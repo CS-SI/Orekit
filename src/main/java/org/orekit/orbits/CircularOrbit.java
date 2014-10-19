@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.orbits;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
@@ -27,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /**
@@ -223,15 +225,13 @@ public class CircularOrbit
      * @param pvCoordinates the {@link PVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public CircularOrbit(final PVCoordinates pvCoordinates, final Frame frame,
-                              final AbsoluteDate date, final double mu)
+    public CircularOrbit(final TimeStampedPVCoordinates pvCoordinates, final Frame frame, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, date, mu);
+        super(pvCoordinates, frame, mu);
 
         // compute semi-major axis
         final Vector3D pvP = pvCoordinates.getPosition();
@@ -280,6 +280,22 @@ public class CircularOrbit
         // compute latitude argument
         final double beta = 1 / (1 + FastMath.sqrt(1 - ex * ex - ey * ey));
         alphaV = eccentricToTrue(FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
+    }
+
+    /** Constructor from cartesian parameters.
+     * @param pvCoordinates the {@link PVCoordinates} in inertial frame
+     * @param frame the frame in which are defined the {@link PVCoordinates}
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    public CircularOrbit(final PVCoordinates pvCoordinates, final Frame frame,
+                         final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
+        this(new TimeStampedPVCoordinates(date, pvCoordinates.getPosition(), pvCoordinates.getVelocity()),
+             frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -457,7 +473,7 @@ public class CircularOrbit
     }
 
     /** {@inheritDoc} */
-    protected PVCoordinates initPVCoordinates() {
+    protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // get equinoctial parameters
         final double equEx = getEquinoctialEx();
@@ -505,7 +521,7 @@ public class CircularOrbit
             new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
         final Vector3D velocity =
             new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
-        return new PVCoordinates(position, velocity);
+        return new TimeStampedPVCoordinates(getDate(), position, velocity);
 
     }
 
@@ -821,6 +837,57 @@ public class CircularOrbit
                                   append(", raan: ").append(FastMath.toDegrees(raan)).
                                   append(", alphaV: ").append(FastMath.toDegrees(alphaV)).
                                   append(";}").toString();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20140617L;
+
+        /** Double values. */
+        private double[] d;
+
+        /** Frame in which are defined the orbital parameters. */
+        private final Frame frame;
+
+        /** Simple constructor.
+         * @param orbit instance to serialize
+         */
+        private DTO(final CircularOrbit orbit) {
+
+            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
+
+            // decompose date
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
+            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+
+            this.d = new double[] {
+                epoch, offset, orbit.getMu(),
+                orbit.a, orbit.ex, orbit.ey,
+                orbit.i, orbit.raan, orbit.alphaV
+            };
+
+            this.frame = orbit.getFrame();
+
+        }
+
+        /** Replace the deserialized data transfer object with a {@link CircularOrbit}.
+         * @return replacement {@link CircularOrbit}
+         */
+        private Object readResolve() {
+            return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
+                                     frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                     d[2]);
+        }
+
     }
 
 }

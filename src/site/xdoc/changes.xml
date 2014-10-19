@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2013 CS Systèmes d'Information
+<!-- Copyright 2002-2014 CS Systèmes d'Information
   Licensed to CS Systèmes d'Information (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -20,7 +20,303 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="6.1" date="TBD" description="TBD">
+    <release version="7.0" date="TBD"
+             description="TBD">
+      <action dev="luc" type="add">
+      Added support for IERS bulletin A (rapid service and prediction)
+      </action>
+      <action dev="tn" type="fix">
+      Fixed various issues in geomagnetic fields models:
+      GeoMagneticField.getDecimalYear() returned a slightly wrong result: e.g. for 1/1/2005
+      returned 2005.0020 instead of 2005.0, GeoMagneticFieldFactory.getModel() returned
+      wrong interpolation near models validity endpoints, GeoMagneticField.transformModel(double)
+      method did not check year validity. Added more unit tests and adapted existing tests for
+      IGRF/WMM with sample values / results as they have changed slightly.
+      Fixes issue #178.
+      </action>
+      <action dev="luc" type="fix" due-to="Patrice Mathieu">
+        Fixed closest TLE search. When filtering first from satellite ID and
+        then extracting closest date, the returned satellite was sometime wrong.
+      </action>
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Allow attitude overriding during impulsive maneuvers.
+        Fixes issue #176.  
+      </action>
+      <action dev="evan" type="add">
+          Added general relativity force model.
+      </action>
+      <action dev="luc" type="add" due-to="Ioanna Stypsanelli">
+        added Greek localization for error messages.
+      </action>
+      <action dev="evan" type="fix">
+          Fixed incorrect partial derivatives for force models that depend on satellite velocity.
+          Fixes #174.
+      </action>
+      <action dev="evan" type="fix">
+          Fixed incorrect parameters set in NumericalPropagatorBuilder.
+          Fixes #175.
+      </action>
+      <action dev="luc" type="update" >
+        Significantly reduced size of various serialized objects.
+      </action>
+      <action dev="luc" type="update" >
+        PVCoordinatesProvider now produces time-stamped position-velocities.
+      </action>
+      <action dev="luc" type="update" >
+        Tabulated attitude provider can be built directly from time-stamped angular coordinates
+        lists, in addition to attitudes lists.
+      </action>
+      <action dev="luc" type="add" >
+        Added time-stamped versions of position-velocity and angular coordinates.
+      </action>
+      <action dev="luc" type="fix" due-to="Daniel Aguilar Taboada">
+        Fixed wrong rotation interpolation for rotations near π.
+        Fixes issue #173.
+      </action>
+      <action dev="luc" type="update" >
+        Updated dependency to Apache Commons Math 3.3.
+      </action>
+      <action dev="luc" type="add" >
+        Added a GeographicZoneDetector event detector for complex geographic zones traversal.
+        Fixes issue #163.
+      </action>
+      <action dev="evan" type="fix">
+        Add Ecliptic frame. Agrees with JPL ephemerides to within 0.5 arcsec.
+        Issue #166.
+      </action>
+      <action dev="evan" type="fix">
+        Fix cache exception when propagating backwards with an interpolated
+        gravity force model.
+        Fixes issue #169.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed parsing of dates very far in the future.
+        Fixes issue #171.
+      </action>
+      <action dev="luc" type="fix">
+        Trigger an exception when attempting to interpolate attitudes without rotation rate
+        using only one data point.
+      </action>
+      <action dev="evan" type="fix">
+        Fixed SpacecraftState date mismatch exception with some attitude providers.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed wrong scaling in JPL ephemeris when retrieving coordinates in a frame
+        that is not the defining frame of the celestial body.
+        Fixes issue #165.
+      </action>
+      <action dev="luc" type="update" due-to="Lucian Barbulescu">
+        Prepare generation of either mean or osculating orbits by DSST propagator.
+        The short periodics terms are not computed yet, but there is ongoing work
+        to add them.
+      </action>
+      <action dev="luc" type="update" due-to="Lucian Barbulescu">
+        Avoid recomputing Chi and Chi^2 in Hansen coefficients for tesseral.
+      </action>
+      <action dev="luc" type="update" due-to="Nicolas Bernard">
+        Added better handling of Hansen kernel computation through use of PolynomialFunction.
+      </action>
+      <action dev="luc" type="update" due-to="Petre Bazavan">
+        Compute Hansen coefficients using linear transformation.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed a non-bracketing exception in event detection, in some rare cases of noisy g function.
+        Fixes issue #160.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed a missing reset of resonant tesseral terms in DSST propagation.
+        Fixes issue #159.
+      </action>
+      <action dev="luc" type="fix" >
+        Improved default max check interval for NodeDetector, so it handles correctly
+        highly eccentric orbits.
+        Fixes issue #158.
+      </action>
+    </release>
+    <release version="6.1" date="2013-12-13"
+             description="Version 6.1 is a minor release of Orekit. It introduces several new
+             features and bug fixes. The most important features introduced in version 6.1
+             are solid tides force model, including pole tide at user choice, and following
+             either IERS 1996, IERS 2003 or IERS 2010 conventions ; ocean tides force model,
+             including pole tide at user choice, loading a user provided model ; simultaneous
+             support for IERS 1996, 2003 and 2010 for frames definition, which is very
+             important to support legacy systems and to convert coordinates between older and
+             newer reference systems ; greatly improved accuracy of celestial/terrestrial
+             frames transforms (we are now at sub-micro arcsecond level for IERS 2003/2010,
+             both with equinox based and Non-Rotating Origin, at a sub-milli arcseconds for
+             IERS 1996, both with equinox based and Non-Rotating Origin) ; classical
+             equinox-based paradigm and new non-rotating origin paradigm for inertial and
+             terrestrial frames are now supported with all IERS conventions ; automatic
+             conversion of IERS Earth Orientation Paramters from equinoxial to non-rotating
+             paradigm ; support for CCSDS Orbit Data Message ; improved API for events,
+             allowing separation of event detection and event handling (the older API is still
+             available for compatibility) ; merged all the elevation related events, allowing
+             to use both refraction model and antenna mask at the same time if desired ;
+             new attitude mode based on interpolation on a table. Numerous bugs were also fixed.
+             Version 6.1 depends on version 3.2 of Apache commons math.">
+      <action dev="luc" type="fix" >
+        Reduced number of calls to the g function in event detectors.
+        Fixes issue #108.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed a spurious backward propagation.
+        Fixes issue #107.
+      </action>
+      <action dev="luc" type="fix" >
+        Improved error detection for numerical and DSST propagation for cases
+        where user attempts to compute integrator tolerances with an orbit for
+        which Jacobian is singular (for example equatorial orbit while using
+        Keplerian representation).
+        Fixes issue #157.
+      </action>
+      <action dev="luc" type="add" >
+        Added a method to get the number or calls to getNeighbors in the generic time stamped cache,
+        to allow performing measurements while tuning the cache.
+      </action>
+      <action dev="luc" type="add" >
+        Added high degree ocean load deformation coefficients computed by Pascal
+        Gégout (CNRS / UMR5563 - GET).
+      </action>
+      <action dev="luc" type="add" >
+        Time scales are now serializable.
+      </action>
+      <action dev="luc" type="add" due-to="Nicolas Bernard">
+        Improved DSST tesseral computation efficiency by caching Jacobi polynomials.
+      </action>
+      <action dev="luc" type="fix" due-to="Daniel Aguilar Taboada">
+        Fixed yaw steering attitude law, which didn't project spacecraft velocity correctly.
+        Fixes issue #156.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to set the maximum number of iterations for events detection.
+        Fixes issue #155.
+      </action>
+      <action dev="luc" type="add">
+        Added an attitude provider from tabulated attitudes.
+        Fixes issue #154.
+      </action>
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Improved test coverage.
+        Fixes issue #153.
+      </action>
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Merged all elevation detectors into one. The new detector supports all
+        features from the previous (and now deprecated) ApparentElevationDetector
+        and GroundMaskElevationDetector.
+        Fixes issue #144.  
+      </action>
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Added a DetectorEventHandler interface aimed at handling only the
+        event occurrence part in propagation. This allows to separate the
+        event detection itself (which is declared by the EventDetector interface)
+        from the action to perform once the event has been detected. This also
+        allows to avoid subclassing of events, which was cumbersome. It also allows
+        to share a single handler for several events.
+        The previous behavior with eventOccurred declared at detector level and
+        subclassing is still available but is deprecated and will be removed in
+        the next major release.
+      </action>
+      <action dev="luc" type="fix" due-to="Christophe Le Bris">
+        Fixed an indexing error in Harris-Priester model.
+        Fixes issue #152.
+      </action>
+      <action dev="luc" type="add">
+        Added a new force model for ocean tides in numerical propagation, including pole tides.
+        Fixes issue #11.
+      </action>
+      <action dev="luc" type="fix" due-to="Lucian Barbulescu">
+        Fixed conversion from position-velocity to Keplerian, when the orbit is
+        perfectly equatorial.
+        Fixes issue #151.
+      </action>
+      <action dev="luc" type="add">
+        Added a new force model for solid tides in numerical propagation, including pole tides.
+        Fixes issue #10.
+      </action>
+      <action dev="luc" type="add">
+        Added a way to select IERS conventions for non-rotating origin
+        based ITRF.
+      </action>
+      <action dev="luc" type="update">
+        Greatly improved accuracy of celestial/terrestrial frames transforms.
+        We are now at sub-micro arcsecond level for IERS 2003/2010, both with
+        equinox based and Non-Rotating Origin, at a sub-milli arcseconds
+        for IERS 1996, both with equinox based and Non-Rotating Origin.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed missing nutation correction in Equation Of Equinoxes.
+        Fixes issue #150.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed rate for TCB time scale.
+      </action>
+      <action dev="luc" type="add">
+        Added new definition of astronomical unit from IAU-2012 resolution B2.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed Date/Time split problem when date is a few femto-seconds before the end of the day.
+        Fixes issue #149.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed overflow problem in TimeComponents.
+        Fixes issue #148.
+      </action>
+      <action dev="luc" type="update">
+        Separate parsing from using Poisson series.
+      </action>
+      <action dev="luc" type="add" due-to="Steven Ports">
+        Added support for parsing CCSDS ODM files (OPM, OMM and OEM).
+      </action>
+      <action dev="luc" type="update">
+        Flattened ITRF frames tree so all supported ITRF realizations (2005, 2000, 97, 93) share the same
+        parent ITRF2008. Previously, the tree was 2008 &lt;- 2005 &lt;- 2000 &lt;- {93,97} and the reference dates
+        for Helmert transforms were all different. We now use the parameters provided at epoch 2000.0 and
+        with respect to ITRF2008 at http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2008_ITRFs.txt.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed azimuth parameter in the TopocentricFrame.pointAtDistance method.
+        Fixes issue #145.
+      </action>
+      <action dev="luc" type="fix"  due-to="Matt Edwards">
+        Fixed location of JAVA_EPOCH. As we now take the linear models between UTC and TAI
+        that were used between 1961 and 1972, we have to consider the offset that was in
+        effect on 1970-01-01 and which was precisely 8.000082s. Fixes issue #142.
+      </action>
+      <action dev="luc" type="update" >
+        Vastly improved performances for Poisson series computations. Poisson series are often
+        evaluated several components together (x/y/s in new non-rotating paradigm, ∆ψ/∆ε in old
+        equinox paradigm for example). As the components are built from a common model, they
+        share many nutation terms. We now evaluate these shared terms only once, as we evaluate
+        the components in parallel thanks to a preliminary "compilation" phase performed when
+        the Poisson series are set up. This dramatically improves speed: on a test case based
+        on x/y/s evaluations over a one year time span without any caching,  we noticed a
+        more than two-fold speedup: mean computation time reduced from 6.75 seconds (standard
+        deviation 0.49s) to 3.07 seconds (standard deviation 0.04s), so it was a 54.5% reduction
+        in mean computation time. At the same time, accuracy was also improved thanks to the
+        Møller-Knuth TwoSum algorithm without branching now used for summing all series terms.
+      </action>
+      <action dev="luc" type="fix" >
+        When UT1 time scale is used, it is now possible to choose which Earth Orientation
+        Parameters history to use (formerly, only EOP compatible with IAU-2000/2006 was
+        used, even for systems relying only on older conventions).
+      </action>
+      <action dev="luc" type="add" >
+        Added Greenwich Mean Sidereal Time and Greenwich Apparent Sidereal Time
+        to all supported IERS conventions (i.e. IERS 1996, IERS 2003 and IERS 2010).
+      </action>
+      <action dev="luc" type="add" >
+        Classical equinox-based paradigm and new non-rotating origin paradigm for
+        inertial and terrestrial frames are now supported with all IERS conventions.
+        This means it is now possible to use MOD/TOD/GTOD with the recent precession/nutation
+        models from recent conventions, and it is also possible to use CIRF/TIRF/ITRF with
+        the older precession nutation models from ancient conventions. Of course, all these
+        conventions and frames can be used at the same time, which is very important to
+        support legacy systems and to convert coordinates between older and newer reference
+        systems.
+      </action>
+      <action dev="luc" type="add" >
+        Added IERS 1996 in the list of supported IERS conventions.
+      </action>
       <action dev="luc" type="add" >
         Added the B1950 inertial frame (also called M50).
       </action>

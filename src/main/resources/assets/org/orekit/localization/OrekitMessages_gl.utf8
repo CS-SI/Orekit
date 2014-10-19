@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local non soport
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = o sistema de referencia non pseudo-inercial "{0}" non está adaptado á definición de órbitas
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = repertorio de datos raíz {0} inexistente
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = repertorio de datos raíz {0} inexistente
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} non é un repertorio
@@ -79,6 +79,9 @@ NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  ningún dato atopado no ficheiro hist
 # missing serie j = {0} in file {1} (line {2})
 MISSING_SERIE_J_IN_FILE = falta a serie i = {0} no ficheiro {1} (liña {2})
 
+# cannot parse both τ and γ from the same Poissons series file
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = non se poden ler ao mesmo tempo τ e γ dun mesmo ficheiro de serie de Poisson
+
 # unexpected end of file {0} (after line {1})
 UNEXPECTED_END_OF_FILE_AFTER_LINE = fin imprevisto do ficheiro {0} (despois da liña {1})
 
@@ -99,6 +102,15 @@ NO_GRAVITY_FIELD_DATA_LOADED = os datos do campo de gravidade non están cargado
 
 # gravity field normalization underflow for degree {0} and order {1}
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = underflow aritmético para a normalización dun campo de gravedad para o grao {0} e a orde {1}
+
+# no ocean tide data loaded
+NO_OCEAN_TIDE_DATA_LOADED = os datos das mareas oceánicas non están cargados
+
+# ocean tide data file {0} limited to degree {1} and order {2}
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = o ficheiro de datos das mareas oceánicas {0} está limitado a grao {1} e orde {2}  
+
+# load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = os coeficientes de deformación baixo carga están limitados a grao {0}, non se poden ler termos de grao {1} no ficheiro {2}    
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = traxectoria polar (distancia ao eixo dos polos : {0})
@@ -238,6 +250,9 @@ UNKNOWN_ADDITIONAL_STATE = estado adicional descoñecido "{0}"
 # unknown month "{0}"
 UNKNOWN_MONTH = mes descoñecido "{0}"
 
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = matriz xacobiana asociada ao tipo {0} é singular para a órbita corrente
+
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = a xacobiana do estado non foi aínda inicializada
 
@@ -270,6 +285,24 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lonxitude inválida para o campo data nun
 
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = falta época de referencia específica axencia nunha CCSDS
+
+# unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+CCSDS_UNEXPECTED_KEYWORD = palabra clave inesperada na liña {0} do ficheiro CCSDS {1}:\n{2}
+
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = o coeficiente gravitacional do corpo central non se pode recuperar do ODM
+
+# there is no spacecraft mass associated with this ODM file
+CCSDS_UNKNOWN_SPACECRAFT_MASS = non hai masa de satélite asociada a este ficheiro ODM
+
+# no IERS conventions have been set before parsing
+CCSDS_UNKNOWN_CONVENTIONS = non se inicializou ningunha convención IERS antes da lectura
+
+# frame {0} is not valid in this ODM file context
+CCSDS_INVALID_FRAME = o sistema de referencia {0} non é válido neste contexto de ficheiro ODM
+
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemas temporais inconsistentes nos bloques de efemérides: {0} ≠ {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = o nome {0} xa está empregado por un estado adicional
@@ -307,6 +340,9 @@ UNSUPPORTED_TIME_TRANSFORM = o modelo xeomagnético {0} na época {1} non ten en
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = a transformación temporal do modelo xeomagnético {0} na época {1} está fora do dominio de validez: {2} != [{3}, {4}]
 
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = <MISSING TRANSLATION>
+
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = número de vecinos almacenados demasiado pequeno: {0} (debe ser polo menos {1})
 
@@ -325,11 +361,8 @@ UNABLE_TO_GENERATE_NEW_DATA_BEFORE = imposible de xerar datos antes de {0}
 # unable to generate new data after {0}
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = imposible de xerar datos despois de {0}
 
-# abscissa {0} is duplicated
-DUPLICATED_ABSCISSA = a abscisa {0} está duplicada
-
-# sample for interpolation is empty
-EMPTY_INTERPOLATION_SAMPLE = mostra de interpolación baleira
-
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = imposible de calcular la anomalía excéntrica hiperbólica a partir de la anomalía media después de {0} iteraciones
+
+# derivation order {0} is out of range
+OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>

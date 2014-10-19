@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -51,6 +51,16 @@ public class TimeComponentsTest {
     @Test(expected=IllegalArgumentException.class)
     public void testOutOfRangeF() throws IllegalArgumentException {
         new TimeComponents(10, 10, 61);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeG() throws IllegalArgumentException {
+        new TimeComponents(86399, 4.5);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeH() throws IllegalArgumentException {
+        new TimeComponents(0, -1.0);
     }
 
     @Test

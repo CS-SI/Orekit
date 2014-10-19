@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,10 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface EventDetector extends Serializable {
 
-    /** Enumerate for actions to be performed when an event occurs. */
+    /** Enumerate for actions to be performed when an event occurs.
+     * @deprecated as of 6.1, replaced with {@link org.orekit.propagation.events.handlers.EventHandler.Action}
+     */
+    @Deprecated
     public enum Action {
 
         /** Stop indicator.
@@ -137,7 +140,11 @@ public interface EventDetector extends Serializable {
      * @return one of {@link EventDetector.Action#STOP}, {@link EventDetector.Action#RESET_STATE},
      * {@link EventDetector.Action#RESET_DERIVATIVES} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
+     * @deprecated as of 6.1 replaced by {@link
+     * org.orekit.propagation.events.handlers.EventHandler#eventOccurred(SpacecraftState,
+     * EventDetector, boolean)}
      */
+    @Deprecated
     Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException;
 
     /** Reset the state prior to continue propagation.
@@ -151,7 +158,10 @@ public interface EventDetector extends Serializable {
      * @param oldState old state
      * @return new state
      * @exception OrekitException if the state cannot be reseted
+     * @deprecated as of 6.1 replaced by {@link
+     * org.orekit.propagation.events.handlers.EventHandler#resetState(EventDetector, SpacecraftState)}
      */
+    @Deprecated
     SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;
 
     /** Get the convergence threshold in the event time search.

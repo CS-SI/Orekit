@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,70 +20,119 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** Finder for body entering/exiting dihedral fov events.
- * <p>This class finds dihedral field of view events (i.e. body entry and exit in fov).</p>
+/** Finder for body entering/exiting dihedral FOV events.
+ * <p>This class finds dihedral field of view events (i.e. body entry and exit in FOV).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at entry and to
- * {@link EventDetector.Action#STOP stop} propagation
- * at exit. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
- * derived class.</p>
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at entry and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * at exit. This can be changed by calling
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see CircularFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class DihedralFieldOfViewDetector extends AbstractDetector {
+public class DihedralFieldOfViewDetector extends AbstractReconfigurableDetector<DihedralFieldOfViewDetector> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4571340030201230951L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Position/velocity provider of the considered target. */
     private final PVCoordinatesProvider targetPVProvider;
 
-    /** Direction of the fov center. */
+    /** Direction of the FOV center. */
     private final Vector3D center;
 
-    /** Fov dihedral axis 1. */
+    /** FOV dihedral axis 1. */
+    private final Vector3D axis1;
+
+    /** FOV normal to first center plane. */
     private final Vector3D normalCenterPlane1;
 
-    /** Fov dihedral half aperture angle 1. */
+    /** FOV dihedral half aperture angle 1. */
     private final double halfAperture1;
 
-    /** Fov dihedral axis 2. */
+    /** FOV dihedral axis 2. */
+    private final Vector3D axis2;
+
+    /** FOV normal to second center plane. */
     private final Vector3D normalCenterPlane2;
 
-    /** Fov dihedral half aperture angle 2. */
+    /** FOV dihedral half aperture angle 2. */
     private final double halfAperture2;
 
     /** Build a new instance.
-     * <p>The maximal interval between distance to fov boundary checks should
+     * <p>The maximal interval between distance to FOV boundary checks should
      * be smaller than the half duration of the minimal pass to handle,
      * otherwise some short passes could be missed.</p>
      * @param maxCheck maximal interval in seconds
      * @param pvTarget Position/velocity provider of the considered target
-     * @param center Direction of the fov center
-     * @param axis1 Fov dihedral axis 1
-     * @param halfAperture1 Fov dihedral half aperture angle 1
-     * @param axis2 Fov dihedral axis 2
-     * @param halfAperture2 Fov dihedral half aperture angle 2
+     * @param center Direction of the FOV center
+     * @param axis1 FOV dihedral axis 1
+     * @param halfAperture1 FOV dihedral half aperture angle 1
+     * @param axis2 FOV dihedral axis 2
+     * @param halfAperture2 FOV dihedral half aperture angle 2
      */
     public DihedralFieldOfViewDetector(final double maxCheck,
-            final PVCoordinatesProvider pvTarget, final Vector3D center, final Vector3D axis1, final double halfAperture1,
-            final Vector3D axis2, final double halfAperture2) {
-        super(maxCheck, 1.0e-3);
+                                       final PVCoordinatesProvider pvTarget, final Vector3D center,
+                                       final Vector3D axis1, final double halfAperture1,
+                                       final Vector3D axis2, final double halfAperture2) {
+        this(maxCheck, 1.0e-3, DEFAULT_MAX_ITER, new StopOnDecreasing<DihedralFieldOfViewDetector>(),
+             pvTarget, center, axis1, halfAperture1, axis2, halfAperture2);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
+     * @param handler event handler to call at event occurrences
+     * @param pvTarget Position/velocity provider of the considered target
+     * @param center Direction of the FOV center
+     * @param axis1 FOV dihedral axis 1
+     * @param halfAperture1 FOV dihedral half aperture angle 1
+     * @param axis2 FOV dihedral axis 2
+     * @param halfAperture2 FOV dihedral half aperture angle 2
+     * @since 6.1
+     */
+    private DihedralFieldOfViewDetector(final double maxCheck, final double threshold,
+                                        final int maxIter, final EventHandler<DihedralFieldOfViewDetector> handler,
+                                        final PVCoordinatesProvider pvTarget, final Vector3D center,
+                                        final Vector3D axis1, final double halfAperture1,
+                                        final Vector3D axis2, final double halfAperture2) {
+        super(maxCheck, threshold, maxIter, handler);
         this.targetPVProvider = pvTarget;
         this.center = center;
 
         // Computation of the center plane normal for dihedra 1
+        this.axis1              = axis1;
         this.normalCenterPlane1 = Vector3D.crossProduct(axis1, center);
 
         // Computation of the center plane normal for dihedra 2
+        this.axis2              = axis2;
         this.normalCenterPlane2 = Vector3D.crossProduct(axis2, center);
 
         this.halfAperture1 = halfAperture1;
         this.halfAperture2 = halfAperture2;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected DihedralFieldOfViewDetector create(final double newMaxCheck, final double newThreshold,
+                                                 final int newMaxIter,
+                                                 final EventHandler<DihedralFieldOfViewDetector> newHandler) {
+        return new DihedralFieldOfViewDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                               targetPVProvider, center,
+                                               axis1, halfAperture1,
+                                               axis2, halfAperture2);
     }
 
     /** Get the position/velocity provider of the target .
@@ -93,64 +142,44 @@ public class DihedralFieldOfViewDetector extends AbstractDetector {
         return targetPVProvider;
     }
 
-    /** Get the direction of fov center.
-     * @return the direction of fov center
+    /** Get the direction of FOV center.
+     * @return the direction of FOV center
      */
     public Vector3D getCenter() {
         return center;
     }
 
-    /** Get the direction of fov 1st dihedral axis.
-     * @return the direction of fov 1st dihedral axis
+    /** Get the direction of FOV 1st dihedral axis.
+     * @return the direction of FOV 1st dihedral axis
      */
     public Vector3D getAxis1() {
-        return Vector3D.crossProduct(center, normalCenterPlane1);
+        return axis1;
     }
 
-    /** Get the half aperture angle of fov 1st dihedra.
-     * @return the half aperture angle of fov 1st dihedras
+    /** Get the half aperture angle of FOV 1st dihedra.
+     * @return the half aperture angle of FOV 1st dihedras
      */
     public double getHalfAperture1() {
         return halfAperture1;
     }
 
-    /** Get the half aperture angle of fov 2nd dihedra.
-     * @return the half aperture angle of fov 2nd dihedras
+    /** Get the half aperture angle of FOV 2nd dihedra.
+     * @return the half aperture angle of FOV 2nd dihedras
      */
     public double getHalfAperture2() {
         return halfAperture2;
     }
 
-    /** Get the direction of fov 2nd dihedral axis.
-     * @return the direction of fov 2nd dihedral axis
+    /** Get the direction of FOV 2nd dihedral axis.
+     * @return the direction of FOV 2nd dihedral axis
      */
     public Vector3D getAxis2() {
-        return Vector3D.crossProduct(center, normalCenterPlane2);
-    }
-
-    /** Handle an fov event and choose what to do next.
-     * <p>The default implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation at entry and to
-     * {@link EventDetector.Action#STOP stop} propagation at exit. This can
-     * be changed by overriding the {@link #eventOccurred(SpacecraftState, boolean)
-     * eventOccurred} method in a derived class.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event, i.e. target enters the fov (note that increase
-     * is measured with respect to physical time, not with respect to propagation which
-     * may go backward in time)
-     * @return one of {@link EventDetector.Action#STOP}, {@link EventDetector.Action#RESET_STATE},
-     * {@link EventDetector.Action#RESET_DERIVATIVES} or {@link EventDetector.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        return increasing ? Action.CONTINUE : Action.STOP;
+        return axis2;
     }
 
     /** {@inheritDoc}
-     * g function value is the target signed distance to the closest fov boundary.
-     * It is positive inside the fov, and negative outside. */
+     * g function value is the target signed distance to the closest FOV boundary.
+     * It is positive inside the FOV, and negative outside. */
     public double g(final SpacecraftState s) throws OrekitException {
 
         // Get position of target at current date in spacecraft frame.
@@ -158,14 +187,14 @@ public class DihedralFieldOfViewDetector extends AbstractDetector {
                                                -1, s.getPVCoordinates().getPosition());
         final Vector3D targetPosSat = s.getAttitude().getRotation().applyTo(targetPosInert);
 
-        // Compute the four angles from the four fov boundaries.
+        // Compute the four angles from the four FOV boundaries.
         final double angle1 = FastMath.atan2(Vector3D.dotProduct(targetPosSat, normalCenterPlane1),
                                    Vector3D.dotProduct(targetPosSat, center));
         final double angle2 = FastMath.atan2(Vector3D.dotProduct(targetPosSat, normalCenterPlane2),
                                    Vector3D.dotProduct(targetPosSat, center));
 
-        // g function value is distance to the fov boundary, computed as a dihedral angle.
-        // It is positive inside the fov, and negative outside.
+        // g function value is distance to the FOV boundary, computed as a dihedral angle.
+        // It is positive inside the FOV, and negative outside.
         return FastMath.min(halfAperture1 - FastMath.abs(angle1) ,  halfAperture2 - FastMath.abs(angle2));
     }
 

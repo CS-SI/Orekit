@@ -47,4 +47,6 @@ src/*/resources/*/unx*.405         -text
 src/*/resources/*/*/unx*.405       -text
 src/*/resources/*/unx*.406         -text
 src/*/resources/*/*/unx*.406       -text
+src/*/resources/inpop/*.dat        -text
+
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,10 +30,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 
 public class CelestialBodyFactoryTest {
 
@@ -138,6 +144,36 @@ public class CelestialBodyFactoryTest {
         if (caught.get() != null) {
             throw caught.get();
         }
+    }
+
+    @Test
+    public void testEarthMoonBarycenter() throws OrekitException {
+        Utils.setDataRoot("regular-data/de405-ephemerides");
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        CelestialBody mars = CelestialBodyFactory.getMars();
+        CelestialBody earth = CelestialBodyFactory.getEarth();
+        CelestialBody earthMoonBarycenter = CelestialBodyFactory.getEarthMoonBarycenter();
+        List<Frame> frames = Arrays.asList(FramesFactory.getEME2000(),
+                                           FramesFactory.getGCRF(),
+                                           sun.getInertiallyOrientedFrame(),
+                                           mars.getInertiallyOrientedFrame(),
+                                           earth.getInertiallyOrientedFrame());
+                                           
+        AbsoluteDate date = new AbsoluteDate(1969, 7, 23, TimeScalesFactory.getTT());
+        final double refDistance = bodyDistance(sun, earthMoonBarycenter, date, frames.get(0));
+        for (Frame frame : frames) {
+            Assert.assertEquals(frame.toString(), refDistance,
+                                bodyDistance(sun, earthMoonBarycenter, date, frame),
+                                1.0e-14 * refDistance);
+        }
+    }
+
+    private double bodyDistance(CelestialBody body1, CelestialBody body2, AbsoluteDate date, Frame frame)
+        throws OrekitException {
+        Vector3D body1Position = body1.getPVCoordinates(date, frame).getPosition();
+        Vector3D body2Position = body2.getPVCoordinates(date, frame).getPosition();
+        Vector3D bodyPositionDifference = body1Position.subtract(body2Position);
+        return bodyPositionDifference.getNorm();
     }
 
 }

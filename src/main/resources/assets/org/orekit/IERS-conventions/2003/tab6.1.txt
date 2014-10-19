@@ -1,0 +1,12 @@
+# values extracted from IERS conventions 2003 table 6.1
+# Nominal values of solid Earth tide external potential Love numbers
+# (the numbers provided here correspond to anelastic Earth)
+
+# n    m    Re(knm)     Im(knm)     knm+
+  2    0    0.30190    -0.00000    -0.00089
+  2    1    0.29830    -0.00144    -0.00080
+  2    2    0.30102    -0.00130    -0.00057
+  3    0    0.093       0.0         0.0
+  3    1    0.093       0.0         0.0
+  3    2    0.093       0.0         0.0
+  3    3    0.094       0.0         0.0

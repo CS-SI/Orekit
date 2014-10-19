@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,6 +46,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class NumericalConverterTest {
@@ -207,7 +208,9 @@ public class NumericalConverterTest {
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
-        final Vector3D position     = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        //use a orbit that comes close to Earth so the drag coefficient has an effect
+        final Vector3D position     = new Vector3D(7.0e6, 1.0e6, 4.0e6).normalize()
+                .scalarMultiply(Constants.WGS84_EARTH_EQUATORIAL_RADIUS + 300e3);
         final Vector3D velocity     = new Vector3D(-500.0, 8000.0, 1000.0);
         final AbsoluteDate initDate = new AbsoluteDate(2010, 10, 10, 10, 10, 10.0, TimeScalesFactory.getUTC());
         orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
@@ -218,12 +221,12 @@ public class NumericalConverterTest {
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
-        gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+        gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                         GravityFieldFactory.getNormalizedProvider(2, 0));
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF2005());
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         earth.setAngularThreshold(1.e-7);
         final Atmosphere atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
         final double dragCoef = 2.0;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Common handling of {@link Propagator} methods for analytical propagators.
  * <p>
@@ -241,7 +241,7 @@ public abstract class AbstractPropagator implements Propagator {
     public abstract BoundedPropagator getGeneratedEphemeris();
 
     /** {@inheritDoc} */
-    public abstract void addEventDetector(final EventDetector detector);
+    public abstract <T extends EventDetector> void addEventDetector(final T detector);
 
     /** {@inheritDoc} */
     public abstract Collection<EventDetector> getEventsDetectors();
@@ -258,7 +258,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return propagate(date).getPVCoordinates(frame);
     }

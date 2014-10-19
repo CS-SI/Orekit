@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.attitudes;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
+import org.apache.commons.math3.geometry.euclidean.threed.Plane;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -45,6 +46,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -54,7 +56,7 @@ public class YawCompensationTest {
     private AbsoluteDate date;
 
     // Reference frame = ITRF 2005C
-    private Frame frameITRF2005;
+    private Frame itrf;
 
     // Satellite position
     CircularOrbit circOrbit;
@@ -78,10 +80,10 @@ public class YawCompensationTest {
         //  Check target
         // *************
         // without yaw compensation
-        Vector3D noYawObserved = nadirLaw.getTargetPoint(circOrbit, date, frameITRF2005);
+        Vector3D noYawObserved = nadirLaw.getTargetPoint(circOrbit, date, itrf);
 
         // with yaw compensation
-        Vector3D yawObserved = yawCompensLaw.getTargetPoint(circOrbit, date, frameITRF2005);
+        Vector3D yawObserved = yawCompensLaw.getTargetPoint(circOrbit, date, itrf);
 
         // Check difference
         Vector3D observedDiff = noYawObserved.subtract(yawObserved);
@@ -104,7 +106,8 @@ public class YawCompensationTest {
         Vector3D satInert = circOrbit.getPVCoordinates().getPosition();
         Vector3D zInert   = att0.getRotation().applyInverseTo(Vector3D.PLUS_K);
         GeodeticPoint gp  = earthShape.getIntersectionPoint(new Line(satInert,
-                                                                     satInert.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, zInert)),
+                                                                     satInert.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, zInert),
+                                                                     1.0e-10),
                                                             satInert,
                                                             inertFrame, circOrbit.getDate());
         Vector3D pEarth   = earthShape.transform(gp);
@@ -121,8 +124,15 @@ public class YawCompensationTest {
         Vector3D pP1h = tP1h.transformPosition(pEarth);
         Transform tP2h = earthFrame.getTransformTo(inertFrame, circOrbit.getDate().shiftedBy( 2 * h));
         Vector3D pP2h = tP2h.transformPosition(pEarth);
-        Vector3D velInert = new Vector3D(s1, pP1h, -s1, pM1h, -s2, pP2h, s2, pM2h);
-        Vector3D relativeVelocity = velInert.subtract(circOrbit.getPVCoordinates().getVelocity());
+        Vector3D vSurfaceInertial = new Vector3D(s1, pP1h, -s1, pM1h, -s2, pP2h, s2, pM2h);
+        
+        // relative velocity
+        Vector3D pSurfaceInertial = earthFrame.getTransformTo(inertFrame, circOrbit.getDate()).transformPosition(pEarth);
+        Vector3D vSatInertial = circOrbit.getPVCoordinates().getVelocity();
+        Plane sspPlane = new Plane(pSurfaceInertial, 1.0e-10);
+        Vector3D satVelocityHorizonal = sspPlane.toSpace(sspPlane.toSubSpace(vSatInertial));
+        Vector3D satVelocityAtSurface = satVelocityHorizonal.scalarMultiply(pSurfaceInertial.getNorm()/satInert.getNorm());
+        Vector3D relativeVelocity = vSurfaceInertial.subtract(satVelocityAtSurface);
 
         // relative velocity in satellite frame, must be in (X, Z) plane
         Vector3D relVelSat = att0.getRotation().applyTo(relativeVelocity);
@@ -181,10 +191,10 @@ public class YawCompensationTest {
             // ------------------
 
             // 1/ Check yaw values around ascending node (max yaw)
-            if ((FastMath.abs(extrapLat) < FastMath.toRadians(20.)) &&
+            if ((FastMath.abs(extrapLat) < FastMath.toRadians(2.)) &&
                 (extrapPvSatEME2000.getVelocity().getZ() >= 0. )) {
-                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(2.51)) &&
-                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(2.86)));
+                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(3.22)) &&
+                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(3.23)));
             }
 
             // 2/ Check yaw values around maximum positive latitude (min yaw)
@@ -195,8 +205,8 @@ public class YawCompensationTest {
             // 3/ Check yaw values around descending node (max yaw)
             if ( (FastMath.abs(extrapLat) < FastMath.toRadians(2.))
                     && (extrapPvSatEME2000.getVelocity().getZ() <= 0. ) ) {
-                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(2.51)) &&
-                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(2.86)));
+                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(3.22)) &&
+                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(3.23)));
             }
 
             // 4/ Check yaw values around maximum negative latitude (min yaw)
@@ -295,7 +305,7 @@ public class YawCompensationTest {
             final double mu = 3.9860047e14;
 
             // Reference frame = ITRF 2005
-            frameITRF2005 = FramesFactory.getITRF2005(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             //  Satellite position
             circOrbit =
@@ -305,7 +315,7 @@ public class YawCompensationTest {
 
             // Elliptic earth shape */
             earthShape =
-                new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+                new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
@@ -316,7 +326,7 @@ public class YawCompensationTest {
     @After
     public void tearDown() {
         date = null;
-        frameITRF2005 = null;
+        itrf = null;
         circOrbit = null;
         earthShape = null;
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -197,8 +197,9 @@ public interface Propagator extends PVCoordinatesProvider {
      * @param detector event detector to add
      * @see #clearEventsDetectors()
      * @see #getEventsDetectors()
+     * @param <T> class type for the generic version
      */
-    void addEventDetector(final EventDetector detector);
+    <T extends EventDetector> void addEventDetector(final T detector);
 
     /** Get all the events detectors that have been added.
      * @return an unmodifiable collection of the added detectors

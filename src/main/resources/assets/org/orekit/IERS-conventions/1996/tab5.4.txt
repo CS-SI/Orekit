@@ -1,0 +1,154 @@
+The following table has been extracted from the original IERS conventions
+1996 TeX files, changing mainly the TeX syntax into pure UTF-8 text.
+
+Two values are different in the TeX files and in the conventions that were printed. The
+reason for that is that they have been fixed by IERS after publication, as explained
+in the errata:
+
+   ### 8.  p. 36:  i=1,106 has been removed from the summation, the B_i" 
+   ###     term -12.7 should be 12.7 and the B_i" term 1.4 should be -1.4.
+
+One value has been changed by Orekit team: the sign of Delaunay multiplier
+for argument l at row number 30 in the table has been switched, so the multipliers
+for this term changed from (1, 0, 0 , 2, 1) to (-1, 0, 0 , 2, 1). This
+change ensure the term matches the corresponding value in table 5.1, it matches the
+coefficients found in all other references about IAU-80 nutation model we are able
+to check (Sofa library function iauNut80, IERS data file at
+http://hpiers.obspm.fr/eop-pc/models/nutations/nut_IAU1980.dat, various
+implementations fond on the web and relating to Explanatory Supplement to the
+Astronomical Almanac (1992), it matches the announced period of 32.0 days
+(the recomputed period for (-1, 0, 0 , 2, 1) is 31.9615 days whereas the
+recomputed period for (1, 0, 0 , 2, 1) is 9.62733 days), and it avoid a
+duplication as another term with multipliers (1, 0, 0 , 2, 1) and the correct
+period of 9.6 days appear later in the table.
+
+Extract for IERS conventions 1996
+
+# Series for the celestial coordinates X and Y of the CEP referred to the mean equator and
+# equinox of epoch J2000.0, with t measured in Julian centuries from epoch J2000.0. The terms following
+# the dotted line are identical in Tables 5.1 and 5.4. The signs of the fundamental arguments, periods,
+# and coefficients may differ from the original publication. These have been changed to be consistent
+# with other portions of this chapter.
+
+# X = 2004.3109″t - 0.42665″t² - 0.198656″t³ + 0.0000140″t⁴
+#     + 0.00006″t² cos Ω + sin ε0 { Σ [(Ai + Ai' t) sin(ARGUMENT) + Ai'' t cos(ARGUMENT)]}
+#     + 0.00204″t² sin Ω + 0.00016″t² sin 2(F - D + Ω),
+
+# Y = -0.00013″ - 22.40992″t² + 0.001836″t³ + 0.0011130″t⁴
+#     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
+#     -0.00231″t² cos Ω - 0.00014″t² cos 2(F - D + Ω)
+
+     MULTIPLIERS OF      PERIOD           LONGITUDE                 OBLIQUITY
+ l    l'   F    D   Om    days        Ai        Ai'    Ai''    Bi        Bi'    Bi''
+ 0    0    0    0    1  -6798.4  -171996.0    -84.2  5173.2  92025.0    8.9  1529.9
+ 0    0    2   -2    2    182.6   -13187.0      5.3   322.2   5736.0   -3.1   117.3
+ 0    0    2    0    2     13.7    -2274.0      1.0    54.8    977.0   -0.5    20.2
+ 0    0    0    0    2  -3399.2     2053.2     -1.0   -50.5   -893.7    0.5   -18.3
+ 0   -1    0    0    0   -365.3    -1426.0      4.3     3.0     54.0   -0.1    12.7
+ 1    0    0    0    0     27.6      712.0      0.1     0.0     -7.0    0.0    -6.3
+ 0    1    2   -2    2    121.7     -517.0      1.5    12.6    224.0   -0.6     4.6
+ 0    0    2    0    1     13.6     -386.0     -0.4    11.3    200.0    0.0     3.4
+ 1    0    2    0    2      9.1     -301.0      0.0     7.3    129.0   -0.1     2.7
+ 0   -1    2   -2    2    365.2      217.0     -0.5    -5.3    -95.0    0.3    -1.9
+-1    0    0    2    0     31.8      158.0      0.0     0.0     -1.0    0.0    -1.4
+ 0    0    2   -2    1    177.8      129.0      0.1    -4.0    -70.0    0.0    -1.2
+-1    0    2    0    2     27.1      123.0      0.0    -3.0    -53.0    0.0    -1.1
+ 1    0    0    0    1     27.7       63.0      0.1    -1.8    -33.0    0.0    -0.6
+ 0    0    0    2    0     14.8       63.0      0.0     0.0     -2.0    0.0    -0.6
+-1    0    2    2    2      9.6      -59.0      0.0     1.5     26.0    0.0     0.5
+-1    0    0    0    1    -27.4      -58.0     -0.1     1.8     32.0    0.0     0.5
+ 1    0    2    0    1      9.1      -51.0      0.0     1.5     27.0    0.0     0.5
+-2    0    0    2    0   -205.9      -48.0      0.0     0.0      1.0    0.0     0.0
+-2    0    2    0    1   1305.5       46.0      0.0    -1.3    -24.0    0.0     0.0
+ 0    0    2    2    2      7.1      -38.0      0.0     0.0     16.0    0.0     0.0
+ 2    0    2    0    2      6.9      -31.0      0.0     0.0     13.0    0.0     0.0
+ 2    0    0    0    0     13.8       29.0      0.0     0.0     -1.0    0.0     0.0
+ 1    0    2   -2    2     23.9       29.0      0.0     0.0    -12.0    0.0     0.0
+ 0    0    2    0    0     13.6       26.0      0.0     0.0     -1.0    0.0     0.0
+ 0    0    2   -2    0    173.3      -22.0      0.0     0.0      0.0    0.0     0.0
+-1    0    2    0    1     27.0       21.0      0.0     0.0    -10.0    0.0     0.0
+ 0    2    0    0    0    182.6       17.0     -0.1     0.0      0.0    0.0     0.0
+ 0    2    2   -2    2     91.3      -16.0      0.1     0.0      7.0    0.0     0.0
+
+# The first coefficient of the following line has been fixed by Orekit team.
+# It was -1 in the original TeX file, which is inconsistent with the 32.0 days
+# period and duplicates another entry later on
+-1    0    0    2    1     32.0       16.0      0.0     0.0     -8.0    0.0     0.0
+
+ 0    1    0    0    1    386.0      -15.0      0.0     0.0      9.0    0.0     0.0
+ 1    0    0   -2    1    -31.7      -13.0      0.0     0.0      7.0    0.0     0.0
+ 0   -1    0    0    1   -346.6      -12.0      0.0     0.0      6.0    0.0     0.0
+ 2    0   -2    0    0  -1095.2       11.0      0.0     0.0      0.0    0.0     0.0
+-1    0    2    2    1      9.5      -10.0      0.0     0.0      5.0    0.0     0.0
+ 1    0    2    2    2      5.6       -8.0      0.0     0.0      3.0    0.0     0.0
+ 0   -1    2    0    2     14.2       -7.0      0.0     0.0      3.0    0.0     0.0
+ 0    0    2    2    1      7.1       -7.0      0.0     0.0      3.0    0.0     0.0
+ 1    1    0   -2    0    -34.8       -7.0      0.0     0.0      0.0    0.0     0.0
+ 0    1    2    0    2     13.2        7.0      0.0     0.0     -3.0    0.0     0.0
+-2    0    0    2    1   -199.8       -6.0      0.0     0.0      3.0    0.0     0.0
+ 0    0    0    2    1     14.8       -6.0      0.0     0.0      3.0    0.0     0.0
+ 2    0    2   -2    2     12.8        6.0      0.0     0.0     -3.0    0.0     0.0
+ 1    0    0    2    0      9.6        6.0      0.0     0.0      0.0    0.0     0.0
+ 1    0    2   -2    1     23.9        6.0      0.0     0.0     -3.0    0.0     0.0
+ 0    0    0   -2    1    -14.7       -5.0      0.0     0.0      3.0    0.0     0.0
+ 0   -1    2   -2    1    346.6       -5.0      0.0     0.0      3.0    0.0     0.0
+ 2    0    2    0    1      6.9       -5.0      0.0     0.0      3.0    0.0     0.0
+ 1   -1    0    0    0     29.8        5.0      0.0     0.0      0.0    0.0     0.0
+ 1    0    0   -1    0    411.8       -4.0      0.0     0.0      0.0    0.0     0.0
+ 0    0    0    1    0     29.5       -4.0      0.0     0.0      0.0    0.0     0.0
+ 0    1    0   -2    0    -15.4       -4.0      0.0     0.0      0.0    0.0     0.0
+ 1    0   -2    0    0    -26.9        4.0      0.0     0.0      0.0    0.0     0.0
+ 2    0    0   -2    1    212.3        4.0      0.0     0.0     -2.0    0.0     0.0
+ 0    1    2   -2    1    119.6        4.0      0.0     0.0     -2.0    0.0     0.0
+ 1    1    0    0    0     25.6       -3.0      0.0     0.0      0.0    0.0     0.0
+ 1   -1    0   -1    0  -3232.9       -3.0      0.0     0.0      0.0    0.0     0.0
+-1   -1    2    2    2      9.8       -3.0      0.0     0.0      1.0    0.0     0.0
+ 0   -1    2    2    2      7.2       -3.0      0.0     0.0      1.0    0.0     0.0
+ 1   -1    2    0    2      9.4       -3.0      0.0     0.0      1.0    0.0     0.0
+ 3    0    2    0    2      5.5       -3.0      0.0     0.0      1.0    0.0     0.0
+-2    0    2    0    2   1615.7       -3.0      0.0     0.0      1.0    0.0     0.0
+ 1    0    2    0    0      9.1        3.0      0.0     0.0      0.0    0.0     0.0
+-1    0    2    4    2      5.8       -2.0      0.0     0.0      1.0    0.0     0.0
+ 1    0    0    0    2     27.8       -2.0      0.0     0.0      1.0    0.0     0.0
+-1    0    2   -2    1    -32.6       -2.0      0.0     0.0      1.0    0.0     0.0
+ 0   -2    2   -2    1   6786.3       -2.0      0.0     0.0      1.0    0.0     0.0
+-2    0    0    0    1    -13.7       -2.0      0.0     0.0      1.0    0.0     0.0
+ 2    0    0    0    1     13.8        2.0      0.0     0.0     -1.0    0.0     0.0
+ 3    0    0    0    0      9.2        2.0      0.0     0.0      0.0    0.0     0.0
+ 1    1    2    0    2      8.9        2.0      0.0     0.0     -1.0    0.0     0.0
+ 0    0    2    1    2      9.3        2.0      0.0     0.0     -1.0    0.0     0.0
+ 1    0    0    2    1      9.6       -1.0      0.0     0.0      0.0    0.0     0.0
+ 1    0    2    2    1      5.6       -1.0      0.0     0.0      1.0    0.0     0.0
+ 1    1    0   -2    1    -34.7       -1.0      0.0     0.0      0.0    0.0     0.0
+ 0    1    0    2    0     14.2       -1.0      0.0     0.0      0.0    0.0     0.0
+ 0    1    2   -2    0    117.5       -1.0      0.0     0.0      0.0    0.0     0.0
+ 0    1   -2    2    0   -329.8       -1.0      0.0     0.0      0.0    0.0     0.0
+ 1    0   -2    2    0     32.8       -1.0      0.0     0.0      0.0    0.0     0.0
+ 1    0   -2   -2    0     -9.5       -1.0      0.0     0.0      0.0    0.0     0.0
+ 1    0    2   -2    0     32.8       -1.0      0.0     0.0      0.0    0.0     0.0
+ 1    0    0   -4    0    -10.1       -1.0      0.0     0.0      0.0    0.0     0.0
+ 2    0    0   -4    0    -15.9       -1.0      0.0     0.0      0.0    0.0     0.0
+ 0    0    2    4    2      4.8       -1.0      0.0     0.0      0.0    0.0     0.0
+ 0    0    2   -1    2     25.4       -1.0      0.0     0.0      0.0    0.0     0.0
+-2    0    2    4    2      7.3       -1.0      0.0     0.0      1.0    0.0     0.0
+ 2    0    2    2    2      4.7       -1.0      0.0     0.0      0.0    0.0     0.0
+ 0   -1    2    0    1     14.2       -1.0      0.0     0.0      0.0    0.0     0.0
+ 0    0   -2    0    1    -13.6       -1.0      0.0     0.0      0.0    0.0     0.0
+ 0    0    4   -2    2     12.7        1.0      0.0     0.0      0.0    0.0     0.0
+ 0    1    0    0    2    409.2        1.0      0.0     0.0      0.0    0.0     0.0
+ 1    1    2   -2    2     22.5        1.0      0.0     0.0     -1.0    0.0     0.0
+ 3    0    2   -2    2      8.7        1.0      0.0     0.0      0.0    0.0     0.0
+-2    0    2    2    2     14.6        1.0      0.0     0.0     -1.0    0.0     0.0
+-1    0    0    0    2    -27.3        1.0      0.0     0.0     -1.0    0.0     0.0
+ 0    0   -2    2    1   -169.0        1.0      0.0     0.0      0.0    0.0     0.0
+ 0    1    2    0    1     13.1        1.0      0.0     0.0      0.0    0.0     0.0
+-1    0    4    0    2      9.1        1.0      0.0     0.0      0.0    0.0     0.0
+ 2    1    0   -2    0    131.7        1.0      0.0     0.0      0.0    0.0     0.0
+ 2    0    0    2    0      7.1        1.0      0.0     0.0      0.0    0.0     0.0
+ 2    0    2   -2    1     12.8        1.0      0.0     0.0     -1.0    0.0     0.0
+ 2    0   -2    0    1   -943.2        1.0      0.0     0.0      0.0    0.0     0.0
+ 1   -1    0   -2    0    -29.3        1.0      0.0     0.0      0.0    0.0     0.0
+-1    0    0    1    1   -388.3        1.0      0.0     0.0      0.0    0.0     0.0
+-1   -1    0    2    1     35.0        1.0      0.0     0.0      0.0    0.0     0.0
+ 0    1    0    1    0     27.3        1.0      0.0     0.0      0.0    0.0     0.0
+ 0    0    2   -2    3    177.8       -1.2      0.0     0.0      0.0    0.0     0.0

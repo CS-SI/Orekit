@@ -1,4 +1,4 @@
-' Copyright 2002-2013 CS Systèmes d'Information
+' Copyright 2002-2014 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,9 +25,9 @@
   skinparam NoteBorderColor       #691616
   skinparam NoteFontColor         #691616
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package time #DDEBD8
+    package time #DDEBD8 {
       interface TimeStamped {
         +AbsoluteDate getDate()
       }
@@ -37,23 +37,27 @@
       interface "TimeInterpolable<T>" as TimeInterpolable_T_ {
         +T interpolate(AbsoluteDate date, Collection<T> sample)
       }
-    end package
+    }
 
-    package utils #DDEBD8
+    package utils #DDEBD8 {
+
+      interface "TimeStampedCache<T extends TimeStamped>" as TimeStamptedCache_T_ {
+        +List<T> getNeighbours(AbsoluteDate central)
+      }
+      note bottom
+        provides thread-safety
+      end note
+      TimeStamped <--* TimeStamptedCache_T_
+       TimeStamptedCache_T_ <|-- GenericTimeStampedCache  
+       TimeStamptedCache_T_ <|-- ImmutableTimeStampedCache
 
       class PVCoordinates {
         +PVCoordinates ZERO
-        +Vector3D estimateVelocity(Vector3D start, Vector3D end, double dt)
         +Vector3D getPosition()
         +Vector3D getVelocity()
         +Vector3D getMomentum()
         +{static} PVCoordinates interpolate(...)
       }
-      note bottom
-      don't implement TimeInterpolable<T>
-      as the interpolate method here is static
-      and has a different signature
-      end note
 
       interface PVCoordinatesProvider {
         +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
@@ -61,17 +65,11 @@
 
       class AngularCoordinates {
         +AngularCoordinates IDENTITY
-        +Vector3D estimateRate(Rotation start, Rotation end, double dt)
         +AngularCoordinates revert()
         +Rotation getRotation()
         +Vector3D getRotationRate()
         +{static} AngularCoordinates interpolate(...)
       }
-      note bottom
-      don't implement TimeInterpolable<T>
-      as the interpolate method here is static
-      and has a different signature
-      end note
 
       PVCoordinatesProvider -up-> PVCoordinates
       TimeShiftable_T_      <|..  PVCoordinates
@@ -89,30 +87,36 @@
         +double G0_STANDARD_GRAVITY
       }
 
-    end package
+      enum IERSConventions {
+        +IERS_1996
+        +IERS_2003
+        +IERS_2010
+      }
 
-    package frames #DDEBD8
+    }
+
+    package frames #DDEBD8 {
       class SpacecraftFrame
       class TopocentricFrame
       PVCoordinatesProvider <|-- SpacecraftFrame
       PVCoordinatesProvider <|-- TopocentricFrame
-   end package
+   }
 
-    package orbits #DDEBD8
+    package orbits #DDEBD8 {
       abstract class Orbit
       PVCoordinatesProvider <|.. Orbit
-    end package
+    }
 
-    package propagation #DDEBD8
+    package propagation #DDEBD8 {
       interface Propagator
       PVCoordinatesProvider <|.. Propagator
-    end package
+    }
 
-    package bodies #DDEBD8
+    package bodies #DDEBD8 {
       class CelestialBody
       PVCoordinatesProvider <|.. CelestialBody
-    end package
+    }
 
- end package
+ }
 
 @enduml

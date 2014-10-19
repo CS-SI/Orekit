@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,10 @@
 
 package fr.cs.examples.frames;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3DFormat;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -33,6 +30,7 @@ import org.orekit.frames.UpdatableFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -48,9 +46,6 @@ public class Frames2 {
 
             // configure Orekit
             Autoconfiguration.configureOrekit();
-            DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-            Vector3DFormat v3 = new Vector3DFormat(new DecimalFormat("0.000",     symbols));
-            Vector3DFormat v7 = new Vector3DFormat(new DecimalFormat("0.0000000", symbols));
 
             // Considering the following Computing/Measurement date in UTC time scale
             TimeScale utc = TimeScalesFactory.getUTC();
@@ -74,13 +69,15 @@ public class Frames2 {
             Frame gpsFrame         = new Frame(satFrame, new Transform(date, translateGPS, rotateGPS), "GPS", false);
 
 
-            // Let's get the satellite position and velocity in ITRF2005 as measured by GPS antenna at this moment:
+            // Let's get the satellite position and velocity in ITRF as measured by GPS antenna at this moment:
             final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
             final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);
-            System.out.println("GPS antenna position in ITRF2005: " + v3.format(position));
-            System.out.println("GPS antenna velocity in ITRF2005: " + v7.format(velocity));
+            System.out.format(Locale.US, "GPS antenna position in ITRF:    %12.3f %12.3f %12.3f%n",
+                              position.getX(), position.getY(), position.getZ());
+            System.out.format(Locale.US, "GPS antenna velocity in ITRF:    %12.7f %12.7f %12.7f%n",
+                              velocity.getX(), velocity.getY(), velocity.getZ());
 
-            // The transform from GPS frame to ITRF2005 frame at this moment is defined by
+            // The transform from GPS frame to ITRF frame at this moment is defined by
             // a translation and a rotation. The translation is directly provided by the
             // GPS measurement above. The rotation is extracted from the existing tree, where
             // we know all rotations are already up to date, even if one translation is still
@@ -88,28 +85,30 @@ public class Frames2 {
             // applying the rotation first because the position/velocity vector are given in
             // ITRF frame not in GPS antenna frame:
             Transform measuredTranslation = new Transform(date, position, velocity);
-            Transform formerTransform     = gpsFrame.getTransformTo(FramesFactory.getITRF2005(true), date);
+            Transform formerTransform     = gpsFrame.getTransformTo(FramesFactory.getITRF(IERSConventions.IERS_2010, true), date);
             Transform preservedRotation   = new Transform(date,
                                                           formerTransform.getRotation(),
                                                           formerTransform.getRotationRate());
             Transform gpsToItrf           = new Transform(date, preservedRotation, measuredTranslation);
 
             // So we can update the transform from EME2000 to CoG frame
-            cogFrame.updateTransform(gpsFrame, FramesFactory.getITRF2005(true), gpsToItrf, date);
+            cogFrame.updateTransform(gpsFrame, FramesFactory.getITRF(IERSConventions.IERS_2010, true), gpsToItrf, date);
 
             // And we can get the position and velocity of satellite CoG in EME2000 frame
             PVCoordinates origin  = PVCoordinates.ZERO;
-            Transform cogToItrf   = cogFrame.getTransformTo(FramesFactory.getITRF2005(true), date);
+            Transform cogToItrf   = cogFrame.getTransformTo(FramesFactory.getITRF(IERSConventions.IERS_2010, true), date);
             PVCoordinates satItrf = cogToItrf.transformPVCoordinates(origin);
-            System.out.println("Satellite position in ITRF2005: " + v3.format(satItrf.getPosition()));
-            System.out.println("Satellite velocity in ITRF2005: " + v7.format(satItrf.getVelocity()));
+            System.out.format(Locale.US, "Satellite   position in ITRF:    %12.3f %12.3f %12.3f%n",
+                              satItrf.getPosition().getX(), satItrf.getPosition().getY(), satItrf.getPosition().getZ());
+            System.out.format(Locale.US, "Satellite   velocity in ITRF:    %12.7f %12.7f %12.7f%n",
+                              satItrf.getVelocity().getX(), satItrf.getVelocity().getY(), satItrf.getVelocity().getZ());
 
             Transform cogToEme2000   = cogFrame.getTransformTo(FramesFactory.getEME2000(), date);
             PVCoordinates satEME2000 = cogToEme2000.transformPVCoordinates(origin);
-            System.out.println("Satellite position in EME2000: " +
-                               v3.format(satEME2000.getPosition()));
-            System.out.println("Satellite velocity in EME2000: " +
-                               v7.format(satEME2000.getVelocity()));
+            System.out.format(Locale.US, "Satellite   position in EME2000: %12.3f %12.3f %12.3f%n",
+                              satEME2000.getPosition().getX(), satEME2000.getPosition().getY(), satEME2000.getPosition().getZ());
+            System.out.format(Locale.US, "Satellite   velocity in EME2000: %12.7f %12.7f %12.7f%n",
+                              satEME2000.getVelocity().getX(), satEME2000.getVelocity().getY(), satEME2000.getVelocity().getZ());
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,8 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventsLogger;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -67,19 +69,14 @@ public class AttitudesSequenceTest {
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
-        final EventDetector dayNightEvent = logger.monitorDetector(new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
-            private static final long serialVersionUID = 8091992101063392941L;
-            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+        final EclipseDetector ed = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
+        final EventDetector dayNightEvent = logger.monitorDetector(ed.withHandler(new ContinueOnEvent<EclipseDetector>() {
+            public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                 setInEclipse(s.getDate(), !increasing);
-                return Action.CONTINUE;
+                return EventHandler.Action.CONTINUE;
             }
-        });
-        final EventDetector nightDayEvent = logger.monitorDetector(new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
-            private static final long serialVersionUID = -377454330129772997L;
-            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                return Action.CONTINUE;
-            }
-        });
+        }));
+        final EventDetector nightDayEvent = logger.monitorDetector(ed.withHandler(new ContinueOnEvent<EclipseDetector>()));
         attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);
         attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
         if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {

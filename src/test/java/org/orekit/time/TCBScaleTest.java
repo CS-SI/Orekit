@@ -1,8 +1,12 @@
 package org.orekit.time;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 
 public class TCBScaleTest {
@@ -26,7 +30,7 @@ public class TCBScaleTest {
             AbsoluteDate t1 = t0.shiftedBy(deltaT);
             double tdbRate = t1.offsetFrom(t0, tdb) / deltaT;
             double tcbRate = t1.offsetFrom(t0, tcb) / deltaT;
-            Assert.assertEquals(tdbRate + 1.550505e-8, tcbRate, 1.0e-14);
+            Assert.assertEquals(tdbRate + 1.550519768e-8, tcbRate, 1.0e-14);
         }
     }
 
@@ -40,6 +44,47 @@ public class TCBScaleTest {
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
             Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
+    }
+
+    @Test
+    public void testAAS06134() throws OrekitException {
+
+        // this reference test has been extracted from the following paper:
+        // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
+        // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
+        // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
+        // Note that the dUT1 here is -0.439962, whereas it is -0.4399619 in the book
+        Utils.setLoaders(IERSConventions.IERS_1996,
+                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                             { 53098, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53099, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53100, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53101, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53102, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53103, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53104, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53105, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN }
+                         }));
+        AbsoluteDate date =
+                new AbsoluteDate(2004, 4, 6, 7, 51, 28.386009, TimeScalesFactory.getUTC());
+        DateTimeComponents components = date.getComponents(TimeScalesFactory.getTCB());
+        Assert.assertEquals(2004,            components.getDate().getYear());
+        Assert.assertEquals(   4,            components.getDate().getMonth());
+        Assert.assertEquals(   6,            components.getDate().getDay());
+        Assert.assertEquals(   7,            components.getTime().getHour());
+        Assert.assertEquals(  52,            components.getTime().getMinute());
+
+        // the "large" threshold in this test is due to the fact TDB model from which
+        // TCB is derived is approximated both in Orekit and in the reference paper.
+        // The difference is however small as the model in the paper is announced as
+        // being accurate to 50 micro seconds, and the test here is far below this value
+        Assert.assertEquals(  45.9109901113, components.getTime().getSecond(), 1.2e-8);
+
+    }
+
+    @Before
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

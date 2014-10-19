@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.forces.gravity.potential;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 
 /** Wrapper providing un-normalized coefficients from normalized ones.
@@ -44,50 +45,88 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getMaxDegree() {
         return normalized.getMaxDegree();
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getMaxOrder() {
         return normalized.getMaxOrder();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getMu() {
         return normalized.getMu();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getAe() {
         return normalized.getAe();
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbsoluteDate getReferenceDate() {
         return normalized.getReferenceDate();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getOffset(final AbsoluteDate date) {
         return normalized.getOffset(date);
     }
 
     /** {@inheritDoc} */
+    @Override
     public TideSystem getTideSystem() {
         return normalized.getTideSystem();
     }
 
     /** {@inheritDoc} */
+    @Override
+    @Deprecated
     public double getUnnormalizedCnm(final double dateOffset, final int n, final int m)
         throws OrekitException {
-        return normalized.getNormalizedCnm(dateOffset, n, m) * factors[n][m];
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getUnnormalizedCnm(n, m);
     }
 
     /** {@inheritDoc} */
+    @Override
+    @Deprecated
     public double getUnnormalizedSnm(final double dateOffset, final int n, final int m)
         throws OrekitException {
-        return normalized.getNormalizedSnm(dateOffset, n, m) * factors[n][m];
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getUnnormalizedSnm(n, m);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public UnnormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+        final NormalizedSphericalHarmonics harmonics = normalized.onDate(date);
+        return new UnnormalizedSphericalHarmonics() {
+
+            /** {@inheritDoc} */
+            @Override
+            public AbsoluteDate getDate() {
+                return date;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public double getUnnormalizedCnm(final int n, final int m) throws OrekitException {
+                return harmonics.getNormalizedCnm(n, m) * factors[n][m];
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public double getUnnormalizedSnm(final int n, final int m) throws OrekitException {
+                return harmonics.getNormalizedSnm(n, m) * factors[n][m];
+            }
+
+        };
     }
 
 }

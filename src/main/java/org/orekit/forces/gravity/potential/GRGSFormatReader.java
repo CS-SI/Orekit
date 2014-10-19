@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -137,8 +137,8 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
 
             if (lineNumber == 3) {
                 // header line defining ae, 1/f, GM and Omega
-                setAe(Double.parseDouble(matcher.group(1).replace('D', 'E')));
-                setMu(Double.parseDouble(matcher.group(3).replace('D', 'E')));
+                setAe(parseDouble(matcher.group(1)));
+                setMu(parseDouble(matcher.group(3)));
             } else if (lineNumber == 4) {
                 // header line containing the reference date
                 referenceDate  = new DateComponents(Integer.parseInt(matcher.group(1)), 1, 1);

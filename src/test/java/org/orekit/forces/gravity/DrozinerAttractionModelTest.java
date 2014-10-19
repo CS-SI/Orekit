@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,6 +63,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -271,7 +272,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
                                                        GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
 
         final DrozinerAttractionModel drozinerModel =
-                new DrozinerAttractionModel(FramesFactory.getITRF2008(),
+                new DrozinerAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                             GravityFieldFactory.getUnnormalizedProvider(20, 20));
 
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
@@ -351,7 +352,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
             c40 =  1.61994537014e-6;
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
-            itrf2008 = FramesFactory.getITRF2008();
+            itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
             double[] absTolerance = {
                 0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
             };

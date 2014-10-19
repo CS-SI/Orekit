@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,6 +53,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -251,7 +252,7 @@ public class TrackCorridor {
             // set up Earth model
             earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                          Constants.WGS84_EARTH_FLATTENING,
-                                         FramesFactory.getITRF2008());
+                                         FramesFactory.getITRF(IERSConventions.IERS_2010, false));
 
             // set up position offsets, using Earth radius as an arbitrary distance
             deltaR = Constants.WGS84_EARTH_EQUATORIAL_RADIUS * FastMath.cos(angle);
@@ -282,9 +283,9 @@ public class TrackCorridor {
                 // compute left and right corridor points
                 Vector3D      nadir      = p.normalize().negate();
                 Vector3D      crossTrack = p.crossProduct(v).normalize();
-                Line          leftLine   = new Line(p, new Vector3D(1.0, p, deltaR, nadir,  deltaC, crossTrack));
+                Line          leftLine   = new Line(p, new Vector3D(1.0, p, deltaR, nadir,  deltaC, crossTrack), 1.0e-10);
                 GeodeticPoint left       = earth.getIntersectionPoint(leftLine, p, earth.getBodyFrame(), date);
-                Line          rightLine  = new Line(p, new Vector3D(1.0, p, deltaR, nadir, -deltaC, crossTrack));
+                Line          rightLine  = new Line(p, new Vector3D(1.0, p, deltaR, nadir, -deltaC, crossTrack), 1.0e-10);
                 GeodeticPoint right      = earth.getIntersectionPoint(rightLine, p, earth.getBodyFrame(), date);
 
                 // add the corridor points

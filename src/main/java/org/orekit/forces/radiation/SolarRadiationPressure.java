@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,8 +27,9 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
+import org.orekit.propagation.events.AbstractReconfigurableDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -273,19 +274,52 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     }
 
     /** This class defines the umbra entry/exit detector. */
-    private class UmbraDetector extends AbstractDetector {
+    private class UmbraDetector extends AbstractReconfigurableDetector<UmbraDetector> {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -165934451905681928L;
 
         /** Build a new instance. */
         public UmbraDetector() {
-            super(60.0, 1.0e-3);
+            super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<UmbraDetector>() {
+
+                /** {@inheritDoc} */
+                public Action eventOccurred(final SpacecraftState s, final UmbraDetector detector,
+                                            final boolean increasing) {
+                    return Action.RESET_DERIVATIVES;
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState resetState(final UmbraDetector detector, final SpacecraftState oldState) {
+                    return oldState;
+                }
+
+            });
+        }
+
+        /** Private constructor with full parameters.
+         * <p>
+         * This constructor is private as users are expected to use the builder
+         * API with the various {@code withXxx()} methods to set up the instance
+         * in a readable manner without using a huge amount of parameters.
+         * </p>
+         * @param maxCheck maximum checking interval (s)
+         * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
+         * @param handler event handler to call at event occurrences
+         * @since 6.1
+         */
+        private UmbraDetector(final double maxCheck, final double threshold,
+                              final int maxIter, final EventHandler<UmbraDetector> handler) {
+            super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-            return Action.RESET_DERIVATIVES;
+        @Override
+        protected UmbraDetector create(final double newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler<UmbraDetector> newHandler) {
+            return new UmbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
@@ -303,19 +337,52 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     }
 
     /** This class defines the penumbra entry/exit detector. */
-    private class PenumbraDetector extends AbstractDetector {
+    private class PenumbraDetector extends AbstractReconfigurableDetector<PenumbraDetector> {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -6128481192702533563L;
 
         /** Build a new instance. */
         public PenumbraDetector() {
-            super(60.0, 1.0e-3);
+            super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<PenumbraDetector>() {
+
+                /** {@inheritDoc} */
+                public Action eventOccurred(final SpacecraftState s, final PenumbraDetector detector,
+                                            final boolean increasing) {
+                    return Action.RESET_DERIVATIVES;
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public SpacecraftState resetState(final PenumbraDetector detector, final SpacecraftState oldState) {
+                    return oldState;
+                }
+
+            });
+        }
+
+        /** Private constructor with full parameters.
+         * <p>
+         * This constructor is private as users are expected to use the builder
+         * API with the various {@code withXxx()} methods to set up the instance
+         * in a readable manner without using a huge amount of parameters.
+         * </p>
+         * @param maxCheck maximum checking interval (s)
+         * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
+         * @param handler event handler to call at event occurrences
+         * @since 6.1
+         */
+        private PenumbraDetector(final double maxCheck, final double threshold,
+                                 final int maxIter, final EventHandler<PenumbraDetector> handler) {
+            super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-            return Action.RESET_DERIVATIVES;
+        @Override
+        protected PenumbraDetector create(final double newMaxCheck, final double newThreshold,
+                                          final int newMaxIter, final EventHandler<PenumbraDetector> newHandler) {
+            return new PenumbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and

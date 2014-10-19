@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ public class DataProvidersManagerTest {
         DataProvidersManager.getInstance().clearProviders();
         Assert.assertFalse(DataProvidersManager.getInstance().isSupported(new DirectoryCrawler(new File(getPath("regular-data")))));
         Assert.assertTrue(DataProvidersManager.getInstance().feed(".*", crawler));
-        Assert.assertEquals(18, crawler.getCount());
+        Assert.assertEquals(21, crawler.getCount());
     }
 
     @Test
@@ -50,12 +50,12 @@ public class DataProvidersManagerTest {
         Assert.assertEquals(0, manager.getLoadedDataNames().size());
         CountingLoader tleCounter = new CountingLoader(false);
         Assert.assertTrue(manager.feed(".*\\.tle$", tleCounter));
-        Assert.assertEquals(3, tleCounter.getCount());
-        Assert.assertEquals(3, manager.getLoadedDataNames().size());
+        Assert.assertEquals(4, tleCounter.getCount());
+        Assert.assertEquals(4, manager.getLoadedDataNames().size());
         CountingLoader de405Counter = new CountingLoader(false);
         Assert.assertTrue(manager.feed(".*\\.405$", de405Counter));
         Assert.assertEquals(4, de405Counter.getCount());
-        Assert.assertEquals(7, manager.getLoadedDataNames().size());
+        Assert.assertEquals(8, manager.getLoadedDataNames().size());
         manager.clearLoadedDataNames();
         Assert.assertEquals(0, manager.getLoadedDataNames().size());
     }
@@ -71,7 +71,7 @@ public class DataProvidersManagerTest {
         } catch (OrekitException oe) {
             // expected
         }
-        Assert.assertEquals(18, crawler.getCount());
+        Assert.assertEquals(21, crawler.getCount());
     }
 
     @Test

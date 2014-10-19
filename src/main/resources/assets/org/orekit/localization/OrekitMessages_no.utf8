@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = ikke understøttet baneramme, støttete typer:
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = ikke pseudo-treghet ramme "{0}" er ikke passende for å definere baner
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = data rotmappen {0} finnes ikke
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = data rotmappen {0} finnes ikke
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} er ikke en mappe
@@ -79,6 +79,9 @@ NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  ingen data funnet i IERS UTC-TAI hist
 # missing serie j = {0} in file {1} (line {2})
 MISSING_SERIE_J_IN_FILE = rekke j = {0} mangler i filen {1} (linje {2})
 
+# cannot parse both τ and γ from the same Poissons series file
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = kan ikke lese både τ og γ fra den samme Poissons-serie filen
+
 # unexpected end of file {0} (after line {1})
 UNEXPECTED_END_OF_FILE_AFTER_LINE = uventet slutt på filen {0} (etter linje {1})
 
@@ -95,10 +98,19 @@ SPACECRAFT_MASS_BECOMES_NEGATIVE = romfartøyets masse blir negativ (m: {0})
 POSITIVE_FLOW_RATE = positiv strøm (q: {0})
 
 # no gravity field data loaded
-NO_GRAVITY_FIELD_DATA_LOADED = ingen tyngdefelt-data er lastet
+NO_GRAVITY_FIELD_DATA_LOADED = ingen tyngdefeltsdata er lastet
 
 # gravity field normalization underflow for degree {0} and order {1}
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = tyngdefeltsnormalisering underflyt for grad {0} og rekkefølge {1}
+
+# no ocean tide data loaded
+NO_OCEAN_TIDE_DATA_LOADED = ingen tidevannsdata lastet
+
+# ocean tide data file {0} limited to degree {1} and order {2}
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = tidevannsdatafilen {0} er begrenset til grad {1} og rekkefølge {2}
+
+# load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = lastdeformasjonskoeffisientene er begrenset til grad {0}, kan ikke lese gradterm {1} fra fil {2}
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = polar bane (avstand til polaksen: {0})
@@ -238,6 +250,9 @@ UNKNOWN_ADDITIONAL_STATE = ukjent ytterligere tilstand "{0}"
 # unknown month "{0}"
 UNKNOWN_MONTH = ukjent måned "{0}"
 
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = jacobianmatrisen assosiert med type {0} er singulær for den gjeldende banen
+
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = Jacobian-tilstanden har ikke blitt initialisert ennå
 
@@ -270,6 +285,24 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = ugyldig datofelt-lengde for CCSDS dato: {
 
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = manglende byrå epoke for CCSDS dato
+
+# unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+CCSDS_UNEXPECTED_KEYWORD = uventet nøkkelord på linje nummer {0} i CCSDS-filen {1}:\n{2}
+
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = sentralelegemets tiltrekningskraftkoeffisient kan ikke bli lastet fra ODM'en
+
+# there is no spacecraft mass associated with this ODM file
+CCSDS_UNKNOWN_SPACECRAFT_MASS = ingen romfartøysmasse er assosiert til denne ODM filen
+
+# no IERS conventions have been set before parsing
+CCSDS_UNKNOWN_CONVENTIONS = ingen IERS-konvensjoner er blitt satt før lesingen
+
+# frame {0} is not valid in this ODM file context
+CCSDS_INVALID_FRAME = ramme {0} er ikke gyldig i denne ODM filens sammenheng
+
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = ukonsekvente tidssystemer i efemerideblokkene: {0} ≠ {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = navnet "{0}" er allerede brukt for en annen tilstand
@@ -307,6 +340,9 @@ UNSUPPORTED_TIME_TRANSFORM = geomagnetisk model {0} med epoke {1} støtter ikke 
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = tidstransformasjonen av den geomagnetiske modelen {0} med epoke {1} er utenfor sitt gyldighetsområde: {2} != [{3}, {4}]
 
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = <MISSING TRANSLATION>
+
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = for få bufrete naboer: {0} (må i allefall være {1})
 
@@ -325,11 +361,8 @@ UNABLE_TO_GENERATE_NEW_DATA_BEFORE = kan ikke generere ny data før {0}
 # unable to generate new data after {0}
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = kan ikke generere ny data etter {0}
 
-# abscissa {0} is duplicated
-DUPLICATED_ABSCISSA = abscissen {0} er duplisert
-
-# sample for interpolation is empty
-EMPTY_INTERPOLATION_SAMPLE = samplen for interpolasjonen er ikke satt
-
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = kan ikke beregne hyperbolsk eksentrisk anomali fra hovedanomalien etter {0} iterasjoner
+
+# derivation order {0} is out of range
+OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>

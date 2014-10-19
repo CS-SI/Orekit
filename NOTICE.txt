@@ -1,5 +1,5 @@
 OREKIT
-Copyright 2002-2013 CS Systèmes d'Information
+Copyright 2002-2014 CS Systèmes d'Information
 
 This product includes software developed by
 CS Systèmes d'Information (http://www.c-s.fr/)
@@ -12,6 +12,12 @@ David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso
 
 This product includes software translated from original work developed by
 Felix R. Hoots, Ronald L. Roehrich
+
+This product includes software translated from original work developed by
+R. Biancale, S. Bruinsma (CNES)
+
+This product includes data computed by
+P. Gégout (CNRS / UMR5563 - GET)
 
 This product includes software translated from original work developed by
 R. Biancale, S. Bruinsma (CNES)

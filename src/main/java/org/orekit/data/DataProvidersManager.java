@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -132,7 +132,7 @@ public class DataProvidersManager {
                         if (DataProvider.ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
                         } else {
-                            throw new OrekitException(OrekitMessages.DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS, name);
+                            throw new OrekitException(OrekitMessages.DATA_ROOT_DIRECTORY_DOES_NOT_EXIST, name);
                         }
                     }
 

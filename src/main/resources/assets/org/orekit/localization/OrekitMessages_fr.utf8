@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local non supporté, repères 
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = le repère non pseudo-inertiel "{0}" n''est pas adapté à la définition d''orbites
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = répertoire de données racine {0} inexistant
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = répertoire de données racine {0} inexistant
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} n''est pas un répertoire
@@ -79,6 +79,9 @@ NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  aucune donnée trouvée dans le fichi
 # missing serie j = {0} in file {1} (line {2})
 MISSING_SERIE_J_IN_FILE = série j = {0} manquante dans le fichier {1} (ligne {2})
 
+# cannot parse both τ and γ from the same Poissons series file
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = impossible lire à la fois τ and γ depuis un même fichier de série de Poisson
+
 # unexpected end of file {0} (after line {1})
 UNEXPECTED_END_OF_FILE_AFTER_LINE = fin inattendue du fichier {0} (après la ligne {1})
 
@@ -99,6 +102,15 @@ NO_GRAVITY_FIELD_DATA_LOADED = aucune donnée de champ de gravité n''a été ch
 
 # gravity field normalization underflow for degree {0} and order {1}
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = soupassement arithmétique pour la normalisation d''un champ de gravité pour le degré {0} et l''ordre {1}
+
+# no ocean tide data loaded
+NO_OCEAN_TIDE_DATA_LOADED = aucune donnée de marée océanique n''a été chargée
+
+# ocean tide data file {0} limited to degree {1} and order {2}
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = le fichier de marées océaniques {0} est limité au degré {1} et à l''ordre {2}
+
+# load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = coefficients de déformation sous la charge limités au degré {0}, impossible de lire un terme de degré {1} dans le fichier {2}
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = trajectoire polaire (distance à l''axe des pôles : {0})
@@ -227,7 +239,7 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = date hors du domaine de validité des éph�
 OUT_OF_RANGE_EPHEMERIDES_DATE = date hors du domaine de validité des éphémérides : {0}, [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
-UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = données inattendues, deux valeurs d''éeléevation : {0} et {1}, pour un azimuth : {2}
+UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = données inattendues, deux valeurs de site : {0} et {1}, pour un azimut : {2}
 
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = paramètre {0} inconnu, paramètres connus : {1}
@@ -237,6 +249,9 @@ UNKNOWN_ADDITIONAL_STATE = état additionel "{0}" inconnu
 
 # unknown month "{0}"
 UNKNOWN_MONTH = mois inconnu "{0}"
+
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matrice jacobienne associée au type {0} est singulière pour l''orbite courante
 
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = la jacobienne de l''état n''a pas encore été initialisée
@@ -271,8 +286,26 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = longueur invalide pour le champ date dans
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = époque de référence spécifique agence manquante dans une date CCSDS
 
+# unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+CCSDS_UNEXPECTED_KEYWORD = mot-clef inattendu à la ligne {0} du fichier CCSDS {1} :\n{2}
+
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = le coefficient d''atraction gravifique ne peut être récupéré dans l''ODM
+
+# there is no spacecraft mass associated with this ODM file
+CCSDS_UNKNOWN_SPACECRAFT_MASS = il n''y a pas de masse pour le véhicule spatial dans ce fichier ODM
+
+# no IERS conventions have been set before parsing
+CCSDS_UNKNOWN_CONVENTIONS = les conventions IERS n''ont pas été initialisées avant la lecture
+
+# frame {0} is not valid in this ODM file context
+CCSDS_INVALID_FRAME = le repère {0} est invalide dans ce contexte de fichier ODM
+
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = systèmes temporels incohérents dans des blocs d''éphémérides : {0} ≠ {1}
+
 # name "{0}" is already used for an additional state
-ADDITIONAL_STATE_NAME_ALREADY_IN_USE = le nom "{0}" est dçjç utilisç pour un çtat additionnel
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE = le nom "{0}" est déjà utilisé pour un état additionnel
 
 # reset state not allowed
 NON_RESETABLE_STATE = réinitialisation de l''état non autorisée
@@ -316,6 +349,9 @@ SP3_UNSUPPORTED_TIMESYSTEM = version de système temporel {0} non prise en compt
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = fin inattendue d''un fichier sp3 (après la ligne {0})
 
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = données insuffisnates pour réaliser une interpolation (taille de l''échantillon : {0})
+
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS =  nombre de voisins en cache trop petit : {0} (il faut au moins {1} voisins)
 
@@ -334,11 +370,8 @@ UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossible de générer des donnée avant l
 # unable to generate new data after {0}
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des donnée après le {0}
 
-# abscissa {0} is duplicated
-DUPLICATED_ABSCISSA = l''abscisse {0} est dupliquée
-
-# sample for interpolation is empty
-EMPTY_INTERPOLATION_SAMPLE = échantillon d''interpolation vide
-
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossible de calculer l''anomalie excentrique hyperbolique à partir de l''anomalie moyenne après {0} itérations
+
+# derivation order {0} is out of range
+OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>

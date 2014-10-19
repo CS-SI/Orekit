@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,6 +37,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -112,7 +113,7 @@ public class TLEPropagatorTest {
     @Test
     public void testBodyCenterInPointingDirection() throws OrekitException {
 
-        final Frame itrf = FramesFactory.getITRF2008(true);
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         DistanceChecker checker = new DistanceChecker(itrf);
 
         // with Earth pointing attitude, distance should be small
@@ -173,7 +174,8 @@ public class TLEPropagatorTest {
                 // Line containing satellite point and following pointing direction
                 Line pointingLine = new Line(pvSatITRF.getPosition(),
                                              pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                         zSatITRF));
+                                                                         zSatITRF),
+                                             1.0e-10);
 
                 double distance = pointingLine.distance(Vector3D.ZERO);
                 minDistance = FastMath.min(minDistance, distance);

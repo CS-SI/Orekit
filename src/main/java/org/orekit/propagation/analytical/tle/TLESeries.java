@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -152,6 +152,8 @@ public class TLESeries implements DataLoader {
 
         // load the data from the configured data providers
         tles.clear();
+        previous = null;
+        next     = null;
         DataProvidersManager.getInstance().feed(supportedNames, this);
         if (tles.isEmpty()) {
             throw new OrekitException(OrekitMessages.NO_TLE_DATA_AVAILABLE);
@@ -196,6 +198,8 @@ public class TLESeries implements DataLoader {
 
             // load the data from the configured data providers
             tles.clear();
+            previous = null;
+            next     = null;
             DataProvidersManager.getInstance().feed(supportedNames, this);
             if (tles.isEmpty()) {
                 throw new OrekitException(OrekitMessages.NO_TLE_FOR_OBJECT, satelliteNumber);
@@ -234,6 +238,8 @@ public class TLESeries implements DataLoader {
 
             // load the data from the configured data providers
             tles.clear();
+            previous = null;
+            next     = null;
             DataProvidersManager.getInstance().feed(supportedNames, this);
             if (tles.isEmpty()) {
                 throw new OrekitException(OrekitMessages.NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE,

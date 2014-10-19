@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,16 +19,28 @@ package org.orekit;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.junit.Assert;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.JPLEphemeridesLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.frames.EOPEntry;
+import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
+import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 public class Utils {
 
@@ -47,19 +59,30 @@ public class Utils {
     public static final double ae =  6378136.460;
     public static final double mu =  3.986004415e+14;
 
+    public static void clearFactories() {
+        Utils.clearFactoryMaps(CelestialBodyFactory.class);
+        CelestialBodyFactory.clearCelestialBodyLoaders();
+        Utils.clearFactoryMaps(FramesFactory.class);
+        Utils.clearFactoryMaps(TimeScalesFactory.class);
+        Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
+        Utils.clearFactoryMaps(JacobiPolynomials.class);
+        Utils.clearFactoryMaps(NewcombOperators.class);
+        for (final Class<?> c : NewcombOperators.class.getDeclaredClasses()) {
+            if (c.getName().endsWith("PolynomialsGenerator")) {
+                Utils.clearFactoryMaps(c);
+            }
+        }
+        TimeScalesFactory.clearUTCTAILoaders();
+        Utils.clearJPLEphemeridesConstants();
+        GravityFieldFactory.clearPotentialCoefficientsReaders();
+        GravityFieldFactory.clearOceanTidesReaders();        
+        DataProvidersManager.getInstance().clearProviders();
+        DataProvidersManager.getInstance().clearLoadedDataNames();
+    }
+
     public static void setDataRoot(String root) {
         try {
-            Utils.clearFactory(CelestialBodyFactory.class);
-            CelestialBodyFactory.clearCelestialBodyLoaders();
-            Utils.clearFactory(FramesFactory.class);
-            FramesFactory.clearEOP1980HistoryLoaders();
-            FramesFactory.clearEOP2000HistoryLoaders();
-            Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
-            TimeScalesFactory.clearUTCTAILoaders();
-            Utils.clearJPLEphemeridesConstants();
-            GravityFieldFactory.clearPotentialCoefficientsReaders();
-            DataProvidersManager.getInstance().clearProviders();
-            DataProvidersManager.getInstance().clearLoadedDataNames();
+            clearFactories();
             StringBuffer buffer = new StringBuffer();
             for (String component : root.split(":")) {
                 String componentPath;
@@ -75,7 +98,7 @@ public class Utils {
         }
     }
 
-    private static void clearFactory(Class<?> factoryClass) {
+    private static void clearFactoryMaps(Class<?> factoryClass) {
         try {
             for (Field field : factoryClass.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers()) &&
@@ -117,5 +140,60 @@ public class Utils {
         }
     }
 
+    public static List<EOPEntry> buildEOPList(IERSConventions conventions,
+                                              double[][] data) throws OrekitException {
+        IERSConventions.NutationCorrectionConverter converter =
+                conventions.getNutationCorrectionConverter();
+        final List<EOPEntry> list = new ArrayList<EOPEntry>();
+        for (double[] row : data) {
+            final AbsoluteDate date =
+                    new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, (int) row[0]),
+                                     TimeScalesFactory.getUTC());
+            final double[] nro;
+            final double[] equinox;
+            if (Double.isNaN(row[7])) {
+                equinox = new double[] {
+                    Constants.ARC_SECONDS_TO_RADIANS * row[5],
+                    Constants.ARC_SECONDS_TO_RADIANS * row[6]
+                };
+                nro     = converter.toNonRotating(date, equinox[0], equinox[1]);
+            } else if (Double.isNaN(row[5])) {
+                nro     = new double[] {
+                    Constants.ARC_SECONDS_TO_RADIANS * row[7],
+                    Constants.ARC_SECONDS_TO_RADIANS * row[8]
+                };
+                equinox = converter.toEquinox(date, nro[0], nro[1]);
+            } else {
+                equinox = new double[] {
+                    Constants.ARC_SECONDS_TO_RADIANS * row[5],
+                    Constants.ARC_SECONDS_TO_RADIANS * row[6]
+                };
+                nro     = new double[] {
+                    Constants.ARC_SECONDS_TO_RADIANS * row[7],
+                    Constants.ARC_SECONDS_TO_RADIANS * row[8]
+                };
+            }
+            list.add(new EOPEntry((int) row[0], row[1], row[2],
+                                  Constants.ARC_SECONDS_TO_RADIANS * row[3],
+                                  Constants.ARC_SECONDS_TO_RADIANS * row[4],
+                                  equinox[0], equinox[1],
+                                  nro[0], nro[1]));
+        }
+        return list;
+    }
+
+    public static void setLoaders(final IERSConventions conventions, final List<EOPEntry> eop) {
+
+        Utils.clearFactoryMaps(FramesFactory.class);
+        Utils.clearFactoryMaps(TimeScalesFactory.class);
+
+        FramesFactory.addEOPHistoryLoader(conventions, new EOPHistoryLoader() {
+            public void fillHistory(IERSConventions.NutationCorrectionConverter converter,
+                                    SortedSet<EOPEntry> history) {
+                history.addAll(eop);
+            }
+        });
+
+    }
 
 }

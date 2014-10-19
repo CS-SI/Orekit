@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,8 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
 
 
 public class InterpolatingTransformProviderTest {
@@ -42,7 +44,9 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
-                new InterpolatingTransformProvider(rawProvider, true, true,
+                new InterpolatingTransformProvider(rawProvider,
+                                                   CartesianDerivativesFilter.USE_PV,
+                                                   AngularDerivativesFilter.USE_RR,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -68,7 +72,9 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
-                new InterpolatingTransformProvider(rawProvider, false, false,
+                new InterpolatingTransformProvider(rawProvider,
+                                                   CartesianDerivativesFilter.USE_P,
+                                                   AngularDerivativesFilter.USE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -95,7 +101,9 @@ public class InterpolatingTransformProviderTest {
                     public Transform getTransform(AbsoluteDate date) throws OrekitException {
                         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
                     }
-                }, true, true,
+                },
+                CartesianDerivativesFilter.USE_PV,
+                AngularDerivativesFilter.USE_RR,
                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                 5, 0.8, 10, 60.0, 60.0);
         interpolatingProvider.getTransform(AbsoluteDate.J2000_EPOCH);
@@ -107,7 +115,9 @@ public class InterpolatingTransformProviderTest {
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
-                new InterpolatingTransformProvider(rawProvider, true, true,
+                new InterpolatingTransformProvider(rawProvider,
+                                                   CartesianDerivativesFilter.USE_PV,
+                                                   AngularDerivativesFilter.USE_RR,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 

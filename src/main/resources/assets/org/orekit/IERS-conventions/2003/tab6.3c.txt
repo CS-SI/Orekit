@@ -1,0 +1,10 @@
+# values extracted from IERS conventions 2003 table 6.3c
+
+Amplitudes (A₂ δkf Hf) of the corrections for frequency dependence of k₂₂⁽⁰⁾, taking the
+nominal value k₂₂ for the sectorial tides as (0.30102 − i 0.00130). Units: 10⁻¹². The
+corrections are only to the real part.
+
+Name  Doodson  deg/hr  τ  s h p N' ps l l' F D Ω   δkfR    Amp.
+         No.
+N₂    245,655 28.43973 2 -1 0 1 0   0 1 0  2 0 2 0.00006  -0.3
+M₂    255,555 28.98410 2  0 0 0 0   0 0 0  2 0 2 0.00004  -1.2

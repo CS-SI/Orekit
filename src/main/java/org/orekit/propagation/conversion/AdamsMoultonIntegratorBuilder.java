@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.AdamsMoultonIntegrator;
+import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -57,7 +58,7 @@ public class AdamsMoultonIntegratorBuilder implements FirstOrderIntegratorBuilde
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit) {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit) throws PropagationException {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
         return new AdamsMoultonIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
     }

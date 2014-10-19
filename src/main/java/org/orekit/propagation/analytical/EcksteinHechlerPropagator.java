@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -96,12 +97,32 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
         throws PropagationException , OrekitException {
-        this(initialOrbit, provider.getAe(), provider.getMu(),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 2, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 3, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 4, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 5, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 6, 0));
+        this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, provider,
+                provider.onDate(initialOrbit.getDate()));
+    }
+
+    /**
+     * Private helper constructor.
+     * @param initialOrbit initial orbit
+     * @param attitude attitude provider
+     * @param mass spacecraft mass
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
+     * @exception OrekitException if the zonal coefficients cannot be retrieved
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final AttitudeProvider attitude,
+                                     final double mass,
+                                     final UnnormalizedSphericalHarmonicsProvider provider,
+                                     final UnnormalizedSphericalHarmonics harmonics)
+        throws OrekitException
+    {
+        this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
+                harmonics.getUnnormalizedCnm(2, 0),
+                harmonics.getUnnormalizedCnm(3, 0),
+                harmonics.getUnnormalizedCnm(4, 0),
+                harmonics.getUnnormalizedCnm(5, 0),
+                harmonics.getUnnormalizedCnm(6, 0));
     }
 
     /** Build a propagator from orbit and potential.
@@ -144,12 +165,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
         throws PropagationException , OrekitException {
-        this(initialOrbit, mass, provider.getAe(), provider.getMu(),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 2, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 3, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 4, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 5, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 6, 0));
+        this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
     /** Build a propagator from orbit, mass and potential.
@@ -193,12 +209,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final AttitudeProvider attitudeProv,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
         throws PropagationException , OrekitException {
-        this(initialOrbit, attitudeProv, provider.getAe(), provider.getMu(),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 2, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 3, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 4, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 5, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 6, 0));
+        this(initialOrbit, attitudeProv, DEFAULT_MASS, provider,
+                provider.onDate(initialOrbit.getDate()));
     }
 
     /** Build a propagator from orbit, attitude provider and potential.
@@ -244,12 +256,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
         throws PropagationException , OrekitException {
-        this(initialOrbit, attitudeProv, mass, provider.getAe(), provider.getMu(),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 2, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 3, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 4, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 5, 0),
-             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 6, 0));
+        this(initialOrbit, attitudeProv, mass, provider,
+                provider.onDate(initialOrbit.getDate()));
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.

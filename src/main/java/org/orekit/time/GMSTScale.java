@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,9 @@ import org.orekit.utils.Constants;
  * @since 5.1
  */
 public class GMSTScale implements TimeScale {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20131209L;
 
     /** Duration of one julian day. */
     private static double FULL_DAY = Constants.JULIAN_DAY;

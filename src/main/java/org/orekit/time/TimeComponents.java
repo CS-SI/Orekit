@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
 
 
 /** Class representing a time within the day broken up as hour,
@@ -81,8 +80,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
         // range check
         if ((hour   < 0) || (hour   >  23) ||
-                (minute < 0) || (minute >  59) ||
-                (second < 0) || (second >= 61.0)) {
+            (minute < 0) || (minute >  59) ||
+            (second < 0) || (second >= 61.0)) {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_HMS_TIME,
                                                                  hour, minute, second);
         }
@@ -94,7 +93,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     }
 
     /** Build a time from the second number within the day.
-     * @param secondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} (excluded)
+     * @param secondInDay second number from 0.0 to {@link
+     * org.orekit.utils.Constants#JULIAN_DAY} (excluded)
      * @exception IllegalArgumentException if seconds number is out of range
      */
     public TimeComponents(final double secondInDay) {
@@ -104,27 +104,35 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Build a time from the second number within the day.
      * <p>
      * The second number is defined here as the sum
-     * {@code secondInDayA + secondInDayB} from 0.0 to {@link Constants#JULIAN_DAY}
-     * (excluded). The two parameters are used for increased accuracy.
+     * {@code secondInDayA + secondInDayB} from 0.0 to {@link
+     * org.orekit.utils.Constants#JULIAN_DAY} (excluded). The two parameters
+     * are used for increased accuracy.
      * </p>
      * @param secondInDayA first part of the second number
      * @param secondInDayB last part of the second number
      * @exception IllegalArgumentException if seconds number is out of range
      */
     public TimeComponents(final int secondInDayA, final double secondInDayB) {
+
+        // split the numbers as a whole number of seconds
+        // and a fractional part between 0.0 (included) and 1.0 (excluded)
+        final int carry         = (int) FastMath.floor(secondInDayB);
+        int wholeSeconds        = secondInDayA + carry;
+        final double fractional = secondInDayB - carry;
+
         // range check
-        final double secondInDay = secondInDayA + secondInDayB;
-        if ((secondInDayB < -secondInDayA) || (secondInDayB >= (Constants.JULIAN_DAY - secondInDayA))) {
+        if (wholeSeconds < 0 || wholeSeconds > 86400) {
+            // beware, 86400 must be allowed to cope with leap seconds introduction days
             throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER,
-                                                                 secondInDay);
+                                                                 wholeSeconds);
         }
 
         // extract the time components
-        hour = (int) FastMath.floor(secondInDay / 3600.0);
-        final int hs = 3600 * hour;
-        minute = (int) FastMath.floor((secondInDay - hs) / 60.0);
-        final int ms = 60 * minute;
-        second = (secondInDayA - hs - ms) + secondInDayB;
+        hour          = wholeSeconds / 3600;
+        wholeSeconds -= 3600 * hour;
+        minute        = wholeSeconds / 60;
+        wholeSeconds -= 60 * minute;
+        second        = wholeSeconds + fractional;
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,7 +61,7 @@ public enum OrekitMessages implements Localizable {
     FRAME_NO_NTH_ANCESTOR("frame {0} has depth {1}, it cannot have an ancestor {2} levels above"),
     UNSUPPORTED_LOCAL_ORBITAL_FRAME("unsupported local orbital frame, supported types: {0} and {1}"),
     NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS("non pseudo-inertial frame \"{0}\" is not suitable for defining orbits"),
-    DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS("data root directory {0} does not exist"),
+    DATA_ROOT_DIRECTORY_DOES_NOT_EXIST("data root directory {0} does not exist"),
     NOT_A_DIRECTORY("{0} is not a directory"),
     NEITHER_DIRECTORY_NOR_ZIP_OR_JAR("{0} is neither a directory nor a zip/jar archive file"),
     UNABLE_TO_FIND_RESOURCE("unable to find resource {0} in classpath"),
@@ -74,6 +74,7 @@ public enum OrekitMessages implements Localizable {
     NO_IERS_UTC_TAI_HISTORY_DATA_LOADED("no IERS UTC-TAI history data loaded"),
     NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE("no entries found in IERS UTC-TAI history file {0}"),
     MISSING_SERIE_J_IN_FILE("missing serie j = {0} in file {1} (line {2})"),
+    CANNOT_PARSE_BOTH_TAU_AND_GAMMA("cannot parse both \u03c4 and \u03b3 from the same Poissons series file"),
     UNEXPECTED_END_OF_FILE_AFTER_LINE("unexpected end of file {0} (after line {1})"),
     UNABLE_TO_PARSE_LINE_IN_FILE("unable to parse line {0} of file {1}:\n{2}"),
     UNABLE_TO_FIND_FILE("unable to find file {0}"),
@@ -81,6 +82,9 @@ public enum OrekitMessages implements Localizable {
     POSITIVE_FLOW_RATE("positive flow rate (q: {0})"),
     NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
     GRAVITY_FIELD_NORMALIZATION_UNDERFLOW("gravity field normalization underflow for degree {0} and order {1}"),
+    NO_OCEAN_TIDE_DATA_LOADED("no ocean tide data loaded"),
+    OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS("ocean tide data file {0} limited to degree {1} and order {2}"),
+    OCEAN_TIDE_LOAD_DEFORMATION_LIMITS("load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}"),
     POLAR_TRAJECTORY("polar trajectory (distance to polar axis: {0})"),
     UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER("unexpected format error for file {0} with loader {1}"),
     DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE("duplicated gravity field coefficient {0}({1}, {2}) in file {3}"),
@@ -127,6 +131,7 @@ public enum OrekitMessages implements Localizable {
     UNSUPPORTED_PARAMETER_NAME("unsupported parameter name {0}, supported names: {1}"),
     UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""),
     UNKNOWN_MONTH("unknown month \"{0}\""),
+    SINGULAR_JACOBIAN_FOR_ORBIT_TYPE("Jacobian matrix for type {0} is singular with current orbit"),
     STATE_JACOBIAN_NOT_INITIALIZED("state Jacobian has not been initialized yet"),
     STATE_JACOBIAN_NEITHER_6X6_NOR_7X7("state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix"),
     STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH("state Jacobian has {0} rows but parameters Jacobian has {1} rows"),
@@ -138,6 +143,12 @@ public enum OrekitMessages implements Localizable {
     CCSDS_DATE_INVALID_PREAMBLE_FIELD("invalid preamble field in CCSDS date: {0}"),
     CCSDS_DATE_INVALID_LENGTH_TIME_FIELD("invalid time field length in CCSDS date: {0}, expected {1}"),
     CCSDS_DATE_MISSING_AGENCY_EPOCH("missing agency epoch in CCSDS date"),
+    CCSDS_UNEXPECTED_KEYWORD("unexpected keyword in CCSDS line number {0} of file {1}:\n{2}"),
+    CCSDS_UNKNOWN_GM("the central body gravitational coefficient cannot be retrieved from the ODM"),
+    CCSDS_UNKNOWN_SPACECRAFT_MASS("there is no spacecraft mass associated with this ODM file"),
+    CCSDS_UNKNOWN_CONVENTIONS("no IERS conventions have been set before parsing"),
+    CCSDS_INVALID_FRAME("frame {0} is not valid in this ODM file context"),
+    CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS("inconsistent time systems in the ephemeris blocks: {0} \u2260 {1}"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
@@ -150,15 +161,15 @@ public enum OrekitMessages implements Localizable {
     NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}"),
     UNSUPPORTED_TIME_TRANSFORM("geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined"),
     OUT_OF_RANGE_TIME_TRANSFORM("time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]"),
+    NOT_ENOUGH_DATA_FOR_INTERPOLATION("not enough data for interpolation (sample size = {0})"),
     NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
     NO_CACHED_ENTRIES("no cached entries"),
     NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1}"),
     NO_DATA_GENERATED("no data generated around date: {0}"),
     UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}"),
     UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}"),
-    DUPLICATED_ABSCISSA("abscissa {0} is duplicated"),
-    EMPTY_INTERPOLATION_SAMPLE("sample for interpolation is empty"),
-    UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations");
+    UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
+    OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range");
 
     // CHECKSTYLE: resume JavadocVariable check
 

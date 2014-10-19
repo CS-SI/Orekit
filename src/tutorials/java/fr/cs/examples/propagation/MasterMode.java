@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,8 @@
  */
 
 package fr.cs.examples.propagation;
+
+import java.util.Locale;
 
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
@@ -36,6 +38,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 import fr.cs.examples.Autoconfiguration;
 
@@ -94,8 +97,12 @@ public class MasterMode {
             propagator.setOrbitType(propagationType);
 
             // Force Model (reduced to perturbing gravity field)
-            final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
-            ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(), provider);
+            final NormalizedSphericalHarmonicsProvider provider =
+                    GravityFieldFactory.getNormalizedProvider(10, 10);
+            ForceModel holmesFeatherstone =
+                    new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010,
+                                                                                true),
+                                                          provider);
 
             // Add force model to the propagator
             propagator.addForceModel(holmesFeatherstone);
@@ -109,8 +116,14 @@ public class MasterMode {
 
             // Extrapolate from the initial to the final date
             SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(630.));
-            System.out.println(" Final date  : " + finalState.getDate());
-            System.out.println(" Final state : " + finalState.getOrbit());
+            KeplerianOrbit o = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(finalState.getOrbit());
+            System.out.format(Locale.US, "Final state:%n%s %12.3f %10.8f %10.6f %10.6f %10.6f %10.6f%n",
+                              finalState.getDate(),
+                              o.getA(), o.getE(),
+                              FastMath.toDegrees(o.getI()),
+                              FastMath.toDegrees(o.getPerigeeArgument()),
+                              FastMath.toDegrees(o.getRightAscensionOfAscendingNode()),
+                              FastMath.toDegrees(o.getTrueAnomaly()));
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
@@ -128,15 +141,24 @@ public class MasterMode {
         }
 
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            System.out.println("          date                a           e" +
+                               "           i         \u03c9          \u03a9" +
+                               "          \u03bd");
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
-            System.out.println(" time : " + currentState.getDate());
-            System.out.println(" " + currentState.getOrbit());
+            KeplerianOrbit o = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(currentState.getOrbit());
+            System.out.format(Locale.US, "%s %12.3f %10.8f %10.6f %10.6f %10.6f %10.6f%n",
+                              currentState.getDate(),
+                              o.getA(), o.getE(),
+                              FastMath.toDegrees(o.getI()),
+                              FastMath.toDegrees(o.getPerigeeArgument()),
+                              FastMath.toDegrees(o.getRightAscensionOfAscendingNode()),
+                              FastMath.toDegrees(o.getTrueAnomaly()));
             if (isLast) {
-                System.out.println(" this was the last step ");
+                System.out.println("this was the last step ");
+                System.out.println();
             }
-
         }
 
     }

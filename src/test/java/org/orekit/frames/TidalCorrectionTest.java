@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,12 +31,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedCache;
 
-
+@Deprecated
 public class TidalCorrectionTest {
 
     // Computation date
@@ -60,6 +65,23 @@ public class TidalCorrectionTest {
         final double tidalCorr = new TidalCorrection().getDUT1(date);
 
         Assert.assertEquals(13.611556854809763e-6, tidalCorr, 1.5e-10);
+    }
+
+    @Test
+    public void testIERSImplementation() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final AbsoluteDate t0 = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 52654),
+                                           TimeScalesFactory.getUTC());
+        final TimeFunction<double[]> newTidalCorrection = IERSConventions.IERS_2010.getEOPTidalCorrection();
+        final TidalCorrection oldTidalCorrection = new TidalCorrection();
+
+        for (double dt = 0; dt < 5 * Constants.JULIAN_DAY; dt += 3600) {
+            AbsoluteDate date = t0.shiftedBy(dt);
+            double[] newCorrections = newTidalCorrection.value(date);
+            Assert.assertEquals(oldTidalCorrection.getPoleCorrection(date).getXp(), newCorrections[0], 1.1e-11);
+            Assert.assertEquals(oldTidalCorrection.getPoleCorrection(date).getYp(), newCorrections[1], 1.1e-11);
+            Assert.assertEquals(oldTidalCorrection.getDUT1(date), newCorrections[2], 1.3e-7);
+        }
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 
 public class EGMFormatReaderTest {
@@ -32,12 +34,13 @@ public class EGMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        NormalizedSphericalHarmonics harmonics = provider.onDate(AbsoluteDate.FUTURE_INFINITY);
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
-        Assert.assertEquals( 0.957254173792E-06, provider.getNormalizedCnm(Double.NaN, 3, 0), 1.0e-15);
-        Assert.assertEquals( 0.174971983203E-06, provider.getNormalizedCnm(Double.NaN, 5, 5), 1.0e-15);
-        Assert.assertEquals( 0.0,                provider.getNormalizedSnm(Double.NaN, 4, 0), 1.0e-15);
-        Assert.assertEquals( 0.308853169333E-06, provider.getNormalizedSnm(Double.NaN, 4, 4), 1.0e-15);
-        Assert.assertEquals(-0.295301647654E-06, provider.getNormalizedCnm(Double.NaN, 5, 4), 1.0e-15);
+        Assert.assertEquals( 0.957254173792E-06, harmonics.getNormalizedCnm(3, 0), 1.0e-15);
+        Assert.assertEquals( 0.174971983203E-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
+        Assert.assertEquals( 0.0,                harmonics.getNormalizedSnm(4, 0), 1.0e-15);
+        Assert.assertEquals( 0.308853169333E-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
+        Assert.assertEquals(-0.295301647654E-06, harmonics.getNormalizedCnm(5, 4), 1.0e-15);
 
         Assert.assertNull(provider.getReferenceDate());
         Assert.assertEquals(0, provider.getOffset(AbsoluteDate.J2000_EPOCH), Precision.SAFE_MIN);
@@ -49,27 +52,28 @@ public class EGMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        UnnormalizedSphericalHarmonics harmonics = provider.onDate(AbsoluteDate.FUTURE_INFINITY);
         Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         int maxUlps = 1;
-        checkValue(provider.getUnnormalizedCnm(Double.NaN, 3, 0), 3, 0, 0.957254173792E-06, maxUlps);
-        checkValue(provider.getUnnormalizedCnm(Double.NaN, 5, 5), 5, 5, 0.174971983203E-06, maxUlps);
-        checkValue(provider.getUnnormalizedSnm(Double.NaN, 4, 0), 4, 0, 0.0,                maxUlps);
-        checkValue(provider.getUnnormalizedSnm(Double.NaN, 4, 4), 4, 4, 0.308853169333E-06, maxUlps);
+        checkValue(harmonics.getUnnormalizedCnm(3, 0), 3, 0, 0.957254173792E-06, maxUlps);
+        checkValue(harmonics.getUnnormalizedCnm(5, 5), 5, 5, 0.174971983203E-06, maxUlps);
+        checkValue(harmonics.getUnnormalizedSnm(4, 0), 4, 0, 0.0,                maxUlps);
+        checkValue(harmonics.getUnnormalizedSnm(4, 4), 4, 4, 0.308853169333E-06, maxUlps);
 
         double a = (-0.295301647654E-06);
         double b = 9*8*7*6*5*4*3*2;
         double c = 2*11/b;
         double result = a*FastMath.sqrt(c);
 
-        Assert.assertEquals(result, provider.getUnnormalizedCnm(Double.NaN, 5, 4), 1.0e-20);
+        Assert.assertEquals(result, harmonics.getUnnormalizedCnm(5, 4), 1.0e-20);
 
         a = -0.188560802735E-06;
         b = 8*7*6*5*4*3*2;
         c=2*9/b;
         result = a*FastMath.sqrt(c);
-        Assert.assertEquals(result, provider.getUnnormalizedCnm(Double.NaN, 4, 4), 1.0e-20);
+        Assert.assertEquals(result, harmonics.getUnnormalizedCnm(4, 4), 1.0e-20);
 
-        Assert.assertEquals(1.0826266835531513e-3, -provider.getUnnormalizedCnm(Double.NaN, 2, 0), 1.0e-20);
+        Assert.assertEquals(1.0826266835531513e-3, -harmonics.getUnnormalizedCnm(2, 0), 1.0e-20);
 
         Assert.assertNull(provider.getReferenceDate());
         Assert.assertEquals(0, provider.getOffset(AbsoluteDate.J2000_EPOCH), Precision.SAFE_MIN);
@@ -81,8 +85,9 @@ public class EGMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
+        UnnormalizedSphericalHarmonics harmonics = provider.onDate(provider.getReferenceDate());
         try {
-            provider.getUnnormalizedCnm(0.0, 3, 3);
+            harmonics.getUnnormalizedCnm(3, 3);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
@@ -90,14 +95,14 @@ public class EGMFormatReaderTest {
             Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
         }
         try {
-            provider.getUnnormalizedCnm(0.0, 4, 2);
+            harmonics.getUnnormalizedCnm(4, 2);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
         } catch (Exception e) {
             Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
         }
-        provider.getUnnormalizedCnm(0.0, 3, 2);
+        harmonics.getUnnormalizedCnm(3, 2);
         Assert.assertEquals(3, provider.getMaxDegree());
         Assert.assertEquals(2, provider.getMaxOrder());
     }

@@ -1,4 +1,4 @@
-' Copyright 2002-2013 CS Systèmes d'Information
+' Copyright 2002-2014 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,19 +25,19 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package frames #DDEBD8
+    package frames #DDEBD8 {
       class Frame
-    end package
+    }
 
-    package time #DDEBD8
+    package time #DDEBD8 {
       interface TimeStamped
       interface "TimeShiftable<T>" as TimeShiftable_T_
       interface "TimeInterpolable<T>" as TimeInterpolable_T_
-    end package
+    }
 
-    package attitude #DDEBD8
+    package attitude #DDEBD8 {
 
       class Attitude {
 	    +Vector3D estimateSpin
@@ -104,9 +104,10 @@
       AttitudeProvider             <|-- CelestialBodyPointed
       AttitudeProvider             <|-- InertialProvider
       AttitudeProvider             <|-- LofOffset
+      AttitudeProvider             <|-- TabulatedProvider
 
-    end package
+    }
 
-  end package
+  }
 
 @enduml

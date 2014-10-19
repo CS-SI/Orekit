@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,11 +30,11 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
 
 public class EventFilterTest {
 
@@ -46,91 +46,89 @@ public class EventFilterTest {
 
     @Test
     public void testUmbra() throws OrekitException {
-        CountingDetector counter =
-                new CountingDetector(60., 1.e-3,
+        EclipseDetector detector =
+                new EclipseDetector(60., 1.e-3,
                                      CelestialBodyFactory.getSun(), sunRadius,
-                                     CelestialBodyFactory.getEarth(), earthRadius,
-                                     true);
+                                     CelestialBodyFactory.getEarth(), earthRadius).
+                withPenumbra().withHandler(new Counter());
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(counter);
+        propagator.addEventDetector(detector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(14, counter.getIncreasingCounter());
-        Assert.assertEquals(15, counter.getDecreasingCounter());
+        Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventFilter(counter, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
+        propagator.addEventDetector(new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(14, counter.getIncreasingCounter());
-        Assert.assertEquals( 0, counter.getDecreasingCounter());
+        Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventFilter(counter, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
+        propagator.addEventDetector(new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals( 0, counter.getIncreasingCounter());
-        Assert.assertEquals(15, counter.getDecreasingCounter());
+        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
 
     }
 
     @Test
     public void testPenumbra() throws OrekitException {
-        CountingDetector counter =
-                new CountingDetector(60., 1.e-3,
-                                     CelestialBodyFactory.getSun(), sunRadius,
-                                     CelestialBodyFactory.getEarth(), earthRadius,
-                                     false);
+        EclipseDetector detector =
+                new EclipseDetector(60., 1.e-3,
+                                    CelestialBodyFactory.getSun(), sunRadius,
+                                    CelestialBodyFactory.getEarth(), earthRadius).
+                withPenumbra().withHandler(new Counter());
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(counter);
+        propagator.addEventDetector(detector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(14, counter.getIncreasingCounter());
-        Assert.assertEquals(15, counter.getDecreasingCounter());
+        Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventFilter(counter, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
+        propagator.addEventDetector(new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals(14, counter.getIncreasingCounter());
-        Assert.assertEquals( 0, counter.getDecreasingCounter());
+        Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventFilter(counter, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
+        propagator.addEventDetector(new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assert.assertEquals( 0, counter.getIncreasingCounter());
-        Assert.assertEquals(15, counter.getDecreasingCounter());
+        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
 
     }
 
-    private static class CountingDetector extends EclipseDetector {
+    private static class Counter implements EventHandler<EclipseDetector> {
 
-        private static final long serialVersionUID = 6688075474710364130L;
         private int increasingCounter;
         private int decreasingCounter;
 
-        public CountingDetector(final double maxCheck,
-                                final double threshold,
-                                final PVCoordinatesProvider occulted,
-                                final double occultedRadius,
-                                final PVCoordinatesProvider occulting,
-                                final double occultingRadius,
-                                final boolean totalEclipse) {
-            super(maxCheck, threshold,
-                  occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
+        public Counter() {
+            reset();
+        }
+
+        public void reset() {
             increasingCounter = 0;
             decreasingCounter = 0;
         }
 
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            increasingCounter = 0;
-            decreasingCounter = 0;
-        }
-
-        public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+        public Action eventOccurred(SpacecraftState s, EclipseDetector ed, boolean increasing) {
             if (increasing) {
                 increasingCounter++;
             } else {
                 decreasingCounter++;
             }
             return Action.CONTINUE;
+        }
+
+        public SpacecraftState resetState(EclipseDetector ed, SpacecraftState oldState) {
+            return oldState;
         }
 
         public int getIncreasingCounter() {

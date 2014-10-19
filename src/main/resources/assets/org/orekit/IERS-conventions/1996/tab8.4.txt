@@ -1,0 +1,18 @@
+The following table has been slightly edited from the original IERS document.
+The change is that the columns already taking the phase
+(either ±90 or 0 degrees) have been added.
+
+ Table 8.4.  Diurnal and subdiurnal tide terms.
+             The units are msec. of arc for Δx and Δy.
+ 
+ Tide     l   l'   F   D   Ω  θ   phase   period          Δx              Δy               Δx              Δy
+                                                            Coefficients of                   phase-fixed
+                                 (deg.)  (hours)     Sin    Cos       Sin    Cos      Sin    Cos       Sin    Cos
+  Q₁     -1   0   -2   0  -2  1   -90     26.868   -0.026  0.006    -0.006 -0.026    0.006  0.026    -0.026  0.006
+  O₁      0   0   -2   0  -2  1   -90     25.819   -0.133  0.049    -0.049 -0.133    0.049  0.133    -0.133  0.049
+  P₁      0   0   -2   2  -2  1   -90     24.066   -0.050  0.025    -0.025 -0.050    0.025  0.050    -0.050  0.025
+  K₁      0   0    0   0   0  1    90     23.935   -0.152  0.078    -0.078 -0.152   -0.078 -0.152     0.152 -0.078
+  N₂     -1   0   -2   0  -2  2     0     12.658   -0.057 -0.013     0.011  0.033   -0.057 -0.013     0.011  0.033
+  M₂      0   0   -2   0  -2  2     0     12.421   -0.330 -0.028     0.037  0.196   -0.330 -0.028     0.037  0.196
+  S₂      0   0   -2   2  -2  2     0     12.000   -0.145  0.064     0.059  0.087   -0.145  0.064     0.059  0.087
+  K₂      0   0    0   0   0  2     0     11.967   -0.036  0.017     0.018  0.022   -0.036  0.017     0.018  0.022

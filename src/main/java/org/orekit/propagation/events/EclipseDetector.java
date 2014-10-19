@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,24 +20,26 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for satellite eclipse related events.
  * <p>This class finds eclipse events, i.e. satellite within umbra (total
  * eclipse) or penumbra (partial eclipse).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation when entering the eclipse and to
- * {@link EventDetector.Action#STOP stop} propagation when exiting the eclipse.
- * This can be changed by overriding the {@link
- * #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
- * derived class.</p>
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation when entering the eclipse and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * when exiting the eclipse. This can be changed by calling {@link
+ * #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */
-public class EclipseDetector extends AbstractDetector {
+public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetector> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -541311550206363031L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Occulting body. */
     private final PVCoordinatesProvider occulting;
@@ -63,18 +65,16 @@ public class EclipseDetector extends AbstractDetector {
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius (m)
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
+     * @deprecated as of 6.1 replaced by {@link #EclipseDetector(PVCoordinatesProvider,
+     * double, PVCoordinatesProvider, double)} followed by either a call to
+     * {@link #withUmbra()} or by a call to {@link #withPenumbra()}
      */
-    public EclipseDetector(final PVCoordinatesProvider occulted,
-            final double occultedRadius,
-            final PVCoordinatesProvider occulting,
-            final double occultingRadius,
-            final boolean totalEclipse) {
-        super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
-        this.occulted = occulted;
-        this.occultedRadius = FastMath.abs(occultedRadius);
-        this.occulting = occulting;
-        this.occultingRadius = FastMath.abs(occultingRadius);
-        this.totalEclipse = totalEclipse;
+    @Deprecated
+    public EclipseDetector(final PVCoordinatesProvider occulted,  final double occultedRadius,
+                           final PVCoordinatesProvider occulting, final double occultingRadius,
+                           final boolean totalEclipse) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD,
+             occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }
 
     /** Build a new eclipse detector.
@@ -89,19 +89,17 @@ public class EclipseDetector extends AbstractDetector {
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius (m)
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
+     * @deprecated as of 6.1 replaced by {@link #EclipseDetector(double,
+     * PVCoordinatesProvider, double, PVCoordinatesProvider, double)} followed by
+     * either a call to {@link #withUmbra()} or by a call to {@link #withPenumbra()}
      */
+    @Deprecated
     public EclipseDetector(final double maxCheck,
-            final PVCoordinatesProvider occulted,
-            final double occultedRadius,
-            final PVCoordinatesProvider occulting,
-            final double occultingRadius,
-            final boolean totalEclipse) {
-        super(maxCheck, DEFAULT_THRESHOLD);
-        this.occulted = occulted;
-        this.occultedRadius = FastMath.abs(occultedRadius);
-        this.occulting = occulting;
-        this.occultingRadius = FastMath.abs(occultingRadius);
-        this.totalEclipse = totalEclipse;
+                           final PVCoordinatesProvider occulted,  final double occultedRadius,
+                           final PVCoordinatesProvider occulting, final double occultingRadius,
+                           final boolean totalEclipse) {
+        this(maxCheck, DEFAULT_THRESHOLD,
+             occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }
 
     /** Build a new eclipse detector .
@@ -116,20 +114,17 @@ public class EclipseDetector extends AbstractDetector {
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius (m)
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
+     * @deprecated as of 6.1 replaced by {@link #EclipseDetector(double, double,
+     * PVCoordinatesProvider, double, PVCoordinatesProvider, double)} followed by
+     * either a call to {@link #withUmbra()} or by a call to {@link #withPenumbra()}
      */
-    public EclipseDetector(final double maxCheck,
-            final double threshold,
-            final PVCoordinatesProvider occulted,
-            final double occultedRadius,
-            final PVCoordinatesProvider occulting,
-            final double occultingRadius,
-            final boolean totalEclipse) {
-        super(maxCheck, threshold);
-        this.occulted = occulted;
-        this.occultedRadius = FastMath.abs(occultedRadius);
-        this.occulting = occulting;
-        this.occultingRadius = FastMath.abs(occultingRadius);
-        this.totalEclipse = totalEclipse;
+    @Deprecated
+    public EclipseDetector(final double maxCheck, final double threshold,
+                           final PVCoordinatesProvider occulted, final double occultedRadius,
+                           final PVCoordinatesProvider occulting, final double occultingRadius,
+                           final boolean totalEclipse) {
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<EclipseDetector>(),
+             occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }
 
     /** Build a new eclipse detector.
@@ -141,16 +136,10 @@ public class EclipseDetector extends AbstractDetector {
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius (m)
      */
-    public EclipseDetector(final PVCoordinatesProvider occulted,
-            final double occultedRadius,
-            final PVCoordinatesProvider occulting,
-            final double occultingRadius) {
-        super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
-        this.occulted = occulted;
-        this.occultedRadius = FastMath.abs(occultedRadius);
-        this.occulting = occulting;
-        this.occultingRadius = FastMath.abs(occultingRadius);
-        this.totalEclipse = true;
+    public EclipseDetector(final PVCoordinatesProvider occulted,  final double occultedRadius,
+                           final PVCoordinatesProvider occulting, final double occultingRadius) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD,
+             occulted, occultedRadius, occulting, occultingRadius);
     }
 
     /** Build a new eclipse detector.
@@ -166,16 +155,10 @@ public class EclipseDetector extends AbstractDetector {
      * @param occultingRadius the occulting body radius in meters
      */
     public EclipseDetector(final double maxCheck,
-            final PVCoordinatesProvider occulted,
-            final double occultedRadius,
-            final PVCoordinatesProvider occulting,
-            final double occultingRadius) {
-        super(maxCheck, DEFAULT_THRESHOLD);
-        this.occulted = occulted;
-        this.occultedRadius = FastMath.abs(occultedRadius);
-        this.occulting = occulting;
-        this.occultingRadius = FastMath.abs(occultingRadius);
-        this.totalEclipse = true;
+                           final PVCoordinatesProvider occulted,  final double occultedRadius,
+                           final PVCoordinatesProvider occulting, final double occultingRadius) {
+        this(maxCheck, DEFAULT_THRESHOLD,
+             occulted, occultedRadius, occulting, occultingRadius);
     }
 
     /** Build a new eclipse detector.
@@ -190,18 +173,79 @@ public class EclipseDetector extends AbstractDetector {
      * @param occulting the occulting body
      * @param occultingRadius the occulting body radius in meters
      */
-    public EclipseDetector(final double maxCheck,
-            final double threshold,
-            final PVCoordinatesProvider occulted,
-            final double occultedRadius,
-            final PVCoordinatesProvider occulting,
-            final double occultingRadius) {
-        super(maxCheck, threshold);
-        this.occulted = occulted;
-        this.occultedRadius = FastMath.abs(occultedRadius);
-        this.occulting = occulting;
+    public EclipseDetector(final double maxCheck, final double threshold,
+                           final PVCoordinatesProvider occulted,  final double occultedRadius,
+                           final PVCoordinatesProvider occulting, final double occultingRadius) {
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<EclipseDetector>(),
+             occulted, occultedRadius, occulting, occultingRadius, true);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
+     * @param handler event handler to call at event occurrences
+     * @param occulted the body to be occulted
+     * @param occultedRadius the radius of the body to be occulted in meters
+     * @param occulting the occulting body
+     * @param occultingRadius the occulting body radius in meters
+     * @param totalEclipse umbra (true) or penumbra (false) detection flag
+     * @since 6.1
+     */
+    private EclipseDetector(final double maxCheck, final double threshold,
+                            final int maxIter, final EventHandler<EclipseDetector> handler,
+                            final PVCoordinatesProvider occulted,  final double occultedRadius,
+                            final PVCoordinatesProvider occulting, final double occultingRadius,
+                            final boolean totalEclipse) {
+        super(maxCheck, threshold, maxIter, handler);
+        this.occulted        = occulted;
+        this.occultedRadius  = FastMath.abs(occultedRadius);
+        this.occulting       = occulting;
         this.occultingRadius = FastMath.abs(occultingRadius);
-        this.totalEclipse = true;
+        this.totalEclipse    = totalEclipse;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
+                                     final int nawMaxIter, final EventHandler<EclipseDetector> newHandler) {
+        return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
+                                   occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
+    }
+
+    /**
+     * Setup the detector to full umbra detection.
+     * <p>
+     * This will override a penumbra/umbra flag if it has been configured previously.
+     * </p>
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @see #withPenumbra()
+     * @since 6.1
+     */
+    public EclipseDetector withUmbra() {
+        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                   occulted, occultedRadius, occulting, occultingRadius,
+                                   true);
+    }
+
+    /**
+     * Setup the detector to penumbra detection.
+     * <p>
+     * This will override a penumbra/umbra flag if it has been configured previously.
+     * </p>
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @see #withUmbra()
+     * @since 6.1
+     */
+    public EclipseDetector withPenumbra() {
+        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+                                   occulted, occultedRadius, occulting, occultingRadius,
+                                   false);
     }
 
     /** Get the occulting body.
@@ -232,28 +276,12 @@ public class EclipseDetector extends AbstractDetector {
         return occultedRadius;
     }
 
-
     /** Get the total eclipse detection flag.
      * @return the total eclipse detection flag (true for umbra events detection,
      * false for penumbra events detection)
      */
     public boolean getTotalEclipse() {
         return totalEclipse;
-    }
-
-    /** Handle an eclipse event and choose what to do next.
-     * <p>The default implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation when entering the eclipse and to
-     * {@link EventDetector.Action#STOP stop} propagation when exiting the eclipse.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event.
-     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        return increasing ? Action.STOP : Action.CONTINUE;
     }
 
     /** Compute the value of the switching function.

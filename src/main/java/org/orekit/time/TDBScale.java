@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,6 +33,9 @@ import org.orekit.utils.Constants;
  */
 public class TDBScale implements TimeScale {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20131209L;
+
     /** Package private constructor for the factory.
      */
     TDBScale() {
@@ -42,7 +45,6 @@ public class TDBScale implements TimeScale {
     public double offsetFromTAI(final AbsoluteDate date) {
         final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
         final double g = FastMath.toRadians(357.53 + 0.9856003 * dtDays);
-//        final double g = FastMath.toRadians(359.534953014 + 0.9856003 * dtDays);
         return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * FastMath.sin(g) + 0.000014 * FastMath.sin(2 * g));
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -636,7 +636,7 @@ class DeepSDP4 extends SDP4 {
             for (int j = 0; j < SECULAR_INTEGRATION_ORDER; j += 2)  {
                 derivs[j]     = term1a + term2a + term3a;
                 derivs[j + 1] = term1b + term2b + term3b;
-                if ((i + 2) < SECULAR_INTEGRATION_ORDER) {
+                if ((j + 2) < SECULAR_INTEGRATION_ORDER) {
                     term1a  = -term1a;
                     term2a *= -4.0;
                     term3a *= -9.0;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,14 +64,14 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
 
         // compute bodies separation vectors and squared norm
         final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final double r2Central       = Vector3D.dotProduct(centralToBody, centralToBody);
+        final double r2Central       = centralToBody.getNormSq();
         final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
-        final double r2Sat           = Vector3D.dotProduct(satToBody, satToBody);
+        final double r2Sat           = satToBody.getNormSq();
 
         // compute relative acceleration
         final Vector3D gamma =
-            new Vector3D(gm * FastMath.pow(r2Sat, -1.5), satToBody,
-                        -gm * FastMath.pow(r2Central, -1.5), centralToBody);
+            new Vector3D(gm / (r2Sat * FastMath.sqrt(r2Sat)), satToBody,
+                        -gm / (r2Central * FastMath.sqrt(r2Central)), centralToBody);
 
         // add contribution to the ODE second member
         adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
@@ -88,13 +88,15 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
 
         // compute bodies separation vectors and squared norm
         final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
-        final double r2Central          = Vector3D.dotProduct(centralToBody, centralToBody);
+        final double r2Central          = centralToBody.getNormSq();
         final FieldVector3D<DerivativeStructure> satToBody = position.subtract(centralToBody).negate();
         final DerivativeStructure r2Sat = satToBody.getNormSq();
 
         // compute relative acceleration
-        final FieldVector3D<DerivativeStructure> satAcc   = new FieldVector3D<DerivativeStructure>(r2Sat.pow(-1.5).multiply(gm), satToBody);
-        final Vector3D centralAcc = new Vector3D(gm * FastMath.pow(r2Central, -1.5), centralToBody);
+        final FieldVector3D<DerivativeStructure> satAcc =
+                new FieldVector3D<DerivativeStructure>(r2Sat.sqrt().multiply(r2Sat).reciprocal().multiply(gm), satToBody);
+        final Vector3D centralAcc =
+                new Vector3D(gm / (r2Central * FastMath.sqrt(r2Central)), centralToBody);
         return satAcc.subtract(centralAcc);
 
     }
@@ -107,15 +109,15 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
 
         // compute bodies separation vectors and squared norm
         final Vector3D centralToBody = body.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final double r2Central       = Vector3D.dotProduct(centralToBody, centralToBody);
+        final double r2Central       = centralToBody.getNormSq();
         final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
-        final double r2Sat           = Vector3D.dotProduct(satToBody, satToBody);
+        final double r2Sat           = satToBody.getNormSq();
 
         final DerivativeStructure gmds = new DerivativeStructure(1, 1, 0, gm);
 
         // compute relative acceleration
-        return new FieldVector3D<DerivativeStructure>(gmds.multiply(FastMath.pow(r2Sat, -1.5)), satToBody,
-                              gmds.multiply(-FastMath.pow(r2Central, -1.5)), centralToBody);
+        return new FieldVector3D<DerivativeStructure>(gmds.divide(r2Sat * FastMath.sqrt(r2Sat)), satToBody,
+                              gmds.divide(-r2Central * FastMath.sqrt(r2Central)), centralToBody);
 
     }
 

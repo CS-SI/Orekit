@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -55,12 +56,9 @@ public class AltitudeDetectorTest {
                                                       initialDate,CelestialBodyFactory.getEarth().getGM());
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         final KeplerianPropagator kepPropagator = new KeplerianPropagator(initialOrbit);
-        final AltitudeDetector altDetector = new AltitudeDetector(alt, new OneAxisEllipsoid(earthRadius, earthF, EME2000)) {
-            private static final long serialVersionUID = 1L;
-            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                return Action.STOP;
-            }
-        };
+        final AltitudeDetector altDetector =
+                new AltitudeDetector(alt, new OneAxisEllipsoid(earthRadius, earthF, EME2000)).
+                withHandler(new StopOnEvent<AltitudeDetector>());
 
         // altitudeDetector should stop propagation upon reaching required altitude
         kepPropagator.addEventDetector(altDetector);

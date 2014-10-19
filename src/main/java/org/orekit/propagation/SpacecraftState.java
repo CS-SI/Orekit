@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,9 @@ import java.util.Map;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -38,7 +41,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** This class is the representation of a complete state holding orbit, attitude
@@ -74,6 +78,12 @@ public class SpacecraftState
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
+
+    /**
+     * tolerance on date comparison in {@link #checkConsistency(Orbit, Attitude)}. 100 ns
+     * corresponds to sub-mm accuracy at LEO orbital velocities.
+     */
+    private static final double DATE_INCONSISTENCY_THRESHOLD = 100e-9;
 
     /** Orbital state. */
     private final Orbit orbit;
@@ -234,7 +244,8 @@ public class SpacecraftState
      */
     private static void checkConsistency(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        if (!orbit.getDate().equals(attitude.getDate())) {
+        if (FastMath.abs(orbit.getDate().durationFrom(attitude.getDate())) >
+            DATE_INCONSISTENCY_THRESHOLD) {
             throw OrekitException.createIllegalArgumentException(
                   OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
                   orbit.getDate(), attitude.getDate());
@@ -562,29 +573,29 @@ public class SpacecraftState
         return orbit.getI();
     }
 
-    /** Get the {@link PVCoordinates} in orbit definition frame.
+    /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
      * Compute the position and velocity of the satellite. This method caches its
      * results, and recompute them only when the method is called with a new value
      * for mu. The result is provided as a reference to the internally cached
-     * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
-     * {@link PVCoordinates} if it needs to keep the value for a while.
+     * {@link TimeStampedPVCoordinates}, so the caller is responsible to copy it in a separate
+     * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
      * @return pvCoordinates in orbit definition frame
      */
-    public PVCoordinates getPVCoordinates() {
+    public TimeStampedPVCoordinates getPVCoordinates() {
         return orbit.getPVCoordinates();
     }
 
-    /** Get the {@link PVCoordinates} in given output frame.
+    /** Get the {@link TimeStampedPVCoordinates} in given output frame.
      * Compute the position and velocity of the satellite. This method caches its
      * results, and recompute them only when the method is called with a new value
      * for mu. The result is provided as a reference to the internally cached
-     * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
-     * {@link PVCoordinates} if it needs to keep the value for a while.
+     * {@link TimeStampedPVCoordinates}, so the caller is responsible to copy it in a separate
+     * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
      * @exception OrekitException if the transformation between frames cannot be computed
      */
-    public PVCoordinates getPVCoordinates(final Frame outputFrame)
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
         return orbit.getPVCoordinates(outputFrame);
     }
@@ -601,6 +612,60 @@ public class SpacecraftState
      */
     public double getMass() {
         return mass;
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20140617L;
+
+        /** Orbit. */
+        private final Orbit orbit;
+
+        /** Attitude and mass double values. */
+        private double[] d;
+
+        /** Additional states. */
+        private final Map<String, double[]> additional;
+
+        /** Simple constructor.
+         * @param state instance to serialize
+         */
+        private DTO(final SpacecraftState state) {
+
+            this.orbit      = state.orbit;
+            this.additional = state.additional.isEmpty() ? null : state.additional;
+
+            final Rotation rotation = state.attitude.getRotation();
+            final Vector3D spin     = state.attitude.getSpin();
+            this.d = new double[] {
+                rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3(),
+                spin.getX(), spin.getY(), spin.getZ(),
+                state.mass
+            };
+
+        }
+
+        /** Replace the deserialized data transfer object with a {@link SpacecraftState}.
+         * @return replacement {@link SpacecraftState}
+         */
+        private Object readResolve() {
+            return new SpacecraftState(orbit,
+                                       new Attitude(orbit.getFrame(),
+                                                    new TimeStampedAngularCoordinates(orbit.getDate(),
+                                                                                      new Rotation(d[0], d[1], d[2], d[3], false),
+                                                                                      new Vector3D(d[4], d[5], d[6]))),
+                                       d[7], additional);
+        }
+
     }
 
 }

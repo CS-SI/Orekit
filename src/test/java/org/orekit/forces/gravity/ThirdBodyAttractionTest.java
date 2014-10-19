@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -160,7 +160,7 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
         final String name = moon.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
-        checkParameterDerivative(state, forceModel, name, 1.0, 4.0e-15);
+        checkParameterDerivative(state, forceModel, name, 1.0, 7.0e-15);
 
     }
 

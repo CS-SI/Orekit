@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -97,18 +97,30 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
         return tideSystem;
     }
 
-    /** {@inheritDoc} */
-    public double getRawCnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        checkLimits(n, m);
-        return rawC[n][m];
-    }
+    @Override
+    public RawSphericalHarmonics onDate(final AbsoluteDate date) {
+        return new RawSphericalHarmonics() {
 
-    /** {@inheritDoc} */
-    public double getRawSnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        checkLimits(n, m);
-        return rawS[n][m];
+            @Override
+            public AbsoluteDate getDate() {
+                return date;
+            }
+
+            /** {@inheritDoc} */
+            public double getRawCnm(final int n, final int m)
+                throws OrekitException {
+                checkLimits(n, m);
+                return rawC[n][m];
+            }
+
+            /** {@inheritDoc} */
+            public double getRawSnm(final int n, final int m)
+                throws OrekitException {
+                checkLimits(n, m);
+                return rawS[n][m];
+            }
+
+        };
     }
 
     /** Check limits.

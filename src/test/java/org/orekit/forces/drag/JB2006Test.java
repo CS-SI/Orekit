@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -38,6 +38,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
 public class JB2006Test {
@@ -45,7 +46,7 @@ public class JB2006Test {
     @Test
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        Frame itrf = FramesFactory.getITRF2005(true);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 
@@ -185,7 +186,7 @@ public class JB2006Test {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
                                              TimeComponents.H00,
                                              TimeScalesFactory.getUTC());
-        Frame itrf = FramesFactory.getITRF2005();
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
 

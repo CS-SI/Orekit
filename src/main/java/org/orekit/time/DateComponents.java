@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -495,7 +495,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         /** {@inheritDoc} */
         public int getYear(final int j2000Day) {
-            return  -((-4 * j2000Day - 2920488) / 1461);
+            return  (int) -((-4l * j2000Day - 2920488l) / 1461l);
         }
 
         /** {@inheritDoc} */
@@ -515,7 +515,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         /** {@inheritDoc} */
         public int getYear(final int j2000Day) {
-            return  (4 * j2000Day + 2921948) / 1461;
+            return  (int) ((4l * j2000Day + 2921948l) / 1461l);
         }
 
         /** {@inheritDoc} */
@@ -537,7 +537,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         public int getYear(final int j2000Day) {
 
             // year estimate
-            int year = (400 * j2000Day + 292194288) / 146097;
+            int year = (int) ((400l * j2000Day + 292194288l) / 146097l);
 
             // the previous estimate is one unit too high in some rare cases
             // (240 days in the 400 years gregorian cycle, about 0.16%)

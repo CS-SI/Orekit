@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,11 +31,9 @@ import org.apache.commons.math3.ode.EquationsMapper;
 import org.apache.commons.math3.ode.ExpandableStatefulODE;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.SecondaryEquations;
-import org.apache.commons.math3.ode.events.EventHandler;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.sampling.StepHandler;
 import org.apache.commons.math3.ode.sampling.StepInterpolator;
-import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
@@ -48,7 +46,9 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractReconfigurableDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -84,13 +84,23 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Underlying raw rawInterpolator. */
     private StepInterpolator mathInterpolator;
 
+    /** Output only the mean orbit. <br/>
+     * <p>
+     * This is used only in the case of semianalitical propagators where there is a clear separation between
+     * mean and short periodic elements. It is ignored by the Numerical propagator.
+     * </p>
+     */
+    private boolean meanOrbit;
+
     /** Build a new instance.
      * @param integrator numerical integrator to use for propagation.
+     * @param meanOrbit output only the mean orbit.
      */
-    protected AbstractIntegratedPropagator(final AbstractIntegrator integrator) {
+    protected AbstractIntegratedPropagator(final AbstractIntegrator integrator, final boolean meanOrbit) {
         detectors           = new ArrayList<EventDetector>();
         additionalEquations = new ArrayList<AdditionalEquations>();
         this.integrator     = integrator;
+        this.meanOrbit      = meanOrbit;
     }
 
     /** Initialize the mapper. */
@@ -221,7 +231,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public void addEventDetector(final EventDetector detector) {
+    public <T extends EventDetector> void addEventDetector(final T detector) {
         detectors.add(detector);
     }
 
@@ -246,10 +256,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Wrap an Orekit event detector and register it to the integrator.
      * @param integ integrator into which event detector should be registered
      * @param detector event detector to wrap
+     * @param <T> class type for the generic version
      */
-    protected void setUpEventDetector(final AbstractIntegrator integ,
-                                      final EventDetector detector) {
-        integ.addEventHandler(new AdaptedEventDetector(detector),
+    protected <T extends EventDetector> void setUpEventDetector(final AbstractIntegrator integ,
+                                                                final T detector) {
+        integ.addEventHandler(new AdaptedEventDetector<T>(detector),
                               detector.getMaxCheckInterval(),
                               detector.getThreshold(),
                               detector.getMaxIterationCount());
@@ -258,7 +269,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -272,7 +283,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setMasterMode(final OrekitStepHandler handler) {
@@ -286,7 +297,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {
@@ -443,7 +454,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // get final state
             SpacecraftState finalState =
-                    stateMapper.mapArrayToState(mathODE.getTime(), mathODE.getPrimaryState());
+                    stateMapper.mapArrayToState(mathODE.getTime(), mathODE.getPrimaryState(), meanOrbit);
             finalState = updateAdditionalStates(finalState);
             for (int i = 0; i < additionalEquations.size(); ++i) {
                 final double[] secondary = mathODE.getSecondaryState(i);
@@ -541,7 +552,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         throws OrekitException {
 
         // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y);
+        SpacecraftState state = stateMapper.mapArrayToState(t, y, meanOrbit);
 
         // pre-integrated additional states
         state = updateAdditionalStates(state);
@@ -549,55 +560,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         // additional states integrated here
         if (!additionalEquations.isEmpty()) {
 
-            if (mathODE.getTotalDimension() <= y.length) {
-                // the provided y vector already contains everything needed
-                final EquationsMapper[] em = mathODE.getSecondaryMappers();
-                for (int i = 0; i < additionalEquations.size(); ++i) {
-                    final double[] secondary = new double[em[i].getDimension()];
-                    System.arraycopy(y, em[i].getFirstIndex(), secondary, 0, secondary.length);
-                    state = state.addAdditionalState(additionalEquations.get(i).getName(),
-                                                     secondary);
-                }
-            } else {
-                // the y array doesn't contain the additional equations data
-
-                // TODO: remove this case when MATH-965 fix is officially published
-                // (i.e for the next Apache Commons Math version after 3.2)
-                // The fix for MATH-965 ensures that y always contains all
-                // needed data, including additional states, so the workaround
-                // below will not be needed anymore
-
-                if (mathInterpolator == null) {
-                    // we are still in the first step, before the step handler call
-                    // we build a temporary interpolator just for this step
-                    final double step = FastMath.abs(integrator.getCurrentSignedStepsize());
-                    final ClassicalRungeKuttaIntegrator firstStepIntegrator =
-                            new ClassicalRungeKuttaIntegrator(step);
-                    firstStepIntegrator.addStepHandler(new StepHandler() {
-
-                        /** {@inheritDoc} */
-                        public void init(final double t0, final double[] y0, final double t) {
-                        }
-
-                        /** {@inheritDoc} */
-                        public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
-                            mathInterpolator = interpolator;
-                        }
-
-                    });
-                    final ExpandableStatefulODE localODE = createODE(firstStepIntegrator);
-                    firstStepIntegrator.clearEventHandlers();
-                    firstStepIntegrator.integrate(localODE, step);
-                }
-
-                // extract the additional data from the spied interpolator
-                mathInterpolator.setInterpolatedTime(t);
-                for (int i = 0; i < additionalEquations.size(); ++i) {
-                    final double[] secondary = mathInterpolator.getInterpolatedSecondaryState(i);
-                    state = state.addAdditionalState(additionalEquations.get(i).getName(),
-                                                     secondary);
-                }
-
+            final EquationsMapper[] em = mathODE.getSecondaryMappers();
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                final double[] secondary = new double[em[i].getDimension()];
+                System.arraycopy(y, em[i].getFirstIndex(), secondary, 0, secondary.length);
+                state = state.addAdditionalState(additionalEquations.get(i).getName(), secondary);
             }
 
         }
@@ -644,7 +611,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 // update space dynamics view
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, y);
+                // use only ODE elements
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, y, true);
                 currentState = updateAdditionalStates(currentState);
 
                 // compute main state differentials
@@ -696,7 +664,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 // update space dynamics view
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary);
+                // the state contains only the ODE elements
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
@@ -720,18 +689,27 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Adapt an {@link org.orekit.propagation.events.EventDetector}
      * to commons-math {@link org.apache.commons.math3.ode.events.EventHandler} interface.
+     * @param <T> class type for the generic version
      * @author Fabien Maussion
      */
-    private class AdaptedEventDetector implements EventHandler {
+    private class AdaptedEventDetector<T extends EventDetector> implements org.apache.commons.math3.ode.events.EventHandler {
 
         /** Underlying event detector. */
-        private final EventDetector detector;
+        private final T detector;
+
+        /** Time of the previous call to g. */
+        private double lastT;
+
+        /** Value from the previous call to g. */
+        private double lastG;
 
         /** Build a wrapped event detector.
          * @param detector event detector to wrap
         */
-        public AdaptedEventDetector(final EventDetector detector) {
+        public AdaptedEventDetector(final T detector) {
             this.detector = detector;
+            this.lastT    = Double.NaN;
+            this.lastG    = Double.NaN;
         }
 
         /** {@inheritDoc} */
@@ -739,6 +717,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 detector.init(getCompleteState(t0, y0), stateMapper.mapDoubleToDate(t));
+                this.lastT = Double.NaN;
+                this.lastG = Double.NaN;
 
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
@@ -748,7 +728,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public double g(final double t, final double[] y) {
             try {
-                return detector.g(getCompleteState(t, y));
+                if (!Precision.equals(lastT, t, 1)) {
+                    lastT = t;
+                    lastG = detector.g(getCompleteState(t, y));
+                }
+                return lastG;
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
@@ -759,7 +743,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 final SpacecraftState state = getCompleteState(t, y);
-                final EventDetector.Action whatNext = detector.eventOccurred(state, increasing);
+                final EventHandler.Action whatNext;
+                if (detector instanceof AbstractReconfigurableDetector) {
+                    @SuppressWarnings("unchecked")
+                    final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) detector).getHandler();
+                    whatNext = handler.eventOccurred(state, detector, increasing);
+                } else {
+                    @SuppressWarnings("deprecation")
+                    final EventDetector.Action a = detector.eventOccurred(state, increasing);
+                    whatNext = AbstractReconfigurableDetector.convert(a);
+                }
 
                 switch (whatNext) {
                 case STOP :
@@ -780,7 +773,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void resetState(final double t, final double[] y) {
             try {
                 final SpacecraftState oldState = getCompleteState(t, y);
-                final SpacecraftState newState = detector.resetState(oldState);
+                final SpacecraftState newState;
+                if (detector instanceof AbstractReconfigurableDetector) {
+                    @SuppressWarnings("unchecked")
+                    final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) detector).getHandler();
+                    newState = handler.resetState(detector, oldState);
+                } else {
+                    @SuppressWarnings("deprecation")
+                    final SpacecraftState s = detector.resetState(oldState);
+                    newState = s;
+                }
 
                 // main part
                 stateMapper.mapStateToArray(newState, y);
@@ -894,7 +896,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                 SpacecraftState s =
                         stateMapper.mapArrayToState(mathInterpolator.getInterpolatedTime(),
-                                                    mathInterpolator.getInterpolatedState());
+                                                    mathInterpolator.getInterpolatedState(),
+                                                    meanOrbit);
                 s = updateAdditionalStates(s);
                 for (int i = 0; i < additionalEquations.size(); ++i) {
                     final double[] secondary = mathInterpolator.getInterpolatedSecondaryState(i);
@@ -991,7 +994,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                         // create the ephemeris
                         ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                            stateMapper, model, unmanaged,
+                                                            stateMapper, meanOrbit, model, unmanaged,
                                                             getAdditionalStateProviders(), names);
 
                     }

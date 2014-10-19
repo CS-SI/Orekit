@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -48,6 +48,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 import fr.cs.examples.Autoconfiguration;
 
@@ -106,7 +107,7 @@ public class PropagatorConversion {
 
             // Force Models:
             // 1 - Perturbing gravity field (only J2 is considered here)
-            ForceModel gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(), provider);
+            ForceModel gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
 
             // Add force models to the propagator
             numProp.addForceModel(gravity);

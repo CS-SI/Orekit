@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,10 +33,12 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 public class BackAndForthDetectorTest {
 
@@ -66,12 +69,14 @@ public class BackAndForthDetectorTest {
         final GeodeticPoint stationPosition = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(100.), 110.);
         final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                      Constants.WGS84_EARTH_FLATTENING,
-                                                     FramesFactory.getITRF2005());
+                                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final TopocentricFrame stationFrame = new TopocentricFrame(earth, stationPosition, "");
 
         // Detector
-        final VisibilityDetector visiDetector = new VisibilityDetector(Math.toRadians(10.), stationFrame);
-        propagator.addEventDetector(visiDetector);
+        final Visibility visi = new Visibility();
+        propagator.addEventDetector(new ElevationDetector(stationFrame).
+                                    withConstantElevation(FastMath.toRadians(10.)).
+                                    withHandler(visi));
 
         // Forward propagation (AOS + LOS)
         propagator.propagate(date1);
@@ -80,28 +85,28 @@ public class BackAndForthDetectorTest {
         propagator.propagate(date1);
         propagator.propagate(date0);
 
-        Assert.assertEquals(4, visiDetector.getVisiNb());
+        Assert.assertEquals(4, visi.getVisiNb());
 
     }
 
-    private static class VisibilityDetector extends ElevationDetector {
-        private static final long serialVersionUID = 8739302131525333416L;
+    private static class Visibility implements EventHandler<ElevationDetector> {
         private int _visiNb;
 
-        public VisibilityDetector(double elevation, TopocentricFrame topo) {
-            super(elevation, topo);
+        public Visibility() {
             _visiNb = 0;
-        }
-
-        @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException
-        {
-            _visiNb++;
-            return Action.CONTINUE;
         }
 
         public int getVisiNb() {
             return _visiNb;
+        }
+
+        public Action eventOccurred(SpacecraftState s, ElevationDetector ed, boolean increasing) {
+            _visiNb++;
+            return Action.CONTINUE;
+        }
+
+        public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
+            return oldState;
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,6 +61,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPress
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -150,9 +151,30 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  follow a keplerian evolution only.
      *  </p>
      *  @param integrator numerical integrator to use for propagation.
+     *  @param meanOnly output only the mean orbits.
+     */
+    public DSSTPropagator(final AbstractIntegrator integrator, final boolean meanOnly) {
+        super(integrator, meanOnly);
+        initMapper();
+        // DSST uses only equinoctial orbits and mean longitude argument
+        setOrbitType(OrbitType.EQUINOCTIAL);
+        setPositionAngleType(PositionAngle.TRUE);
+        setAttitudeProvider(DEFAULT_LAW);
+    }
+
+
+    /** Create a new instance of DSSTPropagator.
+     *  <p>
+     *  After creation, there are no perturbing forces at all.
+     *  This means that if {@link #addForceModel addForceModel}
+     *  is not called after creation, the integrated orbit will
+     *  follow a keplerian evolution only. Only the mean orbits
+     *  will be generated.
+     *  </p>
+     *  @param integrator numerical integrator to use for propagation.
      */
     public DSSTPropagator(final AbstractIntegrator integrator) {
-        super(integrator);
+        super(integrator, true);
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
@@ -296,7 +318,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         private boolean                    initialIsOsculating;
 
         /** Force models used to compute short periodic terms. */
-        private final List<DSSTForceModel> forceModels;
+        private final transient List<DSSTForceModel> forceModels;
 
         /** Number of satellite revolutions in the averaging interval. */
         private int                        satelliteRevolution;
@@ -328,28 +350,30 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState mapArrayToState(final double t, final double[] y)
+        public SpacecraftState mapArrayToState(final double t, final double[] y, final boolean meanOnly)
             throws OrekitException {
 
             final AbsoluteDate date = mapDoubleToDate(t);
 
             // add short periodic variations to mean elements to get osculating elements
-            // (the loop may not be performed if there are no force models, in the
+            // (the loop may not be performed if there are no force models and in the
             //  case we want to remain in mean parameters only)
-            final double[] osculatingElements = y.clone();
-            for (final DSSTForceModel forceModel : forceModels) {
-                final double[] shortPeriodic = forceModel.getShortPeriodicVariations(date, y);
-                for (int i = 0; i < shortPeriodic.length; i++) {
-                    osculatingElements[i] += shortPeriodic[i];
+            final double[] elements = y.clone();
+            if (!meanOnly) {
+                for (final DSSTForceModel forceModel : forceModels) {
+                    final double[] shortPeriodic = forceModel.getShortPeriodicVariations(date, y);
+                    for (int i = 0; i < shortPeriodic.length; i++) {
+                        elements[i] += shortPeriodic[i];
+                    }
                 }
             }
 
-            final double mass = y[6];
+            final double mass = elements[6];
             if (mass <= 0.0) {
                 throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
-            final Orbit orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(y, PositionAngle.MEAN, date, getMu(), getFrame());
+            final Orbit orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, PositionAngle.MEAN, date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
             return new SpacecraftState(orbit, attitude, mass);
@@ -447,13 +471,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         private Propagator createPropagator(final SpacecraftState initialState)
             throws OrekitException {
             final Orbit initialOrbit = initialState.getOrbit();
-            final double[][] tol = NumericalPropagator.tolerances(1.0, initialOrbit, initialOrbit.getType());
+            final double[][] tol = NumericalPropagator.tolerances(1.0, initialOrbit, OrbitType.EQUINOCTIAL);
             final double minStep = 1.;
             final double maxStep = 200.;
             final AdaptiveStepsizeIntegrator integ = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
             integ.setInitialStepSize(100.);
 
             final NumericalPropagator propagator = new NumericalPropagator(integ);
+            propagator.setOrbitType(OrbitType.EQUINOCTIAL);
             propagator.setInitialState(initialState);
 
             // Define the same force model as the DSST
@@ -462,7 +487,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     // Central body
                     final UnnormalizedSphericalHarmonicsProvider provider = ((DSSTCentralBody) force).getProvider();
                     final ForceModel holmesFeatherstone =
-                            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+                            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                                   GravityFieldFactory.getNormalizedProvider(provider));
                     propagator.addForceModel(holmesFeatherstone);
                 } else if (force instanceof DSSTThirdBody) {
@@ -663,9 +688,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
+     * @exception PropagationException if Jacobian is singular
      */
     public static double[][] tolerances(final double dP,
-                                        final Orbit orbit) {
+                                        final Orbit orbit)
+        throws PropagationException {
 
         return NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
 

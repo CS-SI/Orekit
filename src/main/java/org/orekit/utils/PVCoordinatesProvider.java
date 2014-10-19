@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,10 +34,10 @@ public interface PVCoordinatesProvider {
     /** Get the {@link PVCoordinates} of the body in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
-     * @return position/velocity of the body (m and m/s)
+     * @return time-stamped position/velocity of the body (m and m/s)
      * @exception OrekitException if position cannot be computed in given frame
      */
-    PVCoordinates getPVCoordinates(AbsoluteDate date,
-                                   Frame frame) throws OrekitException;
+    TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date,
+                                              Frame frame) throws OrekitException;
 
 }

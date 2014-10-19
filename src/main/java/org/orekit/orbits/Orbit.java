@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,8 +32,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * This class handles orbital parameters.
@@ -75,7 +75,7 @@ public abstract class Orbit
     private final double mu;
 
     /** Computed PVCoordinates. */
-    private transient PVCoordinates pvCoordinates;
+    private transient TimeStampedPVCoordinates pvCoordinates;
 
     /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
     private transient double[][] jacobianMeanWrtCartesian;
@@ -121,18 +121,16 @@ public abstract class Orbit
 
     /** Set the orbit from Cartesian parameters.
      * @param pvCoordinates the position and velocity in the inertial frame
-     * @param frame the frame in which the {@link PVCoordinates} are defined
+     * @param frame the frame in which the {@link TimeStampedPVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    protected Orbit(final PVCoordinates pvCoordinates, final Frame frame,
-                    final AbsoluteDate date, final double mu)
+    protected Orbit(final TimeStampedPVCoordinates pvCoordinates, final Frame frame, final double mu)
         throws IllegalArgumentException {
         ensurePseudoInertialFrame(frame);
-        this.date = date;
+        this.date = pvCoordinates.getDate();
         this.mu = mu;
         this.pvCoordinates = pvCoordinates;
         this.frame = frame;
@@ -251,13 +249,13 @@ public abstract class Orbit
         return date;
     }
 
-    /** Get the {@link PVCoordinates} in a specified frame.
+    /** Get the {@link TimeStampedPVCoordinates} in a specified frame.
      * @param outputFrame frame in which the position/velocity coordinates shall be computed
      * @return pvCoordinates in the specified output frame
      * @exception OrekitException if transformation between frames cannot be computed
      * @see #getPVCoordinates()
      */
-    public PVCoordinates getPVCoordinates(final Frame outputFrame)
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
@@ -275,17 +273,17 @@ public abstract class Orbit
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame)
         throws OrekitException {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
 
 
-    /** Get the {@link PVCoordinates} in definition frame.
+    /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return pvCoordinates in the definition frame
      * @see #getPVCoordinates(Frame)
      */
-    public PVCoordinates getPVCoordinates() {
+    public TimeStampedPVCoordinates getPVCoordinates() {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
         }
@@ -295,7 +293,7 @@ public abstract class Orbit
     /** Compute the position/velocity coordinates from the canonical parameters.
      * @return computed position/velocity coordinates
      */
-    protected abstract PVCoordinates initPVCoordinates();
+    protected abstract TimeStampedPVCoordinates initPVCoordinates();
 
     /** Get a time-shifted orbit.
      * <p>
@@ -312,7 +310,7 @@ public abstract class Orbit
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
-     * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
+     * respect to Cartesian coordinate j. This means each row corresponds to one orbital parameter
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
      * </p>
      * @param type type of the position angle to use
@@ -359,9 +357,9 @@ public abstract class Orbit
 
     /** Compute the Jacobian of the Cartesian parameters with respect to the orbital parameters.
      * <p>
-     * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
-     * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
-     * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
+     * Element {@code jacobian[i][j]} is the derivative of Cartesian coordinate i of the orbit with
+     * respect to orbital parameter j. This means each row corresponds to one Cartesian coordinate
+     * x, y, z, xdot, ydot, zdot whereas columns 0 to 5 correspond to the orbital parameters.
      * </p>
      * @param type type of the position angle to use
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix

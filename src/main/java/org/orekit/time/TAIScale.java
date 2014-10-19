@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,9 @@ package org.orekit.time;
  * @see AbsoluteDate
  */
 public class TAIScale implements TimeScale {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20131209L;
 
     /** Package private constructor for the factory.
      */

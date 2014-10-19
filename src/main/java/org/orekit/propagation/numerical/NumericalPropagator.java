@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,6 +43,7 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
  * numerical integration.
@@ -154,7 +155,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final AbstractIntegrator integrator) {
-        super(integrator);
+        super(integrator, true);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
         setAttitudeProvider(DEFAULT_LAW);
@@ -273,7 +274,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return propagate(date).getPVCoordinates(frame);
     }
@@ -312,8 +313,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState mapArrayToState(final double t, final double[] y)
+        public SpacecraftState mapArrayToState(final double t, final double[] y, final boolean meanOnly)
             throws OrekitException {
+            // the parameter meanOnly is ignored for the Numerical Propagator
 
             final double mass = y[6];
             if (mass <= 0.0) {
@@ -507,8 +509,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
+     * @exception PropagationException if Jacobian is singular
      */
-    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
+    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type)
+        throws PropagationException {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();
@@ -545,6 +549,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                             FastMath.abs(row[3]) * dV +
                             FastMath.abs(row[4]) * dV +
                             FastMath.abs(row[5]) * dV;
+                if (Double.isNaN(absTol[i])) {
+                    throw new PropagationException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
+                }
             }
 
         }

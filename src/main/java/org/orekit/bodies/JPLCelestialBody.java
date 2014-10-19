@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Implementation of the {@link CelestialBody} interface using JPL or INPOP ephemerides.
  * @author Luc Maisonobe
@@ -92,17 +93,18 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        // get raw position-velocity
-        final PVCoordinates pv = rawPVProvider.getRawPV(date);
+        // apply the scale factor to raw position-velocity
+        final PVCoordinates rawPV    = rawPVProvider.getRawPV(date);
+        final TimeStampedPVCoordinates scaledPV = new TimeStampedPVCoordinates(date, scale, rawPV);
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
         final Transform transform = getInertiallyOrientedFrame().getParent().getTransformTo(frame, date);
 
-        // apply the scale factor
-        return new PVCoordinates(scale, transform.transformPVCoordinates(pv));
+        // convert to requested frame
+        return transform.transformPVCoordinates(scaledPV);
 
     }
 

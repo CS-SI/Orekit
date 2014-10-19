@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.forces.gravity.potential;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
@@ -44,9 +45,26 @@ public class GravityFieldFactory {
     /** Default regular expression for GRGS files. */
     public static final String GRGS_FILENAME = "^grim\\d_.*$";
 
-    /** Potential READERS. */
+    /** Default regular expression for FES Cnm, Snm tides files. */
+    public static final String FES_CNM_SNM_FILENAME = "^fes(\\d)+_Cnm-Snm.dat$";
+
+    /** Default regular expression for FES C hat and epsilon tides files. */
+    public static final String FES_CHAT_EPSILON_FILENAME = "^fes(\\d)+.dat$";
+
+    /** Default regular expression for FES Hf tides files. */
+    public static final String FES_HF_FILENAME = "^hf-fes(\\d)+.dat$";
+
+    /** Potential readers. */
     private static final List<PotentialCoefficientsReader> READERS =
         new ArrayList<PotentialCoefficientsReader>();
+
+    /** Ocean tides readers. */
+    private static final List<OceanTidesReader> OCEAN_TIDES_READERS =
+        new ArrayList<OceanTidesReader>();
+
+    /** Ocean load deformation coefficients. */
+    private static OceanLoadDeformationCoefficients OCEAN_LOAD_DEFORMATION_COEFFICIENTS =
+        OceanLoadDeformationCoefficients.IERS_2010;
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -67,7 +85,7 @@ public class GravityFieldFactory {
         }
     }
 
-    /** Add the default READERS for gravity fields.
+    /** Add the default readers for gravity fields.
      * <p>
      * The default READERS supports ICGEM, SHM, EGM and GRGS formats with the
      * default names {@link #ICGEM_FILENAME}, {@link #SHM_FILENAME}, {@link
@@ -85,13 +103,101 @@ public class GravityFieldFactory {
         }
     }
 
-    /** Clear gravity field READERS.
+    /** Clear gravity field readers.
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #addDefaultPotentialCoefficientsReaders()
      */
     public static void clearPotentialCoefficientsReaders() {
         synchronized (READERS) {
             READERS.clear();
+        }
+    }
+
+    /** Add a reader for ocean tides.
+     * @param reader custom reader to add for the gravity field
+     * @see #addDefaultPotentialCoefficientsReaders()
+     * @see #clearPotentialCoefficientsReaders()
+     */
+    public static void addOceanTidesReader(final OceanTidesReader reader) {
+        synchronized (OCEAN_TIDES_READERS) {
+            OCEAN_TIDES_READERS.add(reader);
+        }
+    }
+
+    /** Configure ocean load deformation coefficients.
+     * @param oldc ocean load deformation coefficients
+     * @see #getOceanLoadDeformationCoefficients()
+     */
+    public static void configureOceanLoadDeformationCoefficients(final OceanLoadDeformationCoefficients oldc) {
+        OCEAN_LOAD_DEFORMATION_COEFFICIENTS = oldc;
+    }
+
+    /** Get the configured ocean load deformation coefficients.
+     * <p>
+     * If {@link #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     * configureOceanLoadDeformationCoefficients} has never been called, the default
+     * value will be the {@link OceanLoadDeformationCoefficients#IERS_2010 IERS 2010}
+     * coefficients.
+     * </p>
+     * @return ocean load deformation coefficients
+     * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     */
+    public static OceanLoadDeformationCoefficients getOceanLoadDeformationCoefficients() {
+        return OCEAN_LOAD_DEFORMATION_COEFFICIENTS;
+    }
+
+    /** Add the default READERS for ocean tides.
+     * <p>
+     * The default READERS supports files similar to the fes2004_Cnm-Snm.dat and
+     * fes2004.dat as published by IERS, using the {@link
+     * #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     * configured} ocean load deformation coefficients, which by default are the
+     * IERS 2010 coefficients, which are limited to degree 6. If higher degree
+     * coefficients are needed, the {@link
+     * #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     * configureOceanLoadDeformationCoefficients} method can be called prior to
+     * loading the ocean tides model with the {@link
+     * OceanLoadDeformationCoefficients#GEGOUT high degree coefficients} computed
+     * by Pascal Gégout.
+     * </p>
+     * <p>
+     * WARNING: the files referenced in the published conventions have some errors.
+     * These errors have been corrected and the updated files can be found here:
+     * <a href="http://tai.bipm.org/iers/convupdt/convupdt_c6.html">
+     * http://tai.bipm.org/iers/convupdt/convupdt_c6.html</a>.
+     * </p>
+     * @exception OrekitException if astronomical amplitudes cannot be read
+     * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
+     * @see #clearPotentialCoefficientsReaders()
+     * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     * @see #getOceanLoadDeformationCoefficients()
+     */
+    public static void addDefaultOceanTidesReaders()
+        throws OrekitException {
+        synchronized (OCEAN_TIDES_READERS) {
+
+            OCEAN_TIDES_READERS.add(new FESCnmSnmReader(FES_CNM_SNM_FILENAME, 1.0e-11));
+
+            final AstronomicalAmplitudeReader aaReader =
+                    new AstronomicalAmplitudeReader(FES_HF_FILENAME, 5, 2, 3, 1.0);
+            DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+            final Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
+            OCEAN_TIDES_READERS.add(new FESCHatEpsilonReader(FES_CHAT_EPSILON_FILENAME,
+                                                             0.01, FastMath.toRadians(1.0),
+                                                             getOceanLoadDeformationCoefficients(),
+                                                             map));
+
+
+        }
+    }
+
+    /** Clear ocean tides readers.
+     * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
+     * @see #addDefaultPotentialCoefficientsReaders()
+     */
+    public static void clearOceanTidesReaders() {
+        synchronized (OCEAN_TIDES_READERS) {
+            OCEAN_TIDES_READERS.clear();
         }
     }
 
@@ -371,6 +477,54 @@ public class GravityFieldFactory {
         }
 
         return factor;
+
+    }
+
+    /** Get the ocean tides waves from the first supported file.
+     * <p>
+     * If no {@link OceanTidesReader} has been added by calling {@link
+     * #addOceanTidesReader(OceanTidesReader)
+     * addOceanTidesReader} or if {@link #clearOceanTidesReaders()
+     * clearOceanTidesReaders} has been called afterwards,the {@link
+     * #addDefaultOceanTidesReaders() addDefaultOceanTidesReaders}
+     * method will be called automatically.
+     * </p>
+     * <p><span style="color:red">
+     * WARNING: as of 2013-11-17, there seem to be an inconsistency when loading
+     * one or the other file, for wave Sa (Doodson number 56.554) and P1 (Doodson
+     * number 163.555). The sign of the coefficients are different. We think the
+     * problem lies in the input files from IERS and not in the conversion (which
+     * works for all other waves), but cannot be sure. For this reason, ocean
+     * tides are still considered experimental at this date.
+     * </span></p>
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return list of tides waves containing already loaded data
+     * @exception OrekitException if some data can't be read (missing or read error)
+     * or if some loader specific error occurs
+     * @since 6.1
+     */
+    public static List<OceanTidesWave> getOceanTidesWaves(final int degree, final int order)
+        throws OrekitException {
+
+        synchronized (OCEAN_TIDES_READERS) {
+
+            if (OCEAN_TIDES_READERS.isEmpty()) {
+                addDefaultOceanTidesReaders();
+            }
+
+            // test the available readers
+            for (final OceanTidesReader reader : OCEAN_TIDES_READERS) {
+                reader.setMaxParseDegree(degree);
+                reader.setMaxParseOrder(order);
+                DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
+                if (!reader.stillAcceptsData()) {
+                    return reader.getWaves();
+                }
+            }
+        }
+
+        throw new OrekitException(OrekitMessages.NO_OCEAN_TIDE_DATA_LOADED);
 
     }
 

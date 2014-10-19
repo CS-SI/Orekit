@@ -13,6 +13,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -42,16 +43,17 @@ public class DateDetectorTest {
     @Test
     public void testEmbeddedTimer() throws OrekitException {
     	dateDetector = new DateDetector(maxCheck, threshold);
-        EventDetector nodeDetector = new NodeDetector(iniOrbit, iniOrbit.getFrame()) {
-			private static final long serialVersionUID = 3583432139818469589L;
-			public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-				if (increasing) {
-				    nodeDate = s.getDate();
-	  		        dateDetector.addEventDate(nodeDate.shiftedBy(dt));
-				}
-		        return Action.CONTINUE;
-            }
-        };
+    	EventDetector nodeDetector = new NodeDetector(iniOrbit, iniOrbit.getFrame()).
+    	        withHandler(new ContinueOnEvent<NodeDetector>() {
+    	            public Action eventOccurred(SpacecraftState s, NodeDetector nd, boolean increasing)
+    	                throws OrekitException {
+    	                if (increasing) {
+    	                    nodeDate = s.getDate();
+    	                    dateDetector.addEventDate(nodeDate.shiftedBy(dt));
+    	                }
+    	                return Action.CONTINUE;
+    	            }
+    	        });
 
         propagator.addEventDetector(nodeDetector);
         propagator.addEventDetector(dateDetector);
@@ -62,15 +64,16 @@ public class DateDetectorTest {
 
     @Test
     public void testAutoEmbeddedTimer() throws OrekitException {
-    	dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(-dt)) {
-            private static final long serialVersionUID = 1L;
-			public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-				AbsoluteDate nextDate = s.getDate().shiftedBy(-dt);
-				this.addEventDate(nextDate);
-  		        ++evtno;
-		        return Action.CONTINUE;
-            }
-        };
+        dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(-dt)).
+                withHandler(new ContinueOnEvent<DateDetector>() {
+                    public Action eventOccurred(SpacecraftState s, DateDetector dd,  boolean increasing)
+                            throws OrekitException {
+                        AbsoluteDate nextDate = s.getDate().shiftedBy(-dt);
+                        dd.addEventDate(nextDate);
+                        ++evtno;
+                        return Action.CONTINUE;
+                    }
+                });
         propagator.addEventDetector(dateDetector);
         propagator.propagate(iniDate.shiftedBy(-100.*dt));
 
@@ -79,16 +82,17 @@ public class DateDetectorTest {
 
     @Test(expected=IllegalArgumentException.class)
     public void testExceptionTimer() throws OrekitException {
-    	dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt)) {
-            private static final long serialVersionUID = 1L;
-			public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-				double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;
-				AbsoluteDate nextDate = s.getDate().shiftedBy(step);
-				this.addEventDate(nextDate);
-  		        ++evtno;
-		        return Action.CONTINUE;
-            }
-        };
+        dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt)).
+                withHandler(new ContinueOnEvent<DateDetector>() {
+                    public Action eventOccurred(SpacecraftState s, DateDetector dd, boolean increasing)
+                        throws OrekitException {
+                        double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;
+                        AbsoluteDate nextDate = s.getDate().shiftedBy(step);
+                        dd.addEventDate(nextDate);
+                        ++evtno;
+                        return Action.CONTINUE;
+                    }
+                });
         propagator.addEventDetector(dateDetector);
         propagator.propagate(iniDate.shiftedBy(100.*dt));
     }

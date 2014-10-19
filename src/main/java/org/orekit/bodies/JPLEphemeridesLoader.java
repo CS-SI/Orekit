@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -268,7 +268,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final double gm       = getLoadedGravitationalCoefficient(generateType);
         final IAUPole iauPole = IAUPoleFactory.getIAUPole(generateType);
         final double scale;
-        final Frame definingFrameAlingedWithICRF;
+        final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;
         switch (generateType) {
         case SOLAR_SYSTEM_BARYCENTER : {
@@ -277,23 +277,23 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                     new JPLEphemeridesLoader(supportedNames, EphemerisType.EARTH_MOON);
             final CelestialBody parentBody =
                     parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
-            definingFrameAlingedWithICRF = parentBody.getInertiallyOrientedFrame();
+            definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
             rawPVProvider = new EphemerisRawPVProvider();
             break;
         }
         case EARTH_MOON :
             scale         = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
-            definingFrameAlingedWithICRF =  FramesFactory.getGCRF();
+            definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
             rawPVProvider = new EphemerisRawPVProvider();
             break;
         case EARTH :
             scale         = 1.0;
-            definingFrameAlingedWithICRF = FramesFactory.getGCRF();
+            definingFrameAlignedWithICRF = FramesFactory.getGCRF();
             rawPVProvider = new ZeroRawPVProvider();
             break;
         case MOON :
             scale         =  1.0;
-            definingFrameAlingedWithICRF =  FramesFactory.getGCRF();
+            definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
             rawPVProvider = new EphemerisRawPVProvider();
             break;
         default : {
@@ -302,14 +302,14 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                     new JPLEphemeridesLoader(supportedNames, EphemerisType.SOLAR_SYSTEM_BARYCENTER);
             final CelestialBody parentBody =
                     parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
-            definingFrameAlingedWithICRF = parentBody.getInertiallyOrientedFrame();
+            definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
             rawPVProvider = new EphemerisRawPVProvider();
         }
         }
 
         // build the celestial body
         return new JPLCelestialBody(name, supportedNames, generateType, rawPVProvider,
-                                    gm, scale, iauPole, definingFrameAlingedWithICRF);
+                                    gm, scale, iauPole, definingFrameAlignedWithICRF);
 
     }
 
@@ -910,7 +910,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             if ((au < 1.4e11) || (au > 1.6e11)) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
-            if (FastMath.abs(getLoadedAstronomicalUnit() - au) >= 0.001) {
+            if (FastMath.abs(getLoadedAstronomicalUnit() - au) >= 10.0) {
                 throw new OrekitException(OrekitMessages.INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES,
                                           getLoadedAstronomicalUnit(), au);
             }
@@ -920,7 +920,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             if ((emRat < 80) || (emRat > 82)) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
-            if (FastMath.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-8) {
+            if (FastMath.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-5) {
                 throw new OrekitException(OrekitMessages.INCONSISTENT_EARTH_MOON_RATIO_IN_FILES,
                                           getLoadedEarthMoonMassRatio(), emRat);
             }

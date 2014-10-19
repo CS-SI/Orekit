@@ -7,12 +7,11 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
 public class CoefficientFactoryTest {
@@ -70,14 +69,14 @@ public class CoefficientFactoryTest {
         final double vmnsp = getVmns2(12, 26, 20);
         Assert.assertEquals(vmnsp,
                             CoefficientsFactory.getVmns(12, 26, 20,
-                                                        ArithmeticUtils.factorialDouble(26 + 20),
-                                                        ArithmeticUtils.factorialDouble(26 - 12)),
+                                                        CombinatoricsUtils.factorialDouble(26 + 20),
+                                                        CombinatoricsUtils.factorialDouble(26 - 12)),
                             Math.abs(eps12 * vmnsp));
         final double vmnsm = getVmns2(12, 27, -21);
         Assert.assertEquals(vmnsm,
                             CoefficientsFactory.getVmns(12, 27, -21,
-                                                        ArithmeticUtils.factorialDouble(27 + 21),
-                                                        ArithmeticUtils.factorialDouble(27 - 12)),
+                                                        CombinatoricsUtils.factorialDouble(27 + 21),
+                                                        CombinatoricsUtils.factorialDouble(27 - 12)),
                             Math.abs(eps12 * vmnsm));
     }
 
@@ -145,9 +144,13 @@ public class CoefficientFactoryTest {
         if ((n - s) % 2 == 0) {
             final int coef = (s > 0 || s % 2 == 0) ? 1 : -1; 
             final int ss = (s > 0) ? s : -s;
-            final double num = FastMath.pow(-1, (n - ss) / 2) * ArithmeticUtils.factorialDouble(n + ss) * ArithmeticUtils.factorialDouble(n - ss);
-            final double den = FastMath.pow(2, n) * ArithmeticUtils.factorialDouble(n - m) * ArithmeticUtils.factorialDouble((n + ss) / 2)
-                    * ArithmeticUtils.factorialDouble((n - ss) / 2);
+            final double num = FastMath.pow(-1, (n - ss) / 2) *
+                               CombinatoricsUtils.factorialDouble(n + ss) *
+                               CombinatoricsUtils.factorialDouble(n - ss);
+            final double den = FastMath.pow(2, n) *
+                               CombinatoricsUtils.factorialDouble(n - m) *
+                               CombinatoricsUtils.factorialDouble((n + ss) / 2) *
+                               CombinatoricsUtils.factorialDouble((n - ss) / 2);
             vmsn = coef * num / den;
         }
         return vmsn;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,25 +18,24 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.MNSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.GHmsjPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.GammaMnsFunction;
-import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
+import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
+import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenTesseralLinear;
 import org.orekit.time.AbsoluteDate;
 
 /** Tesseral contribution to the {@link DSSTCentralBody central body gravitational
@@ -59,9 +58,6 @@ class TesseralContribution implements DSSTForceModel {
      *  central body spherical harmonics in satellite revolutions.
      */
     private static final double MIN_PERIOD_IN_SAT_REV = 10.;
-
-    /** Newcomb operators. */
-    private static NewcombOperators newcomb;
 
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -99,23 +95,36 @@ class TesseralContribution implements DSSTForceModel {
     // Equinoctial elements (according to DSST notation)
     /** a. */
     private double a;
+
     /** ex. */
     private double k;
+
     /** ey. */
     private double h;
+
     /** hx. */
     private double q;
+
     /** hy. */
     private double p;
+
     /** lm. */
     private double lm;
 
     /** Eccentricity. */
     private double ecc;
 
+    // Common factors for potential computation
+    /** &Chi; = 1 / sqrt(1 - e<sup>2</sup>) = 1 / B. */
+    private double chi;
+
+    /** &Chi;<sup>2</sup>. */
+    private double chi2;
+
     // Equinoctial reference frame vectors (according to DSST notation)
     /** Equinoctial frame f vector. */
     private Vector3D f;
+
     /** Equinoctial frame g vector. */
     private Vector3D g;
 
@@ -124,26 +133,38 @@ class TesseralContribution implements DSSTForceModel {
 
     /** Direction cosine &alpha;. */
     private double alpha;
+
     /** Direction cosine &beta;. */
     private double beta;
+
     /** Direction cosine &gamma;. */
     private double gamma;
 
     // Common factors from equinoctial coefficients
     /** 2 * a / A .*/
     private double ax2oA;
+
     /** 1 / (A * B) .*/
     private double ooAB;
+
     /** B / A .*/
     private double BoA;
+
     /** B / (A * (1 + B)) .*/
     private double BoABpo;
+
     /** C / (2 * A * B) .*/
     private double Co2AB;
+
     /** &mu; / a .*/
     private double moa;
+
     /** R / a .*/
     private double roa;
+
+    /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
+     * The indexes are s + maxDegree and j */
+    private HansenTesseralLinear[][] hansenObjects;
 
     /** Single constructor.
      *  @param centralBodyFrame rotating body frame
@@ -169,17 +190,13 @@ class TesseralContribution implements DSSTForceModel {
         this.maxEccPow = 0;
         this.maxHansen = 0;
 
-        // Provider for Newcomb operators
-        TesseralContribution.newcomb  = new NewcombOperators();
-
-        // Factorials computation
-        final int maxFact = maxDegree + provider.getMaxOrder() + 1;
+       // Factorials computation
+        final int maxFact = 2 * maxDegree + 1;
         this.fact = new double[maxFact];
         fact[0] = 1;
         for (int i = 1; i < maxFact; i++) {
             fact[i] = i * fact[i - 1];
         }
-
     }
 
     /** {@inheritDoc} */
@@ -218,6 +235,45 @@ class TesseralContribution implements DSSTForceModel {
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
         maxHansen = maxEccPow / 2;
 
+        //initialise the HansenTesseralLinear objects needed
+        if (resOrders.size() > 0) {
+            initialiseHansenObjects();
+        }
+    }
+
+    /**
+     * Create the objects needed for linear transformation.
+     */
+    private void initialiseHansenObjects() {
+        //compute the j maximum
+        final int jMax = FastMath.max(1, (int) FastMath.round(ratio * resOrders.get(resOrders.size() - 1)));
+
+        //Allocate the two dimensional array
+        this.hansenObjects = new HansenTesseralLinear[2 * maxDegree + 1][jMax + 1];
+
+        //loop through the resonant terms
+        for (int m : resOrders) {
+            //Compute the corresponding j term
+            final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
+
+            //Compute the sMin and sMax values
+            final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+            final int sMax = FastMath.min(maxEccPow + j, maxDegree);
+
+            //loop through the s values
+            for (int s = 0; s <= sMax; s++) {
+                //Compute the n0 value
+                final int n0 = FastMath.max(FastMath.max(2, m), s);
+
+                //Create the object for the pair j,s
+                this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
+
+                if (s > 0 && s <= sMin) {
+                    //Also create the object for the pair j, -s
+                    this.hansenObjects[maxDegree - s][j] =  new HansenTesseralLinear(maxDegree, -s, j, n0, maxHansen);
+                }
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -276,13 +332,16 @@ class TesseralContribution implements DSSTForceModel {
         // R / a
         roa = provider.getAe() / a;
 
+        // &Chi; = 1 / B
+        chi = 1. / B;
+        chi2 = chi * chi;
     }
 
     /** {@inheritDoc} */
     public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
 
         // Compute potential derivatives
-        final double[] dU  = computeUDerivatives(provider.getOffset(spacecraftState.getDate()));
+        final double[] dU  = computeUDerivatives(spacecraftState.getDate());
         final double dUda  = dU[0];
         final double dUdh  = dU[1];
         final double dUdk  = dU[2];
@@ -331,6 +390,7 @@ class TesseralContribution implements DSSTForceModel {
                                                    MIN_PERIOD_IN_SECONDS / orbitPeriod);
 
         // Search the resonant orders in the tesseral harmonic field
+        resOrders.clear();
         final int maxOrder = provider.getMaxOrder();
         for (int m = 1; m <= maxOrder; m++) {
             final double resonance = ratio * m;
@@ -355,11 +415,11 @@ class TesseralContribution implements DSSTForceModel {
      *  </pre>
      *  </p>
      *
-     *  @param dateOffset offset between current date and gravity field reference date
+     *  @param date current date
      *  @return potential derivatives
      *  @throws OrekitException if an error occurs
      */
-    private double[] computeUDerivatives(final double dateOffset) throws OrekitException {
+    private double[] computeUDerivatives(final AbsoluteDate date) throws OrekitException {
 
         // Potential derivatives
         double dUda  = 0.;
@@ -377,9 +437,6 @@ class TesseralContribution implements DSSTForceModel {
 
             // GAMMAmns function
             final GammaMnsFunction gammaMNS = new GammaMnsFunction(fact, gamma, I);
-
-            // Hansen coefficients
-            final HansenTesseral hansen = new HansenTesseral(ecc, maxHansen);
 
             // R / a up to power degree
             final double[] roaPow = new double[maxDegree + 1];
@@ -421,8 +478,8 @@ class TesseralContribution implements DSSTForceModel {
                 for (int s = 0; s <= sMax; s++) {
 
                     // n-SUM for s positive
-                    final double[][] nSumSpos = computeNSum(dateOffset, j, m, s,
-                                                            roaPow, ghMSJ, gammaMNS, hansen);
+                    final double[][] nSumSpos = computeNSum(date, j, m, s,
+                                                            roaPow, ghMSJ, gammaMNS);
                     dUdaCos  += nSumSpos[0][0];
                     dUdaSin  += nSumSpos[0][1];
                     dUdhCos  += nSumSpos[1][0];
@@ -440,8 +497,8 @@ class TesseralContribution implements DSSTForceModel {
 
                     // n-SUM for s negative
                     if (s > 0 && s <= sMin) {
-                        final double[][] nSumSneg = computeNSum(dateOffset, j, m, -s,
-                                                                roaPow, ghMSJ, gammaMNS, hansen);
+                        final double[][] nSumSneg = computeNSum(date, j, m, -s,
+                                                                roaPow, ghMSJ, gammaMNS);
                         dUdaCos  += nSumSneg[0][0];
                         dUdaSin  += nSumSneg[0][1];
                         dUdhCos  += nSumSneg[1][0];
@@ -482,23 +539,23 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** Compute the n-SUM for potential derivatives components.
-     *  @param dateOffset offset between current date and gravity field reference date
+     *  @param date current date
      *  @param j resonant index <i>j</i>
      *  @param m resonant order <i>m</i>
      *  @param s d'Alembert characteristic <i>s</i>
      *  @param roaPow powers of R/a up to degree <i>n</i>
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
      *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(&gamma;) function
-     *  @param hansen Hansen coefficients
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
      * @throws OrekitException if some error occurred
      */
-    private double[][] computeNSum(final double dateOffset,
-                                             final int j, final int m, final int s,
-                                             final double[] roaPow,
-                                             final GHmsjPolynomials ghMSJ,
-                                             final GammaMnsFunction gammaMNS,
-                                             final HansenTesseral hansen) throws OrekitException {
+    private double[][] computeNSum(final AbsoluteDate date,
+                                   final int j, final int m, final int s, final double[] roaPow,
+                                   final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS)
+        throws OrekitException {
+
+        //spherical harmonics
+        final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
         // Potential derivatives components
         double dUdaCos  = 0.;
@@ -525,23 +582,15 @@ class TesseralContribution implements DSSTForceModel {
 
         // Initialise lower degree nmin = (Max(2, m, |s|)) for summation over n
         final int nmin = FastMath.max(FastMath.max(2, m), FastMath.abs(s));
-        // n max value for computing Hansen kernel from Newcomb operators
-        final int nmax = nmin + 3;
+
+        //Get the corresponding Hansen object
+        final HansenTesseralLinear hans = this.hansenObjects[maxDegree + s][j];
+
+        //Compute the initial values using newComb operators
+        hans.computeInitValues(ecc * ecc, chi, chi2);
 
         // n-SUM from nmin to N
         for (int n = nmin; n <= maxDegree; n++) {
-
-            // Compute Hansen kernel values and derivatives
-            if (n <= nmax) {
-                // from Newcomb operators
-                hansen.valueFromNewcomb(j, -n - 1, s);
-                hansen.derivFromNewcomb(j, -n - 1, s);
-            } else {
-                // from recurrence relations
-                hansen.valueFromRecurrence(j, -n - 1, s);
-                hansen.derivFromRecurrence(j, -n - 1, s);
-            }
-
             // If (n - s) is odd, the contribution is null because of Vmns
             if ((n - s) % 2 == 0) {
 
@@ -554,8 +603,8 @@ class TesseralContribution implements DSSTForceModel {
                 final double dGaMNS = gammaMNS.getDerivative(m, n, s);
 
                 // Hansen kernel value and derivative
-                final double kJNS   = hansen.getValue(j, -n - 1, s);
-                final double dkJNS  = hansen.getDeriv(j, -n - 1, s);
+                final double kJNS   = hans.getValue(-n - 1, chi);
+                final double dkJNS  = hans.getDerivative(-n - 1, chi);
 
                 // Gjms, Hjms polynomials and derivatives
                 final double gMSJ   = ghMSJ.getGmsj(m, s, j);
@@ -572,17 +621,16 @@ class TesseralContribution implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                final PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
-                final double jacobi  = jacobiPoly.value(gamma);
-                final double dJacobi = jacobiPoly.derivative().value(gamma);
+                final DerivativeStructure jacobi =
+                        JacobiPolynomials.getValue(l, v , w, new DerivativeStructure(1, 1, 0, gamma));
 
                 // Geopotential coefficients
-                final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
-                final double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
+                final double cnm = harmonics.getUnnormalizedCnm(n, m);
+                final double snm = harmonics.getUnnormalizedSnm(n, m);
 
                 // Common factors from expansion of equations 3.3-4
                 final double cf_0      = roaPow[n] * Im * vMNS;
-                final double cf_1      = cf_0 * gaMNS * jacobi;
+                final double cf_1      = cf_0 * gaMNS * jacobi.getValue();
                 final double cf_2      = cf_1 * kJNS;
                 final double gcPhs     = gMSJ * cnm + hMSJ * snm;
                 final double gsMhc     = gMSJ * snm - hMSJ * cnm;
@@ -590,7 +638,7 @@ class TesseralContribution implements DSSTForceModel {
                 final double dKgsMhcx2 = 2. * dkJNS * gsMhc;
                 final double dUdaCoef  = (n + 1) * cf_2;
                 final double dUdlCoef  = j * cf_2;
-                final double dUdGaCoef = cf_0 * kJNS * (jacobi * dGaMNS + gaMNS * dJacobi);
+                final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getPartialDerivative(1));
 
                 // dU / da components
                 dUdaCos  += dUdaCoef * gcPhs;
@@ -631,179 +679,4 @@ class TesseralContribution implements DSSTForceModel {
                                {dUdGaCos, dUdGaSin}};
     }
 
-    /** Hansen coefficients for tesseral contribution to central body force model.
-     *  <p>
-     *  Hansen coefficients are functions of the eccentricity.
-     *  For a given eccentricity, the computed elements are stored in a map.
-     *  </p>
-     */
-    private static class HansenTesseral {
-
-        /** Map to store every Hansen kernel value computed. */
-        private TreeMap<MNSKey, Double> values;
-
-        /** Map to store every Hansen kernel derivative computed. */
-        private TreeMap<MNSKey, Double> derivatives;
-
-        /** Eccentricity. */
-        private final double e2;
-
-        /** 1 - e<sup>2</sup>. */
-        private final double ome2;
-
-        /** &chi; = 1 / sqrt(1- e<sup>2</sup>). */
-        private final double chi;
-
-        /** &chi;<sup>2</sup> = 1 / (1- e<sup>2</sup>). */
-        private final double chi2;
-
-        /** d&chi; / de<sup>2</sup> = &chi;<sup>3</sup> / 2. */
-        private final double dchi;
-
-        /** d&chi;<sup>2</sup> / de<sup>2</sup> = &chi;<sup>4</sup>. */
-        private final double dchi2;
-
-        /** Max power of e<sup>2</sup> in serie expansion
-         *  using Newcomb operator for Hansen kernel computation.
-         */
-        private final int    maxNewcomb;
-
-        /** Simple constructor.
-         *  @param ecc eccentricity
-         *  @param maxHansen maximum power of e<sup>2</sup> to use in series expansion for the Hansen coefficient
-         */
-        public HansenTesseral(final double ecc, final int maxHansen) {
-            this.values      = new TreeMap<CoefficientsFactory.MNSKey, Double>();
-            this.derivatives = new TreeMap<CoefficientsFactory.MNSKey, Double>();
-            this.maxNewcomb  = maxHansen;
-            this.e2    = ecc * ecc;
-            this.ome2  = 1. - e2;
-            this.chi   = 1. / FastMath.sqrt(ome2);
-            this.chi2  = chi * chi;
-            this.dchi  = 0.5 * chi * chi2;
-            this.dchi2 = chi2 * chi2;
-        }
-
-        /** Get the K<sub>j</sub><sup>-n-1,s</sup> value.
-         * @param j j value
-         * @param mnm1 -n-1 value
-         * @param s s value
-         * @return K<sub>j</sub><sup>-n-1,s</sup>
-         */
-        public double getValue(final int j, final int mnm1, final int s) {
-            return values.get(new MNSKey(j, mnm1, s));
-        }
-
-        /** Get the dK<sub>j</sub><sup>-n-1,s</sup> / de<sup>2</sup> derivative.
-         *  @param j j value
-         *  @param mnm1 -n-1 value
-         *  @param s s value
-         *  @return dK<sub>j</sub><sup>-n-1,s</sup> / de<sup>2</sup>
-         */
-        public double getDeriv(final int j, final int mnm1, final int s) {
-            return derivatives.get(new MNSKey(j, mnm1, s));
-        }
-
-        /** Compute the K<sub>j</sub><sup>-n-1,s</sup> from equation 2.7.3-(10).<br>
-         *  <p>
-         *  The coefficient value is evaluated from the {@link NewcombOperators} elements.
-         *  </p>
-         *  @param j j value
-         *  @param mnm1 -n-1 value
-         *  @param s s value
-         */
-        public void valueFromNewcomb(final int j, final int mnm1, final int s) {
-            // Initialization
-            final int a = FastMath.max(j - s, 0);
-            final int b = FastMath.max(s - j, 0);
-            // Expansion until maxNewcomb, the maximum power in e^2 for the Kernel value
-            double sum = newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
-            for (int alpha = maxNewcomb - 1; alpha >= 0; alpha--) {
-                sum *= e2;
-                sum += newcomb.getValue(alpha + a, alpha + b, mnm1, s);
-            }
-            // Kernel value from equation 2.7.3-(10)
-            final double value = FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
-            // Storage of the Kernel value in the map
-            values.put(new MNSKey(j, mnm1, s), value);
-        }
-
-        /** Compute dK<sub>j</sub><sup>-n-1,s</sup>/de<sup>2</sup> from equation 3.3-(5).
-         *  <p>
-         *  The derivative value is evaluated from the {@link NewcombOperators} elements.
-         *  </p>
-         *  @param j j value
-         *  @param mnm1 -n-1 value
-         *  @param s s value
-         */
-        public void derivFromNewcomb(final int j, final int mnm1, final int s) {
-            // Initialization
-            final int a = FastMath.max(j - s, 0);
-            final int b = FastMath.max(s - j, 0);
-            // Expansion until maxNewcomb-1, the maximum power in e^2 for the Kernel derivative
-            double sum = newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
-            for (int alpha = maxNewcomb - 1; alpha >= 1; alpha--) {
-                sum *= e2;
-                sum += newcomb.getValue(alpha + a, alpha + b, mnm1, s);
-            }
-            // Kernel derivative from equation 3.3-(5)
-            final MNSKey key  = new MNSKey(j, mnm1, s);
-            final double coef = -(mnm1 + 1.5);
-            final double Kjns = values.get(key);
-            final double derivative = coef * chi2 * Kjns + FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
-            // Storage of the Kernel derivative in the map
-            derivatives.put(new MNSKey(j, mnm1, s), derivative);
-        }
-
-        /** Compute the K<sub>j</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3-(9).
-         *
-         *  @param j j value
-         *  @param mnm1 -n-1 value
-         *  @param s s value
-         */
-        public void valueFromRecurrence(final int j, final int mnm1, final int s) {
-            final int n = -mnm1 - 1;
-            final double kmn    = values.get(new MNSKey(j, -n, s));
-            final double kmnp1  = values.get(new MNSKey(j, -n + 1, s));
-            final double kmnp3  = values.get(new MNSKey(j, -n + 3, s));
-            final double den    = (3 - n) * (1 - n + s) * (1 - n - s);
-            final double ck     = chi2 / den;
-            final double ckmn   = (3 - n) * (1 - n) * (3 - 2 * n);
-            final double ckmnp1 = (2 - n) * ((3 - n) * (1 - n) + (2 * j * s) / chi);
-            final double ckmnp3 = j * j * (1 - n);
-            final double value  = ck * (ckmn * kmn - ckmnp1 * kmnp1 + ckmnp3 * kmnp3);
-            // Store value
-            values.put(new MNSKey(j, mnm1, s), value);
-        }
-
-        /** Compute dK<sub>j</sub><sup>-n-1,s</sup>/de<sup>2</sup> from derivation of equation 2.7.3-(9).
-         *
-         *  @param j j value
-         *  @param mnm1 -n-1 value
-         *  @param s s value
-         */
-        public void derivFromRecurrence(final int j, final int mnm1, final int s) {
-            final int n = -mnm1 - 1;
-            final MNSKey keymn    = new MNSKey(j, -n, s);
-            final MNSKey keymnp1  = new MNSKey(j, -n + 1, s);
-            final MNSKey keymnp3  = new MNSKey(j, -n + 3, s);
-            final double kmn      = values.get(keymn);
-            final double kmnp1    = values.get(keymnp1);
-            final double kmnp3    = values.get(keymnp3);
-            final double dkmn     = derivatives.get(keymn);
-            final double dkmnp1   = derivatives.get(keymnp1);
-            final double dkmnp3   = derivatives.get(keymnp3);
-            final double den      = (3 - n) * (1 - n + s) * (1 - n - s);
-            final double cdkmn    = (3 - n) * (1 - n) * (3 - 2 * n);
-            final double c0dkmnp1 = (n - 2) * (3 - n) * (1 - n);
-            final double c1dkmnp1 = (n - 2) * (2 * j * s);
-            final double cdkmnp3  = j * j * (1 - n);
-            final double deriv    = chi2  * (cdkmn * dkmn + c0dkmnp1 * dkmnp1 + cdkmnp3 * dkmnp3) +
-                                    chi   * c1dkmnp1 * dkmnp1 +
-                                    dchi2 * (cdkmn * kmn + c0dkmnp1 * kmnp1  + cdkmnp3 * kmnp3)  +
-                                    dchi  * c1dkmnp1 * kmnp1;
-            // Store derivative
-            derivatives.put(new MNSKey(j, mnm1, s), deriv / den);
-        }
-    }
 }

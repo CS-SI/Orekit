@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -402,7 +403,7 @@ public class TransformTest {
             for (int j = 0; j < 20; ++j) {
                 Vector3D p0 = randomVector(random);
                 Vector3D p1 = randomVector(random);
-                Line l = new Line(p0, p1);
+                Line l = new Line(p0, p1, 1.0e-10);
                 Line transformed = transform.transformLine(l);
                 for (int k = 0; k < 10; ++k) {
                     Vector3D p = l.pointAt(random.nextDouble() * 1.0e6);
@@ -590,7 +591,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testInterpolation() {
+    public void testInterpolation() throws OrekitException {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         List<Transform> sample = new ArrayList<Transform>();

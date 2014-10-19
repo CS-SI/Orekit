@@ -1,4 +1,4 @@
-' Copyright 2002-2013 CS Systèmes d'Information
+' Copyright 2002-2014 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,15 +25,15 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package utils #DDEBD8
+    package utils #DDEBD8 {
       interface PVCoordinatesProvider {
         +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
       }
-    end package
+    }
  
-    package propagation #DDEBD8
+    package propagation #DDEBD8 {
       interface Propagator {
         +int getMode()
         +void setSlaveMode()
@@ -65,7 +65,7 @@
       Propagator            <|.. AbstractPropagator
       Propagator            <|.. BoundedPropagator
 
-      package analytical #ECEBD8
+      package analytical #ECEBD8 {
 
         abstract class AbstractAnalyticalPropagator {
           +PVCoordinatesProvider getPvProvider()
@@ -80,13 +80,13 @@
         AbstractAnalyticalPropagator <|-- Ephemeris
         BoundedPropagator            <|.. Ephemeris
 
-        package tle #DDEBD8
+        package tle #DDEBD8 {
           AbstractAnalyticalPropagator <|-- TLEPropagator
-        end package
+        }
 
-     end package
+     }
 
-     package integration #ECEBD8
+     package integration #ECEBD8 {
 
        abstract class AbstractIntegratedPropagator {
          +void setIntegrator(FirstOrderIntegrator integrator)
@@ -98,20 +98,20 @@
        AbstractIntegratedPropagator o-down-> IntegratedEphemeris : creates
        AbstractPropagator           <|-- AbstractIntegratedPropagator
 
-     end package
+     }
 
-     package semianalytical #ECEBD8
+     package semianalytical #ECEBD8 {
 
-       package dsst #DDEBD8
+       package dsst #DDEBD8 {
          AbstractIntegratedPropagator <|-right- DSSTPropagator
-       end package
+       }
 
-     end package
+     }
 
-     package numerical #ECEBD8
+     package numerical #ECEBD8 {
        AbstractIntegratedPropagator <|-right- NumericalPropagator
-     end package
+     }
 
-   end package
+   }
 
 @enduml

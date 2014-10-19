@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -106,8 +106,8 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
 
                     // read the earth values
                     if ("EARTH".equals(tab[0])) {
-                        setMu(Double.parseDouble(tab[1].replace('D', 'E')));
-                        setAe(Double.parseDouble(tab[2].replace('D', 'E')));
+                        setMu(parseDouble(tab[1]));
+                        setAe(parseDouble(tab[2]));
                         okEarth = true;
                     }
 

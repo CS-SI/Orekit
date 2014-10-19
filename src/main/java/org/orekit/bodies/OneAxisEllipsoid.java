@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -85,7 +85,7 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
      * @param bodyFrame body frame related to body shape
-     * @see org.orekit.frames.FramesFactory#getITRF2005()
+     * @see org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean)
      */
     public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {
         this.f   = f;

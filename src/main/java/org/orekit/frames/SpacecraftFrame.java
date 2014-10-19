@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,8 +25,8 @@ import java.io.ObjectOutput;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** Spacecraft frame.
@@ -65,13 +65,13 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
         return ((LocalProvider) getTransformProvider()).getPropagator();
     }
 
-    /** Get the {@link PVCoordinates} of the spacecraft frame origin in the selected frame.
+    /** Get the {@link TimeStampedPVCoordinates} of the spacecraft frame origin in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
      * @return position/velocity of the spacecraft frame origin (m and m/s)
      * @exception OrekitException if position cannot be computed in given frame
      */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return getPropagator().getPVCoordinates(date, frame);
     }

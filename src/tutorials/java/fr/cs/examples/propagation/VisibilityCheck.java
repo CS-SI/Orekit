@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,8 +33,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -67,10 +70,10 @@ public class VisibilityCheck {
             Propagator kepler = new KeplerianPropagator(initialOrbit);
 
             // Earth and frame
-            double ae =  6378137.0; // equatorial radius in meter
-            double f  =  1.0 / 298.257223563; // flattening
-            Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
-            BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+            Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                   Constants.WGS84_EARTH_FLATTENING,
+                                                   earthFrame);
 
             // Station
             final double longitude = FastMath.toRadians(45.);
@@ -80,9 +83,13 @@ public class VisibilityCheck {
             final TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 
             // Event definition
-            final double maxcheck  = 1.;
-            final double elevation = FastMath.toRadians(5.);
-            final EventDetector sta1Visi = new VisibilityDetector(maxcheck, elevation, sta1Frame);
+            final double maxcheck  = 60.0;
+            final double threshold =  0.001;
+            final double elevation = FastMath.toRadians(5.0);
+            final EventDetector sta1Visi =
+                    new ElevationDetector(maxcheck, threshold, sta1Frame).
+                    withConstantElevation(elevation).
+                    withHandler(new VisibilityHandler());
 
             // Add event to be detected
             kepler.addEventDetector(sta1Visi);
@@ -97,29 +104,24 @@ public class VisibilityCheck {
         }
     }
 
-    /** Finder for visibility event.
-     * <p>This class extends the elevation detector modifying the event handler.<p>
-     */
-    private static class VisibilityDetector extends ElevationDetector {
+    /** Handler for visibility event. */
+    private static class VisibilityHandler implements EventHandler<ElevationDetector> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 1181779674621070074L;
-
-        public VisibilityDetector(double maxCheck, double elevation, TopocentricFrame topo) {
-            super(maxCheck, elevation, topo);
-        }
-
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final SpacecraftState s, final ElevationDetector detector,
+                                    final boolean increasing) {
             if (increasing) {
-                System.out.println(" Visibility on " + getTopocentricFrame().getName()
+                System.out.println(" Visibility on " + detector.getTopocentricFrame().getName()
                                                      + " begins at " + s.getDate());
                 return Action.CONTINUE;
             } else {
-                System.out.println(" Visibility on " + getTopocentricFrame().getName()
+                System.out.println(" Visibility on " + detector.getTopocentricFrame().getName()
                                                      + " ends at " + s.getDate());
-                return Action.CONTINUE;//STOP;
+                return Action.STOP;
             }
+        }
+
+        public SpacecraftState resetState(final ElevationDetector detector, final SpacecraftState oldState) {
+            return oldState;
         }
 
     }

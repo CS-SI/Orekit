@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,12 +29,12 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assert.assertEquals(112, OrekitMessages.values().length);
+        Assert.assertEquals(123, OrekitMessages.values().length);
     }
 
     @Test
     public void testAllKeysPresentInPropertiesFiles() {
-        for (final String language : new String[] { "de", "en", "es", "fr", "gl", "it", "no" } ) {
+        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no" } ) {
             ResourceBundle bundle =
                 ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
                                          new Locale(language), new OrekitMessages.UTF8Control());
@@ -54,7 +54,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testAllPropertiesCorrespondToKeys() {
-        for (final String language : new String[] { "de", "en", "es", "fr", "gl", "it", "no" } ) {
+        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no" } ) {
             ResourceBundle bundle =
                 ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
                                          new Locale(language), new OrekitMessages.UTF8Control());
@@ -89,7 +89,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testVariablePartsConsistency() {
-        for (final String language : new String[] { "de", "en", "es", "fr", "gl", "it", "no" } ) {
+        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no" } ) {
             Locale locale = new Locale(language);
             for (OrekitMessages message : OrekitMessages.values()) {
                 MessageFormat source     = new MessageFormat(message.getSourceString());

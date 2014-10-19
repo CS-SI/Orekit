@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,8 +26,11 @@ package org.orekit.time;
  */
 public class TCBScale implements TimeScale {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20131209L;
+
     /** LG rate. */
-    private static final double LB_RATE = 1.550505e-8;
+    private static final double LB_RATE = 1.550519768e-8;
 
     /** Reference date for TCB.
      * <p>The reference date is such that the four following instants are equal:</p>

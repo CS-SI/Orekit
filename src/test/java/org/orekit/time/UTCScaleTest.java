@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,8 +18,12 @@ package org.orekit.time;
 
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -283,7 +287,25 @@ public class UTCScaleTest {
         Assert.assertEquals(dtRef, dt, 1.0e-14);
 
     }
-    
+
+    @Test
+    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+        UTCScale utc = TimeScalesFactory.getUTC();
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(utc);
+
+        Assert.assertTrue(bos.size() > 50);
+        Assert.assertTrue(bos.size() < 100);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        UTCScale deserialized  = (UTCScale) ois.readObject();
+        Assert.assertTrue(utc == deserialized);
+
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");

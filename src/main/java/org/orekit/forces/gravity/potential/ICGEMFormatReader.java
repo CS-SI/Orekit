@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,7 +60,7 @@ import org.orekit.utils.Constants;
  *     periods should appear in the file,
  *   </li>
  *   <li>
- *     only one occurrence of the each coefficient may appear in the file, otherwise
+ *     only one occurrence of each coefficient may appear in the file, otherwise
  *     an error will be triggered during parsing. Multiple occurrences with different
  *     time stamps are forbidden (both because they correspond to a duplicated entry
  *     and because they define two different reference dates as per previous design
@@ -214,9 +214,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                                                                        lineNumber, name, line);
                         }
                     } else if ((tab.length == 2) && GRAVITY_CONSTANT.equals(tab[0])) {
-                        setMu(Double.parseDouble(tab[1].replace('D', 'E')));
+                        setMu(parseDouble(tab[1]));
                     } else if ((tab.length == 2) && REFERENCE_RADIUS.equals(tab[0])) {
-                        setAe(Double.parseDouble(tab[1].replace('D', 'E')));
+                        setAe(parseDouble(tab[1]));
                     } else if ((tab.length == 2) && MAX_DEGREE.equals(tab[0])) {
 
                         final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(tab[1]));
@@ -327,8 +327,10 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                     }
                 }
             } catch (NumberFormatException nfe) {
-                throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                           lineNumber, name, line);
+                final ParseException pe = OrekitException.createParseException(
+                        OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
+                pe.initCause(nfe);
+                throw pe;
             }
         }
 

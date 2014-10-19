@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,17 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
-import org.apache.commons.math3.fitting.CurveFitter;
-import org.apache.commons.math3.fitting.PolynomialFitter;
-import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.fitting.AbstractCurveFitter;
+import org.apache.commons.math3.fitting.PolynomialCurveFitter;
+import org.apache.commons.math3.fitting.WeightedObservedPoint;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
+import org.apache.commons.math3.linear.DiagonalMatrix;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
@@ -38,22 +45,23 @@ public class SecularAndHarmonic {
     /** Pulsations of harmonic part. */
     private final double[] pulsations;
 
-    /** Curve fitting engine. */
-    private CurveFitter<LocalParametricFunction> fitter;
-
     /** Reference date for the model. */
     private AbsoluteDate reference;
 
     /** Fitted parameters. */
     private double[] fitted;
 
+    /** Observed points. */
+    private List<WeightedObservedPoint> observedPoints;
+
     /** Simple constructor.
      * @param secularDegree degree of polynomial secular part
      * @param pulsations pulsations of harmonic part
      */
     public SecularAndHarmonic(final int secularDegree, final double ... pulsations) {
-        this.secularDegree = secularDegree;
-        this.pulsations    = pulsations.clone();
+        this.secularDegree  = secularDegree;
+        this.pulsations     = pulsations.clone();
+        this.observedPoints = new ArrayList<WeightedObservedPoint>();
     }
 
     /** Reset fitting.
@@ -62,7 +70,6 @@ public class SecularAndHarmonic {
      * @see #getReferenceDate()
      */
     public void resetFitting(final AbsoluteDate date, final double ... initialGuess) {
-        fitter    = new CurveFitter<LocalParametricFunction>(new LevenbergMarquardtOptimizer());
         reference = date;
         fitted    = initialGuess.clone();
     }
@@ -72,7 +79,7 @@ public class SecularAndHarmonic {
      * @param osculatingValue osculating value
      */
     public void addPoint(final AbsoluteDate date, final double osculatingValue) {
-        fitter.addObservedPoint(date.durationFrom(reference), osculatingValue);
+        observedPoints.add(new WeightedObservedPoint(1.0, date.durationFrom(reference), osculatingValue));
     }
 
     /** Get the reference date.
@@ -99,7 +106,41 @@ public class SecularAndHarmonic {
      * @see #getFittedParameters()
      */
     public void fit() {
-        fitted = fitter.fit(new LocalParametricFunction(), fitted);
+
+        final AbstractCurveFitter fitter = new AbstractCurveFitter() {
+            /** {@inheritDoc} */
+            @Override
+            protected LeastSquaresProblem getProblem(final Collection<WeightedObservedPoint> observations) {
+                // Prepare least-squares problem.
+                final int len = observations.size();
+                final double[] target  = new double[len];
+                final double[] weights = new double[len];
+
+                int i = 0;
+                for (final WeightedObservedPoint obs : observations) {
+                    target[i]  = obs.getY();
+                    weights[i] = obs.getWeight();
+                    ++i;
+                }
+
+                final AbstractCurveFitter.TheoreticalValuesFunction model =
+                        new AbstractCurveFitter.TheoreticalValuesFunction(new LocalParametricFunction(), observations);
+
+                // build a new least squares problem set up to fit a secular and harmonic curve to the observed points
+                return new LeastSquaresBuilder().
+                        maxEvaluations(Integer.MAX_VALUE).
+                        maxIterations(Integer.MAX_VALUE).
+                        start(fitted).
+                        target(target).
+                        weight(new DiagonalMatrix(weights)).
+                        model(model.getModelFunction(), model.getModelFunctionJacobian()).
+                        build();
+
+            }
+        };
+
+        fitted = fitter.fit(observedPoints);
+
     }
 
     /** Local parametric function used for fitting. */
@@ -211,12 +252,13 @@ public class SecularAndHarmonic {
                                                 final int meanDegree, final int meanHarmonics,
                                                 final AbsoluteDate start, final AbsoluteDate end,
                                                 final double step) {
-        final PolynomialFitter pf = new PolynomialFitter(new LevenbergMarquardtOptimizer());
+        final List<WeightedObservedPoint> points = new ArrayList<WeightedObservedPoint>();
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(step)) {
-            pf.addObservedPoint(date.durationFrom(combinedReference),
-                                meanValue(date, meanDegree, meanHarmonics));
+            points.add(new WeightedObservedPoint(1.0,
+                                                 date.durationFrom(combinedReference),
+                                                 meanValue(date, meanDegree, meanHarmonics)));
         }
-        return pf.fit(new double[combinedDegree + 1]);
+        return PolynomialCurveFitter.create(combinedDegree).fit(points);
     }
 
     /** Get mean second derivative, truncated to first components.

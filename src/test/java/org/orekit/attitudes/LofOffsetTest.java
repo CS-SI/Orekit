@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -45,6 +45,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -57,7 +58,7 @@ public class LofOffsetTest {
     private double mu;
 
     // Reference frame = ITRF 2005C
-    private Frame frameITRF2005;
+    private Frame itrf;
 
     // Earth shape
     OneAxisEllipsoid earthSpheric;
@@ -98,7 +99,7 @@ public class LofOffsetTest {
         // Create target pointing attitude provider
         // ************************************
         // Elliptic earth shape
-        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
         final GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
 
         // Attitude law definition from geodetic point target
@@ -291,11 +292,11 @@ public class LofOffsetTest {
             mu = 3.9860047e14;
 
             // Reference frame = ITRF 2005
-            frameITRF2005 = FramesFactory.getITRF2005(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Elliptic earth shape
             earthSpheric =
-                new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
+                new OneAxisEllipsoid(6378136.460, 0., itrf);
 
             //  Satellite position
             orbit =
@@ -314,7 +315,7 @@ public class LofOffsetTest {
     @After
     public void tearDown() {
         date = null;
-        frameITRF2005 = null;
+        itrf = null;
         earthSpheric = null;
     }
 

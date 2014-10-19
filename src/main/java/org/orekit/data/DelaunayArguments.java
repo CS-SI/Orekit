@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,19 +18,28 @@ package org.orekit.data;
 
 import java.io.Serializable;
 
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
+
 /** Delaunay arguments used for nutation or tides.
  * <p>This class is a simple placeholder,
  * it does not provide any processing method.</p>
  * @author Luc Maisonobe
  * @since 6.1
  */
-public class DelaunayArguments implements Serializable {
+public class DelaunayArguments implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130607L;
+    private static final long serialVersionUID = 20130729L;
+
+    /** Date. */
+    private final AbsoluteDate date;
 
     /** Offset in Julian centuries. */
     private final double tc;
+
+    /** Tide parameter γ = GMST + π. */
+    private final double gamma;
 
     /** Mean anomaly of the Moon. */
     private final double l;
@@ -48,16 +57,21 @@ public class DelaunayArguments implements Serializable {
     private final double omega;
 
     /** Simple constructor.
+     * @param date current date
      * @param tc offset in Julian centuries
+     * @param gamma tide parameter γ = GMST + π
      * @param l mean anomaly of the Moon
      * @param lPrime mean anomaly of the Sun
      * @param f L - &Omega; where L is the mean longitude of the Moon
      * @param d mean elongation of the Moon from the Sun
      * @param omega mean longitude of the ascending node of the Moon
      */
-    public DelaunayArguments(final double tc, final double l, final double lPrime,
+    public DelaunayArguments(final AbsoluteDate date, final double tc, final double gamma,
+                             final double l, final double lPrime,
                              final double f, final double d, final double omega) {
+        this.date   = date;
         this.tc     = tc;
+        this.gamma  = gamma;
         this.l      = l;
         this.lPrime = lPrime;
         this.f      = f;
@@ -65,11 +79,23 @@ public class DelaunayArguments implements Serializable {
         this.omega  = omega;
     }
 
+    /** {@inheritDoc} */
+    public AbsoluteDate getDate() {
+        return date;
+    }
+
     /** Get the offset in Julian centuries.
      * @return offset in Julian centuries
      */
     public double getTC() {
         return tc;
+    }
+
+    /** Get the tide parameter γ = GMST + π.
+     * @return tide parameter γ = GMST + π
+     */
+    public double getGamma() {
+        return gamma;
     }
 
     /** Get the mean anomaly of the Moon.

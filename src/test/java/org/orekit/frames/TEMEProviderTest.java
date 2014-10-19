@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,14 @@
 package org.orekit.frames;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +35,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -66,6 +74,32 @@ public class TEMEProviderTest {
         PVCoordinates delta = new PVCoordinates(pvEME2000Computed, pvEME2000Ref);
         Assert.assertEquals(0.0, delta.getPosition().getNorm(), 0.025);
         Assert.assertEquals(0.0, delta.getVelocity().getNorm(), 1.0e-4);
+
+    }
+
+    @Test
+    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+        TEMEProvider provider = new TEMEProvider(IERSConventions.IERS_2010,
+                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(provider);
+
+        Assert.assertTrue(bos.size() > 280000);
+        Assert.assertTrue(bos.size() < 285000);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        TEMEProvider deserialized  = (TEMEProvider) ois.readObject();
+        for (int i = 0; i < FastMath.min(100, provider.getEOPHistory().getEntries().size()); ++i) {
+            AbsoluteDate date = provider.getEOPHistory().getEntries().get(i).getDate();
+            Transform expectedIdentity = new Transform(date,
+                                                       provider.getTransform(date).getInverse(),
+                                                       deserialized.getTransform(date));
+            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+        }
 
     }
 

@@ -1,0 +1,45 @@
+                                                                               
+      **********************************************************************   
+      *   This file is a faked BULLETIN A created for test purposes        *   
+      **********************************************************************   
+                                                                               
+      COMBINED EARTH ORIENTATION PARAMETERS:                                   
+                                                                               
+   13  8 30  56534 0.16762 .00009 0.32705 .00009  0.038697 0.000019          
+   13  8 31  56535 0.16669 .00010 0.32564 .00010  0.038471 0.000019          
+   13  9  1  56536 0.16592 .00009 0.32410 .00010  0.038206 0.000024          
+                                                                               
+      PREDICTIONS:                                                             
+
+       2013  9  6  56541       0.1638      0.3185      0.03517         
+       2013  9  7  56542       0.1633      0.3175      0.03420         
+       2013  9  8  56543       0.1628      0.3164      0.03322         
+       2013  9  9  56544       0.1623      0.3153      0.03229         
+
+      CELESTIAL POLE OFFSET SERIES:                                            
+                           NEOS Celestial Pole Offset Series                   
+                       MJD      dpsi    error     deps    error                
+                                        (msec. of arc)                         
+                      56519   -87.47     0.13   -12.96     0.08    
+                      56520   -87.72     0.13   -13.20     0.08    
+                                                                               
+                     IERS Celestial Pole Offset Final Series                   
+                           MJD          dpsi      deps                         
+                                        (msec. of arc)                         
+                          56475       -81.0     -13.3                      
+                          56476       -81.2     -13.4                      
+                          56477       -81.6     -13.4                      
+
+                    IAU2000A Celestial Pole Offset Final Series
+                             MJD     dX         dY         
+                             (msec. of arc)                
+                           56475     0.00      -0.28
+                           56476    -0.06      -0.29
+                           56477    -0.07      -0.27
+                                                                               
+    The recommended software to predict celestial pole offsets can be found at 
+    <http://www.usno.navy.mil/USNO/earth-orientation/software/aux/ceppred.f>   
+    and software for the calculation of the dX and dY components with          
+    respect to IAU2000A Nutation/Precession Theory can be found at the         
+    <http://maia.usno.navy.mil/conv2010/conventions.html>                      
+    web site in Chapter 5 Section 5.5 of the IERS Conventions (2010).          

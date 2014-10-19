@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,14 +18,18 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FramesFactory;
+import org.orekit.utils.IERSConventions;
 
 /** Factory for predefined time scales.
  * <p>
@@ -36,7 +40,7 @@ import org.orekit.frames.FramesFactory;
 public class TimeScalesFactory implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2063625014942931917L;
+    private static final long serialVersionUID = 20130807L;
 
     /** International Atomic Time scale. */
     private static TAIScale tai = null;
@@ -44,8 +48,11 @@ public class TimeScalesFactory implements Serializable {
     /** Universal Time Coordinate scale. */
     private static UTCScale utc = null;
 
-    /** Universal Time 1 scale. */
-    private static UT1Scale ut1 = null;
+    /** Universal Time 1 scale (tidal effects ignored). */
+    private static Map<IERSConventions, UT1Scale> ut1MapSimpleEOP = new HashMap<IERSConventions, UT1Scale>();
+
+    /** Universal Time 1 scale (tidal effects considered). */
+    private static Map<IERSConventions, UT1Scale> ut1MapCompleteEOP = new HashMap<IERSConventions, UT1Scale>();
 
     /** Terrestrial Time scale. */
     private static TTScale tt = null;
@@ -168,29 +175,68 @@ public class TimeScalesFactory implements Serializable {
     }
 
     /** Get the Universal Time 1 scale.
-     * <p>
-     * UT1 scale depends on both UTC scale and Earth Orientation Parameters,
-     * so this method loads these data sets. See the {@link #getUTC()
-     * TimeScalesFactory.getUTC()} and {@link FramesFactory#getEOP2000History()
-     * FramesFactory.getEOP2000History()} methods for an explanation of how the
-     * corresponding data loaders can be configured.
-     * </p>
      * @return Universal Time 1 scale
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      * @see #getUTC()
-     * @see FramesFactory#getEOP2000History()
+     * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
+     * @deprecated as of 6.1 replaced with {@link #getUT1(IERSConventions, boolean)}
      */
+    @Deprecated
     public static UT1Scale getUT1() throws OrekitException {
+        return getUT1(IERSConventions.IERS_2010, true);
+    }
+
+    /** Get the Universal Time 1 scale.
+     * <p>
+     * UT1 scale depends on both UTC scale and Earth Orientation Parameters,
+     * so this method loads these data sets. See the {@link #getUTC()
+     * TimeScalesFactory.getUTC()} and {@link
+     * FramesFactory#getEOPHistory(IERSConventions, boolean)} methods
+     * for an explanation of how the corresponding data loaders can be configured.
+     * </p>
+     * @param conventions IERS conventions for which EOP parameters will provide dUT1
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @return Universal Time 1 scale
+     * @exception OrekitException if some data can't be read or some
+     * file content is corrupted
+     * @see #getUTC()
+     * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
+     */
+    public static UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP)
+        throws OrekitException {
         synchronized (TimeScalesFactory.class) {
 
+            final Map<IERSConventions, UT1Scale> map =
+                    simpleEOP ? ut1MapSimpleEOP : ut1MapCompleteEOP;
+            UT1Scale ut1 = map.get(conventions);
             if (ut1 == null) {
-                ut1 = new UT1Scale(FramesFactory.getEOP2000History(), getUTC());
+                ut1 = getUT1(FramesFactory.getEOPHistory(conventions, simpleEOP));
+                map.put(conventions, ut1);
             }
-
             return ut1;
-
         }
+    }
+
+    /** Get the Universal Time 1 scale.
+     * <p>
+     * As this method allow associating any history with the time scale,
+     * it may involve large data sets. So this method does <em>not</em>
+     * cache the resulting {@link UT1Scale UT1Scale} instance, a new
+     * instance will be returned each time. In order to avoid wasting
+     * memory, calling {@link #getUT1(IERSConventions, boolean)}
+     * with the single enumerate corresponding to the conventions may be
+     * a better solution. This method is made available only for expert use.
+     * </p>
+     * @param history EOP parameters providing dUT1
+     * (may be null if no correction is desired)
+     * @return Universal Time 1 scale
+     * @exception OrekitException if some data can't be read or some
+     * file content is corrupted
+     * @see #getUT1(IERSConventions, boolean)
+     */
+    public static UT1Scale getUT1(final EOPHistory history) throws OrekitException {
+        return new UT1Scale(history, getUTC());
     }
 
     /** Get the Terrestrial Time scale.

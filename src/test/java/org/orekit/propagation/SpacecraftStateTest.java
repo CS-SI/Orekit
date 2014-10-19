@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,11 @@
 package org.orekit.propagation;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +33,7 @@ import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -48,6 +54,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -153,6 +160,31 @@ public class SpacecraftStateTest {
                                                            orbit.getDate().shiftedBy(10.0), orbit.getFrame()));
     }
 
+    /**
+     * Check orbit and attitude dates can be off by a few ulps. I see this when using
+     * FixedRate attitude provider.
+     */
+    @Test
+    public void testDateConsistencyClose() throws OrekitException {
+        //setup
+        Orbit orbit10Shifts = orbit;
+        for (int i = 0; i < 10; i++) {
+            orbit10Shifts = orbit10Shifts.shiftedBy(0.1);
+        }
+        final Orbit orbit1Shift = orbit.shiftedBy(1);
+        Attitude shiftedAttitude = attitudeLaw
+                .getAttitude(orbit1Shift, orbit1Shift.getDate(), orbit.getFrame());
+
+        //verify dates are very close, but not equal
+        Assert.assertNotEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
+        Assert.assertEquals(
+                shiftedAttitude.getDate().durationFrom(orbit10Shifts.getDate()),
+                0, Precision.EPSILON);
+
+        //action + verify no exception is thrown
+        new SpacecraftState(orbit10Shifts, shiftedAttitude);
+    }
+
     @Test(expected=IllegalArgumentException.class)
     public void testFramesConsistency() throws OrekitException {
         new SpacecraftState(orbit,
@@ -206,14 +238,14 @@ public class SpacecraftStateTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
-            Assert.assertEquals(oe.getParts()[0], "test-1");
+            Assert.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(state);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
-            Assert.assertEquals(oe.getParts()[0], "test-1");
+            Assert.assertTrue(oe.getParts()[0].toString().startsWith("test-"));
         }
         try {
             extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", new double[7]));
@@ -242,6 +274,62 @@ public class SpacecraftStateTest {
 
     }
 
+    @Test
+    public void testSerialization()
+            throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException, OrekitException {
+
+        propagator.resetInitialState(propagator.getInitialState().
+                                     addAdditionalState("p1", 12.25).
+                                     addAdditionalState("p2", 1, 2, 3));
+        SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(123.456));
+
+        Assert.assertEquals(2, state.getAdditionalStates().size());
+        Assert.assertEquals(1, state.getAdditionalState("p1").length);
+        Assert.assertEquals(12.25, state.getAdditionalState("p1")[0], 1.0e-15);
+        Assert.assertEquals(3, state.getAdditionalState("p2").length);
+        Assert.assertEquals(1.0, state.getAdditionalState("p2")[0], 1.0e-15);
+        Assert.assertEquals(2.0, state.getAdditionalState("p2")[1], 1.0e-15);
+        Assert.assertEquals(3.0, state.getAdditionalState("p2")[2], 1.0e-15);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(state);
+
+        Assert.assertTrue(bos.size() > 600);
+        Assert.assertTrue(bos.size() < 700);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        SpacecraftState deserialized  = (SpacecraftState) ois.readObject();
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(state.getPVCoordinates().getPosition(),
+                                              deserialized.getPVCoordinates().getPosition()),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(state.getPVCoordinates().getVelocity(),
+                                              deserialized.getPVCoordinates().getVelocity()),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(state.getAttitude().getRotation(),
+                                              deserialized.getAttitude().getRotation()),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(state.getAttitude().getSpin(),
+                                              deserialized.getAttitude().getSpin()),
+                            1.0e-10);
+        Assert.assertEquals(state.getDate(), deserialized.getDate());
+        Assert.assertEquals(state.getMu(), deserialized.getMu(), 1.0e-10);
+        Assert.assertEquals(state.getFrame().getName(), deserialized.getFrame().getName());
+        Assert.assertEquals(2, deserialized.getAdditionalStates().size());
+        Assert.assertEquals(1, deserialized.getAdditionalState("p1").length);
+        Assert.assertEquals(12.25, deserialized.getAdditionalState("p1")[0], 1.0e-15);
+        Assert.assertEquals(3, deserialized.getAdditionalState("p2").length);
+        Assert.assertEquals(1.0, deserialized.getAdditionalState("p2")[0], 1.0e-15);
+        Assert.assertEquals(2.0, deserialized.getAdditionalState("p2")[1], 1.0e-15);
+        Assert.assertEquals(3.0, deserialized.getAdditionalState("p2")[2], 1.0e-15);
+
+    }
+
     @Before
     public void setUp() {
         try {
@@ -267,7 +355,7 @@ public class SpacecraftStateTest {
                                                  TimeScalesFactory.getUTC());
         orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
-        attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF2008());
+        attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         propagator =
             new EcksteinHechlerPropagator(orbit, attitudeLaw, mass,
                                           ae, mu, c20, c30, c40, c50, c60);

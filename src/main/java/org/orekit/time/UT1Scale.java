@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,9 @@ import org.orekit.frames.EOPHistory;
  */
 public class UT1Scale implements TimeScale {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20131209L;
+
     /** UTC scale. */
     private final UTCScale utc;
 
@@ -36,7 +39,7 @@ public class UT1Scale implements TimeScale {
     private final EOPHistory eopHistory;
 
     /** Package private constructor for the factory.
-     * @param eopHistory user supplied EOP history
+     * @param eopHistory user supplied EOP history (may be null)
      * @param utc UTC time scale
      */
     UT1Scale(final EOPHistory eopHistory, final UTCScale utc) {
@@ -44,9 +47,16 @@ public class UT1Scale implements TimeScale {
         this.utc        = utc;
     }
 
+    /** Get the EOP history.
+     * @return eop history (may be null)
+     */
+    public EOPHistory getEOPHistory() {
+        return eopHistory;
+    }
+
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-        final double dtu1        = eopHistory.getUT1MinusUTC(date);
+        final double dtu1        = eopHistory == null ? 0 : eopHistory.getUT1MinusUTC(date);
         final double utcMinusTai = utc.offsetFromTAI(date);
         return utcMinusTai + dtu1;
     }

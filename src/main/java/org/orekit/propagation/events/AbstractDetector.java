@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,8 +32,11 @@ public abstract class AbstractDetector implements EventDetector {
     /** Default convergence threshold (s). */
     public static final double DEFAULT_THRESHOLD = 1.e-6;
 
+    /** Default cmaximum number of iterations in the event time search. */
+    public static final int DEFAULT_MAX_ITER = 100;
+
     /** Serializable UID. */
-    private static final long serialVersionUID = -8212002898109868489L;
+    private static final long serialVersionUID = 20131202l;
 
     /** Max check interval. */
     private final double maxCheck;
@@ -41,13 +44,28 @@ public abstract class AbstractDetector implements EventDetector {
     /** Convergence threshold. */
     private final double threshold;
 
+    /** Maximum number of iterations in the event time search. */
+    private final int maxIter;
+
     /** Build a new instance.
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @deprecated as of 6.1, replaced with {@link #AbstractDetector(double, double, int)}
      */
+    @Deprecated
     protected AbstractDetector(final double maxCheck, final double threshold) {
+        this(maxCheck, threshold, DEFAULT_MAX_ITER);
+    }
+
+    /** Build a new instance.
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
+     */
+    protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter) {
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
+        this.maxIter   = maxIter;
     }
 
     /** {@inheritDoc} */
@@ -55,7 +73,12 @@ public abstract class AbstractDetector implements EventDetector {
         // do nothing by default
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * @deprecated as of 6.1 replaced by {@link
+     * org.orekit.propagation.events.handlers.EventHandler#eventOccurred(SpacecraftState,
+     * EventDetector, boolean)}
+     */
+    @Deprecated
     public abstract Action eventOccurred(SpacecraftState s, boolean increasing)
         throws OrekitException;
 
@@ -69,7 +92,7 @@ public abstract class AbstractDetector implements EventDetector {
 
     /** {@inheritDoc} */
     public int getMaxIterationCount() {
-        return 100;
+        return maxIter;
     }
 
     /** {@inheritDoc} */
@@ -77,7 +100,11 @@ public abstract class AbstractDetector implements EventDetector {
         return threshold;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * @deprecated as of 6.1 replaced by {@link
+     * org.orekit.propagation.events.handlers.EventHandler#resetState(EventDetector, SpacecraftState)}
+     */
+    @Deprecated
     public SpacecraftState resetState(final SpacecraftState oldState)
         throws OrekitException {
         return oldState;

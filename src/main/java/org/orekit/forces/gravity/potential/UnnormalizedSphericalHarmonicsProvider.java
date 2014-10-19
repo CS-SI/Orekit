@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,13 +17,62 @@
 package org.orekit.forces.gravity.potential;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
-/** Interface used to provide un-normalized spherical harmonics coefficients.
- * @see GravityFieldFactory
+/**
+ * Interface used to provide un-normalized spherical harmonics coefficients.
+ * <p>
+ * Un-normalized spherical harmonics coefficients are fine for small degrees. At high
+ * degree and order the un-normalized coefficients are not representable in a {@code
+ * double}. {@link NormalizedSphericalHarmonicsProvider} is recommended for high precision
+ * applications.
+ *
  * @author Luc Maisonobe
+ * @see GravityFieldFactory
  * @since 6.0
  */
 public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmonicsProvider {
+
+    /**
+     * Un-normalized spherical harmonics coefficients evaluated at a specific instant.
+     * @see #onDate(AbsoluteDate)
+     * @since 6.1
+     */
+    interface UnnormalizedSphericalHarmonics extends TimeStamped {
+
+        /** Get a spherical harmonic cosine coefficient.
+         * @param n degree of the coefficient
+         * @param m order of the coefficient
+         * @return un-normalized coefficient Cnm
+         * @exception OrekitException if the requested maximal degree or order exceeds the
+         * available degree or order
+         */
+        double getUnnormalizedCnm(int n, int m)
+            throws OrekitException;
+
+        /** Get a spherical harmonic sine coefficient.
+         * @param n degree of the coefficient
+         * @param m order of the coefficient
+         * @return un-normalized coefficient Snm
+         * @exception OrekitException if the requested maximal degree or order exceeds the
+         * available degree or order
+         */
+        double getUnnormalizedSnm(int n, int m)
+            throws OrekitException;
+
+    }
+
+
+    /**
+     * Get the un-normalized spherical harmonic coefficients at a specific instance in time.
+     *
+     * @param date of evaluation
+     * @return un-normalized coefficients on {@code date}.
+     * @throws OrekitException on error
+     * @since 6.1
+     */
+    UnnormalizedSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
 
     /** Get a spherical harmonic cosine coefficient.
      * @param dateOffset date offset since reference date (s)
@@ -32,7 +81,9 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
      * @return un-normalized coefficient Cnm
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order
+     * @deprecated as of 6.1, replaced with {@link #onDate(AbsoluteDate)}
      */
+    @Deprecated
     double getUnnormalizedCnm(double dateOffset, int n, int m)
         throws OrekitException;
 
@@ -43,7 +94,9 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
      * @return un-normalized coefficient Snm
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order
+     * @deprecated as of 6.1, replaced with {@link #onDate(AbsoluteDate)}
      */
+    @Deprecated
     double getUnnormalizedSnm(double dateOffset, int n, int m)
         throws OrekitException;
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,6 +39,7 @@ public class OrekitExceptionWrapper extends RuntimeException {
      * @param wrappedException Orekit exception to wrap
      */
     public OrekitExceptionWrapper(final OrekitException wrappedException) {
+        super(wrappedException);
         this.wrappedException = wrappedException;
     }
 

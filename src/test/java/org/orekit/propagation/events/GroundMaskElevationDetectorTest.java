@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,12 +35,15 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class GroundMaskElevationDetectorTest {
 
     private double mu;
@@ -67,7 +70,7 @@ public class GroundMaskElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
+        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
         BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
@@ -86,13 +89,8 @@ public class GroundMaskElevationDetectorTest {
                               {FastMath.toRadians(300),FastMath.toRadians(3)},
                               {FastMath.toRadians(330),FastMath.toRadians(4)}};
         GroundMaskElevationDetector detector =
-            new GroundMaskElevationDetector(masque, topo) {
-                /** Serializable UID. */
-                private static final long serialVersionUID = 7515758050410436713L;
-                public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                    return increasing ? Action.STOP : Action.CONTINUE;
-                }
-        };
+            new GroundMaskElevationDetector(masque, topo).
+            withHandler(new StopOnIncreasing<GroundMaskElevationDetector>());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -109,7 +107,7 @@ public class GroundMaskElevationDetectorTest {
         // Earth and frame
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
-                                               FramesFactory.getITRF2005());
+                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         TopocentricFrame topo = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "");
         double [][] masque = {{FastMath.toRadians(  0),FastMath.toRadians(5)},
                               {FastMath.toRadians(180),FastMath.toRadians(3)},
@@ -128,7 +126,7 @@ public class GroundMaskElevationDetectorTest {
         // Earth and frame
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
-                                               FramesFactory.getITRF2005());
+                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         TopocentricFrame topo = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "");
         double [][] masque = {{FastMath.toRadians(   0),FastMath.toRadians(5)},
                               {FastMath.toRadians( 360),FastMath.toRadians(4)}};

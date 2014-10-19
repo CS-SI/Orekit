@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,10 +19,13 @@ package org.orekit.forces.maneuvers;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractReconfigurableDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -54,18 +57,25 @@ import org.orekit.utils.PVCoordinates;
  * node on an equatorial orbit! This is a real case that has been encountered
  * during validation ...</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
+     * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class ImpulseManeuver implements EventDetector {
+public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigurableDetector<ImpulseManeuver<T>> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7150871329986590368L;
+    private static final long serialVersionUID = 20131118L;
+
+    /** The attitude to override during the maneuver, if set. **/
+    private final AttitudeProvider attitudeOverride;
 
     /** Triggering event. */
-    private final EventDetector trigger;
+    private final T trigger;
 
     /** Velocity increment in satellite frame. */
     private final Vector3D deltaVSat;
+
+    /** Specific impulse. */
+    private final double isp;
 
     /** Engine exhaust velocity. */
     private final double vExhaust;
@@ -75,33 +85,59 @@ public class ImpulseManeuver implements EventDetector {
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      */
-    public ImpulseManeuver(final EventDetector trigger, final Vector3D deltaVSat,
-                           final double isp) {
+    public ImpulseManeuver(final T trigger, final Vector3D deltaVSat, final double isp) {
+        this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
+             trigger.getMaxIterationCount(), new Handler<T>(),
+             trigger, null, deltaVSat, isp);
+    }
+
+
+    /** Build a new instance.
+     * @param trigger triggering event
+     * @param attitudeOverride the attitude provider to use for the maneuver
+     * @param deltaVSat velocity increment in satellite frame
+     * @param isp engine specific impulse (s)
+     */
+    public ImpulseManeuver(final T trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat, final double isp) {
+        this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
+             trigger.getMaxIterationCount(), new Handler<T>(),
+             trigger, attitudeOverride, deltaVSat, isp);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
+     * @param handler event handler to call at event occurrences
+     * @param trigger triggering event
+     * @param attitudeOverride the attitude provider to use for the maneuver
+     * @param deltaVSat velocity increment in satellite frame
+     * @param isp engine specific impulse (s)
+     * @since 6.1
+     */
+    private ImpulseManeuver(final double maxCheck, final double threshold,
+                            final int maxIter, final EventHandler<ImpulseManeuver<T>> handler,
+                            final T trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
+                            final double isp) {
+        super(maxCheck, threshold, maxIter, handler);
+        this.attitudeOverride = attitudeOverride;
         this.trigger   = trigger;
         this.deltaVSat = deltaVSat;
+        this.isp       = isp;
         this.vExhaust  = Constants.G0_STANDARD_GRAVITY * isp;
     }
 
     /** {@inheritDoc} */
-    public double getMaxCheckInterval() {
-        return trigger.getMaxCheckInterval();
-    }
-
-    /** {@inheritDoc} */
-    public int getMaxIterationCount() {
-        return trigger.getMaxIterationCount();
-    }
-
-    /** {@inheritDoc} */
-    public double getThreshold() {
-        return trigger.getThreshold();
-    }
-
-    /** {@inheritDoc} */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        // filter underlying event
-        return (trigger.eventOccurred(s, increasing) == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
+    @Override
+    protected ImpulseManeuver<T> create(final double newMaxCheck, final double newThreshold,
+                                        final int newMaxIter, final EventHandler<ImpulseManeuver<T>> newHandler) {
+        return new ImpulseManeuver<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                      trigger, attitudeOverride, deltaVSat, isp);
     }
 
     /** {@inheritDoc} */
@@ -113,36 +149,18 @@ public class ImpulseManeuver implements EventDetector {
         return trigger.g(s);
     }
 
-    /** {@inheritDoc} */
-    public SpacecraftState resetState(final SpacecraftState oldState)
-        throws OrekitException {
-
-        final AbsoluteDate date = oldState.getDate();
-        final Attitude attitude = oldState.getAttitude();
-
-        // convert velocity increment in inertial frame
-        final Vector3D deltaV = attitude.getRotation().applyInverseTo(deltaVSat);
-
-        // apply increment to position/velocity
-        final PVCoordinates oldPV = oldState.getPVCoordinates();
-        final PVCoordinates newPV = new PVCoordinates(oldPV.getPosition(),
-                                                      oldPV.getVelocity().add(deltaV));
-        final CartesianOrbit newOrbit =
-                new CartesianOrbit(newPV, oldState.getFrame(), date, oldState.getMu());
-
-        // compute new mass
-        final double newMass = oldState.getMass() * FastMath.exp(-deltaV.getNorm() / vExhaust);
-
-        // pack everything in a new state
-        return new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
-                                   attitude, newMass);
-
+    /**
+     * Get the Attitude Provider to use during maneuver.
+     * @return the attitude provider
+     */
+    public AttitudeProvider getAttitudeOverride() {
+        return attitudeOverride;
     }
 
     /** Get the triggering event.
      * @return triggering event
      */
-    public EventDetector getTrigger() {
+    public T getTrigger() {
         return trigger;
     }
 
@@ -157,7 +175,69 @@ public class ImpulseManeuver implements EventDetector {
     * @return specific impulse
     */
     public double getIsp() {
-        return vExhaust / Constants.G0_STANDARD_GRAVITY;
+        return isp;
+    }
+
+    /** Local handler.
+     * @param <T> class type for the generic version
+     */
+    private static class Handler<T extends EventDetector> implements EventHandler<ImpulseManeuver<T>> {
+
+        /** {@inheritDoc} */
+        public EventHandler.Action eventOccurred(final SpacecraftState s, final ImpulseManeuver<T> im,
+                                                 final boolean increasing)
+            throws OrekitException {
+
+            // filter underlying event
+            final EventHandler.Action underlyingAction;
+            if (im.trigger instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) im.trigger).getHandler();
+                underlyingAction = handler.eventOccurred(s, im.trigger, increasing);
+            } else {
+                @SuppressWarnings("deprecation")
+                final EventDetector.Action a = im.trigger.eventOccurred(s, increasing);
+                underlyingAction = AbstractReconfigurableDetector.convert(a);
+            }
+
+            return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public SpacecraftState resetState(final ImpulseManeuver<T> im, final SpacecraftState oldState)
+            throws OrekitException {
+
+            final AbsoluteDate date = oldState.getDate();
+            final AttitudeProvider override = im.getAttitudeOverride();
+            final Attitude attitude;
+
+            if (override == null) {
+                attitude = oldState.getAttitude();
+            } else {
+                attitude = override.getAttitude(oldState.getOrbit(), date, oldState.getFrame());
+            }
+
+            // convert velocity increment in inertial frame
+            final Vector3D deltaV = attitude.getRotation().applyInverseTo(im.deltaVSat);
+
+            // apply increment to position/velocity
+            final PVCoordinates oldPV = oldState.getPVCoordinates();
+            final PVCoordinates newPV = new PVCoordinates(oldPV.getPosition(),
+                                                          oldPV.getVelocity().add(deltaV));
+            final CartesianOrbit newOrbit =
+                    new CartesianOrbit(newPV, oldState.getFrame(), date, oldState.getMu());
+
+            // compute new mass
+            final double newMass = oldState.getMass() * FastMath.exp(-deltaV.getNorm() / im.vExhaust);
+
+            // pack everything in a new state
+            return new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
+                                       attitude, newMass);
+
+        }
+
     }
 
 }

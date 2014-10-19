@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -42,6 +42,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -62,7 +63,7 @@ public class DragForceTest extends AbstractForceModelTest {
                 new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       Constants.WGS84_EARTH_FLATTENING,
-                                                                      FramesFactory.getITRF2008())),
+                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new SphericalSpacecraft(2.5, 1.2, 0.7, 0.2));
 
         checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
@@ -94,7 +95,7 @@ public class DragForceTest extends AbstractForceModelTest {
                 new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       Constants.WGS84_EARTH_FLATTENING,
-                                                                      FramesFactory.getITRF2008())),
+                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new SphericalSpacecraft(2.5, 1.2, 0.7, 0.2));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
@@ -119,7 +120,7 @@ public class DragForceTest extends AbstractForceModelTest {
                 new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       Constants.WGS84_EARTH_FLATTENING,
-                                                                      FramesFactory.getITRF2008())),
+                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
@@ -152,7 +153,7 @@ public class DragForceTest extends AbstractForceModelTest {
                 new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       Constants.WGS84_EARTH_FLATTENING,
-                                                                      FramesFactory.getITRF2008())),
+                                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                               new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
         propagator.addForceModel(forceModel);

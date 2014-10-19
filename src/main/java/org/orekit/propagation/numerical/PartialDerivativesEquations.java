@@ -341,7 +341,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                                               new DerivativeStructure(nbVars, 1, 2, position.getZ()));
 
         // velocity corresponds three free parameters
-        final Vector3D velocity = s.getPVCoordinates().getPosition();
+        final Vector3D velocity = s.getPVCoordinates().getVelocity();
         final FieldVector3D<DerivativeStructure> dsV = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(nbVars, 1, 3, velocity.getX()),
                                               new DerivativeStructure(nbVars, 1, 4, velocity.getY()),
                                               new DerivativeStructure(nbVars, 1, 5, velocity.getZ()));

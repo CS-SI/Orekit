@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,24 +21,26 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinates;
 
 /** Finder for satellite altitude crossing events.
  * <p>This class finds altitude events (i.e. satellite crossing
  * a predefined altitude level above ground).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation when ascending and to
- * {@link EventDetector.Action#STOP stop} propagation
- * when descending. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
- * derived class.</p>
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE
+ * continue} propagation when ascending and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * propagation when descending. This can be changed by calling
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class AltitudeDetector extends AbstractDetector {
+public class AltitudeDetector extends AbstractReconfigurableDetector<AltitudeDetector> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1552109617025755015L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Threshold altitude value (m). */
     private final double altitude;
@@ -54,9 +56,7 @@ public class AltitudeDetector extends AbstractDetector {
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
     public AltitudeDetector(final double altitude, final BodyShape bodyShape) {
-        super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
-        this.altitude  = altitude;
-        this.bodyShape = bodyShape;
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, altitude, bodyShape);
     }
 
     /** Build a new altitude detector.
@@ -70,14 +70,15 @@ public class AltitudeDetector extends AbstractDetector {
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
     public AltitudeDetector(final double maxCheck,
-            final double altitude,
-            final BodyShape bodyShape) {
-        super(maxCheck, DEFAULT_THRESHOLD);
-        this.altitude  = altitude;
-        this.bodyShape = bodyShape;
+                            final double altitude,
+                            final BodyShape bodyShape) {
+        this(maxCheck, DEFAULT_THRESHOLD, altitude, bodyShape);
     }
 
     /** Build a new altitude detector.
+     * <p>The maximal interval between altitude checks should
+     * be smaller than the half duration of the minimal pass to handle,
+     * otherwise some short passes could be missed.</p>
      * <p>The maximal interval between altitude checks should
      * be smaller than the half duration of the minimal pass to handle,
      * otherwise some short passes could be missed.</p>
@@ -87,12 +88,42 @@ public class AltitudeDetector extends AbstractDetector {
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
     public AltitudeDetector(final double maxCheck,
-            final double threshold,
-            final double altitude,
-            final BodyShape bodyShape) {
-        super(maxCheck, threshold);
+                            final double threshold,
+                            final double altitude,
+                            final BodyShape bodyShape) {
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing<AltitudeDetector>(),
+             altitude, bodyShape);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
+     * @param handler event handler to call at event occurrences
+     * @param altitude threshold altitude value (m)
+     * @param bodyShape body shape with respect to which altitude should be evaluated
+     * @since 6.1
+     */
+    private AltitudeDetector(final double maxCheck, final double threshold,
+                             final int maxIter, final EventHandler<AltitudeDetector> handler,
+                             final double altitude,
+                             final BodyShape bodyShape) {
+        super(maxCheck, threshold, maxIter, handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected AltitudeDetector create(final double newMaxCheck, final double newThreshold,
+                                      final int newMaxIter, final EventHandler<AltitudeDetector> newHandler) {
+        return new AltitudeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                    altitude, bodyShape);
     }
 
     /** Get the threshold altitude value.
@@ -107,21 +138,6 @@ public class AltitudeDetector extends AbstractDetector {
      */
     public BodyShape getBodyShape() {
         return bodyShape;
-    }
-
-    /** Handle an altitude event and choose what to do next.
-     * <p>The default implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation when ascending and to
-     * {@link EventDetector.Action#STOP stop} propagationwhen descending.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event
-     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        return increasing ? Action.CONTINUE : Action.STOP;
     }
 
     /** Compute the value of the switching function.

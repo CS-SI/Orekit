@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -50,6 +50,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -68,7 +69,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                 FramesFactory.getITRF2005());
+                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure SRP =
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (RadiationSensitive) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
@@ -228,7 +229,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         // creation of the force model
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
-                                 FramesFactory.getITRF2005());
+                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure SRP =
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (RadiationSensitive) new SphericalSpacecraft(500.0, 0.7, 0.7, 0.7));

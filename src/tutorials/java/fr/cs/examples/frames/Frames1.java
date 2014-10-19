@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,8 +17,6 @@
 
 package fr.cs.examples.frames;
 
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -39,6 +37,8 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -54,8 +54,6 @@ public class Frames1 {
 
             // configure Orekit
             Autoconfiguration.configureOrekit();
-            DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-            DecimalFormat d3 = new DecimalFormat("0.000", symbols);
 
             //  Initial state definition : date, orbit
             TimeScale utc = TimeScalesFactory.getUTC();
@@ -74,17 +72,17 @@ public class Frames1 {
             LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "QSW");
 
             // Earth and frame
-            double ae =  6378137.0; // equatorial radius in meter
-            double f  =  1.0 / 298.257223563; // flattening
-            Frame ITRF2005 = FramesFactory.getITRF2005(true); // terrestrial frame at an arbitrary date
-            BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+            Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                   Constants.WGS84_EARTH_FLATTENING,
+                                                   earthFrame);
 
             // Station
             final double longitude = FastMath.toRadians(45.);
             final double latitude  = FastMath.toRadians(25.);
             final double altitude  = 0.;
             final GeodeticPoint station = new GeodeticPoint(latitude, longitude, altitude);
-            final TopocentricFrame staF = new TopocentricFrame(earth, station, "station1");
+            final TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
 
             System.out.println("          time           doppler (m/s)");
 
@@ -101,7 +99,7 @@ public class Frames1 {
                 // And then calculate the doppler signal
                 double doppler = Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) / pv.getPosition().getNorm();
 
-                System.out.println(extrapDate + "  " + d3.format(doppler));
+                System.out.format(Locale.US, "%s   %9.3f%n", extrapDate, doppler);
 
                 extrapDate = new AbsoluteDate(extrapDate, 600, utc);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,10 +32,22 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** Topocentric frame.
- * <p>Frame associated to a position at the surface of a body shape.</p>
+ * <p>Frame associated to a position near the surface of a body shape.</p>
+ * <p>
+ * The origin of the frame is at the defining {@link GeodeticPoint geodetic point}
+ * location, and the right-handed canonical trihedra is:
+ * </p>
+ * <ul>
+ *   <li>X axis in the local horizontal plane (normal to zenith direction) and
+ *   following the local parallel towards East</li>
+ *   <li>Y axis in the horizontal plane (normal to zenith direction) and
+ *   following the local meridian towards North</li>
+ *   <li>Z axis towards Zenith direction</li>
+ * </ul>
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
@@ -158,7 +170,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         final Vector3D extPointTopo = t.transformPosition(extPoint);
 
         // Elevation angle is PI/2 - angle between zenith and given point direction
-        return FastMath.asin(extPointTopo.normalize().getZ());
+        return extPointTopo.getDelta();
     }
 
     /** Get the azimuth of a point with regards to the topocentric frame center point.
@@ -286,7 +298,13 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
     public GeodeticPoint pointAtDistance(final double azimuth, final double elevation,
                                          final double distance)
         throws OrekitException {
-        final Vector3D  observed = new Vector3D(distance, new Vector3D(azimuth, elevation));
+        final double cosAz = FastMath.cos(azimuth);
+        final double sinAz = FastMath.sin(azimuth);
+        final double cosEl = FastMath.cos(elevation);
+        final double sinEl = FastMath.sin(elevation);
+        final Vector3D  observed = new Vector3D(distance * cosEl * sinAz,
+                                                distance * cosEl * cosAz,
+                                                distance * sinEl);
         return parentShape.transform(observed, this, AbsoluteDate.J2000_EPOCH);
     }
 
@@ -296,9 +314,9 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return position/velocity of the topocentric frame origin (m and m/s)
      * @exception OrekitException if position cannot be computed in given frame
      */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO);
+        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date, Vector3D.ZERO, Vector3D.ZERO));
     }
 
 }

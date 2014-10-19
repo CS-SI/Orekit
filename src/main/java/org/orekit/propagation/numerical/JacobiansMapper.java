@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -133,7 +133,7 @@ public class JacobiansMapper {
      * @param dY1dP Jacobian of current state at time t<sub>1</sub>
      * with respect to parameters (may be null if there are no parameters)
      * @param p placeholder where to put the one-dimensional additional state
-     * @see #getStateJacobian(double[], double[][])
+     * @see #getStateJacobian(SpacecraftState, double[][])
      */
     void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
                              final double[][] dY1dP, final double[] p) {

@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** Wrapper used to detect only increasing or decreasing events.
@@ -60,7 +61,7 @@ import org.orekit.time.AbsoluteDate;
  *
  */
 
-public class EventFilter implements EventDetector {
+public class EventFilter<T extends EventDetector> extends AbstractReconfigurableDetector<EventFilter<T>> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130409L;
@@ -69,7 +70,7 @@ public class EventFilter implements EventDetector {
     private static final int HISTORY_SIZE = 100;
 
     /** Wrapped event detector. */
-    private final EventDetector rawDetector;
+    private final T rawDetector;
 
     /** Filter to use. */
     private final FilterType filter;
@@ -90,11 +91,41 @@ public class EventFilter implements EventDetector {
      * @param rawDetector event detector to wrap
      * @param filter filter to use
      */
-    public EventFilter(final EventDetector rawDetector, final FilterType filter) {
+    public EventFilter(final T rawDetector, final FilterType filter) {
+        this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
+             rawDetector.getMaxIterationCount(), new LocalHandler<T>(),
+             rawDetector, filter);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
+     * @param handler event handler to call at event occurrences
+     * @param rawDetector event detector to wrap
+     * @param filter filter to use
+     * @since 6.1
+     */
+    private EventFilter(final double maxCheck, final double threshold,
+                        final int maxIter, final EventHandler<EventFilter<T>> handler,
+                        final T rawDetector, final FilterType filter) {
+        super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.filter       = filter;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EventFilter<T> create(final double newMaxCheck, final double newThreshold,
+                                 final int newMaxIter, final EventHandler<EventFilter<T>> newHandler) {
+        return new EventFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }
 
     /**  {@inheritDoc} */
@@ -200,33 +231,38 @@ public class EventFilter implements EventDetector {
 
     }
 
-    /**  {@inheritDoc} */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        // delegate to raw detector, fixing increasing status on the fly
-        return rawDetector.eventOccurred(s, filter.getTriggeredIncreasing());
-    }
+    /** Local handler. */
+    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventFilter<T>> {
 
-    /**  {@inheritDoc} */
-    public SpacecraftState resetState(final SpacecraftState s)
-        throws OrekitException {
-        // delegate to raw detector
-        return rawDetector.resetState(s);
-    }
+        /** {@inheritDoc} */
+        public Action eventOccurred(final SpacecraftState s, final EventFilter<T> ef, final boolean increasing)
+            throws OrekitException {
+            if (ef.rawDetector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) ef.rawDetector).getHandler();
+                return handler.eventOccurred(s, ef.rawDetector, ef.filter.getTriggeredIncreasing());
+            } else {
+                @SuppressWarnings("deprecation")
+                final EventDetector.Action a = ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
+                return AbstractReconfigurableDetector.convert(a);
+            }
+        }
 
-    /**  {@inheritDoc} */
-    public double getThreshold() {
-        return rawDetector.getThreshold();
-    }
+        /** {@inheritDoc} */
+        @Override
+        public SpacecraftState resetState(final EventFilter<T> ef, final SpacecraftState oldState)
+            throws OrekitException {
+            if (ef.rawDetector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) ef.rawDetector).getHandler();
+                return handler.resetState(ef.rawDetector, oldState);
+            } else {
+                @SuppressWarnings("deprecation")
+                final SpacecraftState newState = ef.rawDetector.resetState(oldState);
+                return newState;
+            }
+        }
 
-    /**  {@inheritDoc} */
-    public double getMaxCheckInterval() {
-        return rawDetector.getMaxCheckInterval();
-    }
-
-    /**  {@inheritDoc} */
-    public int getMaxIterationCount() {
-        return rawDetector.getMaxIterationCount();
     }
 
 }

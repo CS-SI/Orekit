@@ -6,16 +6,29 @@
 -->
 <FindBugsFilter>
 
-  <!-- the following inner classes serialization pattern are intentional -->
-  <!-- the inner classes and the enclosing classes should be serialized together -->
+  <!-- the following serialization classes already takes care of non-serializable parts. -->
   <Match>
     <Or>
-      <Class name="~.*\.ConstantThrustManeuver\$\w+Switch$" />
-      <Class name="~.*\.SolarRadiationPressure\$\w+Switch$" />
-      <Class name="~.*\.NumericalPropagator\$MappingSwitchingFunction$" />
-      <Class name="~.*\.AbstractPropagator\$LocalPVProvider$" />
+      <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper\$DataTransferObject$" />
+      <Class name="~.*\.IntegratedEphemeris\$DataTransferObject$" />
     </Or>
-    <Bug pattern="SE_INNER_CLASS" />
+    <Bug pattern="SE_BAD_FIELD" />
+  </Match>
+
+  <!-- the following classes are serialized using writeReplace/readResolve with proxy classes,
+       so the is no real problem about the base class not having a proper constructor.
+       This is tested in the IntegratedEphemerisTest for the ephemeris and both propagators. -->
+  <Match>
+    <Or>
+      <Class name="~.*\.IntegratedEphemeris$" />
+      <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
+      <Class name="~.*\.NumericalPropagator\$OsculatingMapper$" />
+    </Or>
+    <Bug pattern="SE_NO_SUITABLE_CONSTRUCTOR" />
+  </Match>
+  <Match>
+    <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
+    <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>
 
   <!-- The following is an intentional behaviour, to be removed when class is suppressed -->

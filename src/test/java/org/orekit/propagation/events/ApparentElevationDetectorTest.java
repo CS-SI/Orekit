@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,12 +35,15 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class ApparentElevationDetectorTest {
 
     private double mu;
@@ -67,20 +70,15 @@ public class ApparentElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
+        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
         BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
         ApparentElevationDetector detector =
-            new ApparentElevationDetector(FastMath.toRadians(0.0), topo) {
-                /** Serializable UID. */
-                private static final long serialVersionUID = 7515758050410436713L;
-                public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                    return increasing ? Action.STOP : Action.CONTINUE;
-                }
-        };
+            new ApparentElevationDetector(FastMath.toRadians(0.0), topo).
+            withHandler(new StopOnIncreasing<ApparentElevationDetector>());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -107,20 +105,15 @@ public class ApparentElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
+        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
         BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
         ApparentElevationDetector detector =
-            new ApparentElevationDetector(FastMath.toRadians(2.0), topo) {
-                /** Serializable UID. */
-                private static final long serialVersionUID = 7515758050410436713L;
-                public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                    return increasing ? Action.STOP : Action.CONTINUE;
-                }
-        };
+            new ApparentElevationDetector(FastMath.toRadians(2.0), topo).
+            withHandler(new StopOnIncreasing<ApparentElevationDetector>());
         detector.setPressure(101325);
         detector.setTemperature(290);
 

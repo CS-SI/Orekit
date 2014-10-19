@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,8 @@
 package org.orekit.forces.gravity.potential;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /** Interface used to provide raw spherical harmonics coefficients.
  * <p>
@@ -30,26 +32,41 @@ import org.orekit.errors.OrekitException;
  */
 public interface RawSphericalHarmonicsProvider extends SphericalHarmonicsProvider {
 
-    /** Get a spherical harmonic cosine coefficient.
-     * @param dateOffset date offset since reference date (s)
-     * @param n degree of the coefficient
-     * @param m order of the coefficient
-     * @return raw coefficient Cnm
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order
+    /**
+     * The raw spherical harmonics at a particular instant.
+     *
+     * @see RawSphericalHarmonicsProvider#onDate(AbsoluteDate)
      */
-    double getRawCnm(double dateOffset, int n, int m)
-        throws OrekitException;
+    interface RawSphericalHarmonics extends TimeStamped {
 
-    /** Get a spherical harmonic sine coefficient.
-     * @param dateOffset date offset since reference date (s)
-     * @param n degree of the coefficient
-     * @param m order of the coefficient
-     * @return raw coefficient Snm
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order
+        /** Get a spherical harmonic cosine coefficient.
+         * @param n degree of the coefficient
+         * @param m order of the coefficient
+         * @return raw coefficient Cnm
+         * @exception OrekitException if the requested maximal degree or order exceeds the
+         * available degree or order
+         */
+        double getRawCnm(int n, int m)
+            throws OrekitException;
+
+        /** Get a spherical harmonic sine coefficient.
+         * @param n degree of the coefficient
+         * @param m order of the coefficient
+         * @return raw coefficient Snm
+         * @exception OrekitException if the requested maximal degree or order exceeds the
+         * available degree or order
+         */
+        double getRawSnm(int n, int m)
+            throws OrekitException;
+
+    }
+
+    /**
+     * Get the raw spherical harmonic coefficients on a specific date.
+     * @param date to evaluate the spherical harmonics
+     * @return the raw spherical harmonics on {@code date}.
+     * @throws OrekitException on error
      */
-    double getRawSnm(double dateOffset, int n, int m)
-        throws OrekitException;
+    RawSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
 
 }

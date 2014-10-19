@@ -1,4 +1,4 @@
-' Copyright 2002-2013 CS Systèmes d'Information
+' Copyright 2002-2014 CS Systèmes d'Information
 ' Licensed to CS Systèmes d'Information (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -25,62 +25,99 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit.propagation #ECEBD8
+  package org.orekit.propagation #ECEBD8 {
+
+    package events #DDEBD8 {
+
+      package handlers #CEEBD8 {
+
+        interface "EventHandler<T extends EventDetector>" as EventHandler_T_ {
+          +Action eventOccurred(SpacecraftState s, T detector, boolean increasing)
+          +SpacecraftState resetState(T detector, SpacecraftState oldState)
+        }
+
+        enum Action {
+          +STOP
+          +RESET_STATE
+          +RESET_DERIVATIVES
+          +CONTINUE
+        }
+
+        ContinueOnEvent       --|> EventHandler_T_
+        StopOnEvent           --|> EventHandler_T_
+        StopOnDecreasingEvent --|> EventHandler_T_
+        StopOnIncreasingEvent --|> EventHandler_T_
+
+      }
+
+      class EventsLogger
+
+      interface EventDetector {
+        +void init(SpacecraftState s0, AbsoluteDate t)
+        +double g(SpacecraftState s)
+        +double getThreshold()
+        +double getMaxCheckInterval()
+        +int getMaxIterationCount()
+      }
+
+      class EventShifter {
+       -double increasingOffset
+       -double decreasingOffset
+      }
+
+      EventDetector <--* "1" EventShifter 
+      class "AbstractReconfigurableDetector<T extends EventDetector>" as AbstractReconfigurableDetector_T_ {
+        +T withMaxCheck(double maxCheck)
+        +T withThreshold(double threshold)
+        +T withMaxIter(int maxIter)
+        +T withHandler(EventHandler<T> handler)
+        +EventHandler<T> getHandler()
+      }
+      note left
+        temporary class in 6.1
+        will be merged with
+        AbstractDetector in 7.0
+      end note
+
+      class EventFilter
+      enum FilterType {
+	    TRIGGER_ONLY_DECREASING_EVENTS
+	    TRIGGER_ONLY_INCREASING_EVENTS
+      }
+
+      EventsLogger "*" *--> EventDetector : monitors
+
+      EventDetector <--* "1" EventFilter 
+      EventFilter "1" *--> FilterType
+
+      AbstractReconfigurableDetector_T_ <|-- EventShifter  
+      AbstractReconfigurableDetector_T_ <|-- EventFilter  
+      AbstractDetector <|-left- AbstractReconfigurableDetector_T_  
+
+      Action <-left- EventHandler_T_
+      EventDetector    <|.. AbstractDetector
+      AbstractReconfigurableDetector_T_ <|-- AltitudeDetector
+      AbstractReconfigurableDetector_T_ <|-- EclipseDetector
+      AbstractReconfigurableDetector_T_ <|-- ElevationDetector
+      class "...Detector" as DummyDetector
+      AbstractReconfigurableDetector_T_ <|-- DummyDetector
+      note top
+        many implementations
+        not displayed for the
+        sake of diagram clarity
+      end note
+
+      EventHandler_T_ "1" <--o AbstractReconfigurableDetector_T_ : handler
+
+    }
 
     interface Propagator {
       +void addEventDetector(EventDetector detector)
       +Collection<EventDetector> getEventsDetectors()
       +void clearEventsDetectors()
     }
+    EventDetector "*" <--o "1" Propagator : detectors
 
-    package events #DDEBD8
-
-      interface EventDetector {
-        +void init(SpacecraftState s0, AbsoluteDate t)
-        +double g(SpacecraftState s)
-        +Action eventOccurred(SpacecraftState s, boolean increasing)
-        +SpacecraftState resetState(SpacecraftState oldState)
-        +double getThreshold()
-        +double getMaxCheckInterval()
-        +int getMaxIterationCount()
-      }
-
-      enum EventDetector.Action {
-        +STOP
-        +RESET_STATE
-        +RESET_DERIVATIVES
-        +CONTINUE
-      }
-
-      class AbstractDetector
-      note top
-        provides default implementations for
-        all methods except the g function
-        and eventOccurred
-      end note
-
-      class EventShifter {
-       -double increasingOffset
-       -double decreasingOffset
-      }
-      EventDetector <--* "1" EventShifter 
-      EventShifter --|> AbstractDetector 
-
-      Propagator "1" o--> "*" EventDetector : detectors
-      EventDetector.Action <-right-  EventDetector
-      EventDetector <|.. AbstractDetector
-      AbstractDetector <|-- AltitudeDetector
-      AbstractDetector <|-- EclipseDetector
-      AbstractDetector <|-- ElevationDetector
-      class "...Detector" as DummyDetector
-      AbstractDetector <|--DummyDetector
-      note top
-        many implementations not displayed
-        for the sake of diagram clarity
-      end note
-
-    end package
-
-  end package
+  }
 
 @enduml

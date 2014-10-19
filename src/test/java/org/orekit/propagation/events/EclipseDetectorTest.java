@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
@@ -26,10 +27,12 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -47,30 +50,62 @@ public class EclipseDetectorTest {
 
     @Test
     public void testEclipse() throws OrekitException {
-        propagator.addEventDetector(new EclipseDetector(60., 1.e-3,
-                CelestialBodyFactory.getSun(), sunRadius,
-                CelestialBodyFactory.getEarth(), earthRadius) {
-            private static final long serialVersionUID = 1L;
-			public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-		        return increasing ? Action.CONTINUE : Action.STOP;
-            }
-        });
+        EclipseDetector e = new EclipseDetector(60., 1.e-3,
+                                                CelestialBodyFactory.getSun(), sunRadius,
+                                                CelestialBodyFactory.getEarth(), earthRadius).
+                            withHandler(new StopOnDecreasing<EclipseDetector>());
+        Assert.assertEquals(60.0, e.getMaxCheckInterval(), 1.0e-15);
+        Assert.assertEquals(1.0e-3, e.getThreshold(), 1.0e-15);
+        Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
+        propagator.addEventDetector(e);
+        final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
+        Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+    }
+
+    @Test
+    public void testPenumbra() throws OrekitException {
+        EclipseDetector e = new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
+                                                CelestialBodyFactory.getEarth(), earthRadius).
+                            withPenumbra();
+        propagator.addEventDetector(e);
+        final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
+        Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 1.0e-6);
+    }
+
+    @Test
+    public void testWithMethods() throws OrekitException {
+        EclipseDetector e = new EclipseDetector(60., 1.e-3,
+                                                CelestialBodyFactory.getSun(), sunRadius,
+                                                CelestialBodyFactory.getEarth(), earthRadius).
+                             withHandler(new StopOnDecreasing<EclipseDetector>()).
+                             withMaxCheck(120.0).
+                             withThreshold(1.0e-4).
+                             withMaxIter(12);
+        Assert.assertEquals(120.0, e.getMaxCheckInterval(), 1.0e-15);
+        Assert.assertEquals(1.0e-4, e.getThreshold(), 1.0e-15);
+        Assert.assertEquals(12, e.getMaxIterationCount());
+        propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 
     }
 
     @Test
-    public void testPenumbra() throws OrekitException {
-        propagator.addEventDetector(new EclipseDetector(
-                CelestialBodyFactory.getSun(), sunRadius,
-                CelestialBodyFactory.getEarth(), earthRadius, false));
-        final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 1.0e-6);
-
-//        System.out.println(" Ini date : " + iniDate.getDate());
-//        System.out.println(" End date : " + finalState.getDate());
-//        System.out.println(" Duration : " + finalState.getDate().durationFrom(iniDate));
+    public void testTooSmallMaxIterationCount() throws OrekitException {
+        EclipseDetector e = new EclipseDetector(60., 1.e-3,
+                                                CelestialBodyFactory.getSun(), sunRadius,
+                                                CelestialBodyFactory.getEarth(), earthRadius).
+                             withHandler(new StopOnDecreasing<EclipseDetector>()).
+                             withMaxCheck(120.0).
+                             withThreshold(1.0e-4).
+                             withMaxIter(8);
+       propagator.addEventDetector(e);
+        try {
+            propagator.propagate(iniDate.shiftedBy(6000));
+            Assert.fail("an exception should have been thrown");
+        } catch (PropagationException pe) {
+            Assert.assertEquals(8, ((TooManyEvaluationsException) pe.getCause()).getMax());
+        }
     }
 
     @Before

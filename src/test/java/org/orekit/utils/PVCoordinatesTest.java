@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,6 @@ import java.util.Random;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -72,6 +71,7 @@ public class PVCoordinatesTest {
     }
 
     @Test
+    @Deprecated // to be removed when PVCoordinates.interpolate is removed
     public void testInterpolatePolynomialPV() {
         Random random = new Random(0xae7771c9933407bdl);
         AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
@@ -104,65 +104,6 @@ public class PVCoordinatesTest {
             }
 
         }
-    }
-
-    @Test
-    public void testInterpolatePolynomialPositionOnly() {
-        Random random = new Random(0x88740a12e4299003l);
-        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
-        for (int i = 0; i < 20; ++i) {
-
-            PolynomialFunction px    = randomPolynomial(5, random);
-            PolynomialFunction py    = randomPolynomial(5, random);
-            PolynomialFunction pz    = randomPolynomial(5, random);
-            PolynomialFunction pxDot = px.polynomialDerivative();
-            PolynomialFunction pyDot = py.polynomialDerivative();
-            PolynomialFunction pzDot = pz.polynomialDerivative();
-
-            List<Pair<AbsoluteDate, PVCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,PVCoordinates>>();
-            for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
-                Vector3D position = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
-                sample.add(new Pair<AbsoluteDate, PVCoordinates>(t0.shiftedBy(dt), new PVCoordinates(position, Vector3D.ZERO)));
-            }
-
-            for (double dt = 0; dt < 1.0; dt += 0.01) {
-                PVCoordinates interpolated = PVCoordinates.interpolate(t0.shiftedBy(dt), false, sample);
-                Vector3D p = interpolated.getPosition();
-                Vector3D v = interpolated.getVelocity();
-                Assert.assertEquals(px.value(dt),    p.getX(), 1.0e-14 * p.getNorm());
-                Assert.assertEquals(py.value(dt),    p.getY(), 1.0e-14 * p.getNorm());
-                Assert.assertEquals(pz.value(dt),    p.getZ(), 1.0e-14 * p.getNorm());
-                Assert.assertEquals(pxDot.value(dt), v.getX(), 1.0e-14 * v.getNorm());
-                Assert.assertEquals(pyDot.value(dt), v.getY(), 1.0e-14 * v.getNorm());
-                Assert.assertEquals(pzDot.value(dt), v.getZ(), 1.0e-14 * v.getNorm());
-            }
-
-        }
-    }
-
-    @Test
-    public void testInterpolateNonPolynomial() {
-        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
-
-            List<Pair<AbsoluteDate, PVCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,PVCoordinates>>();
-            for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-                Vector3D position = new Vector3D( FastMath.cos(dt), FastMath.sin(dt), 0.0);
-                Vector3D velocity = new Vector3D(-FastMath.sin(dt), FastMath.cos(dt), 0.0);
-                sample.add(new Pair<AbsoluteDate, PVCoordinates>(t0.shiftedBy(dt), new PVCoordinates(position, velocity)));
-            }
-
-            for (double dt = 0; dt < 1.0; dt += 0.01) {
-                PVCoordinates interpolated = PVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
-                Vector3D p = interpolated.getPosition();
-                Vector3D v = interpolated.getVelocity();
-                Assert.assertEquals(FastMath.cos(dt),    p.getX(), 3.0e-6 * p.getNorm());
-                Assert.assertEquals(FastMath.sin(dt),    p.getY(), 3.0e-6 * p.getNorm());
-                Assert.assertEquals(0,                   p.getZ(), 3.0e-6 * p.getNorm());
-                Assert.assertEquals(-FastMath.sin(dt),   v.getX(), 3.0e-5 * v.getNorm());
-                Assert.assertEquals( FastMath.cos(dt),   v.getY(), 3.0e-5 * v.getNorm());
-                Assert.assertEquals(0,                   v.getZ(), 3.0e-5 * v.getNorm());
-            }
-
     }
 
     @Test

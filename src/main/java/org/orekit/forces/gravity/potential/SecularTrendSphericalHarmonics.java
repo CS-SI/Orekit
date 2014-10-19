@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -90,36 +90,51 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
         return provider.getTideSystem();
     }
 
-    /** {@inheritDoc} */
-    public double getRawCnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
+    @Override
+    public RawSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+        final RawSphericalHarmonics harmonics = provider.onDate(date);
+        //compute date offset from reference
+        final double dateOffset = getOffset(date);
+        return new RawSphericalHarmonics() {
 
-        // retrieve the constant part of the coefficient
-        double cnm = provider.getRawCnm(dateOffset, n, m);
+            @Override
+            public AbsoluteDate getDate() {
+                return date;
+            }
 
-        if (n < cTrend.length && m < cTrend[n].length) {
-            // add secular trend
-            cnm += dateOffset * cTrend[n][m];
-        }
+            /** {@inheritDoc} */
+            public double getRawCnm(final int n, final int m)
+                throws OrekitException {
 
-        return cnm;
+                // retrieve the constant part of the coefficient
+                double cnm = harmonics.getRawCnm(n, m);
 
-    }
+                if (n < cTrend.length && m < cTrend[n].length) {
+                    // add secular trend
+                    cnm += dateOffset * cTrend[n][m];
+                }
 
-    /** {@inheritDoc} */
-    public double getRawSnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
+                return cnm;
 
-        // retrieve the constant part of the coefficient
-        double snm = provider.getRawSnm(dateOffset, n, m);
+            }
 
-        if (n < sTrend.length && m < sTrend[n].length) {
-            // add secular trend
-            snm += dateOffset * sTrend[n][m];
-        }
+            /** {@inheritDoc} */
+            public double getRawSnm(final int n, final int m)
+                throws OrekitException {
 
-        return snm;
+                // retrieve the constant part of the coefficient
+                double snm = harmonics.getRawSnm(n, m);
 
+                if (n < sTrend.length && m < sTrend[n].length) {
+                    // add secular trend
+                    snm += dateOffset * sTrend[n][m];
+                }
+
+                return snm;
+
+            }
+
+        };
     }
 
 }

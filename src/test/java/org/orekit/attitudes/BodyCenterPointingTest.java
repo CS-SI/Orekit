@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,6 +41,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -99,7 +100,8 @@ public class BodyCenterPointingTest {
        // Line containing satellite point and following pointing direction
         Line pointingLine = new Line(pvSatITRF2008C.getPosition(),
                                      pvSatITRF2008C.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                      zSatITRF2008C));
+                                                                      zSatITRF2008C),
+                                     1.0e-10);
 
         // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
         double distance = pointingLine.distance(Vector3D.ZERO);
@@ -159,7 +161,7 @@ public class BodyCenterPointingTest {
 
 
             // Reference frame = ITRF 2008
-            itrf = FramesFactory.getITRF2008(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Transform from EME2000 to ITRF2008
             eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);

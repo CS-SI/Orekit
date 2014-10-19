@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,13 +27,15 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 public class HelmertTransformationTest {
 
     @Test
     public void testHelmert20052008() throws OrekitException {
-        Frame itrf2005 = FramesFactory.getITRF2005();
-        Frame itrf2008 = FramesFactory.getITRF2008();
+        Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame itrf2005 =
+                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005.createTransformedITRF(itrf2008, "2005");
         Vector3D pos2005 = new Vector3D(1234567.8, 2345678.9, 3456789.0);
 
         // check the Helmert transformation as per http://itrf.ign.fr/ITRF_solutions/2008/tp_08-05.php
@@ -44,7 +46,7 @@ public class HelmertTransformationTest {
                                                         0.3,  0.0,  0.0, 0.000, 0.000, 0.000,
                                                        pos2005, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
-        Assert.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos2005.getNorm()));
+        Assert.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
 
         date = date.shiftedBy(Constants.JULIAN_YEAR);
         pos2008 = itrf2005.getTransformTo(itrf2008, date).transformPosition(pos2005);
@@ -53,14 +55,17 @@ public class HelmertTransformationTest {
                                                0.3,  0.0,  0.0, 0.000, 0.000, 0.000,
                                               pos2005, 1.0);
         error         = generalOffset.subtract(linearOffset);
-        Assert.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos2005.getNorm()));
+        Assert.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
 
     }
 
     @Test
     public void testHelmert20002005() throws OrekitException {
-        Frame itrf2000 = FramesFactory.getITRF2000();
-        Frame itrf2005 = FramesFactory.getITRF2005();
+        Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame itrf2000 =
+                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000.createTransformedITRF(itrf2008, "2000");
+        Frame itrf2005 =
+                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005.createTransformedITRF(itrf2008, "2005");
         Vector3D pos2000 = new Vector3D(1234567.8, 2345678.9, 3456789.0);
 
         // check the Helmert transformation as per http://itrf.ign.fr/ITRF_solutions/2005/tp_05-00.php
@@ -86,8 +91,11 @@ public class HelmertTransformationTest {
 
     @Test
     public void testHelmert19972000() throws OrekitException {
-        Frame itrf97   = FramesFactory.getITRF97();
-        Frame itrf2000 = FramesFactory.getITRF2000();
+        Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame itrf2000 =
+                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000.createTransformedITRF(itrf2008, "2000");
+        Frame itrf97 =
+                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_97.createTransformedITRF(itrf2008, "97");
         Vector3D pos97 = new Vector3D(1234567.8, 2345678.9, 3456789.0);
 
         // check the Helmert transformation as per ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP
@@ -98,7 +106,7 @@ public class HelmertTransformationTest {
                                                         0.0, -0.6,  -1.4, 0.000, 0.000, 0.002,
                                                        pos2000, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
-        Assert.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos97.getNorm()));
+        Assert.assertEquals(0.0, error.getNorm(), 2.0e-11 * pos97.getNorm());
 
         date = date.shiftedBy(Constants.JULIAN_YEAR);
         pos2000 = itrf97.getTransformTo(itrf2000, date).transformPosition(pos97);
@@ -107,14 +115,17 @@ public class HelmertTransformationTest {
                                                0.0, -0.6,  -1.4, 0.000, 0.000, 0.002,
                                                pos2000, 1.0);
         error         = generalOffset.subtract(linearOffset);
-        Assert.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos97.getNorm()));
+        Assert.assertEquals(0.0, error.getNorm(), 6.0e-11 * pos97.getNorm());
 
     }
 
     @Test
     public void testHelmert19932000() throws OrekitException {
-        Frame itrf93   = FramesFactory.getITRF93();
-        Frame itrf2000 = FramesFactory.getITRF2000();
+        Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame itrf2000 =
+                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000.createTransformedITRF(itrf2008, "2000");
+        Frame itrf93 =
+                HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_93.createTransformedITRF(itrf2008, "93");
         Vector3D pos93 = new Vector3D(1234567.8, 2345678.9, 3456789.0);
 
         // check the Helmert transformation as per ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP

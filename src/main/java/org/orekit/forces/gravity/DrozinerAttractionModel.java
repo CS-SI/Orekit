@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -140,7 +141,7 @@ public class DrozinerAttractionModel
         throws OrekitException {
         // Get the position in body frame
         final AbsoluteDate date = s.getDate();
-        final double dateOffset = provider.getOffset(date);
+        final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         final Transform bodyToInertial = centralBodyFrame.getTransformTo(s.getFrame(), date);
         final Vector3D posInBody =
             bodyToInertial.getInverse().transformVector(s.getPVCoordinates().getPosition());
@@ -175,7 +176,7 @@ public class DrozinerAttractionModel
         double sumB = 0.0;
         double bk1 = zOnr;
         double bk0 = aeOnr * (3 * bk1 * bk1 - 1.0);
-        double jk = -provider.getUnnormalizedCnm(dateOffset, 1, 0);
+        double jk = -harmonics.getUnnormalizedCnm(1, 0);
 
         // first zonal term
         sumA += jk * (2 * aeOnr * bk1 - zOnr * bk0);
@@ -188,7 +189,7 @@ public class DrozinerAttractionModel
             final double p = (1.0 + k) / k;
             bk0 = aeOnr * ((1 + p) * zOnr * bk1 - (k * aeOnr * bk2) / (k - 1));
             final double ak0 = p * aeOnr * bk1 - zOnr * bk0;
-            jk = -provider.getUnnormalizedCnm(dateOffset, k, 0);
+            jk = -harmonics.getUnnormalizedCnm(k, 0);
             sumA += jk * ak0;
             sumB += jk * bk0;
         }
@@ -220,8 +221,8 @@ public class DrozinerAttractionModel
             double Bkminus1kminus1 = Bkm1j;
 
             // first terms
-            final double c11 = provider.getUnnormalizedCnm(dateOffset, 1, 1);
-            final double s11 = provider.getUnnormalizedSnm(dateOffset, 1, 1);
+            final double c11 = harmonics.getUnnormalizedCnm(1, 1);
+            final double s11 = harmonics.getUnnormalizedSnm(1, 1);
             double Gkj  = c11 * cosL + s11 * sinL;
             double Hkj  = c11 * sinL - s11 * cosL;
             double Akj  = 2 * r1Onr * betaKminus1 - zOnr * Bkminus1kminus1;
@@ -239,8 +240,8 @@ public class DrozinerAttractionModel
 
                 for (int k = FastMath.max(2, j); k <= provider.getMaxDegree(); ++k) {
 
-                    final double ckj = provider.getUnnormalizedCnm(dateOffset, k, j);
-                    final double skj = provider.getUnnormalizedSnm(dateOffset, k, j);
+                    final double ckj = harmonics.getUnnormalizedCnm(k, j);
+                    final double skj = harmonics.getUnnormalizedSnm(k, j);
                     Gkj = ckj * cosjL + skj * sinjL;
                     Hkj = ckj * sinjL - skj * cosjL;
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
 
 
 public class SimpleExponentialAtmosphereTest {
@@ -36,7 +37,7 @@ public class SimpleExponentialAtmosphereTest {
     public void testExpAtmosphere() throws OrekitException {
         Vector3D posInEME2000 = new Vector3D(10000,Vector3D.PLUS_I);
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame itrf = FramesFactory.getITRF2005();
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         SimpleExponentialAtmosphere atm =
             new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Utils.ae, 1.0 / 298.257222101, itrf),
                                             0.0004, 42000.0, 7500.0);

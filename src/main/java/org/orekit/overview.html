@@ -45,7 +45,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>frames hierarchy supporting fixed and time-dependent (or telemetry-dependent) frames</li>
       <li>predefined frames (EME2000/J2000, ICRF, GCRF, ITRF93, ITRF97, ITRF2000, ITRF2005, ITRF2008 and
           intermediate frames, TOD, MOD, GTOD and TEME frames, Veis, B1950, topocentric, tnw and qsw local orbital
-          frames, spacecraft body, Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter)</li>
+          frames, Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter, ecliptic)</li>
       <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecraft)</li>
       <li>transparent handling of IERS Earth Orientation Parameters (for both new CIO-based frames following
           IERS 2010 conventions and old equinox-based frames)</li>
@@ -90,6 +90,8 @@ discrete events. Here is a short list of the features offered by the library:</p
               and Marshall solar Activity Future Estimation</li>
               <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses</li>
+              <li>solid tides, with or without solid pole tide</li>
+              <li>ocean tides, with or without ocean pole tide</li>
               <li>multiple maneuvers</li>
             </ul>
           </li>
@@ -133,6 +135,7 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>date</li>
           <li>altitude crossing</li>
           <li>target detection in sensor field of view (circular or dihedral)</li>
+          <li>complex geographic zone traversal</li>
           <li>impulse maneuvers occurrence</li>
         </ul>
       </li>
@@ -153,6 +156,7 @@ discrete events. Here is a short list of the features offered by the library:</p
                yaw compensation, yaw-steering)</li>
           <li>orbit referenced attitudes (LOF aligned, offset on all axes)</li>
           <li>space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)</li>
+          <li>tabulated attitudes/li>
         </ul>
       </li>
     </ul>

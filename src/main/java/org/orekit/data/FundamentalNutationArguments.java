@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,18 +21,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
+import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScale;
+import org.orekit.utils.IERSConventions;
 
 /**
  * Class computing the fundamental arguments for nutation and tides.
@@ -52,10 +57,16 @@ import org.orekit.utils.Constants;
 public class FundamentalNutationArguments implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130418L;
+    private static final long serialVersionUID = 20131209L;
 
-    /** Reference epoch.*/
-    private final AbsoluteDate reference;
+    /** IERS conventions to use. */
+    private final IERSConventions conventions;
+
+    /** Time scale for GMST computation. */
+    private final TimeScale timeScale;
+
+    /** Function computing Greenwich Mean Sidereal Time. */
+    private final transient TimeFunction<DerivativeStructure> gmstFunction;
 
     // luni-solar Delaunay arguments
 
@@ -104,11 +115,58 @@ public class FundamentalNutationArguments implements Serializable {
     private final double[] paCoefficients;
 
     /** Build a model of fundamental arguments from an IERS table file.
+     * @param conventions IERS conventions to use
+     * @param timeScale time scale for GMST computation
+     * (may be null if tide parameter γ = GMST + π is not needed)
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public FundamentalNutationArguments(final InputStream stream, final String name)
+    public FundamentalNutationArguments(final IERSConventions conventions,
+                                        final TimeScale timeScale,
+                                        final InputStream stream, final String name)
+        throws OrekitException {
+        this(conventions, timeScale, parseCoefficients(stream, name));
+    }
+
+    /** Build a model of fundamental arguments from an IERS table file.
+     * @param conventions IERS conventions to use
+     * @param timeScale time scale for GMST computation
+     * (may be null if tide parameter γ = GMST + π is not needed)
+     * @param coefficients list of coefficients arrays (all 14 arrays must be provided,
+     * the 5 Delaunay first and the 9 planetary afterwards)
+     * @exception OrekitException if GMST function cannot be retrieved
+     * @since 6.1
+     */
+    public FundamentalNutationArguments(final IERSConventions conventions, final TimeScale timeScale,
+                                        final List<double[]> coefficients)
+        throws OrekitException {
+        this.conventions        = conventions;
+        this.timeScale          = timeScale;
+        this.gmstFunction       = (timeScale == null) ? null : conventions.getGMSTFunction(timeScale);
+        this.lCoefficients      = coefficients.get( 0);
+        this.lPrimeCoefficients = coefficients.get( 1);
+        this.fCoefficients      = coefficients.get( 2);
+        this.dCoefficients      = coefficients.get( 3);
+        this.omegaCoefficients  = coefficients.get( 4);
+        this.lMeCoefficients    = coefficients.get( 5);
+        this.lVeCoefficients    = coefficients.get( 6);
+        this.lECoefficients     = coefficients.get( 7);
+        this.lMaCoefficients    = coefficients.get( 8);
+        this.lJCoefficients     = coefficients.get( 9);
+        this.lSaCoefficients    = coefficients.get(10);
+        this.lUCoefficients     = coefficients.get(11);
+        this.lNeCoefficients    = coefficients.get(12);
+        this.paCoefficients     = coefficients.get(13);
+    }
+
+    /** Parse coefficients.
+     * @param stream stream containing the IERS table
+     * @param name name of the resource file (for error messages only)
+     * @return list of coefficients arrays
+     * @exception OrekitException if stream is null or the table cannot be parsed
+     */
+    private static List<double[]> parseCoefficients(final InputStream stream, final String name)
         throws OrekitException {
 
         if (stream == null) {
@@ -117,7 +175,6 @@ public class FundamentalNutationArguments implements Serializable {
 
         try {
 
-            final DateParser dateParser             = new DateParser();
             final DefinitionParser definitionParser = new DefinitionParser();
 
             // setup the reader
@@ -125,32 +182,44 @@ public class FundamentalNutationArguments implements Serializable {
             int lineNumber = 0;
 
             // look for the reference date and the 14 polynomials
-            final Map<FundamentalName, double[]> polynomials = new HashMap<FundamentalName, double[]>(14);
+            final int n = FundamentalName.values().length;
+            final Map<FundamentalName, double[]> polynomials = new HashMap<FundamentalName, double[]>(n);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 lineNumber++;
-                if (!dateParser.parse(line)) {
-                    if (definitionParser.parseDefinition(line, lineNumber, name)) {
-                        polynomials.put(definitionParser.getParsedName(),
-                                        definitionParser.getParsedPolynomial());
-                    }
+                if (definitionParser.parseDefinition(line, lineNumber, name)) {
+                    polynomials.put(definitionParser.getParsedName(),
+                                    definitionParser.getParsedPolynomial());
                 }
             }
 
-            reference          = dateParser.getParsedDate(name);
-            lCoefficients      = getCoefficients(FundamentalName.L,       polynomials, name);
-            lPrimeCoefficients = getCoefficients(FundamentalName.L_PRIME, polynomials, name);
-            fCoefficients      = getCoefficients(FundamentalName.F,       polynomials, name);
-            dCoefficients      = getCoefficients(FundamentalName.D,       polynomials, name);
-            omegaCoefficients  = getCoefficients(FundamentalName.OMEGA,   polynomials, name);
-            lMeCoefficients    = getCoefficients(FundamentalName.L_ME,    polynomials, name);
-            lVeCoefficients    = getCoefficients(FundamentalName.L_VE,    polynomials, name);
-            lECoefficients     = getCoefficients(FundamentalName.L_E,     polynomials, name);
-            lMaCoefficients    = getCoefficients(FundamentalName.L_MA,    polynomials, name);
-            lJCoefficients     = getCoefficients(FundamentalName.L_J,     polynomials, name);
-            lSaCoefficients    = getCoefficients(FundamentalName.L_SA,    polynomials, name);
-            lUCoefficients     = getCoefficients(FundamentalName.L_U,     polynomials, name);
-            lNeCoefficients    = getCoefficients(FundamentalName.L_NE,    polynomials, name);
-            paCoefficients     = getCoefficients(FundamentalName.PA,      polynomials, name);
+            final List<double[]> coefficients = new ArrayList<double[]>(n);
+            coefficients.add(getCoefficients(FundamentalName.L,       polynomials, name));
+            coefficients.add(getCoefficients(FundamentalName.L_PRIME, polynomials, name));
+            coefficients.add(getCoefficients(FundamentalName.F,       polynomials, name));
+            coefficients.add(getCoefficients(FundamentalName.D,       polynomials, name));
+            coefficients.add(getCoefficients(FundamentalName.OMEGA,   polynomials, name));
+            if (polynomials.containsKey(FundamentalName.L_ME)) {
+                // IERS conventions 2003 and later provide planetary nutation arguments
+                coefficients.add(getCoefficients(FundamentalName.L_ME,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_VE,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_E,     polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_MA,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_J,     polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_SA,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_U,     polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_NE,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.PA,      polynomials, name));
+            } else {
+                // IERS conventions 1996 and earlier don't provide planetary nutation arguments
+                final double[] zero = new double[] {
+                    0.0
+                };
+                while (coefficients.size() < n) {
+                    coefficients.add(zero);
+                }
+            }
+
+            return coefficients;
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
@@ -165,9 +234,9 @@ public class FundamentalNutationArguments implements Serializable {
      * @return polynomials coefficients (ordered from high degrees to low degrees)
      * @exception OrekitException if the argument is not found
      */
-    private double[] getCoefficients(final FundamentalName argument,
-                                     final Map<FundamentalName, double[]> polynomials,
-                                     final String fileName)
+    private static double[] getCoefficients(final FundamentalName argument,
+                                            final Map<FundamentalName, double[]> polynomials,
+                                            final String fileName)
         throws OrekitException {
         if (!polynomials.containsKey(argument)) {
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, fileName);
@@ -177,33 +246,15 @@ public class FundamentalNutationArguments implements Serializable {
 
     /** Evaluate a polynomial.
      * @param tc offset in Julian centuries
-     * @param coefficients polynomial coefficients (ordered from high degrees to low degrees)
+     * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
      * @return value of the polynomial
      */
     private double value(final double tc, final double[] coefficients) {
-        double value = coefficients[0];
-        for (int i = 1; i < coefficients.length; ++i) {
+        double value = 0;
+        for (int i = coefficients.length - 1; i >= 0; --i) {
             value = coefficients[i] + tc * value;
         }
         return value;
-    }
-
-    /** Evaluate Delaunay arguments for the current date.
-     * @param date current date
-     * @return Delaunay arguments for the current date
-     */
-    public DelaunayArguments evaluateDelaunay(final AbsoluteDate date) {
-
-        // offset in julian centuries
-        final double tc =  date.durationFrom(reference) / Constants.JULIAN_CENTURY;
-
-        return new DelaunayArguments(tc,
-                                  value(tc, lCoefficients),      // mean anomaly of the Moon
-                                  value(tc, lPrimeCoefficients), // mean anomaly of the Sun
-                                  value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
-                                  value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
-                                  value(tc, omegaCoefficients)); // mean longitude of the ascending node of the Moon
-
     }
 
     /** Evaluate all fundamental arguments for the current date (Delaunay plus planetary).
@@ -212,10 +263,11 @@ public class FundamentalNutationArguments implements Serializable {
      */
     public BodiesElements evaluateAll(final AbsoluteDate date) {
 
-        // offset in julian centuries
-        final double tc =  date.durationFrom(reference) / Constants.JULIAN_CENTURY;
+        final double tc = conventions.evaluateTC(date);
+        final double gamma = gmstFunction == null ?
+                             Double.NaN : gmstFunction.value(date).getValue() + FastMath.PI;
 
-        return new BodiesElements(tc,
+        return new BodiesElements(date, tc, gamma,
                                   value(tc, lCoefficients),      // mean anomaly of the Moon
                                   value(tc, lPrimeCoefficients), // mean anomaly of the Sun
                                   value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
@@ -230,6 +282,104 @@ public class FundamentalNutationArguments implements Serializable {
                                   value(tc, lUCoefficients),     // mean Uranus longitude
                                   value(tc, lNeCoefficients),    // mean Neptune longitude
                                   value(tc, paCoefficients));    // general accumulated precession in longitude
+
+    }
+
+    /** Evaluate a polynomial.
+     * @param tc offset in Julian centuries
+     * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
+     * @return value of the polynomial
+     */
+    private DerivativeStructure value(final DerivativeStructure tc, final double[] coefficients) {
+        DerivativeStructure value = tc.getField().getZero();
+        for (int i = coefficients.length - 1; i >= 0; --i) {
+            value = value.multiply(tc).add(coefficients[i]);
+        }
+        return value;
+    }
+
+    /** Evaluate all fundamental arguments for the current date (Delaunay plus planetary),
+     * including the first time derivative.
+     * @param date current date
+     * @return all fundamental arguments for the current date (Delaunay plus planetary),
+     * including the first time derivative
+     */
+    public FieldBodiesElements<DerivativeStructure> evaluateDerivative(final AbsoluteDate date) {
+
+        final DerivativeStructure tc = conventions.dsEvaluateTC(date);
+
+        return new FieldBodiesElements<DerivativeStructure>(date, tc,
+                                                            gmstFunction.value(date).add(FastMath.PI),
+                                                            value(tc, lCoefficients),      // mean anomaly of the Moon
+                                                            value(tc, lPrimeCoefficients), // mean anomaly of the Sun
+                                                            value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
+                                                            value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
+                                                            value(tc, omegaCoefficients),  // mean longitude of the ascending node of the Moon
+                                                            value(tc, lMeCoefficients),    // mean Mercury longitude
+                                                            value(tc, lVeCoefficients),    // mean Venus longitude
+                                                            value(tc, lECoefficients),     // mean Earth longitude
+                                                            value(tc, lMaCoefficients),    // mean Mars longitude
+                                                            value(tc, lJCoefficients),     // mean Jupiter longitude
+                                                            value(tc, lSaCoefficients),    // mean Saturn longitude
+                                                            value(tc, lUCoefficients),     // mean Uranus longitude
+                                                            value(tc, lNeCoefficients),    // mean Neptune longitude
+                                                            value(tc, paCoefficients));    // general accumulated precession in longitude
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(conventions, timeScale,
+                                      Arrays.asList(lCoefficients, lPrimeCoefficients, fCoefficients,
+                                                    dCoefficients, omegaCoefficients,
+                                                    lMeCoefficients, lVeCoefficients, lECoefficients,
+                                                    lMaCoefficients, lJCoefficients, lSaCoefficients,
+                                                    lUCoefficients, lNeCoefficients, paCoefficients));
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131209L;
+
+        /** IERS conventions to use. */
+        private final IERSConventions conventions;
+
+        /** Time scale for GMST computation. */
+        private final TimeScale timeScale;
+
+        /** All coefficients. */
+        private final List<double[]> coefficients;
+
+        /** Simple constructor.
+         * @param conventions IERS conventions to use
+         * @param timeScale time scale for GMST computation
+         * @param coefficients all coefficients
+         */
+        public DataTransferObject(final IERSConventions conventions, final TimeScale timeScale,
+                                  final List<double[]> coefficients) {
+            this.conventions  = conventions;
+            this.timeScale    = timeScale;
+            this.coefficients = coefficients;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link TIRFProvider}.
+         * @return replacement {@link TIRFProvider}
+         */
+        private Object readResolve() {
+            try {
+                // retrieve a managed frame
+                return new FundamentalNutationArguments(conventions, timeScale, coefficients);
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
+        }
 
     }
 
@@ -355,64 +505,14 @@ public class FundamentalNutationArguments implements Serializable {
 
     }
 
-    /** Local parser for dates. */
-    private static class DateParser {
-
-        /** Regular expression pattern for date lines. */
-        private final Pattern pattern;
-
-        /** Last parsed date. */
-        private AbsoluteDate parsedDate;
-
-        /** Simple constructor.
-         */
-        public DateParser() {
-            // the reference date should read something like:
-            // reference = 2000-01-01T12:00:00 TT
-            pattern = Pattern.compile("\\p{Space}*reference\\p{Space}*=\\p{Space}*" +
-                                      "(\\p{Digit}{4}-\\p{Digit}{2}-\\p{Digit}{2}" +
-                                      'T' +
-                                      "\\p{Digit}{2}:\\p{Digit}{2}:\\p{Digit}{2}(?:\\.\\p{Digit}*)?)" +
-                                      "\\p{Space}*TT");
-        }
-
-        /** Parse a reference date.
-         * @param line line to parse
-         * @return true if a date has been parsed
-         */
-        public boolean parse(final String line) {
-            final Matcher matcher = pattern.matcher(line);
-            if (matcher.matches()) {
-                parsedDate = new AbsoluteDate(matcher.group(1), TimeScalesFactory.getTT());
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        /** Get last parsed date.
-         * @param name name of the file parsed
-         * @return last parsed date
-         * @exception OrekitException if no date has been parsed
-         */
-        public AbsoluteDate getParsedDate(final String name) throws OrekitException {
-            if (parsedDate == null) {
-                // this should never happen with files embedded within Orekit
-                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
-            }
-            return parsedDate;
-        }
-
-    }
-
     /** Local parser for argument definition lines. */
     private static class DefinitionParser {
 
         /** Regular expression pattern for definitions. */
         private final Pattern pattern;
 
-        /** Parser for monomials. */
-        private MonomialParser monomialParser;
+        /** Parser for polynomials. */
+        private PolynomialParser polynomialParser;
 
         /** Last parsed fundamental name. */
         private FundamentalName parsedName;
@@ -441,7 +541,7 @@ public class FundamentalNutationArguments implements Serializable {
             pattern = Pattern.compile("\\p{Space}*F\\p{Digit}+\\p{Space}*" + unicodeIdenticalTo +
                                       fundamentalName + "\\p{Space}*=\\p{Space}*(.*)");
 
-            monomialParser = new MonomialParser();
+            polynomialParser = new PolynomialParser('t', PolynomialParser.Unit.NO_UNITS);
 
         }
 
@@ -450,10 +550,8 @@ public class FundamentalNutationArguments implements Serializable {
          * @param lineNumber line number
          * @param fileName name of the file
          * @return true if a definition has been parsed
-         * @exception OrekitException if polynomial cannot be parsed
          */
-        public boolean parseDefinition(final String line, final int lineNumber, final String fileName)
-            throws OrekitException {
+        public boolean parseDefinition(final String line, final int lineNumber, final String fileName) {
 
             parsedName       = null;
             parsedPolynomial = null;
@@ -467,18 +565,7 @@ public class FundamentalNutationArguments implements Serializable {
                 }
 
                 // parse the polynomial
-                final Map<Integer, Double> coefficients = new HashMap<Integer, Double>();
-                int maxDegree = -1;
-                monomialParser.initialize(matcher.group(2));
-                while (monomialParser.parseNext()) {
-                    maxDegree = FastMath.max(maxDegree, monomialParser.getParsedPower());
-                    coefficients.put(monomialParser.getParsedPower(),
-                                     monomialParser.getParsedCoefficient());
-                }
-                parsedPolynomial = new double[maxDegree + 1];
-                for (Map.Entry<Integer, Double> entry : coefficients.entrySet()) {
-                    parsedPolynomial[maxDegree - entry.getKey()] = entry.getValue();
-                }
+                parsedPolynomial = polynomialParser.parse(matcher.group(2));
 
                 return true;
 
@@ -500,162 +587,6 @@ public class FundamentalNutationArguments implements Serializable {
          */
         public double[] getParsedPolynomial() {
             return parsedPolynomial.clone();
-        }
-
-    }
-
-    /** Local parser for monomials. */
-    private static class MonomialParser {
-
-        /** Constant for degree unit. */
-        private static final String UNICODE_DEGREE              = "\u00b0";
-
-        /** Constant for white bullet used as degree unit. */
-        private static final String UNICODE_WHITE_BULLET        = "\u25e6";
-
-        /** Constant for arc-seconds unit. */
-        private static final String UNICODE_DOUBLE_PRIME        = "\u2033";
-
-        /** Constant for apostrophes used as arc-seconds unit. */
-        private static final String UNICODE_DOUBLED_APOSTROPHE  = "''";
-
-        /** Constant for quotation mark used as arc-seconds unit. */
-        private static final String UNICODE_QUOTATION_MARK      = "\"";
-
-        /** Constant for multiplication sign. */
-        private static final String UNICODE_MULTIPLICATION_SIGN = "\u00d7";
-
-        /** Constant for minus sign. */
-        private static final String UNICODE_MINUS_SIGN          = "\u2212";
-
-        /** Constant for power 2. */
-        private static final String UNICODE_SUPERSCRIPT_2       = "\u00b2";
-
-        /** Constant for power 3. */
-        private static final String UNICODE_SUPERSCRIPT_3       = "\u00b3";
-
-        /** Constant for power 4. */
-        private static final String UNICODE_SUPERSCRIPT_4       = "\u2074";
-
-        /** Constant for power 5. */
-        private static final String UNICODE_SUPERSCRIPT_5       = "\u2075";
-
-        // current IERS models don't use yet degree 5 or higher, so the previous
-        // constants are sufficient for now. If IERS increase degrees, unicode has
-        // special characters for up to degree 9 in the range 2076 to 2079
-
-        /** Regular expression pattern for monomials. */
-        private final Pattern pattern;
-
-        /** Matcher for a definition. */
-        private Matcher matcher;
-
-        /** Start index for next search. */
-        private int next;
-
-        /** Last parsed coefficient. */
-        private double parsedCoefficient;
-
-        /** Last parsed power. */
-        private int parsedPower;
-
-        /** Simple constructor. */
-        public MonomialParser() {
-
-            // the luni-solar Delaunay arguments polynomial parts should read something like:
-            // F5 ≡ Ω = 125.04455501° − 6962890.5431″t + 7.4722″t² + 0.007702″t³ − 0.00005939″t⁴
-            // whereas the planetary arguments polynomial parts should read something like:
-            // F14 ≡ pA  = 0.02438175 × t + 0.00000538691 × t²
-            final String space           = "\\p{Space}*";
-            final String sign            = "([-" + UNICODE_MINUS_SIGN + "+]?)";
-            final String mantissa        = "(\\p{Digit}+\\.\\p{Digit}*|\\.\\p{Digit}+)";
-            final String unit            = "(" +
-                                           UNICODE_DEGREE + '|' +
-                                           UNICODE_WHITE_BULLET + '|' +
-                                           UNICODE_DOUBLE_PRIME + '|' +
-                                           UNICODE_DOUBLED_APOSTROPHE + '|' +
-                                           UNICODE_QUOTATION_MARK + ")?";
-            final String power           = "(t(" +
-                                           UNICODE_SUPERSCRIPT_2 + '|' +
-                                           UNICODE_SUPERSCRIPT_3 + '|' +
-                                           UNICODE_SUPERSCRIPT_4 + '|' +
-                                           UNICODE_SUPERSCRIPT_5 + ")?)?";
-            pattern = Pattern.compile(space + sign + space + mantissa + space + unit +
-                                      space + UNICODE_MULTIPLICATION_SIGN + '?' + space + power);
-
-        }
-
-        /** Initialize parsing.
-         * @param definition polynomial complete definition.
-         */
-        public void initialize(final String definition) {
-            matcher = pattern.matcher(definition);
-            next = 0;
-        }
-
-        /** Parse next monomial.
-         * @return true if a monomial has been parsed
-         */
-        public boolean parseNext() {
-
-            // advance matcher
-            matcher.region(next, matcher.regionEnd());
-
-            if (matcher.lookingAt()) {
-
-                // parse coefficient, with proper sign and unit
-                parsedCoefficient = Double.parseDouble(matcher.group(2));
-                if ("-".equals(matcher.group(1)) || UNICODE_MINUS_SIGN.equals(matcher.group(1))) {
-                    parsedCoefficient = -parsedCoefficient;
-                }
-                if (UNICODE_DEGREE.equals(matcher.group(3)) ||
-                    UNICODE_WHITE_BULLET.equals(matcher.group(3))) {
-                    parsedCoefficient = FastMath.toRadians(parsedCoefficient);
-                } else if (UNICODE_DOUBLE_PRIME.equals(matcher.group(3)) ||
-                           UNICODE_DOUBLED_APOSTROPHE.equals(matcher.group(3)) ||
-                           UNICODE_QUOTATION_MARK.equals(matcher.group(3))) {
-                    parsedCoefficient = FastMath.toRadians(parsedCoefficient / 3600.0);
-                }
-
-                if (matcher.group(4) == null) {
-                    parsedPower = 0;
-                } else if (matcher.group(5) == null) {
-                    parsedPower = 1;
-                } else if (UNICODE_SUPERSCRIPT_2.equals(matcher.group(5))) {
-                    parsedPower = 2;
-                } else if (UNICODE_SUPERSCRIPT_3.equals(matcher.group(5))) {
-                    parsedPower = 3;
-                } else if (UNICODE_SUPERSCRIPT_4.equals(matcher.group(5))) {
-                    parsedPower = 4;
-                } else {
-                    // this should never happen for current IERS files (limited to degree 4)
-                    parsedPower = 5;
-                }
-
-                next = matcher.end();
-                return true;
-
-            } else {
-
-                parsedCoefficient = Double.NaN;
-                parsedPower       = -1;
-                return false;
-            }
-
-        }
-
-        /** Get the last parsed coefficient.
-         * @return last parsed coefficient converted to radians
-         */
-        public double getParsedCoefficient() {
-            return parsedCoefficient;
-        }
-
-        /** Get the last parsed power.
-         * @return last parsed power
-         */
-        public int getParsedPower() {
-            return parsedPower;
         }
 
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -302,7 +302,7 @@ public class HarrisPriester implements Atmosphere {
 
         // Search altitude index in density table
         int ia = 0;
-        while (ia < tabAltRho.length - 2 && posAlt > tabAltRho[ia][0]) {
+        while (ia < tabAltRho.length - 2 && posAlt > tabAltRho[ia + 1][0]) {
             ia++;
         }
 

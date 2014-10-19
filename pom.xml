@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>bundle</packaging>
-  <version>6.1-SNAPSHOT</version>
+  <version>7.0-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -20,24 +20,24 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.findbugs-maven-plugin.version>2.5.2</orekit.findbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.6.2.201302030002</orekit.jacoco-maven-plugin.version>
+    <orekit.findbugs-maven-plugin.version>2.5.3</orekit.findbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.7.1.201405082137</orekit.jacoco-maven-plugin.version>
     <orekit.maven-assembly-plugin.version>2.4</orekit.maven-assembly-plugin.version>
-    <orekit.maven-bundle-plugin.version>2.3.7</orekit.maven-bundle-plugin.version>
-    <orekit.maven-changes-plugin.version>2.9</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>2.10</orekit.maven-checkstyle-plugin.version>
+    <orekit.maven-bundle-plugin.version>2.4.0</orekit.maven-bundle-plugin.version>
+    <orekit.maven-changes-plugin.version>2.10</orekit.maven-changes-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>2.12.1</orekit.maven-checkstyle-plugin.version>
     <orekit.maven-clean-plugin.version>2.5</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.1</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>2.9.1</orekit.maven-javadoc-plugin.version>
-    <orekit.maven-jxr-plugin.version>2.3</orekit.maven-jxr-plugin.version>
+    <orekit.maven-jxr-plugin.version>2.4</orekit.maven-jxr-plugin.version>
     <orekit.maven-plantuml-plugin.version>7940</orekit.maven-plantuml-plugin.version>
-    <orekit.maven-project-info-reports-plugin.version>2.6</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-project-info-reports-plugin.version>2.7</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>2.6</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.3</orekit.maven-site-plugin.version>
     <orekit.maven-source-plugin.version>2.2.1</orekit.maven-source-plugin.version>
-    <orekit.maven-surefire-plugin.version>2.14.1</orekit.maven-surefire-plugin.version>
-    <orekit.maven-surefire-report-plugin.version>2.14.1</orekit.maven-surefire-report-plugin.version>
-    <orekit.plantuml.version>7955</orekit.plantuml.version>
+    <orekit.maven-surefire-plugin.version>2.17</orekit.maven-surefire-plugin.version>
+    <orekit.maven-surefire-report-plugin.version>2.17</orekit.maven-surefire-report-plugin.version>
+    <orekit.plantuml.version>7999</orekit.plantuml.version>
   </properties>
 
   <developers>
@@ -63,6 +63,13 @@
         <role>developer</role>
       </roles>
     </developer>
+    <developer>
+      <name>Hank Grabowski</name>
+      <id>hankg</id>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>    
     <developer>
       <name>Fabien Maussion</name>
       <roles>
@@ -122,6 +129,18 @@
 
   <contributors>
     <contributor>
+      <name>Daniel Aguilar Taboada</name>
+    </contributor>
+    <contributor>
+      <name>Lucian Barbulescu</name>
+    </contributor>
+    <contributor>
+      <name>Petre Bazavan</name>
+    </contributor>
+    <contributor>
+      <name>Nicolas Bernard</name>
+    </contributor>
+    <contributor>
       <name>Espen Bj&#248;rntvedt</name>
     </contributor>
     <contributor>
@@ -143,6 +162,12 @@
       <name>Christine Fernandez-Martin</name>
     </contributor>
     <contributor>
+      <name>Hank Grabowski</name>
+    </contributor>
+    <contributor>
+      <name>Steven Ports</name>
+    </contributor>
+    <contributor>
       <name>Silvia R&#237;os Berganti&#241;os</name>
     </contributor>
     <contributor>
@@ -153,6 +178,9 @@
     </contributor>
     <contributor>
       <name>Beatriz Salazar</name>
+    </contributor>
+    <contributor>
+      <name>Ioanna Stypsanelli</name>
     </contributor>
     <contributor>
       <name>Michael Turner</name>
@@ -166,7 +194,7 @@
 
   <licenses>
     <license>
-      <name>Apache 2</name>
+      <name>The Apache Software License, Version 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
@@ -209,7 +237,7 @@
   	<dependency>
   		<groupId>org.apache.commons</groupId>
   		<artifactId>commons-math3</artifactId>
-  		<version>3.2</version>
+  		<version>3.3</version>
   		<type>jar</type>
   		<optional>false</optional>
   	</dependency>
@@ -326,14 +354,43 @@
               <goal>check</goal>
             </goals>
             <configuration>
-              <check>
-                <classRatio>100</classRatio>
-                <instructionRatio>90</instructionRatio>
-                <methodRatio>95</methodRatio>
-                <branchRatio>85</branchRatio>
-                <complexityRatio>85</complexityRatio>
-                <lineRatio>90</lineRatio>
-              </check>
+              <rules>
+                <rule>
+                  <element>BUNDLE</element>
+                  <limits>
+                    <limit>
+                      <counter>CLASS</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>1.00</minimum>
+                    </limit>
+                    <limit>
+                      <counter>INSTRUCTION</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.90</minimum>
+                    </limit>
+                    <limit>
+                      <counter>METHOD</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.95</minimum>
+                    </limit>
+                    <limit>
+                      <counter>BRANCH</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.85</minimum>
+                    </limit>
+                    <limit>
+                      <counter>COMPLEXITY</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.85</minimum>
+                    </limit>
+                    <limit>
+                      <counter>LINE</counter>
+                      <value>COVEREDRATIO</value>
+                      <minimum>0.90</minimum>
+                    </limit>
+                  </limits>
+                </rule>
+              </rules>
               <haltOnFailure>false</haltOnFailure>
             </configuration>
           </execution>

@@ -21,6 +21,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.events.EclipseDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -92,18 +93,24 @@ public class EphemerisEventsTest {
 
         EclipseDetector ecl = new EclipseDetector(60., 1.e-3,
                                                   CelestialBodyFactory.getSun(), sunRadius,
-                                                  CelestialBodyFactory.getEarth(), earthRadius) {
-            private static final long serialVersionUID = 1L;
-            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                Assert.assertEquals(type, s.getOrbit().getType());
-                if (increasing) {
-                    ++inEclipsecounter;
-                } else {
-                    ++outEclipsecounter;
-                }
-                return Action.CONTINUE;
-            }
-        };
+                                                  CelestialBodyFactory.getEarth(), earthRadius).
+                              withHandler(new EventHandler<EclipseDetector>() {
+                                public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
+                                                            boolean increasing)
+                                    throws OrekitException {
+                                    Assert.assertEquals(type, s.getOrbit().getType());
+                                    if (increasing) {
+                                        ++inEclipsecounter;
+                                    } else {
+                                        ++outEclipsecounter;
+                                    }
+                                    return Action.CONTINUE;
+                                }
+                                public SpacecraftState resetState(EclipseDetector detector,
+                                                                  SpacecraftState oldState) {
+                                    return oldState;
+                                }
+                            });
 
         return ecl;
     }

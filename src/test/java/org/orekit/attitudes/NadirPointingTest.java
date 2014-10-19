@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,6 +41,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.IERSConventions;
 
 
 public class NadirPointingTest {
@@ -52,7 +53,7 @@ public class NadirPointingTest {
     private double mu;
 
     // Reference frame = ITRF 2005C
-    private Frame frameITRF2005;
+    private Frame itrf;
 
     /** Test in the case of a spheric earth : nadir pointing shall be
      * the same as earth center pointing
@@ -61,13 +62,13 @@ public class NadirPointingTest {
     public void testSphericEarth() throws OrekitException {
 
         // Spheric earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
 
         // Create nadir pointing attitude provider
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         // Create earth center pointing attitude provider
-        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(frameITRF2005);
+        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
 
         // Create satellite position as circular parameters
         CircularOrbit circ =
@@ -98,13 +99,13 @@ public class NadirPointingTest {
     public void testNonSphericEarth() throws OrekitException {
 
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Create nadir pointing attitude provider
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         // Create earth center pointing attitude provider
-        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(frameITRF2005);
+        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
 
         //  Satellite on equatorial position
         // **********************************
@@ -176,7 +177,7 @@ public class NadirPointingTest {
     public void testVertical() throws OrekitException {
 
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Create earth center pointing attitude provider
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
@@ -190,10 +191,10 @@ public class NadirPointingTest {
         //  Vertical test
         // ***************
         // Get observed ground point position/velocity
-        Vector3D pTargetItrf = nadirAttitudeLaw.getTargetPoint(circ, date, frameITRF2005);
+        Vector3D pTargetItrf = nadirAttitudeLaw.getTargetPoint(circ, date, itrf);
 
         // Convert to geodetic coordinates
-        GeodeticPoint geoTarget = earthShape.transform(pTargetItrf, frameITRF2005, date);
+        GeodeticPoint geoTarget = earthShape.transform(pTargetItrf, itrf, date);
 
         // Compute local vertical axis
         double xVert = FastMath.cos(geoTarget.getLongitude())*FastMath.cos(geoTarget.getLatitude());
@@ -206,7 +207,7 @@ public class NadirPointingTest {
 
         // Get satellite Z axis in EME2000 frame
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
-        Vector3D zSatItrf = FramesFactory.getEME2000().getTransformTo(frameITRF2005, date).transformVector(zSatEME2000);
+        Vector3D zSatItrf = FramesFactory.getEME2000().getTransformTo(itrf, date).transformVector(zSatEME2000);
 
         // Check that satellite Z axis is colinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);
@@ -218,7 +219,7 @@ public class NadirPointingTest {
     public void testSpin() throws OrekitException {
 
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Create earth center pointing attitude provider
         NadirPointing law = new NadirPointing(earthShape);
@@ -273,7 +274,7 @@ public class NadirPointingTest {
             mu = 3.9860047e14;
 
             // Reference frame = ITRF 2005
-            frameITRF2005 = FramesFactory.getITRF2005(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
@@ -284,7 +285,7 @@ public class NadirPointingTest {
     @After
     public void tearDown() {
         date = null;
-        frameITRF2005 = null;
+        itrf = null;
     }
 
 }

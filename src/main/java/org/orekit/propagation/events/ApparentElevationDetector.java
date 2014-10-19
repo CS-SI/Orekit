@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
 /** Finder for satellite apparent elevation events.
  * <p>This class finds apparent elevation events (i.e. apparent satellite raising
@@ -37,15 +39,17 @@ import org.orekit.propagation.SpacecraftState;
  *  variable atmospheric effects become very important.</p>
  * <p>Local pressure and temperature can be set to correct refraction at the viewpoint.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at raising and to
- * {@link EventDetector.Action#STOP stop} propagation
- * at setting. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
- * derived class.</p>
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at raising and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * at setting. This can be changed by calling
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
+ * @deprecated as of 6.1 replaced by {@link ElevationDetector}
  */
-public class ApparentElevationDetector extends AbstractDetector {
+@Deprecated
+public class ApparentElevationDetector extends AbstractReconfigurableDetector<ApparentElevationDetector> {
 
     /** Default local pressure at viewpoint (Pa). */
     public static final double DEFAULT_PRESSURE = 101000.0;
@@ -54,7 +58,7 @@ public class ApparentElevationDetector extends AbstractDetector {
     public static final double DEFAULT_TEMPERATURE = 283.0;
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2611286321482306850L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Elevation min value to compute refraction (under the horizon). */
     private static final double MIN_ELEVATION = -2.0;
@@ -85,9 +89,7 @@ public class ApparentElevationDetector extends AbstractDetector {
      * @param topo topocentric frame in which elevation should be evaluated
      */
     public ApparentElevationDetector(final double elevation, final TopocentricFrame topo) {
-        super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
-        this.elevation = elevation;
-        this.topo = topo;
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, elevation, topo);
     }
 
     /** Build a new apparent elevation detector.
@@ -103,9 +105,7 @@ public class ApparentElevationDetector extends AbstractDetector {
     public ApparentElevationDetector(final double maxCheck,
                                      final double elevation,
                                      final TopocentricFrame topo) {
-        super(maxCheck, DEFAULT_THRESHOLD);
-        this.elevation = elevation;
-        this.topo = topo;
+        this(maxCheck, DEFAULT_THRESHOLD, elevation, topo);
     }
 
     /** Build a new apparent elevation detector.
@@ -121,9 +121,39 @@ public class ApparentElevationDetector extends AbstractDetector {
                                      final double threshold,
                                      final double elevation,
                                      final TopocentricFrame topo) {
-        super(maxCheck, threshold);
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing<ApparentElevationDetector>(),
+             elevation, topo);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param maxIter maximum number of iterations in the event time search
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     * @param elevation threshold elevation value (rad)
+     * @param topo topocentric frame in which elevation should be evaluated
+     * @since 6.1
+     */
+    private ApparentElevationDetector(final double maxCheck, final double threshold,
+                                      final int maxIter, final EventHandler<ApparentElevationDetector> handler,
+                                      final double elevation,
+                                      final TopocentricFrame topo) {
+        super(maxCheck, threshold, maxIter, handler);
         this.elevation = elevation;
-        this.topo = topo;
+        this.topo      = topo;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ApparentElevationDetector create(final double newMaxCheck, final double newThreshold,
+                                               final int newMaxIter, final EventHandler<ApparentElevationDetector> newHandler) {
+        return new ApparentElevationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                             elevation, topo);
     }
 
     /** Set the local pressure at topocentric frame origin if needed.
@@ -170,21 +200,6 @@ public class ApparentElevationDetector extends AbstractDetector {
      */
     public double getTemperature() {
         return temperature;
-    }
-
-    /** Handle an apparent elevation event and choose what to do next.
-     * <p>The default implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation at raising and to
-     * {@link EventDetector.Action#STOP stop} propagation at setting.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event.
-     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        return increasing ? Action.CONTINUE : Action.STOP;
     }
 
     /** Compute the value of the switching function.

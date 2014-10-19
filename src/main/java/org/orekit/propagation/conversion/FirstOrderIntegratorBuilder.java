@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.propagation.conversion;
 
 import org.apache.commons.math3.ode.AbstractIntegrator;
+import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 
 /** This interface is the top-level abstraction to build first order integrators for propagators conversion.
@@ -28,7 +29,8 @@ public interface FirstOrderIntegratorBuilder {
     /** Build a first order integrator.
      * @param orbit reference orbit
      * @return a first order integrator ready to use
+     * @exception PropagationException if integrator cannot been built
      */
-    AbstractIntegrator buildIntegrator(final Orbit orbit);
+    AbstractIntegrator buildIntegrator(final Orbit orbit) throws PropagationException;
 
 }
