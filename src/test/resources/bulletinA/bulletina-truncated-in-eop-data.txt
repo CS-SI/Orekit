@@ -1,0 +1,51 @@
+                                                                               
+      **********************************************************************   
+      *                                                                    *   
+      *                   I E R S   B U L L E T I N - A                    *   
+      *                                                                    *   
+      *           Rapid Service/Prediction of Earth Orientation            *   
+      **********************************************************************   
+      5 September 2013                                     Vol. XXVI No. 036   
+      ______________________________________________________________________   
+      GENERAL INFORMATION:                                                     
+         To receive this information electronically, contact:                  
+            ser7@maia.usno.navy.mil or use                                     
+            <http://maia.usno.navy.mil/docrequest.html>                        
+         MJD = Julian Date - 2 400 000.5 days                                  
+         UT2-UT1 = 0.022 sin(2*pi*T) - 0.012 cos(2*pi*T)                       
+                                     - 0.006 sin(4*pi*T) + 0.007 cos(4*pi*T)   
+            where pi = 3.14159265... and T is the date in Besselian years.     
+         TT = TAI + 32.184 seconds                                             
+         DUT1= (UT1-UTC) transmitted with time signals                         
+             =  +0.0 seconds beginning 22 Aug 2013 at 0000 UTC                 
+         Beginning 1 July 2012:                                                
+            TAI-UTC = 35.000 000 seconds                                       
+     ***********************************************************************
+     * Please note that daily and Bulletin A EOP data can be obtained from *
+     * the primary Earth Orientation (EO) servers at:                      *
+     *   http://maia.usno.navy.mil   ftp://maia.usno.navy.mil              *
+     * and from the backup EO server at:                                   *
+     *   http://toshi.nofs.navy.mil  ftp://toshi.nofs.navy.mil             *
+     ***********************************************************************
+     ________________________________________________________________________  
+       The contributed observations used in the preparation of this Bulletin   
+       are available at <http://www.usno.navy.mil/USNO/earth-orientation/      
+       eo-info/general/input-data>. The contributed analysis results are based 
+       on data from Very Long Baseline Interferometry (VLBI), Satellite Laser  
+       Ranging (SLR), the Global Positioning System (GPS) satellites, Lunar    
+       Laser Ranging (LLR), and meteorological predictions of variations in    
+       Atmospheric Angular Momentum (AAM).                                     
+     ________________________________________________________________________  
+                                                                               
+      COMBINED EARTH ORIENTATION PARAMETERS:                                   
+                                                                               
+                              IERS Rapid Service                               
+              MJD      x    error     y    error   UT1-UTC   error             
+                       "      "       "      "        s        s               
+   13  8 30  56534 0.16762 .00009 0.32705 .00009  0.038697 0.000019          
+   13  8 31  56535 0.16669 .00010 0.32564 .00010  0.038471 0.000019          
+   13  9  1  56536 0.16592 .00009 0.32410 .00010  0.038206 0.000024          
+   13  9  2  56537 0.16557 .00009 0.32270 .00009  0.037834 0.000024          
+   13  9  3  56538 0.16532 .00009 0.32147 .00010  0.037351 0.000024          
+   13  9  4  56539 0.16488 .00009 0.32044 .00010  0.036756 0.000023          
+   13  9  5  56540 0.16435 .00009 0.31948 .00009  0.036036 0.000024          

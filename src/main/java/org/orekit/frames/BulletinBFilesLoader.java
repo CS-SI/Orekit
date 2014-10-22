@@ -42,9 +42,11 @@ import org.orekit.utils.IERSConventions;
 
 /** Loader for bulletin B files.
  * <p>Bulletin B files contain {@link EOPEntry
- * Earth Orientation Parameters} for a few months periods.</p>
+ * Earth Orientation Parameters} for a few months periods.
+ * They correspond fo tinalized data, suitable for long term
+ * a posteriori analysis.</p>
  * <p>The bulletin B files are recognized thanks to their base names,
- * which must match one of the the patterns <code>bulletinb_IAU2000-###.txt</code>,
+ * which must match one of the patterns <code>bulletinb_IAU2000-###.txt</code>,
  * <code>bulletinb_IAU2000.###</code>, <code>bulletinb-###.txt</code> or
  * <code>bulletinb.###</code> (or the same ending with <code>.gz</code>
  * for gzip-compressed files) where # stands for a digit character.</p>
@@ -188,12 +190,14 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
         }
         builder.delete(builder.length() - 1, builder.length());
         builder.append(")");
+        final String integerPattern      = "[-+]?\\p{Digit}+";
+        final String realPattern         = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
         final String monthNameField      = builder.toString();
-        final String ignoredIntegerField = "\\p{Blank}*(?:\\p{Digit})+";
-        final String storedIntegerField  = "\\p{Blank}*(\\p{Digit}+)";
+        final String ignoredIntegerField = "\\p{Blank}*" + integerPattern;
+        final String storedIntegerField  = "\\p{Blank}*(" + integerPattern + ")";
         final String mjdField            = "\\p{Blank}+(\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit}\\p{Digit})";
-        final String storedRealField     = "\\p{Blank}+(-?\\p{Digit}+\\.(?:\\p{Digit})+)";
-        final String ignoredRealField    = "\\p{Blank}+-?\\p{Digit}+\\.(?:\\p{Digit})+";
+        final String storedRealField     = "\\p{Blank}+(" + realPattern + ")";
+        final String ignoredRealField    = "\\p{Blank}+" + realPattern;
         final String finalBlanks         = "\\p{Blank}*$";
         SECTION_1_DATA_OLD_FORMAT = Pattern.compile(monthNameField + ignoredIntegerField + mjdField +
                                                     ignoredRealField + ignoredRealField + ignoredRealField +
