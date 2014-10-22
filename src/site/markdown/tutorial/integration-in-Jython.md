@@ -30,8 +30,8 @@ Example SlaveMode
 This example is a translation of the SlaveMode.java example to Jython, showing a stepped
 Keplerian propagation.
 
-    /* Copyright 2002-2010 CS Communication & Systèmes
-     * Licensed to CS Communication & Systèmes (CS) under one or more
+    /* Copyright 2002-2014 CS Systèmes d'Information
+     * Licensed to CS Systèmes d'Information (CS) under one or more
      * contributor license agreements.  See the NOTICE file distributed with
      * this work for additional information regarding copyright ownership.
      * CS licenses this file to You under the Apache License, Version 2.0
@@ -124,8 +124,8 @@ Example: VisibilityCheck
 This example is based on the VisiblityCheck.java, translated into Jython. It includes an
 example of subclassing of a Java object into a jython object.
 
-    /* Copyright 2002-2010 CS Communication & Syst�mes
-     * Licensed to CS Communication & Syst�mes (CS) under one or more
+    /* Copyright 2002-2014 CS Systèmes d'Information
+     * Licensed to CS Systèmes d'Information (CS) under one or more
      * contributor license agreements.  See the NOTICE file distributed with
      * this work for additional information regarding copyright ownership.
      * CS licenses this file to You under the Apache License, Version 2.0
