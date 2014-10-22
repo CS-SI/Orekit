@@ -104,7 +104,7 @@ public class HansenZonalLinear {
         mpvec      = new PolynomialFunction[size][];
         mpvecDeriv = new PolynomialFunction[size][];
 
-        this.numSlices  = (int) FastMath.ceil(((double) size) / SLICE);
+        this.numSlices  = FastMath.max((int) FastMath.ceil(((double) size) / SLICE), 1);
         hansenRoot      = new double[numSlices][2];
         hansenDerivRoot = new double[numSlices][2];
 

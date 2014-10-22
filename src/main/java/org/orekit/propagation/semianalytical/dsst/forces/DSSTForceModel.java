@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -31,8 +32,8 @@ import org.orekit.time.AbsoluteDate;
  *  </p>
  *  <p>
  *  The propagator will call at the very beginning of a propagation the {@link
- *  #initialize(AuxiliaryElements)} method allowing preliminary computation such
- *  as truncation if needed.
+ *  #initialize(AuxiliaryElements, boolean)} method allowing preliminary computation
+ *  such as truncation if needed.
  *  </p>
  *  <p>
  *  Then the propagator will call at each step:
@@ -61,9 +62,10 @@ public interface DSSTForceModel {
      *  This method aims at being called at the very beginning of a propagation.
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
+     *  @param meanOnly only mean elements are used during the propagation
      *  @throws OrekitException if some specific error occurs
      */
-    void initialize(AuxiliaryElements aux)
+    void initialize(AuxiliaryElements aux, boolean meanOnly)
         throws OrekitException;
 
     /** Performs initialization at each integration step for the current force model.
@@ -100,4 +102,26 @@ public interface DSSTForceModel {
      */
     EventDetector[] getEventsDetectors();
 
+    /** Register an attitude provider.
+     * <p>
+     * Register an attitude provider that can be used by the force model.
+     * </p>
+     * @param provider the {@link AttitudeProvider}
+     */
+    void registerAttitudeProvider(AttitudeProvider provider);
+
+    /** Compute the coefficients used for short periodic variations.
+     *
+     * @param state current state information: date, kinematics, attitude
+     * @throws OrekitException if some specific error occurs
+     */
+    void computeShortPeriodicsCoefficients(SpacecraftState state) throws OrekitException;
+
+    /** Reset the coefficients used for short periodic variations.
+     * <p>
+     * This method is aimed to reset short periodics coefficients.
+     * It is called when one goes from a interpolation step to the next one.
+     * </p>
+     */
+    void resetShortPeriodicsCoefficients();
 }

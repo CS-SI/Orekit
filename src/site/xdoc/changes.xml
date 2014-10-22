@@ -87,6 +87,9 @@
       <action dev="luc" type="update" >
         Updated dependency to Apache Commons Math 3.3.
       </action>
+      <action dev="luc" type="update" due-to="Lucian Barbulescu, Nicolas Bernard">
+        Added short periodics for DSST propagation.
+      </action>
       <action dev="luc" type="add" >
         Added a GeographicZoneDetector event detector for complex geographic zones traversal.
         Fixes issue #163.
