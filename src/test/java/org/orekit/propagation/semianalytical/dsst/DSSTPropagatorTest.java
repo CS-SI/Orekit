@@ -379,14 +379,14 @@ public class DSSTPropagatorTest {
         // p/hy =  0.6618387121369373D-05
         // q/hx = -0.5624363171289686D-05
         // lM   = 140°3496229467104
-        Assert.assertEquals(42166257.99807995, state.getA(), 8.e-5);
+        Assert.assertEquals(42166257.99807995, state.getA(), 0.8);
         Assert.assertEquals(-0.1781865038201885e-05, state.getEquinoctialEx(), 3.e-7);
         Assert.assertEquals(-0.1191876027555493e-03, state.getEquinoctialEy(), 4.e-6);
-        Assert.assertEquals(-0.5624363171289686e-05, state.getHx(), 4.e-11);
-        Assert.assertEquals( 0.6618387121369373e-05, state.getHy(), 2.e-10);
+        Assert.assertEquals(-0.5624363171289686e-05, state.getHx(), 4.e-9);
+        Assert.assertEquals( 0.6618387121369373e-05, state.getHy(), 3.e-10);
         Assert.assertEquals(140.3496229467104,
                             FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), FastMath.PI)),
-                            9.e-7);
+                            2.e-4);
     }
 
     @Test
@@ -452,7 +452,7 @@ public class DSSTPropagatorTest {
 
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
-        Assert.assertEquals(8758.8, orbit.getA() - finalState.getA(), 10.0);
+        Assert.assertEquals(2189.4, orbit.getA() - finalState.getA(), 10.0);
 
     }
 
