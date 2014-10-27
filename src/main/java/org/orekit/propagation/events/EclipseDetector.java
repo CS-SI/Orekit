@@ -299,7 +299,13 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
         final Vector3D po   = ping.subtract(psat);
         final double angle  = Vector3D.angle(ps, po);
         final double rs     = FastMath.asin(occultedRadius / ps.getNorm());
+        if (Double.isNaN(rs)) {
+            return FastMath.PI;
+        }
         final double ro     = FastMath.asin(occultingRadius / po.getNorm());
+        if (Double.isNaN(ro)) {
+            return -FastMath.PI;
+        }
         return totalEclipse ? (angle - ro + rs) : (angle - ro - rs);
     }
 
