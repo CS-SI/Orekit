@@ -329,7 +329,10 @@ public class CartesianParametersTest {
             sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
         }
 
-        // well inside the sample, interpolation should be better than Keplerian shift
+        // well inside the sample, interpolation should be much better than Keplerian shift
+        // this is bacause we take the full non-Keplerian acceleration into account in
+        // the Cartesian parameters, which in this case is preserved by the
+        // Eckstein-Hechler propagator
         double maxShiftPError = 0;
         double maxInterpolationPError = 0;
         double maxShiftVError = 0;
@@ -348,20 +351,19 @@ public class CartesianParametersTest {
             maxShiftVError                   = FastMath.max(maxShiftVError,
                                                             shiftError.getVelocity().getNorm());
             maxInterpolationVError           = FastMath.max(maxInterpolationVError,
-                                                            interpolationError.getVelocity().getNorm());
+                                                            interpolationError.getVelocity().getNorm());                    
         }
         Assert.assertTrue(maxShiftPError         > 390.0);
-        Assert.assertTrue(maxInterpolationPError < 10.0);
+        Assert.assertTrue(maxInterpolationPError < 3.0e-8);
         Assert.assertTrue(maxShiftVError         > 3.0);
-        Assert.assertTrue(maxInterpolationVError < 0.8);
+        Assert.assertTrue(maxInterpolationVError < 2.0e-9);
 
-        // past sample end, interpolation should quickly become worse than Keplerian shift
-        // (this is because we interpolate in Cartesian parameters here, it's much better with other orbit types)
+        // if we go far past sample end, interpolation becomes worse than Keplerian shift
         maxShiftPError = 0;
         maxInterpolationPError = 0;
         maxShiftVError = 0;
         maxInterpolationVError = 0;
-        for (double dt = 250.0; dt < 300.0; dt += 1.0) {
+        for (double dt = 500.0; dt < 650.0; dt += 1.0) {
             AbsoluteDate t                   = initialOrbit.getDate().shiftedBy(dt);
             PVCoordinates propagated         = propagator.propagate(t).getPVCoordinates();
             PVCoordinates shiftError         = new PVCoordinates(propagated,
@@ -377,10 +379,10 @@ public class CartesianParametersTest {
             maxInterpolationVError           = FastMath.max(maxInterpolationVError,
                                                             interpolationError.getVelocity().getNorm());
         }
-        Assert.assertTrue(maxShiftPError         <  610.0);
-        Assert.assertTrue(maxInterpolationPError > 4500.0);
-        Assert.assertTrue(maxShiftVError         <    4.0);
-        Assert.assertTrue(maxInterpolationVError >  320.0);
+        Assert.assertTrue(maxShiftPError         < 2500.0);
+        Assert.assertTrue(maxInterpolationPError > 6000.0);
+        Assert.assertTrue(maxShiftVError         <    7.0);
+        Assert.assertTrue(maxInterpolationVError >  170.0);
 
     }
 

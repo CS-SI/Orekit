@@ -64,8 +64,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -587,21 +587,49 @@ public class EcksteinHechlerPropagatorTest {
         }
         TimeStampedPVCoordinates interpolated =
                 TimeStampedPVCoordinates.interpolate(target, CartesianDerivativesFilter.USE_P, sample);
-        AbsoluteDate computedT = sample.get(1).getDate();
         Vector3D computedP     = sample.get(1).getPosition();
         Vector3D computedV     = sample.get(1).getVelocity();
+        Vector3D referenceP    = interpolated.getPosition();
+        Vector3D referenceV    = interpolated.getVelocity();
         Vector3D computedA     = sample.get(1).getAcceleration();
         Vector3D referenceA    = interpolated.getAcceleration();
-        Orbit keplerianOrbit   = new CircularOrbit(new TimeStampedPVCoordinates(computedT,
-                                                                                computedP,
-                                                                                computedV,
-                                                                                Vector3D.ZERO),
-                                                                                orbit.getFrame(), orbit.getMu());
-        Vector3D keplerianA    = keplerianOrbit.getPVCoordinates().getAcceleration();
+        final CircularOrbit propagated = propagator.propagateOrbit(target);
+        final CircularOrbit keplerian =
+                new CircularOrbit(propagated.getA(),
+                                  propagated.getCircularEx(),
+                                  propagated.getCircularEy(),
+                                  propagated.getI(),
+                                  propagated.getRightAscensionOfAscendingNode(),
+                                  propagated.getAlphaM(), PositionAngle.MEAN,
+                                  propagated.getFrame(),
+                                  propagated.getDate(),
+                                  propagated.getMu());
+        Vector3D keplerianP    = keplerian.getPVCoordinates().getPosition();
+        Vector3D keplerianV    = keplerian.getPVCoordinates().getVelocity();
+        Vector3D keplerianA    = keplerian.getPVCoordinates().getAcceleration();
 
-        double computationError   = Vector3D.distance(referenceA, computedA);
-        double nonKeplerianEffect = Vector3D.distance(referenceA, keplerianA);
-        Assert.assertTrue(computationError < nonKeplerianEffect / 97);
+        // perturbed orbit position should be similar to Keplerian orbit position
+        Assert.assertEquals(0.0, Vector3D.distance(referenceP, computedP), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(referenceP, keplerianP), 4.0e-9);
+
+        // perturbed orbit velocity should be different from Keplerian orbit because
+        // Keplerian orbit doesn't take orbit shape changes into account
+        // perturbed orbit velocity should be consistent with position evolution
+        double computationErrorV   = Vector3D.distance(referenceV, computedV);
+        double nonKeplerianEffectV = Vector3D.distance(referenceV, keplerianV);
+        Assert.assertEquals(0.00022,   computationErrorV, 3.0e-6);
+        Assert.assertEquals(0.09543, nonKeplerianEffectV, 6.0e-6);
+        Assert.assertTrue(computationErrorV < nonKeplerianEffectV / 428);
+
+        // perturbed orbit acceleration should be different from Keplerian orbit because
+        // Keplerian orbit doesn't take orbit shape changes into account
+        // perturbed orbit acceleration should be consistent with position evolution
+        double computationErrorA   = Vector3D.distance(referenceA, computedA);
+        double nonKeplerianEffectA = Vector3D.distance(referenceA, keplerianA);
+        Assert.assertEquals(9.4e-8,    computationErrorA, 2.0e-9);
+        Assert.assertEquals(6.37e-3, nonKeplerianEffectA, 5.0e-6);
+        Assert.assertTrue(computationErrorA < nonKeplerianEffectA / 67000);
+
     }
 
     @Test

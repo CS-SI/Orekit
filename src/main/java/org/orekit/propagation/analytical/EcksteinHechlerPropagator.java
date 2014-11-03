@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -44,29 +46,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
-    /** Mean parameters at the initial date. */
-    private CircularOrbit mean;
+    /** Eckstein-Hechler model. */
+    private EHModel model;
 
     /** Current mass. */
     private double mass;
-
-    // CHECKSTYLE: stop JavadocVariable check
-
-    // preprocessed values
-    private double q;
-    private double ql;
-    private double g2;
-    private double g3;
-    private double g4;
-    private double g5;
-    private double g6;
-    private double cosI1;
-    private double sinI1;
-    private double sinI2;
-    private double sinI4;
-    private double sinI6;
-
-    // CHECKSTYLE: resume JavadocVariable check
 
     /** Reference radius of the central body attraction model (m). */
     private double referenceRadius;
@@ -121,7 +105,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
      * <pre>
-     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup>
+     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
      * @param initialOrbit initial orbit
@@ -164,7 +149,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
      * <pre>
-     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup>
+     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
      * @param initialOrbit initial orbit
@@ -209,7 +195,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
      * <pre>
-     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup>
+     *                     <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
      * @param initialOrbit initial orbit
@@ -255,7 +242,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
      * <pre>
-     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup><span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup>
+     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
      * @param initialOrbit initial orbit
@@ -327,35 +315,154 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         }
 
         // rough initialization of the mean parameters
-        mean = new CircularOrbit(osculating);
+        EHModel current = new EHModel(osculating);
 
         // threshold for each parameter
         final double epsilon         = 1.0e-13;
-        final double thresholdA      = epsilon * (1 + FastMath.abs(mean.getA()));
-        final double thresholdE      = epsilon * (1 + mean.getE());
+        final double thresholdA      = epsilon * (1 + FastMath.abs(current.mean.getA()));
+        final double thresholdE      = epsilon * (1 + current.mean.getE());
         final double thresholdAngles = epsilon * FastMath.PI;
 
         int i = 0;
         while (i++ < 100) {
 
-            // preliminary processing
-            q = referenceRadius / mean.getA();
-            ql = q * q;
-            g2 = ck0[2] * ql;
-            ql *= q;
-            g3 = ck0[3] * ql;
-            ql *= q;
-            g4 = ck0[4] * ql;
-            ql *= q;
-            g5 = ck0[5] * ql;
-            ql *= q;
-            g6 = ck0[6] * ql;
+            // recompute the osculating parameters from the current mean parameters
+            final CircularOrbit rebuilt = current.propagateOrbit(current.mean.getDate());
 
-            cosI1 = FastMath.cos(mean.getI());
-            sinI1 = FastMath.sin(mean.getI());
-            sinI2 = sinI1 * sinI1;
-            sinI4 = sinI2 * sinI2;
-            sinI6 = sinI2 * sinI4;
+            // adapted parameters residuals
+            final double deltaA      = osculating.getA()  - rebuilt.getA();
+            final double deltaEx     = osculating.getCircularEx() - rebuilt.getCircularEx();
+            final double deltaEy     = osculating.getCircularEy() - rebuilt.getCircularEy();
+            final double deltaI      = osculating.getI()  - rebuilt.getI();
+            final double deltaRAAN   = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode() -
+                                                                rebuilt.getRightAscensionOfAscendingNode(),
+                                                                0.0);
+            final double deltaAlphaM = MathUtils.normalizeAngle(osculating.getAlphaM() - rebuilt.getAlphaM(), 0.0);
+
+            // update mean parameters
+            current = new EHModel(new CircularOrbit(current.mean.getA()          + deltaA,
+                                                    current.mean.getCircularEx() + deltaEx,
+                                                    current.mean.getCircularEy() + deltaEy,
+                                                    current.mean.getI()          + deltaI,
+                                                    current.mean.getRightAscensionOfAscendingNode() + deltaRAAN,
+                                                    current.mean.getAlphaM()     + deltaAlphaM,
+                                                    PositionAngle.MEAN,
+                                                    current.mean.getFrame(),
+                                                    current.mean.getDate(), mu));
+
+            // check convergence
+            if ((FastMath.abs(deltaA)      < thresholdA) &&
+                (FastMath.abs(deltaEx)     < thresholdE) &&
+                (FastMath.abs(deltaEy)     < thresholdE) &&
+                (FastMath.abs(deltaI)      < thresholdAngles) &&
+                (FastMath.abs(deltaRAAN)   < thresholdAngles) &&
+                (FastMath.abs(deltaAlphaM) < thresholdAngles)) {
+                model = current;
+                return;
+            }
+
+        }
+
+        throw new PropagationException(OrekitMessages.UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS, i);
+
+    }
+
+    /** {@inheritDoc} */
+    public CircularOrbit propagateOrbit(final AbsoluteDate date)
+        throws PropagationException {
+        return model.propagateOrbit(date);
+    }
+
+    /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
+    private class EHModel {
+
+        /** Mean orbit. */
+        private final CircularOrbit mean;
+
+        // CHECKSTYLE: stop JavadocVariable check
+
+        // preprocessed values
+        private final double xnotDot;
+        private final double rdpom;
+        private final double rdpomp;
+        private final double eps1;
+        private final double eps2;
+        private final double xim;
+        private final double ommD;
+        private final double rdl;
+        private final double aMD;
+
+        private final double kh;
+        private final double kl;
+
+        private final double ax1;
+        private final double ay1;
+        private final double as1;
+        private final double ac2;
+        private final double axy3;
+        private final double as3;
+        private final double ac4;
+        private final double as5;
+        private final double ac6;
+
+        private final double ex1;
+        private final double exx2;
+        private final double exy2;
+        private final double ex3;
+        private final double ex4;
+
+        private final double ey1;
+        private final double eyx2;
+        private final double eyy2;
+        private final double ey3;
+        private final double ey4;
+
+        private final double rx1;
+        private final double ry1;
+        private final double r2;
+        private final double r3;
+        private final double rl;
+
+        private final double iy1;
+        private final double ix1;
+        private final double i2;
+        private final double i3;
+        private final double ih;
+
+        private final double lx1;
+        private final double ly1;
+        private final double l2;
+        private final double l3;
+        private final double ll;
+
+        // CHECKSTYLE: resume JavadocVariable check
+
+        /** Create a model for specified mean orbit.
+         * @param mean mean orbit
+         * @exception PropagationException if mean orbit is not within model supported domain
+         */
+        public EHModel(final CircularOrbit mean) throws PropagationException {
+
+            this.mean = mean;
+
+            // preliminary processing
+            double q = referenceRadius / mean.getA();
+            double ql = q * q;
+            final double g2 = ck0[2] * ql;
+            ql *= q;
+            final double g3 = ck0[3] * ql;
+            ql *= q;
+            final double g4 = ck0[4] * ql;
+            ql *= q;
+            final double g5 = ck0[5] * ql;
+            ql *= q;
+            final double g6 = ck0[6] * ql;
+
+            final double cosI1 = FastMath.cos(mean.getI());
+            final double sinI1 = FastMath.sin(mean.getI());
+            final double sinI2 = sinI1 * sinI1;
+            final double sinI4 = sinI2 * sinI2;
+            final double sinI6 = sinI2 * sinI4;
 
             if (sinI2 < 1.0e-10) {
                 throw new PropagationException(OrekitMessages.ALMOST_EQUATORIAL_ORBIT,
@@ -373,275 +480,325 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                                mean.getE());
             }
 
-            // recompute the osculating parameters from the current mean parameters
-            final CircularOrbit rebuilt = propagateCircularOrbit(mean.getDate());
+            xnotDot = FastMath.sqrt(mu / mean.getA()) / mean.getA();
 
-            // adapted parameters residuals
-            final double deltaA      = osculating.getA()  - rebuilt.getA();
-            final double deltaEx     = osculating.getCircularEx() - rebuilt.getCircularEx();
-            final double deltaEy     = osculating.getCircularEy() - rebuilt.getCircularEy();
-            final double deltaI      = osculating.getI()  - rebuilt.getI();
-            final double deltaRAAN   = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode() -
-                                                                rebuilt.getRightAscensionOfAscendingNode(),
-                                                                0.0);
-            final double deltaAlphaM = MathUtils.normalizeAngle(osculating.getAlphaM() - rebuilt.getAlphaM(), 0.0);
+            rdpom = -0.75 * g2 * (4.0 - 5.0 * sinI2);
+            rdpomp = 7.5 * g4 * (1.0 - 31.0 / 8.0 * sinI2 + 49.0 / 16.0 * sinI4) -
+                    13.125 * g6 * (1.0 - 8.0 * sinI2 + 129.0 / 8.0 * sinI4 - 297.0 / 32.0 * sinI6);
 
-            // update mean parameters
-            mean = new CircularOrbit(mean.getA()          + deltaA,
-                                     mean.getCircularEx() + deltaEx,
-                                     mean.getCircularEy() + deltaEy,
-                                     mean.getI()          + deltaI,
-                                     mean.getRightAscensionOfAscendingNode() + deltaRAAN,
-                                     mean.getAlphaM()     + deltaAlphaM,
-                                     PositionAngle.MEAN,
-                                     mean.getFrame(),
-                                     mean.getDate(), mean.getMu());
+            q = 3.0 / (32.0 * rdpom);
+            eps1 = q * g4 * sinI2 * (30.0 - 35.0 * sinI2) -
+                    175.0 * q * g6 * sinI2 * (1.0 - 3.0 * sinI2 + 2.0625 * sinI4);
+            q = 3.0 * sinI1 / (8.0 * rdpom);
+            eps2 = q * g3 * (4.0 - 5.0 * sinI2) - q * g5 * (10.0 - 35.0 * sinI2 + 26.25 * sinI4);
 
-            // check convergence
-            if ((FastMath.abs(deltaA)      < thresholdA) &&
-                (FastMath.abs(deltaEx)     < thresholdE) &&
-                (FastMath.abs(deltaEy)     < thresholdE) &&
-                (FastMath.abs(deltaI)      < thresholdAngles) &&
-                (FastMath.abs(deltaRAAN)   < thresholdAngles) &&
-                (FastMath.abs(deltaAlphaM) < thresholdAngles)) {
-                return;
-            }
+            xim = mean.getI();
+            ommD = cosI1 * (1.50    * g2 - 2.25 * g2 * g2 * (2.5 - 19.0 / 6.0 * sinI2) +
+                            0.9375  * g4 * (7.0 * sinI2 - 4.0) +
+                            3.28125 * g6 * (2.0 - 9.0 * sinI2 + 8.25 * sinI4));
+
+            rdl = 1.0 - 1.50 * g2 * (3.0 - 4.0 * sinI2);
+            aMD = rdl +
+                    2.25 * g2 * g2 * (9.0 - 263.0 / 12.0 * sinI2 + 341.0 / 24.0 * sinI4) +
+                    15.0 / 16.0 * g4 * (8.0 - 31.0 * sinI2 + 24.5 * sinI4) +
+                    105.0 / 32.0 * g6 * (-10.0 / 3.0 + 25.0 * sinI2 - 48.75 * sinI4 + 27.5 * sinI6);
+
+            final double qq = -1.5 * g2 / rdl;
+            final double qA   = 0.75 * g2 * g2 * sinI2;
+            final double qB   = 0.25 * g4 * sinI2;
+            final double qC   = 105.0 / 16.0 * g6 * sinI2;
+            final double qD   = -0.75 * g3 * sinI1;
+            final double qE   = 3.75 * g5 * sinI1;
+            kh = 0.375 / rdpom;
+            kl = kh / sinI1;
+
+            ax1 = qq * (2.0 - 3.5 * sinI2);
+            ay1 = qq * (2.0 - 2.5 * sinI2);
+            as1 = qD * (4.0 - 5.0 * sinI2) +
+                  qE * (2.625 * sinI4 - 3.5 * sinI2 + 1.0);
+            ac2 = qq * sinI2 +
+                  qA * 7.0 * (2.0 - 3.0 * sinI2) +
+                  qB * (15.0 - 17.5 * sinI2) +
+                  qC * (3.0 * sinI2 - 1.0 - 33.0 / 16.0 * sinI4);
+            axy3 = qq * 3.5 * sinI2;
+            as3 = qD * 5.0 / 3.0 * sinI2 +
+                  qE * 7.0 / 6.0 * sinI2 * (1.0 - 1.125 * sinI2);
+            ac4 = qA * sinI2 +
+                  qB * 4.375 * sinI2 +
+                  qC * 0.75 * (1.1 * sinI4 - sinI2);
+
+            as5 = qE * 21.0 / 80.0 * sinI4;
+
+            ac6 = qC * -11.0 / 80.0 * sinI4;
+
+            ex1 = qq * (1.0 - 1.25 * sinI2);
+            exx2 = qq * 0.5 * (3.0 - 5.0 * sinI2);
+            exy2 = qq * (2.0 - 1.5 * sinI2);
+            ex3 = qq * 7.0 / 12.0 * sinI2;
+            ex4 = qq * 17.0 / 8.0 * sinI2;
+
+            ey1 = qq * (1.0 - 1.75 * sinI2);
+            eyx2 = qq * (1.0 - 3.0 * sinI2);
+            eyy2 = qq * (2.0 * sinI2 - 1.5);
+            ey3 = qq * 7.0 / 12.0 * sinI2;
+            ey4 = qq * 17.0 / 8.0 * sinI2;
+
+            q  = -qq * cosI1;
+            rx1 =  3.5 * q;
+            ry1 = -2.5 * q;
+            r2 = -0.5 * q;
+            r3 =  7.0 / 6.0 * q;
+            rl = g3 * cosI1 * (4.0 - 15.0 * sinI2) -
+                 2.5 * g5 * cosI1 * (4.0 - 42.0 * sinI2 + 52.5 * sinI4);
+
+            q = 0.5 * qq * sinI1 * cosI1;
+            iy1 =  q;
+            ix1 = -q;
+            i2 =  q;
+            i3 =  q * 7.0 / 3.0;
+            ih = -g3 * cosI1 * (4.0 - 5.0 * sinI2) +
+                 2.5 * g5 * cosI1 * (4.0 - 14.0 * sinI2 + 10.5 * sinI4);
+
+            lx1 = qq * (7.0 - 77.0 / 8.0 * sinI2);
+            ly1 = qq * (55.0 / 8.0 * sinI2 - 7.50);
+            l2 = qq * (1.25 * sinI2 - 0.5);
+            l3 = qq * (77.0 / 24.0 * sinI2 - 7.0 / 6.0);
+            ll = g3 * (53.0 * sinI2 - 4.0 - 57.5 * sinI4) +
+                 2.5 * g5 * (4.0 - 96.0 * sinI2 + 269.5 * sinI4 - 183.75 * sinI6);
 
         }
 
-        throw new PropagationException(OrekitMessages.UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS, i);
+        /** Extrapolate an orbit up to a specific target date.
+         * @param date target date for the orbit
+         * @return extrapolated parameters
+         * @exception PropagationException if some parameters are out of bounds
+         */
+        public CircularOrbit propagateOrbit(final AbsoluteDate date)
+            throws PropagationException {
 
-    }
+            // keplerian evolution
+            final DerivativeStructure dt =
+                    new DerivativeStructure(1, 2, 0, date.durationFrom(mean.getDate()));
+            final DerivativeStructure xnot = dt.multiply(xnotDot);
 
-    /** {@inheritDoc} */
-    public Orbit propagateOrbit(final AbsoluteDate date)
-        throws PropagationException {
+            // secular effects
 
-        // propagate orbit, without computing zonal acceleration
-        final CircularOrbit o = propagateCircularOrbit(date);
+            // eccentricity
+            final DerivativeStructure x   = xnot.multiply(rdpom + rdpomp);
+            final DerivativeStructure cx  = x.cos();
+            final DerivativeStructure sx  = x.sin();
+            final DerivativeStructure exm = cx.multiply(mean.getCircularEx()).
+                                            add(sx.multiply(eps2 - (1.0 - eps1) * mean.getCircularEy()));
+            final DerivativeStructure eym = sx.multiply((1.0 + eps1) * mean.getCircularEx()).
+                                            add(cx.multiply(mean.getCircularEy() - eps2)).
+                                            add(eps2);
 
-        // recompute acceleration, to take zonal terms into account
-        final TimeStampedPVCoordinates pva = addZonalAcceleration(o.getPVCoordinates());
+            // no secular effect on inclination
 
-        return new CircularOrbit(pva, mean.getFrame(), mean.getMu());
+            // right ascension of ascending node
+            final DerivativeStructure omm =
+                    new DerivativeStructure(1, 2,
+                                            MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
+                                                                     FastMath.PI),
+                                            ommD * xnotDot,
+                                            0.0);
 
-    }
+            // latitude argument
+            final DerivativeStructure xlm =
+                    new DerivativeStructure(1, 2,
+                                            MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
+                                            aMD * xnotDot,
+                                            0.0);
 
-    /** Propagate only the circular orbit part.
-     * <p>
-     * This method does not compute the non-Keplerian acceleration
-     * </p>
-     * @param date target date
-     * @return propagated circular orbit
-     */
-    private CircularOrbit propagateCircularOrbit(final AbsoluteDate date) {
+            // periodical terms
+            final DerivativeStructure cl1 = xlm.cos();
+            final DerivativeStructure sl1 = xlm.sin();
+            final DerivativeStructure cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
+            final DerivativeStructure sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
+            final DerivativeStructure cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
+            final DerivativeStructure sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
+            final DerivativeStructure cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
+            final DerivativeStructure sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
+            final DerivativeStructure cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
+            final DerivativeStructure sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
+            final DerivativeStructure cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
 
-        // keplerian evolution
-        final double xnot = date.durationFrom(mean.getDate()) * FastMath.sqrt(mu / mean.getA()) / mean.getA();
+            final DerivativeStructure qh  = eym.subtract(eps2).multiply(kh);
+            final DerivativeStructure ql  = exm.multiply(kl);
 
-        // secular effects
+            final DerivativeStructure exmCl1 = exm.multiply(cl1);
+            final DerivativeStructure exmSl1 = exm.multiply(sl1);
+            final DerivativeStructure eymCl1 = eym.multiply(cl1);
+            final DerivativeStructure eymSl1 = eym.multiply(sl1);
+            final DerivativeStructure exmCl2 = exm.multiply(cl2);
+            final DerivativeStructure exmSl2 = exm.multiply(sl2);
+            final DerivativeStructure eymCl2 = eym.multiply(cl2);
+            final DerivativeStructure eymSl2 = eym.multiply(sl2);
+            final DerivativeStructure exmCl3 = exm.multiply(cl3);
+            final DerivativeStructure exmSl3 = exm.multiply(sl3);
+            final DerivativeStructure eymCl3 = eym.multiply(cl3);
+            final DerivativeStructure eymSl3 = eym.multiply(sl3);
+            final DerivativeStructure exmCl4 = exm.multiply(cl4);
+            final DerivativeStructure exmSl4 = exm.multiply(sl4);
+            final DerivativeStructure eymCl4 = eym.multiply(cl4);
+            final DerivativeStructure eymSl4 = eym.multiply(sl4);
 
-        // eccentricity
-        final double rdpom = -0.75 * g2 * (4.0 - 5.0 * sinI2);
-        final double rdpomp = 7.5 * g4 * (1.0 - 31.0 / 8.0 * sinI2 + 49.0 / 16.0 * sinI4) -
-                              13.125 * g6 * (1.0 - 8.0 * sinI2 + 129.0 / 8.0 * sinI4 - 297.0 / 32.0 * sinI6);
-        final double x = (rdpom + rdpomp) * xnot;
-        final double cx = FastMath.cos(x);
-        final double sx = FastMath.sin(x);
-        q = 3.0 / (32.0 * rdpom);
-        final double eps1 =
-            q * g4 * sinI2 * (30.0 - 35.0 * sinI2) -
-            175.0 * q * g6 * sinI2 * (1.0 - 3.0 * sinI2 + 2.0625 * sinI4);
-        q = 3.0 * sinI1 / (8.0 * rdpom);
-        final double eps2 =
-            q * g3 * (4.0 - 5.0 * sinI2) - q * g5 * (10.0 - 35.0 * sinI2 + 26.25 * sinI4);
-        final double exm = mean.getCircularEx() * cx - (1.0 - eps1) * mean.getCircularEy() * sx + eps2 * sx;
-        final double eym = (1.0 + eps1) * mean.getCircularEx() * sx + (mean.getCircularEy() - eps2) * cx + eps2;
+            // semi major axis
+            final DerivativeStructure rda = exmCl1.multiply(ax1).
+                                            add(eymSl1.multiply(ay1)).
+                                            add(sl1.multiply(as1)).
+                                            add(cl2.multiply(ac2)).
+                                            add(exmCl3.add(eymSl3).multiply(axy3)).
+                                            add(sl3.multiply(as3)).
+                                            add(cl4.multiply(ac4)).
+                                            add(sl5.multiply(as5)).
+                                            add(cl6.multiply(ac6));
 
-        // inclination
-        final double xim = mean.getI();
+            // eccentricity
+            final DerivativeStructure rdex = cl1.multiply(ex1).
+                                             add(exmCl2.multiply(exx2)).
+                                             add(eymSl2.multiply(exy2)).
+                                             add(cl3.multiply(ex3)).
+                                             add(exmCl4.add(eymSl4).multiply(ex4));
+            final DerivativeStructure rdey = sl1.multiply(ey1).
+                                             add(exmSl2.multiply(eyx2)).
+                                             add(eymCl2.multiply(eyy2)).
+                                             add(sl3.multiply(ey3)).
+                                             add(exmSl4.subtract(eymCl4).multiply(ey4));
 
-        // right ascension of ascending node
-        q = 1.50 * g2 - 2.25 * g2 * g2 * (2.5 - 19.0 / 6.0 * sinI2) +
-            0.9375 * g4 * (7.0 * sinI2 - 4.0) +
-            3.28125 * g6 * (2.0 - 9.0 * sinI2 + 8.25 * sinI4);
-        final double omm =
-            MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + q * cosI1 * xnot, FastMath.PI);
+            // ascending node
+            final DerivativeStructure rdom = exmSl1.multiply(rx1).
+                                             add(eymCl1.multiply(ry1)).
+                                             add(sl2.multiply(r2)).
+                                             add(eymCl3.subtract(exmSl3).multiply(r3)).
+                                             add(ql.multiply(rl));
 
-        // latitude argument
-        final double rdl = 1.0 - 1.50 * g2 * (3.0 - 4.0 * sinI2);
-        q = rdl +
-            2.25 * g2 * g2 * (9.0 - 263.0 / 12.0 * sinI2 + 341.0 / 24.0 * sinI4) +
-            15.0 / 16.0 * g4 * (8.0 - 31.0 * sinI2 + 24.5 * sinI4) +
-            105.0 / 32.0 * g6 * (-10.0 / 3.0 + 25.0 * sinI2 - 48.75 * sinI4 + 27.5 * sinI6);
-        final double xlm = MathUtils.normalizeAngle(mean.getAlphaM() + q * xnot, FastMath.PI);
+            // inclination
+            final DerivativeStructure rdxi = eymSl1.multiply(iy1).
+                                             add(exmCl1.multiply(ix1)).
+                                             add(cl2.multiply(i2)).
+                                             add(exmCl3.add(eymSl3).multiply(i3)).
+                                             add(qh.multiply(ih));
 
-        // periodical terms
-        final double cl1 = FastMath.cos(xlm);
-        final double sl1 = FastMath.sin(xlm);
-        final double cl2 = cl1 * cl1 - sl1 * sl1;
-        final double sl2 = cl1 * sl1 + sl1 * cl1;
-        final double cl3 = cl2 * cl1 - sl2 * sl1;
-        final double sl3 = cl2 * sl1 + sl2 * cl1;
-        final double cl4 = cl3 * cl1 - sl3 * sl1;
-        final double sl4 = cl3 * sl1 + sl3 * cl1;
-        final double cl5 = cl4 * cl1 - sl4 * sl1;
-        final double sl5 = cl4 * sl1 + sl4 * cl1;
-        final double cl6 = cl5 * cl1 - sl5 * sl1;
+            // latitude argument
+            final DerivativeStructure rdxl = exmSl1.multiply(lx1).
+                                             add(eymCl1.multiply(ly1)).
+                                             add(sl2.multiply(l2)).
+                                             add(exmSl3.subtract(eymCl3).multiply(l3)).
+                                             add(ql.multiply(ll));
 
-        final double qq = -1.5 * g2 / rdl;
-        final double qh = 0.375 * (eym - eps2) / rdpom;
-        ql = 0.375 * exm / (sinI1 * rdpom);
+            // osculating parameters
+            final DerivativeStructure a      = rda.add(1.0).multiply(mean.getA());
+            final DerivativeStructure ex     = rdex.add(exm);
+            final DerivativeStructure ey     = rdey.add(eym);
+            final DerivativeStructure i      = rdxi.add(xim);
+            final DerivativeStructure raan   = rdom.add(omm);
+            final DerivativeStructure alphaM = rdxl.add(xlm);
 
-        // semi major axis
-        double f = (2.0 - 3.5 * sinI2) * exm * cl1 +
-                   (2.0 - 2.5 * sinI2) * eym * sl1 +
-                   sinI2 * cl2 +
-                   3.5 * sinI2 * (exm * cl3 + eym * sl3);
-        double rda = qq * f;
+            // precompute Cartesian parameters, taking derivatives into account
+            // to make sure velocity and acceleration are consistent
+            final TimeStampedPVCoordinates pv = toCartesian(date, a, ex, ey, i, raan, alphaM);
 
-        q = 0.75 * g2 * g2 * sinI2;
-        f = 7.0 * (2.0 - 3.0 * sinI2) * cl2 + sinI2 * cl4;
-        rda += q * f;
+            // build the complete orbit, with both circular and Cartesian parameters
+            return new CircularOrbit(a.getValue(), ex.getValue(), ey.getValue(),
+                                     i.getValue(), raan.getValue(),
+                                     alphaM.getValue(), PositionAngle.MEAN,
+                                     pv, mean.getFrame(), mu);
 
-        q = -0.75 * g3 * sinI1;
-        f = (4.0 - 5.0 * sinI2) * sl1 + 5.0 / 3.0 * sinI2 * sl3;
-        rda += q * f;
-
-        q = 0.25 * g4 * sinI2;
-        f = (15.0 - 17.5 * sinI2) * cl2 + 4.375 * sinI2 * cl4;
-        rda += q * f;
-
-        q = 3.75 * g5 * sinI1;
-        f = (2.625 * sinI4 - 3.5 * sinI2 + 1.0) * sl1 +
-            7.0 / 6.0 * sinI2 * (1.0 - 1.125 * sinI2) * sl3 +
-            21.0 / 80.0 * sinI4 * sl5;
-        rda += q * f;
-
-        q = 105.0 / 16.0 * g6 * sinI2;
-        f = (3.0 * sinI2 - 1.0 - 33.0 / 16.0 * sinI4) * cl2 +
-            0.75 * (1.1 * sinI4 - sinI2) * cl4 -
-            11.0 / 80.0 * sinI4 * cl6;
-        rda += q * f;
-
-        // eccentricity
-        f = (1.0 - 1.25 * sinI2) * cl1 +
-            0.5 * (3.0 - 5.0 * sinI2) * exm * cl2 +
-            (2.0 - 1.5 * sinI2) * eym * sl2 +
-            7.0 / 12.0 * sinI2 * cl3 +
-            17.0 / 8.0 * sinI2 * (exm * cl4 + eym * sl4);
-        final double rdex = qq * f;
-
-        f = (1.0 - 1.75 * sinI2) * sl1 +
-            (1.0 - 3.0 * sinI2) * exm * sl2 +
-            (2.0 * sinI2 - 1.5) * eym * cl2 +
-            7.0 / 12.0 * sinI2 * sl3 +
-            17.0 / 8.0 * sinI2 * (exm * sl4 - eym * cl4);
-        final double rdey = qq * f;
-
-        // ascending node
-        q = -qq * cosI1;
-        f = 3.5 * exm * sl1 -
-            2.5 * eym * cl1 -
-            0.5 * sl2 +
-            7.0 / 6.0 * (eym * cl3 - exm * sl3);
-        double rdom = q * f;
-
-        f = g3 * cosI1 * (4.0 - 15.0 * sinI2);
-        rdom += ql * f;
-
-        f = 2.5 * g5 * cosI1 * (4.0 - 42.0 * sinI2 + 52.5 * sinI4);
-        rdom -= ql * f;
-
-        // inclination
-        q = 0.5 * qq * sinI1 * cosI1;
-        f = eym * sl1 - exm * cl1 + cl2 + 7.0 / 3.0 * (exm * cl3 + eym * sl3);
-        double rdxi = q * f;
-
-        f = g3 * cosI1 * (4.0 - 5.0 * sinI2);
-        rdxi -= qh * f;
-
-        f = 2.5 * g5 * cosI1 * (4.0 - 14.0 * sinI2 + 10.5 * sinI4);
-        rdxi += qh * f;
-
-        // latitude argument
-        f = (7.0 - 77.0 / 8.0 * sinI2) * exm * sl1 +
-            (55.0 / 8.0 * sinI2 - 7.50) * eym * cl1 +
-            (1.25 * sinI2 - 0.5) * sl2 +
-            (77.0 / 24.0 * sinI2 - 7.0 / 6.0) * (exm * sl3 - eym * cl3);
-        double rdxl = qq * f;
-
-        f = g3 * (53.0 * sinI2 - 4.0 - 57.5 * sinI4);
-        rdxl += ql * f;
-
-        f = 2.5 * g5 * (4.0 - 96.0 * sinI2 + 269.5 * sinI4 - 183.75 * sinI6);
-        rdxl += ql * f;
-
-        // osculating parameters
-        return new CircularOrbit(mean.getA() * (1.0 + rda), exm + rdex, eym + rdey,
-                                 xim + rdxi, MathUtils.normalizeAngle(omm + rdom, FastMath.PI),
-                                 MathUtils.normalizeAngle(xlm + rdxl, FastMath.PI),
-                                 PositionAngle.MEAN,
-                                 mean.getFrame(), date, mean.getMu());
-
-    }
-
-    /** Compute acceleration due to central and zonal terms.
-     * @param pva position/velocity/acceleration, where acceleration is only Keplerian
-     * @return position/velocity/acceleration, where acceleration takes zonal terms into account
-     * @exception PropagationException if point is along pole or below Brillouin sphere radius
-     */
-    private TimeStampedPVCoordinates addZonalAcceleration(final TimeStampedPVCoordinates pva)
-        throws PropagationException {
-
-        final double xBody = pva.getPosition().getX();
-        final double yBody = pva.getPosition().getY();
-        final double zBody = pva.getPosition().getZ();
-
-        // Computation of intermediate variables
-        final double r12 = xBody * xBody + yBody * yBody;
-        final double r1 = FastMath.sqrt(r12);
-        if (r1 <= 10e-2) {
-            throw new PropagationException(OrekitMessages.POLAR_TRAJECTORY, r1);
-        }
-        final double r2 = r12 + zBody * zBody;
-        final double r  = FastMath.sqrt(r2);
-        if (r <= referenceRadius) {
-            throw new PropagationException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
-        }
-        final double r3    = r2  * r;
-        final double aeOnr = referenceRadius / r;
-        final double zOnr  = zBody / r;
-        final double r1Onr = r1 / r;
-
-        // Definition of the first acceleration terms
-        final double mMuOnr3  = -mu / r3;
-        final double xDotDotk = xBody * mMuOnr3;
-        final double yDotDotk = yBody * mMuOnr3;
-
-        // Zonal part of acceleration
-        double sumA = 0.0;
-        double sumB = 0.0;
-        double bk1 = zOnr;
-        double bk0 = aeOnr * (3 * bk1 * bk1 - 1.0);
-        for (int k = 2; k <= 6; k++) {
-            final double bk2 = bk1;
-            bk1 = bk0;
-            final double p = (1.0 + k) / k;
-            bk0 = aeOnr * ((1 + p) * zOnr * bk1 - (k * aeOnr * bk2) / (k - 1));
-            final double ak0 = p * aeOnr * bk1 - zOnr * bk0;
-            sumA -= ck0[k] * ak0;
-            sumB -= ck0[k] * bk0;
         }
 
-        // add the acceleration to the initial coordinates
-        final double p = -sumA / (r1Onr * r1Onr);
-        return new TimeStampedPVCoordinates(pva.getDate(),
-                                            pva.getPosition(),
-                                            pva.getVelocity(),
-                                            new Vector3D(pva.getAcceleration().getX() + xDotDotk * p,
-                                                         pva.getAcceleration().getY() + yDotDotk * p,
-                                                         pva.getAcceleration().getZ() + mu * sumB / r2));
+        /** Convert circular parameters <em>with derivatives</em> to Cartesian coordinates.
+         * @param date date of the orbital parameters
+         * @param a  semi-major axis (m)
+         * @param ex e cos(Ω), first component of circular eccentricity vector
+         * @param ey e sin(Ω), second component of circular eccentricity vector
+         * @param i inclination (rad)
+         * @param raan right ascension of ascending node (Ω, rad)
+         * @param alphaM  mean latitude argument (rad)
+         * @return Cartesian coordinates consistent with values and derivatives
+         */
+        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date,      final DerivativeStructure a,
+                                                    final DerivativeStructure ex, final DerivativeStructure ey,
+                                                    final DerivativeStructure i,  final DerivativeStructure raan,
+                                                    final DerivativeStructure alphaM) {
+
+            // evaluate coordinates in the orbit canonical reference frame
+            final DerivativeStructure cosOmega = raan.cos();
+            final DerivativeStructure sinOmega = raan.sin();
+            final DerivativeStructure cosI     = i.cos();
+            final DerivativeStructure sinI     = i.sin();
+            final DerivativeStructure alphaE   = meanToEccentric(alphaM, ex, ey);
+            final DerivativeStructure cosAE    = alphaE.cos();
+            final DerivativeStructure sinAE    = alphaE.sin();
+            final DerivativeStructure ex2      = ex.multiply(ex);
+            final DerivativeStructure ey2      = ey.multiply(ey);
+            final DerivativeStructure exy      = ex.multiply(ey);
+            final DerivativeStructure q        = ex2.add(ey2).subtract(1).negate().sqrt();
+            final DerivativeStructure beta     = q.add(1).reciprocal();
+            final DerivativeStructure bx2      = beta.multiply(ex2);
+            final DerivativeStructure by2      = beta.multiply(ey2);
+            final DerivativeStructure bxy      = beta.multiply(exy);
+            final DerivativeStructure u        = bxy.multiply(sinAE).subtract(ex.add(by2.subtract(1).multiply(cosAE)));
+            final DerivativeStructure v        = bxy.multiply(cosAE).subtract(ey.add(bx2.subtract(1).multiply(sinAE)));
+            final DerivativeStructure x        = a.multiply(u);
+            final DerivativeStructure y        = a.multiply(v);
+
+            // canonical orbit reference frame
+            final FieldVector3D<DerivativeStructure> p =
+                    new FieldVector3D<DerivativeStructure>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
+                                                           x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
+                                                           y.multiply(sinI));
+
+            // dispatch derivatives
+            final Vector3D p0 = new Vector3D(p.getX().getValue(),
+                                             p.getY().getValue(),
+                                             p.getZ().getValue());
+            final Vector3D p1 = new Vector3D(p.getX().getPartialDerivative(1),
+                                             p.getY().getPartialDerivative(1),
+                                             p.getZ().getPartialDerivative(1));
+            final Vector3D p2 = new Vector3D(p.getX().getPartialDerivative(2),
+                                             p.getY().getPartialDerivative(2),
+                                             p.getZ().getPartialDerivative(2));
+            return new TimeStampedPVCoordinates(date, p0, p1, p2);
+
+        }
+
+        /** Computes the eccentric latitude argument from the mean latitude argument.
+         * @param alphaM = M + Ω mean latitude argument (rad)
+         * @param ex e cos(Ω), first component of circular eccentricity vector
+         * @param ey e sin(Ω), second component of circular eccentricity vector
+         * @return the eccentric latitude argument.
+         */
+        private DerivativeStructure meanToEccentric(final DerivativeStructure alphaM,
+                                                    final DerivativeStructure ex,
+                                                    final DerivativeStructure ey) {
+            // Generalization of Kepler equation to circular parameters
+            // with alphaE = PA + E and
+            //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
+            DerivativeStructure alphaE        = alphaM;
+            DerivativeStructure shift         = alphaM.getField().getZero();
+            DerivativeStructure alphaEMalphaM = alphaM.getField().getZero();
+            DerivativeStructure cosAlphaE     = alphaE.cos();
+            DerivativeStructure sinAlphaE     = alphaE.sin();
+            int    iter          = 0;
+            do {
+                final DerivativeStructure f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
+                final DerivativeStructure f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
+                final DerivativeStructure f0 = alphaEMalphaM.subtract(f2);
+
+                final DerivativeStructure f12 = f1.multiply(2);
+                shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
+
+                alphaEMalphaM  = alphaEMalphaM.subtract(shift);
+                alphaE         = alphaM.add(alphaEMalphaM);
+                cosAlphaE      = alphaE.cos();
+                sinAlphaE      = alphaE.sin();
+
+            } while ((++iter < 50) && (FastMath.abs(shift.getValue()) > 1.0e-12));
+
+            return alphaE;
+
+        }
 
     }
 

@@ -940,9 +940,9 @@ public class KeplerianParametersTest {
             maxInterpolationEccentricityError = FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
         }
         Assert.assertTrue(maxShiftPositionError             > 390.0);
-        Assert.assertTrue(maxInterpolationPositionError     < 40.0);
+        Assert.assertTrue(maxInterpolationPositionError     < 62.0);
         Assert.assertTrue(maxShiftEccentricityError         > 4.5e-4);
-        Assert.assertTrue(maxInterpolationEccentricityError < 2.1e-6);
+        Assert.assertTrue(maxInterpolationEccentricityError < 2.6e-5);
 
         // slightly past sample end, bad eccentricity interpolation shows up
         // (in this case, interpolated eccentricity exceeds 1.0 btween 1900

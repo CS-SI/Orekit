@@ -121,13 +121,13 @@ public class SpacecraftStateTest {
     @Test
     public void testInterpolation()
         throws ParseException, OrekitException {
-        checkInterpolationError( 2, 5162.2580, 1.47722511, 169847849.38e-9, 0.0, 450 * 450);
-        checkInterpolationError( 3,  650.5940, 0.62788726,    189888.18e-9, 0.0, 0.0);
-        checkInterpolationError( 4,  259.3868, 0.11878960,       232.33e-9, 0.0, 0.0);
+        checkInterpolationError( 2, 5162.2580, 1.51501141, 169847806.33e-9, 0.0, 450 * 450);
+        checkInterpolationError( 3,  650.5940, 0.67849324,    189886.01e-9, 0.0, 0.0);
+        checkInterpolationError( 4,  259.3868, 0.15246485,       232.25e-9, 0.0, 0.0);
         checkInterpolationError( 5,   29.5445, 0.02278694,         0.48e-9, 0.0, 0.0);
-        checkInterpolationError( 6,    6.7633, 0.00336356,         0.09e-9, 0.0, 0.0);
-        checkInterpolationError( 9,    0.0082, 0.00000577,         1.49e-9, 0.0, 0.0);
-        checkInterpolationError(10,    0.0011, 0.00000058,         5.61e-9, 0.0, 0.0);
+        checkInterpolationError( 6,    6.7633, 0.00336356,         0.00e-9, 0.0, 0.0);
+        checkInterpolationError( 9,    0.0082, 0.00000577,         0.00e-9, 0.0, 0.0);
+        checkInterpolationError(10,    0.0011, 0.00000058,         0.00e-9, 0.0, 0.0);
     }
 
     private void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
@@ -306,8 +306,8 @@ public class SpacecraftStateTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(state);
 
-        Assert.assertTrue(bos.size() > 600);
-        Assert.assertTrue(bos.size() < 700);
+        Assert.assertTrue(bos.size() > 700);
+        Assert.assertTrue(bos.size() < 800);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
