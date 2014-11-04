@@ -40,7 +40,7 @@ ones since the other packages (binary jars, javadoc jars and even the bulk
 of this site) are created from these sources.
 
 Orekit is also available in maven central repository,
-with groupID org.orekit and artifactId rugged-core, rugged-aster, ... so maven
+with groupID org.orekit and artifactId orekit so maven
 internal mechanism will download automatically all artifacts and dependencies
 as required.
 

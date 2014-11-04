@@ -35,7 +35,7 @@ For systems not providing maven as a package, maven can be
 Apache Software Foundation. This site also explains the
 installation procedure.
 
-As with all maven enabled projects, building Rugged is straightforward, simply
+As with all maven enabled projects, building Orekit is straightforward, simply
 run:
 
     mvn assembly:single
@@ -74,7 +74,7 @@ The simplest way to use Orekit with Eclipse is to follow these steps:
   * unpack the distribution inside your Eclipse workspace
 
   * create a new java project from existing sources and direct Eclipse to the
-     directory where you unpacked Rugged
+     directory where you unpacked Orekit
 
   * set the source folders to
     * orekit/src/main/java
