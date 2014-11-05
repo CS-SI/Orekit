@@ -18,7 +18,6 @@ package org.orekit.attitudes;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
@@ -48,12 +47,10 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -182,15 +179,16 @@ public class YawCompensationTest {
         // when the ground point is close to cross the push-broom line (i.e. when Δx decreases from +1000m to -1000m)
         // it will drift along the Y axis if we don't apply compensation
         // but will remain nearly at Δy=0 if we do apply compensation
-        // in fact, as we remove the linear drift, we get a parabola Δy = a uΔx²
+        // in fact, as the yaw compensation mode removes the linear drift,
+        // what remains is a parabola Δy = a uΔx²
         Assert.assertEquals(-55.7056, minYWithoutCompensation,    0.0001);
         Assert.assertEquals(+55.7056, maxYWithoutCompensation,    0.0001);
         Assert.assertEquals(352.5667, minYDotWithoutCompensation, 0.0001);
-        Assert.assertEquals(352.5676, maxYDotWithoutCompensation, 0.0001);
+        Assert.assertEquals(352.5677, maxYDotWithoutCompensation, 0.0001);
         Assert.assertEquals(  0.0000, minYWithCompensation,       0.0001);
         Assert.assertEquals(  0.0008, maxYWithCompensation,       0.0001);
-        Assert.assertEquals( -0.0050, minYDotWithCompensation,    0.0001);
-        Assert.assertEquals(  0.0050, maxYDotWithCompensation,    0.0001);
+        Assert.assertEquals( -0.0101, minYDotWithCompensation,    0.0001);
+        Assert.assertEquals(  0.0102, maxYDotWithCompensation,    0.0001);
 
     }
 
@@ -330,9 +328,7 @@ public class YawCompensationTest {
 
         double h = 0.01;
         SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
-        SpacecraftState sMinusHalf = propagator.propagate(date.shiftedBy(-0.5*h));
         SpacecraftState s0     = propagator.propagate(date);
-        SpacecraftState sPlusHalf  = propagator.propagate(date.shiftedBy(0.5*h));
         SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
         // check spin is consistent with attitude evolution
@@ -340,28 +336,19 @@ public class YawCompensationTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        Assert.assertEquals(0.0, errorAngleMinus, 6.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
-
-        Vector3D r2 = TimeStampedAngularCoordinates.interpolate(date, AngularDerivativesFilter.USE_R,
-                                                                Arrays.asList(
-                                                                              sMinus.getAttitude().getOrientation(),
-                                                                              sMinusHalf.getAttitude().getOrientation(),
-                                                                              s0.getAttitude().getOrientation(),
-                                                                              sPlusHalf.getAttitude().getOrientation(),
-                                                                              sPlus.getAttitude().getOrientation())).getRotationRate();
+        Assert.assertEquals(0.0, errorAnglePlus, 2.0e-5 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        System.out.println(h + " " + spin0.getNorm() + " " + spin0.subtract(reference).getNorm() + " " + spin0.subtract(r2).getNorm());
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-9);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 6.0e-9);
 
     }
 

@@ -113,23 +113,21 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
 
         // compute sliding target ground point
         final PVCoordinates slidingRef  = getTargetPV(pvProv, date, frame);
-        final Vector3D      slidingBody = bodyToRef.getInverse().transformPosition(slidingRef.getPosition());
+        final PVCoordinates slidingBody = bodyToRef.getInverse().transformPVCoordinates(slidingRef);
 
-        // the sliding target point is superimposed to a ground point at current date,
-        // but this ground point has its own velocity due to central body rotation,
-        // which is unrelated to the sliding point velocity
-        final PVCoordinates fixedBody = new PVCoordinates(slidingBody, Vector3D.ZERO, Vector3D.ZERO);
-        final PVCoordinates fixedRef  = bodyToRef.transformPVCoordinates(fixedBody);
-
-        // compute relative position of FIXED ground point with respect to satellite
+        // compute relative position of sliding ground point with respect to satellite
         final PVCoordinates relativePosition =
                 new PVCoordinates(pvProv.getPVCoordinates(date, frame), slidingRef);
 
-        // compute relative velocity of FIXED ground point with respect to satellite
-        final PVCoordinates relativeVelocity =
-                new PVCoordinates(slidingRef.getVelocity().subtract(fixedRef.getVelocity()),
-                                  slidingRef.getAcceleration().subtract(fixedRef.getAcceleration()),
-                                  Vector3D.ZERO);
+        // compute relative velocity of fixed ground point with respect to sliding ground point
+        // the velocity composition are quite tricky here because we want the
+        // velocity of the fixed point despite we start from a sliding point
+        // fortunately, almost everything cancels out and we end up with the
+        // trivial formula below
+        final Vector3D v = bodyToRef.getRotation().applyTo(slidingBody.getVelocity());
+        final Vector3D a = new Vector3D(+1, bodyToRef.getRotation().applyTo(slidingBody.getAcceleration()),
+                                        -1, Vector3D.crossProduct(bodyToRef.getRotationRate(), v));
+        final PVCoordinates relativeVelocity = new PVCoordinates(v, a, Vector3D.ZERO);
 
         final PVCoordinates relativeNormal =
                 PVCoordinates.crossProduct(relativePosition, relativeVelocity).normalize();
