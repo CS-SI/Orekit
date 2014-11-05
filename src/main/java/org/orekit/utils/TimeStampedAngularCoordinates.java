@@ -59,15 +59,18 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
 
     /** Build the rotation that transforms a pair of pv coordinates into another pair.
 
-     * <p>Except for possible scale factors, if the instance were applied to
-     * the pair (u<sub>1</sub>, u<sub>2</sub>) it will produce the pair
-     * (v<sub>1</sub>, v<sub>2</sub>).</p>
-
-     * <p>If the angular separation between u<sub>1</sub> and u<sub>2</sub> is
-     * not the same as the angular separation between v<sub>1</sub> and
-     * v<sub>2</sub>, then a corrected v'<sub>2</sub> will be used rather than
-     * v<sub>2</sub>, the corrected vector will be in the (v<sub>1</sub>,
-     * v<sub>2</sub>) plane.</p>
+     * <p><em>WARNING</em>! This method requires much more stringent assumptions on
+     * its parameters than the similar {@link Rotation#Rotation(Vector3D, Vector3D,
+     * Vector3D, Vector3D) constructor} from the {@link Rotation Rotation} class.
+     * As far as the Rotation constructor is concerned, the {@code v₂} vector from
+     * the second pair can be slightly misaligned. The Rotation constructor will
+     * compensate for this misalignment and create a rotation that ensure {@code
+     * v₁ = r(u₁)} and {@code v₂ in the plane (r(u₁), r(u₂))}. <em>THIS IS NOT
+     * TRUE ANYMORE IN THIS CLASS</em>! As derivatives are involved and must be
+     * preserved, this constructor works <em>only</em> if the two pairs are fully
+     * consistent, i.e. if a rotation exists that fulfill all the requirements: {@code
+     * v₁ = r(u₁)}, {@code v₂ = r(u₂)}, {@code dv₁/dt = dr(u₁)/dt}, {@code dv₂/dt
+     * = dr(u₂)/dt}, {@code d²v₁/dt² = d²r(u₁)/dt²}, {@code d²v₂/dt² = d²r(u₂)/dt²}.</p>
 
      * @param date coordinates date
      * @param u1 first vector of the origin pair
