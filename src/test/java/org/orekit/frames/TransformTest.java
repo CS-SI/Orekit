@@ -130,7 +130,7 @@ public class TransformTest {
 
         // despite neither raw transforms have angular acceleration,
         // the combination does have an angular acceleration,
-        // it is due to the cross product Ω₁ ⨉ Ω₂
+        // it is due to the cross product Ω₁ ⨯ Ω₂
         Assert.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertTrue(t12.getAngular().getRotationAcceleration().getNorm() > 0.01);

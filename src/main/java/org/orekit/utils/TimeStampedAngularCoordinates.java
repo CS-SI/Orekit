@@ -65,7 +65,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * As far as the Rotation constructor is concerned, the {@code v₂} vector from
      * the second pair can be slightly misaligned. The Rotation constructor will
      * compensate for this misalignment and create a rotation that ensure {@code
-     * v₁ = r(u₁)} and {@code v₂ in the plane (r(u₁), r(u₂))}. <em>THIS IS NOT
+     * v₁ = r(u₁)} and {@code v₂ ∈ plane (r(u₁), r(u₂))}. <em>THIS IS NOT
      * TRUE ANYMORE IN THIS CLASS</em>! As derivatives are involved and must be
      * preserved, this constructor works <em>only</em> if the two pairs are fully
      * consistent, i.e. if a rotation exists that fulfill all the requirements: {@code

@@ -110,7 +110,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * As far as the Rotation constructor is concerned, the {@code v₂} vector from
      * the second pair can be slightly misaligned. The Rotation constructor will
      * compensate for this misalignment and create a rotation that ensure {@code
-     * v₁ = r(u₁)} and {@code v₂ in the plane (r(u₁), r(u₂))}. <em>THIS IS NOT
+     * v₁ = r(u₁)} and {@code v₂ ∈ plane (r(u₁), r(u₂))}. <em>THIS IS NOT
      * TRUE ANYMORE IN THIS CLASS</em>! As derivatives are involved and must be
      * preserved, this constructor works <em>only</em> if the two pairs are fully
      * consistent, i.e. if a rotation exists that fulfill all the requirements: {@code
@@ -135,8 +135,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                                     v1.getPosition(), v2.getPosition());
 
             // find rotation rate Ω such that
-            //  Ω ⨉ v₁ = r(dot(u₁)) - dot(v₁)
-            //  Ω ⨉ v₂ = r(dot(u₂)) - dot(v₂)
+            //  Ω ⨯ v₁ = r(dot(u₁)) - dot(v₁)
+            //  Ω ⨯ v₂ = r(dot(u₂)) - dot(v₂)
             final Vector3D ru1Dot = rotation.applyTo(u1.getVelocity());
             final Vector3D ru2Dot = rotation.applyTo(u2.getVelocity());
             rotationRate = inverseCrossProducts(v1.getPosition(), ru1Dot.subtract(v1.getVelocity()),
@@ -144,8 +144,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                                                 tolerance);
 
             // find rotation acceleration dot(Ω) such that
-            // dot(Ω) ⨉ v₁ = r(dotdot(u₁)) - 2 Ω ⨉ dot(v₁) - Ω ⨉  (Ω ⨉ v₁) - dotdot(v₁)
-            // dot(Ω) ⨉ v₂ = r(dotdot(u₂)) - 2 Ω ⨉ dot(v₂) - Ω ⨉  (Ω ⨉ v₂) - dotdot(v₂)
+            // dot(Ω) ⨯ v₁ = r(dotdot(u₁)) - 2 Ω ⨯ dot(v₁) - Ω ⨯  (Ω ⨯ v₁) - dotdot(v₁)
+            // dot(Ω) ⨯ v₂ = r(dotdot(u₂)) - 2 Ω ⨯ dot(v₂) - Ω ⨯  (Ω ⨯ v₂) - dotdot(v₂)
             final Vector3D ru1DotDot = rotation.applyTo(u1.getAcceleration());
             final Vector3D oDotv1    = Vector3D.crossProduct(rotationRate, v1.getVelocity());
             final Vector3D oov1      = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, v1.getPosition()));
@@ -228,18 +228,18 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
     /** Find a vector from two known cross products.
      * <p>
-     * We want to find Ω such that: Ω ⨉ v₁ = c₁ and Ω ⨉ v₂ = c₂
+     * We want to find Ω such that: Ω ⨯ v₁ = c₁ and Ω ⨯ v₂ = c₂
      * </p>
      * <p>
-     * The first equation (Ω ⨉ v₁ = c₁) will always be fulfilled exactly,
+     * The first equation (Ω ⨯ v₁ = c₁) will always be fulfilled exactly,
      * and the second one will be fulfilled if possible.
      * </p>
      * @param v1 vector forming the first known cross product
-     * @param c1 know vector for cross product Ω ⨉ v₁
+     * @param c1 know vector for cross product Ω ⨯ v₁
      * @param v2 vector forming the second known cross product
-     * @param c2 know vector for cross product Ω ⨉ v₂
+     * @param c2 know vector for cross product Ω ⨯ v₂
      * @param tolerance relative tolerance factor used to check singularities
-     * @return vector Ω such that: Ω ⨉ v₁ = c₁ and Ω ⨉ v₂ = c₂
+     * @return vector Ω such that: Ω ⨯ v₁ = c₁ and Ω ⨯ v₂ = c₂
      * @exception MathIllegalArgumentException if vectors are inconsistent and
      * no solution can be found
      */

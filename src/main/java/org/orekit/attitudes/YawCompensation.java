@@ -120,10 +120,25 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
                 new PVCoordinates(pvProv.getPVCoordinates(date, frame), slidingRef);
 
         // compute relative velocity of fixed ground point with respect to sliding ground point
-        // the velocity composition are quite tricky here because we want the
-        // velocity of the fixed point despite we start from a sliding point
-        // fortunately, almost everything cancels out and we end up with the
-        // trivial formula below
+        // the velocity part of the transformPVCoordinates for the sliding point ps
+        // from body frame to reference frame is:
+        //     d(ps_ref)/dt = r(d(ps_body)/dt + dq/dt) - Ω ⨯ ps_ref
+        // where r is the rotation part of the transform, Ω is the corresponding
+        // angular rate, and dq/dt is the derivative of the translation part of the
+        // transform (the translation itself, without derivative, is hidden in the
+        // ps_ref part in the cross product).
+        // The sliding point ps is co-located to a fixed ground point pf (i.e. they have the
+        // same position at time of computation), but this fixed point as zero velocity
+        // with respect to the ground. So the velocity part of the transformPVCoordinates
+        // for this fixed point can be computed using the same formula as above:
+        // from body frame to reference frame is:
+        //     d(pf_ref)/dt = r(0 + dq/dt) - Ω ⨯ pf_ref
+        // so remembering that the two points are at the same location at computation time,
+        // i.e. that at t=0 pf_ref=ps_ref, the relative velocity between the fixed point
+        // and the sliding point is given by the simple expression:
+        //     d(ps_ref)/dt - d(pf_ref)/dt = r(d(ps_body)/dt)
+        // the acceleration is computed by differentiating the expression, which gives:
+        //    d²(ps_ref)/dt² - d²(pf_ref)/dt² = r(d²(ps_body)/dt²) - Ω ⨯ [d(ps_ref)/dt - d(pf_ref)/dt]
         final Vector3D v = bodyToRef.getRotation().applyTo(slidingBody.getVelocity());
         final Vector3D a = new Vector3D(+1, bodyToRef.getRotation().applyTo(slidingBody.getAcceleration()),
                                         -1, Vector3D.crossProduct(bodyToRef.getRotationRate(), v));
