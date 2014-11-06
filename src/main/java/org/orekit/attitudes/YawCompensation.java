@@ -147,7 +147,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
         final PVCoordinates relativeNormal =
                 PVCoordinates.crossProduct(relativePosition, relativeVelocity).normalize();
 
-        // Compensation rotation definition :
+        // attitude definition :
         //  . Z satellite axis points to sliding target
         //  . target relative velocity is in (Z,X) plane, in the -X half plane part
         return new Attitude(frame,
@@ -156,6 +156,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
                                                               relativeNormal.normalize(),
                                                               PLUS_K, PLUS_J,
                                                               1.0e-9));
+
     }
 
     /** Compute the yaw compensation angle at date.
