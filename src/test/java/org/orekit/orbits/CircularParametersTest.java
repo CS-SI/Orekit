@@ -816,7 +816,7 @@ public class CircularParametersTest {
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
         Assert.assertTrue(maxShiftError         < 5000.0);
-        Assert.assertTrue(maxInterpolationError > 9000.0);
+        Assert.assertTrue(maxInterpolationError > 8800.0);
 
     }
 

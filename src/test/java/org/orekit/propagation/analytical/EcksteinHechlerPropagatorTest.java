@@ -50,6 +50,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -593,7 +594,7 @@ public class EcksteinHechlerPropagatorTest {
         Vector3D referenceV    = interpolated.getVelocity();
         Vector3D computedA     = sample.get(1).getAcceleration();
         Vector3D referenceA    = interpolated.getAcceleration();
-        final CircularOrbit propagated = propagator.propagateOrbit(target);
+        final CircularOrbit propagated = (CircularOrbit) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target));
         final CircularOrbit keplerian =
                 new CircularOrbit(propagated.getA(),
                                   propagated.getCircularEx(),

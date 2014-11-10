@@ -17,7 +17,6 @@
 package org.orekit.propagation.analytical;
 
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,12 +34,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -48,12 +47,45 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class TabulatedEphemerisTest {
 
     @Test
-    public void testInterpolation() throws ParseException, OrekitException {
+    public void testInterpolationFullEcksteinHechlerOrbit() throws OrekitException {
+        // with full Eckstein-Hechler Cartesian orbit,
+        // including non-Keplerian acceleration, interpolation is very good
+        checkInterpolation(new StateFilter() {
+            public SpacecraftState filter(SpacecraftState state) {
+                return state;
+            }
+        }, 6.62e-4, 1.89e-5);
+    }
+
+    @Test
+    public void testInterpolationKeplerianAcceleration() throws OrekitException {
+        // with Keplerian-only acceleration, interpolation is quite wrong
+        checkInterpolation(new StateFilter() {
+            public SpacecraftState filter(SpacecraftState state) {
+                CartesianOrbit c = (CartesianOrbit) state.getOrbit();
+                Vector3D p    = c.getPVCoordinates().getPosition();
+                Vector3D v    = c.getPVCoordinates().getVelocity();
+                double r2 = p.getNormSq();
+                double r  = FastMath.sqrt(r2);
+                Vector3D kepA = new Vector3D(-c.getMu() / (r * r2), c.getPVCoordinates().getPosition());
+                return new SpacecraftState(new CartesianOrbit(new TimeStampedPVCoordinates(c.getDate(),
+                                                                                           p, v, kepA),
+                                                              c.getFrame(), c.getMu()),
+                                           state.getAttitude(),
+                                           state.getMass(),
+                                           state.getAdditionalStates());
+            }
+        }, 8.5, 0.22);
+    }
+
+    private void checkInterpolation(StateFilter f, double expectedDP, double expectedDV)
+        throws OrekitException {
 
         double mass = 2500;
         double a = 7187990.1979844316;
@@ -99,7 +131,7 @@ public class TabulatedEphemerisTest {
         List<SpacecraftState> tab = new ArrayList<SpacecraftState>(nbIntervals + 1);
         for (int j = 0; j<= nbIntervals; j++) {
             AbsoluteDate current = initDate.shiftedBy((j * deltaT) / nbIntervals);
-            tab.add(eck.propagate(current));
+            tab.add(f.filter(eck.propagate(current)));
         }
 
         try {
@@ -113,10 +145,27 @@ public class TabulatedEphemerisTest {
         Assert.assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
         Assert.assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
 
-        checkEphemerides(eck, te, initDate.shiftedBy(3600),  1.0e-9, true);
-        checkEphemerides(eck, te, initDate.shiftedBy(3660), 30, false);
-        checkEphemerides(eck, te, initDate.shiftedBy(3720),  1.0e-9, true);
+        double maxP     = 0;
+        double maxV    = 0;
+        for (double dt = 0; dt < 3600; dt += 1) {
+            AbsoluteDate date = initDate.shiftedBy(dt);
+            CartesianOrbit c1 = (CartesianOrbit) eck.propagate(date).getOrbit();
+            CartesianOrbit c2 = (CartesianOrbit) te.propagate(date).getOrbit();
+            maxP  = FastMath.max(maxP,
+                                 Vector3D.distance(c1.getPVCoordinates().getPosition(),
+                                                   c2.getPVCoordinates().getPosition()));
+            maxV  = FastMath.max(maxV,
+                                 Vector3D.distance(c1.getPVCoordinates().getVelocity(),
+                                                   c2.getPVCoordinates().getVelocity()));
+        }
 
+        Assert.assertEquals(expectedDP, maxP, 0.1 * expectedDP);
+        Assert.assertEquals(expectedDV, maxV, 0.1 * expectedDV);
+
+    }
+
+    private interface StateFilter {
+        public SpacecraftState filter(final SpacecraftState state);
     }
 
     @Test
@@ -195,38 +244,6 @@ public class TabulatedEphemerisTest {
 
         // action + verify
         Assert.assertSame(ephem.getFrame(), frame);
-    }
-
-    private void checkEphemerides(Propagator eph1, Propagator eph2, AbsoluteDate date,
-                                  double threshold, boolean expectedBelow)
-        throws OrekitException {
-
-        Assert.assertEquals(eph1.getManagedAdditionalStates().length, eph2.getManagedAdditionalStates().length);
-        for (String name : eph1.getManagedAdditionalStates()) {
-            Assert.assertTrue(eph2.isAdditionalStateManaged(name));
-        }
-        SpacecraftState state1 = eph1.propagate(date);
-        SpacecraftState state2 = eph2.propagate(date);
-        double maxError = FastMath.abs(state1.getA() - state2.getA());
-        maxError = FastMath.max(maxError, FastMath.abs(state1.getEquinoctialEx() - state2.getEquinoctialEx()));
-        maxError = FastMath.max(maxError, FastMath.abs(state1.getEquinoctialEy() - state2.getEquinoctialEy()));
-        maxError = FastMath.max(maxError, FastMath.abs(state1.getHx() - state2.getHx()));
-        maxError = FastMath.max(maxError, FastMath.abs(state1.getHy() - state2.getHy()));
-        maxError = FastMath.max(maxError, FastMath.abs(state1.getLv() - state2.getLv()));
-        for (String name : eph1.getManagedAdditionalStates()) {
-            double[] add1 = state1.getAdditionalState(name);
-            double[] add2 = state2.getAdditionalState(name);
-            Assert.assertEquals(add1.length, add2.length);
-            for (int i = 0; i < add1.length; ++i) {
-                maxError = FastMath.max(maxError, FastMath.abs(add1[i] - add2[i]));
-            }
-            Assert.assertTrue(eph2.isAdditionalStateManaged(name));
-        }
-        if (expectedBelow) {
-            Assert.assertTrue(maxError <= threshold);
-        } else {
-            Assert.assertTrue(maxError >= threshold);
-        }
     }
 
     @Before

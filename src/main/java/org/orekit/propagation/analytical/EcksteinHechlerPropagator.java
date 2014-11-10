@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -327,17 +328,17 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         while (i++ < 100) {
 
             // recompute the osculating parameters from the current mean parameters
-            final CircularOrbit rebuilt = current.propagateOrbit(current.mean.getDate());
+            final DerivativeStructure[] parameters = current.propagateParameters(current.mean.getDate());
 
             // adapted parameters residuals
-            final double deltaA      = osculating.getA()  - rebuilt.getA();
-            final double deltaEx     = osculating.getCircularEx() - rebuilt.getCircularEx();
-            final double deltaEy     = osculating.getCircularEy() - rebuilt.getCircularEy();
-            final double deltaI      = osculating.getI()  - rebuilt.getI();
+            final double deltaA      = osculating.getA()          - parameters[0].getValue();
+            final double deltaEx     = osculating.getCircularEx() - parameters[1].getValue();
+            final double deltaEy     = osculating.getCircularEy() - parameters[2].getValue();
+            final double deltaI      = osculating.getI()          - parameters[3].getValue();
             final double deltaRAAN   = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode() -
-                                                                rebuilt.getRightAscensionOfAscendingNode(),
+                                                                parameters[4].getValue(),
                                                                 0.0);
-            final double deltaAlphaM = MathUtils.normalizeAngle(osculating.getAlphaM() - rebuilt.getAlphaM(), 0.0);
+            final double deltaAlphaM = MathUtils.normalizeAngle(osculating.getAlphaM() - parameters[5].getValue(), 0.0);
 
             // update mean parameters
             current = new EHModel(new CircularOrbit(current.mean.getA()          + deltaA,
@@ -368,9 +369,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    public CircularOrbit propagateOrbit(final AbsoluteDate date)
+    public CartesianOrbit propagateOrbit(final AbsoluteDate date)
         throws PropagationException {
-        return model.propagateOrbit(date);
+        // compute Cartesian parameters, taking derivatives into account
+        // to make sure velocity and acceleration are consistent
+        return new CartesianOrbit(toCartesian(date, model.propagateParameters(date)),
+                                  model.mean.getFrame(), mu);
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
@@ -570,10 +574,10 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
         /** Extrapolate an orbit up to a specific target date.
          * @param date target date for the orbit
-         * @return extrapolated parameters
+         * @return propagated parameters
          * @exception PropagationException if some parameters are out of bounds
          */
-        public CircularOrbit propagateOrbit(final AbsoluteDate date)
+        public DerivativeStructure[] propagateParameters(final AbsoluteDate date)
             throws PropagationException {
 
             // keplerian evolution
@@ -688,117 +692,101 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                              add(ql.multiply(ll));
 
             // osculating parameters
-            final DerivativeStructure a      = rda.add(1.0).multiply(mean.getA());
-            final DerivativeStructure ex     = rdex.add(exm);
-            final DerivativeStructure ey     = rdey.add(eym);
-            final DerivativeStructure i      = rdxi.add(xim);
-            final DerivativeStructure raan   = rdom.add(omm);
-            final DerivativeStructure alphaM = rdxl.add(xlm);
-
-            // precompute Cartesian parameters, taking derivatives into account
-            // to make sure velocity and acceleration are consistent
-            final TimeStampedPVCoordinates pv = toCartesian(date, a, ex, ey, i, raan, alphaM);
-
-            // build the complete orbit, with both circular and Cartesian parameters
-            return new CircularOrbit(a.getValue(), ex.getValue(), ey.getValue(),
-                                     i.getValue(), raan.getValue(),
-                                     alphaM.getValue(), PositionAngle.MEAN,
-                                     pv, mean.getFrame(), mu);
+            return new DerivativeStructure[] {
+                rda.add(1.0).multiply(mean.getA()),
+                rdex.add(exm),
+                rdey.add(eym),
+                rdxi.add(xim),
+                rdom.add(omm),
+                rdxl.add(xlm)
+            };
 
         }
 
-        /** Convert circular parameters <em>with derivatives</em> to Cartesian coordinates.
-         * @param date date of the orbital parameters
-         * @param a  semi-major axis (m)
-         * @param ex e cos(Ω), first component of circular eccentricity vector
-         * @param ey e sin(Ω), second component of circular eccentricity vector
-         * @param i inclination (rad)
-         * @param raan right ascension of ascending node (Ω, rad)
-         * @param alphaM  mean latitude argument (rad)
-         * @return Cartesian coordinates consistent with values and derivatives
-         */
-        public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date,      final DerivativeStructure a,
-                                                    final DerivativeStructure ex, final DerivativeStructure ey,
-                                                    final DerivativeStructure i,  final DerivativeStructure raan,
-                                                    final DerivativeStructure alphaM) {
+    }
 
-            // evaluate coordinates in the orbit canonical reference frame
-            final DerivativeStructure cosOmega = raan.cos();
-            final DerivativeStructure sinOmega = raan.sin();
-            final DerivativeStructure cosI     = i.cos();
-            final DerivativeStructure sinI     = i.sin();
-            final DerivativeStructure alphaE   = meanToEccentric(alphaM, ex, ey);
-            final DerivativeStructure cosAE    = alphaE.cos();
-            final DerivativeStructure sinAE    = alphaE.sin();
-            final DerivativeStructure ex2      = ex.multiply(ex);
-            final DerivativeStructure ey2      = ey.multiply(ey);
-            final DerivativeStructure exy      = ex.multiply(ey);
-            final DerivativeStructure q        = ex2.add(ey2).subtract(1).negate().sqrt();
-            final DerivativeStructure beta     = q.add(1).reciprocal();
-            final DerivativeStructure bx2      = beta.multiply(ex2);
-            final DerivativeStructure by2      = beta.multiply(ey2);
-            final DerivativeStructure bxy      = beta.multiply(exy);
-            final DerivativeStructure u        = bxy.multiply(sinAE).subtract(ex.add(by2.subtract(1).multiply(cosAE)));
-            final DerivativeStructure v        = bxy.multiply(cosAE).subtract(ey.add(bx2.subtract(1).multiply(sinAE)));
-            final DerivativeStructure x        = a.multiply(u);
-            final DerivativeStructure y        = a.multiply(v);
+    /** Convert circular parameters <em>with derivatives</em> to Cartesian coordinates.
+     * @param date date of the orbital parameters
+     * @param parameters circular parameters (a, ex, ey, i, raan, alphaM)
+     * @return Cartesian coordinates consistent with values and derivatives
+     */
+    public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final DerivativeStructure[] parameters) {
 
-            // canonical orbit reference frame
-            final FieldVector3D<DerivativeStructure> p =
-                    new FieldVector3D<DerivativeStructure>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
-                                                           x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
-                                                           y.multiply(sinI));
+        // evaluate coordinates in the orbit canonical reference frame
+        final DerivativeStructure cosOmega = parameters[4].cos();
+        final DerivativeStructure sinOmega = parameters[4].sin();
+        final DerivativeStructure cosI     = parameters[3].cos();
+        final DerivativeStructure sinI     = parameters[3].sin();
+        final DerivativeStructure alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
+        final DerivativeStructure cosAE    = alphaE.cos();
+        final DerivativeStructure sinAE    = alphaE.sin();
+        final DerivativeStructure ex2      = parameters[1].multiply(parameters[1]);
+        final DerivativeStructure ey2      = parameters[2].multiply(parameters[2]);
+        final DerivativeStructure exy      = parameters[1].multiply(parameters[2]);
+        final DerivativeStructure q        = ex2.add(ey2).subtract(1).negate().sqrt();
+        final DerivativeStructure beta     = q.add(1).reciprocal();
+        final DerivativeStructure bx2      = beta.multiply(ex2);
+        final DerivativeStructure by2      = beta.multiply(ey2);
+        final DerivativeStructure bxy      = beta.multiply(exy);
+        final DerivativeStructure u        = bxy.multiply(sinAE).subtract(parameters[1].add(by2.subtract(1).multiply(cosAE)));
+        final DerivativeStructure v        = bxy.multiply(cosAE).subtract(parameters[2].add(bx2.subtract(1).multiply(sinAE)));
+        final DerivativeStructure x        = parameters[0].multiply(u);
+        final DerivativeStructure y        = parameters[0].multiply(v);
 
-            // dispatch derivatives
-            final Vector3D p0 = new Vector3D(p.getX().getValue(),
-                                             p.getY().getValue(),
-                                             p.getZ().getValue());
-            final Vector3D p1 = new Vector3D(p.getX().getPartialDerivative(1),
-                                             p.getY().getPartialDerivative(1),
-                                             p.getZ().getPartialDerivative(1));
-            final Vector3D p2 = new Vector3D(p.getX().getPartialDerivative(2),
-                                             p.getY().getPartialDerivative(2),
-                                             p.getZ().getPartialDerivative(2));
-            return new TimeStampedPVCoordinates(date, p0, p1, p2);
+        // canonical orbit reference frame
+        final FieldVector3D<DerivativeStructure> p =
+                new FieldVector3D<DerivativeStructure>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
+                                                       x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
+                                                       y.multiply(sinI));
 
-        }
+        // dispatch derivatives
+        final Vector3D p0 = new Vector3D(p.getX().getValue(),
+                                         p.getY().getValue(),
+                                         p.getZ().getValue());
+        final Vector3D p1 = new Vector3D(p.getX().getPartialDerivative(1),
+                                         p.getY().getPartialDerivative(1),
+                                         p.getZ().getPartialDerivative(1));
+        final Vector3D p2 = new Vector3D(p.getX().getPartialDerivative(2),
+                                         p.getY().getPartialDerivative(2),
+                                         p.getZ().getPartialDerivative(2));
+        return new TimeStampedPVCoordinates(date, p0, p1, p2);
 
-        /** Computes the eccentric latitude argument from the mean latitude argument.
-         * @param alphaM = M + Ω mean latitude argument (rad)
-         * @param ex e cos(Ω), first component of circular eccentricity vector
-         * @param ey e sin(Ω), second component of circular eccentricity vector
-         * @return the eccentric latitude argument.
-         */
-        private DerivativeStructure meanToEccentric(final DerivativeStructure alphaM,
-                                                    final DerivativeStructure ex,
-                                                    final DerivativeStructure ey) {
-            // Generalization of Kepler equation to circular parameters
-            // with alphaE = PA + E and
-            //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-            DerivativeStructure alphaE        = alphaM;
-            DerivativeStructure shift         = alphaM.getField().getZero();
-            DerivativeStructure alphaEMalphaM = alphaM.getField().getZero();
-            DerivativeStructure cosAlphaE     = alphaE.cos();
-            DerivativeStructure sinAlphaE     = alphaE.sin();
-            int    iter          = 0;
-            do {
-                final DerivativeStructure f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
-                final DerivativeStructure f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
-                final DerivativeStructure f0 = alphaEMalphaM.subtract(f2);
+    }
 
-                final DerivativeStructure f12 = f1.multiply(2);
-                shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
+    /** Computes the eccentric latitude argument from the mean latitude argument.
+     * @param alphaM = M + Ω mean latitude argument (rad)
+     * @param ex e cos(Ω), first component of circular eccentricity vector
+     * @param ey e sin(Ω), second component of circular eccentricity vector
+     * @return the eccentric latitude argument.
+     */
+    private DerivativeStructure meanToEccentric(final DerivativeStructure alphaM,
+                                                final DerivativeStructure ex,
+                                                final DerivativeStructure ey) {
+        // Generalization of Kepler equation to circular parameters
+        // with alphaE = PA + E and
+        //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
+        DerivativeStructure alphaE        = alphaM;
+        DerivativeStructure shift         = alphaM.getField().getZero();
+        DerivativeStructure alphaEMalphaM = alphaM.getField().getZero();
+        DerivativeStructure cosAlphaE     = alphaE.cos();
+        DerivativeStructure sinAlphaE     = alphaE.sin();
+        int    iter          = 0;
+        do {
+            final DerivativeStructure f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
+            final DerivativeStructure f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
+            final DerivativeStructure f0 = alphaEMalphaM.subtract(f2);
 
-                alphaEMalphaM  = alphaEMalphaM.subtract(shift);
-                alphaE         = alphaM.add(alphaEMalphaM);
-                cosAlphaE      = alphaE.cos();
-                sinAlphaE      = alphaE.sin();
+            final DerivativeStructure f12 = f1.multiply(2);
+            shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
 
-            } while ((++iter < 50) && (FastMath.abs(shift.getValue()) > 1.0e-12));
+            alphaEMalphaM  = alphaEMalphaM.subtract(shift);
+            alphaE         = alphaM.add(alphaEMalphaM);
+            cosAlphaE      = alphaE.cos();
+            sinAlphaE      = alphaE.sin();
 
-            return alphaE;
+        } while ((++iter < 50) && (FastMath.abs(shift.getValue()) > 1.0e-12));
 
-        }
+        return alphaE;
 
     }
 

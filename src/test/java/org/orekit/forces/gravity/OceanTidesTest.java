@@ -87,7 +87,7 @@ public class OceanTidesTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(raw.getPVCoordinates().getPosition(),
                                               interpolated.getPVCoordinates().getPosition()),
-                            2.5e-6); // threshold would be 3.9e-4 for 30 days propagation
+                            9.9e-6); // threshold would be 3.4e-5 for 30 days propagation
 
     }
 
