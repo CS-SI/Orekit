@@ -24,6 +24,7 @@
   skinparam NoteBorderColor       #691616
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
 
   package org.orekit #ECEBD8 {
 
@@ -94,22 +95,23 @@
          +void setInitialAdditionalState(String name, double[] addState)
        }
 
-       BoundedPropagator            <|.. IntegratedEphemeris
-       AbstractIntegratedPropagator o-down-> IntegratedEphemeris : creates
-       AbstractPropagator           <|-- AbstractIntegratedPropagator
+       BoundedPropagator <|.. IntegratedEphemeris
+       IntegratedEphemeris --|> AbstractAnalyticalPropagator
+       AbstractIntegratedPropagator o--> IntegratedEphemeris : creates
+       AbstractPropagator  <|-- AbstractIntegratedPropagator
 
      }
 
      package semianalytical #ECEBD8 {
 
        package dsst #DDEBD8 {
-         AbstractIntegratedPropagator <|-right- DSSTPropagator
+         DSSTPropagator --|> AbstractIntegratedPropagator
        }
 
      }
 
      package numerical #ECEBD8 {
-       AbstractIntegratedPropagator <|-right- NumericalPropagator
+       NumericalPropagator --|> AbstractIntegratedPropagator
      }
 
    }

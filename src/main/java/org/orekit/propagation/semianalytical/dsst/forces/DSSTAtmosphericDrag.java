@@ -16,22 +16,22 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
-import org.orekit.frames.Frame;
+import org.orekit.forces.drag.DragForce;
+import org.orekit.forces.drag.DragSensitive;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** Atmospheric drag contribution to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
  *  <p>
- *  The drag acceleration is computed as follows:<br>
- *  &gamma; = (1/2 &rho; C<sub>D</sub> A<sub>Ref</sub> / m) * |v<sub>atm</sub> - v<sub>sat</sub>| *
- *  (v<sub>atm</sub> - v<sub>sat</sub>)
+ *  The drag acceleration is computed through the acceleration model of
+ *  {@link org.orekit.forces.drag.DragForce DragForce}.
  *  </p>
  *
  * @author Pascal Parraud
@@ -47,25 +47,34 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
 
-    /** Cross sectionnal area of satellite. */
-    private final double     area;
-
-    /** Coefficient 1/2 * C<sub>D</sub> * A<sub>Ref</sub>. */
-    private final double     kRef;
+    /** Spacecraft shape. */
+    private final DragSensitive spacecraft;
 
     /** Critical distance from the center of the central body for entering/leaving the atmosphere. */
     private final double     rbar;
 
-    /** Simple constructor.
+    /** Simple constructor assuming spherical spacecraft.
      * @param atmosphere atmospheric model
      * @param cd drag coefficient
      * @param area cross sectionnal area of satellite
      */
-    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd, final double area) {
-        super(GAUSS_THRESHOLD);
+    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd,
+            final double area) {
+        this(atmosphere, new SphericalSpacecraft(
+                area, cd, 0.0, 0.0));
+    }
+
+    /** Simple constructor with custom spacecraft.
+     * @param atmosphere atmospheric model
+     * @param spacecraft spacecraft model
+     */
+    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft) {
+
+        //Call to the constructor from superclass using the numerical drag model as ForceModel
+        super(GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft));
+
         this.atmosphere = atmosphere;
-        this.area = area;
-        this.kRef = 0.5 * cd * area;
+        this.spacecraft = spacecraft;
         this.rbar = ATMOSPHERE_ALTITUDE_MAX + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
     }
 
@@ -74,20 +83,6 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      */
     public Atmosphere getAtmosphere() {
         return atmosphere;
-    }
-
-    /** Get the cross sectional area of satellite.
-     * @return cross sectional area (m<sup>2</sup>)
-     */
-    public double getArea() {
-        return area;
-    }
-
-    /** Get the drag coefficient.
-     *  @return drag coefficient
-     */
-    public double getCd() {
-        return 2 * kRef / area;
     }
 
     /** Get the critical distance.
@@ -102,33 +97,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
-        throws OrekitException {
-        // TODO: not implemented yet, Short Periodic Variations are set to null
-        return new double[] {0., 0., 0., 0., 0., 0.};
-    }
-
-    /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return null;
-    }
-
-    /** {@inheritDoc} */
-    protected Vector3D getAcceleration(final SpacecraftState state,
-                                       final Vector3D position, final Vector3D velocity)
-        throws OrekitException {
-        final AbsoluteDate date = state.getDate();
-        final Frame frame = state.getFrame();
-        // compute atmospheric density (assuming it doesn't depend on the date)
-        final double rho = atmosphere.getDensity(date, position, frame);
-        // compute atmospheric velocity (assuming it doesn't depend on the date)
-        final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
-        // compute relative velocity
-        final Vector3D vRel = vAtm.subtract(velocity);
-        // compute compound drag coefficient
-        final double bc = kRef / state.getMass();
-        // compute drag acceleration
-        return new Vector3D(bc * rho * vRel.getNorm(), vRel);
     }
 
     /** {@inheritDoc} */
@@ -141,7 +111,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final double apogee  = a * (1. + ecc);
         // Trajectory entirely within of the atmosphere
         if (apogee < rbar) {
-            return new double[] {-FastMath.PI, FastMath.PI};
+            return new double[]{-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
+                                FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
         }
         // Else, trajectory partialy within of the atmosphere
         final double fb = FastMath.acos(((a * (1. - ecc * ecc) / rbar) - 1.) / ecc);
@@ -149,4 +120,11 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         return new double[] {wW - fb, wW + fb};
     }
 
+    /** Get spacecraft shape.
+     *
+     * @return spacecraft shape
+     */
+    public DragSensitive getSpacecraft() {
+        return spacecraft;
+    }
 }

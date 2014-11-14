@@ -24,6 +24,7 @@
   skinparam NoteBorderColor       #691616
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
 
   package org.apache.commons.math3.ode #DDEBD8 {
 
@@ -31,60 +32,51 @@
 
   }
 
-  package org.orekit.propagation #DDEBD8 {
+  package org.orekit.forces #DDEBD8 {
+    class ForceModel
+  }
 
-    package semianalytical.dsst #ECEBD8 {
+  package org.orekit.propagation.semianalytical.dsst #DDEBD8 {
 
-      class DSSTPropagator {
-        +void setInitialState(SpacecraftState state)
-        +void setInitialState(SpacecraftState state, boolean isOsculating)
-        +void addForceModel(DSSTForceModel model)
-        +void removeForceModels()
-        +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
+    class DSSTPropagator {
+      +void setInitialState(SpacecraftState state)
+      +void setInitialState(SpacecraftState state, boolean isOsculating)
+      +void addForceModel(DSSTForceModel model)
+      +void removeForceModels()
+      +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
+    }
+
+    FirstOrderIntegrator <--* "1" DSSTPropagator
+
+    package forces #ECEBD8 {
+
+      class AuxiliaryElements
+
+      interface DSSTForceModel {
+        +void initialize(AuxiliaryElements auxiliary)
+        +void initializeStep(AuxiliaryElements auxiliary)
+        +double[] getMeanElementRate(SpacecraftState state)
+        +double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
       }
 
-      FirstOrderIntegrator <--* "1" DSSTPropagator
+      DSSTForceModel -right->  AuxiliaryElements
+      DSSTForceModel <|-- DSSTCentralBody
+      DSSTForceModel <|-- ZonalContribution
+      DSSTForceModel <|-- TesseralContribution
+      DSSTForceModel <|-- DSSTThirdBody
+      DSSTForceModel <|-- AbstractGaussianContribution
 
-      package forces #DDEBD8 {
+      AbstractGaussianContribution <|-- DSSTAtmosphericDrag
+      AbstractGaussianContribution <|-- DSSTSolarRadiationPressure
+      AbstractGaussianContribution o--> "1" ForceModel : acceleration provider
 
-        class AuxiliaryElements
-
-        interface DSSTForceModel {
-          +void initialize(AuxiliaryElements auxiliary)
-          +void initializeStep(AuxiliaryElements auxiliary)
-          +double[] getMeanElementRate(SpacecraftState state)
-          +double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
-        }
-
-        DSSTForceModel <|-- DSSTCentralBody
-        DSSTForceModel <|-- DSSTThirdBody
-        DSSTForceModel <|-- AbstractGaussianContribution
-        DSSTForceModel <|-- ZonalContribution
-        DSSTForceModel <|-- TesseralContribution
-
-        AbstractGaussianContribution <|-- DSSTAtmosphericDrag
-        AbstractGaussianContribution <|-- DSSTSolarRadiationPressure
-
-        DSSTCentralBody *--> ZonalContribution
-        DSSTCentralBody *--> TesseralContribution
-
-        package utilities #ECEBD8 {
-
-          ZonalContribution --> UpperBounds
-          ZonalContribution --> CoefficientFactory
-          TesseralContribution --> CoefficientFactory
-          TesseralContribution --> NewcombOperators
-          DSSTThirdBody --> UpperBounds
-          DSSTThirdBody --> CoefficientFactory
-          
-        }
-
-      }
-
-      DSSTPropagator "0..*" *--> DSSTForceModel
-      DSSTPropagator --> AuxiliaryElements
+      DSSTCentralBody *--> ZonalContribution
+      DSSTCentralBody *--> TesseralContribution
 
     }
+
+    DSSTPropagator "0..*" *--> DSSTForceModel
+    DSSTPropagator --> AuxiliaryElements
 
   }
 

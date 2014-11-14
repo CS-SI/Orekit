@@ -364,5 +364,8 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = nicht möglich Daten nach {0} zu generieren
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = die hyperbolisch-exzentrische Anomalie kann nicht aus der mittleren Anomalie berechnet werden nach {0} Iterationen
 
+# unable to compute mean orbit from osculating orbit after {0} iterations
+UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = <MISSING TRANSLATION>
+
 # derivation order {0} is out of range
 OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>

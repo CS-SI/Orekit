@@ -18,20 +18,22 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.SphericalSpacecraft;
+import org.orekit.forces.radiation.RadiationSensitive;
+import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Solar radiation pressure contribution to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
  *  <p>
- *  The solar radiation pressure acceleration is computed as follows:<br>
- *  &gamma; = (C<sub>R</sub> A / m) * (p<sub>ref</sub> * d<sup>2</sup><sub>ref</sub>) *
- *  (r<sub>sat</sub> - R<sub>sun</sub>) / |r<sub>sat</sub> - R<sub>sun</sub>|<sup>3</sup>
+ *  The solar radiation pressure acceleration is computed through the
+ *  acceleration model of
+ *  {@link org.orekit.forces.radiation.SolarRadiationPressure SolarRadiationPressure}.
  *  </p>
  *
  *  @author Pascal Parraud
@@ -53,22 +55,39 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     /** Sun model. */
     private final PVCoordinatesProvider sun;
 
-    /** Flux on satellite:
-     * kRef = C<sub>R</sub> * Area * P<sub>Ref</sub> * D<sub>Ref</sub><sup>2</sup>.
-     */
-    private final double                kRef;
-
     /** Central Body radius. */
     private final double                ae;
 
-    /** satellite radiation pressure coefficient (assuming total specular reflection). */
-    private final double                cr;
+    /** Spacecraft model for radiation acceleration computation. */
+    private final RadiationSensitive spacecraft;
 
-    /** Cross sectional area of satellite. */
-    private final double                area;
 
     /**
-     * Simple constructor with default reference values.
+     * Simple constructor with default reference values and spherical spacecraft.
+     * <p>
+     * When this constructor is used, the reference values are:
+     * </p>
+     * <ul>
+     * <li>d<sub>ref</sub> = 149597870000.0 m</li>
+     * <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m<sup>2</sup></li>
+     * </ul>
+     * <p>
+     * The spacecraft has a spherical shape.
+     * </p>
+     *
+     * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
+     * @param area cross sectionnal area of satellite
+     * @param sun Sun model
+     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     */
+    public DSSTSolarRadiationPressure(final double cr, final double area,
+            final PVCoordinatesProvider sun,
+            final double equatorialRadius) {
+        this(D_REF, P_REF, cr, area, sun, equatorialRadius);
+    }
+
+    /**
+     * Simple constructor with default reference values, but custom spacecraft.
      * <p>
      * When this constructor is used, the reference values are:
      * </p>
@@ -77,19 +96,18 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m<sup>2</sup></li>
      * </ul>
      *
-     * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
-     * @param area cross sectionnal area of satellite
      * @param sun Sun model
      * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param spacecraft spacecraft model
      */
-    public DSSTSolarRadiationPressure(final double cr, final double area,
-                                      final PVCoordinatesProvider sun,
-                                      final double equatorialRadius) {
-        this(D_REF, P_REF, cr, area, sun, equatorialRadius);
+    public DSSTSolarRadiationPressure(final PVCoordinatesProvider sun,
+            final double equatorialRadius,
+            final RadiationSensitive spacecraft) {
+        this(D_REF, P_REF, sun, equatorialRadius, spacecraft);
     }
 
     /**
-     * Complete constructor.
+     * Constructor with customizable reference values but spherical spacecraft.
      * <p>
      * Note that reference solar radiation pressure <code>pRef</code> in N/m<sup>2</sup> is linked
      * to solar flux SF in W/m<sup>2</sup> using formula pRef = SF/c where c is the speed of light
@@ -105,23 +123,51 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param equatorialRadius central body equatrial radius (for shadow computation)
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
-                                      final double cr, final double area,
-                                      final PVCoordinatesProvider sun,
-                                      final double equatorialRadius) {
-        super(GAUSS_THRESHOLD);
-        this.kRef = pRef * dRef * dRef * cr * area;
-        this.area = area;
-        this.cr   = cr;
-        this.sun  = sun;
-        this.ae   = equatorialRadius;
+            final double cr, final double area,
+            final PVCoordinatesProvider sun,
+            final double equatorialRadius) {
+
+        // cR being the DSST SRP coef and assuming a spherical spacecraft,
+        // the conversion is:
+        // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
+        // with kA arbitrary sets to 0
+        this(dRef, pRef, sun, equatorialRadius, new SphericalSpacecraft(
+                area, 0.0, 0.0, 3.25 - 2.25 * cr));
     }
 
-    /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date,
-                                               final double[] meanElements)
-        throws OrekitException {
-        // TODO: not implemented yet, Short Periodic Variations are set to null
-        return new double[] {0., 0., 0., 0., 0., 0.};
+    /**
+     * Complete constructor.
+     * <p>
+     * Note that reference solar radiation pressure <code>pRef</code> in N/m<sup>2</sup> is linked
+     * to solar flux SF in W/m<sup>2</sup> using formula pRef = SF/c where c is the speed of light
+     * (299792458 m/s). So at 1UA a 1367 W/m<sup>2</sup> solar flux is a 4.56 10<sup>-6</sup>
+     * N/m<sup>2</sup> solar radiation pressure.
+     * </p>
+     *
+     * @param dRef reference distance for the solar radiation pressure (m)
+     * @param pRef reference solar radiation pressure at dRef (N/m<sup>2</sup>)
+     * @param sun Sun model
+     * @param equatorialRadius central body equatrial radius (for shadow computation)
+     * @param spacecraft spacecraft model
+     */
+    public DSSTSolarRadiationPressure(final double dRef, final double pRef,
+            final PVCoordinatesProvider sun, final double equatorialRadius,
+            final RadiationSensitive spacecraft) {
+
+        //Call to the constructor from superclass using the numerical SRP model as ForceModel
+        super(GAUSS_THRESHOLD, new SolarRadiationPressure(
+                dRef, pRef, sun, equatorialRadius, spacecraft));
+
+        this.sun  = sun;
+        this.ae   = equatorialRadius;
+        this.spacecraft = spacecraft;
+    }
+
+    /** Get spacecraft shape.
+     * @return the spacecraft shape.
+     */
+    public RadiationSensitive getSpacecraft() {
+        return spacecraft;
     }
 
     /** {@inheritDoc} */
@@ -131,22 +177,10 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getAcceleration(final SpacecraftState state,
-                                       final Vector3D position, final Vector3D velocity)
-        throws OrekitException {
-
-        final Vector3D sunSat = getSunSatVector(state, position);
-        final double R = sunSat.getNorm();
-        final double R3 = R * R * R;
-        final double T = kRef / state.getMass();
-        // raw radiation pressure
-        return new Vector3D(T / R3, sunSat);
-    }
-
-    /** {@inheritDoc} */
     protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
         // Default bounds without shadow [-PI, PI]
-        final double[] ll = {-FastMath.PI, FastMath.PI};
+        final double[] ll = {-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
+                             FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
 
         // Direction cosines of the Sun in the equinoctial frame
         final Vector3D sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
@@ -235,33 +269,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      */
     public double getEquatorialRadius() {
         return ae;
-    }
-
-    /** Get the satellite radiation pressure coefficient (assuming total specular reflection).
-     *  @return satellite radiation pressure coefficient
-     */
-    public double getCr() {
-        return cr;
-    }
-
-    /** Get the cross sectional area of satellite.
-     *  @return cross sectional section (m<sup>2</sup>
-     */
-    public double getArea() {
-        return area;
-    }
-
-    /**
-     * Compute Sun-sat vector in SpacecraftState frame.
-     * @param state current spacecraft state
-     * @param position spacecraft position
-     * @return Sun-sat vector in SpacecraftState frame
-     * @exception OrekitException if sun position cannot be computed
-     */
-    private Vector3D getSunSatVector(final SpacecraftState state,
-                                     final Vector3D position) throws OrekitException {
-        final PVCoordinates sunPV = sun.getPVCoordinates(state.getDate(), state.getFrame());
-        return position.subtract(sunPV.getPosition());
     }
 
     /**
@@ -460,5 +467,4 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             return 2;
         }
     }
-
 }
