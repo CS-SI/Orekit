@@ -438,7 +438,9 @@ public class GenericTimeStampedCacheTest {
 
         try {
             executorService.shutdown();
-            executorService.awaitTermination(3, TimeUnit.SECONDS);
+            Assert.assertTrue(
+                    "Not enough time for all threads to complete, try increasing the timeout",
+                    executorService.awaitTermination(10, TimeUnit.MINUTES));
         } catch (InterruptedException ie) {
             Assert.fail(ie.getLocalizedMessage());
         }
