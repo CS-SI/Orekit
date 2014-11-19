@@ -737,7 +737,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param parameters circular parameters (a, ex, ey, i, raan, alphaM)
      * @return Cartesian coordinates consistent with values and derivatives
      */
-    public TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final DerivativeStructure[] parameters) {
+    private TimeStampedPVCoordinates toCartesian(final AbsoluteDate date, final DerivativeStructure[] parameters) {
 
         // evaluate coordinates in the orbit canonical reference frame
         final DerivativeStructure cosOmega = parameters[4].cos();
