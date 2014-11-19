@@ -17,10 +17,16 @@
 package org.orekit.attitudes;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.math3.fitting.PolynomialCurveFitter;
+import org.apache.commons.math3.fitting.WeightedObservedPoint;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,9 +38,8 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -43,6 +48,7 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class BodyCenterPointingTest {
@@ -68,10 +74,13 @@ public class BodyCenterPointingTest {
     public void testTarget() throws OrekitException {
 
         // Call get target method
-        Vector3D target = earthCenterAttitudeLaw.getTargetPoint(circ, date, circ.getFrame());
+        TimeStampedPVCoordinates target = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame());
 
         // Check that target is body center
-        Assert.assertEquals(0.0, target.getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, target.getPosition().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, target.getVelocity().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, target.getAcceleration().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(date, target.getDate());
 
     }
 
@@ -110,13 +119,89 @@ public class BodyCenterPointingTest {
     }
 
     @Test
+    public void testQDot() throws OrekitException {
+
+        Utils.setDataRoot("regular-data");
+        final double ehMu  = 3.9860047e14;
+        final double ae  = 6.378137e6;
+        final double c20 = -1.08263e-3;
+        final double c30 = 2.54e-6;
+        final double c40 = 1.62e-6;
+        final double c50 = 2.3e-7;
+        final double c60 = -5.5e-7;
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
+        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
+        final CircularOrbit initialOrbit = new CircularOrbit(new PVCoordinates(position, velocity),
+                                                             FramesFactory.getEME2000(), date, ehMu);
+
+        EcksteinHechlerPropagator propagator =
+                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+        propagator.setAttitudeProvider(new BodyCenterPointing(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+
+        List<WeightedObservedPoint> w0 = new ArrayList<WeightedObservedPoint>();
+        List<WeightedObservedPoint> w1 = new ArrayList<WeightedObservedPoint>();
+        List<WeightedObservedPoint> w2 = new ArrayList<WeightedObservedPoint>();
+        List<WeightedObservedPoint> w3 = new ArrayList<WeightedObservedPoint>();
+        for (double dt = -1; dt < 1; dt += 0.01) {
+            Rotation rP = propagator.propagate(date.shiftedBy(dt)).getAttitude().getRotation();
+            w0.add(new WeightedObservedPoint(1, dt, rP.getQ0()));
+            w1.add(new WeightedObservedPoint(1, dt, rP.getQ1()));
+            w2.add(new WeightedObservedPoint(1, dt, rP.getQ2()));
+            w3.add(new WeightedObservedPoint(1, dt, rP.getQ3()));
+        }
+
+        double q0DotRef = PolynomialCurveFitter.create(2).fit(w0)[1];
+        double q1DotRef = PolynomialCurveFitter.create(2).fit(w1)[1];
+        double q2DotRef = PolynomialCurveFitter.create(2).fit(w2)[1];
+        double q3DotRef = PolynomialCurveFitter.create(2).fit(w3)[1];
+
+        Attitude a0 = propagator.propagate(date).getAttitude();
+        double   q0 = a0.getRotation().getQ0();
+        double   q1 = a0.getRotation().getQ1();
+        double   q2 = a0.getRotation().getQ2();
+        double   q3 = a0.getRotation().getQ3();
+        double   oX = a0.getSpin().getX();
+        double   oY = a0.getSpin().getY();
+        double   oZ = a0.getSpin().getZ();
+
+        // first time-derivatives of the quaternion
+        double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
+        double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
+        double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
+        double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
+
+        Assert.assertEquals(q0DotRef, q0Dot, 5.0e-9);
+        Assert.assertEquals(q1DotRef, q1Dot, 5.0e-9);
+        Assert.assertEquals(q2DotRef, q2Dot, 5.0e-9);
+        Assert.assertEquals(q3DotRef, q3Dot, 5.0e-9);
+
+    }
+
+    @Test
     public void testSpin() throws OrekitException {
 
-        Propagator propagator = new KeplerianPropagator(circ, earthCenterAttitudeLaw);
+        Utils.setDataRoot("regular-data");
+        final double ehMu  = 3.9860047e14;
+        final double ae  = 6.378137e6;
+        final double c20 = -1.08263e-3;
+        final double c30 = 2.54e-6;
+        final double c40 = 1.62e-6;
+        final double c50 = 2.3e-7;
+        final double c60 = -5.5e-7;
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
+        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
+        final CircularOrbit initialOrbit = new CircularOrbit(new PVCoordinates(position, velocity),
+                                                             FramesFactory.getEME2000(), date, ehMu);
+
+        EcksteinHechlerPropagator propagator =
+                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+        propagator.setAttitudeProvider(new BodyCenterPointing(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
 
         double h = 0.01;
-        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
+        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
         // check spin is consistent with attitude evolution

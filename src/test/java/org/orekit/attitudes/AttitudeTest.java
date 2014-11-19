@@ -41,12 +41,13 @@ public class AttitudeTest {
     public void testZeroRate() throws OrekitException {
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                         Vector3D.ZERO);
+                                         Vector3D.ZERO, Vector3D.ZERO);
         Assert.assertEquals(Vector3D.ZERO, attitude.getSpin());
         double dt = 10.0;
         Attitude shifted = attitude.shiftedBy(dt);
+        Assert.assertEquals(Vector3D.ZERO, shifted.getRotationAcceleration());
         Assert.assertEquals(Vector3D.ZERO, shifted.getSpin());
-        Assert.assertEquals(attitude.getRotation(), shifted.getRotation());
+        Assert.assertEquals(0.0, Rotation.distance(attitude.getRotation(), shifted.getRotation()), 1.0e-15);
     }
 
     @Test
@@ -54,7 +55,7 @@ public class AttitudeTest {
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          Rotation.IDENTITY,
-                                         new Vector3D(rate, Vector3D.PLUS_K));
+                                         new Vector3D(rate, Vector3D.PLUS_K), Vector3D.ZERO);
         Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-10);
         double dt = 10.0;
         double alpha = rate * dt;
@@ -76,7 +77,7 @@ public class AttitudeTest {
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                         new Vector3D(rate, Vector3D.PLUS_K));
+                                         new Vector3D(rate, Vector3D.PLUS_K), Vector3D.ZERO);
         Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-10);
         double dt = 10.0;
         Attitude shifted = attitude.shiftedBy(dt);
@@ -136,7 +137,7 @@ public class AttitudeTest {
             sample.add(propagator.propagate(date.shiftedBy(dt)).getAttitude());
         }
 
-        // well inside the sample, interpolation should be better than linear shift
+        // well inside the sample, interpolation should be better than quadratic shift
         double maxShiftAngleError = 0;
         double maxInterpolationAngleError = 0;
         double maxShiftRateError = 0;
@@ -157,12 +158,12 @@ public class AttitudeTest {
             maxShiftRateError              = FastMath.max(maxShiftRateError, shiftRateError);
             maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError);
         }
-        Assert.assertTrue(maxShiftAngleError         > 1.0e-5);
-        Assert.assertTrue(maxInterpolationAngleError < 1.0e-12);
-        Assert.assertTrue(maxShiftRateError          > 1.0e-7);
-        Assert.assertTrue(maxInterpolationRateError  < 1.0e-13);
+        Assert.assertTrue(maxShiftAngleError         > 4.0e-6);
+        Assert.assertTrue(maxInterpolationAngleError < 1.5e-13);
+        Assert.assertTrue(maxShiftRateError          > 6.0e-8);
+        Assert.assertTrue(maxInterpolationRateError  < 2.5e-14);
 
-        // past sample end, interpolation error should increase, but still be far better than linear shif
+        // past sample end, interpolation error should increase, but still be far better than quadratic shift
         maxShiftAngleError = 0;
         maxInterpolationAngleError = 0;
         maxShiftRateError = 0;
@@ -183,10 +184,10 @@ public class AttitudeTest {
             maxShiftRateError              = FastMath.max(maxShiftRateError, shiftRateError);
             maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError);
         }
-        Assert.assertTrue(maxShiftAngleError         > 2.0e-5);
-        Assert.assertTrue(maxInterpolationAngleError < 1.0e-9);
-        Assert.assertTrue(maxShiftRateError          > 1.5e-7);
-        Assert.assertTrue(maxInterpolationRateError  < 1.0e-10);
+        Assert.assertTrue(maxShiftAngleError         > 9.0e-6);
+        Assert.assertTrue(maxInterpolationAngleError < 6.0e-11);
+        Assert.assertTrue(maxShiftRateError          > 9.0e-8);
+        Assert.assertTrue(maxInterpolationRateError  < 4.0e-12);
 
     }
 

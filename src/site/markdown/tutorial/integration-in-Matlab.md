@@ -24,8 +24,8 @@ javaaddpath to set the paths. Note that as of Matlab version 7.5.0 this needs to
 from the script to the Matlab prompt.
 
     %
-    % /* Copyright 2002-2010 CS Communication & Systèmes
-    %  * Licensed to CS Communication & SystÃ¨mes (CS) under one or more
+    % /* Copyright 2002-2014 CS Systèmes d'Information
+    %  * Licensed to CS Systèmes d'Information (CS) under one or more
     %  * contributor license agreements.  See the NOTICE file distributed with
     %  * this work for additional information regarding copyright ownership.
     %  * CS licenses this file to You under the Apache License, Version 2.0

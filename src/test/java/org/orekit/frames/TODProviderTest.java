@@ -50,7 +50,7 @@ public class TODProviderTest {
     public void testRotationRate() throws OrekitException {
         TransformProvider provider =
                 new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null),
-                                                   CartesianDerivativesFilter.USE_PV,
+                                                   CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
@@ -209,7 +209,7 @@ public class TODProviderTest {
         TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, eopHistory);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating,
-                                                   CartesianDerivativesFilter.USE_PV,
+                                                   CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    6, Constants.JULIAN_DAY / 24,
@@ -264,7 +264,7 @@ public class TODProviderTest {
         TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, null);
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(nonInterpolating,
-                                                           CartesianDerivativesFilter.USE_PV,
+                                                           CartesianDerivativesFilter.USE_PVA,
                                                            AngularDerivativesFilter.USE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            6, Constants.JULIAN_DAY / 8,

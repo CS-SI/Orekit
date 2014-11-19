@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -92,7 +93,7 @@ public class LofOffsetPointingTest {
 
     }
 
-    @Test(expected=OrekitException.class)
+    @Test
     public void testMiss() throws OrekitException {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
@@ -100,7 +101,12 @@ public class LofOffsetPointingTest {
                                    FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.VVLH, RotationOrder.XYX, FastMath.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
-        pointing.getTargetPoint(circ, date, circ.getFrame());
+        try {
+            pointing.getTargetPV(circ, date, circ.getFrame());
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND, oe.getSpecifier());
+        }
     }
 
     @Test

@@ -17,16 +17,20 @@
 package org.orekit.utils;
 
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.ode.sampling.FixedStepHandler;
+import org.apache.commons.math3.ode.sampling.StepNormalizer;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well1024a;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.apache.commons.math3.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -41,12 +45,59 @@ public class TimeStampedAngularCoordinatesTest {
         TimeStampedAngularCoordinates ac =
                 new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
                                                   new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                                  Vector3D.ZERO);
+                                                  Vector3D.ZERO, Vector3D.ZERO);
         Assert.assertEquals(Vector3D.ZERO, ac.getRotationRate());
         double dt = 10.0;
         TimeStampedAngularCoordinates shifted = ac.shiftedBy(dt);
+        Assert.assertEquals(Vector3D.ZERO, shifted.getRotationAcceleration());
         Assert.assertEquals(Vector3D.ZERO, shifted.getRotationRate());
-        Assert.assertEquals(ac.getRotation(), shifted.getRotation());
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), shifted.getRotation()), 1.0e-15);
+    }
+
+    @Test
+    public void testTwoPairs() throws OrekitException, java.io.IOException {
+        RandomGenerator random = new Well1024a(0x976ad943966c9f00l);
+
+        for (int i = 0; i < 20; ++i) {
+
+            Rotation r = randomRotation(random);
+            Vector3D o = randomVector(random, 1.0e-2);
+            Vector3D a = randomVector(random, 1.0e-2);
+            TimeStampedAngularCoordinates reference = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, a);
+
+            PVCoordinates u1 = randomPVCoordinates(random, 1000, 1.0, 0.001);
+            PVCoordinates u2 = randomPVCoordinates(random, 1000, 1.0, 0.001);
+            PVCoordinates v1 = reference.applyTo(u1);
+            PVCoordinates v2 = reference.applyTo(u2);
+            TimeStampedAngularCoordinates ac =
+                    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, u1, u2, v1, v2, 1.0e-9);
+
+            Assert.assertEquals(0, Vector3D.distance(v1.getPosition().normalize(), ac.applyTo(u1).getPosition().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v1.getVelocity().normalize(), ac.applyTo(u1).getVelocity().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v1.getAcceleration().normalize(), ac.applyTo(u1).getAcceleration().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v2.getPosition().normalize(), ac.applyTo(u2).getPosition().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v2.getVelocity().normalize(), ac.applyTo(u2).getVelocity().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v2.getAcceleration().normalize(), ac.applyTo(u2).getAcceleration().normalize()), 1.0e-14);
+
+        }
+
+    }
+
+    @Test
+    public void testDerivativesStructures2() throws OrekitException {
+        RandomGenerator random = new Well1024a(0x75fbebbdbf127b3dl);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
+                                                                             r, o, oDot);
+        TimeStampedAngularCoordinates rebuilt =
+                new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
+                                                  ac.toDerivativeStructureRotation(2));
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
     }
 
     @Test
@@ -55,7 +106,7 @@ public class TimeStampedAngularCoordinatesTest {
         TimeStampedAngularCoordinates ac =
                 new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
                                                   Rotation.IDENTITY,
-                                                  new Vector3D(rate, Vector3D.PLUS_K));
+                                                  new Vector3D(rate, Vector3D.PLUS_K), Vector3D.ZERO);
         Assert.assertEquals(rate, ac.getRotationRate().getNorm(), 1.0e-10);
         double dt = 10.0;
         double alpha = rate * dt;
@@ -78,7 +129,7 @@ public class TimeStampedAngularCoordinatesTest {
         TimeStampedAngularCoordinates ac =
                 new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
                                                   new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                                  new Vector3D(rate, Vector3D.PLUS_K));
+                                                  new Vector3D(rate, Vector3D.PLUS_K), Vector3D.ZERO);
         Assert.assertEquals(rate, ac.getRotationRate().getNorm(), 1.0e-10);
         double dt = 10.0;
         TimeStampedAngularCoordinates shifted = ac.shiftedBy(dt);
@@ -111,23 +162,25 @@ public class TimeStampedAngularCoordinatesTest {
 
     @Test
     public void testReverseOffset() {
-        Random random = new Random(0x4ecca9d57a8f1611l);
+        RandomGenerator random = new Well1024a(0x4ecca9d57a8f1611l);
         for (int i = 0; i < 100; ++i) {
             Rotation r = randomRotation(random);
             Vector3D o = randomVector(random, 1.0e-3);
-            TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o);
+            Vector3D a = randomVector(random, 1.0e-3);
+            TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, a);
             TimeStampedAngularCoordinates sum = ac.addOffset(ac.revert());
             Assert.assertEquals(0.0, sum.getRotation().getAngle(), 1.0e-15);
             Assert.assertEquals(0.0, sum.getRotationRate().getNorm(), 1.0e-15);
+            Assert.assertEquals(0.0, sum.getRotationAcceleration().getNorm(), 1.0e-15);
         }
     }
 
     @Test
     public void testNoCommute() {
         TimeStampedAngularCoordinates ac1 =
-                new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.48,  0.64, 0.36, 0.48, false), Vector3D.ZERO);
+	    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.48,  0.64, 0.36, 0.48, false), Vector3D.ZERO, Vector3D.ZERO);
         TimeStampedAngularCoordinates ac2 =
-                new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.36, -0.48, 0.48, 0.64, false), Vector3D.ZERO);
+	    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.36, -0.48, 0.48, 0.64, false), Vector3D.ZERO, Vector3D.ZERO);
 
         TimeStampedAngularCoordinates add12 = ac1.addOffset(ac2);
         TimeStampedAngularCoordinates add21 = ac2.addOffset(ac1);
@@ -139,23 +192,27 @@ public class TimeStampedAngularCoordinatesTest {
 
     @Test
     public void testRoundTripNoOp() {
-        Random random = new Random(0x1e610cfe89306669l);
+        RandomGenerator random = new Well1024a(0x1e610cfe89306669l);
         for (int i = 0; i < 100; ++i) {
 
             Rotation r1 = randomRotation(random);
             Vector3D o1 = randomVector(random, 1.0e-2);
-            TimeStampedAngularCoordinates ac1 = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r1, o1);
+            Vector3D a1 = randomVector(random, 1.0e-2);
+            TimeStampedAngularCoordinates ac1 = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r1, o1, a1);
             Rotation r2 = randomRotation(random);
             Vector3D o2 = randomVector(random, 1.0e-2);
+            Vector3D a2 = randomVector(random, 1.0e-2);
 
-            TimeStampedAngularCoordinates ac2 = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r2, o2);
+            TimeStampedAngularCoordinates ac2 = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r2, o2, a2);
             TimeStampedAngularCoordinates roundTripSA = ac1.subtractOffset(ac2).addOffset(ac2);
-            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripSA.getRotation()), 1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()), 1.0e-17);
+            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripSA.getRotation()), 4.0e-16);
+            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()), 2.0e-17);
+            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripSA.getRotationAcceleration()), 1.0e-17);
 
             TimeStampedAngularCoordinates roundTripAS = ac1.addOffset(ac2).subtractOffset(ac2);
-            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripAS.getRotation()), 1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()), 1.0e-17);
+            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripAS.getRotation()), 6.0e-16);
+            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()), 2.0e-17);
+            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()), 2.0e-17);
 
         }
     }
@@ -169,14 +226,16 @@ public class TimeStampedAngularCoordinatesTest {
         AbsoluteDate t0 = new AbsoluteDate("2012-01-01T00:00:00.000", TimeScalesFactory.getTAI());
         TimeStampedAngularCoordinates ac0 = new TimeStampedAngularCoordinates(t0,
                                                                               new Rotation(Vector3D.PLUS_I, FastMath.toRadians(179.999)),
-                                                                              new Vector3D(FastMath.toRadians(0),0,0));
+                                                                              new Vector3D(FastMath.toRadians(0), 0, 0),
+                                                                              Vector3D.ZERO);
         sample.add(ac0);
 
         // add angular coordinates at t1: -179.999 degrees rotation (= 180.001 degrees) along X axis
         AbsoluteDate t1 = new AbsoluteDate("2012-01-01T00:00:02.000", TimeScalesFactory.getTAI());
         TimeStampedAngularCoordinates ac1 = new TimeStampedAngularCoordinates(t1,
                                                                               new Rotation(Vector3D.PLUS_I, FastMath.toRadians(-179.999)),
-                                                                              new Vector3D(FastMath.toRadians(0),0,0));
+                                                                              new Vector3D(FastMath.toRadians(0), 0, 0),
+                                                                              Vector3D.ZERO);
         sample.add(ac1);
 
         // get interpolated angular coordinates at mid time between t0 and t1
@@ -189,126 +248,99 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testRodriguesSymmetry()
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        // use reflection to test the private static methods
-        Method getter  = TimeStampedAngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        TimeStampedAngularCoordinates.class,
-                                                                        double[].class, double.class
-                                                                    });
-        getter.setAccessible(true);
-        Method factory = TimeStampedAngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        double[].class,
-                                                                        TimeStampedAngularCoordinates.class
-                                                                    });
-        factory.setAccessible(true);
-
-        // check the two-way conversion result in identity
-        Random random = new Random(0xb1e615aaa8236b52l);
-        double[] previous = new double[] { 1.0, 0.0, 0.0, 0.0 };
-        for (int i = 0; i < 1000; ++i) {
-            Rotation offsetRotation    = randomRotation(random);
-            Vector3D offsetRate        = randomVector(random, 0.01);
-            TimeStampedAngularCoordinates offset  =
-                    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, offsetRotation, offsetRate);
-            Rotation rotation          = randomRotation(random);
-            Vector3D rotationRate      = randomVector(random, 0.01);
-            TimeStampedAngularCoordinates ac      =
-                    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, rotation, rotationRate);
-            double dt                  = 10.0 * random.nextDouble();
-            double[] rodrigues =
-                    (double[]) getter.invoke(null,
-                                             ac.subtractOffset(offset.shiftedBy(dt)), previous, -0.9999);
-            TimeStampedAngularCoordinates rebuilt = (TimeStampedAngularCoordinates) factory.invoke(null, rodrigues, offset.shiftedBy(dt));
-            Assert.assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 1.0e-14);
-            Assert.assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 1.0e-15);
-        }
-
-    }
-
-    @Test
-    public void testRodriguesSpecialCases()
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        // use reflection to test the private static methods
-        Method getter  = TimeStampedAngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        TimeStampedAngularCoordinates.class,
-                                                                        double[].class, double.class
-                                                                    });
-        getter.setAccessible(true);
-        Method factory = TimeStampedAngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        double[].class,
-                                                                        TimeStampedAngularCoordinates.class
-                                                                    });
-        factory.setAccessible(true);
-
-        // identity
-        double[] identity =
-                (double[]) getter.invoke(null,
-                                         identity(), new double[] { 1.0, 0.0, 0.0, 0.0 }, -0.9999);
-        TimeStampedAngularCoordinates acId = (TimeStampedAngularCoordinates) factory.invoke(null, identity, identity());
-        for (double element : identity) {
-            Assert.assertEquals(0.0, element, Precision.SAFE_MIN);
-        }
-        Assert.assertEquals(0.0, acId.getRotation().getAngle(), Precision.SAFE_MIN);
-        Assert.assertEquals(0.0, acId.getRotationRate().getNorm(), Precision.SAFE_MIN);
-
-        // PI angle rotation (which is singular for non-modified Rodrigues vector)
-        Random random = new Random(0x2158523e6accb859l);
-        double[] previous = new double[] { 1.0, 0.0, 0.0, 0.0 };
-        for (int i = 0; i < 100; ++i) {
-            Vector3D axis = randomVector(random, 1.0);
-            double[] piRotation =
-                    (double[]) getter.invoke(null,
-                                             new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                                               new Rotation(axis, FastMath.PI),
-                                                                               Vector3D.ZERO),
-                                             previous, -0.9999);
-            TimeStampedAngularCoordinates acPi = (TimeStampedAngularCoordinates) factory.invoke(null, piRotation, identity());
-            Assert.assertEquals(FastMath.PI, acPi.getRotation().getAngle(), 1.0e-15);
-            Assert.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, acPi.getRotation().getAxis())), 1.0e-15);
-            Assert.assertEquals(0.0, acPi.getRotationRate().getNorm(), 1.0e-16);
-        }
-
-        // 2 PI angle rotation (which is singular for modified Rodrigues vector)
-        Assert.assertNull(getter.invoke(null,
-                                        identity(), new double[] { -1.0, 0.0, 0.0, 0.0 }, -0.9999));
-        Assert.assertNotNull(getter.invoke(null,
-                                           identity(), new double[] { +1.0, 0.0, 0.0, 0.0 }, -0.9999));
-
-    }
-
-    @Test
-    public void testInterpolationSimple() throws OrekitException {
+    public void testInterpolationWithoutAcceleration() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
-        double alpha0 = 0.5 * FastMath.PI;
-        double omega  = 0.5 * FastMath.PI;
-        TimeStampedAngularCoordinates reference =
+        double alpha0 = 0.5   * FastMath.PI;
+        double omega  = 0.05  * FastMath.PI;
+        final TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
                                                   new Rotation(Vector3D.PLUS_K, alpha0),
-                                                  new Vector3D(omega, Vector3D.MINUS_K));
+                                                  new Vector3D(omega, Vector3D.MINUS_K),
+                                                  Vector3D.ZERO);
+        double[] errors = interpolationErrors(reference, 1.0);
+        Assert.assertEquals(0.0, errors[0], 1.0e-15);
+        Assert.assertEquals(0.0, errors[1], 3.0e-15);
+        Assert.assertEquals(0.0, errors[2], 3.0e-14);
+    }
+
+    @Test
+    public void testInterpolationWithAcceleration() throws OrekitException {
+        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
+        double alpha0 = 0.5   * FastMath.PI;
+        double omega  = 0.05  * FastMath.PI;
+        double eta    = 0.005 * FastMath.PI;
+        final TimeStampedAngularCoordinates reference =
+                new TimeStampedAngularCoordinates(date,
+                                                  new Rotation(Vector3D.PLUS_K, alpha0),
+                                                  new Vector3D(omega, Vector3D.MINUS_K),
+                                                  new Vector3D(eta,   Vector3D.PLUS_J));
+        double[] errors = interpolationErrors(reference, 1.0);
+        Assert.assertEquals(0.0, errors[0], 3.0e-5);
+        Assert.assertEquals(0.0, errors[1], 2.0e-4);
+        Assert.assertEquals(0.0, errors[2], 4.6e-3);
+    }
+
+    private double[] interpolationErrors(final TimeStampedAngularCoordinates reference, double dt)
+        throws OrekitException {
+
+        final FirstOrderDifferentialEquations ode = new FirstOrderDifferentialEquations() {
+            public int getDimension() {
+                return 4;
+            }
+            public void computeDerivatives(final double t, final double[] q, final double[] qDot) {
+                final double omegaX = reference.getRotationRate().getX() + t * reference.getRotationAcceleration().getX();
+                final double omegaY = reference.getRotationRate().getY() + t * reference.getRotationAcceleration().getY();
+                final double omegaZ = reference.getRotationRate().getZ() + t * reference.getRotationAcceleration().getZ();
+                qDot[0] = 0.5 * MathArrays.linearCombination(-q[1], omegaX, -q[2], omegaY, -q[3], omegaZ);
+                qDot[1] = 0.5 * MathArrays.linearCombination( q[0], omegaX, -q[3], omegaY,  q[2], omegaZ);
+                qDot[2] = 0.5 * MathArrays.linearCombination( q[3], omegaX,  q[0], omegaY, -q[1], omegaZ);
+                qDot[3] = 0.5 * MathArrays.linearCombination(-q[2], omegaX,  q[1], omegaY,  q[0], omegaZ);
+            }
+        };
+        final List<TimeStampedAngularCoordinates> complete = new ArrayList<TimeStampedAngularCoordinates>();
+        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
+        integrator.addStepHandler(new StepNormalizer(dt / 2000, new FixedStepHandler() {
+            public void init(double t0, double[] y0, double t) {
+            }
+            public void handleStep(double t, double[] y, double[] yDot, boolean isLast) {
+                complete.add(new TimeStampedAngularCoordinates(reference.getDate().shiftedBy(t),
+                                                           new Rotation(y[0], y[1], y[2], y[3], true),
+                                                           new Vector3D(1, reference.getRotationRate(),
+                                                                        t, reference.getRotationAcceleration()),
+                                                                        reference.getRotationAcceleration()));
+            }
+        }));
+
+        double[] y = new double[] {
+            reference.getRotation().getQ0(), 
+            reference.getRotation().getQ1(), 
+            reference.getRotation().getQ2(), 
+            reference.getRotation().getQ3()
+        };
+        integrator.integrate(ode, 0, y, dt, y);
 
         List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
-        for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-            TimeStampedAngularCoordinates shifted = reference.shiftedBy(dt);
-            sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(dt),
-                                                         shifted.getRotation(),
-                                                         shifted.getRotationRate()));
+        sample.add(complete.get(0));
+        sample.add(complete.get(complete.size() / 2));
+        sample.add(complete.get(complete.size() - 1));
+
+        double maxRotationError     = 0;
+        double maxRateError         = 0;
+        double maxAccelerationError = 0;
+        for (TimeStampedAngularCoordinates acRef : complete) {
+            TimeStampedAngularCoordinates interpolated =
+                    TimeStampedAngularCoordinates.interpolate(acRef.getDate(), AngularDerivativesFilter.USE_RRA, sample);
+            double rotationError     = Rotation.distance(acRef.getRotation(), interpolated.getRotation());
+            double rateError         = Vector3D.distance(acRef.getRotationRate(), interpolated.getRotationRate());
+            double accelerationError = Vector3D.distance(acRef.getRotationAcceleration(), interpolated.getRotationAcceleration());
+            maxRotationError         = FastMath.max(maxRotationError,     rotationError);
+            maxRateError             = FastMath.max(maxRateError,         rateError);
+            maxAccelerationError     = FastMath.max(maxAccelerationError, accelerationError);
         }
 
-        for (double dt = 0; dt < 1.0; dt += 0.001) {
-            TimeStampedAngularCoordinates interpolated =
-                    TimeStampedAngularCoordinates.interpolate(date.shiftedBy(dt), AngularDerivativesFilter.USE_RR, sample);
-            Rotation r    = interpolated.getRotation();
-            Vector3D rate = interpolated.getRotationRate();
-            Assert.assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate), 5.0e-15);
-        }
+        return new double[] {
+          maxRotationError, maxRateError, maxAccelerationError  
+        };
 
     }
 
@@ -319,14 +351,15 @@ public class TimeStampedAngularCoordinatesTest {
         TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
                                                   Rotation.IDENTITY,
-                                                  new Vector3D(omega, Vector3D.MINUS_K));
+                                                  new Vector3D(omega, Vector3D.MINUS_K),
+                                                  Vector3D.ZERO);
 
         List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
         for (double dt : new double[] { 0.0, 0.25, 0.5, 0.75, 1.0 }) {
             TimeStampedAngularCoordinates shifted = reference.shiftedBy(dt);
             sample.add(new TimeStampedAngularCoordinates(shifted.getDate(),
                                                          shifted.getRotation(),
-                                                         Vector3D.ZERO));
+                                                         Vector3D.ZERO, Vector3D.ZERO));
         }
 
         for (TimeStampedAngularCoordinates s : sample) {
@@ -334,8 +367,8 @@ public class TimeStampedAngularCoordinatesTest {
                     TimeStampedAngularCoordinates.interpolate(s.getDate(), AngularDerivativesFilter.USE_RR, sample);
             Rotation r    = interpolated.getRotation();
             Vector3D rate = interpolated.getRotationRate();
-            Assert.assertEquals(0.0, Rotation.distance(s.getRotation(), r), 1.0e-14);
-            Assert.assertEquals(0.0, Vector3D.distance(s.getRotationRate(), rate), 3.0e-14);
+            Assert.assertEquals(0.0, Rotation.distance(s.getRotation(), r), 2.0e-14);
+            Assert.assertEquals(0.0, Vector3D.distance(s.getRotationRate(), rate), 2.0e-13);
         }
 
     }
@@ -348,12 +381,13 @@ public class TimeStampedAngularCoordinatesTest {
         TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
                                                   new Rotation(Vector3D.PLUS_K, alpha0),
-                                                  new Vector3D(omega, Vector3D.MINUS_K));
+                                                  new Vector3D(omega, Vector3D.MINUS_K),
+                                                  Vector3D.ZERO);
 
         List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
         for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
             Rotation r = reference.shiftedBy(dt).getRotation();
-            sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(dt), r, Vector3D.ZERO));
+            sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(dt), r, Vector3D.ZERO, Vector3D.ZERO));
         }
 
         for (double dt = 0; dt < 1.0; dt += 0.001) {
@@ -375,11 +409,12 @@ public class TimeStampedAngularCoordinatesTest {
         TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
                                                   new Rotation(Vector3D.PLUS_K, alpha0),
-                                                  new Vector3D(omega, Vector3D.MINUS_K));
+                                                  new Vector3D(omega, Vector3D.MINUS_K),
+                                                  Vector3D.ZERO);
 
         List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
         Rotation r = reference.shiftedBy(0.2).getRotation();
-        sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(0.2), r, Vector3D.ZERO));
+        sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(0.2), r, Vector3D.ZERO, Vector3D.ZERO));
 
         try {
             TimeStampedAngularCoordinates.interpolate(date.shiftedBy(0.3), AngularDerivativesFilter.USE_R, sample);
@@ -404,7 +439,7 @@ public class TimeStampedAngularCoordinatesTest {
             AbsoluteDate t = t0.shiftedBy(row[0] * 3600.0);
             Rotation     r = new Rotation(row[1], 0.0, 0.0, row[2], false);
             Vector3D     o = new Vector3D(row[3], Vector3D.PLUS_K);
-            sample.add(new TimeStampedAngularCoordinates(t, r, o));
+            sample.add(new TimeStampedAngularCoordinates(t, r, o, Vector3D.ZERO));
         }
         for (double dt = 0; dt < 29000; dt += 120) {
             TimeStampedAngularCoordinates shifted      = sample.get(0).shiftedBy(dt);
@@ -420,20 +455,23 @@ public class TimeStampedAngularCoordinatesTest {
 
     }
 
-    private TimeStampedAngularCoordinates identity() {
-        return new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                 Rotation.IDENTITY, Vector3D.ZERO);
-    }
-
-    private Vector3D randomVector(Random random, double norm) {
+    private Vector3D randomVector(RandomGenerator random, double norm) {
         double n = random.nextDouble() * norm;
-        double x = random.nextDouble();
-        double y = random.nextDouble();
-        double z = random.nextDouble();
+        double x = 2 * random.nextDouble() - 1;
+        double y = 2 * random.nextDouble() - 1;
+        double z = 2 * random.nextDouble() - 1;
         return new Vector3D(n, new Vector3D(x, y, z).normalize());
     }
 
-    private Rotation randomRotation(Random random) {
+    private PVCoordinates randomPVCoordinates(RandomGenerator random,
+                                              double norm0, double norm1, double norm2) {
+        Vector3D p0 = randomVector(random, norm0);
+        Vector3D p1 = randomVector(random, norm1);
+        Vector3D p2 = randomVector(random, norm2);
+        return new PVCoordinates(p0, p1, p2);
+    }
+
+    private Rotation randomRotation(RandomGenerator random) {
         double q0 = random.nextDouble() * 2 - 1;
         double q1 = random.nextDouble() * 2 - 1;
         double q2 = random.nextDouble() * 2 - 1;

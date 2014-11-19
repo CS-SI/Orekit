@@ -1024,7 +1024,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             }
 
             // evaluate the Chebyshev polynomials
-            return chebyshev.getPositionVelocity(date);
+            return chebyshev.getPositionVelocityAcceleration(date);
 
         }
 

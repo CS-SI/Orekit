@@ -33,7 +33,10 @@ public enum CartesianDerivativesFilter {
     USE_P(0),
 
     /** Use positions and velocities. */
-    USE_PV(1);
+    USE_PV(1),
+
+    /** Use positions, velocities and accelerations. */
+    USE_PVA(2);
 
     /** Maximum derivation order. */
     private final int maxOrder;

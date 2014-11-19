@@ -130,7 +130,7 @@ public class CelestialBodyPointed implements AttitudeProvider {
         }
 
         // build the attitude
-        return new Attitude(date, frame, transform.getRotation(), transform.getRotationRate());
+        return new Attitude(date, frame, transform.getRotation(), transform.getRotationRate(), transform.getRotationAcceleration());
 
     }
 

@@ -24,19 +24,21 @@ public class AngularDerivativesFilterTest {
 
     @Test
     public void testList() {
-        Assert.assertEquals(2, AngularDerivativesFilter.values().length);
+        Assert.assertEquals(3, AngularDerivativesFilter.values().length);
     }
 
     @Test
     public void testOrder() {
         Assert.assertEquals(0, AngularDerivativesFilter.USE_R.getMaxOrder(), 0);
         Assert.assertEquals(1, AngularDerivativesFilter.USE_RR.getMaxOrder(), 0);
+        Assert.assertEquals(2, AngularDerivativesFilter.USE_RRA.getMaxOrder(), 0);
     }
 
     @Test
     public void testBuildFromOrder() {
-        Assert.assertEquals(AngularDerivativesFilter.USE_R,  AngularDerivativesFilter.getFilter(0));
-        Assert.assertEquals(AngularDerivativesFilter.USE_RR, AngularDerivativesFilter.getFilter(1));
+        Assert.assertEquals(AngularDerivativesFilter.USE_R,   AngularDerivativesFilter.getFilter(0));
+        Assert.assertEquals(AngularDerivativesFilter.USE_RR,  AngularDerivativesFilter.getFilter(1));
+        Assert.assertEquals(AngularDerivativesFilter.USE_RRA, AngularDerivativesFilter.getFilter(2));
     }
 
     @Test
@@ -50,9 +52,9 @@ public class AngularDerivativesFilterTest {
     }
 
     @Test
-    public void testNoOrder2() {
+    public void testNoOrder3() {
         try {
-            AngularDerivativesFilter.getFilter(2);
+            AngularDerivativesFilter.getFilter(3);
             Assert.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected

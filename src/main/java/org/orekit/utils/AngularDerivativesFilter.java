@@ -33,7 +33,10 @@ public enum AngularDerivativesFilter {
     USE_R(0),
 
     /** Use rotations and rotation rates. */
-    USE_RR(1);
+    USE_RR(1),
+
+    /** Use rotations, rotation rates and acceleration. */
+    USE_RRA(2);
 
     /** Maximum derivation order. */
     private final int maxOrder;

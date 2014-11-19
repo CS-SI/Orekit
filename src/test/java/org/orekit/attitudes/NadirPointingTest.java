@@ -17,6 +17,9 @@
 package org.orekit.attitudes;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -32,6 +35,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -41,7 +45,9 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class NadirPointingTest {
@@ -167,7 +173,7 @@ public class NadirPointingTest {
         Assert.assertEquals(angle, FastMath.toRadians(0.16797386586252272), Utils.epsilonAngle);
     }
 
-    /** Vertical test : check that Z satellite axis is colinear to local vertical axis,
+    /** Vertical test : check that Z satellite axis is collinear to local vertical axis,
         which direction is : (cos(lon)*cos(lat), sin(lon)*cos(lat), sin(lat)),
         where lon et lat stand for observed point coordinates
         (i.e satellite ones, since they are the same by construction,
@@ -191,10 +197,10 @@ public class NadirPointingTest {
         //  Vertical test
         // ***************
         // Get observed ground point position/velocity
-        Vector3D pTargetItrf = nadirAttitudeLaw.getTargetPoint(circ, date, itrf);
+        TimeStampedPVCoordinates pvTargetItrf = nadirAttitudeLaw.getTargetPV(circ, date, itrf);
 
         // Convert to geodetic coordinates
-        GeodeticPoint geoTarget = earthShape.transform(pTargetItrf, itrf, date);
+        GeodeticPoint geoTarget = earthShape.transform(pvTargetItrf.getPosition(), itrf, date);
 
         // Compute local vertical axis
         double xVert = FastMath.cos(geoTarget.getLongitude())*FastMath.cos(geoTarget.getLatitude());
@@ -209,9 +215,50 @@ public class NadirPointingTest {
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
         Vector3D zSatItrf = FramesFactory.getEME2000().getTransformTo(itrf, date).transformVector(zSatEME2000);
 
-        // Check that satellite Z axis is colinear to local vertical axis
+        // Check that satellite Z axis is collinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);
         Assert.assertEquals(0.0, FastMath.sin(angle), Utils.epsilonTest);
+
+    }
+
+    /** Test the derivatives of the sliding target
+     */
+    @Test
+    public void testSlidingDerivatives() throws OrekitException {
+
+        // Elliptic earth shape
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
+
+        // Create earth center pointing attitude provider
+        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
+
+        //  Satellite on any position
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
+                                   FastMath.toRadians(90.), PositionAngle.TRUE,
+                                   FramesFactory.getEME2000(), date, mu);
+
+        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        for (double dt = -0.1; dt < 0.1; dt += 0.05) {
+            Orbit o = circ.shiftedBy(dt);
+            sample.add(nadirAttitudeLaw.getTargetPV(o, o.getDate(), o.getFrame()));
+        }
+        TimeStampedPVCoordinates reference =
+                TimeStampedPVCoordinates.interpolate(circ.getDate(),
+                                                     CartesianDerivativesFilter.USE_P, sample);
+
+        TimeStampedPVCoordinates target =
+                nadirAttitudeLaw.getTargetPV(circ, circ.getDate(), circ.getFrame());
+
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getPosition(),     target.getPosition()),
+                            1.0e-15 * reference.getPosition().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getVelocity(),     target.getVelocity()),
+                            3.0e-11 * reference.getVelocity().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
+                            1.0e-5 * reference.getAcceleration().getNorm());
 
     }
 
@@ -243,12 +290,12 @@ public class NadirPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        Assert.assertEquals(0.0, errorAngleMinus, 4.0e-9 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        Assert.assertEquals(0.0, errorAnglePlus, 8.0e-9 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Rotation rM = sMinus.getAttitude().getRotation();

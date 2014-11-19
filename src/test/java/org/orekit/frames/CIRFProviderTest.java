@@ -45,7 +45,7 @@ public class CIRFProviderTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         TransformProvider provider =
                 new InterpolatingTransformProvider(new CIRFProvider(eopHistory),
-                                                   CartesianDerivativesFilter.USE_PV,
+                                                   CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
@@ -85,7 +85,7 @@ public class CIRFProviderTest {
         TransformProvider nonInterpolating = new CIRFProvider(eopHistory);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating,
-                                                   CartesianDerivativesFilter.USE_PV,
+                                                   CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    6, Constants.JULIAN_DAY / 24,
@@ -132,7 +132,7 @@ public class CIRFProviderTest {
         TransformProvider nonInterpolating = new CIRFProvider(eopHistory);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating,
-                                                   CartesianDerivativesFilter.USE_PV,
+                                                   CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    6, Constants.JULIAN_DAY / 24,

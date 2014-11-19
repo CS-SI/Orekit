@@ -83,7 +83,10 @@ public class Attitude
     public Attitude(final AbsoluteDate date, final Frame referenceFrame,
                     final AngularCoordinates orientation) {
         this(referenceFrame,
-             new TimeStampedAngularCoordinates(date, orientation.getRotation(), orientation.getRotationRate()));
+             new TimeStampedAngularCoordinates(date,
+                                               orientation.getRotation(),
+                                               orientation.getRotationRate(),
+                                               orientation.getRotationAcceleration()));
     }
 
     /** Creates a new instance.
@@ -91,10 +94,11 @@ public class Attitude
      * @param referenceFrame reference frame from which attitude is defined
      * @param attitude rotation between reference frame and satellite frame
      * @param spin satellite spin (axis and velocity, in <strong>satellite</strong> frame)
+     * @param acceleration satellite rotation acceleration (in <strong>satellite</strong> frame)
      */
     public Attitude(final AbsoluteDate date, final Frame referenceFrame,
-                    final Rotation attitude, final Vector3D spin) {
-        this(referenceFrame, new TimeStampedAngularCoordinates(date, attitude, spin));
+                    final Rotation attitude, final Vector3D spin, final Vector3D acceleration) {
+        this(referenceFrame, new TimeStampedAngularCoordinates(date, attitude, spin, acceleration));
     }
 
     /** Estimate spin between two orientations.
@@ -152,7 +156,8 @@ public class Attitude
         final Transform t = newReferenceFrame.getTransformTo(referenceFrame, orientation.getDate());
         return new Attitude(orientation.getDate(), newReferenceFrame,
                             orientation.getRotation().applyTo(t.getRotation()),
-                            orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())));
+                            orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())),
+                            orientation.getRotationAcceleration().add(orientation.getRotation().applyTo(t.getRotationAcceleration())));
 
     }
 
@@ -196,6 +201,16 @@ public class Attitude
      */
     public Vector3D getSpin() {
         return orientation.getRotationRate();
+    }
+
+    /** Get the satellite rotation acceleration.
+     * <p>The rotation acceleration. vector is defined in <strong>satellite</strong> frame.</p>
+     * @return rotation acceleration
+     * @see #getOrientation()
+     * @see #getRotation()
+     */
+    public Vector3D getRotationAcceleration() {
+        return orientation.getRotationAcceleration();
     }
 
     /** {@inheritDoc}

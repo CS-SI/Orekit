@@ -47,7 +47,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 
 public class TabulatedProviderTest {
@@ -66,49 +68,67 @@ public class TabulatedProviderTest {
 
     @Test
     public void testWithoutRate() throws OrekitException {
-        double             samplingRate      = 60.0;
-        double             checkingRate      = 10.0;
+        double             samplingRate      = 10.0;
+        double             checkingRate      = 1.0;
         int                n                 = 8;
-        AttitudeProvider   referenceProvider = new YawCompensation(new NadirPointing(earthShape));
-        List<Attitude>     sample            = createSample(samplingRate, referenceProvider);
+        AttitudeProvider   referenceProvider = new NadirPointing(earthShape);
+        List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
         final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
-        TabulatedProvider  provider          = new TabulatedProvider(sample, n, false);
-        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.0e-11);
+        TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
+                                                                     AngularDerivativesFilter.USE_R);
+        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 2.2e-14);
     }
 
     @Test
     public void testWithRate() throws OrekitException {
-        double             samplingRate      = 60.0;
-        double             checkingRate      = 10.0;
+        double             samplingRate      = 10.0;
+        double             checkingRate      = 1.0;
         int                n                 = 8;
-        AttitudeProvider   referenceProvider = new YawCompensation(new NadirPointing(earthShape));
-        List<Attitude>     sample            = createSample(samplingRate, referenceProvider);
+        AttitudeProvider   referenceProvider = new NadirPointing(earthShape);
+        List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
         final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
-        TabulatedProvider  provider          = new TabulatedProvider(sample, n, true);
-        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.0e-12);
-   }
+        TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
+                                                                     AngularDerivativesFilter.USE_RR);
+        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.3e-11);
+    }
+
+    @Test
+    public void testWithAcceleration() throws OrekitException {
+        double             samplingRate      = 10.0;
+        double             checkingRate      = 1.0;
+        int                n                 = 8;
+        AttitudeProvider   referenceProvider = new NadirPointing(earthShape);
+        List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
+        final double       margin            = samplingRate * n / 2;
+        final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
+        final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
+        TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
+                                                                     AngularDerivativesFilter.USE_RRA);
+        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 4.2e-9);
+    }
 
     @Test
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         double             samplingRate      = 60.0;
         double             checkingRate      = 10.0;
         int                n                 = 8;
-        AttitudeProvider   referenceProvider = new YawCompensation(new NadirPointing(earthShape));
-        List<Attitude>     sample            = createSample(samplingRate, referenceProvider);
+        AttitudeProvider   referenceProvider = new NadirPointing(earthShape);
+        List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
         final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
-        TabulatedProvider  provider          = new TabulatedProvider(sample, n, true);
+        TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
+                                                                     AngularDerivativesFilter.USE_RR);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
-        Assert.assertTrue(bos.size() > 20000);
-        Assert.assertTrue(bos.size() < 21000);
+        Assert.assertTrue(bos.size() > 26000);
+        Assert.assertTrue(bos.size() < 27000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -118,7 +138,7 @@ public class TabulatedProviderTest {
 
     }
 
-    private List<Attitude> createSample(double samplingRate, AttitudeProvider referenceProvider)
+    private List<TimeStampedAngularCoordinates> createSample(double samplingRate, AttitudeProvider referenceProvider)
         throws PropagationException {
 
         // reference propagator, using a yaw compensation law
@@ -126,14 +146,14 @@ public class TabulatedProviderTest {
         referencePropagator.setAttitudeProvider(referenceProvider);
 
         // create sample
-        final List<Attitude> sample = new ArrayList<Attitude>();
+        final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
         referencePropagator.setMasterMode(samplingRate, new OrekitFixedStepHandler() {
 
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
 
             public void handleStep(SpacecraftState currentState, boolean isLast) {
-                sample.add(currentState.getAttitude());
+                sample.add(currentState.getAttitude().getOrientation());
             }
 
         });
@@ -143,7 +163,7 @@ public class TabulatedProviderTest {
 
     }
 
-    private double checkError(AbsoluteDate start, AbsoluteDate end, double checkingRate,
+    private double checkError(final AbsoluteDate start, AbsoluteDate end, double checkingRate,
                               final AttitudeProvider referenceProvider, TabulatedProvider provider)
             throws PropagationException {
 

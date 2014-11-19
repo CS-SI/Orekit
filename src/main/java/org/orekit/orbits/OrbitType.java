@@ -17,6 +17,7 @@
 package org.orekit.orbits;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -55,8 +56,10 @@ public enum OrbitType {
                                      final AbsoluteDate date, final double mu, final Frame frame) {
 
             final Vector3D p     = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
+            final double r2      = p.getNormSq();
             final Vector3D v     = new Vector3D(stateVector[3], stateVector[4], stateVector[5]);
-            return new CartesianOrbit(new PVCoordinates(p, v), frame, date, mu);
+            final Vector3D a     = new Vector3D(-mu / (r2 * FastMath.sqrt(r2)), p);
+            return new CartesianOrbit(new PVCoordinates(p, v, a), frame, date, mu);
 
         }
 

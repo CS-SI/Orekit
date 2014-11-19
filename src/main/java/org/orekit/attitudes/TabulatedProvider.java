@@ -40,7 +40,7 @@ public class TabulatedProvider implements AttitudeProvider {
 
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140624L;
+    private static final long serialVersionUID = 20140723L;
 
     /** Reference frame for tabulated attitudes. */
     private final Frame referenceFrame;
@@ -48,22 +48,22 @@ public class TabulatedProvider implements AttitudeProvider {
     /** Cached attitude table. */
     private final transient ImmutableTimeStampedCache<TimeStampedAngularCoordinates> table;
 
-    /** filter for derivatives from the sample to use in interpolation. */
+    /** Filter for derivatives from the sample to use in interpolation. */
     private final AngularDerivativesFilter filter;
 
     /** Creates new instance.
-     * @param referenceFrame reference frame for tabulated attitudes
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
      * @param useRotationRate if true, rotation rate from the tables are used in
-     * the interpolation, ortherwise rates present in the table are ignored
+     * the interpolation, otherwise rates present in the table are ignored
      * and rate is reconstructed from the rotation angles only
+     * @deprecated as of 7.0, replaced with {@link #TabulatedProvider(Frame, List, int, AngularDerivativesFilter)}
      */
-    public TabulatedProvider(final Frame referenceFrame, final List<TimeStampedAngularCoordinates> table,
-                             final int n, final boolean useRotationRate) {
-        this.referenceFrame  = referenceFrame;
-        this.table           = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
-        this.filter          = useRotationRate ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R;
+    @Deprecated
+    public TabulatedProvider(final List<Attitude> table, final int n, final boolean useRotationRate) {
+        this(table.get(0).getReferenceFrame(),
+             toTimeStampedAngularCoordinates(table),
+             n, useRotationRate ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R);
     }
 
     /** Creates new instance.
@@ -77,19 +77,6 @@ public class TabulatedProvider implements AttitudeProvider {
         this.referenceFrame  = referenceFrame;
         this.table           = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
         this.filter          = filter;
-    }
-
-    /** Creates new instance.
-     * @param table tabulated attitudes
-     * @param n number of attitude to use for interpolation
-     * @param useRotationRate if true, rotation rate from the tables are used in
-     * the interpolation, ortherwise rates present in the table are ignored
-     * and rate is reconstructed from the rotation angles only
-     */
-    public TabulatedProvider(final List<Attitude> table, final int n, final boolean useRotationRate) {
-        this(table.get(0).getReferenceFrame(),
-             toTimeStampedAngularCoordinates(table),
-             n, useRotationRate);
     }
 
     /** {@inheritDoc} */
@@ -134,7 +121,7 @@ public class TabulatedProvider implements AttitudeProvider {
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20131205L;
+        private static final long serialVersionUID = 20140723L;
 
         /** Reference frame for tabulated attitudes. */
         private final Frame referenceFrame;
@@ -145,7 +132,7 @@ public class TabulatedProvider implements AttitudeProvider {
         /** Number of attitude to use for interpolation. */
         private final int n;
 
-        /** filter for derivatives from the sample to use in interpolation. */
+        /** Filter for derivatives from the sample to use in interpolation. */
         private final AngularDerivativesFilter filter;
 
         /** Simple constructor.

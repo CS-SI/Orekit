@@ -45,7 +45,7 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider,
-                                                   CartesianDerivativesFilter.USE_PV,
+                                                   CartesianDerivativesFilter.USE_PVA,
                                                    AngularDerivativesFilter.USE_RR,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
@@ -54,10 +54,11 @@ public class InterpolatingTransformProviderTest {
             Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
             Transform interpolated = interpolatingProvider.getTransform(t0.shiftedBy(dt));
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
-            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),   7.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),   3.0e-14);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),    1.1e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(), 2.2e-15);
+            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           7.0e-15);
+            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           3.0e-14);
+            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            1.3e-15);
+            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         2.2e-15);
+            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 1.2e-14);
 
         }
         Assert.assertEquals(10,   rawProvider.getCount());
@@ -102,8 +103,8 @@ public class InterpolatingTransformProviderTest {
                         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
                     }
                 },
-                CartesianDerivativesFilter.USE_PV,
-                AngularDerivativesFilter.USE_RR,
+                CartesianDerivativesFilter.USE_PVA,
+                AngularDerivativesFilter.USE_RRA,
                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                 5, 0.8, 10, 60.0, 60.0);
         interpolatingProvider.getTransform(AbsoluteDate.J2000_EPOCH);
@@ -116,8 +117,8 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider,
-                                                   CartesianDerivativesFilter.USE_PV,
-                                                   AngularDerivativesFilter.USE_RR,
+                                                   CartesianDerivativesFilter.USE_PVA,
+                                                   AngularDerivativesFilter.USE_RRA,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -178,7 +179,10 @@ public class InterpolatingTransformProviderTest {
             final double cos = FastMath.cos(omega * dt);
             final double sin = FastMath.sin(omega * dt);
             return new Transform(date,
-                                 new Transform(date, new Vector3D(-cos, -sin, 0), new Vector3D(omega * sin, -omega * cos, 0)),
+                                 new Transform(date,
+                                               new Vector3D(-cos, -sin, 0),
+                                               new Vector3D(omega * sin, -omega * cos, 0),
+                                               new Vector3D(omega * omega * cos, omega * omega * sin, 0)),
                                  new Transform(date,
                                                new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt),
                                                new Vector3D(omega, Vector3D.PLUS_K)));

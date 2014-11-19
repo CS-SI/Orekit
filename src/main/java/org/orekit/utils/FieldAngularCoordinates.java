@@ -32,7 +32,7 @@ import org.orekit.time.TimeShiftable;
 /** Simple container for FieldRotation<T>/FieldRotation<T> rate pairs, using {@link RealFieldElement}.
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
- * a simple linear model. It is <em>not</em> intended as a replacement for
+ * a simple quadratic model. It is <em>not</em> intended as a replacement for
  * proper attitude propagation but should be sufficient for either small
  * time shifts or coarse accuracy.
  * </p>
@@ -49,7 +49,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      implements TimeShiftable<FieldAngularCoordinates<T>>, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130222L;
+    private static final long serialVersionUID = 20140414L;
 
     /** FieldRotation<T>. */
     private final FieldRotation<T> rotation;
@@ -57,13 +57,30 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
     /** FieldRotation<T> rate. */
     private final FieldVector3D<T> rotationRate;
 
-    /** Builds a FieldRotation<T>/FieldRotation<T> rate pair.
-     * @param rotation FieldRotation<T>
-     * @param rotationRate FieldRotation<T> rate (rad/s)
+    /** FieldRotation<T> acceleration. */
+    private final FieldVector3D<T> rotationAcceleration;
+
+    /** Builds a rotation/rotation rate pair.
+     * @param rotation rotation
+     * @param rotationRate rotation rate Ω (rad/s)
      */
     public FieldAngularCoordinates(final FieldRotation<T> rotation, final FieldVector3D<T> rotationRate) {
-        this.rotation     = rotation;
-        this.rotationRate = rotationRate;
+        this(rotation, rotationRate,
+             new FieldVector3D<T>(rotation.getQ0().getField().getZero(),
+                                  rotation.getQ0().getField().getZero(),
+                                  rotation.getQ0().getField().getZero()));
+    }
+
+    /** Builds a FieldRotation<T>/FieldRotation<T> rate/FieldRotation<T> acceleration triplet.
+     * @param rotation FieldRotation<T>
+     * @param rotationRate FieldRotation<T> rate Ω (rad/s)
+     * @param rotationAcceleration FieldRotation<T> acceleration dΩ/dt (rad²/s²)
+     */
+    public FieldAngularCoordinates(final FieldRotation<T> rotation, final FieldVector3D<T> rotationRate,
+                                   final FieldVector3D<T> rotationAcceleration) {
+        this.rotation             = rotation;
+        this.rotationRate         = rotationRate;
+        this.rotationAcceleration = rotationAcceleration;
     }
 
     /** Estimate FieldRotation<T> rate between two orientations.
@@ -75,24 +92,27 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return FieldRotation<T> rate allowing to go from start to end orientations
      */
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> estimateRate(final FieldRotation<T> start, final FieldRotation<T> end, final double dt) {
+    public static <T extends RealFieldElement<T>> FieldVector3D<T>
+    estimateRate(final FieldRotation<T> start, final FieldRotation<T> end, final double dt) {
         final FieldRotation<T> evolution = start.applyTo(end.revert());
         return new FieldVector3D<T>(evolution.getAngle().divide(dt), evolution.getAxis());
     }
 
-    /** Revert a FieldRotation<T>/FieldRotation<T> rate pair.
-     * Build a pair which reverse the effect of another pair.
-     * @return a new pair whose effect is the reverse of the effect
+    /** Revert a FieldRotation<T>/FieldRotation<T>/FieldRotation<T> acceleration triplet.
+     * Build a triplet which reverse the effect of another triplet.
+     * @return a new triplet whose effect is the reverse of the effect
      * of the instance
      */
     public FieldAngularCoordinates<T> revert() {
-        return new FieldAngularCoordinates<T>(rotation.revert(), rotation.applyInverseTo(rotationRate.negate()));
+        return new FieldAngularCoordinates<T>(rotation.revert(),
+                                              rotation.applyInverseTo(rotationRate.negate()),
+                                              rotation.applyInverseTo(rotationAcceleration.negate()));
     }
 
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple linear model. It is <em>not</em> intended as a replacement for
+     * a simple quadratic model. It is <em>not</em> intended as a replacement for
      * proper attitude propagation but should be sufficient for either small
      * time shifts or coarse accuracy.
      * </p>
@@ -100,18 +120,53 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public FieldAngularCoordinates<T> shiftedBy(final double dt) {
-        final T rate = rotationRate.getNorm();
-        if (rate.getReal() == 0.0) {
-            // special case for fixed FieldRotation<T>s
-            return this;
-        }
 
+        // the shiftedBy method is based on a local approximation.
+        // It considers separately the contribution of the constant
+        // rotation, the linear contribution or the rate and the
+        // quadratic contribution of the acceleration. The rate
+        // and acceleration contributions are small rotations as long
+        // as the time shift is small, which is the crux of the algorithm.
+        // Small rotations are almost commutative, so we append these small
+        // contributions one after the other, as if they really occurred
+        // successively, despite this is not what really happens.
+
+        // compute the linear contribution first, ignoring acceleration
         // BEWARE: there is really a minus sign here, because if
         // the target frame rotates in one direction, the vectors in the origin
         // frame seem to rotate in the opposite direction
-        final FieldRotation<T> evolution = new FieldRotation<T>(rotationRate, rate.negate().multiply(dt));
+        final T rate = rotationRate.getNorm();
+        final T zero = rate.getField().getZero();
+        final T one  = rate.getField().getOne();
+        final FieldRotation<T> rateContribution = (rate.getReal() == 0.0) ?
+                                                  new FieldRotation<T>(one, zero, zero, zero, false) :
+                                                  new FieldRotation<T>(rotationRate, rate.multiply(-dt));
 
-        return new FieldAngularCoordinates<T>(evolution.applyTo(rotation), rotationRate);
+        // append rotation and rate contribution
+        final FieldAngularCoordinates<T> linearPart =
+                new FieldAngularCoordinates<T>(rateContribution.applyTo(rotation), rotationRate);
+
+        final T acc  = rotationAcceleration.getNorm();
+        if (acc.getReal() == 0.0) {
+            // no acceleration, the linear part is sufficient
+            return linearPart;
+        }
+
+        // compute the quadratic contribution, ignoring initial rotation and rotation rate
+        // BEWARE: there is really a minus sign here, because if
+        // the target frame rotates in one direction, the vectors in the origin
+        // frame seem to rotate in the opposite direction
+        final FieldAngularCoordinates<T> quadraticContribution =
+                new FieldAngularCoordinates<T>(new FieldRotation<T>(rotationAcceleration,
+                                                                    acc.multiply(-0.5 * dt * dt)),
+                                               new FieldVector3D<T>(dt, rotationAcceleration),
+                                               rotationAcceleration);
+
+        // the quadratic contribution is a small rotation:
+        // its initial angle and angular rate are both zero.
+        // small rotations are almost commutative, so we append the small
+        // quadratic part after the linear part as a simple offset
+        return quadraticContribution.addOffset(linearPart);
 
     }
 
@@ -127,6 +182,13 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      */
     public FieldVector3D<T> getRotationRate() {
         return rotationRate;
+    }
+
+    /** Get the rotation acceleration.
+     * @return the rotation acceleration vector dΩ/dt (rad²/s²).
+     */
+    public FieldVector3D<T> getRotationAcceleration() {
+        return rotationAcceleration;
     }
 
     /** Add an offset from the instance.
@@ -148,8 +210,13 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @see #subtractOffset(FieldAngularCoordinates)
      */
     public FieldAngularCoordinates<T> addOffset(final FieldAngularCoordinates<T> offset) {
+        final FieldVector3D<T> rOmega    = rotation.applyTo(offset.rotationRate);
+        final FieldVector3D<T> rOmegaDot = rotation.applyTo(offset.rotationAcceleration);
         return new FieldAngularCoordinates<T>(rotation.applyTo(offset.rotation),
-                                              rotationRate.add(rotation.applyTo(offset.rotationRate)));
+                                              rotationRate.add(rOmega),
+                                              new FieldVector3D<T>( 1.0, rotationAcceleration,
+                                                                    1.0, rOmegaDot,
+                                                                   -1.0, FieldVector3D.crossProduct(rotationRate, rOmega)));
     }
 
     /** Subtract an offset from the instance.
@@ -178,7 +245,8 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @return a regular angular coordinates
      */
     public AngularCoordinates toAngularCoordinates() {
-        return new AngularCoordinates(rotation.toRotation(), rotationRate.toVector3D());
+        return new AngularCoordinates(rotation.toRotation(), rotationRate.toVector3D(),
+                                      rotationAcceleration.toVector3D());
     }
 
     /** Interpolate angular coordinates.
@@ -192,8 +260,8 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * Interpolation</a>, changing the norm of the vector to match the modified Rodrigues
      * vector as described in Malcolm D. Shuster's paper <a
      * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
-     * Survey of Attitude Representations</a>. This change avoids the singularity at &pi;.
-     * There is still a singularity at 2&pi;, which is handled by slightly offsetting all FieldRotation<T>s
+     * Survey of Attitude Representations</a>. This change avoids the singularity at π.
+     * There is still a singularity at 2π, which is handled by slightly offsetting all FieldRotation<T>s
      * when this singularity is detected.
      * </p>
      * <p>
@@ -212,16 +280,20 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
-     * @deprecated since 7.0 replaced with {@link TimeStampedFieldAngularCoordinates#interpolate(AbsoluteDate, AngularDerivativesFilter, Collection)}
+     * @deprecated since 7.0 replaced with {@link TimeStampedFieldAngularCoordinates#interpolate(AbsoluteDate,
+     * AngularDerivativesFilter, Collection)}
      */
     @Deprecated
-    public static <T extends RealFieldElement<T>> FieldAngularCoordinates<T> interpolate(final AbsoluteDate date, final boolean useRotationRates,
-                                                                                         final Collection<Pair<AbsoluteDate, FieldAngularCoordinates<T>>> sample)
+    public static <T extends RealFieldElement<T>> FieldAngularCoordinates<T>
+    interpolate(final AbsoluteDate date, final boolean useRotationRates,
+                final Collection<Pair<AbsoluteDate, FieldAngularCoordinates<T>>> sample)
         throws OrekitException {
         final List<TimeStampedFieldAngularCoordinates<T>> list = new ArrayList<TimeStampedFieldAngularCoordinates<T>>(sample.size());
         for (final Pair<AbsoluteDate, FieldAngularCoordinates<T>> pair : sample) {
             list.add(new TimeStampedFieldAngularCoordinates<T>(pair.getFirst(),
-                                                               pair.getSecond().getRotation(), pair.getSecond().getRotationRate()));
+                                                               pair.getSecond().getRotation(),
+                                                               pair.getSecond().getRotationRate(),
+                                                               pair.getSecond().getRotationAcceleration()));
         }
         return TimeStampedFieldAngularCoordinates.interpolate(date,
                                                               useRotationRates ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R,

@@ -23,6 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** Interface representing the rigid surface shape of a natural body.
@@ -53,6 +54,31 @@ public interface BodyShape extends Serializable {
      */
     GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
                                        Frame frame, AbsoluteDate date)
+        throws OrekitException;
+
+    /** Project a point to the ground.
+     * @param point point to project
+     * @param date current date
+     * @param frame frame in which moving point is expressed
+     * @return ground point exactly at the local vertical of specified point,
+     * in the same frame as specified point
+     * @exception OrekitException if point cannot be converted to body frame
+     * @see #projectToGround(TimeStampedPVCoordinates, Frame)
+     * @since 7.0
+     */
+    Vector3D projectToGround(Vector3D point, AbsoluteDate date, Frame frame)
+        throws OrekitException;
+
+    /** Project a moving point to the ground.
+     * @param pv moving point
+     * @param frame frame in which moving point is expressed
+     * @return ground point exactly at the local vertical of specified point,
+     * in the same frame as specified point
+     * @exception OrekitException if point cannot be converted to body frame
+     * @see #projectToGround(Vector3D, AbsoluteDate, Frame)
+     * @since 7.0
+     */
+    TimeStampedPVCoordinates projectToGround(TimeStampedPVCoordinates pv, Frame frame)
         throws OrekitException;
 
     /** Transform a cartesian point to a surface-relative point.

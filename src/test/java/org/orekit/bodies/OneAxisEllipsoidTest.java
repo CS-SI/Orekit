@@ -22,6 +22,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
@@ -36,25 +38,22 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class OneAxisEllipsoidTest {
-
-    @Test
-    public void testOrigin() throws OrekitException {
-        double ae = 6378137.0;
-        checkCartesianToEllipsoidic(ae, 1.0 / 298.257222101,
-                                    ae, 0, 0,
-                                    0, 0, 0);
-    }
 
     @Test
     public void testStandard() throws OrekitException {
@@ -150,6 +149,137 @@ public class OneAxisEllipsoidTest {
         Assert.assertEquals(4201866.69291890, p.getX(), 1.0e-6);
         Assert.assertEquals(177908.184625686, p.getY(), 1.0e-6);
         Assert.assertEquals(4779203.64408617, p.getZ(), 1.0e-6);
+    }
+
+    @Test
+    public void testGroundProjectionPosition() throws OrekitException {
+        OneAxisEllipsoid model =
+            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                 Constants.WGS84_EARTH_FLATTENING,
+                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
+        TimeStampedPVCoordinates initPV =
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(584.),
+                                             new Vector3D(3220103., 69623., 6449822.),
+                                             new Vector3D(6414.7, -2006., -3180.),
+                                             Vector3D.ZERO);
+        Frame eme2000 = FramesFactory.getEME2000();
+        Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
+
+        for (double dt = 0; dt < 3600.0; dt += 60.0) {
+
+            TimeStampedPVCoordinates pv = orbit.getPVCoordinates(orbit.getDate().shiftedBy(dt), eme2000);
+            TimeStampedPVCoordinates groundPV = model.projectToGround(pv, eme2000);
+            Vector3D groundP = model.projectToGround(pv.getPosition(), pv.getDate(), eme2000);
+
+            // check methods projectToGround and transform are consistent with each other
+            Assert.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLatitude(),
+                                model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLatitude(),
+                                1.0e-10);
+            Assert.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLongitude(),
+                                model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLongitude(),
+                                1.0e-10);
+            Assert.assertEquals(0.0, Vector3D.distance(groundP, groundPV.getPosition()), 1.0e-15 * groundP.getNorm());
+
+        }
+
+    }
+
+    @Test
+    public void testGroundProjectionDerivatives()
+            throws OrekitException {
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame eme2000 = FramesFactory.getEME2000();
+        OneAxisEllipsoid model =
+            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                 Constants.WGS84_EARTH_FLATTENING,
+                                 itrf);
+
+        TimeStampedPVCoordinates initPV =
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(584.),
+                                             new Vector3D(3220103., 69623., 6449822.),
+                                             new Vector3D(6414.7, -2006., -3180.),
+                                             Vector3D.ZERO);
+        Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
+
+        double[] errors = derivativesErrors(orbit, orbit.getDate(), eme2000, model);
+        Assert.assertEquals(0, errors[0], 1.0e-16);
+        Assert.assertEquals(0, errors[1], 1.0e-12);
+        Assert.assertEquals(0, errors[2], 2.0e-4);
+
+    }
+
+    private double[] derivativesErrors(PVCoordinatesProvider provider, AbsoluteDate date, Frame frame,
+                                       OneAxisEllipsoid model)
+        throws OrekitException {
+        List<TimeStampedPVCoordinates> pvList       = new ArrayList<TimeStampedPVCoordinates>();
+        List<TimeStampedPVCoordinates> groundPVList = new ArrayList<TimeStampedPVCoordinates>();
+        for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
+            TimeStampedPVCoordinates shiftedPV = provider.getPVCoordinates(date.shiftedBy(dt), frame);
+            Vector3D p = model.projectToGround(shiftedPV.getPosition(), shiftedPV.getDate(), frame);
+            pvList.add(shiftedPV);
+            groundPVList.add(new TimeStampedPVCoordinates(shiftedPV.getDate(),
+                                                          p, Vector3D.ZERO, Vector3D.ZERO));
+        }
+        TimeStampedPVCoordinates computed =
+                model.projectToGround(TimeStampedPVCoordinates.interpolate(date,
+                                                                           CartesianDerivativesFilter.USE_P,
+                                                                           pvList),
+                                                                           frame);
+        TimeStampedPVCoordinates reference =
+                TimeStampedPVCoordinates.interpolate(date,
+                                                     CartesianDerivativesFilter.USE_P,
+                                                     groundPVList);
+
+        TimeStampedPVCoordinates pv0 = provider.getPVCoordinates(date, frame);
+        Vector3D p0 = pv0.getPosition();
+        Vector3D v0 = pv0.getVelocity();
+        Vector3D a0 = pv0.getAcceleration();
+
+        return new double[] {
+            Vector3D.distance(computed.getPosition(),     reference.getPosition())     / p0.getNorm(),
+            Vector3D.distance(computed.getVelocity(),     reference.getVelocity())     / v0.getNorm(),
+            Vector3D.distance(computed.getAcceleration(), reference.getAcceleration()) / a0.getNorm(),
+        };
+
+    }
+
+    @Test
+    public void testGroundProjectionTaylor()
+            throws OrekitException {
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame eme2000 = FramesFactory.getEME2000();
+        OneAxisEllipsoid model =
+            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                 Constants.WGS84_EARTH_FLATTENING,
+                                 itrf);
+
+        TimeStampedPVCoordinates initPV =
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(584.),
+                                             new Vector3D(3220103., 69623., 6449822.),
+                                             new Vector3D(6414.7, -2006., -3180.),
+                                             Vector3D.ZERO);
+        Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
+
+        TimeStampedPVCoordinates pv0 = orbit.getPVCoordinates(orbit.getDate(), model.getBodyFrame());
+        PVCoordinatesProvider groundTaylor =
+                model.projectToGround(pv0, model.getBodyFrame()).toTaylorProvider(model.getBodyFrame());
+
+        TimeStampedPVCoordinates g0 = groundTaylor.getPVCoordinates(orbit.getDate(), model.getBodyFrame());
+        Vector3D zenith       = pv0.getPosition().subtract(g0.getPosition()).normalize();
+        Vector3D acrossTrack  = Vector3D.crossProduct(zenith, g0.getVelocity()).normalize();
+        Vector3D alongTrack   = Vector3D.crossProduct(acrossTrack, zenith).normalize();
+        for (double dt = -1; dt < 1; dt += 0.01) {
+            AbsoluteDate date = orbit.getDate().shiftedBy(dt);
+            Vector3D taylorP = groundTaylor.getPVCoordinates(date, model.getBodyFrame()).getPosition();
+            Vector3D refP    = model.projectToGround(orbit.getPVCoordinates(date, model.getBodyFrame()).getPosition(),
+                                                     date, model.getBodyFrame());
+            Vector3D delta = taylorP.subtract(refP);
+            Assert.assertEquals(0.0, Vector3D.dotProduct(delta, alongTrack),  0.0015);
+            Assert.assertEquals(0.0, Vector3D.dotProduct(delta, acrossTrack), 0.0007);
+            Assert.assertEquals(0.0, Vector3D.dotProduct(delta, zenith),      0.00002);
+        }
+
     }
 
     @Test

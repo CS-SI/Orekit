@@ -57,7 +57,7 @@ public class InertialProvider implements AttitudeProvider {
                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         final Transform t = frame.getTransformTo(satelliteFrame, date);
-        return new Attitude(date, frame, t.getRotation(), t.getRotationRate());
+        return new Attitude(date, frame, t.getRotation(), t.getRotationRate(), t.getRotationAcceleration());
     }
 
 }

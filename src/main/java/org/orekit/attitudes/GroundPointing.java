@@ -16,15 +16,16 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /**
@@ -43,7 +44,15 @@ import org.orekit.utils.PVCoordinatesProvider;
 public abstract class GroundPointing implements AttitudeProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1459257023765594793L;
+    private static final long serialVersionUID = 20140811L;
+
+    /** J axis. */
+    private static final PVCoordinates PLUS_J =
+            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
+
+    /** K axis. */
+    private static final PVCoordinates PLUS_K =
+            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
 
     /** Body frame. */
     private final Frame bodyFrame;
@@ -63,82 +72,52 @@ public abstract class GroundPointing implements AttitudeProvider {
         return bodyFrame;
     }
 
-    /** Compute the target point in specified frame.
-     * @param pvProv provider for PV coordinates
-     * @param date date at which target point is requested
-     * @param frame frame in which observed ground point should be provided
-     * @return observed ground point position in specified frame
-     * @throws OrekitException if some specific error occurs,
-     * such as no target reached
-     */
-    protected abstract Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
-                                               final AbsoluteDate date, final Frame frame)
-        throws OrekitException;
-
     /** Compute the target point position/velocity in specified frame.
-     * <p>The default implementation use a simple two points finite differences scheme,
-     * it may be replaced by more accurate models in specialized implementations.</p>
      * @param pvProv provider for PV coordinates
      * @param date date at which target point is requested
      * @param frame frame in which observed ground point should be provided
-     * @return observed ground point position/velocity in specified frame
+     * @return observed ground point position (element 0) and velocity (at index 1)
+     * in specified frame
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                        final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
-
-        // target point position in same frame as initial pv
-        final Vector3D intersectionP = getTargetPoint(pvProv, date, frame);
-
-        // velocity of target point due to satellite and target motions
-        final double h  = 0.1;
-        final double scale = 1.0 / (2 * h);
-        final Vector3D intersectionM1h = getTargetPoint(pvProv, date.shiftedBy(-h), frame);
-        final Vector3D intersectionP1h = getTargetPoint(pvProv, date.shiftedBy( h), frame);
-        final Vector3D intersectionV   = new Vector3D(scale, intersectionP1h, -scale, intersectionM1h);
-
-        return new PVCoordinates(intersectionP, intersectionV);
-
-    }
-
+    protected abstract TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                            final AbsoluteDate date, final Frame frame)
+        throws OrekitException;
 
     /** {@inheritDoc} */
     public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date,
                                 final Frame frame)
         throws OrekitException {
 
-        // Construction of the satellite-target position/velocity vector at t-h, t and t+h
-        final double h = 0.1;
+        // satellite-target relative vector
+        final PVCoordinates pva  = pvProv.getPVCoordinates(date, frame);
+        final TimeStampedPVCoordinates delta =
+                new TimeStampedPVCoordinates(date, pva, getTargetPV(pvProv, date, frame));
 
-        final AbsoluteDate dateM1H = date.shiftedBy(-h);
-        final PVCoordinates pvM1H  = pvProv.getPVCoordinates(dateM1H, frame);
-        final Vector3D deltaPM1h   = getTargetPoint(pvProv, dateM1H, frame).subtract(pvM1H.getPosition());
-
-        final PVCoordinates pv0    = pvProv.getPVCoordinates(date, frame);
-        final Vector3D deltaP0     = getTargetPoint(pvProv, date, frame).subtract(pv0.getPosition());
-
-        final AbsoluteDate dateP1H = date.shiftedBy(h);
-        final PVCoordinates pvP1H  = pvProv.getPVCoordinates(dateP1H, frame);
-        final Vector3D deltaPP1h   = getTargetPoint(pvProv, dateP1H, frame).subtract(pvP1H.getPosition());
-
-        // New orekit exception if null position.
-        if (deltaP0.equals(Vector3D.ZERO)) {
+        // spacecraft and target should be away from each other to define a pointing direction
+        if (delta.getPosition().getNorm() == 0.0) {
             throw new OrekitException(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET);
         }
 
-        // Attitude rotation:
-        // line of sight -> z satellite axis,
-        // satellite velocity -> x satellite axis.
-        final Rotation rot    = new Rotation(deltaP0,   pv0.getVelocity(),   Vector3D.PLUS_K, Vector3D.PLUS_I);
+        // attitude definition:
+        // line of sight    -> +z satellite axis,
+        // orbital velocity -> (z, +x) half plane
+        final Vector3D p  = pva.getPosition();
+        final Vector3D v  = pva.getVelocity();
+        final Vector3D a  = pva.getAcceleration();
+        final double   r2 = p.getNormSq();
+        final double   r  = FastMath.sqrt(r2);
+        final Vector3D keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
+        final PVCoordinates velocity = new PVCoordinates(v, a, keplerianJerk);
 
-        // Attitude spin
-        final Rotation rotM1h = new Rotation(deltaPM1h, pvM1H.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
-        final Rotation rotP1h = new Rotation(deltaPP1h, pvP1H.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
-        final Vector3D spin   = AngularCoordinates.estimateRate(rotM1h, rotP1h, 2 * h);
+        final PVCoordinates los    = delta.normalize();
+        final PVCoordinates normal = PVCoordinates.crossProduct(delta, velocity).normalize();
 
-        return new Attitude(date, frame, rot, spin);
+        final TimeStampedAngularCoordinates ac =
+                new TimeStampedAngularCoordinates(date, los, normal, PLUS_K, PLUS_J, 1.0e-9);
+
+        return new Attitude(date, frame, ac);
 
     }
 

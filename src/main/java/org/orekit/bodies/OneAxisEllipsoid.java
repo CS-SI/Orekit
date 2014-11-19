@@ -18,17 +18,16 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.BracketedUnivariateSolver;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** Modeling of a one-axis ellipsoid.
@@ -40,7 +39,7 @@ import org.orekit.time.AbsoluteDate;
 
  * @author Luc Maisonobe
  */
-public class OneAxisEllipsoid implements BodyShape {
+public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130518L;
@@ -48,17 +47,8 @@ public class OneAxisEllipsoid implements BodyShape {
     /** Body frame related to body shape. */
     private final Frame bodyFrame;
 
-    /** Equatorial radius. */
-    private final double ae;
-
     /** Equatorial radius power 2. */
     private final double ae2;
-
-    /** Polar radius. */
-    private final double ap;
-
-    /** Polar radius power 2. */
-    private final double ap2;
 
     /** Flattening. */
     private final double f;
@@ -78,7 +68,7 @@ public class OneAxisEllipsoid implements BodyShape {
     /** Simple constructor.
      * <p>The following table provides conventional parameters for global Earth models:</p>
      * <table border="1" cellpadding="5">
-     * <tr bgcolor="#ccccff"><th>model</th><th>a<sub>e</sub> (m)</th><th>f</th></tr>
+     * <tr bgcolor="#ccccff"><th>model</th><th>a<sub>e</sub> (m)</th> <th>f</th></tr>
      * <tr><td bgcolor="#eeeeff">GRS 80</td><td>6378137.0</td><td>1.0 / 298.257222101</td></tr>
      * <tr><td bgcolor="#eeeeff">WGS84</td><td>6378137.0</td><td>1.0 / 298.257223563</td></tr>
      * </table>
@@ -87,15 +77,14 @@ public class OneAxisEllipsoid implements BodyShape {
      * @param bodyFrame body frame related to body shape
      * @see org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean)
      */
-    public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {
-        this.f   = f;
-        this.ae  = ae;
+    public OneAxisEllipsoid(final double ae, final double f,
+                            final Frame bodyFrame) {
+        super(bodyFrame, ae, ae, ae * (1.0 - f));
+        this.f = f;
         this.ae2 = ae * ae;
-        this.e2  = f * (2.0 - f);
-        this.g   = 1.0 - f;
-        this.g2  = g * g;
-        this.ap  = ae * g;
-        this.ap2 = ap * ap;
+        this.e2 = f * (2.0 - f);
+        this.g = 1.0 - f;
+        this.g2 = g * g;
         setAngularThreshold(1.0e-12);
         this.bodyFrame = bodyFrame;
     }
@@ -126,7 +115,7 @@ public class OneAxisEllipsoid implements BodyShape {
      * @return equatorial radius of the body (m)
      */
     public double getEquatorialRadius() {
-        return ae;
+        return getA();
     }
 
     /** Get the flattening of the body: f = (a-b)/a.
@@ -136,9 +125,7 @@ public class OneAxisEllipsoid implements BodyShape {
         return f;
     }
 
-    /** Get the body frame related to body shape.
-     * @return body frame related to body shape
-     */
+    /** {@inheritDoc} */
     public Frame getBodyFrame() {
         return bodyFrame;
     }
@@ -196,10 +183,7 @@ public class OneAxisEllipsoid implements BodyShape {
 
     }
 
-    /** Transform a surface-relative point to a cartesian point.
-     * @param point surface-relative point
-     * @return point at the same location but as a cartesian point
-     */
+    /** {@inheritDoc} */
     public Vector3D transform(final GeodeticPoint point) {
         final double longitude = point.getLongitude();
         final double cLambda   = FastMath.cos(longitude);
@@ -208,232 +192,115 @@ public class OneAxisEllipsoid implements BodyShape {
         final double cPhi      = FastMath.cos(latitude);
         final double sPhi      = FastMath.sin(latitude);
         final double h         = point.getAltitude();
-        final double n         = ae / FastMath.sqrt(1.0 - e2 * sPhi * sPhi);
+        final double n         = getA() / FastMath.sqrt(1.0 - e2 * sPhi * sPhi);
         final double r         = (n + h) * cPhi;
         return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
     }
 
-    /** Transform a cartesian point to a surface-relative point.
-     * @param point cartesian point
-     * @param frame frame in which cartesian point is expressed
-     * @param date date of the point in given frame
-     * @return point at the same location but as a surface-relative point,
-     * expressed in body frame
-     * @exception OrekitException if point cannot be converted to body frame
-     */
-    public GeodeticPoint transform(final Vector3D point, final Frame frame,
-                                   final AbsoluteDate date)
+    /** {@inheritDoc} */
+    public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        // transform line to body frame
-        final Vector3D pointInBodyFrame =
-            frame.getTransformTo(bodyFrame, date).transformPosition(point);
-        final double lambda = FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
+        // transform point to body frame
+        final Transform  toBody    = frame.getTransformTo(bodyFrame, date);
+        final Vector3D   p         = toBody.transformPosition(point);
+        final double     z         = p.getZ();
+        final double     r         = FastMath.hypot(p.getX(), p.getY());
 
-        // compute some miscellaneous variables outside of the loop
-        final double z  = pointInBodyFrame.getZ();
-        final double z2 = z * z;
-        final double r2 = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
-                          pointInBodyFrame.getY() * pointInBodyFrame.getY();
-        final double r  = FastMath.sqrt(r2);
+        // set up the 2D meridian ellipse
+        final Ellipse meridian = new Ellipse(Vector3D.ZERO,
+                                             new Vector3D(p.getX() / r, p.getY() / r, 0),
+                                             Vector3D.PLUS_K,
+                                             getA(), getC(), bodyFrame);
 
-        if (r <= angularThreshold * FastMath.abs(z)) {
-            // the point is almost on the minor axis, approximate the ellipse with
-            // the osculating circle whose center is at evolute cusp along minor axis
-            final double osculatingRadius = ae2 / ap;
-            final double evoluteCusp      = ae * e2 / g;
-            final double delta            = z + FastMath.copySign(evoluteCusp, z);
-            return new GeodeticPoint(FastMath.atan2(delta, r), lambda,
-                                     FastMath.hypot(delta, r) - osculatingRadius);
-        }
+        // find the closest point in the meridian plane
+        final Vector3D groundPoint = meridian.toSpace(meridian.projectToEllipse(new Vector2D(r, z)));
 
-        // find ellipse point closest to test point
-        final double[] ellipsePoint;
-        if (FastMath.abs(z) <= angularThreshold * r) {
-            // the point is almost on the major axis
-
-            final double osculatingRadius = ap2 / ae;
-            final double evoluteCusp      = ae * e2;
-            final double delta            = r - evoluteCusp;
-            if (delta >= 0) {
-                // the point is outside of the ellipse evolute, approximate the ellipse
-                // with the osculating circle whose center is at evolute cusp along major axis
-                return new GeodeticPoint(FastMath.atan2(z, delta), lambda,
-                                         FastMath.hypot(z, delta) - osculatingRadius);
-            }
-
-            // the point is on the part of the major axis within ellipse evolute
-            // we can compute the closest ellipse point analytically
-            final double rEllipse = r / e2;
-            ellipsePoint = new double[] {
-                rEllipse,
-                FastMath.copySign(g * FastMath.sqrt(ae2 - rEllipse * rEllipse), z)
-            };
-
-        } else {
-
-            final ClosestPointFinder finder = new ClosestPointFinder(r, z);
-            final double rho;
-            if (e2 >= angularThreshold) {
-                // search the nadir point on the major axis,
-                // somewhere within the evolute, i.e. between 0 and ae * e2
-                // we use a slight margin factor 1.1 to make sure we properly bracket
-                // the solution even for points very close to major axis
-                final BracketedUnivariateSolver<UnivariateFunction> solver =
-                        new BracketingNthOrderBrentSolver(angularThreshold * ap, 5);
-                rho = solver.solve(100, finder, 0, 1.1 * ae * e2);
-            } else {
-                // the evolute is almost reduced to the central point,
-                // the ellipsoid is almost a sphere
-                rho = 0;
-            }
-            ellipsePoint = finder.intersectionPoint(rho);
-
-        }
-
-        // relative position of test point with respect to its ellipse sub-point
-        final double dr = r - ellipsePoint[0];
-        final double dz = z - ellipsePoint[1];
-        final double insideIfNegative = g2 * (r2 - ae2) + z2;
-
-        return new GeodeticPoint(FastMath.atan2(ellipsePoint[1], g2 * ellipsePoint[0]),
-                                 lambda,
-                                 FastMath.copySign(FastMath.hypot(dr, dz), insideIfNegative));
+        // transform point back to initial frame
+        return toBody.getInverse().transformPosition(groundPoint);
 
     }
 
-    /** Local class for finding closest point to ellipse.
-     * <p>
-     * We consider a guessed equatorial point E somewhere along
-     * the ellipse major axis, and within the ellipse evolute curve.
-     * This point is defined by its coordinates (&rho;, 0).
-     * </p>
-     * <p>
-     * A point P belonging to line (E, A) can be computed from a
-     * parameter k as follows:
-     * </p>
-     * <pre>
-     *   u = &rho; + k * (r - &rho;)
-     *   v = 0 + k * (z - 0)
-     * </pre>
-     * <p>
-     * For some specific positive value of k, the line (E, A)
-     * intersects the ellipse at a point I which lies in the same quadrant
-     * as test point A. There is another intersection point with k
-     * negative, but this intersection point is not in the same quadrant
-     * as test point A.
-     * </p>
-     * <p>
-     * The line joining point I and the center of the corresponding
-     * osculating circle (i.e. the normal to the ellipse at point I)
-     * crosses major axis at another equatorial point E'. If E and E' are
-     * the same points, then the guessed point E is the true nadir. When
-     * the point I is close to the major axis, the intersection of the
-     * line I with equatorial line is not well defined, but the limit
-     * position of point E' can be computed, it is the cusp of the
-     * ellipse evolute.
-     * </p>
-     * <p>
-     * This class provides methods to compute I and to compute the
-     * offset between E' and E, which allows to find the value
-     * of &rho; such that I is the closest point of the ellipse to A.
-     * </p>
-     */
-    private class ClosestPointFinder implements UnivariateFunction {
+    /** {@inheritDoc} */
+    public TimeStampedPVCoordinates projectToGround(final TimeStampedPVCoordinates pv, final Frame frame)
+        throws OrekitException {
 
-        /** Abscissa of test point A along ellipse major axis. */
-        private final double r;
+        // transform point to body frame
+        final Transform                toBody        = frame.getTransformTo(bodyFrame, pv.getDate());
+        final TimeStampedPVCoordinates pvInBodyFrame = toBody.transformPVCoordinates(pv);
+        final Vector3D                 p             = pvInBodyFrame.getPosition();
+        final double                   r             = FastMath.hypot(p.getX(), p.getY());
 
-        /** Ordinate of test point A along ellipse minor axis. */
-        private final double z;
+        // set up the 2D ellipse corresponding to first principal curvature along meridian
+        final Vector3D meridian = new Vector3D(p.getX() / r, p.getY() / r, 0);
+        final Ellipse firstPrincipalCurvature =
+                new Ellipse(Vector3D.ZERO, meridian, Vector3D.PLUS_K, getA(), getC(), bodyFrame);
 
-        /** Simple constructor.
-         * @param r abscissa of test point A along ellipse major axis
-         * @param z ordinate of test point A along ellipse minor axis
-         */
-        public ClosestPointFinder(final double r, final double z) {
-            this.r = r;
-            this.z = z;
-        }
+        // project coordinates in the meridian plane
+        final TimeStampedPVCoordinates gpFirst = firstPrincipalCurvature.projectToEllipse(pvInBodyFrame);
+        final Vector3D                 gpP     = gpFirst.getPosition();
 
-        /** Compute intersection point I.
-         * @param rho guessed equatorial point radius
-         * @return coordinates of intersection point I
-         */
-        private double[] intersectionPoint(final double rho) {
-            final double k = kOnEllipse(rho);
-            return new double[] {
-                rho + k * (r - rho),
-                k * z
-            };
-        }
+        // topocentric frame
+        final Vector3D east   = new Vector3D(-meridian.getY(), meridian.getX(), 0);
+        final Vector3D zenith = p.subtract(gpP).normalize();
+        final Vector3D north  = Vector3D.crossProduct(zenith, east);
 
-        /** Compute parameter k of intersection point I.
-         * @param rho guessed equatorial point radius
-         * @return value of parameter k such that line point belongs to the ellipse
-         */
-        private double kOnEllipse(final double rho) {
+        // set up the ellipse corresponding to second principal curvature in the zenith/east plane
+        final Ellipse secondPrincipalCurvature  = getPlaneSection(gpP, north);
+        final TimeStampedPVCoordinates gpSecond = secondPrincipalCurvature.projectToEllipse(pvInBodyFrame);
 
-            // rho defines a point on the ellipse major axis E with coordinates (rho, 0)
-            // the fixed test point A has coordinates (r, z)
-            // the coordinates (u, v) of point P belonging to line (E, A) can be
-            // computed from a parameter k as follows:
-            //     u = rho + k * (r - rho)
-            //     v = 0   + k * (z - 0)
-            // if P also belongs to the ellipse, the following quadratic
-            // equation in k holds: a * k^2 + 2 * b * k + c = 0
-            final double dr = r - rho;
-            final double a  = ap2 * dr * dr + ae2 * z * z;
-            final double b  = ap2 * rho * dr;
-            final double c  = ap2 * (rho - ae) * (rho + ae);
+        final Vector3D gpV = gpFirst.getVelocity().add(gpSecond.getVelocity());
+        final Vector3D gpA = gpFirst.getAcceleration().add(gpSecond.getAcceleration());
 
-            // positive root of the quadratic equation
-            final double s = FastMath.sqrt(b * b - a * c);
-            return (b > 0) ? -c / (s + b) : (s - b) / a;
+        // moving projected point
+        final TimeStampedPVCoordinates groundPV =
+                new TimeStampedPVCoordinates(pv.getDate(), gpP, gpV, gpA);
 
-        }
+        // transform moving projected point back to initial frame
+        return toBody.getInverse().transformPVCoordinates(groundPV);
 
-        /** Compute offset between guessed equatorial point and nadir.
-         * <p>
-         * We consider a guessed equatorial point E somewhere along
-         * the ellipse major axis, and within the ellipse evolute curve.
-         * The line (E, A) intersects the ellipse at some point P. The
-         * line segment starting at point P and going along the interior
-         * normal of the ellipse crosses major axis at another equatorial
-         * point E'. If E and E' are the same points, then the guessed
-         * point E is the true nadir. This method compute the offset
-         * between E and E' along major axis.
-         * </p>
-         * @param rho guessed equatorial point radius
-         * (point E is at coordinates (rho, 0) in the ellipse canonical axes system)
-         * @return offset between E and E'
-         */
-        @Override
-        public double value(final double rho) {
+    }
 
-            // intersection of line (E, A) with ellipse
-            final double k = kOnEllipse(rho);
-            final double u = rho + k * (r - rho);
+    /** {@inheritDoc} */
+    public GeodeticPoint transform(final Vector3D point, final Frame frame, final AbsoluteDate date)
+        throws OrekitException {
 
-            // equatorial point E' in the nadir direction of P
-            final double rhoPrime = u * e2;
+        // transform point to body frame
+        final Vector3D pointInBodyFrame = frame.getTransformTo(bodyFrame, date).transformPosition(point);
+        final double   r2               = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
+                                          pointInBodyFrame.getY() * pointInBodyFrame.getY();
+        final double   r                = FastMath.sqrt(r2);
+        final double   z                = pointInBodyFrame.getZ();
 
-            // offset between guessed point and recovered nadir point
-            return rhoPrime - rho;
+        // set up the 2D meridian ellipse
+        final Ellipse meridian = new Ellipse(Vector3D.ZERO,
+                                             new Vector3D(pointInBodyFrame.getX() / r, pointInBodyFrame.getY() / r, 0),
+                                             Vector3D.PLUS_K,
+                                             getA(), getC(), bodyFrame);
 
-        }
+        // project point on the 2D meridian ellipse
+        final Vector2D ellipsePoint = meridian.projectToEllipse(new Vector2D(r, z));
+
+        // relative position of test point with respect to its ellipse sub-point
+        final double dr = r - ellipsePoint.getX();
+        final double dz = z - ellipsePoint.getY();
+        final double insideIfNegative = g2 * (r2 - ae2) + z * z;
+
+        return new GeodeticPoint(FastMath.atan2(ellipsePoint.getY(), g2 * ellipsePoint.getX()),
+                                 FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX()),
+                                 FastMath.copySign(FastMath.hypot(dr, dz), insideIfNegative));
 
     }
 
     /** Replace the instance with a data transfer object for serialization.
      * <p>
-     * This intermediate class serializes the files supported names, the ephemeris type
-     * and the body name.
+     * This intermediate class serializes the files supported names, the
+     * ephemeris type and the body name.
      * </p>
      * @return data transfer object that will be serialized
      */
     private Object writeReplace() {
-        return new DataTransferObject(ae, f, bodyFrame, angularThreshold);
+        return new DataTransferObject(getA(), f, bodyFrame, angularThreshold);
     }
 
     /** Internal class used only for serialization. */
@@ -460,15 +327,16 @@ public class OneAxisEllipsoid implements BodyShape {
          * @param bodyFrame body frame related to body shape
          * @param angularThreshold convergence limit
          */
-        public DataTransferObject(final double ae, final double f, final Frame bodyFrame,
-                                  final double angularThreshold) {
+        public DataTransferObject(final double ae, final double f,
+                                  final Frame bodyFrame, final double angularThreshold) {
             this.ae               = ae;
             this.f                = f;
             this.bodyFrame        = bodyFrame;
             this.angularThreshold = angularThreshold;
         }
 
-        /** Replace the deserialized data transfer object with a {@link JPLCelestialBody}.
+        /** Replace the deserialized data transfer object with a
+         * {@link JPLCelestialBody}.
          * @return replacement {@link JPLCelestialBody}
          */
         private Object readResolve() {

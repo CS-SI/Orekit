@@ -125,10 +125,8 @@ public class EventShifterTest {
                                                                       true, -10, -10));
         propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-100s increasing", "-100s decreasing", 3.0e-2),
                                                                       true, -100, -100));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-1000s increasing", "-1000s decreasing", 4.0),
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-1000s increasing", "-1000s decreasing", 5.0),
                                                                       true, -1000, -1000));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-10000s increasing", "-10000s decreasing", 47),
-                                                                      true, -10000, -10000));
         propagator.propagate(iniDate.shiftedBy(20000));
 
         // the raw eclipses (not all within the propagation range) are at times:
@@ -139,55 +137,45 @@ public class EventShifterTest {
         // [25942.716671989547, 28019.330627364776]
         // [31853.335356719457, 33929.91564178527]
         // [ 37763.95369198012, 39840.50021622965]
-        Assert.assertEquals(33, log.size());
-        log.get( 0).checkExpected(  287.572940950, "-10000s increasing");
-        log.get( 1).checkExpected( 1300.238432465, "-1000s decreasing");
-        log.get( 2).checkExpected( 2200.238432465, "-100s decreasing");
-        log.get( 3).checkExpected( 2290.238432465, "-10s decreasing");
-        log.get( 4).checkExpected( 2300.238432465, "raw decreasing");
-        log.get( 5).checkExpected( 3376.986163327, "-1000s increasing");
-        log.get( 6).checkExpected( 4132.109689462, "-10000s decreasing");
-        log.get( 7).checkExpected( 4276.986163327, "-100s increasing");
-        log.get( 8).checkExpected( 4366.986163327, "-10s increasing");
-        log.get( 9).checkExpected( 4376.986163327, "raw increasing");
-        log.get(10).checkExpected( 6198.159277277, "-10000s increasing");
-        log.get(11).checkExpected( 7210.858518030, "-1000s decreasing");
-        log.get(12).checkExpected( 8110.858518030, "-100s decreasing");
-        log.get(13).checkExpected( 8200.858518030, "-10s decreasing");
-        log.get(14).checkExpected( 8210.858518030, "raw decreasing");
-        log.get(15).checkExpected( 9287.572940950, "-1000s increasing");
-        log.get(16).checkExpected(10032.097637495, "-10000s decreasing");
-        log.get(17).checkExpected(10187.572940950, "-100s increasing");
-        log.get(18).checkExpected(10277.572940950, "-10s increasing");
-        log.get(19).checkExpected(10287.572940950, "raw increasing");
-        log.get(20).checkExpected(12108.745172639, "-10000s increasing");
-        log.get(21).checkExpected(13121.478252941, "-1000s decreasing");
-        log.get(22).checkExpected(14021.478252941, "-100s decreasing");
-        log.get(23).checkExpected(14111.478252941, "-10s decreasing");
-        log.get(24).checkExpected(14121.478252941, "raw decreasing");
-        log.get(25).checkExpected(15198.159277277, "-1000s increasing");
-        log.get(26).checkExpected(15942.716671989, "-10000s decreasing");
-        log.get(27).checkExpected(16098.159277277, "-100s increasing");
-        log.get(28).checkExpected(16188.159277277, "-10s increasing");
-        log.get(29).checkExpected(16198.159277277, "raw increasing");
-        log.get(30).checkExpected(18019.330627365, "-10000s increasing");
-        log.get(31).checkExpected(19032.097637495, "-1000s decreasing");
-        log.get(32).checkExpected(19932.097637495, "-100s decreasing");
+        Assert.assertEquals(26, log.size());
+        log.get( 0).checkExpected( 1300.238432465, "-1000s decreasing");
+        log.get( 1).checkExpected( 2200.238432465, "-100s decreasing");
+        log.get( 2).checkExpected( 2290.238432465, "-10s decreasing");
+        log.get( 3).checkExpected( 2300.238432465, "raw decreasing");
+        log.get( 4).checkExpected( 3376.986163327, "-1000s increasing");
+        log.get( 5).checkExpected( 4276.986163327, "-100s increasing");
+        log.get( 6).checkExpected( 4366.986163327, "-10s increasing");
+        log.get( 7).checkExpected( 4376.986163327, "raw increasing");
+        log.get( 8).checkExpected( 7210.858518030, "-1000s decreasing");
+        log.get( 9).checkExpected( 8110.858518030, "-100s decreasing");
+        log.get(10).checkExpected( 8200.858518030, "-10s decreasing");
+        log.get(11).checkExpected( 8210.858518030, "raw decreasing");
+        log.get(12).checkExpected( 9287.572940950, "-1000s increasing");
+        log.get(13).checkExpected(10187.572940950, "-100s increasing");
+        log.get(14).checkExpected(10277.572940950, "-10s increasing");
+        log.get(15).checkExpected(10287.572940950, "raw increasing");
+        log.get(16).checkExpected(13121.478252941, "-1000s decreasing");
+        log.get(17).checkExpected(14021.478252941, "-100s decreasing");
+        log.get(18).checkExpected(14111.478252941, "-10s decreasing");
+        log.get(19).checkExpected(14121.478252941, "raw decreasing");
+        log.get(20).checkExpected(15198.159277277, "-1000s increasing");
+        log.get(21).checkExpected(16098.159277277, "-100s increasing");
+        log.get(22).checkExpected(16188.159277277, "-10s increasing");
+        log.get(23).checkExpected(16198.159277277, "raw increasing");
+        log.get(24).checkExpected(19032.097637495, "-1000s decreasing");
+        log.get(25).checkExpected(19932.097637495, "-100s decreasing");
 
         for (EventEntry entry : log) {
             double error = entry.getTimeError();
             if (entry.name.contains("10s")) {
-                Assert.assertTrue(error > 0.0002);
-                Assert.assertTrue(error < 0.0004);
+                Assert.assertTrue(error > 0.00001);
+                Assert.assertTrue(error < 0.0003);
             } else if (entry.name.contains("100s")) {
-                Assert.assertTrue(error > 0.001);
+                Assert.assertTrue(error > 0.002);
                 Assert.assertTrue(error < 0.03);
             } else if (entry.name.contains("1000s")) {
                 Assert.assertTrue(error > 0.7);
-                Assert.assertTrue(error < 4.0);
-            } else if (entry.name.contains("10000s")) {
-                Assert.assertTrue(error > 1.0);
-                Assert.assertTrue(error < 50.0);
+                Assert.assertTrue(error < 3.3);
             }
         }
     }

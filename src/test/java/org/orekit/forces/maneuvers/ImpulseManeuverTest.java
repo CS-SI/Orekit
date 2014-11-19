@@ -82,9 +82,9 @@ public class ImpulseManeuverTest {
 
         final Vector3D position = new Vector3D(initialX, initialY, initialZ);
         final Vector3D velocity = new Vector3D(initialVx, initialVy, initialVz);
-        final AbsoluteDate epoch = new AbsoluteDate(2010,1,1,0,0,0,TimeScalesFactory.getUTC());
-        final TimeStampedPVCoordinates state = new TimeStampedPVCoordinates(epoch,position,velocity);
-        final Orbit initialOrbit = new CartesianOrbit(state,FramesFactory.getEME2000(),mu);
+        final AbsoluteDate epoch = new AbsoluteDate(2010, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
+        final TimeStampedPVCoordinates state = new TimeStampedPVCoordinates(epoch, position, velocity, Vector3D.ZERO);
+        final Orbit initialOrbit = new CartesianOrbit(state, FramesFactory.getEME2000(), mu);
 
         final double totalPropagationTime = 0.00001;
         final double driftTimeInSec = totalPropagationTime / 2.0;

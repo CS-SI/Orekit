@@ -24,19 +24,21 @@ public class CartesianDerivativesFilterTest {
 
     @Test
     public void testList() {
-        Assert.assertEquals(2, CartesianDerivativesFilter.values().length);
+        Assert.assertEquals(3, CartesianDerivativesFilter.values().length);
     }
 
     @Test
     public void testOrder() {
         Assert.assertEquals(0, CartesianDerivativesFilter.USE_P.getMaxOrder(), 0);
         Assert.assertEquals(1, CartesianDerivativesFilter.USE_PV.getMaxOrder(), 0);
+        Assert.assertEquals(2, CartesianDerivativesFilter.USE_PVA.getMaxOrder(), 0);
     }
 
     @Test
     public void testBuildFromOrder() {
         Assert.assertEquals(CartesianDerivativesFilter.USE_P,  CartesianDerivativesFilter.getFilter(0));
         Assert.assertEquals(CartesianDerivativesFilter.USE_PV, CartesianDerivativesFilter.getFilter(1));
+        Assert.assertEquals(CartesianDerivativesFilter.USE_PVA, CartesianDerivativesFilter.getFilter(2));
     }
 
     @Test
@@ -50,9 +52,9 @@ public class CartesianDerivativesFilterTest {
     }
 
     @Test
-    public void testNoOrder2() {
+    public void testNoOrder3() {
         try {
-            CartesianDerivativesFilter.getFilter(2);
+            CartesianDerivativesFilter.getFilter(3);
             Assert.fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected

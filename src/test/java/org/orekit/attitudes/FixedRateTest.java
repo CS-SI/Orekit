@@ -50,7 +50,7 @@ public class FixedRateTest {
         final Frame frame = FramesFactory.getEME2000();
         FixedRate law = new FixedRate(new Attitude(date, frame,
                                                    new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                                   Vector3D.ZERO));
+                                                   Vector3D.ZERO, Vector3D.ZERO));
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
@@ -73,7 +73,7 @@ public class FixedRateTest {
         final Frame frame = FramesFactory.getEME2000();
         FixedRate law = new FixedRate(new Attitude(date, frame,
                                                    new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                                   new Vector3D(rate, Vector3D.PLUS_K)));
+                                                   new Vector3D(rate, Vector3D.PLUS_K), Vector3D.ZERO));
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
@@ -101,7 +101,8 @@ public class FixedRateTest {
         AttitudeProvider law =
             new FixedRate(new Attitude(date, FramesFactory.getEME2000(),
                                        new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                       new Vector3D(rate, Vector3D.PLUS_K)));
+                                       new Vector3D(rate, Vector3D.PLUS_K),
+                                       Vector3D.ZERO));
 
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),

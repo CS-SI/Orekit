@@ -19,9 +19,10 @@ package org.orekit.attitudes;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * This class handles body center pointing attitude provider.
@@ -38,7 +39,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class BodyCenterPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6528493179834801802L;
+    private static final long serialVersionUID = 20140811L;
 
     /** Creates new instance.
      * @param bodyFrame Body frame
@@ -48,17 +49,14 @@ public class BodyCenterPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
-                                      final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
-        return getBodyFrame().getTransformTo(frame, date).transformPosition(Vector3D.ZERO);
-    }
-
-    /** {@inheritDoc} */
     @Override
-    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame)
+    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                   final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return getBodyFrame().getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO);
+        final Transform t = getBodyFrame().getTransformTo(frame, date);
+        final TimeStampedPVCoordinates center =
+                new TimeStampedPVCoordinates(date, Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
+        return t.transformPVCoordinates(center);
     }
 
 }

@@ -112,6 +112,9 @@ public class CircularOrbit
     /** True latitude argument (rad). */
     private final double alphaV;
 
+    /** Indicator for {@link PVCoordinates} serialization. */
+    private final boolean serializePV;
+
     /** Creates a new instance.
      * @param a  semi-major axis (m)
      * @param ex e cos(&omega;), first component of circular eccentricity vector
@@ -156,6 +159,58 @@ public class CircularOrbit
         default :
             throw OrekitException.createInternalError(null);
         }
+
+        serializePV = false;
+
+    }
+
+    /** Creates a new instance.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(&omega;), first component of circular eccentricity vector
+     * @param ey e sin(&omega;), second component of circular eccentricity vector
+     * @param i inclination (rad)
+     * @param raan right ascension of ascending node (&Omega;, rad)
+     * @param alpha  an + &omega;, mean, eccentric or true latitude argument (rad)
+     * @param type type of latitude argument
+     * @param pvCoordinates the {@link PVCoordinates} in inertial frame
+     * @param frame the frame in which are defined the parameters
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    public CircularOrbit(final double a, final double ex, final double ey,
+                         final double i, final double raan,
+                         final double alpha, final PositionAngle type,
+                         final TimeStampedPVCoordinates pvCoordinates, final Frame frame,
+                         final double mu)
+        throws IllegalArgumentException {
+        super(pvCoordinates, frame, mu);
+        if (ex * ex + ey * ey >= 1.0) {
+            throw OrekitException.createIllegalArgumentException(
+                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
+        }
+        this.a    =  a;
+        this.ex   = ex;
+        this.ey   = ey;
+        this.i    = i;
+        this.raan = raan;
+
+        switch (type) {
+        case MEAN :
+            this.alphaV = eccentricToTrue(meanToEccentric(alpha));
+            break;
+        case ECCENTRIC :
+            this.alphaV = eccentricToTrue(alpha);
+            break;
+        case TRUE :
+            this.alphaV = alpha;
+            break;
+        default :
+            throw OrekitException.createInternalError(null);
+        }
+
+        serializePV = true;
 
     }
 
@@ -219,6 +274,8 @@ public class CircularOrbit
                   "TRUE_LONGITUDE_ARGUMENT");
         }
 
+        serializePV = false;
+
     }
 
     /** Constructor from cartesian parameters.
@@ -280,6 +337,9 @@ public class CircularOrbit
         // compute latitude argument
         final double beta = 1 / (1 + FastMath.sqrt(1 - ex * ex - ey * ey));
         alphaV = eccentricToTrue(FastMath.atan2(y2 + ey + eSE * beta * ex, x2 + ex - eSE * beta * ey));
+
+        serializePV = true;
+
     }
 
     /** Constructor from cartesian parameters.
@@ -294,7 +354,8 @@ public class CircularOrbit
     public CircularOrbit(final PVCoordinates pvCoordinates, final Frame frame,
                          final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedPVCoordinates(date, pvCoordinates.getPosition(), pvCoordinates.getVelocity()),
+        this(new TimeStampedPVCoordinates(date,
+                                          pvCoordinates.getPosition(), pvCoordinates.getVelocity(), pvCoordinates.getAcceleration()),
              frame, mu);
     }
 
@@ -313,6 +374,7 @@ public class CircularOrbit
         ex   = equiEx * cosRaan + equiEy * sinRaan;
         ey   = equiEy * cosRaan - equiEx * sinRaan;
         this.alphaV = op.getLv() - raan;
+        serializePV = false;
     }
 
     /** {@inheritDoc} */
@@ -519,9 +581,11 @@ public class CircularOrbit
 
         final Vector3D position =
             new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
+        final double r2         = position.getNormSq();
         final Vector3D velocity =
             new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
-        return new TimeStampedPVCoordinates(getDate(), position, velocity);
+        final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+        return new TimeStampedPVCoordinates(getDate(), position, velocity, acceleration);
 
     }
 
@@ -863,17 +927,29 @@ public class CircularOrbit
          */
         private DTO(final CircularOrbit orbit) {
 
-            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
+            final AbsoluteDate date = orbit.getDate();
 
             // decompose date
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
-            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+            final double epoch  = FastMath.floor(date.durationFrom(AbsoluteDate.J2000_EPOCH));
+            final double offset = date.durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
 
-            this.d = new double[] {
-                epoch, offset, orbit.getMu(),
-                orbit.a, orbit.ex, orbit.ey,
-                orbit.i, orbit.raan, orbit.alphaV
-            };
+            if (orbit.serializePV) {
+                final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
+                this.d = new double[] {
+                    epoch, offset, orbit.getMu(),
+                    orbit.a, orbit.ex, orbit.ey,
+                    orbit.i, orbit.raan, orbit.alphaV,
+                    pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
+                    pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
+                    pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
+                };
+            } else {
+                this.d = new double[] {
+                    epoch, offset, orbit.getMu(),
+                    orbit.a, orbit.ex, orbit.ey,
+                    orbit.i, orbit.raan, orbit.alphaV
+                };
+            }
 
             this.frame = orbit.getFrame();
 
@@ -883,9 +959,20 @@ public class CircularOrbit
          * @return replacement {@link CircularOrbit}
          */
         private Object readResolve() {
-            return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
-                                     frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
-                                     d[2]);
+            if (d.length > 10) {
+                return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
+                                         new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                                                      new Vector3D(d[9],  d[10], d[11]),
+                                                                      new Vector3D(d[12], d[13], d[14]),
+                                                                      new Vector3D(d[15], d[16], d[17])),
+                                         frame,
+                                         d[2]);
+            } else {
+                return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
+                                         frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                         d[2]);
+
+            }
         }
 
     }

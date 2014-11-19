@@ -219,7 +219,7 @@ public class EquinoctialOrbit extends Orbit {
     }
 
     /** Constructor from cartesian parameters.
-     * @param pvCoordinates the position end velocity
+     * @param pvCoordinates the position, velocity and acceleration
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
@@ -281,7 +281,8 @@ public class EquinoctialOrbit extends Orbit {
     public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
                             final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedPVCoordinates(date, pvCoordinates.getPosition(), pvCoordinates.getVelocity()),
+        this(new TimeStampedPVCoordinates(date,
+                                          pvCoordinates.getPosition(), pvCoordinates.getVelocity(), pvCoordinates.getAcceleration()),
              frame, mu);
     }
 
@@ -458,9 +459,13 @@ public class EquinoctialOrbit extends Orbit {
 
         final Vector3D position =
             new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
+        final double r2 = position.getNormSq();
         final Vector3D velocity =
             new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
-        return new TimeStampedPVCoordinates(getDate(), position, velocity);
+
+        final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+
+        return new TimeStampedPVCoordinates(getDate(), position, velocity, acceleration);
 
     }
 

@@ -322,7 +322,8 @@ public class KeplerianOrbit extends Orbit {
     public KeplerianOrbit(final PVCoordinates pvCoordinates,
                           final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedPVCoordinates(date, pvCoordinates.getPosition(), pvCoordinates.getVelocity()),
+        this(new TimeStampedPVCoordinates(date,
+                                          pvCoordinates.getPosition(), pvCoordinates.getVelocity(), pvCoordinates.getAcceleration()),
               frame, mu);
     }
 
@@ -643,7 +644,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** Initialize the position/velocity coordinates, elliptic case.
      * @param p unit vector in the orbital plane pointing towards perigee
-     * @param q unit vector in the orbital plane in quadrature with q
+     * @param q unit vector in the orbital plane in quadrature with p
      * @return computed position/velocity coordinates
      */
     private TimeStampedPVCoordinates initPVCoordinatesElliptical(final Vector3D p, final Vector3D q) {
@@ -662,13 +663,18 @@ public class KeplerianOrbit extends Orbit {
         final double xDot   = -sinE * factor;
         final double yDot   =  cosE * s1Me2 * factor;
 
-        return new TimeStampedPVCoordinates(getDate(), new Vector3D(x, p, y, q), new Vector3D(xDot, p, yDot, q));
+
+        final Vector3D position = new Vector3D(x, p, y, q);
+        final double r2 = x * x + y * y;
+        final Vector3D velocity = new Vector3D(xDot, p, yDot, q);
+        final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+        return new TimeStampedPVCoordinates(getDate(), position, velocity, acceleration);
 
     }
 
     /** Initialize the position/velocity coordinates, hyperbolic case.
      * @param p unit vector in the orbital plane pointing towards perigee
-     * @param q unit vector in the orbital plane in quadrature with q
+     * @param q unit vector in the orbital plane in quadrature with p
      * @return computed position/velocity coordinates
      */
     private TimeStampedPVCoordinates initPVCoordinatesHyperbolic(final Vector3D p, final Vector3D q) {
@@ -680,9 +686,10 @@ public class KeplerianOrbit extends Orbit {
         final double posFactor = f / (1 + e * cosV);
         final double velFactor = FastMath.sqrt(getMu() / f);
 
-        return new TimeStampedPVCoordinates(getDate(),
-                                            new Vector3D( posFactor * cosV, p, posFactor * sinV, q),
-                                            new Vector3D(-velFactor * sinV, p, velFactor * (e + cosV), q));
+        final Vector3D position     = new Vector3D( posFactor * cosV, p, posFactor * sinV, q);
+        final Vector3D velocity     = new Vector3D(-velFactor * sinV, p, velFactor * (e + cosV), q);
+        final Vector3D acceleration = new Vector3D(-getMu() / (posFactor * posFactor * posFactor), position);
+        return new TimeStampedPVCoordinates(getDate(), position, velocity, acceleration);
 
     }
 

@@ -44,12 +44,14 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
                                                                             createRotation(0.48, 0.64, 0.36, 0.48, false),
+                                                                            createVector(0, 0, 0, 4),
                                                                             createVector(0, 0, 0, 4));
         Assert.assertEquals(createVector(0, 0, 0, 4), angularCoordinates.getRotationRate());
         double dt = 10.0;
         TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted = angularCoordinates.shiftedBy(dt);
-        Assert.assertEquals(createVector(0, 0, 0, 4), shifted.getRotationRate());
-        Assert.assertEquals(angularCoordinates.getRotation(), shifted.getRotation());
+        Assert.assertEquals(0.0, shifted.getRotationAcceleration().getNorm().getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, shifted.getRotationRate().getNorm().getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldRotation.distance(angularCoordinates.getRotation(), shifted.getRotation()).getReal(), 1.0e-15);
     }
 
     @Test
@@ -58,7 +60,8 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
                                                                             createRotation(1, 0, 0, 0, false),
-                                                                            new FieldVector3D<DerivativeStructure>(rate, createVector(0, 0, 1, 4)));
+                                                                            new FieldVector3D<DerivativeStructure>(rate, createVector(0, 0, 1, 4)),
+                                                                            createVector(0, 0, 0, 4));
         Assert.assertEquals(rate, angularCoordinates.getRotationRate().getNorm().getReal(), 1.0e-10);
         double dt = 10.0;
         double alpha = rate * dt;
@@ -81,11 +84,13 @@ public class TimeStampedFieldAngularCoordinatesTest {
         for (int i = 0; i < 100; ++i) {
             FieldRotation<DerivativeStructure> r = randomRotation(random);
             FieldVector3D<DerivativeStructure> o = randomVector(random, 1.0e-3);
+            FieldVector3D<DerivativeStructure> a = randomVector(random, 1.0e-3);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> acds =
-                    new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, r, o);
+		new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, r, o, a);
             AngularCoordinates ac = acds.toAngularCoordinates();
             Assert.assertEquals(0, Rotation.distance(r.toRotation(), ac.getRotation()), 1.0e-15);
             Assert.assertEquals(0, FieldVector3D.distance(o, ac.getRotationRate()).getReal(), 1.0e-15);
+            Assert.assertEquals(0, FieldVector3D.distance(a, ac.getRotationAcceleration()).getReal(), 1.0e-15);
         }
     }
 
@@ -95,7 +100,8 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> angularCoordinates =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
                                                                             createRotation(0.48, 0.64, 0.36, 0.48, false),
-                                                                            new FieldVector3D<DerivativeStructure>(rate, createVector(0, 0, 1, 4)));
+                                                                            new FieldVector3D<DerivativeStructure>(rate, createVector(0, 0, 1, 4)),
+									    createVector(0, 0, 0, 4));
         Assert.assertEquals(rate, angularCoordinates.getRotationRate().getNorm().getReal(), 1.0e-10);
         double dt = 10.0;
         TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted = angularCoordinates.shiftedBy(dt);
@@ -132,11 +138,13 @@ public class TimeStampedFieldAngularCoordinatesTest {
         for (int i = 0; i < 100; ++i) {
             FieldRotation<DerivativeStructure> r = randomRotation(random);
             FieldVector3D<DerivativeStructure> o = randomVector(random, 1.0e-3);
+            FieldVector3D<DerivativeStructure> a = randomVector(random, 1.0e-3);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> ac =
-                    new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, r, o);
+		new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, r, o, a);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> sum = ac.addOffset(ac.revert());
             Assert.assertEquals(0.0, sum.getRotation().getAngle().getReal(), 1.0e-15);
             Assert.assertEquals(0.0, sum.getRotationRate().getNorm().getReal(), 1.0e-15);
+            Assert.assertEquals(0.0, sum.getRotationAcceleration().getNorm().getReal(), 1.0e-15);
         }
     }
 
@@ -145,10 +153,12 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> ac1 =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
                                                                             createRotation(0.48,  0.64, 0.36, 0.48, false),
+                                                                            createVector(0, 0, 0, 4),
                                                                             createVector(0, 0, 0, 4));
         TimeStampedFieldAngularCoordinates<DerivativeStructure> ac2 =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
                                                                             createRotation(0.36, -0.48, 0.48, 0.64, false),
+                                                                            createVector(0, 0, 0, 4),
                                                                             createVector(0, 0, 0, 4));
 
         TimeStampedFieldAngularCoordinates<DerivativeStructure> add12 = ac1.addOffset(ac2);
@@ -166,20 +176,24 @@ public class TimeStampedFieldAngularCoordinatesTest {
 
             FieldRotation<DerivativeStructure> r1 = randomRotation(random);
             FieldVector3D<DerivativeStructure> o1 = randomVector(random, 1.0e-2);
+            FieldVector3D<DerivativeStructure> a1 = randomVector(random, 1.0e-2);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> ac1 =
-                    new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, r1, o1);
+		new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, r1, o1, a1);
             FieldRotation<DerivativeStructure> r2 = randomRotation(random);
             FieldVector3D<DerivativeStructure> o2 = randomVector(random, 1.0e-2);
+            FieldVector3D<DerivativeStructure> a2 = randomVector(random, 1.0e-2);
 
             TimeStampedFieldAngularCoordinates<DerivativeStructure> ac2 =
-                    new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, r2, o2);
+		new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, r2, o2, a2);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> roundTripSA = ac1.subtractOffset(ac2).addOffset(ac2);
-            Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripSA.getRotation()).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()).getReal(), 1.0e-17);
+            Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripSA.getRotation()).getReal(), 4.0e-16);
+            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()).getReal(), 2.0e-17);
+            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationAcceleration(), roundTripSA.getRotationAcceleration()).getReal(), 1.0e-17);
 
             TimeStampedFieldAngularCoordinates<DerivativeStructure> roundTripAS = ac1.addOffset(ac2).subtractOffset(ac2);
-            Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripAS.getRotation()).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()).getReal(), 1.0e-17);
+            Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripAS.getRotation()).getReal(), 6.0e-16);
+            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()).getReal(), 2.0e-17);
+            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()).getReal(), 2.0e-17);
 
         }
     }
@@ -209,11 +223,13 @@ public class TimeStampedFieldAngularCoordinatesTest {
             FieldRotation<DerivativeStructure> offsetRotation    = randomRotation(random);
             FieldVector3D<DerivativeStructure> offsetRate        = randomVector(random, 0.01);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> offset  =
-                    new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, offsetRotation, offsetRate);
-            FieldRotation<DerivativeStructure> rotation          = randomRotation(random);
-            FieldVector3D<DerivativeStructure> rotationRate      = randomVector(random, 0.01);
+		new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
+                                                                            offsetRotation, offsetRate, createVector(0, 0, 0, 4));
+            FieldRotation<DerivativeStructure> rotation             = randomRotation(random);
+            FieldVector3D<DerivativeStructure> rotationRate         = randomVector(random, 0.01);
+            FieldVector3D<DerivativeStructure> rotationAcceleration = randomVector(random, 0.01);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> ac      =
-                    new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, rotation, rotationRate);
+		new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, rotation, rotationRate, rotationAcceleration);
             double dt                  = 10.0 * random.nextDouble();
             DerivativeStructure[][] rodrigues =
                     (DerivativeStructure[][]) getter.invoke(null,
@@ -223,6 +239,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
             (TimeStampedFieldAngularCoordinates<DerivativeStructure>) factory.invoke(null, rodrigues, offset.shiftedBy(dt));
             Assert.assertEquals(0.0, FieldRotation.distance(rotation, rebuilt.getRotation()).getReal(), 1.0e-14);
             Assert.assertEquals(0.0, FieldVector3D.distance(rotationRate, rebuilt.getRotationRate()).getReal(), 1.0e-15);
+            Assert.assertEquals(0.0, FieldVector3D.distance(rotationAcceleration, rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
         }
 
     }
@@ -270,6 +287,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
                     (DerivativeStructure[][]) getter.invoke(null,
                                                             new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
                                                                                                                         createRotation(axis, FastMath.PI),
+                                                                                                                        createVector(0, 0, 0, 4),
                                                                                                                         createVector(0, 0, 0, 4)),
                                                             previous, -0.9999);
             @SuppressWarnings("unchecked")
@@ -289,42 +307,14 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationSimple() throws OrekitException {
-        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
-        double alpha0 = 0.5 * FastMath.PI;
-        double omega  = 0.5 * FastMath.PI;
-        TimeStampedFieldAngularCoordinates<DerivativeStructure> reference =
-                new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date,
-                                                                            createRotation(createVector(0, 0, 1, 4), alpha0),
-                                                                            new FieldVector3D<DerivativeStructure>(omega, createVector(0, 0, -1, 4)));
-
-        List<TimeStampedFieldAngularCoordinates<DerivativeStructure>> sample =
-                new ArrayList<TimeStampedFieldAngularCoordinates<DerivativeStructure>>();
-        for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-            FieldRotation<DerivativeStructure> r = reference.shiftedBy(dt).getRotation();
-            FieldVector3D<DerivativeStructure> rate = reference.shiftedBy(dt).getRotationRate();
-            sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date.shiftedBy(dt), r, rate));
-        }
-
-        for (double dt = 0; dt < 1.0; dt += 0.001) {
-            TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
-                    TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(dt), AngularDerivativesFilter.USE_RR, sample);
-            FieldRotation<DerivativeStructure> r    = interpolated.getRotation();
-            FieldVector3D<DerivativeStructure> rate = interpolated.getRotationRate();
-            Assert.assertEquals(0.0, FieldRotation.distance(reference.shiftedBy(dt).getRotation(), r).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate).getReal(), 5.0e-15);
-        }
-
-    }
-
-    @Test
     public void testInterpolationNeedOffsetWrongRate() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double omega  = 2.0 * FastMath.PI;
         TimeStampedFieldAngularCoordinates<DerivativeStructure> reference =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date,
                                                                             createRotation(1, 0, 0, 0, false),
-                                                                            createVector(0, 0, -omega, 4));
+                                                                            createVector(0, 0, -omega, 4),
+                                                                            createVector(0, 0, 0, 4));
 
         List<TimeStampedFieldAngularCoordinates<DerivativeStructure>> sample =
                 new ArrayList<TimeStampedFieldAngularCoordinates<DerivativeStructure>>();
@@ -332,16 +322,17 @@ public class TimeStampedFieldAngularCoordinatesTest {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted = reference.shiftedBy(dt);
             sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(shifted.getDate(),
                                                                                    shifted.getRotation(),
+                                                                                   createVector(0, 0, 0, 4),
                                                                                    createVector(0, 0, 0, 4)));
         }
 
         for (TimeStampedFieldAngularCoordinates<DerivativeStructure> s : sample) {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
                     TimeStampedFieldAngularCoordinates.interpolate(s.getDate(), AngularDerivativesFilter.USE_RR, sample);
-            FieldRotation<DerivativeStructure> r    = interpolated.getRotation();
-            FieldVector3D<DerivativeStructure> rate = interpolated.getRotationRate();
-            Assert.assertEquals(0.0, FieldRotation.distance(s.getRotation(), r).getReal(), 1.0e-14);
-            Assert.assertEquals(0.0, FieldVector3D.distance(s.getRotationRate(), rate).getReal(), 1.0e-12);
+            FieldRotation<DerivativeStructure> r            = interpolated.getRotation();
+            FieldVector3D<DerivativeStructure> rate         = interpolated.getRotationRate();
+            Assert.assertEquals(0.0, FieldRotation.distance(s.getRotation(), r).getReal(), 2.0e-14);
+            Assert.assertEquals(0.0, FieldVector3D.distance(s.getRotationRate(), rate).getReal(), 2.0e-13);
         }
 
     }
@@ -354,22 +345,26 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> reference =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date,
                                                                             createRotation(createVector(0, 0, 1, 4), alpha0),
-                                                                            new FieldVector3D<DerivativeStructure>(omega, createVector(0, 0, -1, 4)));
+                                                                            new FieldVector3D<DerivativeStructure>(omega, createVector(0, 0, -1, 4)),
+                                                                            createVector(0, 0, 0, 4));
 
         List<TimeStampedFieldAngularCoordinates<DerivativeStructure>> sample =
                 new ArrayList<TimeStampedFieldAngularCoordinates<DerivativeStructure>>();
         for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
             FieldRotation<DerivativeStructure> r = reference.shiftedBy(dt).getRotation();
-            sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date.shiftedBy(dt), r, createVector(0, 0, 0, 4)));
+            sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date.shiftedBy(dt),
+                                                                                   r, createVector(0, 0, 0, 4), createVector(0, 0, 0, 4)));
         }
 
         for (double dt = 0; dt < 1.0; dt += 0.001) {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
                     TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(dt), AngularDerivativesFilter.USE_R, sample);
-            FieldRotation<DerivativeStructure> r    = interpolated.getRotation();
-            FieldVector3D<DerivativeStructure> rate = interpolated.getRotationRate();
+            FieldRotation<DerivativeStructure> r            = interpolated.getRotation();
+            FieldVector3D<DerivativeStructure> rate         = interpolated.getRotationRate();
+            FieldVector3D<DerivativeStructure> acceleration = interpolated.getRotationAcceleration();
             Assert.assertEquals(0.0, FieldRotation.distance(reference.shiftedBy(dt).getRotation(), r).getReal(), 3.0e-4);
             Assert.assertEquals(0.0, FieldVector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate).getReal(), 1.0e-2);
+            Assert.assertEquals(0.0, FieldVector3D.distance(reference.shiftedBy(dt).getRotationAcceleration(), acceleration).getReal(), 1.0e-2);
         }
 
     }
@@ -386,7 +381,8 @@ public class TimeStampedFieldAngularCoordinatesTest {
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(t0,
                                                                             new FieldRotation<DerivativeStructure>(createVector(1, 0, 0, 4),
                                                                                                                    new DerivativeStructure(4, 1, 3, FastMath.toRadians(179.999))),
-                                                                            createVector(FastMath.toRadians(0), 0, 0, 4));
+                                                                            createVector(FastMath.toRadians(0), 0, 0, 4),
+                                                                            createVector(0, 0, 0, 4));
         sample.add(ac0);
 
         // add angular coordinates at t1: -179.999 degrees rotation (= 180.001 degrees) along X axis
@@ -395,7 +391,8 @@ public class TimeStampedFieldAngularCoordinatesTest {
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(t1,
                                                                             new FieldRotation<DerivativeStructure>(createVector(1, 0, 0, 4),
                                                                                                                    new DerivativeStructure(4, 1, 3, FastMath.toRadians(-179.999))),
-                                                                            createVector(FastMath.toRadians(0), 0, 0, 4));
+                                                                            createVector(FastMath.toRadians(0), 0, 0, 4),
+                                                                            createVector(0, 0, 0, 4));
         sample.add(ac1);
 
         // get interpolated angular coordinates at mid time between t0 and t1
@@ -416,12 +413,14 @@ public class TimeStampedFieldAngularCoordinatesTest {
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date,
                                                                             new FieldRotation<DerivativeStructure>(createVector(0, 0, 1, 4),
                                                                                                                    new DerivativeStructure(4, 1, 3, alpha0)),
-                                                                            createVector(0, 0, -omega, 4));
+                                                                            createVector(0, 0, -omega, 4),
+                                                                            createVector(0, 0, 0, 4));
 
         List<TimeStampedFieldAngularCoordinates<DerivativeStructure> > sample =
                 new ArrayList<TimeStampedFieldAngularCoordinates<DerivativeStructure> >();
         FieldRotation<DerivativeStructure> r = reference.shiftedBy(0.2).getRotation();
-        sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date.shiftedBy(0.2), r, createVector(0, 0, 0, 4)));
+        sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date.shiftedBy(0.2),
+                                                                               r, createVector(0, 0, 0, 4), createVector(0, 0, 0, 4)));
 
         try {
             TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(0.3), AngularDerivativesFilter.USE_R, sample);
@@ -447,7 +446,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
             AbsoluteDate t = t0.shiftedBy(row[0] * 3600.0);
             FieldRotation<DerivativeStructure>     r = createRotation(row[1], 0.0, 0.0, row[2], false);
             FieldVector3D<DerivativeStructure>     o = new FieldVector3D<DerivativeStructure>(row[3], createVector(0, 0, 1, 4));
-            sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(t, r, o));
+            sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(t, r, o, createVector(0, 0, 0, 4)));
         }
         for (double dt = 0; dt < 29000; dt += 120) {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted      = sample.get(0).shiftedBy(dt);
@@ -483,6 +482,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     private TimeStampedFieldAngularCoordinates<DerivativeStructure> identity() {
         return new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
                                                                            createRotation(1, 0, 0, 0, false),
+                                                                           createVector(0, 0, 0, 4),
                                                                            createVector(0, 0, 0, 4));
     }
 

@@ -644,11 +644,13 @@ public class SpacecraftState
             this.orbit      = state.orbit;
             this.additional = state.additional.isEmpty() ? null : state.additional;
 
-            final Rotation rotation = state.attitude.getRotation();
-            final Vector3D spin     = state.attitude.getSpin();
+            final Rotation rotation             = state.attitude.getRotation();
+            final Vector3D spin                 = state.attitude.getSpin();
+            final Vector3D rotationAcceleration = state.attitude.getRotationAcceleration();
             this.d = new double[] {
                 rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3(),
                 spin.getX(), spin.getY(), spin.getZ(),
+                rotationAcceleration.getX(), rotationAcceleration.getY(), rotationAcceleration.getZ(),
                 state.mass
             };
 
@@ -662,8 +664,9 @@ public class SpacecraftState
                                        new Attitude(orbit.getFrame(),
                                                     new TimeStampedAngularCoordinates(orbit.getDate(),
                                                                                       new Rotation(d[0], d[1], d[2], d[3], false),
-                                                                                      new Vector3D(d[4], d[5], d[6]))),
-                                       d[7], additional);
+                                                                                      new Vector3D(d[4], d[5], d[6]),
+                                                                                      new Vector3D(d[7], d[8], d[9]))),
+                                       d[10], additional);
         }
 
     }

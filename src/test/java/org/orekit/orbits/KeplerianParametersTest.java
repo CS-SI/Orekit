@@ -24,6 +24,9 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -937,9 +940,9 @@ public class KeplerianParametersTest {
             maxInterpolationEccentricityError = FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
         }
         Assert.assertTrue(maxShiftPositionError             > 390.0);
-        Assert.assertTrue(maxInterpolationPositionError     < 40.0);
+        Assert.assertTrue(maxInterpolationPositionError     < 62.0);
         Assert.assertTrue(maxShiftEccentricityError         > 4.5e-4);
-        Assert.assertTrue(maxInterpolationEccentricityError < 2.1e-6);
+        Assert.assertTrue(maxInterpolationEccentricityError < 2.6e-5);
 
         // slightly past sample end, bad eccentricity interpolation shows up
         // (in this case, interpolated eccentricity exceeds 1.0 btween 1900
@@ -981,6 +984,85 @@ public class KeplerianParametersTest {
                             MathUtils.normalizeAngle(converted.getRightAscensionOfAscendingNode() +
                                                      converted.getPerigeeArgument(), FastMath.PI),
                             1.0e-10);
+    }
+
+    @Test
+    public void testKeplerianDerivatives() {
+        final KeplerianOrbit o = new KeplerianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
+                                                                      new Vector3D(-2079., 5291., -7842.)),
+                                                    FramesFactory.getEME2000(), date, 3.9860047e14);
+        final Vector3D p = o.getPVCoordinates().getPosition();
+        final Vector3D v = o.getPVCoordinates().getVelocity();
+        final Vector3D a = o.getPVCoordinates().getAcceleration();
+
+        // check that despite we did not provide acceleration, it got recomputed
+        Assert.assertEquals(7.605422, a.getNorm(), 1.0e-6);
+
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
+
+        // check velocity is the derivative of position
+        double vx = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(dt).getPVCoordinates().getPosition().getX();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getPVCoordinates().getVelocity().getX(), vx, 3.0e-12 * v.getNorm());
+        double vy = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(dt).getPVCoordinates().getPosition().getY();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getPVCoordinates().getVelocity().getY(), vy, 3.0e-12 * v.getNorm());
+        double vz = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(dt).getPVCoordinates().getPosition().getZ();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getPVCoordinates().getVelocity().getZ(), vz, 3.0e-12 * v.getNorm());
+
+        // check acceleration is the derivative of velocity
+        double ax = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(dt).getPVCoordinates().getVelocity().getX();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getPVCoordinates().getAcceleration().getX(), ax, 3.0e-12 * a.getNorm());
+        double ay = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(dt).getPVCoordinates().getVelocity().getY();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getPVCoordinates().getAcceleration().getY(), ay, 3.0e-12 * a.getNorm());
+        double az = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(dt).getPVCoordinates().getVelocity().getZ();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getPVCoordinates().getAcceleration().getZ(), az, 3.0e-12 * a.getNorm());
+
+        // check jerk is the derivative of acceleration
+        final double r2 = p.getNormSq();
+        final double r  = FastMath.sqrt(r2);
+        Vector3D keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
+        double jx = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(dt).getPVCoordinates().getAcceleration().getX();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(keplerianJerk.getX(), jx, 3.0e-12 * keplerianJerk.getNorm());
+        double jy = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(dt).getPVCoordinates().getAcceleration().getY();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(keplerianJerk.getY(), jy, 3.0e-12 * keplerianJerk.getNorm());
+        double jz = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(dt).getPVCoordinates().getAcceleration().getZ();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(keplerianJerk.getZ(), jz, 3.0e-12 * keplerianJerk.getNorm());
+
     }
 
     @Test

@@ -43,7 +43,7 @@ import org.orekit.utils.TimeStampedGenerator;
 public class InterpolatingTransformProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140624L;
+    private static final long serialVersionUID = 20140723L;
 
     /** Provider for raw (non-interpolated) transforms. */
     private final TransformProvider rawProvider;
@@ -126,7 +126,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
         this.latest      = latest;
         this.step        = step;
         this.cache       = new GenericTimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
-                                                           new Generator(), Transform.class);
+                                                                  new Generator(), Transform.class);
     }
 
     /** Get the underlying provider for raw (non-interpolated) transforms.
@@ -185,7 +185,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20140624L;
+        private static final long serialVersionUID = 20140723L;
 
         /** Provider for raw (non-interpolated) transforms. */
         private final TransformProvider rawProvider;

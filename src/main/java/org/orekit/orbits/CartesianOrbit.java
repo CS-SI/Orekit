@@ -70,28 +70,28 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class CartesianOrbit extends Orbit {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5411308212620896302L;
+    private static final long serialVersionUID = 20140723L;
 
     /** Underlying equinoctial orbit to which high-level methods are delegated. */
     private transient EquinoctialOrbit equinoctial;
 
-    /** Constructor from cartesian parameters.
-     * @param pvCoordinates the position and velocity of the satellite.
+    /** Constructor from Cartesian parameters.
+     * @param pvaCoordinates the position, velocity and acceleration of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public CartesianOrbit(final TimeStampedPVCoordinates pvCoordinates,
+    public CartesianOrbit(final TimeStampedPVCoordinates pvaCoordinates,
                           final Frame frame, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, mu);
+        super(pvaCoordinates, frame, mu);
         equinoctial = null;
     }
 
-    /** Constructor from cartesian parameters.
-     * @param pvCoordinates the position and velocity of the satellite.
+    /** Constructor from Cartesian parameters.
+     * @param pvaCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
@@ -99,10 +99,10 @@ public class CartesianOrbit extends Orbit {
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public CartesianOrbit(final PVCoordinates pvCoordinates, final Frame frame,
+    public CartesianOrbit(final PVCoordinates pvaCoordinates, final Frame frame,
                           final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedPVCoordinates(date, pvCoordinates.getPosition(), pvCoordinates.getVelocity()),
+        this(new TimeStampedPVCoordinates(date, pvaCoordinates.getPosition(), pvaCoordinates.getVelocity(), pvaCoordinates.getAcceleration()),
               frame, mu);
     }
 
@@ -241,10 +241,11 @@ public class CartesianOrbit extends Orbit {
         for (final Orbit o : sample) {
             datedPV.add(new TimeStampedPVCoordinates(o.getDate(),
                                                      o.getPVCoordinates().getPosition(),
-                                                     o.getPVCoordinates().getVelocity()));
+                                                     o.getPVCoordinates().getVelocity(),
+                                                     o.getPVCoordinates().getAcceleration()));
         }
         final TimeStampedPVCoordinates interpolated =
-                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PV, datedPV);
+                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA, datedPV);
         return new CartesianOrbit(interpolated, getFrame(), date, getMu());
     }
 
@@ -292,7 +293,11 @@ public class CartesianOrbit extends Orbit {
         final double xDot   = factor * (-sTE + beta * ey * exCeyS);
         final double yDot   = factor * ( cTE - beta * ex * exCeyS);
 
-        return new PVCoordinates(new Vector3D(x, u, y, v), new Vector3D(xDot, u, yDot, v));
+        final Vector3D shiftedP = new Vector3D(x, u, y, v);
+        final double   r2       = x * x + y * y;
+        final Vector3D shiftedV = new Vector3D(xDot, u, yDot, v);
+        final Vector3D shiftedA = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), shiftedP);
+        return new PVCoordinates(shiftedP, shiftedV, shiftedA);
 
     }
 
@@ -340,7 +345,11 @@ public class CartesianOrbit extends Orbit {
         final double xDot   = -factor * sH;
         final double yDot   =  factor * sE2m1 * cH;
 
-        return new PVCoordinates(new Vector3D(x, p, y, q), new Vector3D(xDot, p, yDot, q));
+        final Vector3D shiftedP = new Vector3D(x, p, y, q);
+        final double   r2       = x * x + y * y;
+        final Vector3D shiftedV = new Vector3D(xDot, p, yDot, q);
+        final Vector3D shiftedA = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), shiftedP);
+        return new PVCoordinates(shiftedP, shiftedV, shiftedA);
 
     }
 
@@ -510,7 +519,7 @@ public class CartesianOrbit extends Orbit {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20140617L;
+        private static final long serialVersionUID = 20140723L;
 
         /** Double values. */
         private double[] d;
@@ -531,8 +540,9 @@ public class CartesianOrbit extends Orbit {
 
             this.d = new double[] {
                 epoch, offset, orbit.getMu(),
-                pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
-                pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ(),
+                pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
+                pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
+                pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
             };
 
             this.frame = orbit.getFrame();
@@ -544,8 +554,9 @@ public class CartesianOrbit extends Orbit {
          */
         private Object readResolve() {
             return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
-                                                                   new Vector3D(d[3], d[4], d[5]),
-                                                                   new Vector3D(d[6], d[7], d[8])),
+                                                                   new Vector3D(d[3], d[ 4], d[ 5]),
+                                                                   new Vector3D(d[6], d[ 7], d[ 8]),
+                                                                   new Vector3D(d[9], d[10], d[11])),
                                       frame, d[2]);
         }
 

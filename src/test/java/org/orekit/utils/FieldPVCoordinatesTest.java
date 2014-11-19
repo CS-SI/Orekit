@@ -21,9 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937a;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -181,8 +186,10 @@ public class FieldPVCoordinatesTest {
     @Test
     public void testToString() {
         FieldPVCoordinates<DerivativeStructure> pv =
-            new FieldPVCoordinates<DerivativeStructure>(createVector(1, 0.1, 10, 6), createVector(-1, -0.1, -10, 6));
-        Assert.assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0)}", pv.toString());
+            new FieldPVCoordinates<DerivativeStructure>(createVector( 1,  0.1,  10, 6),
+                                                        createVector(-1, -0.1, -10, 6),
+                                                        createVector(10,  1.0, 100, 6));
+        Assert.assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
     }
 
     @Test
@@ -233,6 +240,60 @@ public class FieldPVCoordinatesTest {
             }
 
         }
+    }
+
+    @Test
+    public void testNormalize() {
+        RandomGenerator generator = new Well19937a(0x7ede9376e4e1ab5al);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
+        for (int i = 0; i < 200; ++i) {
+            final FieldPVCoordinates<DerivativeStructure> pv = randomPVCoordinates(generator, 1e6, 1e3, 1.0);
+            DerivativeStructure x =
+                    differentiator.differentiate(new UnivariateFunction() {
+                        public double value(double t) {
+                            return pv.shiftedBy(t).getPosition().normalize().getX().getValue();
+                        }
+                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+            DerivativeStructure y =
+                    differentiator.differentiate(new UnivariateFunction() {
+                        public double value(double t) {
+                            return pv.shiftedBy(t).getPosition().normalize().getY().getValue();
+                        }
+                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+            DerivativeStructure z =
+                    differentiator.differentiate(new UnivariateFunction() {
+                        public double value(double t) {
+                            return pv.shiftedBy(t).getPosition().normalize().getZ().getValue();
+                        }
+                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+            FieldPVCoordinates<DerivativeStructure> normalized = pv.normalize();
+            Assert.assertEquals(x.getValue(),              normalized.getPosition().getX().getValue(),     1.0e-16);
+            Assert.assertEquals(y.getValue(),              normalized.getPosition().getY().getValue(),     1.0e-16);
+            Assert.assertEquals(z.getValue(),              normalized.getPosition().getZ().getValue(),     1.0e-16);
+            Assert.assertEquals(x.getPartialDerivative(1), normalized.getVelocity().getX().getValue(),     3.0e-13);
+            Assert.assertEquals(y.getPartialDerivative(1), normalized.getVelocity().getY().getValue(),     3.0e-13);
+            Assert.assertEquals(z.getPartialDerivative(1), normalized.getVelocity().getZ().getValue(),     3.0e-13);
+            Assert.assertEquals(x.getPartialDerivative(2), normalized.getAcceleration().getX().getValue(), 6.0e-10);
+            Assert.assertEquals(y.getPartialDerivative(2), normalized.getAcceleration().getY().getValue(), 6.0e-10);
+            Assert.assertEquals(z.getPartialDerivative(2), normalized.getAcceleration().getZ().getValue(), 6.0e-10);
+        }
+    }
+
+    private FieldVector3D<DerivativeStructure> randomVector(RandomGenerator random, double norm) {
+        double n = random.nextDouble() * norm;
+        double x = random.nextDouble();
+        double y = random.nextDouble();
+        double z = random.nextDouble();
+        n = n / FastMath.sqrt(x * x + y * y + z * z);
+        return createVector(n * x, n * y, n * z, 3);
+    }
+
+    private FieldPVCoordinates<DerivativeStructure> randomPVCoordinates(RandomGenerator random,
+                                                                        double norm0, double norm1, double norm2) {
+        FieldVector3D<DerivativeStructure> p0 = randomVector(random, norm0);
+        FieldVector3D<DerivativeStructure> p1 = randomVector(random, norm1);
+        FieldVector3D<DerivativeStructure> p2 = randomVector(random, norm2);
+        return new FieldPVCoordinates<DerivativeStructure>(p0, p1, p2);
     }
 
     private PolynomialFunction randomPolynomial(int degree, Random random) {

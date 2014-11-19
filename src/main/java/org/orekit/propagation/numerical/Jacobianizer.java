@@ -109,7 +109,7 @@ public class Jacobianizer {
         final Orbit shiftedORbit = new CartesianOrbit(new PVCoordinates(position, velocity), frame, date, mu);
         retriever.setOrbit(shiftedORbit);
         forceModel.addContribution(new SpacecraftState(shiftedORbit,
-                                                       new Attitude(date, frame, rotation, Vector3D.ZERO),
+                                                       new Attitude(date, frame, rotation, Vector3D.ZERO, Vector3D.ZERO),
                                                        mass),
                                    retriever);
     }

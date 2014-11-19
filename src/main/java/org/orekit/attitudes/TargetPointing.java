@@ -21,9 +21,10 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 
@@ -46,10 +47,10 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class TargetPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8002434923471977301L;
+    private static final long serialVersionUID = 20140811L;
 
     /** Target in body frame. */
-    private final PVCoordinates target;
+    private final Vector3D target;
 
 
     /** Creates a new instance from body frame and target expressed in cartesian coordinates.
@@ -58,7 +59,7 @@ public class TargetPointing extends GroundPointing {
      */
     public TargetPointing(final Frame bodyFrame, final Vector3D target) {
         super(bodyFrame);
-        this.target = new PVCoordinates(target, Vector3D.ZERO);
+        this.target = target;
     }
 
     /** Creates a new instance from body shape and target expressed in geodetic coordinates.
@@ -67,23 +68,19 @@ public class TargetPointing extends GroundPointing {
      */
     public TargetPointing(final GeodeticPoint targetGeo, final BodyShape shape) {
         super(shape.getBodyFrame());
-        // Transform target from geodetic coordinates to position-velocity coordinates
-        target = new PVCoordinates(shape.transform(targetGeo), Vector3D.ZERO);
-    }
-
-    /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
-                                      final AbsoluteDate date, final Frame frame)
-        throws OrekitException {
-        return getBodyFrame().getTransformTo(frame, date).transformPosition(target.getPosition());
+        // Transform target from geodetic coordinates to Cartesian coordinates
+        target = shape.transform(targetGeo);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected PVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                        final AbsoluteDate date, final Frame frame)
+    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                   final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return getBodyFrame().getTransformTo(frame, date).transformPVCoordinates(target);
+        final Transform t = getBodyFrame().getTransformTo(frame, date);
+        final TimeStampedPVCoordinates pv =
+                new TimeStampedPVCoordinates(date, target, Vector3D.ZERO, Vector3D.ZERO);
+        return t.transformPVCoordinates(pv);
     }
 
 }

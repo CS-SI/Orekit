@@ -995,7 +995,7 @@ public class FramesFactory {
                 final EOPHistory eopHistory = FramesFactory.getEOPHistory(conventions, simpleEOP);
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(new CIRFProvider(eopHistory),
-                                                           CartesianDerivativesFilter.USE_PV,
+                                                           CartesianDerivativesFilter.USE_PVA,
                                                            AngularDerivativesFilter.USE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            6, Constants.JULIAN_DAY / 24,
@@ -1200,7 +1200,7 @@ public class FramesFactory {
                 final GTODProvider      gtodRaw    = new GTODProvider(conventions, eopHistory);
                 final TransformProvider gtodInterpolating =
                         new InterpolatingTransformProvider(gtodRaw,
-                                                           CartesianDerivativesFilter.USE_PV,
+                                                           CartesianDerivativesFilter.USE_PVA,
                                                            AngularDerivativesFilter.USE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            todInterpolating.getGridPoints(), todInterpolating.getStep(),
@@ -1340,7 +1340,7 @@ public class FramesFactory {
                 final EOPHistory eopHistory = applyEOPCorr ? getEOPHistory(conventions, simpleEOP) : null;
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(new TODProvider(conventions, eopHistory),
-                                                           CartesianDerivativesFilter.USE_PV,
+                                                           CartesianDerivativesFilter.USE_PVA,
                                                            AngularDerivativesFilter.USE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
@@ -1490,7 +1490,7 @@ public class FramesFactory {
                 final TEMEProvider temeRaw = new TEMEProvider(IERSConventions.IERS_1996, null);
                 final TransformProvider temeInterpolating =
                         new InterpolatingTransformProvider(temeRaw,
-                                                           CartesianDerivativesFilter.USE_PV,
+                                                           CartesianDerivativesFilter.USE_PVA,
                                                            AngularDerivativesFilter.USE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            todInterpolating.getGridPoints(), todInterpolating.getStep(),

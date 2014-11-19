@@ -316,7 +316,10 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      */
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date, Vector3D.ZERO, Vector3D.ZERO));
+        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date,
+                                                                                               Vector3D.ZERO,
+                                                                                               Vector3D.ZERO,
+                                                                                               Vector3D.ZERO));
     }
 
 }

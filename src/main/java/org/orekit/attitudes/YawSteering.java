@@ -16,12 +16,14 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /**
@@ -56,19 +58,26 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>
  * Instances of this class are guaranteed to be immutable.
  * </p>
- * @see     GroundPointing
+ * @see    GroundPointing
  * @author Luc Maisonobe
  */
-public class YawSteering extends GroundPointingWrapper {
+public class YawSteering extends GroundPointing implements AttitudeProviderModifier {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5804405406938727964L;
+    private static final long serialVersionUID = 20140808L;
+
+    /** Pointing axis. */
+    private static final PVCoordinates PLUS_Z =
+            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
+
+    /** Underlying ground pointing attitude provider.  */
+    private final GroundPointing groundPointingLaw;
 
     /** Sun motion model. */
     private final PVCoordinatesProvider sun;
 
-    /** Satellite axis that must be roughly in Sun direction. */
-    private final Vector3D phasingAxis;
+    /** Normal to the plane where the Sun must remain. */
+    private final PVCoordinates phasingNormal;
 
     /** Creates a new instance.
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
@@ -79,27 +88,66 @@ public class YawSteering extends GroundPointingWrapper {
     public YawSteering(final GroundPointing groundPointingLaw,
                        final PVCoordinatesProvider sun,
                        final Vector3D phasingAxis) {
-        super(groundPointingLaw);
+        super(groundPointingLaw.getBodyFrame());
+        this.groundPointingLaw = groundPointingLaw;
         this.sun = sun;
-        this.phasingAxis = phasingAxis;
+        this.phasingNormal = new PVCoordinates(Vector3D.crossProduct(Vector3D.PLUS_K, phasingAxis).normalize(),
+                                               Vector3D.ZERO,
+                                               Vector3D.ZERO);
+    }
+
+    /** Get the underlying (ground pointing) attitude provider.
+     * @return underlying attitude provider, which in this case is a {@link GroundPointing} instance
+     */
+    public AttitudeProvider getUnderlyingAttitudeProvider() {
+        return groundPointingLaw;
     }
 
     /** {@inheritDoc} */
-    public Rotation getCompensation(final PVCoordinatesProvider pvProv,
-                                    final AbsoluteDate date, final Frame orbitFrame,
-                                    final Attitude base)
+    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                   final AbsoluteDate date, final Frame frame)
         throws OrekitException {
+        return groundPointingLaw.getTargetPV(pvProv, date, frame);
+    }
+
+    /** Compute the base system state at given date, without compensation.
+     * @param pvProv provider for PV coordinates
+     * @param date date at which state is requested
+     * @param frame reference frame from which attitude is computed
+     * @return satellite base attitude state, i.e without compensation.
+     * @throws OrekitException if some specific error occurs
+     */
+    public Attitude getBaseState(final PVCoordinatesProvider pvProv,
+                                 final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+        return groundPointingLaw.getAttitude(pvProv, date, frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
+                                final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+
+        // attitude from base attitude provider
+        final Attitude base = getBaseState(pvProv, date, frame);
 
         // Compensation rotation definition :
         //  . Z satellite axis is unchanged
         //  . phasing axis shall be aligned to sun direction
-        final Vector3D sunPosition  = sun.getPVCoordinates(date, orbitFrame).getPosition();
-        final Vector3D sunDirection = sunPosition.subtract(pvProv.getPVCoordinates(date, orbitFrame).getPosition());
-        final Rotation compensation =
-            new Rotation(Vector3D.PLUS_K, base.getRotation().applyTo(sunDirection),
-                         Vector3D.PLUS_K, phasingAxis);
+        final PVCoordinates sunDirection = new PVCoordinates(pvProv.getPVCoordinates(date, frame),
+                                                             sun.getPVCoordinates(date, frame));
+        final PVCoordinates sunNormal =
+                PVCoordinates.crossProduct(PLUS_Z, base.getOrientation().applyTo(sunDirection));
+        final TimeStampedAngularCoordinates compensation =
+                new TimeStampedAngularCoordinates(date,
+                                                  PLUS_Z, sunNormal.normalize(),
+                                                  PLUS_Z, phasingNormal,
+                                                  1.0e-9);
 
-        return compensation;
+        // add compensation
+        return new Attitude(frame, compensation.addOffset(base.getOrientation()));
+
     }
 
 }
