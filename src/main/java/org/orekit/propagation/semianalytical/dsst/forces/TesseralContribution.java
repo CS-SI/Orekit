@@ -341,12 +341,6 @@ class TesseralContribution implements DSSTForceModel {
         // Compute the resonant tesseral harmonic terms if not set by the user
         getResonantAndNonResonantTerms(meanOnly);
 
-        // Ratio of satellite to central body periods to define resonant terms
-        ratio = orbitPeriod / bodyPeriod;
-
-        // Compute the resonant tesseral harmonic terms if not set by the user
-        getResonantAndNonResonantTerms(meanOnly);
-
         //initialize the HansenTesseralLinear objects needed
         createHansenObjects(meanOnly);
 
