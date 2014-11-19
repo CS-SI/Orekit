@@ -1726,8 +1726,8 @@ public enum IERSConventions {
     /** Get the function computing the precession angles.
      * <p>
      * The function returned computes the three precession angles
-     * &psi;<sub>A</sub> (around Z axis), &omega;<sub>A</sub> (around X axis)
-     * and &chi;<sub>A</sub> (around Z axis). The constant angle &epsilon;<sub>0</sub>
+     * ψ<sub>A</sub> (around Z axis), ω<sub>A</sub> (around X axis)
+     * and χ<sub>A</sub> (around Z axis). The constant angle ε₀
      * for the fourth rotation (around X axis) can be retrieved by evaluating the
      * function returned by {@link #getMeanObliquityFunction()} at {@link
      * #getNutationReferenceEpoch() nutation reference epoch}.
@@ -1740,11 +1740,11 @@ public enum IERSConventions {
 
     /** Get the function computing the nutation angles.
      * <p>
-     * The function returned computes the two classical angles &Delta;&Psi; and &Delta;&epsilon;,
+     * The function returned computes the two classical angles ΔΨ and Δε,
      * and the correction to the equation of equinoxes introduced since 1997-02-27 by IAU 1994
      * resolution C7 (the correction is forced to 0 before this date)
      * </p>
-     * @return function computing the nutation in longitude &Delta;&Psi; and &Delta;&epsilon;
+     * @return function computing the nutation in longitude ΔΨ and Δε
      * and the correction of equation of equinoxes
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
@@ -1825,10 +1825,10 @@ public enum IERSConventions {
         throws OrekitException;
 
     /** Interface for functions converting nutation corrections between
-     * &delta;&Delta;&psi;/&delta;&Delta;&epsilon; to &delta;X/&delta;Y.
+     * δΔψ/δΔε to δX/δY.
      * <ul>
-     * <li>&delta;&Delta;&psi;/&delta;&Delta;&epsilon; nutation corrections are used with the equinox-based paradigm.</li>
-     * <li>&delta;X/&delta;Y nutation corrections are used with the Non-Rotating Origin paradigm.</li>
+     * <li>δΔψ/δΔε nutation corrections are used with the equinox-based paradigm.</li>
+     * <li>δX/δY nutation corrections are used with the Non-Rotating Origin paradigm.</li>
      * </ul>
      * @since 6.1
      */
@@ -1836,9 +1836,9 @@ public enum IERSConventions {
 
         /** Convert nutation corrections.
          * @param date current date
-         * @param ddPsi &delta;&Delta;&psi; part of the nutation correction
-         * @param ddEpsilon &delta;&Delta;&epsilon; part of the nutation correction
-         * @return array containing &delta;X and &delta;Y
+         * @param ddPsi δΔψ part of the nutation correction
+         * @param ddEpsilon δΔε part of the nutation correction
+         * @return array containing δX and δY
          * @exception OrekitException if correction cannot be converted
          */
         double[] toNonRotating(AbsoluteDate date, double ddPsi, double ddEpsilon)
@@ -1846,9 +1846,9 @@ public enum IERSConventions {
 
         /** Convert nutation corrections.
          * @param date current date
-         * @param dX &delta;X part of the nutation correction
-         * @param dY &delta;Y part of the nutation correction
-         * @return array containing &delta;&Delta;&psi; and &delta;&Delta;&epsilon;
+         * @param dX δX part of the nutation correction
+         * @param dY δY part of the nutation correction
+         * @return array containing δΔψ and δΔε
          * @exception OrekitException if correction cannot be converted
          */
         double[] toEquinox(AbsoluteDate date, double dX, double dY)
@@ -1857,10 +1857,10 @@ public enum IERSConventions {
     }
 
     /** Create a function converting nutation corrections between
-     * &delta;X/&delta;Y and &delta;&Delta;&psi;/&delta;&Delta;&epsilon;.
+     * δX/δY and δΔψ/δΔε.
      * <ul>
-     * <li>&delta;X/&delta;Y nutation corrections are used with the Non-Rotating Origin paradigm.</li>
-     * <li>&delta;&Delta;&psi;/&delta;&Delta;&epsilon; nutation corrections are used with the equinox-based paradigm.</li>
+     * <li>δX/δY nutation corrections are used with the Non-Rotating Origin paradigm.</li>
+     * <li>δΔψ/δΔε nutation corrections are used with the equinox-based paradigm.</li>
      * </ul>
      * @return a new converter
      * @exception OrekitException if some convention table cannot be loaded

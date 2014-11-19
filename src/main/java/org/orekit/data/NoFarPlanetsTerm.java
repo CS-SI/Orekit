@@ -27,7 +27,7 @@ class NoFarPlanetsTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
 
-    /** Coefficient for L - &Omega; where L is the mean longitude of the Moon. */
+    /** Coefficient for L - Ω where L is the mean longitude of the Moon. */
     private final int cF;
 
     /** Coefficient for mean elongation of the Moon from the Sun. */
@@ -56,7 +56,7 @@ class NoFarPlanetsTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
 
     /** Build a planetary term for nutation series.
      * @param cL coefficient for mean anomaly of the Moon
-     * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
+     * @param cF coefficient for L - Ω where L is the mean longitude of the Moon
      * @param cD coefficient for mean elongation of the Moon from the Sun
      * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      * @param cMe coefficient for mean Mercury longitude

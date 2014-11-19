@@ -52,7 +52,7 @@ public interface SphericalHarmonicsProvider extends TideSystemProvider {
     int getMaxOrder();
 
     /** Get the central body attraction coefficient.
-     * @return mu (m<sup>3</sup>/s<sup>2</sup>)
+     * @return mu (m³/s²)
      */
     double getMu();
 

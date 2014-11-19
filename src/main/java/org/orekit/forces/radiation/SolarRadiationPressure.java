@@ -47,7 +47,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     /** Reference distance for the solar radiation pressure (m). */
     private static final double D_REF = 149597870000.0;
 
-    /** Reference solar radiation pressure at D_REF (N/m<sup>2</sup>). */
+    /** Reference solar radiation pressure at D_REF (N/m²). */
     private static final double P_REF = 4.56e-6;
 
     /** Reference flux normalized for a 1m distance (N). */
@@ -66,7 +66,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
      * <p>When this constructor is used, the reference values are:</p>
      * <ul>
      *   <li>d<sub>ref</sub> = 149597870000.0 m</li>
-     *   <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m<sup>2</sup></li>
+     *   <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m²</li>
      * </ul>
      * @param sun Sun model
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
@@ -79,12 +79,12 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
 
     /** Complete constructor.
      * <p>Note that reference solar radiation pressure <code>pRef</code> in
-     * N/m<sup>2</sup> is linked to solar flux SF in W/m<sup>2</sup> using
+     * N/m² is linked to solar flux SF in W/m² using
      * formula pRef = SF/c where c is the speed of light (299792458 m/s). So
-     * at 1UA a 1367 W/m<sup>2</sup> solar flux is a 4.56 10<sup>-6</sup>
-     * N/m<sup>2</sup> solar radiation pressure.</p>
+     * at 1UA a 1367 W/m² solar flux is a 4.56 10<sup>-6</sup>
+     * N/m² solar radiation pressure.</p>
      * @param dRef reference distance for the solar radiation pressure (m)
-     * @param pRef reference solar radiation pressure at dRef (N/m<sup>2</sup>)
+     * @param pRef reference solar radiation pressure at dRef (N/m²)
      * @param sun Sun model
      * @param equatorialRadius spherical shape model (for umbra/penumbra computation)
      * @param spacecraft the object physical and geometrical information

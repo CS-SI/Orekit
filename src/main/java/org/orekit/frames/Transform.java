@@ -653,12 +653,12 @@ public class Transform
      * <p>
      * This definition implies that if we define position-velocity coordinates
      * <pre>
-     * PV<sub>1</sub> = transform.transformPVCoordinates(PV<sub>0</sub>), then
+     * PV₁ = transform.transformPVCoordinates(PV₀), then
      * </pre>
-     * their differentials dPV<sub>1</sub> and dPV<sub>0</sub> will obey the following relation
+     * their differentials dPV₁ and dPV₀ will obey the following relation
      * where J is the matrix computed by this method:<br/>
      * <pre>
-     * dPV<sub>1</sub> = J &times; dPV<sub>0</sub>
+     * dPV₁ = J &times; dPV₀
      * </pre>
      * </p>
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with
@@ -680,12 +680,12 @@ public class Transform
      * <p>
      * This definition implies that if we define position-velocity coordinates
      * <pre>
-     * PV<sub>1</sub> = transform.transformPVCoordinates(PV<sub>0</sub>), then
+     * PV₁ = transform.transformPVCoordinates(PV₀), then
      * </pre>
-     * their differentials dPV<sub>1</sub> and dPV<sub>0</sub> will obey the following relation
+     * their differentials dPV₁ and dPV₀ will obey the following relation
      * where J is the matrix computed by this method:<br/>
      * <pre>
-     * dPV<sub>1</sub> = J &times; dPV<sub>0</sub>
+     * dPV₁ = J &times; dPV₀
      * </pre>
      * </p>
      * @param selector selector specifying the size of the upper left corner that must be filled

@@ -45,15 +45,15 @@ public class JacobiPolynomials {
     private JacobiPolynomials() {
     }
 
-    /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at &gamma;.
+    /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at γ.
      * <p>
      * This method is guaranteed to be thread-safe
      * </p>
      * @param l degree of the polynomial
      * @param v v value
      * @param w w value
-     * @param gamma &gamma; value
-     * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(&gamma;)
+     * @param gamma γ value
+     * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(γ)
      */
     public static DerivativeStructure getValue(final int l, final int v, final int w, final DerivativeStructure gamma) {
 

@@ -128,9 +128,9 @@ public class JacobiansMapper {
      * in the one-dimensional {@code p} array.
      * </p>
      * @param state spacecraft state
-     * @param dY1dY0 Jacobian of current state at time t<sub>1</sub>
-     * with respect to state at some previous time t<sub>0</sub>
-     * @param dY1dP Jacobian of current state at time t<sub>1</sub>
+     * @param dY1dY0 Jacobian of current state at time t₁
+     * with respect to state at some previous time t₀
+     * @param dY1dP Jacobian of current state at time t₁
      * with respect to parameters (may be null if there are no parameters)
      * @param p placeholder where to put the one-dimensional additional state
      * @see #getStateJacobian(SpacecraftState, double[][])

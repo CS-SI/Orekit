@@ -119,7 +119,7 @@ public class HansenTesseralLinear {
      *
      *  <p>
      *  It is used to generate the coefficient for K<sub>j</sub><sup>-n, s</sup> when computing K<sub>j</sub><sup>-n-1, s</sup>
-     *  and the coefficient for dK<sub>j</sub><sup>-n, s</sup> / de<sup>2</sup> when computing dK<sub>j</sub><sup>-n-1, s</sup> / de<sup>2</sup>
+     *  and the coefficient for dK<sub>j</sub><sup>-n, s</sup> / de² when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
      *  </p>
      *
      *  <p>
@@ -143,7 +143,7 @@ public class HansenTesseralLinear {
      *
      *  <p>
      *  It is used to generate the coefficient for K<sub>j</sub><sup>-n+1, s</sup> when computing K<sub>j</sub><sup>-n-1, s</sup>
-     *  and the coefficient for dK<sub>j</sub><sup>-n+1, s</sup> / de<sup>2</sup> when computing dK<sub>j</sub><sup>-n-1, s</sup> / de<sup>2</sup>
+     *  and the coefficient for dK<sub>j</sub><sup>-n+1, s</sup> / de² when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
      *  </p>
      *
      *  <p>
@@ -168,7 +168,7 @@ public class HansenTesseralLinear {
      *
      *  <p>
      *  It is used to generate the coefficient for K<sub>j</sub><sup>-n+3, s</sup> when computing K<sub>j</sub><sup>-n-1, s</sup>
-     *  and the coefficient for dK<sub>j</sub><sup>-n+3, s</sup> / de<sup>2</sup> when computing dK<sub>j</sub><sup>-n-1, s</sup> / de<sup>2</sup>
+     *  and the coefficient for dK<sub>j</sub><sup>-n+3, s</sup> / de² when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
      *  </p>
      *
      *  <p>
@@ -192,7 +192,7 @@ public class HansenTesseralLinear {
      * Compute polynomial coefficient d.
      *
      *  <p>
-     *  It is used to generate the coefficient for K<sub>j</sub><sup>-n-1, s</sup> / d&chi; when computing dK<sub>j</sub><sup>-n-1, s</sup> / de<sup>2</sup>
+     *  It is used to generate the coefficient for K<sub>j</sub><sup>-n-1, s</sup> / dχ when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
      *  </p>
      *
      *  <p>
@@ -213,7 +213,7 @@ public class HansenTesseralLinear {
      * Compute polynomial coefficient f.
      *
      *  <p>
-     *  It is used to generate the coefficient for K<sub>j</sub><sup>-n+1, s</sup> / d&chi; when computing dK<sub>j</sub><sup>-n-1, s</sup> / de<sup>2</sup>
+     *  It is used to generate the coefficient for K<sub>j</sub><sup>-n+1, s</sup> / dχ when computing dK<sub>j</sub><sup>-n-1, s</sup> / de²
      *  </p>
      *
      *  <p>
@@ -311,9 +311,9 @@ public class HansenTesseralLinear {
     /**
      * Compute the values for the first four coefficients and their derivatives by means of series.
      *
-     * @param e2 e<sup>2</sup>
+     * @param e2 e²
      * @param chi &Chi;
-     * @param chi2 &Chi;<sup>2</sup>
+     * @param chi2 &Chi;²
      */
     public void computeInitValues(final double e2, final double chi, final double chi2) {
         // compute the values for n, n+1, n+2 and n+3 by series
@@ -352,7 +352,7 @@ public class HansenTesseralLinear {
      * Compute the value of the Hansen coefficient K<sub>j</sub><sup>-n-1, s</sup>.
      *
      * @param mnm1 -n-1
-     * @param chi &chi;
+     * @param chi χ
      * @return the coefficient K<sub>j</sub><sup>-n-1, s</sup>
      */
     public double getValue(final int mnm1, final double chi) {
@@ -386,11 +386,11 @@ public class HansenTesseralLinear {
     }
 
     /**
-     * Compute the value of the derivative dK<sub>j</sub><sup>-n-1, s</sup> / de<sup>2</sup>.
+     * Compute the value of the derivative dK<sub>j</sub><sup>-n-1, s</sup> / de².
      *
      * @param mnm1 -n-1
-     * @param chi &chi;
-     * @return the derivative dK<sub>j</sub><sup>-n-1, s</sup> / de<sup>2</sup>
+     * @param chi χ
+     * @return the derivative dK<sub>j</sub><sup>-n-1, s</sup> / de²
      */
     public double getDerivative(final int mnm1, final double chi) {
 
@@ -433,7 +433,7 @@ public class HansenTesseralLinear {
      * Compute a Hansen coefficient with series.
      * <p>
      * This class implements the computation of the Hansen kernels
-     * through a power series in e<sup>2</sup> and that is using
+     * through a power series in e² and that is using
      * modified Newcomb operators. The reference formulae can be found
      * in Danielson 2.7.3-10 and 3.3-5
      * </p>
@@ -449,7 +449,7 @@ public class HansenTesseralLinear {
         /** j coefficient. */
         private final int j;
 
-        /** Max power in e<sup>2</sup> for the Newcomb's series expansion. */
+        /** Max power in e² for the Newcomb's series expansion. */
         private final int maxNewcomb;
 
         /** Polynomial representing the serie. */
@@ -461,7 +461,7 @@ public class HansenTesseralLinear {
          * @param mnm1 -n-1 value
          * @param s s value
          * @param j j value
-         * @param maxHansen max power of e<sup>2</sup> in series expansion
+         * @param maxHansen max power of e² in series expansion
          */
         public HansenCoefficientsBySeries(final int mnm1, final int s,
                                           final int j, final int maxHansen) {
@@ -472,15 +472,15 @@ public class HansenTesseralLinear {
             this.polynomial = generatePolynomial();
         }
 
-        /** Computes the value of Hansen kernel and its derivative at e<sup>2</sup>.
+        /** Computes the value of Hansen kernel and its derivative at e².
          * <p>
          * The formulae applied are described in Danielson 2.7.3-10 and
          * 3.3-5
          * </p>
-         * @param e2 e<sup>2</sup>
+         * @param e2 e²
          * @param chi &Chi;
-         * @param chi2 &Chi;<sup>2</sup>
-         * @return the value of the Hansen coefficient and its derivative for e<sup>2</sup>
+         * @param chi2 &Chi;²
+         * @return the value of the Hansen coefficient and its derivative for e²
          */
         public DerivativeStructure getValue(final double e2, final double chi, final double chi2) {
 
@@ -495,12 +495,12 @@ public class HansenTesseralLinear {
             return new DerivativeStructure(1, 1, value, derivative);
         }
 
-        /** Generate the serie expansion in e<sup>2</sup>.
+        /** Generate the serie expansion in e².
          * <p>
-         * Generate the series expansion in e<sup>2</sup> used in the formulation
+         * Generate the series expansion in e² used in the formulation
          * of the Hansen kernel (see Danielson 2.7.3-10):
-         * &Sigma; Y<sup>ns</sup><sub>&alpha;+a,&alpha;+b</sub>
-         * *e<sup>2&alpha;</sup>
+         * &Sigma; Y<sup>ns</sup><sub>α+a,α+b</sub>
+         * *e<sup>2α</sup>
          * </p>
          * @return polynomial representing the power serie expansion
          */

@@ -85,7 +85,7 @@ public class GHmsjTest {
         }
     }
 
-    /** dG/d&alpha; and dH/d&alpha; computations test based on 2 independent methods.
+    /** dG/dα and dH/dα computations test based on 2 independent methods.
      *  If they give same results, we assume them to be consistent.
      */
     @Test
@@ -110,7 +110,7 @@ public class GHmsjTest {
         }
     }
 
-    /** dG/d&beta; and dH/d&beta; computations test based on 2 independent methods.
+    /** dG/dβ and dH/dβ computations test based on 2 independent methods.
      *  If they give same results, we assume them to be consistent.
      */
     @Test
@@ -212,7 +212,7 @@ public class GHmsjTest {
         return new double[] {khab.getReal(), khab.getImaginary()};
     }
 
-    /** Compute directly dG/d&alpha; and dH/d&alpha; from equation 2.7.1-(14).
+    /** Compute directly dG/dα and dH/dα from equation 2.7.1-(14).
      * @param k x-component of the eccentricity vector
      * @param h y-component of the eccentricity vector
      * @param a 1st direction cosine
@@ -220,7 +220,7 @@ public class GHmsjTest {
      * @param m order
      * @param s d'Alembert characteristic
      * @param j index
-     * @return dG/d&alpha; and dH/d&alpha; values
+     * @return dG/dα and dH/dα values
      */
     private static double[] getdGHda(final double k, final double h,
                                      final double a, final double b,
@@ -237,7 +237,7 @@ public class GHmsjTest {
         return new double[] {khab.getReal(), khab.getImaginary()};
     }
 
-    /** Compute directly dG/d&beta; and dH/d&beta; from equation 2.7.1-(14).
+    /** Compute directly dG/dβ and dH/dβ from equation 2.7.1-(14).
      * @param k x-component of the eccentricity vector
      * @param h y-component of the eccentricity vector
      * @param a 1st direction cosine
@@ -245,7 +245,7 @@ public class GHmsjTest {
      * @param m order
      * @param s d'Alembert characteristic
      * @param j index
-     * @return dG/d&beta; and dH/d&beta; values
+     * @return dG/dβ and dH/dβ values
      */
     private static double[] getdGHdb(final double k, final double h,
                                      final double a, final double b,

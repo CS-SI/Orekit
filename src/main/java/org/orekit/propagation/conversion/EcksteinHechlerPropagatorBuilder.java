@@ -64,7 +64,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
      * @param frame the frame in which the orbit is propagated
      *        (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param referenceRadius reference radius of the Earth for the potential model (m)
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param tideSystem tide system
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)

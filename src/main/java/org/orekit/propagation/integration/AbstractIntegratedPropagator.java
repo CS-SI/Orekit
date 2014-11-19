@@ -161,8 +161,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return stateMapper.getPositionAngleType();
     }
 
-    /** Set the central attraction coefficient &mu;.
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+    /** Set the central attraction coefficient μ.
+     * @param mu central attraction coefficient (m³/s²)
      */
     public void setMu(final double mu) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), mu,
@@ -170,8 +170,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
     }
 
-    /** Get the central attraction coefficient &mu;.
-     * @return mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+    /** Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
      * @see #setMu(double)
      */
     public double getMu() {
@@ -333,7 +333,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * in {@link OrbitType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param referenceDate reference date
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param orbitType orbit type to use for mapping
      * @param positionAngleType angle type to use for propagation
      * @param attitudeProvider attitude provider

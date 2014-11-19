@@ -117,8 +117,8 @@ public class HansenZonalLinear {
      * Compute polynomial coefficient a.
      *
      *  <p>
-     *  It is used to generate the coefficient for K<sub>0</sub><sup>-n, s</sup> when computing K<sub>0</sub><sup>-n-1, s</sup>
-     *  and the coefficient for dK<sub>0</sub><sup>-n, s</sup> / de<sup>2</sup> when computing dK<sub>0</sub><sup>-n-1, s</sup> / de<sup>2</sup>
+     *  It is used to generate the coefficient for K₀<sup>-n, s</sup> when computing K₀<sup>-n-1, s</sup>
+     *  and the coefficient for dK₀<sup>-n, s</sup> / de² when computing dK₀<sup>-n-1, s</sup> / de²
      *  </p>
      *
      *  <p>
@@ -141,8 +141,8 @@ public class HansenZonalLinear {
      * Compute polynomial coefficient b.
      *
      *  <p>
-     *  It is used to generate the coefficient for K<sub>0</sub><sup>-n+1, s</sup> when computing K<sub>0</sub><sup>-n-1, s</sup>
-     *  and the coefficient for dK<sub>0</sub><sup>-n+1, s</sup> / de<sup>2</sup> when computing dK<sub>0</sub><sup>-n-1, s</sup> / de<sup>2</sup>
+     *  It is used to generate the coefficient for K₀<sup>-n+1, s</sup> when computing K₀<sup>-n-1, s</sup>
+     *  and the coefficient for dK₀<sup>-n+1, s</sup> / de² when computing dK₀<sup>-n-1, s</sup> / de²
      *  </p>
      *
      *  <p>
@@ -228,7 +228,7 @@ public class HansenZonalLinear {
     /**
      * Compute the roots for the Hansen coefficients and their derivatives.
      *
-     * @param chi 1 / sqrt(1 - e<sup>2</sup>)
+     * @param chi 1 / sqrt(1 - e²)
      */
     public void computeInitValues(final double chi) {
         // compute the values for n=s and n=s+1
@@ -260,12 +260,12 @@ public class HansenZonalLinear {
     }
 
     /**
-     * Get the K<sub>0</sub><sup>-n-1,s</sup> coefficient value. <br />
+     * Get the K₀<sup>-n-1,s</sup> coefficient value. <br />
      * The s value is given in the class constructor <br />
      *
      * @param mnm1 (-n-1) coefficient
-     * @param chi The value of &chi;
-     * @return K<sub>0</sub><sup>-n-1,s</sup>
+     * @param chi The value of χ
+     * @return K₀<sup>-n-1,s</sup>
      */
     public double getValue(final int mnm1, final double chi) {
 
@@ -298,12 +298,12 @@ public class HansenZonalLinear {
     }
 
     /**
-     * Get the dK<sub>0</sub><sup>-n-1,s</sup> / d&Chi; coefficient derivative. <br />
+     * Get the dK₀<sup>-n-1,s</sup> / d&Chi; coefficient derivative. <br />
      * The s value is given in the class constructor <br />
      *
      * @param mnm1 (-n-1) coefficient
-     * @param chi The value of &chi;
-     * @return dK<sub>0</sub><sup>-n-1,s</sup> / d&Chi;
+     * @param chi The value of χ
+     * @return dK₀<sup>-n-1,s</sup> / d&Chi;
      */
     public double getDerivative(final int mnm1, final double chi) {
 

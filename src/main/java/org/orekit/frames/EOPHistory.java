@@ -232,7 +232,7 @@ public class EOPHistory implements Serializable {
     /** Get the correction to the nutation parameters for equinox-based paradigm.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
-     * @return nutation correction in longitude &Delta;&Psi; and in obliquity &Delta;&epsilon;
+     * @return nutation correction in longitude ΔΨ and in obliquity Δε
      * (zero if date is outside covered range)
      */
     public double[] getEquinoxNutationCorrection(final AbsoluteDate date) {
@@ -261,7 +261,7 @@ public class EOPHistory implements Serializable {
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
      * @return nutation correction in Celestial Intermediat Pole coordinates
-     * &delta;X and &delta;Y (zero if date is outside covered range)
+     * δX and δY (zero if date is outside covered range)
      */
     public double[] getNonRotatinOriginNutationCorrection(final AbsoluteDate date) {
         // check if there is data for date

@@ -108,11 +108,11 @@ class ZonalContribution implements DSSTForceModel {
     private double gamma;
 
     // Common factors for potential computation
-    /** &Chi; = 1 / sqrt(1 - e<sup>2</sup>) = 1 / B. */
+    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
     private double X;
-    /** &Chi;<sup>2</sup>. */
+    /** &Chi;². */
     private double XX;
-    /** &Chi;<sup>3</sup>. */
+    /** &Chi;³. */
     private double XXX;
     /** 1 / (A * B) .*/
     private double ooAB;
@@ -124,7 +124,7 @@ class ZonalContribution implements DSSTForceModel {
     private double mCo2AB;
     /** -2 * a / A .*/
     private double m2aoA;
-    /** &mu; / a .*/
+    /** μ / a .*/
     private double muoa;
     /** R / a .*/
     private double roa;
@@ -137,11 +137,11 @@ class ZonalContribution implements DSSTForceModel {
      * Needed when computed the short periodic contribution */
     private double U;
 
-    /** A = sqrt( &mu; * a ) = n * a<sup>2</sup>. */
+    /** A = sqrt( μ * a ) = n * a². */
     private double A;
-    /** B = sqrt( 1 - k<sup>2</sup> - h<sup>2</sup> ). */
+    /** B = sqrt( 1 - k² - h² ). */
     private double B;
-    /** C = 1 + p<sup>2</sup> + Q<sup>2</sup>. */
+    /** C = 1 + p² + Q². */
     private double C;
 
     /** The mean motion (n). */
@@ -383,7 +383,7 @@ class ZonalContribution implements DSSTForceModel {
         BoABpo = BoA / (1. + B);
         // -2 * a / A
         m2aoA = -2 * a / A;
-        // &mu; / a
+        // μ / a
         muoa = provider.getMu() / a;
         // R / a
         roa = provider.getAe() / a;
@@ -485,7 +485,7 @@ class ZonalContribution implements DSSTForceModel {
     /** Compute the derivatives of the gravitational potential U [Eq. 3.1-(6)].
      *  <p>
      *  The result is the array
-     *  [dU/da, dU/dk, dU/dh, dU/d&alpha;, dU/d&beta;, dU/d&gamma;]
+     *  [dU/da, dU/dk, dU/dh, dU/dα, dU/dβ, dU/dγ]
      *  </p>
      *  @param date current date
      *  @return potential derivatives
@@ -578,7 +578,7 @@ class ZonalContribution implements DSSTForceModel {
             }
         }
 
-        // Multiply by -(&mu; / a)
+        // Multiply by -(μ / a)
         U *= -muoa;
 
         return new double[] {
@@ -624,8 +624,8 @@ class ZonalContribution implements DSSTForceModel {
      * <p>
      * The coefficients are: <br/>
      * - C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> <br/>
-     * - &rho;<sub>j</sub> and &sigma;<sub>j</sub> <br/>
-     * - C<sub>i</sub><sup>0</sup>
+     * - ρ<sub>j</sub> and σ<sub>j</sub> <br/>
+     * - C<sub>i</sub>⁰
      * </p>
      *
      * @author Lucian Barbulescu
@@ -641,14 +641,14 @@ class ZonalContribution implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[] di;
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>
-         * The constant term C<sub>i</sub><sup>0</sup> is also stored in this variable at index j = 0 <br>
+         * The constant term C<sub>i</sub>⁰ is also stored in this variable at index j = 0 <br>
          * The index order is cij[j][i] <br/>
          * i corresponds to the equinoctial element, as follows: <br/>
          * - i=0 for a <br/>
@@ -656,7 +656,7 @@ class ZonalContribution implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[][] cij;
@@ -670,15 +670,15 @@ class ZonalContribution implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[][] sij;
 
-        /** The coefficients &rho;<sub>j</sub>. */
+        /** The coefficients ρ<sub>j</sub>. */
         private final double[] rhoj;
 
-        /** The coefficients &sigma;<sub>j</sub>. */
+        /** The coefficients σ<sub>j</sub>. */
         private final double[] sigmaj;
 
         /** N maximum. */
@@ -695,21 +695,21 @@ class ZonalContribution implements DSSTForceModel {
 
         /** h * k. */
         private double hk;
-        /** k<sup>2</sup> - h<sup>2</sup>. */
+        /** k² - h². */
         private double k2mh2;
-        /** (k<sup>2</sup> - h<sup>2</sup>) / 2. */
+        /** (k² - h²) / 2. */
         private double k2mh2o2;
-        /** 1 / (n<sup>2</sup> * a<sup>2</sup>). */
+        /** 1 / (n² * a²). */
         private double oon2a2;
-        /** 1 / (n<sup>2</sup> * a) . */
+        /** 1 / (n² * a) . */
         private double oon2a;
-        /** &chi;<sup>3</sup> / (n<sup>2</sup> * a). */
+        /** χ³ / (n² * a). */
         private double x3on2a;
-        /** &chi; / (n<sup>2</sup> * a<sup>2</sup>). */
+        /** χ / (n² * a²). */
         private double xon2a2;
-        /** (C * &chi;) / ( 2 * n<sup>2</sup> * a<sup>2</sup> ). */
+        /** (C * χ) / ( 2 * n² * a² ). */
         private double cxo2n2a2;
-        /** (&chi;<sup>2</sup>) / (n<sup>2</sup> * a<sup>2</sup> * (&chi; + 1 ) ). */
+        /** (χ²) / (n² * a² * (χ + 1 ) ). */
         private double x2on2a2xp1;
         /** B * B.*/
         private double BB;
@@ -777,21 +777,21 @@ class ZonalContribution implements DSSTForceModel {
             throws OrekitException {
             // h * k.
             this.hk = h * k;
-            // k<sup>2</sup> - h<sup>2</sup>.
+            // k² - h².
             this.k2mh2 = k * k - h * h;
-            // (k<sup>2</sup> - h<sup>2</sup>) / 2.
+            // (k² - h²) / 2.
             this.k2mh2o2 = k2mh2 / 2.;
-            // 1 / (n<sup>2</sup> * a<sup>2</sup>) = 1 / (n * A)
+            // 1 / (n² * a²) = 1 / (n * A)
             this.oon2a2 = 1 / (A * meanMotion);
-            // 1 / (n<sup>2</sup> * a) = a / (n * A)
+            // 1 / (n² * a) = a / (n * A)
             this.oon2a = a * oon2a2;
-            // &chi;<sup>3</sup> / (n<sup>2</sup> * a)
+            // χ³ / (n² * a)
             this.x3on2a = XXX * oon2a;
-            // &chi; / (n<sup>2</sup> * a<sup>2</sup>)
+            // χ / (n² * a²)
             this.xon2a2 = X * oon2a2;
-            // (C * &chi;) / ( 2 * n<sup>2</sup> * a<sup>2</sup> )
+            // (C * χ) / ( 2 * n² * a² )
             this.cxo2n2a2 = xon2a2 * C / 2;
-            // (&chi;<sup>2</sup>) / (n<sup>2</sup> * a<sup>2</sup> * (&chi; + 1 ) )
+            // (χ²) / (n² * a² * (χ + 1 ) )
             this.x2on2a2xp1 = xon2a2 * X / (X + 1);
             // B * B
             this.BB = B * B;
@@ -834,7 +834,7 @@ class ZonalContribution implements DSSTForceModel {
          * @param date date of computation
          */
         private void computeCijSijCoefficients(final AbsoluteDate date) {
-            // The C<sub>i</sub><sup>0</sup> coefficients
+            // The C<sub>i</sub>⁰ coefficients
             final double [] currentCi0 = new double[] {0., 0., 0., 0., 0., 0.};
             for (int j = 1; j <= jMax; j++) {
 
@@ -861,7 +861,7 @@ class ZonalContribution implements DSSTForceModel {
                     currentCij[2] -= coef3;
                     currentSij[2] += coef4;
 
-                    //Coefficients for &lamda;
+                    //Coefficients for λ
                     currentCij[5] -= coef2 / 2;
                     currentSij[5] += coef1 / 2;
                 }
@@ -885,7 +885,7 @@ class ZonalContribution implements DSSTForceModel {
                     currentCij[2] -= coef3;
                     currentSij[2] += coef4;
 
-                    //Coefficients for &lamda;
+                    //Coefficients for λ
                     currentCij[5] -= coef2 / 2;
                     currentSij[5] += coef1 / 2;
                 }
@@ -909,7 +909,7 @@ class ZonalContribution implements DSSTForceModel {
                     currentCij[2] -= coef3;
                     currentSij[2] += coef4;
 
-                    //Coefficients for &lamda;
+                    //Coefficients for λ
                     currentCij[5] -= coef2 / 2;
                     currentSij[5] += -coef1 / 2;
                 }
@@ -933,7 +933,7 @@ class ZonalContribution implements DSSTForceModel {
                     currentCij[2] -= coef3;
                     currentSij[2] -= coef4;
 
-                    //Coefficients for &lamda;
+                    //Coefficients for λ
                     currentCij[5] -= coef2 / 2;
                     currentSij[5] += -coef1 / 2;
                 }
@@ -957,7 +957,7 @@ class ZonalContribution implements DSSTForceModel {
                     currentCij[2] += coef3;
                     currentSij[2] += coef4;
 
-                    //Coefficients for &lamda;
+                    //Coefficients for λ
                     currentCij[5] += coef2 / 2;
                     currentSij[5] += coef1 / 2;
                 }
@@ -982,22 +982,22 @@ class ZonalContribution implements DSSTForceModel {
                     currentCij[2] += coef3;
                     currentSij[2] += coef4;
 
-                    //Coefficients for &lamda;
+                    //Coefficients for λ
                     currentCij[5] += coef5 / 2;
                     currentSij[5] += coef1 / 2;
                 }
 
                 //multiply by the common factor
-                //for a (i == 0) -> &chi;<sup>3</sup> / (n<sup>2</sup> * a)
+                //for a (i == 0) -> χ³ / (n² * a)
                 currentCij[0] *= this.x3on2a;
                 currentSij[0] *= this.x3on2a;
-                //for k (i == 1) -> &chi; / (n<sup>2</sup> * a<sup>2</sup>)
+                //for k (i == 1) -> χ / (n² * a²)
                 currentCij[1] *= this.xon2a2;
                 currentSij[1] *= this.xon2a2;
-                //for h (i == 2) -> &chi; / (n<sup>2</sup> * a<sup>2</sup>)
+                //for h (i == 2) -> χ / (n² * a²)
                 currentCij[2] *= this.xon2a2;
                 currentSij[2] *= this.xon2a2;
-                //for &lamda; (i == 5) -> (&chi;<sup>2</sup>) / (n<sup>2</sup> * a<sup>2</sup> * (&chi; + 1 ) )
+                //for λ (i == 5) -> (χ²) / (n² * a² * (χ + 1 ) )
                 currentCij[5] *= this.x2on2a2xp1;
                 currentSij[5] *= this.x2on2a2xp1;
 
@@ -1042,7 +1042,7 @@ class ZonalContribution implements DSSTForceModel {
                     currentCij[4] = this.cxo2n2a2 * (-CjBetaGamma + p * coef4);
                     currentSij[4] = this.cxo2n2a2 * (-SjBetaGamma + p * coef5);
 
-                    //Coefficients for &lamda;
+                    //Coefficients for λ
                     final double coef6 = h * cjsj.getdCjdH(j) + k * cjsj.getdCjdK(j);
                     final double coef7 = h * cjsj.getdSjdH(j) + k * cjsj.getdSjdK(j);
                     currentCij[5] += this.oon2a2 * (-2 * a * cjsj.getdCjdA(j) + coef6 / (X + 1) + X * coef2 - 3 * cjsj.getCj(j));
@@ -1050,7 +1050,7 @@ class ZonalContribution implements DSSTForceModel {
                 }
 
                 for (int i = 0; i < 6; i++) {
-                    //Add the current coefficients contribution to C<sub>i</sub><sup>0</sup>
+                    //Add the current coefficients contribution to C<sub>i</sub>⁰
                     currentCi0[i] -= currentCij[i] * rhoj[j] + currentSij[i] * sigmaj[j];
 
                     // Add the coefficients to the interpolation grid
@@ -1059,18 +1059,18 @@ class ZonalContribution implements DSSTForceModel {
                 }
             }
 
-            //Add C<sub>i</sub><sup>0</sup> to the interpolation grid
+            //Add C<sub>i</sub>⁰ to the interpolation grid
             for (int i = 0; i < 6; i++) {
                 cij[0][i].addGridPoint(date, currentCi0[i]);
             }
         }
 
         /**
-         * Compute the auxiliary quantities &rho;<sub>j</sub> and &sigma;<sub>j</sub>.
+         * Compute the auxiliary quantities ρ<sub>j</sub> and σ<sub>j</sub>.
          * <p>
          * The expressions used are equations 2.5.3-(4) from the Danielson paper. <br/>
-         *  &rho;<sub>j</sub> = (1+jB)(-b)<sup>j</sup>C<sub>j</sub>(k, h) <br/>
-         *  &sigma;<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
+         *  ρ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>C<sub>j</sub>(k, h) <br/>
+         *  σ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
          * </p>
          * @param date target date
          */
@@ -1139,7 +1139,7 @@ class ZonalContribution implements DSSTForceModel {
         /** The G<sub>js</sub>, H<sub>js</sub>, I<sub>js</sub> and J<sub>js</sub> polynomials. */
         private final GHIJjsPolynomials ghijCoef;
 
-        /** L<sub>n</sub><sup>s</sup>(&gamma;). */
+        /** L<sub>n</sub><sup>s</sup>(γ). */
         private final LnsCoefficients lnsCoef;
 
         /** Maximum possible value for n. */
@@ -1158,9 +1158,9 @@ class ZonalContribution implements DSSTForceModel {
          * - dC<sup>j</sup> / da <br/>
          * - dC<sup>j</sup> / dh <br/>
          * - dC<sup>j</sup> / dk <br/>
-         * - dC<sup>j</sup> / d&alpha; <br/>
-         * - dC<sup>j</sup> / d&beta; <br/>
-         * - dC<sup>j</sup> / d&gama; <br/>
+         * - dC<sup>j</sup> / dα <br/>
+         * - dC<sup>j</sup> / dβ <br/>
+         * - dC<sup>j</sup> / dγ <br/>
          * </p>
          */
         private final double[][] cCoef;
@@ -1172,16 +1172,16 @@ class ZonalContribution implements DSSTForceModel {
          * - dS<sup>j</sup> / da <br/>
          * - dS<sup>j</sup> / dh <br/>
          * - dS<sup>j</sup> / dk <br/>
-         * - dS<sup>j</sup> / d&alpha; <br/>
-         * - dS<sup>j</sup> / d&beta; <br/>
-         * - dS<sup>j</sup> / d&gamma; <br/>
+         * - dS<sup>j</sup> / dα <br/>
+         * - dS<sup>j</sup> / dβ <br/>
+         * - dS<sup>j</sup> / dγ <br/>
          * </p>
          */
         private final double[][] sCoef;
 
-        /** h * &Chi;<sup>3</sup>. */
+        /** h * &Chi;³. */
         private final double hXXX;
-        /** k * &Chi;<sup>3</sup>. */
+        /** k * &Chi;³. */
         private final double kXXX;
 
         /** Create a set of C<sup>j</sup> and the S<sup>j</sup> coefficients.
@@ -1241,7 +1241,7 @@ class ZonalContribution implements DSSTForceModel {
                         for (int n = s + 1; n <= nMax; n++) {
                             // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
                             if ((n + jms) % 2 == 0) {
-                                // (2 - delta(0,s-j)) * J<sub>n</sub> * K<sub>0</sub><sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                // (2 - delta(0,s-j)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
                                 final double lns = lnsCoef.getLns(n, -jms);
                                 final double dlns = lnsCoef.getdLnsdGamma(n, -jms);
 
@@ -1260,7 +1260,7 @@ class ZonalContribution implements DSSTForceModel {
                                 // J<sub>n</sub>
                                 final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
-                                // K<sub>0</sub><sup>-n-1,s</sup>
+                                // K₀<sup>-n-1,s</sup>
                                 final double kns   = hansenObjects[s].getValue(-n - 1, X);
                                 final double dkns  = hansenObjects[s].getDerivative(-n - 1, X);
 
@@ -1300,7 +1300,7 @@ class ZonalContribution implements DSSTForceModel {
                         for (int n = FastMath.max(j + s, j + 1); n <= nMax; n++) {
                             // if n + (j+s) is odd, then the term is equal to zero due to the factor Vn,s+j
                             if ((n + jps) % 2 == 0) {
-                                // (2 - delta(0,s+j)) * J<sub>n</sub> * K<sub>0</sub><sup>-n-1,s</sup> * L<sub>n</sub><sup>j+s</sup>
+                                // (2 - delta(0,s+j)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j+s</sup>
                                 final double lns = lnsCoef.getLns(n, jps);
                                 final double dlns = lnsCoef.getdLnsdGamma(n, jps);
 
@@ -1319,7 +1319,7 @@ class ZonalContribution implements DSSTForceModel {
                                 // J<sub>n</sub>
                                 final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
-                                // K<sub>0</sub><sup>-n-1,s</sup>
+                                // K₀<sup>-n-1,s</sup>
                                 final double kns   = hansenObjects[s].getValue(-n - 1, X);
                                 final double dkns  = hansenObjects[s].getDerivative(-n - 1, X);
 
@@ -1360,7 +1360,7 @@ class ZonalContribution implements DSSTForceModel {
                         for (int n = j + 1; n <= nMax; n++) {
                             // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
                             if ((n + jms) % 2 == 0) {
-                                // (2 - delta(0,j-s)) * J<sub>n</sub> * K<sub>0</sub><sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
                                 final double lns = lnsCoef.getLns(n, jms);
                                 final double dlns = lnsCoef.getdLnsdGamma(n, jms);
 
@@ -1379,7 +1379,7 @@ class ZonalContribution implements DSSTForceModel {
                                 // J<sub>n</sub>
                                 final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
-                                // K<sub>0</sub><sup>-n-1,s</sup>
+                                // K₀<sup>-n-1,s</sup>
                                 final double kns   = hansenObjects[s].getValue(-n - 1, X);
                                 final double dkns  = hansenObjects[s].getDerivative(-n - 1, X);
 
@@ -1433,7 +1433,7 @@ class ZonalContribution implements DSSTForceModel {
                     final double dGjsdAlpha = ghijCoef.getdGjsdAlpha(0, j);
                     final double dGjsdBeta = ghijCoef.getdGjsdBeta(0, j);
 
-                    // 2 * J<sub>j</sub> * K<sub>0</sub><sup>-j-1,0</sup> * L<sub>j</sub><sup>j</sup>
+                    // 2 * J<sub>j</sub> * K₀<sup>-j-1,0</sup> * L<sub>j</sub><sup>j</sup>
                     double coef0 = 2 * jj;
                     double coef1 = coef0 * lns;
                     double coef2 = coef1 * kns;
@@ -1467,7 +1467,7 @@ class ZonalContribution implements DSSTForceModel {
 
                         // if s is odd, then the term is equal to zero due to the factor Vj,s-j
                         if (s % 2 == 0) {
-                            // (2 - delta(0,j-s)) * J<sub>j</sub> * K<sub>0</sub><sup>-j-1,s</sup> * L<sub>j</sub><sup>j-s</sup>
+                            // (2 - delta(0,j-s)) * J<sub>j</sub> * K₀<sup>-j-1,s</sup> * L<sub>j</sub><sup>j-s</sup>
                             kns   = hansenObjects[s].getValue(-j - 1, X);
                             dkns  = hansenObjects[s].getDerivative(-j - 1, X);
 
@@ -1531,7 +1531,7 @@ class ZonalContribution implements DSSTForceModel {
                             for (int n = j - s; n <= minjm1on; n++) {
                                 // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
                                 if ((n + jms) % 2 == 0) {
-                                    // (2 - delta(0,j-s)) * J<sub>n</sub> * K<sub>0</sub><sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                    // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
                                     final double lns = lnsCoef.getLns(n, jms);
                                     final double dlns = lnsCoef.getdLnsdGamma(n, jms);
 
@@ -1550,7 +1550,7 @@ class ZonalContribution implements DSSTForceModel {
                                     // J<sub>n</sub>
                                     final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
-                                    // K<sub>0</sub><sup>-n-1,s</sup>
+                                    // K₀<sup>-n-1,s</sup>
                                     final double kns   = hansenObjects[s].getValue(-n - 1, X);
                                     final double dkns  = hansenObjects[s].getDerivative(-n - 1, X);
 
@@ -1591,7 +1591,7 @@ class ZonalContribution implements DSSTForceModel {
                             for (int n = s + 1; n <= minjm1on; n++) {
                                 // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
                                 if ((n + jms) % 2 == 0) {
-                                    // (2 - delta(0,j-s)) * J<sub>n</sub> * K<sub>0</sub><sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                    // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
                                     final double lns = lnsCoef.getLns(n, jms);
                                     final double dlns = lnsCoef.getdLnsdGamma(n, jms);
 
@@ -1610,7 +1610,7 @@ class ZonalContribution implements DSSTForceModel {
                                     // J<sub>n</sub>
                                     final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
-                                    // K<sub>0</sub><sup>-n-1,s</sup>
+                                    // K₀<sup>-n-1,s</sup>
                                     final double kns   = hansenObjects[s].getValue(-n - 1, X);
                                     final double dkns  = hansenObjects[s].getDerivative(-n - 1, X);
 
@@ -1654,7 +1654,7 @@ class ZonalContribution implements DSSTForceModel {
                             for (int n = s + 1; n <= minjm1on; n++) {
                                 // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
                                 if ((n + jms) % 2 == 0) {
-                                    // (2 - delta(0,j-s)) * J<sub>n</sub> * K<sub>0</sub><sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                    // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
                                     final double lns = lnsCoef.getLns(n, jms);
                                     final double dlns = lnsCoef.getdLnsdGamma(n, jms);
 
@@ -1673,7 +1673,7 @@ class ZonalContribution implements DSSTForceModel {
                                     // J<sub>n</sub>
                                     final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
-                                    // K<sub>0</sub><sup>-n-1,s</sup>
+                                    // K₀<sup>-n-1,s</sup>
 
                                     final double kns = hansenObjects[s].getValue(-n - 1, X);
                                     final double dkns  = hansenObjects[s].getDerivative(-n - 1, X);
@@ -1717,7 +1717,7 @@ class ZonalContribution implements DSSTForceModel {
                                 for (int n = j - s; n <= minjm1on; n++) {
                                     // if n + (j-s) is odd, then the term is equal to zero due to the factor Vn,s-j
                                     if ((n + jms) % 2 == 0) {
-                                        // (2 - delta(0,j-s)) * J<sub>n</sub> * K<sub>0</sub><sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
+                                        // (2 - delta(0,j-s)) * J<sub>n</sub> * K₀<sup>-n-1,s</sup> * L<sub>n</sub><sup>j-s</sup>
                                         final double lns = lnsCoef.getLns(n, jms);
                                         final double dlns = lnsCoef.getdLnsdGamma(n, jms);
 
@@ -1736,7 +1736,7 @@ class ZonalContribution implements DSSTForceModel {
                                         // J<sub>n</sub>
                                         final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
-                                        // K<sub>0</sub><sup>-n-1,s</sup>
+                                        // K₀<sup>-n-1,s</sup>
                                         final double kns   = hansenObjects[s].getValue(-n - 1, X);
                                         final double dkns  = hansenObjects[s].getDerivative(-n - 1, X);
 
@@ -1836,28 +1836,28 @@ class ZonalContribution implements DSSTForceModel {
             return cCoef[3][j];
         }
 
-        /**Get the value of dC<sup>j</sup> / d&alpha;.
+        /**Get the value of dC<sup>j</sup> / dα.
          *
          * @param j j index
-         * @return dC<sup>j</sup> / d&alpha;
+         * @return dC<sup>j</sup> / dα
          */
         public double getdCjdAlpha(final int j) {
             return cCoef[4][j];
         }
 
-        /**Get the value of dC<sup>j</sup> / d&beta;.
+        /**Get the value of dC<sup>j</sup> / dβ.
          *
          * @param j j index
-         * @return dC<sup>j</sup> / d&beta;
+         * @return dC<sup>j</sup> / dβ
          */
         public double getdCjdBeta(final int j) {
             return cCoef[5][j];
         }
 
-        /**Get the value of dC<sup>j</sup> / d&gamma;.
+        /**Get the value of dC<sup>j</sup> / dγ.
          *
          * @param j j index
-         * @return dC<sup>j</sup> / d&gamma;
+         * @return dC<sup>j</sup> / dγ
          */
         public double getdCjdGamma(final int j) {
             return cCoef[6][j];
@@ -1899,28 +1899,28 @@ class ZonalContribution implements DSSTForceModel {
             return sCoef[3][j];
         }
 
-        /**Get the value of dS<sup>j</sup> / d&alpha;.
+        /**Get the value of dS<sup>j</sup> / dα.
          *
          * @param j j index
-         * @return dS<sup>j</sup> / d&alpha;
+         * @return dS<sup>j</sup> / dα
          */
         public double getdSjdAlpha(final int j) {
             return sCoef[4][j];
         }
 
-        /**Get the value of dS<sup>j</sup> / d&beta;.
+        /**Get the value of dS<sup>j</sup> / dβ.
          *
          * @param j j index
-         * @return dS<sup>j</sup> / d&beta;
+         * @return dS<sup>j</sup> / dβ
          */
         public double getdSjdBeta(final int j) {
             return sCoef[5][j];
         }
 
-        /**Get the value of dS<sup>j</sup> /  d&gamma;.
+        /**Get the value of dS<sup>j</sup> /  dγ.
          *
          * @param j j index
-         * @return dS<sup>j</sup> /  d&gamma;
+         * @return dS<sup>j</sup> /  dγ
          */
         public double getdSjdGamma(final int j) {
             return sCoef[6][j];

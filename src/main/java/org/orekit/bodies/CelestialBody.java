@@ -61,7 +61,7 @@ public interface CelestialBody extends Serializable, PVCoordinatesProvider {
     String getName();
 
     /** Get the attraction coefficient of the body.
-     * @return attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>)
+     * @return attraction coefficient of the body (m³/s²)
      */
     double getGM();
 

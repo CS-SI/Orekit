@@ -50,7 +50,7 @@ class JPLCelestialBody implements CelestialBody {
     /** Raw position-velocity provider. */
     private final transient JPLEphemeridesLoader.RawPVProvider rawPVProvider;
 
-    /** Attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Attraction coefficient of the body (m³/s²). */
     private final double gm;
 
     /** Scaling factor for position-velocity. */
@@ -70,7 +70,7 @@ class JPLCelestialBody implements CelestialBody {
      * @param supportedNames regular expression for supported files names
      * @param generateType ephemeris type to generate
      * @param rawPVProvider raw position-velocity provider
-     * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
+     * @param gm attraction coefficient (in m³/s²)
      * @param scale scaling factor for position-velocity
      * @param iauPole IAU pole implementation
      * @param definingFrameAlignedWithICRF frame in which celestial body coordinates are defined,

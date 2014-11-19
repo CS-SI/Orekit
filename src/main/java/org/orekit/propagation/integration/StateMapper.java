@@ -56,7 +56,7 @@ public abstract class StateMapper {
      * in {@link OrbitType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param referenceDate reference date
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param orbitType orbit type to use for mapping
      * @param positionAngleType angle type to use for propagation
      * @param attitudeProvider attitude provider
@@ -99,8 +99,8 @@ public abstract class StateMapper {
         return angleType;
     }
 
-    /** Get the central attraction coefficient &mu;.
-     * @return mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+    /** Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
      */
     public double getMu() {
         return mu;

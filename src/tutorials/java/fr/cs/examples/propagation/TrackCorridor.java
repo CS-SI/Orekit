@@ -176,11 +176,11 @@ public class TrackCorridor {
 
     /** Create an orbit propagator for a circular orbit
      * @param a  semi-major axis (m)
-     * @param ex e cos(&omega;), first component of circular eccentricity vector
-     * @param ey e sin(&omega;), second component of circular eccentricity vector
+     * @param ex e cos(ω), first component of circular eccentricity vector
+     * @param ey e sin(ω), second component of circular eccentricity vector
      * @param i inclination (rad)
-     * @param raan right ascension of ascending node (&Omega;, rad)
-     * @param alpha  an + &omega;, mean latitude argument (rad)
+     * @param raan right ascension of ascending node (Ω, rad)
+     * @param alpha  an + ω, mean latitude argument (rad)
      * @param date date of the orbital parameters
      * @return an orbit propagator
      * @exception OrekitException if propagator cannot be built

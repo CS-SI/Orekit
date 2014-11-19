@@ -66,7 +66,7 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
     /** Revolution number at epoch. */
     private final int revolutionNumberAtEpoch;
 
-    /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Central attraction coefficient (m³/s²). */
     private final double mu;
 
     /** TEME frame. */

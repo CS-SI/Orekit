@@ -113,10 +113,10 @@ public class TLE implements TimeStamped, Serializable {
     /** Mean motion (rad/s). */
     private final double meanMotion;
 
-    /** Mean motion first derivative (rad/s<sup>2</sup>). */
+    /** Mean motion first derivative (rad/s²). */
     private final double meanMotionFirstDerivative;
 
-    /** Mean motion second derivative (rad/s<sup>3</sup>). */
+    /** Mean motion second derivative (rad/s³). */
     private final double meanMotionSecondDerivative;
 
     /** Eccentricity. */
@@ -215,8 +215,8 @@ public class TLE implements TimeStamped, Serializable {
      * @param elementNumber element number
      * @param epoch elements epoch
      * @param meanMotion mean motion (rad/s)
-     * @param meanMotionFirstDerivative mean motion first derivative (rad/s<sup>2</sup>)
-     * @param meanMotionSecondDerivative mean motion second derivative (rad/s<sup>3</sup>)
+     * @param meanMotionFirstDerivative mean motion first derivative (rad/s²)
+     * @param meanMotionSecondDerivative mean motion second derivative (rad/s³)
      * @param e eccentricity
      * @param i inclination (rad)
      * @param pa argument of perigee (rad)
@@ -520,14 +520,14 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Get the mean motion first derivative.
-     * @return the mean motion first derivative (rad/s<sup>2</sup>)
+     * @return the mean motion first derivative (rad/s²)
      */
     public double getMeanMotionFirstDerivative() {
         return meanMotionFirstDerivative;
     }
 
     /** Get the mean motion second derivative.
-     * @return the mean motion second derivative (rad/s<sup>3</sup>)
+     * @return the mean motion second derivative (rad/s³)
      */
     public double getMeanMotionSecondDerivative() {
         return meanMotionSecondDerivative;

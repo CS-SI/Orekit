@@ -22,7 +22,7 @@ import java.util.TreeMap;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.MNSKey;
 
-/** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(&gamma;) function from equation 2.7.1-(13).
+/** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13).
  *
  *  @author Romain Di Costanzo
  */
@@ -34,7 +34,7 @@ public class GammaMnsFunction {
     /** Factorial. */
     private final double[] fact;
 
-    /** 1 + I * &gamma;. */
+    /** 1 + I * γ. */
     private final double opIg;
 
     /** I = +1 for a prograde orbit, -1 otherwise. */
@@ -42,7 +42,7 @@ public class GammaMnsFunction {
 
     /** Simple constructor.
      *  @param fact factorial array
-     *  @param gamma &gamma;
+     *  @param gamma γ
      *  @param I retrograde factor
      */
     public GammaMnsFunction(final double[] fact, final double gamma, final int I) {
@@ -56,7 +56,7 @@ public class GammaMnsFunction {
      *  @param m m
      *  @param n n
      *  @param s s
-     *  @return &Gamma;<sup>m</sup><sub>n, s</sub>(&gamma;)
+     *  @return &Gamma;<sup>m</sup><sub>n, s</sub>(γ)
      */
     public double getValue(final int m, final int n, final int s) {
         double res = 0.;
@@ -82,7 +82,7 @@ public class GammaMnsFunction {
      * @param m m
      * @param n n
      * @param s s
-     * @return d&Gamma;<sup>m</sup><sub>n,s</sub>(&gamma;)/d&gamma;
+     * @return d&Gamma;<sup>m</sup><sub>n,s</sub>(γ)/dγ
      */
     public double getDerivative(final int m, final int n, final int s) {
         double res = 0.;

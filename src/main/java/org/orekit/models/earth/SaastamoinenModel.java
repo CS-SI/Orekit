@@ -31,8 +31,8 @@ import org.orekit.utils.InterpolationTableLoader;
 /** The modified Saastamoinen model. Estimates the path delay imposed to
  * electro-magnetic signals by the troposphere according to the formula:
  * <pre>
- * &delta; = 2.277e-3 / cos z * (P + (1255 / T + 0.05) * e - B * tan<sup>2</sup>
- * z) + &delta;R
+ * δ = 2.277e-3 / cos z * (P + (1255 / T + 0.05) * e - B * tan²
+ * z) + δR
  * </pre>
  * with the following input data provided to the model:
  * <ul>
@@ -40,10 +40,10 @@ import org.orekit.utils.InterpolationTableLoader;
  * <li>P: atmospheric pressure</li>
  * <li>T: temperature</li>
  * <li>e: partial pressure of water vapour</li>
- * <li>B, &delta;R: correction terms</li>
+ * <li>B, δR: correction terms</li>
  * </ul>
  * <p>
- * The model supports custom &delta;R correction terms to be read from a
+ * The model supports custom δR correction terms to be read from a
  * configuration file (saastamoinen-correction.txt) via the
  * {@link DataProvidersManager}.
  * </p>
@@ -140,7 +140,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
 
     /** Contains several functions used by the Saastamoinen model to calculate
      * the path delay. The functions are static and thus accessed via a static
-     * instance of this class. The &delta;R correction terms can be optionally
+     * instance of this class. The δR correction terms can be optionally
      * loaded from a configuration file, otherwise default values are used.
      */
     private static class Functions {

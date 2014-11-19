@@ -48,12 +48,12 @@ public class CoefficientsFactory {
     private CoefficientsFactory() {
     }
 
-    /** Compute the Q<sub>n,s</sub> coefficients evaluated at &gamma; from the recurrence formula 2.8.3-(2).
+    /** Compute the Q<sub>n,s</sub> coefficients evaluated at γ from the recurrence formula 2.8.3-(2).
      *  <p>
      *  Q<sub>n,s</sub> coefficients are computed for n = 0 to nMax
-     *  and s = 0 to sMax + 1 in order to also get the derivative dQ<sub>n,s</sub>/d&gamma; = Q(n, s + 1)
+     *  and s = 0 to sMax + 1 in order to also get the derivative dQ<sub>n,s</sub>/dγ = Q(n, s + 1)
      *  </p>
-     *  @param gamma &gamma; angle
+     *  @param gamma γ angle
      *  @param nMax n max value
      *  @param sMax s max value
      *  @return Q<sub>n,s</sub> coefficients array

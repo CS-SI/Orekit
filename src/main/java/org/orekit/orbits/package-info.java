@@ -83,7 +83,7 @@
  * are really used in many places in algorithms, for computation related to
  * period (setting a convergence threshold or a search interval) or geometry
  * (computing swath or lightning). A side-effect of this choice is that all orbits
- * do include a value for &mu;, the acceleration coefficient of the central body.
+ * do include a value for μ, the acceleration coefficient of the central body.
  * This value is only used for the representation of the parameters and for conversion
  * purposes, it is <em>not</em> always the same as the value used for propagation (but
  * of course, using different values should be done with care).
@@ -128,7 +128,7 @@
  * <em>infinite</em> possible number of values that all represent the same physical
  * orbit. Orekit simply does an arbitrary choice, often choosing simply the value 0.
  * In our example case, we would then get a converted orbit with a 0 perigee argument.
- * This choice is valid, just as any other choice (&pi;/2, &pi;, whatever ...) would
+ * This choice is valid, just as any other choice (π/2, π, whatever ...) would
  * have been valid, in the sense that it <i>does</i> represent correctly the orbit
  * and when converted back to the original non-ambiguous representation it does give
  * the right result.

@@ -30,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * <p>
  * This class computes the differential effect of J2 due to an initial orbit
  * offset. A typical case is when an inclination maneuver changes an orbit
- * inclination at time t<sub>0</sub>. As ascending node drift rate depends on
+ * inclination at time t₀. As ascending node drift rate depends on
  * inclination, the change induces a time-dependent change in ascending node
  * for later dates.
  * </p>
@@ -107,7 +107,7 @@ public class J2DifferentialEffect
      * @param applyBefore if true, effect is applied both before and after
      * reference date, if false it is only applied after reference date
      * @param referenceRadius reference radius of the Earth for the potential model (m)
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param j2 un-normalized zonal coefficient (about +1.08e-3 for Earth)
      * @exception OrekitException if direct effect cannot be applied
      */
@@ -132,7 +132,7 @@ public class J2DifferentialEffect
      * @param applyBefore if true, effect is applied both before and after
      * reference date, if false it is only applied after reference date
      * @param referenceRadius reference radius of the Earth for the potential model (m)
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param j2 un-normalized zonal coefficient (about +1.08e-3 for Earth)
      */
     public J2DifferentialEffect(final Orbit orbit0, final Orbit orbit1, final boolean applyBefore,
@@ -174,9 +174,9 @@ public class J2DifferentialEffect
     }
 
     /** Compute the effect of the maneuver on an orbit.
-     * @param orbit1 original orbit at t<sub>1</sub>, without maneuver
-     * @return orbit at t<sub>1</sub>, taking the maneuver
-     * into account if t<sub>1</sub> &gt; t<sub>0</sub>
+     * @param orbit1 original orbit at t₁, without maneuver
+     * @return orbit at t₁, taking the maneuver
+     * into account if t₁ &gt; t₀
      * @see #apply(SpacecraftState)
      */
     public Orbit apply(final Orbit orbit1) {
@@ -204,8 +204,8 @@ public class J2DifferentialEffect
     }
 
     /** Compute the differential effect of J2 on an orbit.
-     * @param orbit1 original orbit at t<sub>1</sub>, without differential J2
-     * @return orbit at t<sub>1</sub>, always taking the effect into account
+     * @param orbit1 original orbit at t₁, without differential J2
+     * @return orbit at t₁, always taking the effect into account
      */
     private Orbit updateOrbit(final Orbit orbit1) {
 

@@ -45,7 +45,7 @@ public class HansenUtilities {
      * <p>
      * <pre>
      *                  / 1   0 \
-     *  I<sub>2</sub> = |       |
+     *  I₂ = |       |
      *                  \ 0   1 /
      * </pre>
      *
@@ -69,7 +69,7 @@ public class HansenUtilities {
      * <p>
      * <pre>
      *                  / 0   0 \
-     *  E<sub>2</sub> = |       |
+     *  E₂ = |       |
      *                  \ 0   0 /
      * </pre>
      *
@@ -96,7 +96,7 @@ public class HansenUtilities {
      *                  / 1  0  0  0 \
      *                  |            |
      *                   | 0  1  0  0 |
-     *  I<sub>4</sub> = |            |
+     *  I₄ = |            |
      *                  | 0  0  1  0 |
      *                  |             |
      *                  \ 0  0  0  1 /
@@ -130,7 +130,7 @@ public class HansenUtilities {
      *                  / 0  0  0  0 \
      *                  |            |
      *                   | 0  0  0  0 |
-     *  E<sub>4</sub> = |            |
+     *  E₄ = |            |
      *                  | 0  0  0  0 |
      *                  |             |
      *                  \ 0  0  0  0 /

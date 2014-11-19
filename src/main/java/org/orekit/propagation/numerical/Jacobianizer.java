@@ -53,7 +53,7 @@ public class Jacobianizer {
     /** Wrapped force model instance. */
     private final ForceModel forceModel;
 
-    /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Central attraction coefficient (m³/s²). */
     private final double mu;
 
     /** Step used for finite difference computation with respect to spacecraft position. */
@@ -64,7 +64,7 @@ public class Jacobianizer {
 
     /** Simple constructor.
      * @param forceModel force model instance to wrap
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param paramsAndSteps collection of parameters and their associated steps
      * @param hPos step used for finite difference computation with respect to spacecraft position (m)
      */

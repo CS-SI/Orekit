@@ -67,9 +67,9 @@ import org.orekit.utils.PVCoordinatesProvider;
  *   <li>Temperature at altitude z (K)</li>
  *   <li>Exospheric temperature above input position (K)</li>
  *   <li>Vertical gradient of T a 120 km</li>
- *   <li>Total density (kg/m<sup>3</sup>)</li>
+ *   <li>Total density (kg/m³)</li>
  *   <li>Mean atomic mass</li>
- *   <li>Partial densities in (kg/m<sup>3</sup>) : hydrogen, helium, atomic oxygen,
+ *   <li>Partial densities in (kg/m³) : hydrogen, helium, atomic oxygen,
  *   molecular nitrogen, molecular oxygen, atomic nitrogen</li>
  * </ul>
  * </p>
@@ -157,7 +157,7 @@ public class DTM2000 implements Atmosphere {
     /** Universal gas constant. */
     private static final double RGAS = 831.4;
 
-    /** 2 * &pi; / 365. */
+    /** 2 * π / 365. */
     private static final double ROT = 0.017214206;
 
     /** 2 * rot. */
@@ -324,7 +324,7 @@ public class DTM2000 implements Atmosphere {
      * @param fbar mean solar flux (F10.7)
      * @param akp3 3 hrs geomagnetic activity index (1-9)
      * @param akp24 Mean of last 24 hrs geomagnetic activity index (1-9)
-     * @return the local density (kg/m<sup>3</sup>)
+     * @return the local density (kg/m³)
      * @exception OrekitException if altitude is outside of supported range
      */
     public double getDensity(final int day,
@@ -469,9 +469,9 @@ public class DTM2000 implements Atmosphere {
             final double gamma = MA[i] * glb;
             final double upapg = 1.0 + ALEFA[i] + gamma;
             fz[i] = FastMath.pow(t120tz, upapg) * FastMath.exp(-sigzeta * gamma);
-            // concentrations of H, He, O, N2, O2, N (particles/cm<sup>3</sup>)
+            // concentrations of H, He, O, N2, O2, N (particles/cm³)
             cc[i] = dbase[i] * fz[i];
-            // densities of H, He, O, N2, O2, N (g/cm<sup>3</sup>)
+            // densities of H, He, O, N2, O2, N (g/cm³)
             d[i]  = cc[i] * VMA[i];
             // total density
             ro += d[i];
@@ -830,7 +830,7 @@ public class DTM2000 implements Atmosphere {
      * method <b>must</b> be called before calling this function.
      * @param identifier one of the six elements : {@link #HYDROGEN}, {@link #HELIUM},
      * {@link #ATOMIC_OXYGEN}, {@link #MOLECULAR_NITROGEN},  {@link #MOLECULAR_OXYGEN}, {@link #ATOMIC_NITROGEN}
-     * @return the local partial density (kg/m<sup>3</sup>)
+     * @return the local partial density (kg/m³)
      */
     public double getPartialDensities(final int identifier) {
         if (identifier < 1 || identifier > 6) {
@@ -843,7 +843,7 @@ public class DTM2000 implements Atmosphere {
      * @param date current date
      * @param position current position in frame
      * @param frame the frame in which is defined the position
-     * @return local density (kg/m<sup>3</sup>)
+     * @return local density (kg/m³)
      * @exception OrekitException if date is out of range of solar activity model
      * or if some frame conversion cannot be performed
      */

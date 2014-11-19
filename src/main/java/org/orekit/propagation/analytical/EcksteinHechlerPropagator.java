@@ -83,7 +83,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     /** Reference radius of the central body attraction model (m). */
     private double referenceRadius;
 
-    /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Central attraction coefficient (m³/s²). */
     private double mu;
 
     /** Un-normalized zonal coefficients. */
@@ -133,13 +133,13 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
      * <pre>
-     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup>
+     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
      *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
      * @param initialOrbit initial orbit
      * @param referenceRadius reference radius of the Earth for the potential model (m)
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
@@ -177,14 +177,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
      * <pre>
-     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup>
+     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
      *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
@@ -223,14 +223,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
      * <pre>
-     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup>
+     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
      *                     <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param referenceRadius reference radius of the Earth for the potential model (m)
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
@@ -270,7 +270,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
      * <pre>
-     *   C<sub>n,0</sub> = [(2-&delta;<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>&frac12;</sup>
+     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
      *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *   C<sub>n,0</sub> = -J<sub>n</sub>
      * </pre>
@@ -278,7 +278,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)

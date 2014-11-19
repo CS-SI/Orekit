@@ -169,10 +169,10 @@ class TesseralContribution implements DSSTForceModel {
     private double ecc;
 
     // Common factors for potential computation
-    /** &Chi; = 1 / sqrt(1 - e<sup>2</sup>) = 1 / B. */
+    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
     private double chi;
 
-    /** &Chi;<sup>2</sup>. */
+    /** &Chi;². */
     private double chi2;
 
     // Equinoctial reference frame vectors (according to DSST notation)
@@ -182,16 +182,16 @@ class TesseralContribution implements DSSTForceModel {
     /** Equinoctial frame g vector. */
     private Vector3D g;
 
-    /** Central body rotation angle &theta;. */
+    /** Central body rotation angle θ. */
     private double theta;
 
-    /** Direction cosine &alpha;. */
+    /** Direction cosine α. */
     private double alpha;
 
-    /** Direction cosine &beta;. */
+    /** Direction cosine β. */
     private double beta;
 
-    /** Direction cosine &gamma;. */
+    /** Direction cosine γ. */
     private double gamma;
 
     // Common factors from equinoctial coefficients
@@ -210,13 +210,13 @@ class TesseralContribution implements DSSTForceModel {
     /** C / (2 * A * B) .*/
     private double Co2AB;
 
-    /** &mu; / a .*/
+    /** μ / a .*/
     private double moa;
 
     /** R / a .*/
     private double roa;
 
-    /** ecc<sup>2</sup>. */
+    /** ecc². */
     private double e2;
 
     /** The satellite mean motion. */
@@ -446,11 +446,11 @@ class TesseralContribution implements DSSTForceModel {
         gamma = aux.getGamma();
 
         // Equinoctial coefficients
-        // A = sqrt(&mu; * a)
+        // A = sqrt(μ * a)
         final double A = aux.getA();
-        // B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>)
+        // B = sqrt(1 - h² - k²)
         final double B = aux.getB();
-        // C = 1 + p<sup>2</sup> + q<sup>2</sup>
+        // C = 1 + p² + q²
         final double C = aux.getC();
         // Common factors from equinoctial coefficients
         // 2 * a / A
@@ -641,10 +641,10 @@ class TesseralContribution implements DSSTForceModel {
      *  dU / da
      *  dU / dh
      *  dU / dk
-     *  dU / d&lambda;
-     *  dU / d&alpha;
-     *  dU / d&beta;
-     *  dU / d&gamma;
+     *  dU / dλ
+     *  dU / dα
+     *  dU / dβ
+     *  dU / dγ
      *  </pre>
      *  </p>
      *
@@ -785,7 +785,7 @@ class TesseralContribution implements DSSTForceModel {
      *  @param maxN maximum possible value for <i>n</i> index
      *  @param roaPow powers of R/a up to degree <i>n</i>
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
-     *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(&gamma;) function
+     *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
      * @throws OrekitException if some error occurred
      */
@@ -952,8 +952,8 @@ class TesseralContribution implements DSSTForceModel {
          * - dk/dt <br/>
          * - dh/dt / dk <br/>
          * - dq/dt <br/>
-         * - dp/dt / d&alpha; <br/>
-         * - d&lambda;/dt / d&beta; <br/>
+         * - dp/dt / dα <br/>
+         * - dλ/dt / dβ <br/>
          * </p>
          */
         private final double[][][] cCoef;
@@ -967,8 +967,8 @@ class TesseralContribution implements DSSTForceModel {
          * - dk/dt <br/>
          * - dh/dt / dk <br/>
          * - dq/dt <br/>
-         * - dp/dt / d&alpha; <br/>
-         * - d&lambda;/dt / d&beta; <br/>
+         * - dp/dt / dα <br/>
+         * - dλ/dt / dβ <br/>
          * </p>
          */
         private final double[][][] sCoef;
@@ -1153,7 +1153,7 @@ class TesseralContribution implements DSSTForceModel {
             cCoef[m][j + jMax][4] = Co2AB * (p * RhkmRabmdRdlCos - RBetaGammaCos);
             sCoef[m][j + jMax][4] = Co2AB * (p * RhkmRabmdRdlSin - RBetaGammaSin);
 
-            // d&lambda;/dt
+            // dλ/dt
             cCoef[m][j + jMax][5] = -ax2oA * dRdaCos + BoABpo * (h * dRdhCos + k * dRdkCos) + pRagmIqRbgoABCos;
             sCoef[m][j + jMax][5] = -ax2oA * dRdaSin + BoABpo * (h * dRdhSin + k * dRdkSin) + pRagmIqRbgoABSin;
         }
@@ -1199,7 +1199,7 @@ class TesseralContribution implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[][][] cijm;
@@ -1213,7 +1213,7 @@ class TesseralContribution implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[][][] sijm;
@@ -1301,7 +1301,7 @@ class TesseralContribution implements DSSTForceModel {
             final double[] currentCijm = new double[] {0., 0., 0., 0., 0., 0.};
             final double[] currentSijm = new double[] {0., 0., 0., 0., 0., 0.};
 
-            // compute the term 1 / (jn - m&theta;<sup>.</sup>)
+            // compute the term 1 / (jn - mθ<sup>.</sup>)
             final double oojnmt = 1. / (j * meanMotion - m * centralBodyRotationRate);
 
             // initialise the coeficients
@@ -1309,11 +1309,11 @@ class TesseralContribution implements DSSTForceModel {
                 currentCijm[i] = -cjsjFourier.getSijm(i, j, m);
                 currentSijm[i] = cjsjFourier.getCijm(i, j, m);
             }
-            // Add the separate part for &delta;<sub>6i</sub>
+            // Add the separate part for δ<sub>6i</sub>
             currentCijm[5] += tnota * oojnmt * cjsjFourier.getCijm(0, j, m);
             currentSijm[5] += tnota * oojnmt * cjsjFourier.getSijm(0, j, m);
 
-            //Multiply by 1 / (jn - m&theta;<sup>.</sup>)
+            //Multiply by 1 / (jn - mθ<sup>.</sup>)
             for (int i = 0; i < 6; i++) {
                 currentCijm[i] *= oojnmt;
                 currentSijm[i] *= oojnmt;

@@ -20,26 +20,26 @@ import java.util.TreeMap;
 
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
-/** Compute the L<sub>n</sub><sup>s</sup>(&gamma;).
+/** Compute the L<sub>n</sub><sup>s</sup>(γ).
  *  <p>
  *  The fomula used is: <br/>
- *  L<sub>n</sub><sup>s</sup>(&gamma;) = ( R / a )<sup>n</sup>V<sub>ns</sub>Q<sup>ns</sup>(&gamma;)
+ *  L<sub>n</sub><sup>s</sup>(γ) = ( R / a )<sup>n</sup>V<sub>ns</sub>Q<sup>ns</sup>(γ)
  *  </p>
  *  @author Lucian Barbulescu
  */
 public class LnsCoefficients {
 
-    /** The coefficients L<sub>n</sub><sup>s</sup>(&gamma;). */
+    /** The coefficients L<sub>n</sub><sup>s</sup>(γ). */
     private final double[][] lns;
 
-    /** The coefficients dL<sub>n</sub><sup>s</sup>(&gamma;) / d&gamma;. */
+    /** The coefficients dL<sub>n</sub><sup>s</sup>(γ) / dγ. */
     private final double[][] dlns;
 
-    /** Create a set of L<sub>n</sub><sup>s</sup>(&gamma;) coefficients.
+    /** Create a set of L<sub>n</sub><sup>s</sup>(γ) coefficients.
      *
      * @param nMax maximum value for n
      * @param sMax maximum value for s
-     * @param Qns the Q<sup>ns</sup>(&gamma;) coefficients
+     * @param Qns the Q<sup>ns</sup>(γ) coefficients
      * @param Vns the V<sub>ns</sub> coefficients
      * @param roa (R / a)
      */
@@ -55,7 +55,7 @@ public class LnsCoefficients {
         }
         for (int s = 0; s <= sMax; s++) {
             for (int n = s; n <= nMax; n++) {
-                // if (n - s) is not even L<sub>n</sub><sup>s</sup>(&gamma;) is 0
+                // if (n - s) is not even L<sub>n</sub><sup>s</sup>(γ) is 0
                 if ((n - s) % 2 == 0) {
                     final double coef = roaPow[n] * Vns.get(new NSKey(n, s));
                     lns[n][s] = coef * Qns[n][s];
@@ -74,21 +74,21 @@ public class LnsCoefficients {
 
     }
 
-    /**Get the value of L<sub>n</sub><sup>s</sup>(&gamma;).
+    /**Get the value of L<sub>n</sub><sup>s</sup>(γ).
      *
      * @param n n index
      * @param s s index
-     * @return L<sub>n</sub><sup>s</sup>(&gamma;)
+     * @return L<sub>n</sub><sup>s</sup>(γ)
      */
     public double getLns(final int n, final int s) {
         return lns[n][s];
     }
 
-    /**Get the value of dL<sub>n</sub><sup>s</sup> / d&gamma; (&gamma;).
+    /**Get the value of dL<sub>n</sub><sup>s</sup> / dγ (γ).
      *
      * @param n n index
      * @param s s index
-     * @return L<sub>n</sub><sup>s</sup>(&gamma;)
+     * @return L<sub>n</sub><sup>s</sup>(γ)
      */
     public double getdLnsdGamma(final int n, final int s) {
         return dlns[n][s];

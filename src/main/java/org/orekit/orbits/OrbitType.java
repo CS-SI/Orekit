@@ -198,7 +198,7 @@ public enum OrbitType {
      * @param array state as a flat array
      * @param type type of the angle
      * @param date integration date
-     * @param mu central attraction coefficient used for propagation (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient used for propagation (m³/s²)
      * @param frame frame in which integration is performed
      * @return orbit corresponding to the flat array as a space dynamics object
      */

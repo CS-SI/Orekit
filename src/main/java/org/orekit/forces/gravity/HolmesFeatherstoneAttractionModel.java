@@ -87,10 +87,10 @@ public class HolmesFeatherstoneAttractionModel
     /** Rotating body. */
     private final Frame bodyFrame;
 
-    /** Recursion coefficients g<sub>n,m</sub>/&radic;j. */
+    /** Recursion coefficients g<sub>n,m</sub>/√j. */
     private final double[] gnmOj;
 
-    /** Recursion coefficients h<sub>n,m</sub>/&radic;j. */
+    /** Recursion coefficients h<sub>n,m</sub>/√j. */
     private final double[] hnmOj;
 
     /** Recursion coefficients e<sub>n,m</sub>. */
@@ -572,10 +572,10 @@ public class HolmesFeatherstoneAttractionModel
     }
 
     /** Compute longitude cosines and sines.
-     * @param cosLambda cos(&lambda;)
-     * @param sinLambda sin(&lambda;)
-     * @return array containing cos(m &times; &lambda;) in row 0
-     * and sin(m &times; &lambda;) in row 1
+     * @param cosLambda cos(λ)
+     * @param sinLambda sin(λ)
+     * @return array containing cos(m &times; λ) in row 0
+     * and sin(m &times; λ) in row 1
      */
     private double[][] createCosSinArrays(final double cosLambda, final double sinLambda) {
 
@@ -615,8 +615,8 @@ public class HolmesFeatherstoneAttractionModel
      * @param m current order
      * @param degree max degree
      * @param index index in the flattened array
-     * @param t cos(&theta;), where &theta; is the polar angle
-     * @param u sin(&theta;), where &theta; is the polar angle
+     * @param t cos(θ), where θ is the polar angle
+     * @param u sin(θ), where θ is the polar angle
      * @param tOu t/u
      * @param pnm0Plus2 array containing scaled P<sub>n,m+2</sub>/u<sup>m+2</sup>
      * @param pnm0Plus1 array containing scaled P<sub>n,m+1</sub>/u<sup>m+1</sup>
@@ -625,7 +625,7 @@ public class HolmesFeatherstoneAttractionModel
      * @param pnm0 array to fill with scaled P<sub>n,m</sub>/u<sup>m</sup>
      * @param pnm1 array to fill with scaled dP<sub>n,m</sub>/u<sup>m</sup>
      * (may be null if first derivatives are not needed)
-     * @param pnm2 array to fill with scaled d<sup>2</sup>P<sub>n,m</sub>/u<sup>m</sup>
+     * @param pnm2 array to fill with scaled d²P<sub>n,m</sub>/u<sup>m</sup>
      * (may be null if second derivatives are not needed)
      * @return new value for index
      */

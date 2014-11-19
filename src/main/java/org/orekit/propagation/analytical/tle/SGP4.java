@@ -37,7 +37,7 @@ class SGP4 extends TLEPropagator {
     /** If perige is less than 220 km, some calculus are avoided. */
     private boolean lessThan220;
 
-    /** (1 + eta * cos(M0))<sup>3</sup>. */
+    /** (1 + eta * cos(M0))³. */
     private double delM0;
 
     // CHECKSTYLE: stop JavadocVariable check

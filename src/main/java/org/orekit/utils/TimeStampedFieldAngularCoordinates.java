@@ -346,9 +346,9 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * </p>
      * @param fixed coordinates to convert, with offset already fixed
      * @param previous previous quaternion used
-     * @param threshold threshold for rotations too close to 2&pi;
+     * @param threshold threshold for rotations too close to 2π
      * @param <T> the type of the field elements
-     * @return modified Rodrigues vector and derivative, or null if rotation is too close to 2&pi;
+     * @return modified Rodrigues vector and derivative, or null if rotation is too close to 2π
      */
     private static <T extends RealFieldElement<T>> T[][] getModifiedRodrigues(final TimeStampedFieldAngularCoordinates<T> fixed,
                                                                               final double[] previous, final double threshold) {

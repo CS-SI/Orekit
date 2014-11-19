@@ -41,11 +41,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *     a
  *     e
  *     i
- *     &omega;
- *     &Omega;
+ *     ω
+ *     Ω
  *     v
  *   </pre>
- * where &omega; stands for the Perigee Argument, &Omega; stands for the
+ * where ω stands for the Perigee Argument, Ω stands for the
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
  * </p>
  * <p>
@@ -54,7 +54,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </p>
  * <p>
  * When orbit is either equatorial or circular, some keplerian elements
- * (more precisely &omega; and &Omega;) become ambiguous so this class should not
+ * (more precisely ω and Ω) become ambiguous so this class should not
  * be used for such orbits. For this reason, {@link EquinoctialOrbit equinoctial
  * orbits} is the recommended way to represent orbits.
  * </p>
@@ -130,14 +130,14 @@ public class KeplerianOrbit extends Orbit {
      * @param a  semi-major axis (m), negative for hyperbolic orbits
      * @param e eccentricity
      * @param i inclination (rad)
-     * @param pa perigee argument (&omega;, rad)
-     * @param raan right ascension of ascending node (&Omega;, rad)
+     * @param pa perigee argument (ω, rad)
+     * @param raan right ascension of ascending node (Ω, rad)
      * @param anomaly mean, eccentric or true anomaly (rad)
      * @param type type of anomaly
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
      * or v is out of range for hyperbolic orbits
@@ -192,15 +192,15 @@ public class KeplerianOrbit extends Orbit {
      * @param a  semi-major axis (m), negative for hyperbolic orbits
      * @param e eccentricity
      * @param i inclination (rad)
-     * @param pa perigee argument (&omega;, rad)
-     * @param raan right ascension of ascending node (&Omega;, rad)
+     * @param pa perigee argument (ω, rad)
+     * @param raan right ascension of ascending node (Ω, rad)
      * @param anomaly mean, eccentric or true anomaly (rad)
      * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
      * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if the longitude argument type is not
      * one of {@link #MEAN_ANOMALY}, {@link #ECCENTRIC_ANOMALY}
      * or {@link #TRUE_ANOMALY} or if frame is not a {@link
@@ -259,7 +259,7 @@ public class KeplerianOrbit extends Orbit {
      * @param pvCoordinates the PVCoordinates of the satellite
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
@@ -315,7 +315,7 @@ public class KeplerianOrbit extends Orbit {
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */

@@ -68,7 +68,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Surface vectors for body facets. */
     private final List<Facet> facets;
 
-    /** Solar array area (m<sup>2</sup>). */
+    /** Solar array area (m²). */
     private final double solarArrayArea;
 
     /** Reference date for linear rotation angle (may be null). */
@@ -111,7 +111,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param yLength length of the body along its Y axis (m)
      * @param zLength length of the body along its Z axis (m)
      * @param sun sun model
-     * @param solarArrayArea area of the solar array (m<sup>2</sup>)
+     * @param solarArrayArea area of the solar array (m²)
      * @param solarArrayAxis solar array rotation axis in satellite frame
      * @param dragCoeff drag coefficient (used only for drag)
      * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
@@ -134,7 +134,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * <p>
      * The spacecraft body is described by an array of surface vectors. Each facet of
      * the body is describe by a vector normal to the facet (pointing outward of the spacecraft)
-     * and whose norm is the surface area in m<sup>2</sup>.
+     * and whose norm is the surface area in m².
      * </p>
      * <p>
      * Solar arrays orientation will be such that at each time the Sun direction
@@ -143,7 +143,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * </p>
      * @param facets body facets (only the facets with strictly positive area will be stored)
      * @param sun sun model
-     * @param solarArrayArea area of the solar array (m<sup>2</sup>)
+     * @param solarArrayArea area of the solar array (m²)
      * @param solarArrayAxis solar array rotation axis in satellite frame
      * @param dragCoeff drag coefficient (used only for drag)
      * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
@@ -185,7 +185,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param yLength length of the body along its Y axis (m)
      * @param zLength length of the body along its Z axis (m)
      * @param sun sun model
-     * @param solarArrayArea area of the solar array (m<sup>2</sup>)
+     * @param solarArrayArea area of the solar array (m²)
      * @param solarArrayAxis solar array rotation axis in satellite frame
      * @param referenceDate reference date for the solar array rotation
      * @param referenceNormal direction of the solar array normal at reference date
@@ -216,7 +216,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * <p>
      * The spacecraft body is described by an array of surface vectors. Each facet of
      * the body is describe by a vector normal to the facet (pointing outward of the spacecraft)
-     * and whose norm is the surface area in m<sup>2</sup>.
+     * and whose norm is the surface area in m².
      * </p>
      * <p>
      * Solar arrays orientation will be a regular rotation from the
@@ -225,7 +225,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * </p>
      * @param facets body facets (only the facets with strictly positive area will be stored)
      * @param sun sun model
-     * @param solarArrayArea area of the solar array (m<sup>2</sup>)
+     * @param solarArrayArea area of the solar array (m²)
      * @param solarArrayAxis solar array rotation axis in satellite frame
      * @param referenceDate reference date for the solar array rotation
      * @param referenceNormal direction of the solar array normal at reference date
@@ -666,12 +666,12 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         /** Unit Normal vector, pointing outward. */
         private final Vector3D normal;
 
-        /** Area in m<sup>2</sup>. */
+        /** Area in m². */
         private final double area;
 
         /** Simple constructor.
          * @param normal vector normal to the facet, pointing outward (will be normalized)
-         * @param area facet area in m<sup>2</sup>
+         * @param area facet area in m²
          */
         public Facet(final Vector3D normal, final double area) {
             this.normal = normal.normalize();

@@ -93,12 +93,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * The six first elements are either:
  * <ul>
  *   <li>the {@link org.orekit.orbits.EquinoctialOrbit equinoctial orbit parameters} (a, e<sub>x</sub>,
- *   e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, &lambda;<sub>M</sub> or &lambda;<sub>E</sub>
- *   or &lambda;<sub>v</sub>) in meters and radians,</li>
- *   <li>the {@link org.orekit.orbits.KeplerianOrbit Keplerian orbit parameters} (a, e, i, &omega;, &Omega;,
+ *   e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, λ<sub>M</sub> or λ<sub>E</sub>
+ *   or λ<sub>v</sub>) in meters and radians,</li>
+ *   <li>the {@link org.orekit.orbits.KeplerianOrbit Keplerian orbit parameters} (a, e, i, ω, Ω,
  *   M or E or v) in meters and radians,</li>
  *   <li>the {@link org.orekit.orbits.CircularOrbit circular orbit parameters} (a, e<sub>x</sub>, e<sub>y</sub>, i,
- *   &Omega;, &alpha;<sub>M</sub> or &alpha;<sub>E</sub> or &alpha;<sub>v</sub>) in meters
+ *   Ω, α<sub>M</sub> or α<sub>E</sub> or α<sub>v</sub>) in meters
  *   and radians,</li>
  *   <li>the {@link org.orekit.orbits.CartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
  *   v<sub>y</sub>, v<sub>z</sub>) in meters and meters per seconds.
@@ -165,8 +165,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         setPositionAngleType(PositionAngle.TRUE);
     }
 
-     /** Set the central attraction coefficient &mu;.
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     /** Set the central attraction coefficient μ.
+     * @param mu central attraction coefficient (m³/s²)
      * @see #addForceModel(ForceModel)
      */
     public void setMu(final double mu) {
@@ -300,7 +300,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
          * in {@link OrbitType#CARTESIAN Cartesian} parameters.
          * </p>
          * @param referenceDate reference date
-         * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+         * @param mu central attraction coefficient (m³/s²)
          * @param orbitType orbit type to use for mapping
          * @param positionAngleType angle type to use for propagation
          * @param attitudeProvider attitude provider
@@ -354,7 +354,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             /** Reference date. */
             private final AbsoluteDate referenceDate;
 
-            /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+            /** Central attraction coefficient (m³/s²). */
             private final double mu;
 
             /** Orbit type to use for mapping. */
@@ -371,7 +371,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             /** Simple constructor.
              * @param referenceDate reference date
-             * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+             * @param mu central attraction coefficient (m³/s²)
              * @param orbitType orbit type to use for mapping
              * @param positionAngleType angle type to use for propagation
              * @param attitudeProvider attitude provider
@@ -491,7 +491,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
      * we get at constant energy (i.e. on a Keplerian trajectory):
      * <pre>
-     * V<sup>2</sup> r |dV| = mu |dr|
+     * V² r |dV| = mu |dr|
      * </pre>
      * So we deduce a scalar velocity error consistent with the position error.
      * From here, we apply orbits Jacobians matrices to get consistent errors

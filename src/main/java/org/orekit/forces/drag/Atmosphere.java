@@ -39,7 +39,7 @@ public interface Atmosphere extends Serializable {
      * @param date current date
      * @param position current position in frame
      * @param frame the frame in which is defined the position
-     * @return local density (kg/m<sup>3</sup>)
+     * @return local density (kg/m³)
      * @exception OrekitException if date is out of range of solar activity model
      * or if some frame conversion cannot be performed
      */

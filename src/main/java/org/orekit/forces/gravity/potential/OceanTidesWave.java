@@ -49,7 +49,7 @@ public class OceanTidesWave {
     /** Coefficient for mean anomaly of the Sun. */
     private final int cLPrime;
 
-    /** Coefficient for L - &Omega; where L is the mean longitude of the Moon. */
+    /** Coefficient for L - Ω where L is the mean longitude of the Moon. */
     private final int cF;
 
     /** Coefficient for mean elongation of the Moon from the Sun. */

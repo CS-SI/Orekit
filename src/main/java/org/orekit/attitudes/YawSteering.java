@@ -40,7 +40,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * but gets more and more <i>square like</i> as the Sun gets closer to the
  * orbital plane. The degenerate extreme case with the Sun in the orbital
  * plane leads to a yaw angle switching between two steady states, with
- * instantaneaous &pi; radians rotations at each switch, two times per orbit.
+ * instantaneaous π radians rotations at each switch, two times per orbit.
  * This degenerate case is clearly not operationally sound so another pointing
  * mode is chosen when Sun comes closer than some predefined threshold to the
  * orbital plane.

@@ -730,7 +730,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param cGamma coefficient for γ = GMST + π tide parameter
      * @param cL coefficient for mean anomaly of the Moon
      * @param cLPrime coefficient for mean anomaly of the Sun
-     * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
+     * @param cF coefficient for L - Ω where L is the mean longitude of the Moon
      * @param cD coefficient for mean elongation of the Moon from the Sun
      * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      * @return computed Doodson number

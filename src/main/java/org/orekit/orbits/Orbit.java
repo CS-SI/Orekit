@@ -71,7 +71,7 @@ public abstract class Orbit
     /** Date of the orbital parameters. */
     private final AbsoluteDate date;
 
-    /** Value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Value of mu used to compute position and velocity (m³/s²). */
     private final double mu;
 
     /** Computed PVCoordinates. */
@@ -200,17 +200,17 @@ public abstract class Orbit
     public abstract double getHy();
 
     /** Get the eccentric longitude argument.
-     * @return E + &omega; + &Omega; eccentric longitude argument (rad)
+     * @return E + ω + Ω eccentric longitude argument (rad)
      */
     public abstract double getLE();
 
     /** Get the true longitude argument.
-     * @return v + &omega; + &Omega; true longitude argument (rad)
+     * @return v + ω + Ω true longitude argument (rad)
      */
     public abstract double getLv();
 
     /** Get the mean longitude argument.
-     * @return M + &omega; + &Omega; mean longitude argument (rad)
+     * @return M + ω + Ω mean longitude argument (rad)
      */
     public abstract double getLM();
 

@@ -68,8 +68,8 @@ public class EOPEntry implements TimeStamped, Serializable {
     * @param lod length of day
     * @param x X component of pole motion
     * @param y Y component of pole motion
-    * @param ddPsi correction for nutation in longitude &delta;&Delta;&Psi;
-    * @param ddEps correction for nutation in obliquity &delta;&Delta;&epsilon;
+    * @param ddPsi correction for nutation in longitude δΔΨ
+    * @param ddEps correction for nutation in obliquity δΔε
     * @param dx correction for Celestial Intermediate Pole (CIP) coordinates
     * @param dy correction for Celestial Intermediate Pole (CIP) coordinates
     * @exception OrekitException if UTC time scale cannot be retrieved
@@ -135,15 +135,15 @@ public class EOPEntry implements TimeStamped, Serializable {
         return y;
     }
 
-    /** Get the correction for nutation in longitude &delta;&Delta;&Psi;.
-     * @return correction for nutation in longitude  &delta;&Delta;&Psi;
+    /** Get the correction for nutation in longitude δΔΨ.
+     * @return correction for nutation in longitude  δΔΨ
      */
     public double getDdPsi() {
         return ddPsi;
     }
 
-    /** Get the correction for nutation in obliquity &delta;&Delta;&epsilon;.
-     * @return correction for nutation in obliquity &delta;&Delta;&epsilon;
+    /** Get the correction for nutation in obliquity δΔε.
+     * @return correction for nutation in obliquity δΔε
      */
     public double getDdEps() {
         return ddEps;

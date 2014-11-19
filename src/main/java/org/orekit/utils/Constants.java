@@ -51,7 +51,7 @@ public interface Constants {
     double ARC_SECONDS_TO_RADIANS = MathUtils.TWO_PI / 1296000;
 
 
-    /** Standard gravity constant, used in maneuvers definition: 9.80665 m/s<sup>2</sup>. */
+    /** Standard gravity constant, used in maneuvers definition: 9.80665 m/s². */
     double G0_STANDARD_GRAVITY = 9.80665;
 
 
@@ -71,7 +71,7 @@ public interface Constants {
     /** Earth angular velocity from WGS84 model: 7.292115e-5 rad/s. */
     double WGS84_EARTH_ANGULAR_VELOCITY = 7.292115e-5;
 
-    /** Earth gravitational constant from WGS84 model: 3.986004418e14 m<sup>3</sup>/s<sup>2</sup>. */
+    /** Earth gravitational constant from WGS84 model: 3.986004418e14 m³/s². */
     double WGS84_EARTH_MU = 3.986004418e14;
 
     /** Earth un-normalized second zonal coefficient from WGS84 model: . */
@@ -87,7 +87,7 @@ public interface Constants {
     /** Earth angular velocity from GRS80 model: 7.292115e-5 rad/s. */
     double GRS80_EARTH_ANGULAR_VELOCITY = 7.292115e-5;
 
-    /** Earth gravitational constant from GRS80 model: 3.986005e14 m<sup>3</sup>/s<sup>2</sup>. */
+    /** Earth gravitational constant from GRS80 model: 3.986005e14 m³/s². */
     double GRS80_EARTH_MU = 3.986005e14;
 
     /** Earth un-normalized second zonal coefficient from GRS80 model: -1.08263e-3. */
@@ -97,7 +97,7 @@ public interface Constants {
     /** Earth equatorial radius from EGM96 model: 6378136.3 m. */
     double EGM96_EARTH_EQUATORIAL_RADIUS = 6378136.3;
 
-    /** Earth gravitational constant from EGM96 model: 3.986004415e14 m<sup>3</sup>/s<sup>2</sup>. */
+    /** Earth gravitational constant from EGM96 model: 3.986004415e14 m³/s². */
     double EGM96_EARTH_MU = 3.986004415e14;
 
     /** Earth un-normalized second zonal coefficient from EGM96 model: -1.08262668355315e-3. */
@@ -125,7 +125,7 @@ public interface Constants {
     /** Earth angular velocity from GRIM5C1 model: 7.292115e-5 rad/s. */
     double GRIM5C1_EARTH_ANGULAR_VELOCITY = 7.292115e-5;
 
-    /** Earth gravitational constant from GRIM5C1 model: 3.986004415e14 m<sup>3</sup>/s<sup>2</sup>. */
+    /** Earth gravitational constant from GRIM5C1 model: 3.986004415e14 m³/s². */
     double GRIM5C1_EARTH_MU = 3.986004415e14;
 
     /** Earth un-normalized second zonal coefficient from GRIM5C1 model: -1.082626110612609e-3. */
@@ -147,7 +147,7 @@ public interface Constants {
     /** Earth equatorial radius from EIGEN5C model: 6378136.46 m. */
     double EIGEN5C_EARTH_EQUATORIAL_RADIUS = 6378136.46;
 
-    /** Earth gravitational constant from EIGEN5C model: 3.986004415e14 m<sup>3</sup>/s<sup>2</sup>. */
+    /** Earth gravitational constant from EIGEN5C model: 3.986004415e14 m³/s². */
     double EIGEN5C_EARTH_MU = 3.986004415e14;
 
     /** Earth un-normalized second zonal coefficient from EIGEN5C model: -1.082626457231767e-3. */
@@ -166,13 +166,13 @@ public interface Constants {
     double EIGEN5C_EARTH_C60 = -5.406653715879098e-7;
 
 
-    /** Gaussian gravitational constant: 0.01720209895 &radic;(AU<sup>3</sup>/d<sup>2</sup>). */
+    /** Gaussian gravitational constant: 0.01720209895 √(AU³/d²). */
     double JPL_SSD_GAUSSIAN_GRAVITATIONAL_CONSTANT = 0.01720209895;
 
     /** Astronomical Unit: 149597870691 m. */
     double JPL_SSD_ASTRONOMICAL_UNIT = 149597870691.0;
 
-    /** Sun attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun attraction coefficient (m³/s²). */
     double JPL_SSD_SUN_GM = JPL_SSD_GAUSSIAN_GRAVITATIONAL_CONSTANT * JPL_SSD_GAUSSIAN_GRAVITATIONAL_CONSTANT *
                             JPL_SSD_ASTRONOMICAL_UNIT * JPL_SSD_ASTRONOMICAL_UNIT * JPL_SSD_ASTRONOMICAL_UNIT /
                             (JULIAN_DAY * JULIAN_DAY);
@@ -180,64 +180,64 @@ public interface Constants {
     /** Sun/Mercury mass ratio: 6023600. */
     double JPL_SSD_SUN_MERCURY_MASS_RATIO = 6023600;
 
-    /** Sun/Mercury attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun/Mercury attraction coefficient (m³/s²). */
     double JPL_SSD_MERCURY_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_MERCURY_MASS_RATIO;
 
     /** Sun/Venus mass ratio: 408523.71. */
     double JPL_SSD_SUN_VENUS_MASS_RATIO = 408523.71;
 
-    /** Sun/Venus attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun/Venus attraction coefficient (m³/s²). */
     double JPL_SSD_VENUS_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_VENUS_MASS_RATIO;
 
     /** Sun/(Earth + Moon) mass ratio: 328900.56. */
     double JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO = 328900.56;
 
-    /** Sun/(Earth + Moon) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun/(Earth + Moon) attraction coefficient (m³/s²). */
     double JPL_SSD_EARTH_PLUS_MOON_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_EARTH_PLUS_MOON_MASS_RATIO;
 
     /** Earth/Moon mass ratio: 81.30059. */
     double JPL_SSD_EARTH_MOON_MASS_RATIO = 81.300596;
 
-    /** Moon attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Moon attraction coefficient (m³/s²). */
     double JPL_SSD_MOON_GM = JPL_SSD_EARTH_PLUS_MOON_GM / (1.0 + JPL_SSD_EARTH_MOON_MASS_RATIO);
 
-    /** Earth attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Earth attraction coefficient (m³/s²). */
     double JPL_SSD_EARTH_GM = JPL_SSD_MOON_GM * JPL_SSD_EARTH_MOON_MASS_RATIO;
 
     /** Sun/(Mars system) mass ratio: 3098708.0. */
     double JPL_SSD_SUN_MARS_SYSTEM_MASS_RATIO = 3098708.0;
 
-    /** Sun/(Mars system) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun/(Mars system) attraction coefficient (m³/s²). */
     double JPL_SSD_MARS_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_MARS_SYSTEM_MASS_RATIO;
 
     /** Sun/(Jupiter system) mass ratio: 1047.3486. */
     double JPL_SSD_SUN_JUPITER_SYSTEM_MASS_RATIO = 1047.3486;
 
-    /** Sun/(Jupiter system) ttraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun/(Jupiter system) ttraction coefficient (m³/s²). */
     double JPL_SSD_JUPITER_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_JUPITER_SYSTEM_MASS_RATIO;
 
     /** Sun/(Saturn system) mass ratio: 3497.898. */
     double JPL_SSD_SUN_SATURN_SYSTEM_MASS_RATIO = 3497.898;
 
-    /** Sun/(Saturn system) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun/(Saturn system) attraction coefficient (m³/s²). */
     double JPL_SSD_SATURN_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_SATURN_SYSTEM_MASS_RATIO;
 
     /** Sun/(Uranus system) mass ratio: 22902.98. */
     double JPL_SSD_SUN_URANUS_SYSTEM_MASS_RATIO = 22902.98;
 
-    /** Sun/(Uranus system) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun/(Uranus system) attraction coefficient (m³/s²). */
     double JPL_SSD_URANUS_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_URANUS_SYSTEM_MASS_RATIO;
 
     /** Sun/(Neptune system) mass ratio: 19412.24. */
     double JPL_SSD_SUN_NEPTUNE_SYSTEM_MASS_RATIO = 19412.24;
 
-    /** Sun/(Neptune system) attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun/(Neptune system) attraction coefficient (m³/s²). */
     double JPL_SSD_NEPTUNE_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_NEPTUNE_SYSTEM_MASS_RATIO;
 
     /** Sun/(Pluto system) mass ratio: 1.35e8. */
     double JPL_SSD_SUN_PLUTO_SYSTEM_MASS_RATIO = 1.35e8;
 
-    /** Sun/(Pluto system) ttraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Sun/(Pluto system) ttraction coefficient (m³/s²). */
     double JPL_SSD_PLUTO_SYSTEM_GM = JPL_SSD_SUN_GM / JPL_SSD_SUN_PLUTO_SYSTEM_MASS_RATIO;
 
 }

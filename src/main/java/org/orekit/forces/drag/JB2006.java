@@ -55,7 +55,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <ul>
  * <li>Exospheric Temperature above Input Position (deg K)</li>
  * <li>Temperature at Input Position (deg K)</li>
- * <li>Total Mass-Density at Input Position (kg/m<sup>3</sup>)</li>
+ * <li>Total Mass-Density at Input Position (kg/m³)</li>
  * </ul>
  * </p>
  * <p>
@@ -92,13 +92,13 @@ public class JB2006 implements Atmosphere {
     /** Avogadro's number in mks units (molecules/kmol). */
     private static final double AVOGAD = 6.02257e26;
 
-    /** Approximate value for 2 &pi;. */
+    /** Approximate value for 2 π. */
     private static final double TWOPI   = 6.2831853;
 
-    /** Approximate value for &pi;. */
+    /** Approximate value for π. */
     private static final double PI      = 3.1415927;
 
-    /** Approximate value for &pi; / 2. */
+    /** Approximate value for π / 2. */
     private static final double PIOV2   = 1.5707963;
 
     /** The FRAC are the assumed sea-level volume fractions in order: N2, O2, Ar, and He. */
@@ -190,7 +190,7 @@ public class JB2006 implements Atmosphere {
      */
     private double[] temp = new double[3];
 
-    /** Total Mass-Density at Input Position (kg/m<sup>3</sup>). */
+    /** Total Mass-Density at Input Position (kg/m³). */
     private double rho;
 
     /** Sun position. */
@@ -226,7 +226,7 @@ public class JB2006 implements Atmosphere {
      * @param satLon Right Ascension of position (radians)
      * @param satLat Geocentric latitude of position (radians)
      * @param satAlt Height of position (m)
-     * @param f10 10.7-cm Solar flux (1e<sup>-22</sup>*Watt/(m<sup>2</sup>*Hertz)).
+     * @param f10 10.7-cm Solar flux (1e<sup>-22</sup>*Watt/(m²*Hertz)).
      *            Tabular time 1.0 day earlier
      * @param f10B 10.7-cm Solar Flux, averaged 81-day centered on the input time
      * @param ap Geomagnetic planetary 3-hour index A<sub>p</sub>
@@ -235,7 +235,7 @@ public class JB2006 implements Atmosphere {
      * @param s10B UV 81-day averaged centered index
      * @param xm10 MG2 index scaled to F10
      * @param xm10B MG2 81-day ave. centered index. Tabular time 5.0 days earlier.
-     * @return total mass-Density at input position (kg/m<sup>3</sup>)
+     * @return total mass-Density at input position (kg/m³)
      */
     public double getDensity(final double dateMJD, final double sunRA, final double sunDecli,
                              final double satLon, final double satLat, final double satAlt,
@@ -721,7 +721,7 @@ public class JB2006 implements Atmosphere {
      * @param date current date
      * @param position current position in frame
      * @param frame the frame in which is defined the position
-     * @return local density (kg/m<sup>3</sup>)
+     * @return local density (kg/m³)
      * @exception OrekitException if date is out of range of solar activity
      */
     public double getDensity(final AbsoluteDate date, final Vector3D position,

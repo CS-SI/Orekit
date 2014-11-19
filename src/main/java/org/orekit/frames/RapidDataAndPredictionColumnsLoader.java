@@ -135,8 +135,8 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
 
     /** Build a loader for IERS bulletins B files.
      * @param isNonRotatingOrigin if true the supported files <em>must</em>
-     * contain &delta;X/&delta;Y nutation corrections, otherwise they
-     * <em>must</em> contain &delta;&Delta;&psi;/&delta;&Delta;&epsilon; nutation
+     * contain δX/δY nutation corrections, otherwise they
+     * <em>must</em> contain δΔψ/δΔε nutation
      * corrections
      * @param supportedNames regular expression for supported files names
      */

@@ -46,7 +46,7 @@ public interface RadiationSensitive {
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @param mass current mass
      * @param flux radiation flux in the same inertial frame as spacecraft orbit
-     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s<sup>2</sup>)
+     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
      * @throws OrekitException if acceleration cannot be computed
      */
     Vector3D radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
@@ -60,7 +60,7 @@ public interface RadiationSensitive {
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @param mass spacecraft mass
      * @param flux radiation flux in the same inertial frame as spacecraft orbit
-     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s<sup>2</sup>)
+     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
      * @throws OrekitException if acceleration cannot be computed
      */
     FieldVector3D<DerivativeStructure> radiationPressureAcceleration(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position,
@@ -76,7 +76,7 @@ public interface RadiationSensitive {
      * @param mass current mass
      * @param flux radiation flux in the same inertial frame as spacecraft orbit
      * @param paramName name of the parameter with respect to which derivatives are required
-     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s<sup>2</sup>)
+     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
      * @throws OrekitException if acceleration cannot be computed
      */
     FieldVector3D<DerivativeStructure> radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3D position,

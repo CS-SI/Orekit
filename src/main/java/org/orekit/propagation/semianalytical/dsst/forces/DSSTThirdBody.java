@@ -66,7 +66,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
     /** The 3rd body to consider. */
     private final CelestialBody    body;
 
-    /** Standard gravitational parameter &mu; for the body in m<sup>3</sup>/s<sup>2</sup>. */
+    /** Standard gravitational parameter μ for the body in m³/s². */
     private final double           gm;
 
     /** Factorial. */
@@ -94,33 +94,33 @@ public class DSSTThirdBody  implements DSSTForceModel {
     private double ecc;
 
     // Direction cosines of the symmetry axis
-    /** &alpha;. */
+    /** α. */
     private double alpha;
-    /** &beta;. */
+    /** β. */
     private double beta;
-    /** &gamma;. */
+    /** γ. */
     private double gamma;
 
     // Common factors for potential computation
-    /** A = n * a<sup>2</sup>. */
+    /** A = n * a². */
     private double A;
-    /** B = sqrt(1 - e<sup>2</sup>). */
+    /** B = sqrt(1 - e²). */
     private double B;
-    /** C = 1 + p<sup>2</sup> + q<sup>2</sup>. */
+    /** C = 1 + p² + q². */
     private double C;
-    /** B<sup>2</sup>. */
+    /** B². */
     private double BB;
-    /** B<sup>3</sup>. */
+    /** B³. */
     private double BBB;
 
     /** The mean motion (n). */
     private double meanMotion;
 
-    /** &Chi; = 1 / sqrt(1 - e<sup>2</sup>) = 1 / B. */
+    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
     private double X;
-    /** &Chi;<sup>2</sup>. */
+    /** &Chi;². */
     private double XX;
-    /** &Chi;<sup>3</sup>. */
+    /** &Chi;³. */
     private double XXX;
     /** -2 * a / A. */
     private double m2aoA;
@@ -169,12 +169,12 @@ public class DSSTThirdBody  implements DSSTForceModel {
     /** mu3 / R3. */
     private double muoR3;
 
-    /** b = 1 / (1 + sqrt(1 - e<sup>2</sup>)) = 1 / (1 + B).*/
+    /** b = 1 / (1 + sqrt(1 - e²)) = 1 / (1 + B).*/
     private double b;
 
-    /** h * &Chi;<sup>3</sup>. */
+    /** h * &Chi;³. */
     private double hXXX;
-    /** k * &Chi;<sup>3</sup>. */
+    /** k * &Chi;³. */
     private double kXXX;
 
     /** The coefficients for the short periodic contribution. */
@@ -370,9 +370,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
         // mu3 / R3
         muoR3 = gm / R3;
 
-        //h * &Chi;<sup>3</sup>
+        //h * &Chi;³
         hXXX = h * XXX;
-        //k * &Chi;<sup>3</sup>
+        //k * &Chi;³
         kXXX = k * XXX;
     }
 
@@ -432,7 +432,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
         final double[] shortPeriodic = new double[6];
 
-        //initialize the short periodic contribution with the corresponding C<sup>0</sup> coeficient
+        //initialize the short periodic contribution with the corresponding C⁰ coeficient
         for (int i = 0; i < 6; i++) {
             shortPeriodic[i] = cjsjCoeficients.getCij(i, 0, date);
         }
@@ -595,7 +595,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /** the coefficients e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> and their derivatives by h and k. */
         private final WnsjEtomjmsCoefficient wnsjEtomjmsCoefficient;
 
-        /** The terms containing the coefficients C<sub>j</sub> and S<sub>j</sub> of (&alpha;, &beta;) or (k, h). */
+        /** The terms containing the coefficients C<sub>j</sub> and S<sub>j</sub> of (α, β) or (k, h). */
         private final CjSjAlphaBetaKH ABDECoefficients;
 
         /** The Fourier coefficients C<sup>j</sup> and their derivatives.
@@ -605,9 +605,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * - dC<sup>j</sup> / da <br/>
          * - dC<sup>j</sup> / dk <br/>
          * - dC<sup>j</sup> / dh <br/>
-         * - dC<sup>j</sup> / d&alpha; <br/>
-         * - dC<sup>j</sup> / d&beta; <br/>
-         * - dC<sup>j</sup> / d&gama; <br/>
+         * - dC<sup>j</sup> / dα <br/>
+         * - dC<sup>j</sup> / dβ <br/>
+         * - dC<sup>j</sup> / dγ <br/>
          * </p>
          */
         private final double[][] cj;
@@ -619,21 +619,21 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * - dS<sup>j</sup> / da <br/>
          * - dS<sup>j</sup> / dk <br/>
          * - dS<sup>j</sup> / dh <br/>
-         * - dS<sup>j</sup> / d&alpha; <br/>
-         * - dS<sup>j</sup> / d&beta; <br/>
-         * - dS<sup>j</sup> / d&gamma; <br/>
+         * - dS<sup>j</sup> / dα <br/>
+         * - dS<sup>j</sup> / dβ <br/>
+         * - dS<sup>j</sup> / dγ <br/>
          * </p>
          */
         private final double[][] sj;
 
-        /** The Coefficients C<sup>j</sup><sub>,&lambda;</sub>.
+        /** The Coefficients C<sup>j</sup><sub>,λ</sub>.
          * <p>
          * See Danielson 4.2-21
          * </p>
          */
         private final double[] cjlambda;
 
-        /** The Coefficients S<sup>j</sup><sub>,&lambda;</sub>.
+        /** The Coefficients S<sup>j</sup><sub>,λ</sub>.
         * <p>
         * See Danielson 4.2-21
         * </p>
@@ -688,7 +688,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
                     sj[i][j] = 0.;
                 }
                 if (j < jMax) {
-                    // initialise the C<sup>j</sup><sub>,&lambda;</sub> and S<sup>j</sup><sub>,&lambda;</sub> coefficients
+                    // initialise the C<sup>j</sup><sub>,λ</sub> and S<sup>j</sup><sub>,λ</sub> coefficients
                     cjlambda[j] = 0.;
                     sjlambda[j] = 0.;
                 }
@@ -733,19 +733,19 @@ public class DSSTThirdBody  implements DSSTForceModel {
                                             wmjnp1semjms[2] * ABDECoefficients.getCoefB() +
                                             wmjnp1semjms[0] * ABDECoefficients.getdCoefBdh()
                                          );
-                            //Compute dC<sup>j</sup> / d&alpha;
+                            //Compute dC<sup>j</sup> / dα
                             cj[4][j] += -gns.getGns(n, s) *
                                         (
                                             wjnp1semjms[0] * ABDECoefficients.getdCoefAdalpha() +
                                             wmjnp1semjms[0] * ABDECoefficients.getdCoefBdalpha()
                                         );
-                            //Compute dC<sup>j</sup> / d&beta;
+                            //Compute dC<sup>j</sup> / dβ
                             cj[5][j] += -gns.getGns(n, s) *
                                         (
                                             wjnp1semjms[0] * ABDECoefficients.getdCoefAdbeta() +
                                             wmjnp1semjms[0] * ABDECoefficients.getdCoefBdbeta()
                                         );
-                            //Compute dC<sup>j</sup> / d&gamma;
+                            //Compute dC<sup>j</sup> / dγ
                             cj[6][j] += gns.getdGnsdgamma(n, s) * coef1;
 
                             //Compute S<sup>j</sup>
@@ -768,19 +768,19 @@ public class DSSTThirdBody  implements DSSTForceModel {
                                             wmjnp1semjms[2] * ABDECoefficients.getCoefE() +
                                             wmjnp1semjms[0] * ABDECoefficients.getdCoefEdh()
                                          );
-                            //Compute dS<sup>j</sup> / d&alpha;
+                            //Compute dS<sup>j</sup> / dα
                             sj[4][j] += gns.getGns(n, s) *
                                         (
                                             wjnp1semjms[0] * ABDECoefficients.getdCoefDdalpha() +
                                             wmjnp1semjms[0] * ABDECoefficients.getdCoefEdalpha()
                                         );
-                            //Compute dS<sup>j</sup> / d&beta;
+                            //Compute dS<sup>j</sup> / dβ
                             sj[5][j] += gns.getGns(n, s) *
                                         (
                                             wjnp1semjms[0] * ABDECoefficients.getdCoefDdbeta() +
                                             wmjnp1semjms[0] * ABDECoefficients.getdCoefEdbeta()
                                         );
-                            //Compute dS<sup>j</sup> / d&gamma;
+                            //Compute dS<sup>j</sup> / dγ
                             sj[6][j] += gns.getdGnsdgamma(n, s) * coef2;
 
                             //Check if n is greater or equal to j and j is at most jMax-1
@@ -791,9 +791,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
                                 // compute the coefficient e<sup>-|j-s|</sup>*w<sub>-j</sub><sup>n, s</sup> and its derivatives
                                 final double[] wmjnsemjms = wnsjEtomjmsCoefficient.computeWjnsEmjmsAndDeriv(-j, s, n);
 
-                                //Compute C<sup>j</sup><sub>,&lambda;</sub>
+                                //Compute C<sup>j</sup><sub>,λ</sub>
                                 cjlambda[j] += gns.getGns(n, s) * (wjnsemjms[0] * ABDECoefficients.getCoefD() + wmjnsemjms[0] * ABDECoefficients.getCoefE());
-                                //Compute S<sup>j</sup><sub>,&lambda;</sub>
+                                //Compute S<sup>j</sup><sub>,λ</sub>
                                 sjlambda[j] += gns.getGns(n, s) * (wjnsemjms[0] * ABDECoefficients.getCoefA() + wmjnsemjms[0] * ABDECoefficients.getCoefB());
                             }
                         }
@@ -805,10 +805,10 @@ public class DSSTThirdBody  implements DSSTForceModel {
                     sj[i][j] /= j;
                 }
             }
-            //The C<sup>0</sup> coefficients are not computed here.
+            //The C⁰ coefficients are not computed here.
             //They are evaluated at the final point.
 
-            //C<sup>0</sup><sub>,&lambda;</sub>
+            //C⁰<sub>,λ</sub>
             cjlambda[0] = k * cjlambda[1] / 2. + h * sjlambda[1] / 2.;
         }
 
@@ -844,25 +844,25 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return cj[3][j];
         }
 
-        /** Get the derivative dC<sup>j</sup>/d&alpha;.
+        /** Get the derivative dC<sup>j</sup>/dα.
          * @param j j index
-         * @return dC<sup>j</sup>/d&alpha;
+         * @return dC<sup>j</sup>/dα
          */
         public double getdCjdalpha(final int j) {
             return cj[4][j];
         }
 
-        /** Get the derivative dC<sup>j</sup>/d&beta;.
+        /** Get the derivative dC<sup>j</sup>/dβ.
          * @param j j index
-         * @return dC<sup>j</sup>/d&beta;
+         * @return dC<sup>j</sup>/dβ
          */
         public double getdCjdbeta(final int j) {
             return cj[5][j];
         }
 
-        /** Get the derivative dC<sup>j</sup>/d&gamma;.
+        /** Get the derivative dC<sup>j</sup>/dγ.
          * @param j j index
-         * @return dC<sup>j</sup>/d&gamma;
+         * @return dC<sup>j</sup>/dγ
          */
         public double getdCjdgamma(final int j) {
             return cj[6][j];
@@ -900,40 +900,40 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return sj[3][j];
         }
 
-        /** Get the derivative dS<sup>j</sup>/d&alpha;.
+        /** Get the derivative dS<sup>j</sup>/dα.
          * @param j j index
-         * @return dS<sup>j</sup>/d&alpha;
+         * @return dS<sup>j</sup>/dα
          */
         public double getdSjdalpha(final int j) {
             return sj[4][j];
         }
 
-        /** Get the derivative dS<sup>j</sup>/d&beta;.
+        /** Get the derivative dS<sup>j</sup>/dβ.
          * @param j j index
-         * @return dS<sup>j</sup>/d&beta;
+         * @return dS<sup>j</sup>/dβ
          */
         public double getdSjdbeta(final int j) {
             return sj[5][j];
         }
 
-        /** Get the derivative dS<sup>j</sup>/d&gamma;.
+        /** Get the derivative dS<sup>j</sup>/dγ.
          * @param j j index
-         * @return dS<sup>j</sup>/d&gamma;
+         * @return dS<sup>j</sup>/dγ
          */
         public double getdSjdgamma(final int j) {
             return sj[6][j];
         }
 
-        /** Get the coefficient C<sup>0</sup><sub>,&lambda;</sub>.
-         * @return C<sup>0</sup><sub>,&lambda;</sub>
+        /** Get the coefficient C⁰<sub>,λ</sub>.
+         * @return C⁰<sub>,λ</sub>
          */
         public double getC0Lambda() {
             return cjlambda[0];
         }
 
-        /** Get the coefficient C<sup>j</sup><sub>,&lambda;</sub>.
+        /** Get the coefficient C<sup>j</sup><sub>,λ</sub>.
          * @param j j index
-         * @return C<sup>j</sup><sub>,&lambda;</sub>
+         * @return C<sup>j</sup><sub>,λ</sub>
          */
         public double getCjLambda(final int j) {
             if (j < 1 || j >= jMax) {
@@ -942,9 +942,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return cjlambda[j];
         }
 
-        /** Get the coefficient S<sup>j</sup><sub>,&lambda;</sub>.
+        /** Get the coefficient S<sup>j</sup><sub>,λ</sub>.
          * @param j j index
-         * @return S<sup>j</sup><sub>,&lambda;</sub>
+         * @return S<sup>j</sup><sub>,λ</sub>
          */
         public double getSjLambda(final int j) {
             if (j < 1 || j >= jMax) {
@@ -958,21 +958,21 @@ public class DSSTThirdBody  implements DSSTForceModel {
      *
      * <p>
      * Starting from Danielson 4.2-9,10,11 and taking into account that fact that: <br />
-     * c = e / (1 + (1 - e<sup>2</sup>)<sup>1/2</sup>) = e / (1 + B) = e * b <br/>
+     * c = e / (1 + (1 - e²)<sup>1/2</sup>) = e / (1 + B) = e * b <br/>
      * the expression e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup>
      * can be written as: <br/ >
      * - for |s| > |j| <br />
      * e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> =
      *          (((n + s)!(n - s)!)/((n + j)!(n - j)!)) *
      *          (-b)<sup>|j-s|</sup> *
-     *          ((1 - c<sup>2</sup>)<sup>n-|s|</sup>/(1 + c<sup>2</sup>)<sup>n</sup>) *
-     *          P<sub>n-|s|</sub><sup>|j-s|, |j+s|</sup>(&chi;) <br />
+     *          ((1 - c²)<sup>n-|s|</sup>/(1 + c²)<sup>n</sup>) *
+     *          P<sub>n-|s|</sub><sup>|j-s|, |j+s|</sup>(χ) <br />
      * <br />
      * - for |s| <= |j| <br />
      * e<sup>-|j-s|</sup>*w<sub>j</sub><sup>n, s</sup> =
      *          (-b)<sup>|j-s|</sup> *
-     *          ((1 - c<sup>2</sup>)<sup>n-|j|</sup>/(1 + c<sup>2</sup>)<sup>n</sup>) *
-     *          P<sub>n-|j|</sub><sup>|j-s|, |j+s|</sup>(&chi;)
+     *          ((1 - c²)<sup>n-|j|</sup>/(1 + c²)<sup>n</sup>) *
+     *          P<sub>n-|j|</sub><sup>|j-s|, |j+s|</sup>(χ)
      * </p>
      *
      * @author Lucian Barbulescu
@@ -981,12 +981,12 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
         /** The value c.
          * <p>
-         *  c = e / (1 + (1 - e<sup>2</sup>)<sup>1/2</sup>) = e / (1 + B) = e * b <br/>
+         *  c = e / (1 + (1 - e²)<sup>1/2</sup>) = e / (1 + B) = e * b <br/>
          * </p>
          *  */
         private final double c;
 
-        /** c<sup>2</sup>.*/
+        /** c².*/
         private final double c2;
 
         /** db / dh. */
@@ -1007,11 +1007,11 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /** dc / dk = e * db/dk + b * de/dk. */
         private final double dcdk;
 
-        /** The values (1 - c<sup>2</sup>)<sup>n</sup>. <br />
+        /** The values (1 - c²)<sup>n</sup>. <br />
          * The maximum possible value for the power is N + 1 */
         private final double[] omc2tn;
 
-        /** The values (1 + c<sup>2</sup>)<sup>n</sup>. <br />
+        /** The values (1 + c²)<sup>n</sup>. <br />
          * The maximum possible value for the power is N + 1 */
         private final double[] opc2tn;
 
@@ -1026,7 +1026,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             c = ecc * b;
             c2 = c * c;
 
-            //b<sup>2</sup> * &chi;
+            //b² * χ
             final double b2Chi = b * b * X;
             //Compute derivatives of b
             dbdh = h * b2Chi;
@@ -1040,7 +1040,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             dcdh = ecc * dbdh + b * dedh;
             dcdk = ecc * dbdk + b * dedk;
 
-            //Compute the powers (1 - c<sup>2</sup>)<sup>n</sup> and (1 + c<sup>2</sup>)<sup>n</sup>
+            //Compute the powers (1 - c²)<sup>n</sup> and (1 + c²)<sup>n</sup>
             omc2tn = new double[maxAR3Pow + maxFreqF + 2];
             opc2tn = new double[maxAR3Pow + maxFreqF + 2];
             final double omc2 = 1. - c2;
@@ -1079,7 +1079,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             // |j + s|
             final int absJpS = FastMath.abs(j + s);
 
-            //The lower index of P. Also the power of (1 - c<sup>2</sup>)
+            //The lower index of P. Also the power of (1 - c²)
             int l;
             // the factorial ratio coefficient or 1. if |s| <= |j|
             double factCoef;
@@ -1093,11 +1093,11 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
             // (-1)<sup>|j-s|</sup>
             final double sign = absJmS % 2 != 0 ? -1. : 1.;
-            //(1 - c<sup>2</sup>)<sup>n-|s|</sup> / (1 + c<sup>2</sup>)<sup>n</sup>
+            //(1 - c²)<sup>n-|s|</sup> / (1 + c²)<sup>n</sup>
             final double coef1 = omc2tn[l] / opc2tn[n];
             //-b<sup>|j-s|</sup>
             final double coef2 = sign * btjms[absJmS];
-            // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(&chi;)
+            // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
             final DerivativeStructure jac =
                     JacobiPolynomials.getValue(l, absJmS , absJpS, new DerivativeStructure(1, 1, 0, X));
 
@@ -1156,7 +1156,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /** The derivatives of the coefficients G<sub>n,s</sub> by a. */
         private final double dgnsda[][];
 
-        /** The derivatives of the coefficients G<sub>n,s</sub> by &gamma;. */
+        /** The derivatives of the coefficients G<sub>n,s</sub> by γ. */
         private final double dgnsdgamma[][];
 
         /** Standard constructor.
@@ -1178,7 +1178,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /**
          * Compute the coefficient G<sub>n,s</sub> and its derivatives.
          * <p>
-         * Only the derivatives by a and &gamma; are computed as all others are 0
+         * Only the derivatives by a and γ are computed as all others are 0
          * </p>
          */
         private void generateCoefficients() {
@@ -1231,25 +1231,25 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return this.dgnsda[n][s];
         }
 
-        /** Get the derivative dG<sub>n,s</sub> / d&gamma;.
+        /** Get the derivative dG<sub>n,s</sub> / dγ.
          *
          * @param n n index
          * @param s s index
-         * @return the derivative dG<sub>n,s</sub> / d&gamma;
+         * @return the derivative dG<sub>n,s</sub> / dγ
          */
         public double getdGnsdgamma(final int n, final int s) {
             return this.dgnsdgamma[n][s];
         }
     }
 
-    /** This class computes the terms containing the coefficients C<sub>j</sub> and S<sub>j</sub> of (&alpha;, &beta;) or (k, h).
+    /** This class computes the terms containing the coefficients C<sub>j</sub> and S<sub>j</sub> of (α, β) or (k, h).
      *
      * <p>
      * The following terms and their derivatives by k, h, alpha and beta are considered: <br/ >
-     * - sign(j-s) * C<sub>s</sub>(&alpha;, &beta;) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(&alpha;, &beta;) * C<sub>|j-s|</sub>(k, h) <br />
-     * - C<sub>s</sub>(&alpha;, &beta;) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(&alpha;, &beta;) * C<sub>j+s</sub>(k, h) <br />
-     * - C<sub>s</sub>(&alpha;, &beta;) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(&alpha;, &beta;) * S<sub>|j-s|</sub>(k, h) <br />
-     * - C<sub>s</sub>(&alpha;, &beta;) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(&alpha;, &beta;) * S<sub>j+s</sub>(k, h) <br />
+     * - sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) <br />
+     * - C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) <br />
+     * - C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) <br />
+     * - C<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) <br />
      * For the ease of usage the above terms are renamed A<sub>js</sub>, B<sub>js</sub>, D<sub>js</sub> and E<sub>js</sub> respectively <br />
      * See the CS Mathematical report $3.5.3.2 for more details
      * </p>
@@ -1260,23 +1260,23 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /** The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) series. */
         private final CjSjCoefficient cjsjkh;
 
-        /** The C<sub>j</sub>(&alpha;, &beta;) and the S<sub>j</sub>(&alpha;, &beta;) series. */
+        /** The C<sub>j</sub>(α, β) and the S<sub>j</sub>(α, β) series. */
         private final CjSjCoefficient cjsjalbe;
 
-        /** The coeficient sign(j-s) * C<sub>s</sub>(&alpha;, &beta;) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(&alpha;, &beta;) * C<sub>|j-s|</sub>(k, h)
-         * and its derivative by k, h, &alpha; and &beta;. */
+        /** The coeficient sign(j-s) * C<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h) + S<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h)
+         * and its derivative by k, h, α and β. */
         private final double coefAandDeriv[];
 
-        /** The coeficient C<sub>s</sub>(&alpha;, &beta;) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(&alpha;, &beta;) * C<sub>j+s</sub>(k, h)
-         * and its derivative by k, h, &alpha; and &beta;. */
+        /** The coeficient C<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h) - S<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h)
+         * and its derivative by k, h, α and β. */
         private final double coefBandDeriv[];
 
-        /** The coeficient C<sub>s</sub>(&alpha;, &beta;) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(&alpha;, &beta;) * S<sub>|j-s|</sub>(k, h)
-         * and its derivative by k, h, &alpha; and &beta;. */
+        /** The coeficient C<sub>s</sub>(α, β) * C<sub>|j-s|</sub>(k, h) - sign(j-s) * S<sub>s</sub>(α, β) * S<sub>|j-s|</sub>(k, h)
+         * and its derivative by k, h, α and β. */
         private final double coefDandDeriv[];
 
-        /** The coeficient C<sub>s</sub>(&alpha;, &beta;) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(&alpha;, &beta;) * S<sub>j+s</sub>(k, h)
-         * and its derivative by k, h, &alpha; and &beta;. */
+        /** The coeficient C<sub>s</sub>(α, β) * C<sub>j+s</sub>(k, h) + S<sub>s</sub>(α, β) * S<sub>j+s</sub>(k, h)
+         * and its derivative by k, h, α and β. */
         private final double coefEandDeriv[];
 
         /**
@@ -1359,17 +1359,17 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return coefAandDeriv[2];
         }
 
-        /** Get the value of coefficient dA<sub>j,s</sub>/d&alpha;.
+        /** Get the value of coefficient dA<sub>j,s</sub>/dα.
          *
-         * @return the coefficient dA<sub>j,s</sub>/d&alpha;
+         * @return the coefficient dA<sub>j,s</sub>/dα
          */
         public double getdCoefAdalpha() {
             return coefAandDeriv[3];
         }
 
-        /** Get the value of coefficient dA<sub>j,s</sub>/d&beta;.
+        /** Get the value of coefficient dA<sub>j,s</sub>/dβ.
          *
-         * @return the coefficient dA<sub>j,s</sub>/d&beta;
+         * @return the coefficient dA<sub>j,s</sub>/dβ
          */
         public double getdCoefAdbeta() {
             return coefAandDeriv[4];
@@ -1399,17 +1399,17 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return coefBandDeriv[2];
         }
 
-        /** Get the value of coefficient dB<sub>j,s</sub>/d&alpha;.
+        /** Get the value of coefficient dB<sub>j,s</sub>/dα.
          *
-         * @return the coefficient dB<sub>j,s</sub>/d&alpha;
+         * @return the coefficient dB<sub>j,s</sub>/dα
          */
         public double getdCoefBdalpha() {
             return coefBandDeriv[3];
         }
 
-        /** Get the value of coefficient dB<sub>j,s</sub>/d&beta;.
+        /** Get the value of coefficient dB<sub>j,s</sub>/dβ.
          *
-         * @return the coefficient dB<sub>j,s</sub>/d&beta;
+         * @return the coefficient dB<sub>j,s</sub>/dβ
          */
         public double getdCoefBdbeta() {
             return coefBandDeriv[4];
@@ -1439,17 +1439,17 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return coefDandDeriv[2];
         }
 
-        /** Get the value of coefficient dD<sub>j,s</sub>/d&alpha;.
+        /** Get the value of coefficient dD<sub>j,s</sub>/dα.
          *
-         * @return the coefficient dD<sub>j,s</sub>/d&alpha;
+         * @return the coefficient dD<sub>j,s</sub>/dα
          */
         public double getdCoefDdalpha() {
             return coefDandDeriv[3];
         }
 
-        /** Get the value of coefficient dD<sub>j,s</sub>/d&beta;.
+        /** Get the value of coefficient dD<sub>j,s</sub>/dβ.
          *
-         * @return the coefficient dD<sub>j,s</sub>/d&beta;
+         * @return the coefficient dD<sub>j,s</sub>/dβ
          */
         public double getdCoefDdbeta() {
             return coefDandDeriv[4];
@@ -1479,17 +1479,17 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return coefEandDeriv[2];
         }
 
-        /** Get the value of coefficient dE<sub>j,s</sub>/d&alpha;.
+        /** Get the value of coefficient dE<sub>j,s</sub>/dα.
          *
-         * @return the coefficient dE<sub>j,s</sub>/d&alpha;
+         * @return the coefficient dE<sub>j,s</sub>/dα
          */
         public double getdCoefEdalpha() {
             return coefEandDeriv[3];
         }
 
-        /** Get the value of coefficient dE<sub>j,s</sub>/d&beta;.
+        /** Get the value of coefficient dE<sub>j,s</sub>/dβ.
          *
-         * @return the coefficient dE<sub>j,s</sub>/d&beta;
+         * @return the coefficient dE<sub>j,s</sub>/dβ
          */
         public double getdCoefEdbeta() {
             return coefEandDeriv[4];
@@ -1499,12 +1499,12 @@ public class DSSTThirdBody  implements DSSTForceModel {
     /** This class computes the coefficients for the generating function S and its derivatives.
      * <p>
      * The form of the generating functions is: <br>
-     *  S = C<sup>0</sup> + &Sigma;<sub>j=1</sub><sup>N+1</sup>(C<sup>j</sup> * cos(jF) + S<sup>j</sup> * sin(jF)) <br>
-     *  The coefficients C<sup>0</sup>, C<sup>j</sup>, S<sup>j</sup> are the Fourrier coefficients
+     *  S = C⁰ + &Sigma;<sub>j=1</sub><sup>N+1</sup>(C<sup>j</sup> * cos(jF) + S<sup>j</sup> * sin(jF)) <br>
+     *  The coefficients C⁰, C<sup>j</sup>, S<sup>j</sup> are the Fourrier coefficients
      *  presented in Danielson 4.2-14,15 except for the case j=1 where
-     *  C<sup>1</sup> = C<sup>1</sup><sub>Fourier</sub> - hU and
-     *  S<sup>1</sup> = S<sup>1</sup><sub>Fourier</sub> + kU <br>
-     *  Also the coefficients of the derivatives of S by a, k, h, &alpha;, &beta;, &gamma; and &lambda;
+     *  C¹ = C¹<sub>Fourier</sub> - hU and
+     *  S¹ = S¹<sub>Fourier</sub> + kU <br>
+     *  Also the coefficients of the derivatives of S by a, k, h, α, β, γ and λ
      *  are computed end expressed in a similar manner. The formulas used are 4.2-19, 20, 23, 24
      * </p>
      * @author Lucian Barbulescu
@@ -1519,16 +1519,16 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
         /** The coefficients C<sup>j</sup> of the function S and its derivatives.
          * <p>
-         * The index j belongs to the interval [0,jMax]. The coefficient C<sup>0</sup> is the free coefficient.<br>
+         * The index j belongs to the interval [0,jMax]. The coefficient C⁰ is the free coefficient.<br>
          * Each column of the matrix contains the coefficient corresponding to the following functions: <br/>
          * - S <br/>
          * - dS / da <br/>
          * - dS / dk <br/>
          * - dS / dh <br/>
-         * - dS / d&alpha; <br/>
-         * - dS / d&beta; <br/>
-         * - dS / d&gamma; <br/>
-         * - dS / d&lambda;
+         * - dS / dα <br/>
+         * - dS / dβ <br/>
+         * - dS / dγ <br/>
+         * - dS / dλ
          * </p>
          */
         private final double[][] cjCoefs;
@@ -1541,10 +1541,10 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * - dS / da <br/>
          * - dS / dk <br/>
          * - dS / dh <br/>
-         * - dS / d&alpha; <br/>
-         * - dS / d&beta; <br/>
-         * - dS / d&gamma; <br/>
-         * - dS / d&lambda;
+         * - dS / dα <br/>
+         * - dS / dβ <br/>
+         * - dS / dγ <br/>
+         * - dS / dλ
          * </p>
          */
         private final double[][] sjCoefs;
@@ -1623,7 +1623,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /** Get the coefficient C<sup>j</sup> for the function S.
          * <br>
          * Possible values for j are within the interval [0,jMax].
-         * The value 0 is used to obtain the free coefficient C<sup>0</sup>
+         * The value 0 is used to obtain the free coefficient C⁰
          * @param j j index
          * @return C<sup>j</sup> for the function S
          */
@@ -1644,7 +1644,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /** Get the coefficient C<sup>j</sup> for the derivative dS/da.
          * <br>
          * Possible values for j are within the interval [0,jMax].
-         * The value 0 is used to obtain the free coefficient C<sup>0</sup>
+         * The value 0 is used to obtain the free coefficient C⁰
          * @param j j index
          * @return C<sup>j</sup> for the function dS/da
          */
@@ -1665,7 +1665,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /** Get the coefficient C<sup>j</sup> for the derivative dS/dk
          * <br>
          * Possible values for j are within the interval [0,jMax].
-         * The value 0 is used to obtain the free coefficient C<sup>0</sup>
+         * The value 0 is used to obtain the free coefficient C⁰
          * @param j j index
          * @return C<sup>j</sup> for the function dS/dk
          */
@@ -1686,7 +1686,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /** Get the coefficient C<sup>j</sup> for the derivative dS/dh
          * <br>
          * Possible values for j are within the interval [0,jMax].
-         * The value 0 is used to obtain the free coefficient C<sup>0</sup>
+         * The value 0 is used to obtain the free coefficient C⁰
          * @param j j index
          * @return C<sup>j</sup> for the function dS/dh
          */
@@ -1704,85 +1704,85 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return sjCoefs[3][j];
         }
 
-        /** Get the coefficient C<sup>j</sup> for the derivative dS/d&alpha;
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dα
          * <br>
          * Possible values for j are within the interval [0,jMax].
-         * The value 0 is used to obtain the free coefficient C<sup>0</sup>
+         * The value 0 is used to obtain the free coefficient C⁰
          * @param j j index
-         * @return C<sup>j</sup> for the function dS/d&alpha;
+         * @return C<sup>j</sup> for the function dS/dα
          */
         public double getdSdalphaCj(final int j) {
             return cjCoefs[4][j];
         }
 
-        /** Get the coefficient S<sup>j</sup> for the derivative dS/d&alpha;.
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dα.
          * <br>
          * Possible values for j are within the interval [1,jMax].
          * @param j j index
-         * @return S<sup>j</sup> for the derivative dS/d&alpha;
+         * @return S<sup>j</sup> for the derivative dS/dα
          */
         public double getdSdalphaSj(final int j) {
             return sjCoefs[4][j];
         }
 
-        /** Get the coefficient C<sup>j</sup> for the derivative dS/d&beta;
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dβ
          * <br>
          * Possible values for j are within the interval [0,jMax].
-         * The value 0 is used to obtain the free coefficient C<sup>0</sup>
+         * The value 0 is used to obtain the free coefficient C⁰
          * @param j j index
-         * @return C<sup>j</sup> for the function dS/d&beta;
+         * @return C<sup>j</sup> for the function dS/dβ
          */
         public double getdSdbetaCj(final int j) {
             return cjCoefs[5][j];
         }
 
-        /** Get the coefficient S<sup>j</sup> for the derivative dS/d&beta;.
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dβ.
          * <br>
          * Possible values for j are within the interval [1,jMax].
          * @param j j index
-         * @return S<sup>j</sup> for the derivative dS/d&beta;
+         * @return S<sup>j</sup> for the derivative dS/dβ
          */
         public double getdSdbetaSj(final int j) {
             return sjCoefs[5][j];
         }
 
-        /** Get the coefficient C<sup>j</sup> for the derivative dS/d&gamma;
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dγ
          * <br>
          * Possible values for j are within the interval [0,jMax].
-         * The value 0 is used to obtain the free coefficient C<sup>0</sup>
+         * The value 0 is used to obtain the free coefficient C⁰
          * @param j j index
-         * @return C<sup>j</sup> for the function dS/d&gamma;
+         * @return C<sup>j</sup> for the function dS/dγ
          */
         public double getdSdgammaCj(final int j) {
             return cjCoefs[6][j];
         }
 
-        /** Get the coefficient S<sup>j</sup> for the derivative dS/d&gamma;.
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dγ.
          * <br>
          * Possible values for j are within the interval [1,jMax].
          * @param j j index
-         * @return S<sup>j</sup> for the derivative dS/d&gamma;
+         * @return S<sup>j</sup> for the derivative dS/dγ
          */
         public double getdSdgammaSj(final int j) {
             return sjCoefs[6][j];
         }
 
-        /** Get the coefficient C<sup>j</sup> for the derivative dS/d&lambda;
+        /** Get the coefficient C<sup>j</sup> for the derivative dS/dλ
          * <br>
          * Possible values for j are within the interval [0,jMax].
-         * The value 0 is used to obtain the free coefficient C<sup>0</sup>
+         * The value 0 is used to obtain the free coefficient C⁰
          * @param j j index
-         * @return C<sup>j</sup> for the function dS/d&lambda;
+         * @return C<sup>j</sup> for the function dS/dλ
          */
         public double getdSdlambdaCj(final int j) {
             return cjCoefs[7][j];
         }
 
-        /** Get the coefficient S<sup>j</sup> for the derivative dS/d&lambda;.
+        /** Get the coefficient S<sup>j</sup> for the derivative dS/dλ.
          * <br>
          * Possible values for j are within the interval [1,jMax].
          * @param j j index
-         * @return S<sup>j</sup> for the derivative dS/d&lambda;
+         * @return S<sup>j</sup> for the derivative dS/dλ
          */
         public double getdSdlambdaSj(final int j) {
             return sjCoefs[7][j];
@@ -1793,7 +1793,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
      * The coefficients used to compute the short periodic contribution for the Third body perturbation.
      * <p>
      * The short periodic contribution for the Third Body is expressed in Danielson 4.2-25.<br>
-     * The coefficients C<sub>i</sub><sup>0</sup>, C<sub>i</sub><sup>j</sup>, S<sub>i</sub><sup>j</sup>
+     * The coefficients C<sub>i</sub>⁰, C<sub>i</sub><sup>j</sup>, S<sub>i</sub><sup>j</sup>
      * are computed by replacing the corresponding values in formula 2.5.5-10.
      * </p>
      * @author Lucian Barbulescu
@@ -1818,7 +1818,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[][] cij;
@@ -1832,7 +1832,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[][] sij;
@@ -1884,7 +1884,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             final double Co2ABn = -mCo2AB / meanMotion;
             // B / (A * (1 + B) * n)
             final double BoABpon = BoABpo / meanMotion;
-            // -3 / n<sup>2</sup>a<sup>2</sup> = -3 / nA
+            // -3 / n²a² = -3 / nA
             final double m3onA = -3 / (A * meanMotion);
 
             //Compute the C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> coefficients.
@@ -1936,7 +1936,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
                 }
 
                 if (j == 1) {
-                    //Compute the C<sup>0</sup> coefficients using Danielson 2.5.2-15a.
+                    //Compute the C⁰ coefficients using Danielson 2.5.2-15a.
                     for (int i = 0; i < 6; i++) {
                         cij[0][i].addGridPoint(date, currentCij[i] * k / 2. + currentSij[i] * h / 2.);
                     }

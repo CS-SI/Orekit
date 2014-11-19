@@ -31,8 +31,8 @@ public class UpperBounds {
 
     /** Get the upper bound value D<sub>n</sub><sup>l</sup>(&Chi;).
      *
-     * @param xx value of &Chi;<sup>2</sup>
-     * @param xpl value of &Chi; * (&Chi;<sup>2</sup> / 2)<sup>l</sup>
+     * @param xx value of &Chi;²
+     * @param xpl value of &Chi; * (&Chi;² / 2)<sup>l</sup>
      * @param n index n (power of a/R)
      * @param l index l (power of eccentricity)
      * @return the upper bound D<sub>n</sub><sup>l</sup>(&Chi;)
@@ -58,15 +58,15 @@ public class UpperBounds {
         }
     }
 
-    /** Get the upper bound value R<sup>&epsilon;</sup><sub>n,m,l</sub>(&gamma;).
+    /** Get the upper bound value R<sup>ε</sup><sub>n,m,l</sub>(γ).
      *
-     * @param gamma value of &gamma;
+     * @param gamma value of γ
      * @param n index n
      * @param l index l
      * @param m index m
-     * @param eps &epsilon; value (+1/-1)
+     * @param eps ε value (+1/-1)
      * @param irf retrograde factor I (+1/-1)
-     * @return the upper bound R<sup>&epsilon;</sup><sub>n,m,l</sub>(&gamma;)
+     * @return the upper bound R<sup>ε</sup><sub>n,m,l</sub>(γ)
      */
     public static double getRnml(final double gamma,
                                  final int n, final int l, final int m,

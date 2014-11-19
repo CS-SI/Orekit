@@ -39,13 +39,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * related to keplerian elements as follows:
  *   <pre>
  *     a
- *     ex = e cos(&omega; + &Omega;)
- *     ey = e sin(&omega; + &Omega;)
- *     hx = tan(i/2) cos(&Omega;)
- *     hy = tan(i/2) sin(&Omega;)
- *     lv = v + &omega; + &Omega;
+ *     ex = e cos(ω + Ω)
+ *     ey = e sin(ω + Ω)
+ *     hx = tan(i/2) cos(Ω)
+ *     hy = tan(i/2) sin(Ω)
+ *     lv = v + ω + Ω
  *   </pre>
- * where &omega; stands for the Perigee Argument and &Omega; stands for the
+ * where ω stands for the Perigee Argument and Ω stands for the
  * Right Ascension of the Ascending Node.
  * </p>
  * <p>
@@ -53,7 +53,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * when both sides are unambiguously defined, i.e. when orbit is neither equatorial
  * nor circular. When orbit is either equatorial or circular, the equinoctial
  * parameters are still unambiguously defined whereas some keplerian elements
- * (more precisely &omega; and &Omega;) become ambiguous. For this reason, equinoctial
+ * (more precisely ω and Ω) become ambiguous. For this reason, equinoctial
  * parameters are the recommended way to represent orbits.
  * </p>
  * <p>
@@ -112,17 +112,17 @@ public class EquinoctialOrbit extends Orbit {
 
     /** Creates a new instance.
      * @param a  semi-major axis (m)
-     * @param ex e cos(&omega; + &Omega;), first component of eccentricity vector
-     * @param ey e sin(&omega; + &Omega;), second component of eccentricity vector
-     * @param hx tan(i/2) cos(&Omega;), first component of inclination vector
-     * @param hy tan(i/2) sin(&Omega;), second component of inclination vector
-     * @param l  (M or E or v) + &omega; + &Omega;, mean, eccentric or true longitude argument (rad)
+     * @param ex e cos(ω + Ω), first component of eccentricity vector
+     * @param ey e sin(ω + Ω), second component of eccentricity vector
+     * @param hx tan(i/2) cos(Ω), first component of inclination vector
+     * @param hy tan(i/2) sin(Ω), second component of inclination vector
+     * @param l  (M or E or v) + ω + Ω, mean, eccentric or true longitude argument (rad)
      * @param type type of longitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
@@ -160,17 +160,17 @@ public class EquinoctialOrbit extends Orbit {
 
     /** Creates a new instance.
      * @param a  semi-major axis (m)
-     * @param ex e cos(&omega; + &Omega;), first component of eccentricity vector
-     * @param ey e sin(&omega; + &Omega;), second component of eccentricity vector
-     * @param hx tan(i/2) cos(&Omega;), first component of inclination vector
-     * @param hy tan(i/2) sin(&Omega;), second component of inclination vector
-     * @param l  (M or E or v) + &omega; + &Omega;, mean, eccentric or true longitude argument (rad)
+     * @param ex e cos(ω + Ω), first component of eccentricity vector
+     * @param ey e sin(ω + Ω), second component of eccentricity vector
+     * @param hx tan(i/2) cos(Ω), first component of inclination vector
+     * @param hy tan(i/2) sin(Ω), second component of inclination vector
+     * @param l  (M or E or v) + ω + Ω, mean, eccentric or true longitude argument (rad)
      * @param type type of longitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if the longitude argument type is not one of {@link #MEAN_LATITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or {@link #TRUE_LATITUDE_ARGUMENT} or
@@ -222,7 +222,7 @@ public class EquinoctialOrbit extends Orbit {
      * @param pvCoordinates the position, velocity and acceleration
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
@@ -274,7 +274,7 @@ public class EquinoctialOrbit extends Orbit {
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
@@ -355,7 +355,7 @@ public class EquinoctialOrbit extends Orbit {
     }
 
     /** Computes the true longitude argument from the eccentric longitude argument.
-     * @param lE = E + &omega; + &Omega; eccentric longitude argument (rad)
+     * @param lE = E + ω + Ω eccentric longitude argument (rad)
      * @return the true longitude argument
      */
     private double eccentricToTrue(final double lE) {
@@ -374,7 +374,7 @@ public class EquinoctialOrbit extends Orbit {
     }
 
     /** Computes the eccentric longitude argument from the mean longitude argument.
-     * @param lM = M + &omega; + &Omega; mean longitude argument (rad)
+     * @param lM = M + ω + Ω mean longitude argument (rad)
      * @return the eccentric longitude argument
      */
     private double meanToEccentric(final double lM) {

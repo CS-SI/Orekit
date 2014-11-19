@@ -116,7 +116,7 @@ import org.orekit.utils.IERSConventions;
  * These six elements are:
  * <ul>
  * <li>the {@link org.orekit.orbits.EquinoctialOrbit equinoctial orbit parameters}
- * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, &lambda;<sub>m</sub>)
+ * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, λ<sub>m</sub>)
  * in meters and radians,</li>
  * </ul>
  * </p>
@@ -476,7 +476,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          * in {@link OrbitType#CARTESIAN Cartesian} parameters.
          * </p>
          * @param referenceDate reference date
-         * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+         * @param mu central attraction coefficient (m³/s²)
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
          */
@@ -803,7 +803,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             /** Reference date. */
             private final AbsoluteDate referenceDate;
 
-            /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+            /** Central attraction coefficient (m³/s²). */
             private final double mu;
 
             /** Attitude provider. */
@@ -823,7 +823,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             /** Simple constructor.
              * @param referenceDate reference date
-             * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+             * @param mu central attraction coefficient (m³/s²)
              * @param attitudeProvider attitude provider
              * @param frame inertial frame
              * @param initialIsOsculating if true, initial orbital state is given with osculating elements
@@ -929,7 +929,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  we get at constant energy (i.e. on a Keplerian trajectory):
      *
      *  <pre>
-     *  V<sup>2</sup> r |dV| = mu |dr|
+     *  V² r |dV| = mu |dr|
      *  </pre>
      *
      *  So we deduce a scalar velocity error consistent with the position error. From here, we apply

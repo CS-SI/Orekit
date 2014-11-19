@@ -30,10 +30,10 @@ import org.apache.commons.math3.util.FastMath;
  *  <p>
  *  From equations 2.7.3 - (12)(13) of the Danielson paper, those operators are defined as:
  *  <pre>
- *  4(&rho; + &sigma;)Y<sub>&rho;,&sigma;</sub><sup>n,s</sup> =
- *     2(2s - n)Y<sub>&rho;-1,&sigma;</sub><sup>n,s+1</sup> + (s - n)Y<sub>&rho;-2,&sigma;</sub><sup>n,s+2</sup>
- *   - 2(2s + n)Y<sub>&rho;,&sigma;-1</sub><sup>n,s-1</sup> - (s+n)Y<sub>&rho;,&sigma;-2</sub><sup>n,s-2</sup>
- *   + 2(2&rho; + 2&sigma; + 2 + 3n)Y<sub>&rho;-1,&sigma;-1</sub><sup>n,s</sup>
+ *  4(ρ + σ)Y<sub>ρ,σ</sub><sup>n,s</sup> =
+ *     2(2s - n)Y<sub>ρ-1,σ</sub><sup>n,s+1</sup> + (s - n)Y<sub>ρ-2,σ</sub><sup>n,s+2</sup>
+ *   - 2(2s + n)Y<sub>ρ,σ-1</sub><sup>n,s-1</sup> - (s+n)Y<sub>ρ,σ-2</sub><sup>n,s-2</sup>
+ *   + 2(2ρ + 2σ + 2 + 3n)Y<sub>ρ-1,σ-1</sub><sup>n,s</sup>
  *  </pre>
  *  Initialization is given by : <pre>Y<sub>0,0</sub><sup>n,s</sup> = 1</pre>
  *  </p>
@@ -41,13 +41,13 @@ import org.apache.commons.math3.util.FastMath;
  *  Internally, the Modified Newcomb Operators are stored as an array of {@link PolynomialFunction} :
  *
  *  <pre>
- *  Y<sub>&rho;,&sigma;</sub><sup>n,s</sup> = P<sub>k<sub>0</sub></sub> + P<sub>k<sub>1</sub></sub>n + ... + P<sub>k<sub>j</sub></sub>n<sup>j</sup>
+ *  Y<sub>ρ,σ</sub><sup>n,s</sup> = P<sub>k₀</sub> + P<sub>k₁</sub>n + ... + P<sub>k<sub>j</sub></sub>n<sup>j</sup>
  *  </pre>
  *
  * where the P<sub>k<sub>j</sub></sub> are given by
  *
  * <pre>
- *  P<sub>k<sub>j</sub></sub> = &sum;<sub>j=0;&rho;</sub> a<sub>j</sub>s<sup>j</sup>
+ *  P<sub>k<sub>j</sub></sub> = ∑<sub>j=0;ρ</sub> a<sub>j</sub>s<sup>j</sup>
  * </pre>
  *
  * @author Romain Di Costanzo
@@ -63,15 +63,15 @@ public class NewcombOperators {
     private NewcombOperators() {
     }
 
-    /** Get the Newcomb operator evaluated at n, s, &rho;, &sigma;.
+    /** Get the Newcomb operator evaluated at n, s, ρ, σ.
      * <p>
      * This method is guaranteed to be thread-safe
      * </p>
-     *  @param rho &rho; index
-     *  @param sigma &sigma; index
+     *  @param rho ρ index
+     *  @param sigma σ index
      *  @param n n index
      *  @param s s index
-     *  @return Y<sub>&rho;,&sigma;</sub><sup>n,s</sup>
+     *  @return Y<sub>ρ,σ</sub><sup>n,s</sup>
      */
     public static double getValue(final int rho, final int sigma, final int n, final int s) {
 
@@ -112,13 +112,13 @@ public class NewcombOperators {
         private PolynomialsGenerator() {
         }
 
-        /** Get the list of polynomials representing the Newcomb Operator for the (&rho;,&sigma;) couple.
+        /** Get the list of polynomials representing the Newcomb Operator for the (ρ,σ) couple.
          * <p>
          * This method is guaranteed to be thread-safe
          * </p>
-         *  @param rho &rho; value
-         *  @param sigma &sigma; value
-         *  @return Polynomials representing the Newcomb Operator for the (&rho;,&sigma;) couple.
+         *  @param rho ρ value
+         *  @param sigma σ value
+         *  @return Polynomials representing the Newcomb Operator for the (ρ,σ) couple.
          */
         private static List<PolynomialFunction> getPolynomials(final int rho, final int sigma) {
 
@@ -180,12 +180,12 @@ public class NewcombOperators {
             }
         }
 
-        /** Compute the Modified Newcomb Operators up to a given (&rho;, &sigma;) couple.
+        /** Compute the Modified Newcomb Operators up to a given (ρ, σ) couple.
          *  <p>
          *  The recursive computation uses equation 2.7.3-(12) of the Danielson paper.
          *  </p>
-         *  @param rho &rho; value to reach
-         *  @param sigma &sigma; value to reach
+         *  @param rho ρ value to reach
+         *  @param sigma σ value to reach
          */
         private static void computeFor(final int rho, final int sigma) {
 
@@ -239,11 +239,11 @@ public class NewcombOperators {
          *  <p>
          *  Let's call R<sub>s</sub>(n) the result returned by the method :
          *  <pre>
-         *  R<sub>s</sub>(n) = (P<sub>s<sub>0</sub></sub> + P<sub>s<sub>1</sub></sub>n + ... + P<sub>s<sub>j</sub></sub>n<sup>j</sup>) *(Q<sub>s<sub>0</sub></sub> + Q<sub>s<sub>1</sub></sub>n + ... + Q<sub>s<sub>k</sub></sub>n<sup>k</sup>)
+         *  R<sub>s</sub>(n) = (P<sub>s₀</sub> + P<sub>s₁</sub>n + ... + P<sub>s<sub>j</sub></sub>n<sup>j</sup>) *(Q<sub>s₀</sub> + Q<sub>s₁</sub>n + ... + Q<sub>s<sub>k</sub></sub>n<sup>k</sup>)
          *  </pre>
          *
          *  where the P<sub>s<sub>j</sub></sub> and Q<sub>s<sub>k</sub></sub> are polynomials in s,
-         *  s being the index of the Y<sub>&rho;,&sigma;</sub><sup>n,s</sup> function
+         *  s being the index of the Y<sub>ρ,σ</sub><sup>n,s</sup> function
          *
          *  @param poly1 first list of polynomials
          *  @param poly2 second list of polynomials
@@ -330,8 +330,8 @@ public class NewcombOperators {
 
         /** Generate recurrence coefficients.
          *
-         *  @param rho &rho; value
-         *  @param sigma &sigma; value
+         *  @param rho ρ value
+         *  @param sigma σ value
          *  @return recurrence coefficients
          */
         private static Map<Integer, List<PolynomialFunction>> generateRecurrenceCoefficients(final int rho, final int sigma) {
@@ -437,17 +437,17 @@ public class NewcombOperators {
         /** s value. */
         private final int s;
 
-        /** &rho; value. */
+        /** ρ value. */
         private final int rho;
 
-        /** &sigma; value. */
+        /** σ value. */
         private final int sigma;
 
         /** Simpleconstructor.
          * @param n n
          * @param s s
-         * @param rho &rho;
-         * @param sigma &sigma;
+         * @param rho ρ
+         * @param sigma σ
          */
         public NewKey(final int n, final int s, final int rho, final int sigma) {
             this.n = n;

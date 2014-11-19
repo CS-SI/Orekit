@@ -76,7 +76,7 @@ public class FundamentalNutationArguments implements Serializable {
     /** Coefficients for mean anomaly of the Sun. */
     private final double[] lPrimeCoefficients;
 
-    /** Coefficients for L - &Omega; where L is the mean longitude of the Moon. */
+    /** Coefficients for L - Ω where L is the mean longitude of the Moon. */
     private final double[] fCoefficients;
 
     /** Coefficients for mean elongation of the Moon from the Sun. */
@@ -270,7 +270,7 @@ public class FundamentalNutationArguments implements Serializable {
         return new BodiesElements(date, tc, gamma,
                                   value(tc, lCoefficients),      // mean anomaly of the Moon
                                   value(tc, lPrimeCoefficients), // mean anomaly of the Sun
-                                  value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
+                                  value(tc, fCoefficients),      // L - Ω where L is the mean longitude of the Moon
                                   value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
                                   value(tc, omegaCoefficients),  // mean longitude of the ascending node of the Moon
                                   value(tc, lMeCoefficients),    // mean Mercury longitude
@@ -312,7 +312,7 @@ public class FundamentalNutationArguments implements Serializable {
                                                             gmstFunction.value(date).add(FastMath.PI),
                                                             value(tc, lCoefficients),      // mean anomaly of the Moon
                                                             value(tc, lPrimeCoefficients), // mean anomaly of the Sun
-                                                            value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
+                                                            value(tc, fCoefficients),      // L - Ω where L is the mean longitude of the Moon
                                                             value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
                                                             value(tc, omegaCoefficients),  // mean longitude of the ascending node of the Moon
                                                             value(tc, lMeCoefficients),    // mean Mercury longitude
@@ -402,7 +402,7 @@ public class FundamentalNutationArguments implements Serializable {
             }
         },
 
-        /** Constant for L - &Omega; where L is the mean longitude of the Moon. */
+        /** Constant for L - Ω where L is the mean longitude of the Moon. */
         F() {
             /** {@inheritDoc} */
             public String getArgumentName() {

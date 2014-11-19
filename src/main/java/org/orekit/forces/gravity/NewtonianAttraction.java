@@ -73,8 +73,8 @@ public class NewtonianAttraction extends AbstractParameterizable implements Forc
 
     }
 
-    /** Get the central attraction coefficient &mu;.
-     * @return mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+    /** Get the central attraction coefficient μ.
+     * @return mu central attraction coefficient (m³/s²)
      */
     public double getMu() {
         return mu;

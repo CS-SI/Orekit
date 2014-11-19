@@ -331,13 +331,13 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     /** Get the gravitational coefficient of a body.
      * @param body body for which the gravitational coefficient is requested
-     * @return gravitational coefficient in m<sup>3</sup>/s<sup>2</sup>
+     * @return gravitational coefficient in m³/s²
      * @exception OrekitException if constants cannot be loaded
      */
     public double getLoadedGravitationalCoefficient(final EphemerisType body)
         throws OrekitException {
 
-        // coefficient in au<sup>3</sup>/day<sup>2</sup>
+        // coefficient in au³/day²
         final double rawGM;
         switch (body) {
         case SOLAR_SYSTEM_BARYCENTER :

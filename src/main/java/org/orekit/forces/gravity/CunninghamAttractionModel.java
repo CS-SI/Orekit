@@ -93,7 +93,7 @@ public class CunninghamAttractionModel
     /** Creates a new instance.
     * @param centralBodyFrame rotating body frame
     * @param equatorialRadius reference equatorial radius of the potential
-    * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+    * @param mu central body attraction coefficient (m³/s²)
     * @param C un-normalized coefficients array (cosine part)
     * @param S un-normalized coefficients array (sine part)
     * @deprecated since 6.0, replaced by {@link #CunninghamAttractionModel(Frame, UnnormalizedSphericalHarmonicsProvider)}
@@ -125,7 +125,7 @@ public class CunninghamAttractionModel
      * @param hPosition step used for finite difference computation
      * with respect to spacecraft position (m)
      * @param hMu step used for finite difference computation
-     * with respect to central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * with respect to central attraction coefficient (m³/s²)
      */
     public void setSteps(final double hPosition, final double hMu) {
         final ParameterConfiguration muConfig =

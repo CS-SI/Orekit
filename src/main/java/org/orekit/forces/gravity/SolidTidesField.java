@@ -276,8 +276,8 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
     }
 
     /** Evaluate Legendre functions.
-     * @param t cos(&theta;), where &theta; is the polar angle
-     * @param u sin(&theta;), where &theta; is the polar angle
+     * @param t cos(θ), where θ is the polar angle
+     * @param u sin(θ), where θ is the polar angle
      * @param pnm the computed coefficients. Modified in place.
      */
     private void evaluateLegendre(final double t, final double u, final double[][] pnm) {

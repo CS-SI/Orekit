@@ -165,8 +165,8 @@ public class HarrisPriester implements Atmosphere {
      *  <p>The provided density table must be an array such as:
      *  <ul>
      *   <li>tabAltRho[][0] = altitude (m)</li>
-     *   <li>tabAltRho[][1] = min density (kg/m<sup>3</sup>)</li>
-     *   <li>tabAltRho[][2] = max density (kg/m<sup>3</sup>)</li>
+     *   <li>tabAltRho[][1] = min density (kg/m³)</li>
+     *   <li>tabAltRho[][2] = max density (kg/m³)</li>
      *  </ul>
      *  The altitude must be increasing without limitation in range.<br>
      *  The internal density table is a copy of the provided one.
@@ -188,8 +188,8 @@ public class HarrisPriester implements Atmosphere {
      *  <p>The provided density table must be an array such as:
      *  <ul>
      *   <li>tabAltRho[][0] = altitude (m)</li>
-     *   <li>tabAltRho[][1] = min density (kg/m<sup>3</sup>)</li>
-     *   <li>tabAltRho[][2] = max density (kg/m<sup>3</sup>)</li>
+     *   <li>tabAltRho[][1] = min density (kg/m³)</li>
+     *   <li>tabAltRho[][2] = max density (kg/m³)</li>
      *  </ul>
      *  The altitude must be increasing without limitation in range.<br>
      *  The internal density table is a copy of the provided one.
@@ -235,8 +235,8 @@ public class HarrisPriester implements Atmosphere {
      *  <p>The density table is an array such as:
      *  <ul>
      *   <li>tabAltRho[][0] = altitude (m)</li>
-     *   <li>tabAltRho[][1] = min density (kg/m<sup>3</sup>)</li>
-     *   <li>tabAltRho[][2] = max density (kg/m<sup>3</sup>)</li>
+     *   <li>tabAltRho[][1] = min density (kg/m³)</li>
+     *   <li>tabAltRho[][2] = max density (kg/m³)</li>
      *  </ul>
      *  The altitude must be increasing without limitation in range.
      *  </p>
@@ -272,7 +272,7 @@ public class HarrisPriester implements Atmosphere {
     /** Get the local density.
      * @param sunInEarth position of the Sun in Earth frame (m)
      * @param posInEarth target position in Earth frame (m)
-     * @return the local density (kg/m<sup>3</sup>)
+     * @return the local density (kg/m³)
      * @exception OrekitException if altitude is below the model minimal altitude
      */
     public double getDensity(final Vector3D sunInEarth, final Vector3D posInEarth)
@@ -326,7 +326,7 @@ public class HarrisPriester implements Atmosphere {
      * @param date current date
      * @param position current position
      * @param frame the frame in which is defined the position
-     * @return local density (kg/m<sup>3</sup>)
+     * @return local density (kg/m³)
      * @exception OrekitException if some frame conversion cannot be performed
      *            or if altitude is below the model minimal altitude
      */

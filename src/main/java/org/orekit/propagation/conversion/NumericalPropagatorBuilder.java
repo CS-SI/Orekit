@@ -43,7 +43,7 @@ import org.orekit.utils.PVCoordinates;
  */
 public class NumericalPropagatorBuilder implements PropagatorBuilder {
 
-    /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Central attraction coefficient (m³/s²). */
     private final double mu;
 
     /** Frame in which the orbit is propagated. */
@@ -65,7 +65,7 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
     private Collection<String> freeParameters;
 
     /** Build a new instance.
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @param frame the frame in which the orbit is propagated
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param builder first order integrator builder

@@ -41,7 +41,7 @@ import org.orekit.time.AbsoluteDate;
  */
 public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
 
-    /** Cross section (m<sup>2</sup>). */
+    /** Cross section (m²). */
     private final double crossSection;
 
     /** Drag coefficient. */
@@ -54,7 +54,7 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     private double specularReflectionCoeff;
 
     /** Simple constructor.
-     * @param crossSection Surface (m<sup>2</sup>)
+     * @param crossSection Surface (m²)
      * @param dragCoeff drag coefficient (used only for drag)
      * @param absorptionCoeff absorption coefficient between 0.0 an 1.0
      * (used only for radiation pressure)

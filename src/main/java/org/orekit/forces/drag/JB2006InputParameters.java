@@ -38,7 +38,7 @@ public interface JB2006InputParameters extends Serializable {
     AbsoluteDate getMaxDate();
 
     /** Get the value of the instantaneous solar flux index
-     * (1e<sup>-22</sup>*Watt/(m<sup>2</sup>*Hertz)).
+     * (1e<sup>-22</sup>*Watt/(m²*Hertz)).
      * Tabular time 1.0 day earlier.
      * @param date the current date
      * @return the instantaneous F10.7 index

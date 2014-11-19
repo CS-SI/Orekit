@@ -36,7 +36,7 @@ import org.orekit.utils.FieldPVCoordinates;
  *
  * The drag acceleration is computed as follows :
  *
- * &gamma; = (1/2 * &rho; * V<sup>2</sup> * S / Mass) * DragCoefVector
+ * γ = (1/2 * ρ * V² * S / Mass) * DragCoefVector
  *
  * With DragCoefVector = {C<sub>x</sub>, C<sub>y</sub>, C<sub>z</sub>} and S given by the user through the interface
  * {@link DragSensitive}

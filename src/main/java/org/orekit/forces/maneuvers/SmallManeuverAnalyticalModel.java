@@ -31,20 +31,20 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** Analytical model for small maneuvers.
- * <p>The aim of this model is to compute quickly the effect at date t<sub>1</sub>
- * of a small maneuver performed at an earlier date t<sub>0</sub>. Both the
+ * <p>The aim of this model is to compute quickly the effect at date t₁
+ * of a small maneuver performed at an earlier date t₀. Both the
  * direct effect of the maneuver and the Jacobian of this effect with respect to
  * maneuver parameters are available.
  * </p>
  * <p>These effect are computed analytically using two Jacobian matrices:
  * <ol>
- *   <li>J<sub>0</sub>: Jacobian of Keplerian or equinoctial elements with respect
- *   to cartesian parameters at date t<sub>0</sub></li> allows to compute
- *   maneuver effect as a change in orbital elements at maneuver date t<sub>0</sub>,
+ *   <li>J₀: Jacobian of Keplerian or equinoctial elements with respect
+ *   to cartesian parameters at date t₀</li> allows to compute
+ *   maneuver effect as a change in orbital elements at maneuver date t₀,
  *   <li>J<sub>1/0</sub>: Jacobian of Keplerian or equinoctial elements
- *   at date t<sub>1</sub> with respect to Keplerian or equinoctial elements
- *   at date t<sub>0</sub></li> allows to propagate the change in orbital elements
- *   to final date t<sub>1</sub>.
+ *   at date t₁ with respect to Keplerian or equinoctial elements
+ *   at date t₀</li> allows to propagate the change in orbital elements
+ *   to final date t₁.
  * </ol>
  * </p>
  * <p>
@@ -53,7 +53,7 @@ import org.orekit.utils.Constants;
  * an off-diagonal element due to semi-major axis change.
  * </p>
  * <p>
- * The orbital elements change at date t<sub>1</sub> can be added to orbital elements
+ * The orbital elements change at date t₁ can be added to orbital elements
  * extracted from state, and the final elements taking account the changes are then
  * converted back to appropriate type, which may be different from Keplerian or
  * equinoctial elements.
@@ -172,9 +172,9 @@ public class SmallManeuverAnalyticalModel
     }
 
     /** Compute the effect of the maneuver on an orbit.
-     * @param orbit1 original orbit at t<sub>1</sub>, without maneuver
-     * @return orbit at t<sub>1</sub>, taking the maneuver
-     * into account if t<sub>1</sub> &gt; t<sub>0</sub>
+     * @param orbit1 original orbit at t₁, without maneuver
+     * @return orbit at t₁, taking the maneuver
+     * into account if t₁ &gt; t₀
      * @see #apply(SpacecraftState)
      * @see #getJacobian(Orbit, PositionAngle, double[][])
      */
@@ -190,10 +190,10 @@ public class SmallManeuverAnalyticalModel
     }
 
     /** Compute the effect of the maneuver on a spacecraft state.
-     * @param state1 original spacecraft state at t<sub>1</sub>,
+     * @param state1 original spacecraft state at t₁,
      * without maneuver
-     * @return spacecraft state at t<sub>1</sub>, taking the maneuver
-     * into account if t<sub>1</sub> &gt; t<sub>0</sub>
+     * @return spacecraft state at t₁, taking the maneuver
+     * into account if t₁ &gt; t₀
      * @see #apply(Orbit)
      * @see #getJacobian(Orbit, PositionAngle, double[][])
      */
@@ -210,8 +210,8 @@ public class SmallManeuverAnalyticalModel
     }
 
     /** Compute the effect of the maneuver on an orbit.
-     * @param orbit1 original orbit at t<sub>1</sub>, without maneuver
-     * @return orbit at t<sub>1</sub>, always taking the maneuver into account
+     * @param orbit1 original orbit at t₁, without maneuver
+     * @return orbit at t₁, always taking the maneuver into account
      */
     private Orbit updateOrbit(final Orbit orbit1) {
 
@@ -250,11 +250,11 @@ public class SmallManeuverAnalyticalModel
      * parameter j. The rows order is the same order as used in {@link
      * Orbit#getJacobianWrtCartesian(PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
      * method. Columns (0, 1, 2) correspond to the velocity increment coordinates
-     * (&Delta;V<sub>x</sub>, &Delta;V<sub>y</sub>, &Delta;V<sub>z</sub>) in the
+     * (ΔV<sub>x</sub>, ΔV<sub>y</sub>, ΔV<sub>z</sub>) in the
      * inertial frame returned by {@link #getInertialFrame()}, and column 3
-     * corresponds to the maneuver date t<sub>0</sub>.
+     * corresponds to the maneuver date t₀.
      * </p>
-     * @param orbit1 original orbit at t<sub>1</sub>, without maneuver
+     * @param orbit1 original orbit at t₁, without maneuver
      * @param positionAngle type of the position angle to use
      * @param jacobian placeholder 6x4 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x4, only the 6x4 upper left corner will be modified

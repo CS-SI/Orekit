@@ -495,7 +495,7 @@ public class SpacecraftState
     }
 
     /** Get the first component of the eccentricity vector (as per equinoctial parameters).
-     * @return e cos(&omega; + &Omega;), first component of eccentricity vector
+     * @return e cos(ω + Ω), first component of eccentricity vector
      * @see #getE()
      */
     public double getEquinoctialEx() {
@@ -503,7 +503,7 @@ public class SpacecraftState
     }
 
     /** Get the second component of the eccentricity vector (as per equinoctial parameters).
-     * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
+     * @return e sin(ω + Ω), second component of the eccentricity vector
      * @see #getE()
      */
     public double getEquinoctialEy() {
@@ -511,7 +511,7 @@ public class SpacecraftState
     }
 
     /** Get the first component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) cos(&Omega;), first component of the inclination vector
+     * @return tan(i/2) cos(Ω), first component of the inclination vector
      * @see #getI()
      */
     public double getHx() {
@@ -519,7 +519,7 @@ public class SpacecraftState
     }
 
     /** Get the second component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) sin(&Omega;), second component of the inclination vector
+     * @return tan(i/2) sin(Ω), second component of the inclination vector
      * @see #getI()
      */
     public double getHy() {
@@ -527,7 +527,7 @@ public class SpacecraftState
     }
 
     /** Get the true latitude argument (as per equinoctial parameters).
-     * @return v + &omega; + &Omega; true latitude argument (rad)
+     * @return v + ω + Ω true latitude argument (rad)
      * @see #getLE()
      * @see #getLM()
      */
@@ -536,7 +536,7 @@ public class SpacecraftState
     }
 
     /** Get the eccentric latitude argument (as per equinoctial parameters).
-     * @return E + &omega; + &Omega; eccentric latitude argument (rad)
+     * @return E + ω + Ω eccentric latitude argument (rad)
      * @see #getLv()
      * @see #getLM()
      */
@@ -545,7 +545,7 @@ public class SpacecraftState
     }
 
     /** Get the mean latitude argument (as per equinoctial parameters).
-     * @return M + &omega; + &Omega; mean latitude argument (rad)
+     * @return M + ω + Ω mean latitude argument (rad)
      * @see #getLv()
      * @see #getLE()
      */

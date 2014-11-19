@@ -330,7 +330,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * you need to multiply this vector by the mass.</p>
      * <p>The returned vector is recomputed each time this method is called, it
      * is not cached.</p>
-     * @return a new instance of the momentum vector (m<sup>2</sup>/s).
+     * @return a new instance of the momentum vector (m²/s).
      */
     public Vector3D getMomentum() {
         return Vector3D.crossProduct(position, velocity);
@@ -340,7 +340,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * Get the angular velocity (spin) of this point as seen from the origin.
      * <p/>
      * The angular velocity vector is parallel to the {@link #getMomentum() angular
-     * momentum} and is computed by &omega; = p &times; v / ||p||<sup>2</sup>
+     * momentum} and is computed by ω = p &times; v / ||p||²
      *
      * @return the angular velocity vector
      * @see <a href="http://en.wikipedia.org/wiki/Angular_velocity">Angular Velocity on

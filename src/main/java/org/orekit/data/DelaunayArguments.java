@@ -47,7 +47,7 @@ public class DelaunayArguments implements TimeStamped, Serializable {
     /** Mean anomaly of the Sun. */
     private final double lPrime;
 
-    /** L - &Omega; where L is the mean longitude of the Moon. */
+    /** L - Ω where L is the mean longitude of the Moon. */
     private final double f;
 
     /** Mean elongation of the Moon from the Sun. */
@@ -62,7 +62,7 @@ public class DelaunayArguments implements TimeStamped, Serializable {
      * @param gamma tide parameter γ = GMST + π
      * @param l mean anomaly of the Moon
      * @param lPrime mean anomaly of the Sun
-     * @param f L - &Omega; where L is the mean longitude of the Moon
+     * @param f L - Ω where L is the mean longitude of the Moon
      * @param d mean elongation of the Moon from the Sun
      * @param omega mean longitude of the ascending node of the Moon
      */
@@ -112,8 +112,8 @@ public class DelaunayArguments implements TimeStamped, Serializable {
         return lPrime;
     }
 
-    /** Get L - &Omega; where L is the mean longitude of the Moon.
-     * @return L - &Omega;
+    /** Get L - Ω where L is the mean longitude of the Moon.
+     * @return L - Ω
      */
     public double getF() {
         return f;

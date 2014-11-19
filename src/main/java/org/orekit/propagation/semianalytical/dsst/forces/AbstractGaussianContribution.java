@@ -45,7 +45,7 @@ import org.orekit.time.AbsoluteDate;
  * Numerical averaging is mainly used for non-conservative disturbing forces such as
  * atmospheric drag and solar radiation pressure.
  * </p><p>
- * Gaussian contributions can be expressed as: da<sub>i</sub>/dt = &delta;a<sub>i</sub>/&delta;v . q<br>
+ * Gaussian contributions can be expressed as: da<sub>i</sub>/dt = δa<sub>i</sub>/δv . q<br>
  * where:
  * <ul>
  * <li>a<sub>i</sub> are the six equinoctial elements</li>
@@ -93,7 +93,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Eccentricity. */
     protected double ecc;
 
-    /** Kepler mean motion: n = sqrt(&mu; / a<sup>3</sup>). */
+    /** Kepler mean motion: n = sqrt(μ / a³). */
     protected double n;
 
     /** Mean longitude. */
@@ -106,14 +106,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Equinoctial frame w vector. */
     protected Vector3D w;
 
-    /** A = sqrt(&mu; * a). */
+    /** A = sqrt(μ * a). */
     protected double A;
-    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>). */
+    /** B = sqrt(1 - h² - k²). */
     protected double B;
-    /** C = 1 + p<sup>2</sup> + q<sup>2</sup>. */
+    /** C = 1 + p² + q². */
     protected double C;
 
-    /** 2 / (n<sup>2</sup> * a) . */
+    /** 2 / (n² * a) . */
     protected double ton2a;
     /** 1 / A .*/
     protected double ooA;
@@ -123,9 +123,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     protected double co2AB;
     /** 1 / (1 + B) .*/
     protected double ooBpo;
-    /** 1 / &mu; .*/
+    /** 1 / μ .*/
     protected double ooMu;
-    /** &mu; .*/
+    /** μ .*/
     protected double mu;
 
     // CHECKSTYLE: resume VisibilityModifierCheck
@@ -333,9 +333,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         // Get the True longitude L
         final double L = meanOrbit.getLv();
 
-        // Compute the center (l - &lambda;)
+        // Compute the center (l - λ)
         final double center =  L - meanElements[5];
-        // Compute (l - &lambda;)<sup>2</sup>
+        // Compute (l - λ)²
         final double center2 = center * center;
 
         // Initialize short periodic variations
@@ -530,7 +530,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             deriv[3] = getQoV(X).dotProduct(acc);
             // dhy/dv
             deriv[4] = getPoV(Y).dotProduct(acc);
-            // d&lambda;/dv
+            // dλ/dv
             deriv[5] = getLoV(X, Y, Xdot, Ydot).dotProduct(acc);
 
             // Compute mean elements rates
@@ -585,20 +585,20 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             return eccentricToMean(trueToEccentric(lv));
         }
 
-        /** Compute &delta;a/&delta;v.
+        /** Compute δa/δv.
          *  @param vel satellite velocity
-         *  @return &delta;a/&delta;v
+         *  @return δa/δv
          */
         private Vector3D getAoV(final Vector3D vel) {
             return new Vector3D(ton2a, vel);
         }
 
-        /** Compute &delta;h/&delta;v.
+        /** Compute δh/δv.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
          *  @param Y satellite position component along g, equinoctial reference frame 2nd vector
          *  @param Xdot satellite velocity component along f, equinoctial reference frame 1st vector
          *  @param Ydot satellite velocity component along g, equinoctial reference frame 2nd vector
-         *  @return &delta;h/&delta;v
+         *  @return δh/δv
          */
         private Vector3D getHoV(final double X, final double Y, final double Xdot, final double Ydot) {
             final double kf = (2. * Xdot * Y - X * Ydot) * ooMu;
@@ -607,12 +607,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             return new Vector3D(kf, f, -kg, g, kw, w);
         }
 
-        /** Compute &delta;k/&delta;v.
+        /** Compute δk/δv.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
          *  @param Y satellite position component along g, equinoctial reference frame 2nd vector
          *  @param Xdot satellite velocity component along f, equinoctial reference frame 1st vector
          *  @param Ydot satellite velocity component along g, equinoctial reference frame 2nd vector
-         *  @return &delta;k/&delta;v
+         *  @return δk/δv
          */
         private Vector3D getKoV(final double X, final double Y, final double Xdot, final double Ydot) {
             final double kf = Y * Ydot * ooMu;
@@ -621,28 +621,28 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             return new Vector3D(-kf, f, kg, g, -kw, w);
         }
 
-        /** Compute &delta;p/&delta;v.
+        /** Compute δp/δv.
          *  @param Y satellite position component along g, equinoctial reference frame 2nd vector
-         *  @return &delta;p/&delta;v
+         *  @return δp/δv
          */
         private Vector3D getPoV(final double Y) {
             return new Vector3D(co2AB * Y, w);
         }
 
-        /** Compute &delta;q/&delta;v.
+        /** Compute δq/δv.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
-         *  @return &delta;q/&delta;v
+         *  @return δq/δv
          */
         private Vector3D getQoV(final double X) {
             return new Vector3D(I * co2AB * X, w);
         }
 
-        /** Compute &delta;&lambda;/&delta;v.
+        /** Compute δλ/δv.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
          *  @param Y satellite position component along g, equinoctial reference frame 2nd vector
          *  @param Xdot satellite velocity component along f, equinoctial reference frame 1st vector
          *  @param Ydot satellite velocity component along g, equinoctial reference frame 2nd vector
-         *  @return &delta;&lambda;/&delta;v
+         *  @return δλ/δv
          */
         private Vector3D getLoV(final double X, final double Y, final double Xdot, final double Ydot) {
             final Vector3D pos = new Vector3D(X, f, Y, g);
@@ -1245,7 +1245,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * - 2 for h <br>
          * - 3 for q <br>
          * - 4 for p <br>
-         * - 5 for &lambda; <br>
+         * - 5 for λ <br>
          * </p>
          */
         private final double[][] cCoef;
@@ -1258,7 +1258,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * - 2 for h <br>
          * - 3 for q <br>
          * - 4 for p <br>
-         * - 5 for &lambda; <br>
+         * - 5 for λ <br>
          * </p>
          */
         private final double[][] sCoef;
@@ -1353,7 +1353,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[][] dij;
@@ -1367,7 +1367,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[][] cij;
@@ -1381,14 +1381,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * - i=2 for h <br/>
          * - i=3 for q <br/>
          * - i=4 for p <br/>
-         * - i=5 for &lambda; <br/>
+         * - i=5 for λ <br/>
          * </p>
          */
         private final ShortPeriodicsInterpolatedCoefficient[][] sij;
 
-        /** The current computed values for the &rho;<sub>j</sub> and &sigma;<sub>j</sub> coefficients.
+        /** The current computed values for the ρ<sub>j</sub> and σ<sub>j</sub> coefficients.
          * <p>
-         * Index 0 corresponds to &rho;, index 1 corresponds to &sigma;
+         * Index 0 corresponds to ρ, index 1 corresponds to σ
          * Used to compute the U<sub>i</sub><sup>j</sup> and V<sub>i</sub><sup>j</sup> coefficients.
          * </p>
          */
@@ -1435,7 +1435,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // get the current date
             final AbsoluteDate date = state.getDate();
 
-            // Compute &rho;<sub>j</sub> and &sigma;<sub>j</sub>
+            // Compute ρ<sub>j</sub> and σ<sub>j</sub>
             computeRhoSigmaCoefficients(date);
 
             // Compute the Fourier coefficients
@@ -1444,7 +1444,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Compute the required U and V coefficients
             final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, jMax);
 
-            // compute the k<sub>2</sub><sup>0</sup> coefficient
+            // compute the k₂⁰ coefficient
             final double k20 = computeK20(jMax);
 
             // 1. / n
@@ -1457,7 +1457,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Compute the coefficients for each element
             for (int i = 0; i < 6; i++) {
 
-                // compute D<sub>i</sub><sup>1</sup> and D<sub>i</sub><sup>2</sup> (all others are 0)
+                // compute D<sub>i</sub>¹ and D<sub>i</sub>² (all others are 0)
                 double di1 = -oon * fourierCjSj.getCij(i, 0);
                 if (i == 5) {
                     di1 += to2an * uijvij.getU1(0, 0);
@@ -1467,7 +1467,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                     di2 += -to4an * fourierCjSj.getCij(0, 0);
                 }
 
-                //the C<sub>i</sub><sup>0</sup> is computed based on all others
+                //the C<sub>i</sub>⁰ is computed based on all others
                 double currentCi0 = -di2 * k20;
 
                 for (int j = 1; j <= jMax; j++) {
@@ -1481,7 +1481,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                         currentSij += -to2an * uijvij.getV2(j);
                     }
 
-                    // add the computed coefficients to C<sub>i</sub><sup>0</sup>
+                    // add the computed coefficients to C<sub>i</sub>⁰
                     currentCi0 += -(currentCij * currentRhoSigmaj[0][j] + currentSij * currentRhoSigmaj[1][j]);
 
                     // add the values to the interpolators
@@ -1518,11 +1518,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         }
 
         /**
-         * Compute the auxiliary quantities &rho;<sub>j</sub> and &sigma;<sub>j</sub>.
+         * Compute the auxiliary quantities ρ<sub>j</sub> and σ<sub>j</sub>.
          * <p>
          * The expressions used are equations 2.5.3-(4) from the Danielson paper. <br/>
-         *  &rho;<sub>j</sub> = (1+jB)(-b)<sup>j</sup>C<sub>j</sub>(k, h) <br/>
-         *  &sigma;<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
+         *  ρ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>C<sub>j</sub>(k, h) <br/>
+         *  σ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
          * </p>
          * @param date current date
          */
@@ -1543,25 +1543,25 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             }
         }
 
-        /** Compute the coefficient k<sub>2</sub><sup>0</sup> by using the equation
+        /** Compute the coefficient k₂⁰ by using the equation
          * 2.5.3-(9a) from Danielson.
          * <p>
          * After inserting 2.5.3-(8) into 2.5.3-(9a) the result becomes:<br>
-         * k<sub>2</sub><sup>0</sup> = &Sigma;<sub>k=1</sub><sup>kMax</sup>[(2 / k<sup>2</sup>) * (&sigma;<sub>k</sub><sup>2</sup> + &rho;<sub>k</sub><sup>2</sup>)]
+         * k₂⁰ = &Sigma;<sub>k=1</sub><sup>kMax</sup>[(2 / k²) * (σ<sub>k</sub>² + ρ<sub>k</sub>²)]
          * </p>
          * @param kMax max value fot k index
-         * @return the coefficient k<sub>2</sub><sup>0</sup>
+         * @return the coefficient k₂⁰
          */
         private double computeK20(final int kMax) {
             double k20 = 0.;
 
             for (int kIndex = 1; kIndex <= kMax; kIndex++) {
                 // After inserting 2.5.3-(8) into 2.5.3-(9a) the result becomes:
-                //k<sub>2</sub><sup>0</sup> = &Sigma;<sub>k=1</sub><sup>kMax</sup>[(2 / k<sup>2</sup>) * (&sigma;<sub>k</sub><sup>2</sup> + &rho;<sub>k</sub><sup>2</sup>)]
+                //k₂⁰ = &Sigma;<sub>k=1</sub><sup>kMax</sup>[(2 / k²) * (σ<sub>k</sub>² + ρ<sub>k</sub>²)]
                 double currentTerm = currentRhoSigmaj[1][kIndex] * currentRhoSigmaj[1][kIndex] +
                                      currentRhoSigmaj[0][kIndex] * currentRhoSigmaj[0][kIndex];
 
-                //multiply by 2 / k<sup>2</sup>
+                //multiply by 2 / k²
                 currentTerm *= 2. / (kIndex * kIndex);
 
                 // add the term to the result
@@ -1616,42 +1616,42 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      */
     private class UijVijCoefficients {
 
-        /** The U<sub>1</sub><sup>j</sup> coefficients.
+        /** The U₁<sup>j</sup> coefficients.
          * <p>
          * The first index identifies the Fourier coefficients used<br>
          * Those coefficients are computed for all Fourier C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup><br>
          * The only exception is when j = 0 when only the coefficient for fourier index = 1 (i == 0) is needed.<br>
          * Also, for fourier index = 1 (i == 0), the coefficients up to 2 * jMax are computed, because are required
-         * to compute the coefficients U<sub>2</sub><sup>j</sup>
+         * to compute the coefficients U₂<sup>j</sup>
          * </p>
          */
         private final double[][] u1ij;
 
-        /** The V<sub>1</sub><sup>j</sup> coefficients.
+        /** The V₁<sup>j</sup> coefficients.
          * <p>
          * The first index identifies the Fourier coefficients used<br>
          * Those coefficients are computed for all Fourier C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup><br>
          * for fourier index = 1 (i == 0), the coefficients up to 2 * jMax are computed, because are required
-         * to compute the coefficients V<sub>2</sub><sup>j</sup>
+         * to compute the coefficients V₂<sup>j</sup>
          * </p>
          */
         private final double[][] v1ij;
 
-        /** The U<sub>2</sub><sup>j</sup> coefficients.
+        /** The U₂<sup>j</sup> coefficients.
          * <p>
          * Only the coefficients that use the Fourier index = 1 (i == 0) are computed as they are the only ones required.
          * </p>
          */
         private final double[] u2ij;
 
-        /** The V<sub>2</sub><sup>j</sup> coefficients.
+        /** The V₂<sup>j</sup> coefficients.
          * <p>
          * Only the coefficients that use the Fourier index = 1 (i == 0) are computed as they are the only ones required.
          * </p>
          */
         private final double[] v2ij;
 
-        /** The current computed values for the &rho;<sub>j</sub> and &sigma;<sub>j</sub> coefficients. */
+        /** The current computed values for the ρ<sub>j</sub> and σ<sub>j</sub> coefficients. */
         private final double[][] currentRhoSigmaj;
 
         /** The C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup> Fourier coefficients. */
@@ -1661,7 +1661,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         private final int jMax;
 
         /** Constructor.
-         * @param currentRhoSigmaj the current computed values for the &rho;<sub>j</sub> and &sigma;<sub>j</sub> coefficients
+         * @param currentRhoSigmaj the current computed values for the ρ<sub>j</sub> and σ<sub>j</sub> coefficients
          * @param fourierCjSj the fourier coefficients C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup>
          * @param jMax maximum value for j index
          */
@@ -1681,11 +1681,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             computeU2V2Coefficients();
         }
 
-        /** Build the U<sub>1</sub><sup>j</sup> and V<sub>1</sub><sup>j</sup> coefficients. */
+        /** Build the U₁<sup>j</sup> and V₁<sup>j</sup> coefficients. */
         private void computeU1V1Coefficients() {
-            // generate the U<sub>1</sub><sup>j</sup> and V<sub>1</sub><sup>j</sup> coefficients
+            // generate the U₁<sup>j</sup> and V₁<sup>j</sup> coefficients
             // for j >= 1
-            // also the U<sub>1</sub><sup>0</sup> for Fourier index = 1 (i == 0) coefficient will be computed
+            // also the U₁⁰ for Fourier index = 1 (i == 0) coefficient will be computed
             u1ij[0][0] = 0;
             for (int j = 1; j <= jMax; j++) {
                 // compute 1 / j
@@ -1696,17 +1696,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                     u1ij[i][j] = fourierCjSj.getSij(i, j);
                     v1ij[i][j] = fourierCjSj.getCij(i, j);
 
-                    // 1 - &delta;<sub>1j</sub> is 1 for all j > 1
+                    // 1 - δ<sub>1j</sub> is 1 for all j > 1
                     if (j > 1) {
                         // k starts with 1 because j-J is less than or equal to 0
                         for (int kIndex = 1; kIndex <= j - 1; kIndex++) {
-                            // C<sub>i</sub><sup>j-k</sup> * &sigma;<sub>k</sub> +
-                            // S<sub>i</sub><sup>j-k</sup> * &rho;<sub>k</sub>
+                            // C<sub>i</sub><sup>j-k</sup> * σ<sub>k</sub> +
+                            // S<sub>i</sub><sup>j-k</sup> * ρ<sub>k</sub>
                             u1ij[i][j] +=   fourierCjSj.getCij(i, j - kIndex) * currentRhoSigmaj[1][kIndex] +
                                             fourierCjSj.getSij(i, j - kIndex) * currentRhoSigmaj[0][kIndex];
 
-                            // C<sub>i</sub><sup>j-k</sup> * &rho;<sub>k</sub> -
-                            // S<sub>i</sub><sup>j-k</sup> * &sigma;<sub>k</sub>
+                            // C<sub>i</sub><sup>j-k</sup> * ρ<sub>k</sub> -
+                            // S<sub>i</sub><sup>j-k</sup> * σ<sub>k</sub>
                             v1ij[i][j] +=   fourierCjSj.getCij(i, j - kIndex) * currentRhoSigmaj[0][kIndex] -
                                             fourierCjSj.getSij(i, j - kIndex) * currentRhoSigmaj[1][kIndex];
                         }
@@ -1716,26 +1716,26 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                     // the following sum is skiped only for j = jMax
                     if (j != jMax) {
                         for (int kIndex = 1; kIndex <= jMax - j; kIndex++) {
-                            // -C<sub>i</sub><sup>j+k</sup> * &sigma;<sub>k</sub> +
-                            // S<sub>i</sub><sup>j+k</sup> * &rho;<sub>k</sub>
+                            // -C<sub>i</sub><sup>j+k</sup> * σ<sub>k</sub> +
+                            // S<sub>i</sub><sup>j+k</sup> * ρ<sub>k</sub>
                             u1ij[i][j] +=   -fourierCjSj.getCij(i, j + kIndex) * currentRhoSigmaj[1][kIndex] +
                                             fourierCjSj.getSij(i, j + kIndex) * currentRhoSigmaj[0][kIndex];
 
-                            // C<sub>i</sub><sup>j+k</sup> * &rho;<sub>k</sub> +
-                            // S<sub>i</sub><sup>j+k</sup> * &sigma;<sub>k</sub>
+                            // C<sub>i</sub><sup>j+k</sup> * ρ<sub>k</sub> +
+                            // S<sub>i</sub><sup>j+k</sup> * σ<sub>k</sub>
                             v1ij[i][j] +=   fourierCjSj.getCij(i, j + kIndex) * currentRhoSigmaj[0][kIndex] +
                                             fourierCjSj.getSij(i, j + kIndex) * currentRhoSigmaj[1][kIndex];
                         }
                     }
 
                     for (int kIndex = 1; kIndex <= jMax; kIndex++) {
-                        // C<sub>i</sub><sup>k</sup> * &sigma;<sub>j+k</sub> -
-                        // S<sub>i</sub><sup>k</sup> * &rho;<sub>j+k</sub>
+                        // C<sub>i</sub><sup>k</sup> * σ<sub>j+k</sub> -
+                        // S<sub>i</sub><sup>k</sup> * ρ<sub>j+k</sub>
                         u1ij[i][j] +=   -fourierCjSj.getCij(i, kIndex) * currentRhoSigmaj[1][j + kIndex] -
                                         fourierCjSj.getSij(i, kIndex) * currentRhoSigmaj[0][j + kIndex];
 
-                        // C<sub>i</sub><sup>k</sup> * &rho;<sub>j+k</sub> +
-                        // S<sub>i</sub><sup>k</sup> * &sigma;<sub>j+k</sub>
+                        // C<sub>i</sub><sup>k</sup> * ρ<sub>j+k</sub> +
+                        // S<sub>i</sub><sup>k</sup> * σ<sub>j+k</sub>
                         v1ij[i][j] +=   fourierCjSj.getCij(i, kIndex) * currentRhoSigmaj[0][j + kIndex] +
                                         fourierCjSj.getSij(i, kIndex) * currentRhoSigmaj[1][j + kIndex];
                     }
@@ -1744,16 +1744,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                     u1ij[i][j] *= -ooj;
                     v1ij[i][j] *= ooj;
 
-                    // if index = 1 (i == 0) add the computed terms to U<sub>1</sub><sup>0</sup>
+                    // if index = 1 (i == 0) add the computed terms to U₁⁰
                     if (i == 0) {
-                        //- (U<sub>1</sub><sup>j</sup> * &rho;<sub>j</sub> + V<sub>1</sub><sup>j</sup> * &sigma;<sub>j</sub>
+                        //- (U₁<sup>j</sup> * ρ<sub>j</sub> + V₁<sup>j</sup> * σ<sub>j</sub>
                         u1ij[0][0] += -u1ij[0][j] * currentRhoSigmaj[0][j] - v1ij[0][j] * currentRhoSigmaj[1][j];
                     }
                 }
             }
 
             // Terms with j > jMax are required only when computing the coefficients
-            // U<sub>2</sub><sup>j</sup> and V<sub>2</sub><sup>j</sup>
+            // U₂<sup>j</sup> and V₂<sup>j</sup>
             // and those coefficients are only required for Fourier index = 1 (i == 0).
             for (int j = jMax + 1; j <= 2 * jMax; j++) {
                 // compute 1 / j
@@ -1764,24 +1764,24 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
                 //k starts from j-J as it is always greater than or equal to 1
                 for (int kIndex = j - jMax; kIndex <= j - 1; kIndex++) {
-                    // C<sub>i</sub><sup>j-k</sup> * &sigma;<sub>k</sub> +
-                    // S<sub>i</sub><sup>j-k</sup> * &rho;<sub>k</sub>
+                    // C<sub>i</sub><sup>j-k</sup> * σ<sub>k</sub> +
+                    // S<sub>i</sub><sup>j-k</sup> * ρ<sub>k</sub>
                     u1ij[0][j] +=   fourierCjSj.getCij(0, j - kIndex) * currentRhoSigmaj[1][kIndex] +
                                     fourierCjSj.getSij(0, j - kIndex) * currentRhoSigmaj[0][kIndex];
 
-                    // C<sub>i</sub><sup>j-k</sup> * &rho;<sub>k</sub> -
-                    // S<sub>i</sub><sup>j-k</sup> * &sigma;<sub>k</sub>
+                    // C<sub>i</sub><sup>j-k</sup> * ρ<sub>k</sub> -
+                    // S<sub>i</sub><sup>j-k</sup> * σ<sub>k</sub>
                     v1ij[0][j] +=   fourierCjSj.getCij(0, j - kIndex) * currentRhoSigmaj[0][kIndex] -
                                     fourierCjSj.getSij(0, j - kIndex) * currentRhoSigmaj[1][kIndex];
                 }
                 for (int kIndex = 1; kIndex <= jMax; kIndex++) {
-                    // C<sub>i</sub><sup>k</sup> * &sigma;<sub>j+k</sub> -
-                    // S<sub>i</sub><sup>k</sup> * &rho;<sub>j+k</sub>
+                    // C<sub>i</sub><sup>k</sup> * σ<sub>j+k</sub> -
+                    // S<sub>i</sub><sup>k</sup> * ρ<sub>j+k</sub>
                     u1ij[0][j] +=   -fourierCjSj.getCij(0, kIndex) * currentRhoSigmaj[1][j + kIndex] -
                                     fourierCjSj.getSij(0, kIndex) * currentRhoSigmaj[0][j + kIndex];
 
-                    // C<sub>i</sub><sup>k</sup> * &rho;<sub>j+k</sub> +
-                    // S<sub>i</sub><sup>k</sup> * &sigma;<sub>j+k</sub>
+                    // C<sub>i</sub><sup>k</sup> * ρ<sub>j+k</sub> +
+                    // S<sub>i</sub><sup>k</sup> * σ<sub>j+k</sub>
                     v1ij[0][j] +=   fourierCjSj.getCij(0, kIndex) * currentRhoSigmaj[0][j + kIndex] +
                                     fourierCjSj.getSij(0, kIndex) * currentRhoSigmaj[1][j + kIndex];
                 }
@@ -1792,7 +1792,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             }
         }
 
-        /** Build the U<sub>1</sub><sup>j</sup> and V<sub>1</sub><sup>j</sup> coefficients.
+        /** Build the U₁<sup>j</sup> and V₁<sup>j</sup> coefficients.
          * <p>
          * Only the coefficients for Fourier index = 1 (i == 0) are required.
          * </p>
@@ -1806,35 +1806,35 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                 u2ij[j] = v1ij[0][j];
                 v2ij[j] = u1ij[0][j];
 
-                // 1 - &delta;<sub>1j</sub> is 1 for all j > 1
+                // 1 - δ<sub>1j</sub> is 1 for all j > 1
                 if (j > 1) {
                     for (int l = 1; l <= j - 1; l++) {
-                        // U<sub>1</sub><sup>j-l</sup> * &sigma;<sub>l</sub> +
-                        // V<sub>1</sub><sup>j-l</sup> * &rho;<sub>l</sub>
+                        // U₁<sup>j-l</sup> * σ<sub>l</sub> +
+                        // V₁<sup>j-l</sup> * ρ<sub>l</sub>
                         u2ij[j] +=   u1ij[0][j - l] * currentRhoSigmaj[1][l] +
                                      v1ij[0][j - l] * currentRhoSigmaj[0][l];
 
-                        // U<sub>1</sub><sup>j-l</sup> * &rho;<sub>l</sub> -
-                        // V<sub>1</sub><sup>j-l</sup> * &sigma;<sub>l</sub>
+                        // U₁<sup>j-l</sup> * ρ<sub>l</sub> -
+                        // V₁<sup>j-l</sup> * σ<sub>l</sub>
                         v2ij[j] +=   u1ij[0][j - l] * currentRhoSigmaj[0][l] -
                                      v1ij[0][j - l] * currentRhoSigmaj[1][l];
                     }
                 }
 
                 for (int l = 1; l <= jMax; l++) {
-                    // -U<sub>1</sub><sup>j+l</sup> * &sigma;<sub>l</sub> +
-                    // U<sub>1</sub><sup>l</sup> * &sigma;<sub>j+l</sub> +
-                    // V<sub>1</sub><sup>j+l</sup> * &rho;<sub>l</sub> -
-                    // V<sub>1</sub><sup>l</sup> * &rho;<sub>j+l</sub>
+                    // -U₁<sup>j+l</sup> * σ<sub>l</sub> +
+                    // U₁<sup>l</sup> * σ<sub>j+l</sub> +
+                    // V₁<sup>j+l</sup> * ρ<sub>l</sub> -
+                    // V₁<sup>l</sup> * ρ<sub>j+l</sub>
                     u2ij[j] +=   -u1ij[0][j + l] * currentRhoSigmaj[1][l] +
                                   u1ij[0][l] * currentRhoSigmaj[1][j + l] +
                                   v1ij[0][j + l] * currentRhoSigmaj[0][l] -
                                   v1ij[0][l] * currentRhoSigmaj[0][j + l];
 
-                    // U<sub>1</sub><sup>j+l</sup> * &rho;<sub>l</sub> +
-                    // U<sub>1</sub><sup>l</sup> * &rho;<sub>j+l</sub> +
-                    // V<sub>1</sub><sup>j+l</sup> * &sigma;<sub>l</sub> +
-                    // V<sub>1</sub><sup>l</sup> * &sigma;<sub>j+l</sub>
+                    // U₁<sup>j+l</sup> * ρ<sub>l</sub> +
+                    // U₁<sup>l</sup> * ρ<sub>j+l</sub> +
+                    // V₁<sup>j+l</sup> * σ<sub>l</sub> +
+                    // V₁<sup>l</sup> * σ<sub>j+l</sub>
                     u2ij[j] +=   u1ij[0][j + l] * currentRhoSigmaj[0][l] +
                                  u1ij[0][l] * currentRhoSigmaj[0][j + l] +
                                  v1ij[0][j + l] * currentRhoSigmaj[1][l] +
@@ -1847,39 +1847,39 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             }
         }
 
-        /** Get the coefficient U<sub>1</sub><sup>j</sup> for Fourier index i.
+        /** Get the coefficient U₁<sup>j</sup> for Fourier index i.
          *
          * @param j j index
          * @param i Fourier index (starts at 0)
-         * @return the coefficient U<sub>1</sub><sup>j</sup> for the given Fourier index i
+         * @return the coefficient U₁<sup>j</sup> for the given Fourier index i
          */
         public double getU1(final int j, final int i) {
             return u1ij[i][j];
         }
 
-        /** Get the coefficient V<sub>1</sub><sup>j</sup> for Fourier index i.
+        /** Get the coefficient V₁<sup>j</sup> for Fourier index i.
          *
          * @param j j index
          * @param i Fourier index (starts at 0)
-         * @return the coefficient V<sub>1</sub><sup>j</sup> for the given Fourier index i
+         * @return the coefficient V₁<sup>j</sup> for the given Fourier index i
          */
         public double getV1(final int j, final int i) {
             return v1ij[i][j];
         }
 
-        /** Get the coefficient U<sub>2</sub><sup>j</sup> for Fourier index = 1 (i == 0).
+        /** Get the coefficient U₂<sup>j</sup> for Fourier index = 1 (i == 0).
          *
          * @param j j index
-         * @return the coefficient U<sub>2</sub><sup>j</sup> for Fourier index = 1 (i == 0)
+         * @return the coefficient U₂<sup>j</sup> for Fourier index = 1 (i == 0)
          */
         public double getU2(final int j) {
             return u2ij[j];
         }
 
-        /** Get the coefficient V<sub>2</sub><sup>j</sup> for Fourier index = 1 (i == 0).
+        /** Get the coefficient V₂<sup>j</sup> for Fourier index = 1 (i == 0).
          *
          * @param j j index
-         * @return the coefficient V<sub>2</sub><sup>j</sup> for Fourier index = 1 (i == 0)
+         * @return the coefficient V₂<sup>j</sup> for Fourier index = 1 (i == 0)
          */
         public double getV2(final int j) {
             return v2ij[j];

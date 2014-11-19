@@ -63,7 +63,7 @@ public final class BodiesElements extends  DelaunayArguments implements Serializ
      * @param gamma tide parameter γ = GMST + π
      * @param l mean anomaly of the Moon
      * @param lPrime mean anomaly of the Sun
-     * @param f L - &Omega; where L is the mean longitude of the Moon
+     * @param f L - Ω where L is the mean longitude of the Moon
      * @param d mean elongation of the Moon from the Sun
      * @param omega mean longitude of the ascending node of the Moon
      * @param lMe mean Mercury longitude

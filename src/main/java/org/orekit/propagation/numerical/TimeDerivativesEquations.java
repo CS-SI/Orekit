@@ -49,14 +49,14 @@ public interface TimeDerivativesEquations {
     /** Add the contribution of an acceleration expressed in the inertial frame
      *  (it is important to make sure this acceleration is defined in the
      *  same frame as the orbit) .
-     * @param x acceleration along the X axis (m/s<sup>2</sup>)
-     * @param y acceleration along the Y axis (m/s<sup>2</sup>)
-     * @param z acceleration along the Z axis (m/s<sup>2</sup>)
+     * @param x acceleration along the X axis (m/s²)
+     * @param y acceleration along the Y axis (m/s²)
+     * @param z acceleration along the Z axis (m/s²)
      */
     void addXYZAcceleration(final double x, final double y, final double z);
 
     /** Add the contribution of an acceleration expressed in some inertial frame.
-     * @param gamma acceleration vector (m/s<sup>2</sup>)
+     * @param gamma acceleration vector (m/s²)
      * @param frame frame in which acceleration is defined (must be an inertial frame)
      * @exception OrekitException if frame transforms cannot be computed
      */

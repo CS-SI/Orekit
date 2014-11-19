@@ -199,10 +199,10 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * automatically, as the user may need to add more states to it).
      * </p>
      * @param s1 current state
-     * @param dY1dY0 Jacobian of current state at time t<sub>1</sub> with respect
-     * to state at some previous time t<sub>0</sub> (may be either 6x6 for orbit
+     * @param dY1dY0 Jacobian of current state at time t₁ with respect
+     * to state at some previous time t₀ (may be either 6x6 for orbit
      * only or 7x7 for orbit and mass)
-     * @param dY1dP Jacobian of current state at time t<sub>1</sub> with respect
+     * @param dY1dP Jacobian of current state at time t₁ with respect
      * to parameters (may be null if no parameters are selected)
      * @return state with initial Jacobians added
      * @exception OrekitException if the partial equation has not been registered in

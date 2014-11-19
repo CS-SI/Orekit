@@ -33,7 +33,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     private SpacecraftState initialState;
 
     /** Build a propagator from orbit only.
-     * <p>The central attraction coefficient &mu; is set to the same value used
+     * <p>The central attraction coefficient μ is set to the same value used
      * for the initial orbit definition. Mass and attitude provider are set to
      * unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
@@ -44,7 +44,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         this(initialOrbit, DEFAULT_LAW, initialOrbit.getMu(), DEFAULT_MASS);
     }
 
-    /** Build a propagator from orbit and central attraction coefficient &mu;.
+    /** Build a propagator from orbit and central attraction coefficient μ.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
      * @param mu central attraction coefficient (m^3/s^2)
@@ -56,7 +56,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Build a propagator from orbit and attitude provider.
-     * <p>The central attraction coefficient &mu; is set to the same value
+     * <p>The central attraction coefficient μ is set to the same value
      * used for the initial orbit definition. Mass is set to an unspecified
      * non-null arbitrary value.</p>
      * @param initialOrbit initial orbit
@@ -70,7 +70,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Build a propagator from orbit, attitude provider and central attraction
-     * coefficient &mu;.
+     * coefficient μ.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
@@ -85,7 +85,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Build propagator from orbit, attitude provider, central attraction
-     * coefficient &mu; and mass.
+     * coefficient μ and mass.
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param mu central attraction coefficient (m^3/s^2)

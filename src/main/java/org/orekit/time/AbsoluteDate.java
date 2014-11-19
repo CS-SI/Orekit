@@ -732,9 +732,9 @@ public class AbsoluteDate
     }
 
     /** Compute the offset between two time scales at the current instant.
-     * <p>The offset is defined as <i>l<sub>1</sub>-l<sub>2</sub></i>
-     * where <i>l<sub>1</sub></i> is the location of the instant in
-     * the <code>scale1</code> time scale and <i>l<sub>2</sub></i> is the
+     * <p>The offset is defined as <i>l₁-l₂</i>
+     * where <i>l₁</i> is the location of the instant in
+     * the <code>scale1</code> time scale and <i>l₂</i> is the
      * location of the instant in the <code>scale2</code> time scale.</p>
      * @param scale1 first time scale
      * @param scale2 second time scale

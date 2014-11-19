@@ -19,8 +19,8 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import org.apache.commons.math3.util.FastMath;
 
 /** Compute the G<sub>ms</sub><sup>j</sup> and the H<sub>ms</sub><sup>j</sup>
- *  polynomials in the equinoctial elements h, k and the direction cosines &alpha; and &beta;
- *  and their partial derivatives with respect to k, h, &alpha; and &beta;.
+ *  polynomials in the equinoctial elements h, k and the direction cosines α and β
+ *  and their partial derivatives with respect to k, h, α and β.
  *  <p>
  *  The expressions used are equations 2.7.5-(1)(2) from the Danielson paper.
  *  </p>
@@ -33,8 +33,8 @@ public class GHmsjPolynomials {
      */
     private final CjSjCoefficient cjsjKH;
 
-    /** C<sub>j</sub>(&alpha;, &beta;), S<sub>j</sub>(&alpha;, &beta;) coefficient.
-     * (&alpha;, &beta;) are the direction cosines
+    /** C<sub>j</sub>(α, β), S<sub>j</sub>(α, β) coefficient.
+     * (α, β) are the direction cosines
      */
     private final CjSjCoefficient cjsjAB;
 
@@ -46,8 +46,8 @@ public class GHmsjPolynomials {
     /** Create a set of G<sub>ms</sub><sup>j</sup> and H<sub>ms</sub><sup>j</sup> polynomials.
      *  @param k X component of the eccentricity vector
      *  @param h Y component of the eccentricity vector
-     *  @param alpha direction cosine &alpha;
-     *  @param beta direction cosine &beta;
+     *  @param alpha direction cosine α
+     *  @param beta direction cosine β
      *  @param retroFactor -1 if the orbit is represented as retrograde, +1 otherwise
      **/
     public GHmsjPolynomials(final double k, final double h,
@@ -142,11 +142,11 @@ public class GHmsjPolynomials {
         return dGmsdh;
     }
 
-    /** Get the dG<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub> coefficient.
+    /** Get the dG<sub>ms</sub><sup>j</sup> / d<sub>α</sub> coefficient.
      * @param m m subscript
      * @param s s subscript
      * @param j order
-     * @return dG<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub>
+     * @return dG<sub>ms</sub><sup>j</sup> / d<sub>α</sub>
      */
     public double getdGmsdAlpha(final int m, final int s, final int j) {
         final int sMj  = FastMath.abs(s - j);
@@ -163,11 +163,11 @@ public class GHmsjPolynomials {
         return dGmsdAl;
     }
 
-    /** Get the dG<sub>ms</sub><sup>j</sup> / d<sub>&beta;</sub> coefficient.
+    /** Get the dG<sub>ms</sub><sup>j</sup> / d<sub>β</sub> coefficient.
      * @param m m subscript
      * @param s s subscript
      * @param j order
-     * @return dG<sub>ms</sub><sup>j</sup> / d<sub>&beta;</sub>
+     * @return dG<sub>ms</sub><sup>j</sup> / d<sub>β</sub>
      */
     public double getdGmsdBeta(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
@@ -226,11 +226,11 @@ public class GHmsjPolynomials {
         return dHmsdh;
     }
 
-    /** Get the dH<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub> coefficient.
+    /** Get the dH<sub>ms</sub><sup>j</sup> / d<sub>α</sub> coefficient.
      * @param m m subscript
      * @param s s subscript
      * @param j order
-     * @return dH<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub>
+     * @return dH<sub>ms</sub><sup>j</sup> / d<sub>α</sub>
      */
     public double getdHmsdAlpha(final int m, final int s, final int j) {
         final int sMj  = FastMath.abs(s - j);
@@ -247,11 +247,11 @@ public class GHmsjPolynomials {
         return dHmsdAl;
     }
 
-    /** Get the dH<sub>ms</sub><sup>j</sup> / d<sub>&beta;</sub> coefficient.
+    /** Get the dH<sub>ms</sub><sup>j</sup> / d<sub>β</sub> coefficient.
      * @param m m subscript
      * @param s s subscript
      * @param j order
-     * @return dH<sub>ms</sub><sup>j</sup> / d<sub>&beta;</sub>
+     * @return dH<sub>ms</sub><sup>j</sup> / d<sub>β</sub>
      */
     public double getdHmsdBeta(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);

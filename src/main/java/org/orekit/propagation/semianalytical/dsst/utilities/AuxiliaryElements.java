@@ -89,13 +89,13 @@ public class AuxiliaryElements {
      */
     private final int    I;
 
-    /** A = sqrt(&mu; * a). */
+    /** A = sqrt(μ * a). */
     private final double A;
 
-    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>). */
+    /** B = sqrt(1 - h² - k²). */
     private final double B;
 
-    /** C = 1 + p<sup>2</sup> + q<sup>2</sup>. */
+    /** C = 1 + p² + q². */
     private final double C;
 
     /** Equinoctial frame f vector. */
@@ -107,13 +107,13 @@ public class AuxiliaryElements {
     /** Equinoctial frame w vector. */
     private final Vector3D w;
 
-    /** Direction cosine &alpha;. */
+    /** Direction cosine α. */
     private final double alpha;
 
-    /** Direction cosine &beta;. */
+    /** Direction cosine β. */
     private final double beta;
 
-    /** Direction cosine &gamma;. */
+    /** Direction cosine γ. */
     private final double gamma;
 
     /** Simple constructor.
@@ -192,7 +192,7 @@ public class AuxiliaryElements {
     }
 
     /** Get the central body attraction coefficient.
-     * @return &mu;
+     * @return μ
      */
     public double getMu() {
         return mu;
@@ -298,21 +298,21 @@ public class AuxiliaryElements {
         return I;
     }
 
-    /** Get A = sqrt(&mu; * a).
+    /** Get A = sqrt(μ * a).
      * @return A
      */
     public double getA() {
         return A;
     }
 
-    /** Get B = sqrt(1 - e<sup>2</sup>).
+    /** Get B = sqrt(1 - e²).
      * @return B
      */
     public double getB() {
         return B;
     }
 
-    /** Get C = 1 + p<sup>2</sup> + q<sup>2</sup>.
+    /** Get C = 1 + p² + q².
      * @return C
      */
     public double getC() {
@@ -340,22 +340,22 @@ public class AuxiliaryElements {
         return w;
     }
 
-    /** Get direction cosine &alpha; for central body.
-     * @return &alpha;
+    /** Get direction cosine α for central body.
+     * @return α
      */
     public double getAlpha() {
         return alpha;
     }
 
-    /** Get direction cosine &beta; for central body.
-     * @return &beta;
+    /** Get direction cosine β for central body.
+     * @return β
      */
     public double getBeta() {
         return beta;
     }
 
-    /** Get direction cosine &gamma; for central body.
-     * @return &gamma;
+    /** Get direction cosine γ for central body.
+     * @return γ
      */
     public double getGamma() {
         return gamma;

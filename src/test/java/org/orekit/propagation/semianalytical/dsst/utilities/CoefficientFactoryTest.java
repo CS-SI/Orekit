@@ -156,15 +156,15 @@ public class CoefficientFactoryTest {
         return vmsn;
     }
 
-    /** Get the Q<sub>ns</sub> value from 2.8.1-(4) evaluated in &gamma; This method is using the
+    /** Get the Q<sub>ns</sub> value from 2.8.1-(4) evaluated in γ This method is using the
      * Legendre polynomial to compute the Q<sub>ns</sub>'s one. This direct computation method
      * allows to store the polynomials value in a static map. If the Q<sub>ns</sub> had been
-     * computed already, they just will be evaluated at &gamma;
+     * computed already, they just will be evaluated at γ
      *
-     * @param gamma &gamma; angle for which Q<sub>ns</sub> is evaluated
+     * @param gamma γ angle for which Q<sub>ns</sub> is evaluated
      * @param n n value
      * @param s s value
-     * @return the polynomial value evaluated at &gamma;
+     * @return the polynomial value evaluated at γ
      */
     private static double getQnsPolynomialValue(final double gamma, final int n, final int s) {
         PolynomialFunction derivative;

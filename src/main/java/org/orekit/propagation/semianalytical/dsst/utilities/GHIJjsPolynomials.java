@@ -18,8 +18,8 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 
 /** Compute the G<sub>js</sub>, H<sub>js</sub>, I<sub>js</sub> and J<sub>js</sub>
- *  polynomials in the equinoctial elements h, k and the direction cosines &alpha; and &beta;
- *  and their partial derivatives with respect to k, h, &alpha; and &beta;.
+ *  polynomials in the equinoctial elements h, k and the direction cosines α and β
+ *  and their partial derivatives with respect to k, h, α and β.
  *  <p>
  *  The expressions used are equations 4.1-(10) from the Danielson paper.
  *  </p>
@@ -32,16 +32,16 @@ public class GHIJjsPolynomials {
      */
     private final CjSjCoefficient cjsjKH;
 
-    /** C<sub>j</sub>(&alpha;, &beta;), S<sub>j</sub>(&alpha;, &beta;) coefficient.
-     * (&alpha;, &beta;) are the direction cosines
+    /** C<sub>j</sub>(α, β), S<sub>j</sub>(α, β) coefficient.
+     * (α, β) are the direction cosines
      */
     private final CjSjCoefficient cjsjAB;
 
     /** Create a set of G<sub>js</sub>, H<sub>js</sub>, I<sub>js</sub> and J<sub>js</sub> polynomials.
      *  @param k X component of the eccentricity vector
      *  @param h Y component of the eccentricity vector
-     *  @param alpha direction cosine &alpha;
-     *  @param beta direction cosine &beta;
+     *  @param alpha direction cosine α
+     *  @param beta direction cosine β
      **/
     public GHIJjsPolynomials(final double k, final double h,
                             final double alpha, final double beta) {
@@ -76,19 +76,19 @@ public class GHIJjsPolynomials {
         return cjsjKH.getDcjDh(j) * cjsjAB.getCj(s) + cjsjKH.getDsjDh(j) * cjsjAB.getSj(s);
     }
 
-    /** Get the dG<sub>js</sub> / d&alpha; coefficient.
+    /** Get the dG<sub>js</sub> / dα coefficient.
      * @param j j subscript
      * @param s s subscript
-     * @return the dG<sub>js</sub> / d&alpha;
+     * @return the dG<sub>js</sub> / dα
      */
     public double getdGjsdAlpha(final int j, final int s) {
         return cjsjKH.getCj(j) * cjsjAB.getDcjDk(s) + cjsjKH.getSj(j) * cjsjAB.getDsjDk(s);
     }
 
-    /** Get the dG<sub>js</sub> / d&beta; coefficient.
+    /** Get the dG<sub>js</sub> / dβ coefficient.
      * @param j j subscript
      * @param s s subscript
-     * @return the dG<sub>js</sub> / d&beta;
+     * @return the dG<sub>js</sub> / dβ
      */
     public double getdGjsdBeta(final int j, final int s) {
         return cjsjKH.getCj(j) * cjsjAB.getDcjDh(s) + cjsjKH.getSj(j) * cjsjAB.getDsjDh(s);
@@ -121,19 +121,19 @@ public class GHIJjsPolynomials {
         return cjsjKH.getDcjDh(j) * cjsjAB.getSj(s) - cjsjKH.getDsjDh(j) * cjsjAB.getCj(s);
     }
 
-    /** Get the dH<sub>js</sub> / d&alpha; coefficient.
+    /** Get the dH<sub>js</sub> / dα coefficient.
      * @param j j subscript
      * @param s s subscript
-     * @return the H<sub>js</sub> / d&alpha;
+     * @return the H<sub>js</sub> / dα
      */
     public double getdHjsdAlpha(final int j, final int s) {
         return cjsjKH.getCj(j) * cjsjAB.getDsjDk(s) - cjsjKH.getSj(j) * cjsjAB.getDcjDk(s);
     }
 
-    /** Get the dH<sub>js</sub> / d&beta; coefficient.
+    /** Get the dH<sub>js</sub> / dβ coefficient.
      * @param j j subscript
      * @param s s subscript
-     * @return the H<sub>js</sub> / d&beta;
+     * @return the H<sub>js</sub> / dβ
      */
     public double getdHjsdBeta(final int j, final int s) {
         return cjsjKH.getCj(j) * cjsjAB.getDsjDh(s) - cjsjKH.getSj(j) * cjsjAB.getDcjDh(s);
@@ -166,19 +166,19 @@ public class GHIJjsPolynomials {
         return cjsjKH.getDcjDh(j) * cjsjAB.getSj(s) + cjsjKH.getDsjDh(j) * cjsjAB.getCj(s);
     }
 
-    /** Get the dI<sub>js</sub> / d&aplha; coefficient.
+    /** Get the dI<sub>js</sub> / dα coefficient.
      * @param j j subscript
      * @param s s subscript
-     * @return the I<sub>js</sub> / d&aplha;
+     * @return the I<sub>js</sub> / dα
      */
     public double getdIjsdAlpha(final int j, final int s) {
         return cjsjKH.getCj(j) * cjsjAB.getDsjDk(s) + cjsjKH.getSj(j) * cjsjAB.getDcjDk(s);
     }
 
-    /** Get the dI<sub>js</sub> / d&beta; coefficient.
+    /** Get the dI<sub>js</sub> / dβ coefficient.
      * @param j j subscript
      * @param s s subscript
-     * @return the I<sub>js</sub> / d&beta;
+     * @return the I<sub>js</sub> / dβ
      */
     public double getdIjsdBeta(final int j, final int s) {
         return cjsjKH.getCj(j) * cjsjAB.getDsjDh(s) + cjsjKH.getSj(j) * cjsjAB.getDcjDh(s);
@@ -209,18 +209,18 @@ public class GHIJjsPolynomials {
     public double getdJjsdh(final int j, final int s) {
         return cjsjKH.getDcjDh(j) * cjsjAB.getCj(s) - cjsjKH.getDsjDh(j) * cjsjAB.getSj(s);
     }
-    /** Get the dJ<sub>js</sub> / d&alpha; coefficient.
+    /** Get the dJ<sub>js</sub> / dα coefficient.
      * @param j j subscript
      * @param s s subscript
-     * @return the J<sub>js</sub> / d&alpha;
+     * @return the J<sub>js</sub> / dα
      */
     public double getdJjsdAlpha(final int j, final int s) {
         return cjsjKH.getCj(j) * cjsjAB.getDcjDk(s) - cjsjKH.getSj(j) * cjsjAB.getDsjDk(s);
     }
-    /** Get the dJ<sub>js</sub> / d&beta; coefficient.
+    /** Get the dJ<sub>js</sub> / dβ coefficient.
      * @param j j subscript
      * @param s s subscript
-     * @return the J<sub>js</sub> / d&beta;
+     * @return the J<sub>js</sub> / dβ
      */
     public double getdJjsdBeta(final int j, final int s) {
         return cjsjKH.getCj(j) * cjsjAB.getDcjDh(s) - cjsjKH.getSj(j) * cjsjAB.getDsjDh(s);

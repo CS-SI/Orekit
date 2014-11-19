@@ -39,21 +39,21 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * related to keplerian elements as follows:
  *   <ul>
  *     <li>a</li>
- *     <li>e<sub>x</sub> = e cos(&omega;)</li>
- *     <li>e<sub>y</sub> = e sin(&omega;)</li>
+ *     <li>e<sub>x</sub> = e cos(ω)</li>
+ *     <li>e<sub>y</sub> = e sin(ω)</li>
  *     <li>i</li>
- *     <li>&Omega;</li>
- *     <li>&alpha;<sub>v</sub> = v + &omega;</li>
+ *     <li>Ω</li>
+ *     <li>α<sub>v</sub> = v + ω</li>
  *   </ul>
- * where &Omega; stands for the Right Ascension of the Ascending Node and
- * &alpha;<sub>v</sub> stands for the true latitude argument
+ * where Ω stands for the Right Ascension of the Ascending Node and
+ * α<sub>v</sub> stands for the true latitude argument
  * </p>
  * <p>
  * The conversion equations from and to keplerian elements given above hold only
  * when both sides are unambiguously defined, i.e. when orbit is neither equatorial
  * nor circular. When orbit is circular (but not equatorial), the circular
  * parameters are still unambiguously defined whereas some keplerian elements
- * (more precisely &omega; and &Omega;) become ambiguous. When orbit is equatorial,
+ * (more precisely ω and Ω) become ambiguous. When orbit is equatorial,
  * neither the keplerian nor the circular parameters can be defined unambiguously.
  * {@link EquinoctialOrbit equinoctial orbits} is the recommended way to represent
  * orbits.
@@ -117,16 +117,16 @@ public class CircularOrbit
 
     /** Creates a new instance.
      * @param a  semi-major axis (m)
-     * @param ex e cos(&omega;), first component of circular eccentricity vector
-     * @param ey e sin(&omega;), second component of circular eccentricity vector
+     * @param ex e cos(ω), first component of circular eccentricity vector
+     * @param ey e sin(ω), second component of circular eccentricity vector
      * @param i inclination (rad)
-     * @param raan right ascension of ascending node (&Omega;, rad)
-     * @param alpha  an + &omega;, mean, eccentric or true latitude argument (rad)
+     * @param raan right ascension of ascending node (Ω, rad)
+     * @param alpha  an + ω, mean, eccentric or true latitude argument (rad)
      * @param type type of latitude argument
      * @param frame the frame in which are defined the parameters
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
@@ -166,16 +166,16 @@ public class CircularOrbit
 
     /** Creates a new instance.
      * @param a  semi-major axis (m)
-     * @param ex e cos(&omega;), first component of circular eccentricity vector
-     * @param ey e sin(&omega;), second component of circular eccentricity vector
+     * @param ex e cos(ω), first component of circular eccentricity vector
+     * @param ey e sin(ω), second component of circular eccentricity vector
      * @param i inclination (rad)
-     * @param raan right ascension of ascending node (&Omega;, rad)
-     * @param alpha  an + &omega;, mean, eccentric or true latitude argument (rad)
+     * @param raan right ascension of ascending node (Ω, rad)
+     * @param alpha  an + ω, mean, eccentric or true latitude argument (rad)
      * @param type type of latitude argument
      * @param pvCoordinates the {@link PVCoordinates} in inertial frame
      * @param frame the frame in which are defined the parameters
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
@@ -216,17 +216,17 @@ public class CircularOrbit
 
     /** Creates a new instance.
      * @param a  semi-major axis (m)
-     * @param ex e cos(&omega;), first component of circular eccentricity vector
-     * @param ey e sin(&omega;), second component of circular eccentricity vector
+     * @param ex e cos(ω), first component of circular eccentricity vector
+     * @param ey e sin(ω), second component of circular eccentricity vector
      * @param i inclination (rad)
-     * @param raan right ascension of ascending node (&Omega;, rad)
-     * @param alpha  an + &omega;, mean, eccentric or true latitude argument (rad)
+     * @param raan right ascension of ascending node (Ω, rad)
+     * @param alpha  an + ω, mean, eccentric or true latitude argument (rad)
      * @param type type of latitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
      * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
      * @param frame the frame in which are defined the parameters
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if the latitude argument type is not
      * one of {@link #MEAN_LONGITUDE_ARGUMENT}, {@link #ECCENTRIC_LONGITUDE_ARGUMENT}
      * or {@link #TRUE_LONGITUDE_ARGUMENT} or if frame is not a {@link
@@ -282,7 +282,7 @@ public class CircularOrbit
      * @param pvCoordinates the {@link PVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
@@ -347,7 +347,7 @@ public class CircularOrbit
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
@@ -398,14 +398,14 @@ public class CircularOrbit
     }
 
     /** Get the first component of the circular eccentricity vector.
-     * @return ex = e cos(&omega;), first component of the circular eccentricity vector
+     * @return ex = e cos(ω), first component of the circular eccentricity vector
      */
     public double getCircularEx() {
         return ex;
     }
 
     /** Get the second component of the circular eccentricity vector.
-     * @return ey = e sin(&omega;), second component of the circular eccentricity vector
+     * @return ey = e sin(ω), second component of the circular eccentricity vector
      */
     public double getCircularEy() {
         return ey;
@@ -422,7 +422,7 @@ public class CircularOrbit
     }
 
     /** Get the true latitude argument.
-     * @return v + &omega; true latitude argument (rad)
+     * @return v + ω true latitude argument (rad)
      */
     public double getAlphaV() {
         return alphaV;
@@ -439,7 +439,7 @@ public class CircularOrbit
     }
 
     /** Get the eccentric latitude argument.
-     * @return E + &omega; eccentric latitude argument (rad)
+     * @return E + ω eccentric latitude argument (rad)
      */
     public double getAlphaE() {
         final double epsilon   = FastMath.sqrt(1 - ex * ex - ey * ey);
@@ -450,7 +450,7 @@ public class CircularOrbit
     }
 
     /** Computes the true latitude argument from the eccentric latitude argument.
-     * @param alphaE = E + &omega; eccentric latitude argument (rad)
+     * @param alphaE = E + ω eccentric latitude argument (rad)
      * @return the true latitude argument.
      */
     private double eccentricToTrue(final double alphaE) {
@@ -462,7 +462,7 @@ public class CircularOrbit
     }
 
     /** Get the mean latitude argument.
-     * @return M + &omega; mean latitude argument (rad)
+     * @return M + ω mean latitude argument (rad)
      */
     public double getAlphaM() {
         final double alphaE = getAlphaE();
@@ -470,7 +470,7 @@ public class CircularOrbit
     }
 
     /** Computes the eccentric latitude argument from the mean latitude argument.
-     * @param alphaM = M + &omega;  mean latitude argument (rad)
+     * @param alphaM = M + ω  mean latitude argument (rad)
      * @return the eccentric latitude argument.
      */
     private double meanToEccentric(final double alphaM) {

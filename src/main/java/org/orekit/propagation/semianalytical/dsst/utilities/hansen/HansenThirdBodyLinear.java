@@ -118,8 +118,8 @@ public class HansenThirdBodyLinear {
      * Compute polynomial coefficient a.
      *
      *  <p>
-     *  It is used to generate the coefficient for K<sub>0</sub><sup>n-1, s</sup> when computing K<sub>0</sub><sup>n, s</sup>
-     *  and the coefficient for dK<sub>0</sub><sup>n-1, s</sup> / d&Chi; when computing dK<sub>0</sub><sup>n, s</sup> / d&Chi;
+     *  It is used to generate the coefficient for K₀<sup>n-1, s</sup> when computing K₀<sup>n, s</sup>
+     *  and the coefficient for dK₀<sup>n-1, s</sup> / d&Chi; when computing dK₀<sup>n, s</sup> / d&Chi;
      *  </p>
      *
      *  <p>
@@ -143,8 +143,8 @@ public class HansenThirdBodyLinear {
      * Compute polynomial coefficient b.
      *
      *  <p>
-     *  It is used to generate the coefficient for K<sub>0</sub><sup>n-2, s</sup> when computing K<sub>0</sub><sup>n, s</sup>
-     *  and the coefficient for dK<sub>0</sub><sup>n-2, s</sup> / d&Chi; when computing dK<sub>0</sub><sup>n, s</sup> / d&Chi;
+     *  It is used to generate the coefficient for K₀<sup>n-2, s</sup> when computing K₀<sup>n, s</sup>
+     *  and the coefficient for dK₀<sup>n-2, s</sup> / d&Chi; when computing dK₀<sup>n, s</sup> / d&Chi;
      *  </p>
      *
      *  <p>
@@ -168,7 +168,7 @@ public class HansenThirdBodyLinear {
      * Compute polynomial coefficient d.
      *
      *  <p>
-     *  It is used to generate the coefficient for K<sub>0</sub><sup>n-2, s</sup> when computing dK<sub>0</sub><sup>n, s</sup> / d&Chi;
+     *  It is used to generate the coefficient for K₀<sup>n-2, s</sup> when computing dK₀<sup>n, s</sup> / d&Chi;
      *  </p>
      *
      *  <p>
@@ -262,19 +262,19 @@ public class HansenThirdBodyLinear {
     /**
      * Compute the initial values (see Collins, 4-255, 4-256 and 4.259)
      * <p>
-     * K<sub>0</sub><sup>s, s</sup> = (-1)<sup>s</sup> * ( (2*s+1)!! / (s+1)! )
+     * K₀<sup>s, s</sup> = (-1)<sup>s</sup> * ( (2*s+1)!! / (s+1)! )
      * </p>
      * <p>
-     * K<sub>0</sub><sup>s+1, s</sup> = (-1)<sup>s</sup> * ( (2*s+1)!! / (s+2)!
-     * ) * (2*s+3 - &chi;<sup>-2</sup>)
+     * K₀<sup>s+1, s</sup> = (-1)<sup>s</sup> * ( (2*s+1)!! / (s+2)!
+     * ) * (2*s+3 - χ<sup>-2</sup>)
      * </p>
      * <p>
-     * dK<sub>0</sub><sup>s+1, s</sup> / d&chi; = = (-1)<sup>s</sup> * 2 * (
-     * (2*s+1)!! / (s+2)! ) * &chi;<sup>-3</sup>
+     * dK₀<sup>s+1, s</sup> / dχ = = (-1)<sup>s</sup> * 2 * (
+     * (2*s+1)!! / (s+2)! ) * χ<sup>-3</sup>
      * </p>
-     * @param chitm1 sqrt(1 - e<sup>2</sup>)
-     * @param chitm2 sqrt(1 - e<sup>2</sup>)<sup>2</sup>
-     * @param chitm3 sqrt(1 - e<sup>2</sup>)<sup>3</sup>
+     * @param chitm1 sqrt(1 - e²)
+     * @param chitm2 sqrt(1 - e²)²
+     * @param chitm3 sqrt(1 - e²)³
      */
     public void computeInitValues(final double chitm1, final double chitm2, final double chitm3) {
         this.hansenRoot[0][0] = this.twosp1dfosp1f;
@@ -302,11 +302,11 @@ public class HansenThirdBodyLinear {
     }
 
     /**
-     * Compute the value of the Hansen coefficient K<sub>0</sub><sup>n, s</sup>.
+     * Compute the value of the Hansen coefficient K₀<sup>n, s</sup>.
      *
      * @param n n value
-     * @param chitm1 &chi;<sup>-1</sup>
-     * @return the coefficient K<sub>0</sub><sup>n, s</sup>
+     * @param chitm1 χ<sup>-1</sup>
+     * @return the coefficient K₀<sup>n, s</sup>
      */
     public double getValue(final int n, final double chitm1) {
 
@@ -338,11 +338,11 @@ public class HansenThirdBodyLinear {
     }
 
     /**
-     * Compute the value of the Hansen coefficient dK<sub>0</sub><sup>n, s</sup> / d&Chi;.
+     * Compute the value of the Hansen coefficient dK₀<sup>n, s</sup> / d&Chi;.
      *
      * @param n n value
-     * @param chitm1 &chi;<sup>-1</sup>
-     * @return the coefficient dK<sub>0</sub><sup>n, s</sup> / d&Chi;
+     * @param chitm1 χ<sup>-1</sup>
+     * @return the coefficient dK₀<sup>n, s</sup> / d&Chi;
      */
     public double getDerivative(final int n, final double chitm1) {
         //Compute the potential slice
