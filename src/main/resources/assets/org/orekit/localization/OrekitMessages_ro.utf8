@@ -1,0 +1,371 @@
+# internal error, contact maintenance at {0}
+INTERNAL_ERROR = eroare internă, contactați echipa de întrținere la {0}
+
+# altitude ({0} m) is below the {1} m allowed threshold
+ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitudinea ({0} m) este sub limita permisă de {1} m 
+
+# trajectory inside the Brillouin sphere (r = {0})
+TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = traiectorie în interiorul sferei Brillouin (r = {0})
+
+# almost equatorial orbit (i = {0} degrees)
+ALMOST_EQUATORIAL_ORBIT = orbită aproape ecuatorială (i = {0} grade)
+
+# almost critically inclined orbit (i = {0} degrees)
+ALMOST_CRITICALLY_INCLINED_ORBIT = orbită cu înclinație aproape critică (i = {0} grade)
+
+# unable to compute Eckstein-Hechler mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = imposibil de calculat parametrii medii Eckstein-Hechler după {0} iterații
+
+# null parent for frame {0}
+NULL_PARENT_FOR_FRAME = părintele sistemului de coordonate {0} este nul
+
+# frame {0} is already attached to frame {1}
+FRAME_ALREADY_ATTACHED = sistemul de coordonate {0} este deja atașat sistemului de coordonate {1}
+
+# frame {0} is not attached to the main frames tree
+FRAME_NOT_ATTACHED = sistemul de coordonate {0} nu este atașat arborelui de sisteme de coordonate
+
+# frame {0} is an ancestor of both frames {1} and {2}
+FRAME_ANCESTOR_OF_BOTH_FRAMES = sistemul de coordonate {0} este un strămoș al sistemelor de coordonate {1} și {2}
+
+# frame {0} is an ancestor of neither frame {1} nor {2}
+FRAME_ANCESTOR_OF_NEITHER_FRAME = sistemul de coordonate {0} nu este un strămoș al sistemelor de coordonate {1} și {2}
+
+# frame {0} has depth {1}, it cannot have an ancestor {2} levels above
+FRAME_NO_NTH_ANCESTOR = sistemul de coordonate {0} are nivelul {1}, nu poate avea un strămoș cu {2} nivele deasupra
+
+# unsupported local orbital frame, supported types: {0} and {1}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistem orbital de coordonate nesuportat, tipuri suportate: {0} și {1}
+
+# non pseudo-inertial frame "{0}" is not suitable for defining orbits
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = sistemul de coordonate non pseudo-inerțial "{0}" nu este potrivit pentru definirea orbitelor
+
+# data root directory {0} does not exist
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = directorul rădăcină al datelor {0} nu există
+
+# {0} is not a directory
+NOT_A_DIRECTORY = {0} nu este un director
+
+# {0} is neither a directory nor a zip/jar archive file
+NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} nu este nici un director, nici un fișier arhivă zip/jar
+
+# unable to find resource {0} in classpath
+UNABLE_TO_FIND_RESOURCE = imposibil de găsit resursa {0} în classpath
+
+# no Earth Orientation Parameters loaded
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED = nici un Parametru de Orientare al Pământului nu a fost încărcat
+
+# missing Earth Orientation Parameters between {0} and {1}
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Parametrii de Orientare ai Pamântului lipsesc între {0} și {1}
+
+# file {0} is not a supported IERS data file
+NOT_A_SUPPORTED_IERS_DATA_FILE = fișierul {0} nu este un fișier IERS de date suportat
+
+# inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
+INCONSISTENT_DATES_IN_IERS_FILE = datele {1}-{2}-{3} și MJD {4} sunt inconsistente în fișierul IERS {0} 
+
+# unexpected data after line {0} in file {1}: {2}
+UNEXPECTED_DATA_AFTER_LINE_IN_FILE = date neașteptate după linia {0} din fișierul {1}: {2}
+
+# non-chronological dates in file {0}, line {1}
+NON_CHRONOLOGICAL_DATES_IN_FILE = date necronologice în fișierul {0}, linia {1}
+
+# no IERS UTC-TAI history data loaded
+NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = datele istorice UTC-TAI nu sunt încărcate
+
+# no entries found in IERS UTC-TAI history file {0}
+NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  nicio înregistrare nu a fost gasită în fișierul istoric UTC_TAI {0} al IERS 
+
+# missing serie j = {0} in file {1} (line {2})
+MISSING_SERIE_J_IN_FILE = seria j = {0} lipsește din fișierul {1} (linia {2})
+
+# cannot parse both τ and γ from the same Poissons series file
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = imposibil de analizat τ și γ din același fișier ce conține serii Poissons
+
+# unexpected end of file {0} (after line {1})
+UNEXPECTED_END_OF_FILE_AFTER_LINE = final neașteptat de fișier {0} (după linia {1})
+
+# unable to parse line {0} of file {1}:\n{2}
+UNABLE_TO_PARSE_LINE_IN_FILE = imposibil de analizat linia {0} din fișierul {1}:\n{2}
+
+# unable to find file {0}
+UNABLE_TO_FIND_FILE = imposibil de găsit fișierul {0}
+
+# spacecraft mass becomes negative: {0} kg
+SPACECRAFT_MASS_BECOMES_NEGATIVE = masa navei spațiale devine negativă: {0} kg
+
+# positive flow rate (q: {0})
+POSITIVE_FLOW_RATE = rata fluxului pozitivă (q: {0})
+
+# no gravity field data loaded
+NO_GRAVITY_FIELD_DATA_LOADED = nu sunt încărcate date referitoare la câmpul gravitațional
+
+# gravity field normalization underflow for degree {0} and order {1}
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = depășire inferioara la normalizarea campului gravitațional pentru gradul {0} și ordinul {1}
+
+# no ocean tide data loaded
+NO_OCEAN_TIDE_DATA_LOADED = nu sunt încărcate date referitoare la mareele oceanice
+
+# ocean tide data file {0} limited to degree {1} and order {2}
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = fișierul cu mareele oceanice {0} limitat la gradul {1} și ordinul {2}
+
+# load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = coeficienții de deformare în sarcină limitați la gradul {0}, imposibil de citit un termen cu gradul {1} din fișierul {2}
+
+# polar trajectory (distance to polar axis: {0})
+POLAR_TRAJECTORY = traiectorie polară (distanța la axa polară: {0})
+
+# unexpected format error for file {0} with loader {1}
+UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = eroare neașteptată de format pentru fișierul {0} cu cititorul {1}
+
+# duplicated gravity field coefficient {0}({1}, {2}) in file {3}
+DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coeficientul {0}({1}, {2}) duplicat în fișierul de câmp gravitațional {3}
+
+# missing gravity field coefficient {0}({1}, {2}) in file {3}
+MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coeficientul {0}({1}, {2}) lipsă în fișierul de câmp gravitațional {3}
+
+# too large degree (n = {0}, potential maximal degree is {1})
+TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grad prea mare (n = {0}, gradul maxim al potențialului este {1})
+
+# too large order (m = {0}, potential maximal order is {1})
+TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordin prea mare (n = {0}, ordinul maxim al potențialului este {1})
+
+# several reference dates ({0} and {1}) found in gravity field file {2}
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = mai multe date de referință ({0} and {1}) descoperite în fișierul de câmp gravitațional {2}
+
+# no TLE data available for object {0}
+NO_TLE_FOR_OBJECT = nu sunt disponibile date TLE pentru obiectul {0}
+
+# no TLE data available for launch year {0}, launch number {1}, launch piece {2}
+NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = nu sunt disponibile date TPE pentru anul lansării {0}, numărul lansării {1}, obiectul lansat {2}
+
+# lines {0} and {1} are not TLE lines:\n{0}: "{2}"\n{1}: "{3}"
+NOT_TLE_LINES = liniile {0} și {1} nu sunt liniii TLE:\n{0}: "{2}"\n{1}: "{3}"
+
+# expected a second TLE line after line {0}:\n{0}: "{1}"
+MISSING_SECOND_TLE_LINE = a doua linie TLE este așteptată după linia {0}:\n{0}: "{1}"
+
+# TLE lines do not refer to the same object:\n{0}\n{1}
+TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = liniile TLE nu se referă la același obiect:\n{0}\n{1}
+
+# wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
+TLE_CHECKSUM_ERROR = sumă de control eronată pentru linia TLE {0}, {2} în loc de valoarea așteptata {1} ({3})
+
+# no TLE data available
+NO_TLE_DATA_AVAILABLE = nu sunt date TLE disponibile
+
+# spacecraft mass is not positive: {0} kg
+NOT_POSITIVE_SPACECRAFT_MASS = masa vehiculului spațial nu este pozitivă: {0} kg
+
+# too large eccentricity for propagation model: e = {0}
+TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = eccentricitate prea mare pentru modelul de propagare: e = {0}
+
+# no solar activity available at {0}, data available only in range [{1}, {2}]
+NO_SOLAR_ACTIVITY_AT_DATE = nu există informații referitoare la activitatea solară la data {0}, informații disponibile doar pentru intervalul [{1}, {2}]
+
+# non-existent month {0}
+NON_EXISTENT_MONTH = lună inexistentă {0}
+
+# non-existent date {0}-{1}-{2}
+NON_EXISTENT_YEAR_MONTH_DAY = dată inexistentă {0}-{1}-{2}
+
+# non-existent week date {0}-W{1}-{2}
+NON_EXISTENT_WEEK_DATE = dată săptămânală inexistentă {0}-W{1}-{2}
+
+# non-existent date {0}
+NON_EXISTENT_DATE = dată inexistentă {0}
+
+# no day number {0} in year {1}
+NON_EXISTENT_DAY_NUMBER_IN_YEAR = zi cu numărul {0} inexistentă în anul {1}
+
+# non-existent time {0}:{1}:{2}
+NON_EXISTENT_HMS_TIME = oră inexistentă {0}:{1}:{2}
+
+# non-existent time {0}
+NON_EXISTENT_TIME = oră inexistentă {0}
+
+# out of range seconds number: {0}
+OUT_OF_RANGE_SECONDS_NUMBER = secundă în afara domeniului: {0}
+
+# angle type not supported, supported angles: {0}, {1} and {2}
+ANGLE_TYPE_NOT_SUPPORTED = tip de unghi nesuportat, unghiuri suportate: {0}, {1} și {2}
+
+# satellite collided with target
+SATELLITE_COLLIDED_WITH_TARGET = satelitul s-a ciocnit de ținta sa
+
+# attitude pointing law misses ground
+ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = legea de indicare a atitudinii nu indică către pământ
+
+# orbit date ({0}) does not match attitude date ({1})
+ORBIT_AND_ATTITUDE_DATES_MISMATCH = data orbitală ({0}) nu corespunde datei ({1}) corespunzătoare atitudinii
+
+# frame ({0}) does not match frame ({1})
+FRAMES_MISMATCH = sistemul de referință {0} nu corespunde sistemului de referință {1}
+
+# initial state not specified for orbit propagation
+INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = stare inițială nespecificată pentru propagarea orbitală
+
+# propagator is not in ephemeris generation mode
+PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = propagatorul nu este în modul de generare al efemeridelor
+
+# event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
+EVENT_DATE_TOO_CLOSE = data evenimentului {0}, mai mare decât {1} minus {3} secunde și mai mică decât {2} plus {3} secunde, nu poate fi adăugată
+
+# unable to read header record from JPL ephemerides binary file {0}
+UNABLE_TO_READ_JPL_HEADER = imposibil de citit antetul fișierului de efemeride JPL {0}
+
+# inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
+INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = valori incoerente pentru unitățile astronomice din fișierele de efemeride JPL : ({0} și {1})
+ 
+# inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
+INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = valori incoerente pentru raportul masei Pământ/Lună din fișierele de efemeride JPL : ({0} și {1})
+
+# no data loaded for celestial body {0}
+NO_DATA_LOADED_FOR_CELESTIAL_BODY = nicio informație încărcată pentru corpul celest {0}
+
+# file {0} is not a JPL ephemerides binary file
+NOT_A_JPL_EPHEMERIDES_BINARY_FILE = fișierul {0} nu este un fișier de efemeride JPL 
+
+# file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file
+NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = fișierul {0} nu este un fișier Marshal de Estimare a Activității Solare Viitoare (MSAFE)
+
+# no JPL ephemerides binary files found
+NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = niciun fișier de efemeride JPL găsit
+
+# out of range date for {0} ephemerides: {1}
+OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = dată în afara domeniului de valabilitate al efemeridelor « {0} » : {1}
+
+# out of range date for ephemerides: {0}, [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE = dată în afara domeniului de valabilitate al efemeridelor : {0}, [{1}, {2}]
+
+# unexpected two elevation values: {0} and {1}, for one azimuth: {2}
+UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = date neașteptate, două valori ale elevației: {0} and {1}, pentru o singură valoare a azimutului: {2}
+
+# unsupported parameter name {0}, supported names: {1}
+UNSUPPORTED_PARAMETER_NAME = parametrul {0} necunoscut, parametrii cunoscuți: {1}
+
+# unknown additional state "{0}"
+UNKNOWN_ADDITIONAL_STATE = starea adiționala "{0}" necunoscută
+
+# unknown month "{0}"
+UNKNOWN_MONTH = lună necunoscută "{0}"
+
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = matricea Jacobiană asociată tipului {0} este singulară pentru orbita curentă
+
+# state Jacobian has not been initialized yet
+STATE_JACOBIAN_NOT_INITIALIZED = Jacobianul de stare nu a fost inițializat încă
+
+# state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
+STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Jacobianul de stare este o matrice {0}x{1}, ar trebui sa fie o matrice 6x6 sau o matrice 7x7
+
+# state Jacobian has {0} rows but parameters Jacobian has {1} rows
+STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobianul de stare are {0} linii dar Jacobianul parametrilor are {1} linii
+
+# finite differences steps for force models derivatives not initialized
+STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = pas neinițializat pentru calculul derivatelor modelului de forțe prin metoda diferențelor finite
+
+# initial Jacobian matrix has {0} columns, but {1} parameters have been selected
+INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = matricea Jacobiană inițială are {0} coloane, dar {1} parametrii au fost selectați
+
+# orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
+ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = orbita trebuie sa fie ori eliptică cu a > 0 și e < 1 ori hiperbolică cu a < 0 și e > 1, a = {0}, e = {1}
+
+# true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = anomalia realaă {0} în afara domeniului pentru orbitele hiperbolice (e = {1}, {2} < v < {3})
+
+# hyperbolic orbits cannot be handled as {0} instances
+HYPERBOLIC_ORBIT_NOT_HANDLED_AS = orbitele hiperbolice nu pot fi tratate ca instanțe de {0}
+
+# invalid preamble field in CCSDS date: {0}
+CCSDS_DATE_INVALID_PREAMBLE_FIELD = preambul invalid într-o dată CCSDS: {0}
+
+# invalid time field length in CCSDS date: {0}, expected {1}
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lungime invalidă pentru câmpul timp dintr-o dată CCSDS: {0} în loc de valoarea așteptată {1}
+
+# missing agency epoch in CCSDS date
+CCSDS_DATE_MISSING_AGENCY_EPOCH = epocă de referință specifică agenției lipsă din data CCSDS
+
+# unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+CCSDS_UNEXPECTED_KEYWORD = cuvânt cheie neașteptat la linia {0} din fișierul CCSDS {1}:\n{2}
+
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = coeficientul de atracție gravitațională nu poate fi extras din ODM
+
+# there is no spacecraft mass associated with this ODM file
+CCSDS_UNKNOWN_SPACECRAFT_MASS = nu există masa pentru vehiculul spațial din acest fișier ODM
+
+# no IERS conventions have been set before parsing
+CCSDS_UNKNOWN_CONVENTIONS = convențiile IERS nu au fost inițializate înainte de citire
+
+# frame {0} is not valid in this ODM file context
+CCSDS_INVALID_FRAME = sistemul de referință {0} nu este valid în contextul acestui fișier ODM
+
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sisteme temporale incoerente in blocurile de efemeride : {0} ≠ {1}
+
+# name "{0}" is already used for an additional state
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE = numele "{0}" este deja folosit pentru o stare adițională
+
+# reset state not allowed
+NON_RESETABLE_STATE = reinițializarea stării nepermisă
+
+# Cannot compute Newcomb operators for sigma > rho ({0} > {1})
+DSST_NEWCOMB_OPERATORS_COMPUTATION = Imposibil de calculat operatorii Newcomb pentru sigma > rho ({0} > {1})
+
+# Cannot compute the Vmns coefficient with m > n ({0} > {1})
+DSST_VMNS_COEFFICIENT_ERROR_MS = Imposibil de calculat coeficientul Vmns pentru m > n ({0} > {1})
+
+# inconsistent shadow computation: entry = {0} whereas exit = {1}
+DSST_SPR_SHADOW_INCONSISTENT = inconsistență în calculul umbrei: intrare = {0} și ieșire = {1}
+
+# The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Orbita curentă are o eccentricitate {0} > 0.5 care necesită pentru calculul ratelor medii o metodă numerică cu dependență de timp neimplementată încă
+
+# unsupported sp3 file version {0}
+SP3_UNSUPPORTED_VERSION = versiunea fișierului sp3 {0} nesuportată
+
+# unsupported time system {0}
+SP3_UNSUPPORTED_TIMESYSTEM = versiunea sistemului temporal {0} nesuportată
+
+# unexpected end of file in sp3 file (after line {0})
+SP3_UNEXPECTED_END_OF_FILE = sfârșit neașteptat al fișierului sp3 (după linia {0})
+
+# non-existent geomagnetic model {0} for year {1}
+NON_EXISTENT_GEOMAGNETIC_MODEL = fișierul de model geomagnetic {0} inexistent pentru anul {1}
+
+# geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined
+UNSUPPORTED_TIME_TRANSFORM = modelul geomagnetic {0} cu moment de timp de referință {1} nu permite transformări temporale, nu este definită variația seculară a coeficienților
+
+# time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
+OUT_OF_RANGE_TIME_TRANSFORM = tranformarea temporală a modelului geomagnetic {0} cu moment de timp de referință {1} este în afara intervalului de validitate: {2} != [{3}, {4}]
+
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = date insuficiente pentru interpolare (dimensiunea eșantionului = {0})
+
+# too small number of cached neighbors: {0} (must be at least {1})
+NOT_ENOUGH_CACHED_NEIGHBORS =  numărul de vecini din cache este prea mic: {0} (trebuie cel puțin {1})
+
+# no cached entries
+NO_CACHED_ENTRIES = nu există înregistrări în cache
+
+# generated entries not sorted: {0} > {1}
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = înregistrările generate nu sunt în ordine cronologică: {0} > {1}
+
+# no data generated around date: {0}
+NO_DATA_GENERATED = nu există informații generate în jurul datei: {0}
+
+# unable to generate new data before {0}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = imposibil de generat date noi înainte de {0}
+
+# unable to generate new data after {0}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = imposibil de generat date noi după {0}
+
+# unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
+UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = imposibil de calculat anomalia excentrică hiperbolică pornind de la anomalia medie după {0} iterații
+
+# unable to compute mean orbit from osculating orbit after {0} iterations
+UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = imposibil de calculat orbita medie din orbita osculatorie după {0} iterații
+
+# derivation order {0} is out of range
+OUT_OF_RANGE_DERIVATION_ORDER = ordinul de derivare {0} este in afara domeniului de definiție

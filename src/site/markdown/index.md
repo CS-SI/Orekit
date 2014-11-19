@@ -159,6 +159,7 @@ Features
     * Greek
     * Italian
     * Norwegian
+    * Romanian
     * Spanish
 
   * The top level packages provided by Orekit are the following one:

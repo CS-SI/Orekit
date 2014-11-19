@@ -34,7 +34,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testAllKeysPresentInPropertiesFiles() {
-        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no" } ) {
+        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" } ) {
             ResourceBundle bundle =
                 ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
                                          new Locale(language), new OrekitMessages.UTF8Control());
@@ -54,7 +54,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testAllPropertiesCorrespondToKeys() {
-        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no" } ) {
+        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" } ) {
             ResourceBundle bundle =
                 ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
                                          new Locale(language), new OrekitMessages.UTF8Control());
@@ -89,7 +89,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testVariablePartsConsistency() {
-        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no" } ) {
+        for (final String language : new String[] { "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" } ) {
             Locale locale = new Locale(language);
             for (OrekitMessages message : OrekitMessages.values()) {
                 MessageFormat source     = new MessageFormat(message.getSourceString());
