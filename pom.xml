@@ -201,12 +201,12 @@
 
   <scm>
     <connection>scm:git:http://www.orekit.org/git/orekit</connection>
-    <developerConnection>scm:git:ssh://git@www.orekit.org/orekit.git</developerConnection>
+    <developerConnection>scm:git:ssh://git@www.orekit.org/orekit-main.git</developerConnection>
     <url>https://www.orekit.org/forge/projects/orekit/repository</url>
   </scm>
 
   <issueManagement>
-      <system>ChiliProject</system>
+      <system>Redmine</system>
       <url>https://www.orekit.org/forge/projects/orekit/issues</url>
   </issueManagement>
 
