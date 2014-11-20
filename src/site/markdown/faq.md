@@ -108,7 +108,7 @@ with version 4.1, Orekit depends only on officially released versions of Apache 
   Orekit 5.0   | Apache Commons Math 2.1
   Orekit 5.0.3 | Apache Commons Math 2.2
   Orekit 6.0   | Apache Commons Math 3.2
-  Orekit 6.1   | Apache Commons Math 2.2
+  Orekit 6.1   | Apache Commons Math 3.2
 
 ### The orekit-data.zip file you provide is not up to date. Can you update it?
 
@@ -150,10 +150,10 @@ by keeping the file as a zip archive and pointing to this archive, or by unzippi
 
 Here is an example using the file in zip format:
 
-    DataProvidersManager.addProvider(new ZipJarCrawler(new File("/path/to/the/zip/file/orekit-data.zip")));
+    DataProvidersManager.getInstance().addProvider(new ZipJarCrawler(new File("/path/to/the/zip/file/orekit-data.zip")));
 
 Here is an example using the folder resulting from expanding the archive:
 
-    DataProvidersManager.addProvider(new DirectoryCrawler(new File("/path/to/the/folder/orekit-data")));
+    DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File("/path/to/the/folder/orekit-data")));
 
 Using a folder allows one to change the data in it, e.g., adding new EOP files as they are published by IERS.
