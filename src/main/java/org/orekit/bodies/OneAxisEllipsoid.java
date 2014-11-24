@@ -23,6 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -239,10 +240,13 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // project coordinates in the meridian plane
         final TimeStampedPVCoordinates gpFirst = firstPrincipalCurvature.projectToEllipse(pvInBodyFrame);
         final Vector3D                 gpP     = gpFirst.getPosition();
+        final double                   gr      = MathArrays.linearCombination(gpP.getX(), meridian.getX(),
+                                                                              gpP.getY(), meridian.getY());
+        final double                   gz      = gpP.getZ();
 
         // topocentric frame
         final Vector3D east   = new Vector3D(-meridian.getY(), meridian.getX(), 0);
-        final Vector3D zenith = p.subtract(gpP).normalize();
+        final Vector3D zenith = new Vector3D(gr * getC() / getA(), meridian, gz * getA() / getC(), Vector3D.PLUS_K).normalize();
         final Vector3D north  = Vector3D.crossProduct(zenith, east);
 
         // set up the ellipse corresponding to second principal curvature in the zenith/east plane

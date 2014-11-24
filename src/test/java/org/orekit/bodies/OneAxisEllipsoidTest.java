@@ -209,6 +209,30 @@ public class OneAxisEllipsoidTest {
 
     }
 
+    @Test
+    public void testGroundToGroundIssue181()
+            throws OrekitException {
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame eme2000 = FramesFactory.getEME2000();
+        OneAxisEllipsoid model =
+            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                 Constants.WGS84_EARTH_FLATTENING,
+                                 itrf);
+
+        TimeStampedPVCoordinates initPV =
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(584.),
+                                             new Vector3D(3220103., 69623., 6449822.),
+                                             new Vector3D(6414.7, -2006., -3180.),
+                                             Vector3D.ZERO);
+        TimeStampedPVCoordinates body = itrf.getTransformTo(eme2000, initPV.getDate()).transformPVCoordinates(initPV);
+        TimeStampedPVCoordinates ground1 = model.projectToGround(body,    itrf);
+        TimeStampedPVCoordinates ground2 = model.projectToGround(ground1, itrf);
+        Assert.assertEquals(0.0, Vector3D.distance(ground1.getPosition(),     ground2.getPosition()),     1.0e-12);
+        Assert.assertEquals(0.0, Vector3D.distance(ground1.getVelocity(),     ground2.getVelocity()),     1.0e-12);
+        Assert.assertEquals(0.0, Vector3D.distance(ground1.getAcceleration(), ground2.getAcceleration()), 1.0e-12);
+
+    }
+
     private double[] derivativesErrors(PVCoordinatesProvider provider, AbsoluteDate date, Frame frame,
                                        OneAxisEllipsoid model)
         throws OrekitException {

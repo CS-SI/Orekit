@@ -22,6 +22,10 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix">
+        Fixed null vector normalization when attempting to project to ground a point already on ground.
+        Fixes issue #181.
+      </action>
       <action dev="luc" type="add" due-to="Lucian Barbulescu">
         Added Romanian localization for error messages.
       </action>
