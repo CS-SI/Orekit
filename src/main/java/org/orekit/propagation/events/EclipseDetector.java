@@ -36,7 +36,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */
-public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetector> {
+public class EclipseDetector extends AbstractDetector<EclipseDetector> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
@@ -55,77 +55,6 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
     private boolean totalEclipse;
-
-    /** Build a new eclipse detector.
-     * <p>The new instance is either an umbra detector or a penumbra detector
-     * with default values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
-     * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
-     * @param occulted the body to be occulted
-     * @param occultedRadius the radius of the body to be occulted (m)
-     * @param occulting the occulting body
-     * @param occultingRadius the occulting body radius (m)
-     * @param totalEclipse umbra (true) or penumbra (false) detection flag
-     * @deprecated as of 6.1 replaced by {@link #EclipseDetector(PVCoordinatesProvider,
-     * double, PVCoordinatesProvider, double)} followed by either a call to
-     * {@link #withUmbra()} or by a call to {@link #withPenumbra()}
-     */
-    @Deprecated
-    public EclipseDetector(final PVCoordinatesProvider occulted,  final double occultedRadius,
-                           final PVCoordinatesProvider occulting, final double occultingRadius,
-                           final boolean totalEclipse) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD,
-             occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
-    }
-
-    /** Build a new eclipse detector.
-     * <p>The new instance is either an umbra detector or a penumbra detector
-     * with default value for convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
-     * <p>The maximal interval between eclipse checks should be smaller than
-     * the half duration of the minimal pass to handle, otherwise some short
-     * passes could be missed.</p>
-     * @param maxCheck maximal checking interval (s)
-     * @param occulted the body to be occulted
-     * @param occultedRadius the radius of the body to be occulted (m)
-     * @param occulting the occulting body
-     * @param occultingRadius the occulting body radius (m)
-     * @param totalEclipse umbra (true) or penumbra (false) detection flag
-     * @deprecated as of 6.1 replaced by {@link #EclipseDetector(double,
-     * PVCoordinatesProvider, double, PVCoordinatesProvider, double)} followed by
-     * either a call to {@link #withUmbra()} or by a call to {@link #withPenumbra()}
-     */
-    @Deprecated
-    public EclipseDetector(final double maxCheck,
-                           final PVCoordinatesProvider occulted,  final double occultedRadius,
-                           final PVCoordinatesProvider occulting, final double occultingRadius,
-                           final boolean totalEclipse) {
-        this(maxCheck, DEFAULT_THRESHOLD,
-             occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
-    }
-
-    /** Build a new eclipse detector .
-     * <p>The new instance is either an umbra detector or a penumbra detector.</p>
-     * <p>The maximal interval between eclipse checks should be smaller than
-     * the half duration of the minimal pass to handle, otherwise some short
-     * passes could be missed.</p>
-     * @param maxCheck maximal checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @param occulted the body to be occulted
-     * @param occultedRadius the radius of the body to be occulted (m)
-     * @param occulting the occulting body
-     * @param occultingRadius the occulting body radius (m)
-     * @param totalEclipse umbra (true) or penumbra (false) detection flag
-     * @deprecated as of 6.1 replaced by {@link #EclipseDetector(double, double,
-     * PVCoordinatesProvider, double, PVCoordinatesProvider, double)} followed by
-     * either a call to {@link #withUmbra()} or by a call to {@link #withPenumbra()}
-     */
-    @Deprecated
-    public EclipseDetector(final double maxCheck, final double threshold,
-                           final PVCoordinatesProvider occulted, final double occultedRadius,
-                           final PVCoordinatesProvider occulting, final double occultingRadius,
-                           final boolean totalEclipse) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<EclipseDetector>(),
-             occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
-    }
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default

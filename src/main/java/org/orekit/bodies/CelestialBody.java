@@ -31,15 +31,6 @@ public interface CelestialBody extends Serializable, PVCoordinatesProvider {
     /** Get an inertially oriented, body centered frame.
      * <p>The frame is always bound to the body center, and its axes have a
      * fixed orientation with respect to other inertial frames.</p>
-     * @return an inertially oriented body centered frame
-     * @deprecated as of 6.0 replaced by {@link #getInertiallyOrientedFrame()}
-     */
-    @Deprecated
-    Frame getFrame();
-
-    /** Get an inertially oriented, body centered frame.
-     * <p>The frame is always bound to the body center, and its axes have a
-     * fixed orientation with respect to other inertial frames.</p>
      * @return an inertially oriented, body centered frame
      * @exception OrekitException if frame cannot be retrieved
      * @see #getBodyOrientedFrame()

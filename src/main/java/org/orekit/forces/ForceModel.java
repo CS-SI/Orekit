@@ -107,6 +107,6 @@ public interface ForceModel extends ParameterizedODE {
      * @return array of events detectors or null if the model is not
      * related to any discrete events
      */
-    EventDetector[] getEventsDetectors();
+    EventDetector<?>[] getEventsDetectors();
 
 }

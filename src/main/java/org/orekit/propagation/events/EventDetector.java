@@ -20,6 +20,8 @@ import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
@@ -42,49 +44,11 @@ import org.orekit.time.AbsoluteDate;
  * some processing, ignore it ...). The return value of the method will be used by
  * the propagator to stop or resume propagation, possibly changing the state vector.<p>
  *
+ * @param <T> object type of the detector
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface EventDetector extends Serializable {
-
-    /** Enumerate for actions to be performed when an event occurs.
-     * @deprecated as of 6.1, replaced with {@link org.orekit.propagation.events.handlers.EventHandler.Action}
-     */
-    @Deprecated
-    public enum Action {
-
-        /** Stop indicator.
-         * <p>This value should be used as the return value of the {@link
-         * #eventOccurred eventOccurred} method when the propagation should be
-         * stopped after the event ending the current step.</p>
-         */
-        STOP,
-
-        /** Reset state indicator.
-         * <p>This value should be used as the return value of the {@link
-         * #eventOccurred eventOccurred} method when the propagation should
-         * go on after the event ending the current step, with a new state
-         * (which will be retrieved thanks to the {@link #resetState
-         * resetState} method).</p>
-         */
-        RESET_STATE,
-
-        /** Reset derivatives indicator.
-         * <p>This value should be used as the return value of the {@link
-         * #eventOccurred eventOccurred} method when the propagation should
-         * go on after the event ending the current step, with recomputed
-         * derivatives vector.</p>
-         */
-        RESET_DERIVATIVES,
-
-        /** Continue indicator.
-         * <p>This value should be used as the return value of the {@link
-         * #eventOccurred eventOccurred} method when the propagation should go
-         * on after the event ending the current step.</p>
-         */
-        CONTINUE;
-
-    }
+public interface EventDetector<T extends EventDetector<T>> extends Serializable {
 
     /** Initialize event handler at the start of a propagation.
      * <p>
@@ -106,64 +70,6 @@ public interface EventDetector extends Serializable {
      */
     double g(SpacecraftState s) throws OrekitException;
 
-    /** Handle an event and choose what to do next.
-
-     * <p>The scheduling between this method and the {@link
-     * org.orekit.propagation.sampling.OrekitStepHandler OrekitStepHandler} method {@link
-     * org.orekit.propagation.sampling.OrekitStepHandler#handleStep(
-     * org.orekit.propagation.sampling.OrekitStepInterpolator, boolean)
-     * handleStep(interpolator, isLast)} is to call this method first and
-     * <code>handleStep</code> afterwards. This scheduling allows the propagator to
-     * pass <code>true</code> as the <code>isLast</code> parameter to the step
-     * handler to make it aware the step will be the last one if this method
-     * returns {@link EventDetector.Action#STOP}. As the interpolator may be used to navigate back
-     * throughout the last step (as {@link
-     * org.orekit.propagation.sampling.OrekitStepNormalizer OrekitStepNormalizer}
-     * does for example), user code called by this method and user
-     * code called by step handlers may experience apparently out of order values
-     * of the independent time variable. As an example, if the same user object
-     * implements both this {@link EventDetector EventDetector} interface and the
-     * {@link org.orekit.propagation.sampling.OrekitFixedStepHandler OrekitFixedStepHandler}
-     * interface, a <em>forward</em> integration may call its
-     * <code>eventOccurred</code> method with a state at 2000-01-01T00:00:10 first
-     * and call its <code>handleStep</code> method with a state at 2000-01-01T00:00:09
-     * afterwards. Such out of order calls are limited to the size of the
-     * integration step for {@link
-     * org.orekit.propagation.sampling.OrekitStepHandler variable step handlers} and
-     * to the size of the fixed step for {@link
-     * org.orekit.propagation.sampling.OrekitFixedStepHandler fixed step handlers}.</p>
-
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event (note that increase is measured with respect
-     * to physical time, not with respect to propagation which may go backward in time)
-     * @return one of {@link EventDetector.Action#STOP}, {@link EventDetector.Action#RESET_STATE},
-     * {@link EventDetector.Action#RESET_DERIVATIVES} or {@link EventDetector.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     * @deprecated as of 6.1 replaced by {@link
-     * org.orekit.propagation.events.handlers.EventHandler#eventOccurred(SpacecraftState,
-     * EventDetector, boolean)}
-     */
-    @Deprecated
-    Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException;
-
-    /** Reset the state prior to continue propagation.
-     * <p>This method is called after the step handler has returned and
-     * before the next step is started, but only when {@link
-     * #eventOccurred} has itself returned the {@link EventDetector.Action#RESET_STATE}
-     * indicator. It allows the user to reset the state for the next step,
-     * without perturbing the step handler of the finishing step. If the
-     * {@link #eventOccurred} never returns the {@link EventDetector.Action#RESET_STATE}
-     * indicator, this function will never be called, and it is safe to simply return null.</p>
-     * @param oldState old state
-     * @return new state
-     * @exception OrekitException if the state cannot be reseted
-     * @deprecated as of 6.1 replaced by {@link
-     * org.orekit.propagation.events.handlers.EventHandler#resetState(EventDetector, SpacecraftState)}
-     */
-    @Deprecated
-    SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;
-
     /** Get the convergence threshold in the event time search.
      * @return convergence threshold (s)
      */
@@ -178,5 +84,78 @@ public interface EventDetector extends Serializable {
      * @return maximal number of iterations in the event time search
      */
     int getMaxIterationCount();
+
+    /**
+     * Setup the maximum checking interval.
+     * <p>
+     * This will override a maximum checking interval if it has been configured previously.
+     * </p>
+     * @param newMaxCheck maximum checking interval (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
+    T withMaxCheck(final double newMaxCheck);
+
+    /**
+     * Setup the maximum number of iterations in the event time search.
+     * <p>
+     * This will override a number of iterations if it has been configured previously.
+     * </p>
+     * @param newMaxIter maximum number of iterations in the event time search
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
+    T withMaxIter(final int newMaxIter);
+
+    /**
+     * Setup the convergence threshold.
+     * <p>
+     * This will override a convergence threshold if it has been configured previously.
+     * </p>
+     * @param newThreshold convergence threshold (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
+    T withThreshold(final double newThreshold);
+
+    /**
+     * Setup the event handler to call at event occurrences.
+     * <p>
+     * This will override a handler if it has been configured previously.
+     * </p>
+     * @param newHandler event handler to call at event occurrences
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
+    T withHandler(final EventHandler<T> newHandler);
+
+    /** Get the handler.
+     * @return event handler to call at event occurrences
+     */
+    EventHandler<T> getHandler();
+
+    /** Handle the event.
+     * @param s SpaceCraft state to be used in the evaluation
+     * @param increasing with the event occured in an "increasing" or "decreasing" slope direction
+     * @return the Action that the calling detector should pass back to the evaluation system
+     * @exception OrekitException if some specific error occurs
+     * @since 7.0
+     */
+    Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException;
+
+    /** Reset the state prior to continue propagation.
+     * <p>This method is called after the step handler has returned and
+     * before the next step is started, but only when {@link
+     * #eventOccurred} has itself returned the {@link Action#RESET_STATE}
+     * indicator. It allows the user to reset the state for the next step,
+     * without perturbing the step handler of the finishing step. If the
+     * {@link #eventOccurred} never returns the {@link Action#RESET_STATE}
+     * indicator, this function will never be called, and it is safe to simply return null.</p>
+     * @param oldState old state
+     * @return new state
+     * @exception OrekitException if the state cannot be reseted
+     * @since 7.0
+     */
+    SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;
 
 }

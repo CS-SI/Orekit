@@ -61,7 +61,7 @@ import org.orekit.time.AbsoluteDate;
  *
  */
 
-public class EventFilter<T extends EventDetector> extends AbstractReconfigurableDetector<EventFilter<T>> {
+public class EventFilter<T extends EventDetector<T>> extends AbstractDetector<EventFilter<T>> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130409L;
@@ -232,35 +232,21 @@ public class EventFilter<T extends EventDetector> extends AbstractReconfigurable
     }
 
     /** Local handler. */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventFilter<T>> {
+    private static class LocalHandler<T extends EventDetector<T>> implements EventHandler<EventFilter<T>> {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final EventFilter<T> ef, final boolean increasing)
             throws OrekitException {
-            if (ef.rawDetector instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) ef.rawDetector).getHandler();
-                return handler.eventOccurred(s, ef.rawDetector, ef.filter.getTriggeredIncreasing());
-            } else {
-                @SuppressWarnings("deprecation")
-                final EventDetector.Action a = ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
-                return AbstractReconfigurableDetector.convert(a);
-            }
+            final EventHandler<T> handler = ef.rawDetector.getHandler();
+            return handler.eventOccurred(s, ef.rawDetector, ef.filter.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */
         @Override
         public SpacecraftState resetState(final EventFilter<T> ef, final SpacecraftState oldState)
             throws OrekitException {
-            if (ef.rawDetector instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) ef.rawDetector).getHandler();
-                return handler.resetState(ef.rawDetector, oldState);
-            } else {
-                @SuppressWarnings("deprecation")
-                final SpacecraftState newState = ef.rawDetector.resetState(oldState);
-                return newState;
-            }
+            final EventHandler<T> handler = ef.rawDetector.getHandler();
+            return handler.resetState(ef.rawDetector, oldState);
         }
 
     }

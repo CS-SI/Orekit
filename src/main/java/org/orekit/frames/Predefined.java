@@ -70,74 +70,6 @@ public enum Predefined {
      */
     ITRF_CIO_CONV_1996_ACCURATE_EOP("CIO/1996-based ITRF accurate EOP"),
 
-    /** ITRF2008 with simple EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_SIMPLE_EOP}
-     */
-    @Deprecated
-    ITRF_2008_WITHOUT_TIDAL_EFFECTS("ITRF2008 accurate EOP"),
-
-    /** ITRF2008 with accurate EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_ACCURATE_EOP}
-     */
-    @Deprecated
-    ITRF_2008_WITH_TIDAL_EFFECTS("ITRF2008 simple EOP"),
-
-    /** ITRF2005 with simple EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_SIMPLE_EOP}
-     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2005}
-     */
-    @Deprecated
-    ITRF_2005_WITHOUT_TIDAL_EFFECTS("ITRF2005 accurate EOP"),
-
-    /** ITRF2005 with accurate EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_ACCURATE_EOP}
-     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2005}
-     */
-    @Deprecated
-    ITRF_2005_WITH_TIDAL_EFFECTS("ITRF2005 simple EOP"),
-
-    /** ITRF2000 with simple EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_SIMPLE_EOP}
-     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2000}
-     */
-    @Deprecated
-    ITRF_2000_WITHOUT_TIDAL_EFFECTS("ITRF2000 accurate EOP"),
-
-    /** ITRF2000 with accurate EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_ACCURATE_EOP}
-     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2000}
-     */
-    @Deprecated
-    ITRF_2000_WITH_TIDAL_EFFECTS("ITRF2000 simple EOP"),
-
-    /** ITRF97 with simple EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_SIMPLE_EOP}
-     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_97}
-     */
-    @Deprecated
-    ITRF_97_WITHOUT_TIDAL_EFFECTS("ITRF97 accurate EOP"),
-
-    /** ITRF97 with accurate EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_ACCURATE_EOP}
-     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_97}
-     */
-    @Deprecated
-    ITRF_97_WITH_TIDAL_EFFECTS("ITRF97 simple EOP"),
-
-    /** ITRF93 with simple EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_SIMPLE_EOP}
-     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_93}
-     */
-    @Deprecated
-    ITRF_93_WITHOUT_TIDAL_EFFECTS("ITRF93 accurate EOP"),
-
-    /** ITRF93 with accurate EOP interpolation.
-     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_ACCURATE_EOP}
-     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_93}
-     */
-    @Deprecated
-    ITRF_93_WITH_TIDAL_EFFECTS("ITRF93 simple EOP"),
-
     /** Equinox-based ITRF, IERS 2010 conventions with simple EOP interpolation.
      * @since 6.1
      */
@@ -158,12 +90,6 @@ public enum Predefined {
      */
     ITRF_EQUINOX_CONV_2003_ACCURATE_EOP("Equinox/2003-based ITRF accurate EOP"),
 
-    /** Equinox-based ITRF.
-     * @deprecated as of 6.1 replaced with {@link #ITRF_EQUINOX_CONV_1996_SIMPLE_EOP}
-     */
-    @Deprecated
-    ITRF_EQUINOX("Equinox-based ITRF"),
-
     /** Equinox-based ITRF, IERS 1996 conventions with simple EOP interpolation.
      * @since 6.1
      */
@@ -174,44 +100,20 @@ public enum Predefined {
      */
     ITRF_EQUINOX_CONV_1996_ACCURATE_EOP("Equinox/1996-based ITRF accurate EOP"),
 
-    /** TIRF2000, IERS 2010 conventions, with simple EOP interpolation.
-     * @deprecated as of 6.1 replaced with {@link #TIRF_CONVENTIONS_2010_SIMPLE_EOP}
-     */
-    @Deprecated
-    TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS("TIRF2000/2010 accurate EOP"),
-
     /** TIRF, IERS 2010 conventions, with simple EOP interpolation.
      * @since 6.1
      */
     TIRF_CONVENTIONS_2010_SIMPLE_EOP("TIRF/2010 simple EOP"),
-
-    /** TIRF2000, IERS 2010 conventions, with accurate EOP interpolation.
-     * @deprecated as of 6.1 replaced with {@link #TIRF_CONVENTIONS_2010_ACCURATE_EOP}
-     */
-    @Deprecated
-    TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS("TIRF2000/2010 simple EOP"),
 
     /** TIRF, IERS 2010 conventions, with accurate EOP interpolation.
      * @since 6.1
      */
     TIRF_CONVENTIONS_2010_ACCURATE_EOP("TIRF/2010 accurate EOP"),
 
-    /** TIRF2000, IERS 2003 conventions, with simple EOP interpolation.
-     * @deprecated as of 6.1 replaced with {@link #TIRF_CONVENTIONS_2003_SIMPLE_EOP}
-     */
-    @Deprecated
-    TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS("TIRF2000/2003 accurate EOP"),
-
     /** TIRF, IERS 2003 conventions, with simple EOP interpolation.
      * @since 6.1
      */
     TIRF_CONVENTIONS_2003_SIMPLE_EOP("TIRF/2003 simple EOP"),
-
-    /** TIRF2000, IERS 2003 conventions, with accurate EOP interpolation.
-     * @deprecated as of 6.1 replaced with {@link #TIRF_CONVENTIONS_2003_ACCURATE_EOP}
-     */
-    @Deprecated
-    TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS("TIRF2000/2003 simple EOP"),
 
     /** TIRF, IERS 2003 conventions, with accurate EOP interpolation.
      * @since 6.1
@@ -228,12 +130,6 @@ public enum Predefined {
      */
     TIRF_CONVENTIONS_1996_ACCURATE_EOP("TIRF/1996 accurate EOP"),
 
-    /** CIRF2000 frame, IERS 2010 conventions.
-     * @deprecated as of 6.1 replaced with {@link #CIRF_CONVENTIONS_2010_ACCURATE_EOP}
-     */
-    @Deprecated
-    CIRF_2000_CONV_2010("CIRF2000/2010"),
-
     /** CIRF frame, IERS 2010 conventions, with accurate EOP interpolation.
      * @since 6.1
      */
@@ -243,12 +139,6 @@ public enum Predefined {
      * @since 6.1
      */
     CIRF_CONVENTIONS_2010_SIMPLE_EOP("CIRF/2010 simple EOP"),
-
-    /** CIRF2000 frame, IERS 2003 conventions.
-     * @deprecated as of 6.1 replaced with {@link #CIRF_CONVENTIONS_2003_ACCURATE_EOP}
-     */
-    @Deprecated
-    CIRF_2000_CONV_2003("CIRF2000/2003"),
 
     /** CIRF frame, IERS 2003 conventions, with accurate EOP interpolation.
      * @since 6.1
@@ -297,12 +187,6 @@ public enum Predefined {
      */
     GTOD_CONVENTIONS_2003_SIMPLE_EOP("GTOD/2003 simple EOP"),
 
-    /** GTOD, IERS 1996 conventions with EOP corrections.
-     * @deprecated as of 6.1 replaced with {@link #GTOD_CONVENTIONS_1996_ACCURATE_EOP}
-     */
-    @Deprecated
-    GTOD_WITH_EOP_CORRECTIONS("GTOD with EOP"),
-
     /** GTOD, IERS 1996 conventions, with accurate EOP interpolation.
      * @since 6.1
      */
@@ -337,12 +221,6 @@ public enum Predefined {
      */
     TOD_CONVENTIONS_2003_SIMPLE_EOP("TOD/2003 simple EOP"),
 
-    /** TOD, IERS 1996 conventions with EOP corrections.
-     * @deprecated as of 6.1 replaced with {@link #TOD_CONVENTIONS_1996_ACCURATE_EOP}
-     */
-    @Deprecated
-    TOD_WITH_EOP_CORRECTIONS("TOD with EOP"),
-
     /** TOD, IERS 1996 conventions, with accurate EOP interpolation.
      * @since 6.1
      */
@@ -367,12 +245,6 @@ public enum Predefined {
      * @since 6.1
      */
     MOD_CONVENTIONS_2003("MOD/2003"),
-
-    /** MOD, IERS 1996 conventions with EOP corrections.
-     * @deprecated as of 6.1 replaced with {@link #MOD_CONVENTIONS_1996}
-     */
-    @Deprecated
-    MOD_WITH_EOP_CORRECTIONS("MOD with EOP"),
 
     /** MOD, IERS 1996 conventions.
      * @since 6.1

@@ -152,7 +152,7 @@ public class DetectorTest {
         Assert.assertEquals(n + 1, counter.getCount());
     }
 
-    private static class GCallsCounter extends AbstractReconfigurableDetector<GCallsCounter> {
+    private static class GCallsCounter extends AbstractDetector<GCallsCounter> {
 
         private static final long serialVersionUID = 1L;
         private int count;
@@ -205,7 +205,7 @@ public class DetectorTest {
         Assert.assertEquals(interruptDate, s.getDate());
     }
 
-    private static class CloseApproachDetector extends AbstractReconfigurableDetector<CloseApproachDetector> {
+    private static class CloseApproachDetector extends AbstractDetector<CloseApproachDetector> {
 
         private static final long serialVersionUID = 1L;
         private final PVCoordinatesProvider provider;

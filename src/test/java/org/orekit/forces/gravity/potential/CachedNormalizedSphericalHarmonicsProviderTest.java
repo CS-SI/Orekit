@@ -1,7 +1,6 @@
 package org.orekit.forces.gravity.potential;
 
 import org.junit.Assert;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Before;
 import org.junit.Test;
@@ -155,20 +154,6 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         @Override
         public TideSystem getTideSystem() {
             return TideSystem.UNKNOWN;
-        }
-
-        @Override
-        @Deprecated
-        public double getNormalizedCnm(final double dateOffset, final int n, final int m) {
-            throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
-                                                              "this deprecated method should never be called");
-        }
-
-        @Override
-        @Deprecated
-        public double getNormalizedSnm(final double dateOffset, final int n, final int m) {
-            throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
-                                                              "this deprecated method should never be called");
         }
 
     }

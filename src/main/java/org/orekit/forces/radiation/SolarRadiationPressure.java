@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractReconfigurableDetector;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
@@ -176,7 +176,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
+    public EventDetector<?>[] getEventsDetectors() {
         return new EventDetector[] {
             new UmbraDetector(), new PenumbraDetector()
         };
@@ -274,10 +274,10 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     }
 
     /** This class defines the umbra entry/exit detector. */
-    private class UmbraDetector extends AbstractReconfigurableDetector<UmbraDetector> {
+    private class UmbraDetector extends AbstractDetector<UmbraDetector> {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -165934451905681928L;
+        private static final long serialVersionUID = 20141228L;
 
         /** Build a new instance. */
         public UmbraDetector() {
@@ -337,10 +337,10 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     }
 
     /** This class defines the penumbra entry/exit detector. */
-    private class PenumbraDetector extends AbstractReconfigurableDetector<PenumbraDetector> {
+    private class PenumbraDetector extends AbstractDetector<PenumbraDetector> {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -6128481192702533563L;
+        private static final long serialVersionUID = 20141228L;
 
         /** Build a new instance. */
         public PenumbraDetector() {

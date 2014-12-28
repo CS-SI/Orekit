@@ -48,7 +48,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractReconfigurableDetector;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -439,7 +439,7 @@ public class NumericalPropagatorTest {
 
     }
 
-    private static class AdditionalStateLinearDetector extends AbstractReconfigurableDetector<AdditionalStateLinearDetector> {
+    private static class AdditionalStateLinearDetector extends AbstractDetector<AdditionalStateLinearDetector> {
 
         private static final long serialVersionUID = 1L;
 
@@ -665,7 +665,7 @@ public class NumericalPropagatorTest {
         }
     }
 
-    private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
+    private static class CheckingHandler<T extends EventDetector<T>> implements EventHandler<T> {
 
         private final Action actionOnEvent;
         private boolean gotHere;

@@ -71,26 +71,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class EquinoctialOrbit extends Orbit {
 
-    /** Identifier for mean longitude argument.
-     * @deprecated as of 6.0 replaced by {@link PositionAngle}
-     */
-    @Deprecated
-    public static final int MEAN_LATITUDE_ARGUMENT = 0;
-
-    /** Identifier for eccentric longitude argument.
-     * @deprecated as of 6.0 replaced by {@link PositionAngle}
-     */
-    @Deprecated
-    public static final int ECCENTRIC_LATITUDE_ARGUMENT = 1;
-
-    /** Identifier for true longitude argument.
-     * @deprecated as of 6.0 replaced by {@link PositionAngle}
-     */
-    @Deprecated
-    public static final int TRUE_LATITUDE_ARGUMENT = 2;
-
     /** Serializable UID. */
-    private static final long serialVersionUID = -2000712440570076839L;
+    private static final long serialVersionUID = 20141228L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -154,66 +136,6 @@ public class EquinoctialOrbit extends Orbit {
             break;
         default :
             throw OrekitException.createInternalError(null);
-        }
-
-    }
-
-    /** Creates a new instance.
-     * @param a  semi-major axis (m)
-     * @param ex e cos(ω + Ω), first component of eccentricity vector
-     * @param ey e sin(ω + Ω), second component of eccentricity vector
-     * @param hx tan(i/2) cos(Ω), first component of inclination vector
-     * @param hy tan(i/2) sin(Ω), second component of inclination vector
-     * @param l  (M or E or v) + ω + Ω, mean, eccentric or true longitude argument (rad)
-     * @param type type of longitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
-     * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
-     * @param frame the frame in which the parameters are defined
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m³/s²)
-     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
-     * if the longitude argument type is not one of {@link #MEAN_LATITUDE_ARGUMENT},
-     * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or {@link #TRUE_LATITUDE_ARGUMENT} or
-     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
-     * @see #MEAN_LATITUDE_ARGUMENT
-     * @see #ECCENTRIC_LATITUDE_ARGUMENT
-     * @see #TRUE_LATITUDE_ARGUMENT
-     * @deprecated as of 6.0 replaced by {@link #EquinoctialOrbit(double, double, double,
-     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)}
-     */
-    @Deprecated
-    public EquinoctialOrbit(final double a, final double ex, final double ey,
-                            final double hx, final double hy,
-                            final double l, final int type,
-                            final Frame frame, final AbsoluteDate date, final double mu)
-        throws IllegalArgumentException {
-        super(frame, date, mu);
-        if (ex * ex + ey * ey >= 1.0) {
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
-        }
-        this.a  =  a;
-        this.ex = ex;
-        this.ey = ey;
-        this.hx = hx;
-        this.hy = hy;
-
-        switch (type) {
-        case MEAN_LATITUDE_ARGUMENT :
-            this.lv = eccentricToTrue(meanToEccentric(l));
-            break;
-        case ECCENTRIC_LATITUDE_ARGUMENT :
-            this.lv = eccentricToTrue(l);
-            break;
-        case TRUE_LATITUDE_ARGUMENT :
-            this.lv = l;
-            break;
-        default :
-            this.lv = Double.NaN;
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.ANGLE_TYPE_NOT_SUPPORTED,
-                  "MEAN_LATITUDE_ARGUMENT", "ECCENTRIC_LATITUDE_ARGUMENT",
-                  "TRUE_LATITUDE_ARGUMENT");
         }
 
     }

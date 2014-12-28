@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractReconfigurableDetector;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -119,11 +119,11 @@ public class AttitudesSequence implements AttitudeProvider {
      * (used only if switchEvent is non null)
      * @param <T> class type for the generic version
      */
-    public <T extends EventDetector> void addSwitchingCondition(final AttitudeProvider before,
-                                                                final T switchEvent,
-                                                                final boolean switchOnIncrease,
-                                                                final boolean switchOnDecrease,
-                                                                final AttitudeProvider after) {
+    public <T extends EventDetector<T>> void addSwitchingCondition(final AttitudeProvider before,
+                                                                   final T switchEvent,
+                                                                   final boolean switchOnIncrease,
+                                                                   final boolean switchOnDecrease,
+                                                                   final AttitudeProvider after) {
 
         // add the before provider if not already known
         if (!switchingMap.containsKey(before)) {
@@ -158,10 +158,10 @@ public class AttitudesSequence implements AttitudeProvider {
     /** Switch specification.
      * @param <T> class type for the generic version
      */
-    private class Switch<T extends EventDetector> extends AbstractReconfigurableDetector<Switch<T>> {
+    private class Switch<T extends EventDetector<T>> extends AbstractDetector<Switch<T>> {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20131118L;
+        private static final long serialVersionUID = 20141228L;
 
         /** Event. */
         private final T event;
@@ -248,7 +248,7 @@ public class AttitudesSequence implements AttitudeProvider {
     /** Local handler.
      * @param <T> class type for the generic version
      */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<Switch<T>> {
+    private static class LocalHandler<T extends EventDetector<T>> implements EventHandler<Switch<T>> {
 
         /** {@inheritDoc} */
         public EventHandler.Action eventOccurred(final SpacecraftState s, final Switch<T> sw, final boolean increasing)
@@ -259,15 +259,8 @@ public class AttitudesSequence implements AttitudeProvider {
                 sw.performSwitch();
             }
 
-            if (sw.event instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) sw.event).getHandler();
-                return handler.eventOccurred(s, sw.event, increasing);
-            } else {
-                @SuppressWarnings("deprecation")
-                final EventDetector.Action a = sw.event.eventOccurred(s, increasing);
-                return AbstractReconfigurableDetector.convert(a);
-            }
+            final EventHandler<T> handler = sw.event.getHandler();
+            return handler.eventOccurred(s, sw.event, increasing);
 
         }
 
@@ -275,15 +268,8 @@ public class AttitudesSequence implements AttitudeProvider {
         @Override
         public SpacecraftState resetState(final Switch<T> sw, final SpacecraftState oldState)
             throws OrekitException {
-            if (sw.event instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) sw.event).getHandler();
-                return handler.resetState(sw.event, oldState);
-            } else {
-                @SuppressWarnings("deprecation")
-                final SpacecraftState newState = sw.event.resetState(oldState);
-                return newState;
-            }
+            final EventHandler<T> handler = sw.event.getHandler();
+            return handler.resetState(sw.event, oldState);
         }
 
     }

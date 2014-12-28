@@ -176,21 +176,6 @@ public class Frame implements Serializable {
      * <em>not</em> pseudo-inertial are <em>not</em> suitable for orbit
      * definition and propagation.</p>
      * @return true if frame is pseudo-inertial
-     * @deprecated as of 6.0, replaced by {@link #isPseudoInertial()}
-     */
-    @Deprecated
-    public boolean isQuasiInertial() {
-        return isPseudoInertial();
-    }
-
-    /** Check if the frame is pseudo-inertial.
-     * <p>Pseudo-inertial frames are frames that do have a linear motion and
-     * either do not rotate or rotate at a very low rate resulting in
-     * neglectible inertial forces. This means they are suitable for orbit
-     * definition and propagation using Newtonian mechanics. Frames that are
-     * <em>not</em> pseudo-inertial are <em>not</em> suitable for orbit
-     * definition and propagation.</p>
-     * @return true if frame is pseudo-inertial
      */
     public boolean isPseudoInertial() {
         return pseudoInertial;

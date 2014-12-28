@@ -70,15 +70,6 @@ public class SpinStabilized implements AttitudeProviderModifier {
         this.spin           = new Vector3D(rate / axis.getNorm(), axis);
     }
 
-    /** Get the underlying non-rotating attitude provider.
-     * @return underlying non-rotating attitude provider
-     * @deprecated as of 6.0, replaced by {@link #getUnderlyingAttitudeProvider()}
-     */
-    @Deprecated
-    public AttitudeProvider getNonRotatingLaw() {
-        return nonRotatingLaw;
-    }
-
     /** {@inheritDoc} */
     public AttitudeProvider getUnderlyingAttitudeProvider() {
         return nonRotatingLaw;

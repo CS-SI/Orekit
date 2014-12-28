@@ -23,7 +23,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractReconfigurableDetector;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -60,7 +60,7 @@ import org.orekit.utils.PVCoordinates;
      * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigurableDetector<ImpulseManeuver<T>> {
+public class ImpulseManeuver<T extends EventDetector<T>> extends AbstractDetector<ImpulseManeuver<T>> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
@@ -181,7 +181,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
     /** Local handler.
      * @param <T> class type for the generic version
      */
-    private static class Handler<T extends EventDetector> implements EventHandler<ImpulseManeuver<T>> {
+    private static class Handler<T extends EventDetector<T>> implements EventHandler<ImpulseManeuver<T>> {
 
         /** {@inheritDoc} */
         public EventHandler.Action eventOccurred(final SpacecraftState s, final ImpulseManeuver<T> im,
@@ -190,15 +190,8 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
 
             // filter underlying event
             final EventHandler.Action underlyingAction;
-            if (im.trigger instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) im.trigger).getHandler();
-                underlyingAction = handler.eventOccurred(s, im.trigger, increasing);
-            } else {
-                @SuppressWarnings("deprecation")
-                final EventDetector.Action a = im.trigger.eventOccurred(s, increasing);
-                underlyingAction = AbstractReconfigurableDetector.convert(a);
-            }
+            final EventHandler<T> handler = im.trigger.getHandler();
+            underlyingAction = handler.eventOccurred(s, im.trigger, increasing);
 
             return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
 

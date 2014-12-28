@@ -82,22 +82,6 @@ class WrappingUnnormalizedProvider implements UnnormalizedSphericalHarmonicsProv
         return rawProvider.getTideSystem();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double getUnnormalizedCnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        return onDate(getReferenceDate().shiftedBy(dateOffset)).getUnnormalizedCnm(n, m);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double getUnnormalizedSnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        return onDate(getReferenceDate().shiftedBy(dateOffset)).getUnnormalizedSnm(n, m);
-    }
-
     @Override
     public UnnormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
         final RawSphericalHarmonics raw = rawProvider.onDate(date);

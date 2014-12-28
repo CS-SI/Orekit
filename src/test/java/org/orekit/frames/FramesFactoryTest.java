@@ -115,54 +115,15 @@ public class FramesFactoryTest {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Test
     public void testSerialization()
             throws OrekitException, IOException, ClassNotFoundException {
         for (Predefined predefined : Predefined.values()) {
 
             Frame original = FramesFactory.getFrame(predefined);
-            switch (predefined) {
-            case ICRF :
+            if (predefined == Predefined.ICRF) {
                 Assert.assertEquals(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial", original.getName());
-                break;
-            case ITRF_2008_WITHOUT_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.ITRF_CIO_CONV_2010_SIMPLE_EOP.getName(), original.getName());
-                break;
-            case ITRF_2008_WITH_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.ITRF_CIO_CONV_2010_ACCURATE_EOP.getName(), original.getName());
-                break;
-            case ITRF_EQUINOX :
-                Assert.assertEquals(Predefined.ITRF_EQUINOX_CONV_1996_SIMPLE_EOP.getName(), original.getName());
-                break;
-            case TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.TIRF_CONVENTIONS_2003_ACCURATE_EOP.getName(), original.getName());
-                break;
-            case TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.TIRF_CONVENTIONS_2003_SIMPLE_EOP.getName(), original.getName());
-                break;
-            case TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.TIRF_CONVENTIONS_2010_ACCURATE_EOP.getName(), original.getName());
-                break;
-            case TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.TIRF_CONVENTIONS_2010_SIMPLE_EOP.getName(), original.getName());
-                break;
-            case CIRF_2000_CONV_2003 :
-                Assert.assertEquals(Predefined.CIRF_CONVENTIONS_2003_ACCURATE_EOP.getName(), original.getName());
-                break;
-            case CIRF_2000_CONV_2010 :
-                Assert.assertEquals(Predefined.CIRF_CONVENTIONS_2010_ACCURATE_EOP.getName(), original.getName());
-                break;
-            case GTOD_WITH_EOP_CORRECTIONS :
-                Assert.assertEquals(Predefined.GTOD_CONVENTIONS_1996_ACCURATE_EOP.getName(), original.getName());
-                break;
-            case TOD_WITH_EOP_CORRECTIONS :
-                Assert.assertEquals(Predefined.TOD_CONVENTIONS_1996_ACCURATE_EOP.getName(), original.getName());
-                break;
-            case MOD_WITH_EOP_CORRECTIONS :
-                Assert.assertEquals(Predefined.MOD_CONVENTIONS_1996.getName(), original.getName());
-                break;
-            default :
+            } else {
                 Assert.assertEquals(predefined.getName(), original.getName());
             }
 

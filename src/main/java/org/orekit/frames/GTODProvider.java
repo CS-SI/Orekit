@@ -40,7 +40,7 @@ import org.orekit.utils.IERSConventions;
 public class GTODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130922L;
+    private static final long serialVersionUID = 20141228L;
 
     /** Angular velocity of the Earth, in rad/s. */
     private static final double AVE = 7.292115146706979e-5;
@@ -50,9 +50,6 @@ public class GTODProvider implements TransformProvider {
 
     /** EOP history. */
     private final EOPHistory eopHistory;
-
-    /** GMST function. */
-    private final transient TimeFunction<DerivativeStructure> gmstFunction;
 
     /** GAST function. */
     private final transient TimeFunction<DerivativeStructure> gastFunction;
@@ -67,7 +64,6 @@ public class GTODProvider implements TransformProvider {
         final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
         this.conventions   = conventions;
         this.eopHistory    = eopHistory;
-        this.gmstFunction  = conventions.getGMSTFunction(ut1);
         this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory);
     }
 
@@ -98,28 +94,6 @@ public class GTODProvider implements TransformProvider {
         // set up the transform from parent TOD
         return new Transform(date, new Rotation(Vector3D.PLUS_K, -gast), rotationRate);
 
-    }
-
-    /** Get the Greenwich mean sidereal time, in radians.
-     * @param date current date
-     * @return Greenwich mean sidereal time, in radians
-     * @exception OrekitException if UT1 time scale cannot be retrieved
-     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGMSTFunction(org.orekit.time.TimeScale)}
-     */
-    @Deprecated
-    public double getGMST(final AbsoluteDate date) throws OrekitException {
-        return gmstFunction.value(date).getValue();
-    }
-
-    /** Get the Greenwich apparent sidereal time, in radians.
-     * @param date current date
-     * @return Greenwich apparent sidereal time, in radians
-     * @exception OrekitException if UT1 time scale cannot be retrieved
-     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGASTFunction(org.orekit.time.TimeScale, EOPHistory)}
-     */
-    @Deprecated
-    public double getGAST(final AbsoluteDate date) throws OrekitException {
-        return gastFunction.value(date).getValue();
     }
 
     /** Replace the instance with a data transfer object for serialization.

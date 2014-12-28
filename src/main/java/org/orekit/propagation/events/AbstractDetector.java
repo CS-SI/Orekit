@@ -18,13 +18,14 @@ package org.orekit.propagation.events;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** Common parts shared by several orbital events finders.
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public abstract class AbstractDetector implements EventDetector {
+public abstract class AbstractDetector<T extends EventDetector<T>> implements EventDetector<T> {
 
     /** Default maximum checking interval (s). */
     public static final double DEFAULT_MAXCHECK = 600;
@@ -47,40 +48,27 @@ public abstract class AbstractDetector implements EventDetector {
     /** Maximum number of iterations in the event time search. */
     private final int maxIter;
 
-    /** Build a new instance.
-     * @param maxCheck maximum checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @deprecated as of 6.1, replaced with {@link #AbstractDetector(double, double, int)}
-     */
-    @Deprecated
-    protected AbstractDetector(final double maxCheck, final double threshold) {
-        this(maxCheck, threshold, DEFAULT_MAX_ITER);
-    }
+    /** Default handler for event overrides. */
+    private final EventHandler<T> handler;
 
     /** Build a new instance.
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
+     * @param handler event handler to call at event occurrences
      */
-    protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter) {
+    protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter,
+                               final EventHandler<T> handler) {
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
         this.maxIter   = maxIter;
+        this.handler   = handler;
     }
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         // do nothing by default
     }
-
-    /** {@inheritDoc}
-     * @deprecated as of 6.1 replaced by {@link
-     * org.orekit.propagation.events.handlers.EventHandler#eventOccurred(SpacecraftState,
-     * EventDetector, boolean)}
-     */
-    @Deprecated
-    public abstract Action eventOccurred(SpacecraftState s, boolean increasing)
-        throws OrekitException;
 
     /** {@inheritDoc} */
     public abstract double g(SpacecraftState s) throws OrekitException;
@@ -100,14 +88,54 @@ public abstract class AbstractDetector implements EventDetector {
         return threshold;
     }
 
-    /** {@inheritDoc}
-     * @deprecated as of 6.1 replaced by {@link
-     * org.orekit.propagation.events.handlers.EventHandler#resetState(EventDetector, SpacecraftState)}
-     */
-    @Deprecated
-    public SpacecraftState resetState(final SpacecraftState oldState)
-        throws OrekitException {
-        return oldState;
+    /** {@inheritDoc} */
+    public T withMaxCheck(final double newMaxCheck) {
+        return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
     }
+
+    /** {@inheritDoc} */
+    public T withMaxIter(final int newMaxIter) {
+        return create(getMaxCheckInterval(), getThreshold(), newMaxIter,  getHandler());
+    }
+
+    /** {@inheritDoc} */
+    public T withThreshold(final double newThreshold) {
+        return create(getMaxCheckInterval(), newThreshold, getMaxIterationCount(),  getHandler());
+    }
+
+    /** {@inheritDoc} */
+    public T withHandler(final EventHandler<T> newHandler) {
+        return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
+    }
+
+    /** {@inheritDoc} */
+    public EventHandler<T> getHandler() {
+        return handler;
+    }
+
+    /** {@inheritDoc} */
+    public EventHandler.Action eventOccurred(final SpacecraftState s, final boolean increasing)
+        throws OrekitException {
+        @SuppressWarnings("unchecked")
+        final EventHandler.Action whatNext = getHandler().eventOccurred(s, (T) this, increasing);
+        return whatNext;
+    }
+
+    /** {@inheritDoc} */
+    public SpacecraftState resetState(final SpacecraftState oldState) throws OrekitException {
+        @SuppressWarnings("unchecked")
+        final SpacecraftState newState = getHandler().resetState((T) this, oldState);
+        return newState;
+    }
+
+    /** Build a new instance.
+     * @param newMaxCheck maximum checking interval (s)
+     * @param newThreshold convergence threshold (s)
+     * @param newMaxIter maximum number of iterations in the event time search
+     * @param newHandler event handler to call at event occurrences
+     * @return a new instance of the appropriate sub-type
+     */
+    protected abstract T create(final double newMaxCheck, final double newThreshold,
+                                final int newMaxIter, final EventHandler<T> newHandler);
 
 }

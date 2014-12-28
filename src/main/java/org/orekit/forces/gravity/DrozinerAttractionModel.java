@@ -27,7 +27,6 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -87,21 +86,6 @@ public class DrozinerAttractionModel
 
     /** Helper class computing acceleration derivatives. */
     private Jacobianizer jacobianizer;
-
-    /** Creates a new instance.
-    * @param centralBodyFrame rotating body frame
-    * @param equatorialRadius reference equatorial radius of the potential
-    * @param mu central body attraction coefficient (m³/s²)
-    * @param C un-normalized coefficients array (cosine part)
-    * @param S un-normalized coefficients array (sine part)
-    * @deprecated since 6.0, replaced by {@link #DrozinerAttractionModel(Frame, UnnormalizedSphericalHarmonicsProvider)}
-    */
-    public DrozinerAttractionModel(final Frame centralBodyFrame,
-                                   final double equatorialRadius, final double mu,
-                                   final double[][] C, final double[][] S) {
-        this(centralBodyFrame, GravityFieldFactory.getUnnormalizedProvider(equatorialRadius, mu,
-                                                                           TideSystem.UNKNOWN, C, S));
-    }
 
    /** Creates a new instance.
    * @param centralBodyFrame rotating body frame
@@ -320,7 +304,7 @@ public class DrozinerAttractionModel
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
+    public EventDetector<?>[] getEventsDetectors() {
         return new EventDetector[0];
     }
 

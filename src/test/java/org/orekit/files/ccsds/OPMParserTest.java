@@ -258,7 +258,8 @@ public class OPMParserTest {
         OPMParser parser = new OPMParser().withConventions(IERSConventions.IERS_2010);
         final OPMFile file = parser.parse(name);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
-                                                 TimeScalesFactory.getGMST()), file.getMetaData().getFrameEpoch());
+                                             TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
+                            file.getMetaData().getFrameEpoch());
         // Check Data Covariance matrix Block
         ArrayList<String> dataCovMatrixComment = new ArrayList<String>();
         dataCovMatrixComment.add("toto");
@@ -328,7 +329,8 @@ public class OPMParserTest {
                 new OPMParser().withConventions(IERSConventions.IERS_2010).withInternationalDesignator(2060, 666, "XYZ");
         final OPMFile file = parser.parse(name);
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
-                                                 TimeScalesFactory.getGMST()), file.getMetaData().getFrameEpoch());
+                                                 TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
+                            file.getMetaData().getFrameEpoch());
         Assert.assertEquals(2060, file.getMetaData().getLaunchYear());
         Assert.assertEquals(666, file.getMetaData().getLaunchNumber());
         Assert.assertEquals("XYZ", file.getMetaData().getLaunchPiece());

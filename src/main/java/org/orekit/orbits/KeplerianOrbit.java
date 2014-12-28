@@ -73,26 +73,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class KeplerianOrbit extends Orbit {
 
-    /** Identifier for mean anomaly.
-     * @deprecated as of 6.0 replaced by {@link PositionAngle}
-     */
-    @Deprecated
-    public static final int MEAN_ANOMALY = 0;
-
-    /** Identifier for eccentric anomaly.
-     * @deprecated as of 6.0 replaced by {@link PositionAngle}
-     */
-    @Deprecated
-    public static final int ECCENTRIC_ANOMALY = 1;
-
-    /** Identifier for true anomaly.
-     * @deprecated as of 6.0 replaced by {@link PositionAngle}
-     */
-    @Deprecated
-    public static final int TRUE_ANOMALY = 2;
-
     /** Serializable UID. */
-    private static final long serialVersionUID = 7593919633854535287L;
+    private static final long serialVersionUID = 20141228L;
 
     /** First coefficient to compute Kepler equation solver starter. */
     private static final double A;
@@ -186,73 +168,6 @@ public class KeplerianOrbit extends Orbit {
         }
         this.v = tmpV;
 
-    }
-
-    /** Creates a new instance.
-     * @param a  semi-major axis (m), negative for hyperbolic orbits
-     * @param e eccentricity
-     * @param i inclination (rad)
-     * @param pa perigee argument (ω, rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param anomaly mean, eccentric or true anomaly (rad)
-     * @param type type of anomaly, must be one of {@link #MEAN_ANOMALY},
-     * {@link #ECCENTRIC_ANOMALY} or  {@link #TRUE_ANOMALY}
-     * @param frame the frame in which the parameters are defined
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m³/s²)
-     * @exception IllegalArgumentException if the longitude argument type is not
-     * one of {@link #MEAN_ANOMALY}, {@link #ECCENTRIC_ANOMALY}
-     * or {@link #TRUE_ANOMALY} or if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame}
-     * @see #MEAN_ANOMALY
-     * @see #ECCENTRIC_ANOMALY
-     * @see #TRUE_ANOMALY
-     * @deprecated as of 6.0 replaced by {@link #KeplerianOrbit(double, double, double,
-     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)}
-     * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
-     * or v is out of range for hyperbolic orbits
-     */
-    @Deprecated
-    public KeplerianOrbit(final double a, final double e, final double i,
-                          final double pa, final double raan,
-                          final double anomaly, final int type,
-                          final Frame frame, final AbsoluteDate date, final double mu)
-        throws IllegalArgumentException {
-        super(frame, date, mu);
-
-        if (a * (1 - e) < 0) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
-        }
-
-        this.a    =    a;
-        this.e    =    e;
-        this.i    =    i;
-        this.pa   =   pa;
-        this.raan = raan;
-
-        switch (type) {
-        case MEAN_ANOMALY :
-            this.v = (a < 0) ?
-                     hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly, e)) :
-                     ellipticEccentricToTrue(meanToEllipticEccentric(anomaly));
-            break;
-        case ECCENTRIC_ANOMALY :
-            this.v = (a < 0) ?
-                     hyperbolicEccentricToTrue(anomaly) :
-                     ellipticEccentricToTrue(anomaly);
-            break;
-        case TRUE_ANOMALY :
-            this.v = anomaly;
-            break;
-        default :
-            this.v = Double.NaN;
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.ANGLE_TYPE_NOT_SUPPORTED,
-                  "MEAN_ANOMALY", "ECCENTRIC_ANOMALY", "TRUE_ANOMALY");
-
-        }
     }
 
     /** Constructor from cartesian parameters.

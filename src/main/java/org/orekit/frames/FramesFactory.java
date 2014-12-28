@@ -397,7 +397,6 @@ public class FramesFactory {
      * @return the predefined frame
      * @exception OrekitException if frame cannot be built due to missing data
      */
-    @SuppressWarnings("deprecation")
     public static Frame getFrame(final Predefined factoryKey)
         throws OrekitException {
         switch (factoryKey) {
@@ -413,10 +412,8 @@ public class FramesFactory {
             return getEcliptic(IERSConventions.IERS_2010);
         case EME2000 :
             return getEME2000();
-        case ITRF_2008_WITHOUT_TIDAL_EFFECTS :
         case ITRF_CIO_CONV_2010_SIMPLE_EOP :
             return getITRF(IERSConventions.IERS_2010, true);
-        case ITRF_2008_WITH_TIDAL_EFFECTS :
         case ITRF_CIO_CONV_2010_ACCURATE_EOP :
             return getITRF(IERSConventions.IERS_2010, false);
         case ITRF_CIO_CONV_2003_SIMPLE_EOP :
@@ -427,22 +424,6 @@ public class FramesFactory {
             return getITRF(IERSConventions.IERS_1996, true);
         case ITRF_CIO_CONV_1996_ACCURATE_EOP :
             return getITRF(IERSConventions.IERS_1996, false);
-        case ITRF_2005_WITHOUT_TIDAL_EFFECTS :
-            return getITRF2005(true);
-        case ITRF_2005_WITH_TIDAL_EFFECTS :
-            return getITRF2005(false);
-        case ITRF_2000_WITHOUT_TIDAL_EFFECTS :
-            return getITRF2000(true);
-        case ITRF_2000_WITH_TIDAL_EFFECTS :
-            return getITRF2000(false);
-        case ITRF_97_WITHOUT_TIDAL_EFFECTS :
-            return getITRF97(true);
-        case ITRF_97_WITH_TIDAL_EFFECTS :
-            return getITRF97(false);
-        case ITRF_93_WITHOUT_TIDAL_EFFECTS :
-            return getITRF93(true);
-        case ITRF_93_WITH_TIDAL_EFFECTS :
-            return getITRF93(false);
         case ITRF_EQUINOX_CONV_2010_SIMPLE_EOP :
             return getITRFEquinox(IERSConventions.IERS_2010, true);
         case ITRF_EQUINOX_CONV_2010_ACCURATE_EOP :
@@ -451,33 +432,26 @@ public class FramesFactory {
             return getITRFEquinox(IERSConventions.IERS_2003, true);
         case ITRF_EQUINOX_CONV_2003_ACCURATE_EOP :
             return getITRFEquinox(IERSConventions.IERS_2003, false);
-        case ITRF_EQUINOX :
         case ITRF_EQUINOX_CONV_1996_SIMPLE_EOP :
             return getITRFEquinox(IERSConventions.IERS_1996, true);
         case ITRF_EQUINOX_CONV_1996_ACCURATE_EOP :
             return getITRFEquinox(IERSConventions.IERS_1996, false);
-        case TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
         case TIRF_CONVENTIONS_2010_SIMPLE_EOP :
             return getTIRF(IERSConventions.IERS_2010, true);
-        case TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS :
         case TIRF_CONVENTIONS_2010_ACCURATE_EOP :
             return getTIRF(IERSConventions.IERS_2010, false);
-        case TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
         case TIRF_CONVENTIONS_2003_SIMPLE_EOP :
             return getTIRF(IERSConventions.IERS_2003, true);
-        case TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS :
         case TIRF_CONVENTIONS_2003_ACCURATE_EOP :
             return getTIRF(IERSConventions.IERS_2003, false);
         case TIRF_CONVENTIONS_1996_SIMPLE_EOP :
             return getTIRF(IERSConventions.IERS_1996, true);
         case TIRF_CONVENTIONS_1996_ACCURATE_EOP :
             return getTIRF(IERSConventions.IERS_1996, false);
-        case CIRF_2000_CONV_2010 :
         case CIRF_CONVENTIONS_2010_ACCURATE_EOP :
             return getCIRF(IERSConventions.IERS_2010, false);
         case CIRF_CONVENTIONS_2010_SIMPLE_EOP :
             return getCIRF(IERSConventions.IERS_2010, true);
-        case CIRF_2000_CONV_2003 :
         case CIRF_CONVENTIONS_2003_ACCURATE_EOP :
             return getCIRF(IERSConventions.IERS_2003, false);
         case CIRF_CONVENTIONS_2003_SIMPLE_EOP :
@@ -498,7 +472,6 @@ public class FramesFactory {
             return getGTOD(IERSConventions.IERS_2003, true, false);
         case GTOD_CONVENTIONS_2003_SIMPLE_EOP :
             return getGTOD(IERSConventions.IERS_2003, true, true);
-        case GTOD_WITH_EOP_CORRECTIONS :
         case GTOD_CONVENTIONS_1996_ACCURATE_EOP :
             return getGTOD(IERSConventions.IERS_1996, true, false);
         case GTOD_CONVENTIONS_1996_SIMPLE_EOP :
@@ -513,7 +486,6 @@ public class FramesFactory {
             return getTOD(IERSConventions.IERS_2003, true, false);
         case TOD_CONVENTIONS_2003_SIMPLE_EOP :
             return getTOD(IERSConventions.IERS_2003, true, true);
-        case TOD_WITH_EOP_CORRECTIONS :
         case TOD_CONVENTIONS_1996_ACCURATE_EOP :
             return getTOD(IERSConventions.IERS_1996, true, false);
         case TOD_CONVENTIONS_1996_SIMPLE_EOP :
@@ -524,7 +496,6 @@ public class FramesFactory {
             return getMOD(IERSConventions.IERS_2010, true);
         case MOD_CONVENTIONS_2003 :
             return getMOD(IERSConventions.IERS_2003, true);
-        case MOD_WITH_EOP_CORRECTIONS :
         case MOD_CONVENTIONS_1996 :
             return getMOD(IERSConventions.IERS_1996, true);
         case TEME :
@@ -671,200 +642,6 @@ public class FramesFactory {
         }
     }
 
-    /** Get the ITRF2008 reference frame, using IERS 2010 conventions and ignoring tidal effects.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced with {@link #getITRF(IERSConventions, boolean)}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF2008() throws OrekitException {
-        return getITRF2008(true);
-    }
-
-    /** Get the ITRF2008 reference frame, using IERS 2010 conventions.
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced with {@link #getITRF(IERSConventions, boolean)}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF2008(final boolean simpleEOP) throws OrekitException {
-        return getITRF(IERSConventions.IERS_2010, simpleEOP);
-    }
-
-    /** Get the ITRF2005 reference frame, using IERS 2010 conventions and ignoring tidal effects.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
-     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2005}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF2005() throws OrekitException {
-        return getITRF2005(true);
-    }
-
-    /** Get the ITRF2005 reference frame, using IERS 2010 conventions.
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
-     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2005}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF2005(final boolean simpleEOP) throws OrekitException {
-
-        final Predefined factoryKey = simpleEOP ?
-                                      Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS :
-                                      Predefined.ITRF_2005_WITH_TIDAL_EFFECTS;
-
-        return getITRSRealization(factoryKey, getITRF2008(simpleEOP),
-                                  HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005);
-
-    }
-
-    /** Get the ITRF2000 reference frame, ignoring tidal effects.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
-     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2000}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF2000() throws OrekitException {
-        return getITRF2000(true);
-    }
-
-    /** Get the ITRF2000 reference frame.
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
-     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2000}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF2000(final boolean simpleEOP) throws OrekitException {
-
-        final Predefined factoryKey = simpleEOP ?
-                                      Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS :
-                                      Predefined.ITRF_2000_WITH_TIDAL_EFFECTS;
-
-        return getITRSRealization(factoryKey, getITRF2008(simpleEOP),
-                                  HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000);
-
-    }
-
-    /** Get the ITRF97 reference frame, ignoring tidal effects.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
-     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_97}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF97() throws OrekitException {
-        return getITRF97(true);
-    }
-
-    /** Get the ITRF97 reference frame.
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
-     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_97}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF97(final boolean simpleEOP) throws OrekitException {
-
-        final Predefined factoryKey = simpleEOP ?
-                                      Predefined.ITRF_97_WITHOUT_TIDAL_EFFECTS :
-                                      Predefined.ITRF_97_WITH_TIDAL_EFFECTS;
-
-        return getITRSRealization(factoryKey, getITRF2008(simpleEOP),
-                                  HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_97);
-
-    }
-
-    /** Get the ITRF93 reference frame, ignoring tidal effects.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
-     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_93}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF93() throws OrekitException {
-        return getITRF93(true);
-    }
-
-    /** Get the ITRF93 reference frame.
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
-     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_93}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRF93(final boolean simpleEOP) throws OrekitException {
-
-        final Predefined factoryKey = simpleEOP ?
-                                      Predefined.ITRF_93_WITHOUT_TIDAL_EFFECTS :
-                                      Predefined.ITRF_93_WITH_TIDAL_EFFECTS;
-
-        return getITRSRealization(factoryKey, getITRF2008(simpleEOP),
-                                  HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_93);
-
-    }
-
-    /** Get an ITRS realization reference frame.
-     * @param factoryKey key of the frame within the factory
-     * @param parent parent frame to which the Helmert transformation should be applied
-     * to define the desired realization
-     * @param predefined predefined transformation between parent frame and created frame
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     */
-    private static FactoryManagedFrame getITRSRealization(final Predefined factoryKey, final Frame parent,
-                                                          final HelmertTransformation.Predefined predefined)
-        throws OrekitException {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final Frame nonFactoryManaged = predefined.createTransformedITRF(parent, factoryKey.getName());
-                final TransformProvider provider = nonFactoryManaged.getTransformProvider();
-                frame = new FactoryManagedFrame(parent, provider, false, factoryKey);
-                FRAMES.put(factoryKey, frame);
-
-            }
-
-            return frame;
-
-        }
-    }
-
-    /** Get the TIRF reference frame, ignoring tidal effects.
-     * @param conventions IERS conventions to apply
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated since 6.1 replaced with {@link #getTIRF(IERSConventions)}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getTIRF2000(final IERSConventions conventions) throws OrekitException {
-        return getTIRF(conventions);
-    }
-
     /** Get the TIRF reference frame, ignoring tidal effects.
      * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
@@ -873,20 +650,6 @@ public class FramesFactory {
      */
     public static FactoryManagedFrame getTIRF(final IERSConventions conventions) throws OrekitException {
         return getTIRF(conventions, true);
-    }
-
-    /** Get the TIRF reference frame.
-     * @param conventions IERS conventions to apply
-     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated since 6.1 replaced with {@link #getTIRF(IERSConventions, boolean)}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getTIRF2000(final IERSConventions conventions,
-                                                  final boolean simpleEOP) throws OrekitException {
-        return getTIRF(conventions, simpleEOP);
     }
 
     /** Get the TIRF reference frame.
@@ -940,18 +703,6 @@ public class FramesFactory {
             return frame;
 
         }
-    }
-
-    /** Get the CIRF2000 reference frame.
-     * @param conventions IERS conventions to apply
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated since 6.1 repaced with {@link #getCIRF(IERSConventions, boolean)}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getCIRF2000(final IERSConventions conventions) throws OrekitException {
-        return getCIRF(conventions, false);
     }
 
     /** Get the CIRF2000 reference frame.
@@ -1035,16 +786,6 @@ public class FramesFactory {
     }
 
     /** Get the equinox-based ITRF reference frame.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated since 6.1 replaced with {@link #getITRFEquinox(IERSConventions, boolean)}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getITRFEquinox() throws OrekitException {
-        return getITRFEquinox(IERSConventions.IERS_1996, true);
-    }
-
-    /** Get the equinox-based ITRF reference frame.
      * @param conventions IERS conventions to apply
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return the selected reference frame singleton.
@@ -1112,18 +853,6 @@ public class FramesFactory {
      */
     public static FactoryManagedFrame getGTOD(final boolean applyEOPCorr) throws OrekitException {
         return getGTOD(IERSConventions.IERS_1996, applyEOPCorr, true);
-    }
-
-    /** Get the GTOD reference frame.
-     * @param conventions IERS conventions to apply
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated as of 6.1, replaced with {@link #getGTOD(IERSConventions, boolean)}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getGTOD(final IERSConventions conventions)
-        throws OrekitException {
-        return getGTOD(conventions, true, true);
     }
 
     /** Get the GTOD reference frame.
@@ -1215,23 +944,6 @@ public class FramesFactory {
         }
     }
 
-    /** Get the GTOD reference frame.
-     * <p>
-     * The applyEOPCorr parameter is available mainly for testing purposes or for
-     * consistency with legacy software that don't handle EOP correction parameters.
-     * Beware that setting this parameter to {@code false} leads to crude accuracy
-     * (order of magnitudes for errors might be above 250m in LEO and 1400m in GEO).
-     * </p>
-     * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated as of 6.0, replaced by {@link #getGTOD(IERSConventions, boolean)}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getPEF(final boolean applyEOPCorr) throws OrekitException {
-        return getGTOD(applyEOPCorr);
-    }
-
     /** Get the TOD reference frame.
      * <p>
      * The applyEOPCorr parameter is available mainly for testing purposes or for
@@ -1249,17 +961,6 @@ public class FramesFactory {
     public static FactoryManagedFrame getTOD(final boolean applyEOPCorr)
         throws OrekitException {
         return getTOD(IERSConventions.IERS_1996, applyEOPCorr, false);
-    }
-
-    /** Get the TOD reference frame.
-     * @param conventions IERS conventions to apply
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated as of 6.1, replaced with {@link #getTOD(IERSConventions, boolean)}
-     */
-    public static FactoryManagedFrame getTOD(final IERSConventions conventions)
-        throws OrekitException {
-        return getTOD(conventions, true, true);
     }
 
     /** Get the TOD reference frame.
@@ -1445,23 +1146,6 @@ public class FramesFactory {
             return frame;
 
         }
-    }
-
-    /** Get the MOD reference frame.
-     * <p>
-     * The applyEOPCorr parameter is available mainly for testing purposes or for
-     * consistency with legacy software that don't handle EOP correction parameters.
-     * Beware that setting this parameter to {@code false} leads to crude accuracy
-     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
-     * </p>
-     * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated as of 6.0, replaced by {@link #getMOD(IERSConventions)}
-     */
-    @Deprecated
-    public static FactoryManagedFrame getMEME(final boolean applyEOPCorr) throws OrekitException {
-        return getMOD(IERSConventions.IERS_1996, applyEOPCorr);
     }
 
     /** Get the TEME reference frame.

@@ -40,7 +40,7 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class ApsideDetector extends AbstractReconfigurableDetector<ApsideDetector> {
+public class ApsideDetector extends AbstractDetector<ApsideDetector> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;

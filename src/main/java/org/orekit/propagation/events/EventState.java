@@ -47,7 +47,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @param <T> class type for the generic version
  */
-public class EventState<T extends EventDetector> implements Serializable {
+public class EventState<T extends EventDetector<T>> implements Serializable {
 
     /** Serializable version identifier. */
     private static final long serialVersionUID = 4489391420715269318L;
@@ -299,16 +299,8 @@ public class EventState<T extends EventDetector> implements Serializable {
             // force the sign to its value "just after the event"
             previousEventTime = state.getDate();
             g0Positive        = increasing;
-            if (detector instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) detector).getHandler();
-                nextAction = handler.eventOccurred(state, detector, !(increasing ^ forward));
-            } else {
-                @SuppressWarnings("deprecation")
-                final EventHandler.Action a =
-                    AbstractReconfigurableDetector.convert(detector.eventOccurred(state, !(increasing ^ forward)));
-                nextAction = a;
-            }
+            final EventHandler<T> handler = detector.getHandler();
+            nextAction = handler.eventOccurred(state, detector, !(increasing ^ forward));
         } else {
             g0Positive = g0 >= 0;
             nextAction = EventHandler.Action.CONTINUE;
@@ -340,15 +332,8 @@ public class EventState<T extends EventDetector> implements Serializable {
         if (nextAction != EventHandler.Action.RESET_STATE) {
             newState = null;
         } else {
-            if (detector instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) detector).getHandler();
-                newState = handler.resetState(detector, oldState);
-            } else {
-                @SuppressWarnings("deprecation")
-                final SpacecraftState s = detector.resetState(oldState);
-                newState = s;
-            }
+            final EventHandler<T> handler = detector.getHandler();
+            newState = handler.resetState(detector, oldState);
         }
 
         pendingEvent      = false;

@@ -46,7 +46,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * @author Luc Maisonobe
  * @since 6.2
  */
-public class GeographicZoneDetector extends AbstractReconfigurableDetector<GeographicZoneDetector> {
+public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetector> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20140619L;

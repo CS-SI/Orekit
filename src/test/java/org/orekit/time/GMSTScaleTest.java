@@ -58,7 +58,7 @@ public class GMSTScaleTest {
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
-        gmst = TimeScalesFactory.getGMST();
+        gmst = TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false);
     }
 
     @After

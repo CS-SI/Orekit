@@ -46,7 +46,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
+public class NodeDetector extends AbstractDetector<NodeDetector> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;

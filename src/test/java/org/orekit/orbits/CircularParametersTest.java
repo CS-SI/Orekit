@@ -51,48 +51,6 @@ public class CircularParametersTest {
     private double mu;
 
     @Test
-    @Deprecated
-    public void testOldConstructors() {
-
-        double ix = 1.200e-04;
-        double iy = -1.16e-04;
-        double i  = 2 * FastMath.asin(FastMath.sqrt((ix * ix + iy * iy) / 4));
-        double raan = FastMath.atan2(iy, ix);
-
-        int inexistantType = 17;
-        int[] types = {
-            CircularOrbit.MEAN_LONGITUDE_ARGUMENT,
-            CircularOrbit.ECCENTRIC_LONGITUDE_ARGUMENT,
-            CircularOrbit.TRUE_LONGITUDE_ARGUMENT,
-            inexistantType
-        };
-
-        for (int type : types) {
-            try {
-                // elliptic orbit
-                CircularOrbit circ =
-                    new CircularOrbit(42166.712, 0.5, -0.5, i, raan, 5.300 - raan, type,
-                                      FramesFactory.getEME2000(), date, mu);
-                Vector3D pos = circ.getPVCoordinates().getPosition();
-                Vector3D vit = circ.getPVCoordinates().getVelocity();
-
-                PVCoordinates pvCoordinates = new PVCoordinates( pos, vit);
-
-                EquinoctialOrbit param = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-                Assert.assertEquals(param.getA(),  circ.getA(), Utils.epsilonTest * circ.getA());
-                Assert.assertEquals(param.getEquinoctialEx(), circ.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(circ.getE()));
-                Assert.assertEquals(param.getEquinoctialEy(), circ.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(circ.getE()));
-                Assert.assertEquals(param.getHx(), circ.getHx(), Utils.epsilonAngle * FastMath.abs(circ.getI()));
-                Assert.assertEquals(param.getHy(), circ.getHy(), Utils.epsilonAngle * FastMath.abs(circ.getI()));
-                Assert.assertEquals(MathUtils.normalizeAngle(param.getLv(),circ.getLv()), circ.getLv(), Utils.epsilonAngle * FastMath.abs(circ.getLv()));
-            } catch (IllegalArgumentException iae) {
-                Assert.assertEquals(inexistantType, type);
-            }
-        }
-
-    }
-
-    @Test
     public void testCircularToEquinoctialEll() {
 
         double ix = 1.200e-04;

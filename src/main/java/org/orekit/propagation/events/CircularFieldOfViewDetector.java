@@ -35,7 +35,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see DihedralFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class CircularFieldOfViewDetector extends AbstractReconfigurableDetector<CircularFieldOfViewDetector> {
+public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldOfViewDetector> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;

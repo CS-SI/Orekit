@@ -53,40 +53,6 @@ public class LofOffset implements AttitudeProvider {
     /** Create a LOF-aligned attitude.
      * <p>
      * Calling this constructor is equivalent to call
-     * {@code LofOffset(intertialFrame, LOFType.VVLH)}
-     * </p>
-     * @param inertialFrame inertial frame with respect to which orbit should be computed
-     * @exception OrekitException if inertialFrame is not a pseudo-inertial frame
-     * @deprecated as of 6.0 replaced by {@link #LofOffset(Frame, LOFType)}
-     */
-    @Deprecated
-    public LofOffset(final Frame inertialFrame) throws OrekitException {
-        this(inertialFrame, LOFType.VVLH);
-    }
-
-    /** Creates new instance.
-     * <p>
-     * Calling this constructor is equivalent to call
-     * {@code LofOffset(intertialFrame, LOFType.VVLH, order, alpha1, alpha2, alpha3)}
-     * </p>
-     * @param inertialFrame inertial frame with respect to which orbit should be computed
-     * @param order order of rotations to use for (alpha1, alpha2, alpha3) composition
-     * @param alpha1 angle of the first elementary rotation
-     * @param alpha2 angle of the second elementary rotation
-     * @param alpha3 angle of the third elementary rotation
-     * @exception OrekitException if inertialFrame is not a pseudo-inertial frame
-     * @deprecated as of 6.0 replaced by {@link #LofOffset(Frame, LOFType, RotationOrder, double, double, double)}
-     */
-    @Deprecated
-    public LofOffset(final Frame inertialFrame,
-                     final RotationOrder order, final double alpha1,
-                     final double alpha2, final double alpha3) throws OrekitException {
-        this(inertialFrame, LOFType.VVLH, order, alpha1, alpha2, alpha3);
-    }
-
-    /** Create a LOF-aligned attitude.
-     * <p>
-     * Calling this constructor is equivalent to call
      * {@code LofOffset(inertialFrame, LOFType, RotationOrder.XYZ, 0, 0, 0)}
      * </p>
      * @param inertialFrame inertial frame with respect to which orbit should be computed

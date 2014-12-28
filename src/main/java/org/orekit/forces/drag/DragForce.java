@@ -91,7 +91,7 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
     /** There are no discrete events for this model.
      * @return an empty array
      */
-    public EventDetector[] getEventsDetectors() {
+    public EventDetector<?>[] getEventsDetectors() {
         return new EventDetector[0];
     }
 

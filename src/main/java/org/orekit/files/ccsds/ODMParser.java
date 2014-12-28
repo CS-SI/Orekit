@@ -568,7 +568,7 @@ public abstract class ODMParser {
         throws OrekitException {
         switch (timeSystem) {
         case GMST:
-            return new AbsoluteDate(date, TimeScalesFactory.getGMST());
+            return new AbsoluteDate(date, TimeScalesFactory.getGMST(conventions, false));
         case GPS:
             return new AbsoluteDate(date, TimeScalesFactory.getGPS());
         case TAI:

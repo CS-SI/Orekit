@@ -73,26 +73,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class CircularOrbit
     extends Orbit {
 
-    /** Identifier for mean latitude argument.
-     * @deprecated as of 6.0 replaced by {@link PositionAngle}
-     */
-    @Deprecated
-    public static final int MEAN_LONGITUDE_ARGUMENT = 0;
-
-    /** Identifier for eccentric latitude argument.
-     * @deprecated as of 6.0 replaced by {@link PositionAngle}
-     */
-    @Deprecated
-    public static final int ECCENTRIC_LONGITUDE_ARGUMENT = 1;
-
-    /** Identifier for true latitude argument.
-     * @deprecated as of 6.0 replaced by {@link PositionAngle}
-     */
-    @Deprecated
-    public static final int TRUE_LONGITUDE_ARGUMENT = 2;
-
     /** Serializable UID. */
-    private static final long serialVersionUID = 5565190329070485158L;
+    private static final long serialVersionUID = 20141228L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -211,70 +193,6 @@ public class CircularOrbit
         }
 
         serializePV = true;
-
-    }
-
-    /** Creates a new instance.
-     * @param a  semi-major axis (m)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param i inclination (rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param alpha  an + ω, mean, eccentric or true latitude argument (rad)
-     * @param type type of latitude argument, must be one of {@link #MEAN_LONGITUDE_ARGUMENT},
-     * {@link #ECCENTRIC_LONGITUDE_ARGUMENT} or  {@link #TRUE_LONGITUDE_ARGUMENT}
-     * @param frame the frame in which are defined the parameters
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param date date of the orbital parameters
-     * @param mu central attraction coefficient (m³/s²)
-     * @exception IllegalArgumentException if the latitude argument type is not
-     * one of {@link #MEAN_LONGITUDE_ARGUMENT}, {@link #ECCENTRIC_LONGITUDE_ARGUMENT}
-     * or {@link #TRUE_LONGITUDE_ARGUMENT} or if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame}
-     * @see #MEAN_LONGITUDE_ARGUMENT
-     * @see #ECCENTRIC_LONGITUDE_ARGUMENT
-     * @see #TRUE_LONGITUDE_ARGUMENT
-     * @deprecated as of 6.0 replaced by {@link #CircularOrbit(double, double, double,
-     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)}
-     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
-     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
-     */
-    @Deprecated
-    public CircularOrbit(final double a, final double ex, final double ey,
-                         final double i, final double raan,
-                         final double alpha, final int type,
-                         final Frame frame, final AbsoluteDate date, final double mu)
-        throws IllegalArgumentException {
-        super(frame, date, mu);
-        if (ex * ex + ey * ey >= 1.0) {
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
-        }
-        this.a    =  a;
-        this.ex   = ex;
-        this.ey   = ey;
-        this.i    = i;
-        this.raan = raan;
-
-        switch (type) {
-        case MEAN_LONGITUDE_ARGUMENT :
-            this.alphaV = eccentricToTrue(meanToEccentric(alpha));
-            break;
-        case ECCENTRIC_LONGITUDE_ARGUMENT :
-            this.alphaV = eccentricToTrue(alpha);
-            break;
-        case TRUE_LONGITUDE_ARGUMENT :
-            this.alphaV = alpha;
-            break;
-        default :
-            this.alphaV = Double.NaN;
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.ANGLE_TYPE_NOT_SUPPORTED,
-                  "MEAN_LONGITUDE_ARGUMENT", "ECCENTRIC_LONGITUDE_ARGUMENT",
-                  "TRUE_LONGITUDE_ARGUMENT");
-        }
-
-        serializePV = false;
 
     }
 

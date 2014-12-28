@@ -174,15 +174,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         newtonianAttraction = new NewtonianAttraction(mu);
     }
 
-    /** Set the attitude provider.
-     * @param provider attitude provider
-     * @deprecated as of 6.0 replaced by {@link #setAttitudeProvider(AttitudeProvider)}
-     */
-    @Deprecated
-    public void setAttitudeLaw(final AttitudeProvider provider) {
-        setAttitudeProvider(provider);
-    }
-
     /** Add a force model to the global perturbation model.
      * <p>If this method is not called at all, the integrated orbit will follow
      * a keplerian evolution only.</p>
@@ -424,9 +415,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             this.jacobian = new double[6][6];
 
             for (final ForceModel forceModel : forceModels) {
-                final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
+                final EventDetector<?>[] modelDetectors = forceModel.getEventsDetectors();
                 if (modelDetectors != null) {
-                    for (final EventDetector detector : modelDetectors) {
+                    for (final EventDetector<?> detector : modelDetectors) {
                         setUpEventDetector(integrator, detector);
                     }
                 }

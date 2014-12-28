@@ -90,15 +90,6 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         this.bodyFrame = bodyFrame;
     }
 
-    /** Set the close approach threshold.
-     * @param closeApproachThreshold close approach threshold (no unit)
-     * @deprecated as of 6.1, this threshold is not used anymore
-     */
-    @Deprecated
-    public void setCloseApproachThreshold(final double closeApproachThreshold) {
-        // unused
-    }
-
     /** Set the angular convergence threshold.
      * <p>The angular threshold is used both to identify points close to
      * the ellipse axes and as the convergence threshold used to

@@ -187,7 +187,7 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
+    public EventDetector<?>[] getEventsDetectors() {
         return new EventDetector[] {
             new DateDetector(startDate).withHandler(new FiringStartHandler()),
             new DateDetector(endDate).withHandler(new FiringStopHandler())

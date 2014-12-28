@@ -37,7 +37,7 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class AltitudeDetector extends AbstractReconfigurableDetector<AltitudeDetector> {
+public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;

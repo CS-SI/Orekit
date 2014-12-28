@@ -39,7 +39,7 @@ import org.orekit.utils.ElevationMask;
  * @author Hank Grabowski
  * @since 6.1
  */
-public class ElevationDetector extends AbstractReconfigurableDetector<ElevationDetector> {
+public class ElevationDetector extends AbstractDetector<ElevationDetector> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
@@ -69,24 +69,6 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      */
     public ElevationDetector(final TopocentricFrame topo) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, topo);
-    }
-
-    /**
-     * Creates an instance of Elevation detector based on passed in topocentric frame
-     * and the minimum elevation angle.
-     * <p>
-     * uses default values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
-     * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
-     * @param minElevation minimum elevation angle
-     * @param topo reference to a topocentric model
-     * @deprecated as of 6.1 replace with {@link #ElevationDetector(TopocentricFrame)} followed
-     * by a call to {@link #withConstantElevation(double)}
-     */
-    @Deprecated
-    public ElevationDetector(final double minElevation, final TopocentricFrame topo) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnDecreasing<ElevationDetector>(),
-             minElevation, null, null, topo);
     }
 
     /**

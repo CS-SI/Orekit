@@ -130,12 +130,6 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** {@inheritDoc} */
-    @Deprecated
-    public Frame getFrame() {
-        return inertialFrame;
-    }
-
-    /** {@inheritDoc} */
     public Frame getInertiallyOrientedFrame() {
         return inertialFrame;
     }

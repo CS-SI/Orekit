@@ -37,7 +37,7 @@ import org.orekit.time.AbsoluteDate;
  * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class EventShifter<T extends EventDetector> extends AbstractReconfigurableDetector<EventShifter<T>> {
+public class EventShifter<T extends EventDetector<T>> extends AbstractDetector<EventShifter<T>> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
@@ -143,7 +143,7 @@ public class EventShifter<T extends EventDetector> extends AbstractReconfigurabl
     }
 
     /** Local class for handling events. */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventShifter<T>> {
+    private static class LocalHandler<T extends EventDetector<T>> implements EventHandler<EventShifter<T>> {
 
         /** Shifted state at even occurrence. */
         private SpacecraftState shiftedState;
@@ -161,15 +161,8 @@ public class EventShifter<T extends EventDetector> extends AbstractReconfigurabl
                 shiftedState = s.shiftedBy(offset);
             }
 
-            if (shifter.detector instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) shifter.detector).getHandler();
-                return handler.eventOccurred(shiftedState, shifter.detector, increasing);
-            } else {
-                @SuppressWarnings("deprecation")
-                final EventDetector.Action a = shifter.detector.eventOccurred(shiftedState, increasing);
-                return AbstractReconfigurableDetector.convert(a);
-            }
+            final EventHandler<T> handler = shifter.detector.getHandler();
+            return handler.eventOccurred(shiftedState, shifter.detector, increasing);
 
         }
 
@@ -177,15 +170,8 @@ public class EventShifter<T extends EventDetector> extends AbstractReconfigurabl
         @Override
         public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState)
             throws OrekitException {
-            if (shifter.detector instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) shifter.detector).getHandler();
-                return handler.resetState(shifter.detector, shiftedState);
-            } else {
-                @SuppressWarnings("deprecation")
-                final SpacecraftState newState = shifter.detector.resetState(shiftedState);
-                return newState;
-            }
+            final EventHandler<T> handler = shifter.detector.getHandler();
+            return handler.resetState(shifter.detector, shiftedState);
         }
 
     }

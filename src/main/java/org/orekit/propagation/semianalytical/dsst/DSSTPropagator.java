@@ -25,52 +25,31 @@ import java.util.List;
 
 import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.ode.sampling.StepHandler;
 import org.apache.commons.math3.ode.sampling.StepInterpolator;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.bodies.CelestialBody;
-import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
-import org.orekit.forces.ForceModel;
-import org.orekit.forces.drag.Atmosphere;
-import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.forces.gravity.ThirdBodyAttraction;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.radiation.RadiationSensitive;
-import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.VariableStepInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -725,55 +704,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     meanState.getMu(), meanState.getFrame());
         }
 
-        /** Create a reference numerical propagator to convert orbit to mean elements.
-         *  @param initialState initial state
-         *  @return propagator
-         *  @throws OrekitException if some numerical force model cannot be built
-         */
-        private Propagator createPropagator(final SpacecraftState initialState)
-            throws OrekitException {
-            final Orbit initialOrbit = initialState.getOrbit();
-            final double[][] tol = NumericalPropagator.tolerances(1.0, initialOrbit, OrbitType.EQUINOCTIAL);
-            final double minStep = 1.;
-            final double maxStep = 200.;
-            final AdaptiveStepsizeIntegrator integ = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
-            integ.setInitialStepSize(100.);
-
-            final NumericalPropagator propagator = new NumericalPropagator(integ);
-            propagator.setOrbitType(OrbitType.EQUINOCTIAL);
-            propagator.setInitialState(initialState);
-
-            // Define the same force model as the DSST
-            for (final DSSTForceModel force : forceModels) {
-                if (force instanceof DSSTCentralBody) {
-                    // Central body
-                    final UnnormalizedSphericalHarmonicsProvider provider = ((DSSTCentralBody) force).getProvider();
-                    final ForceModel holmesFeatherstone =
-                            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                                                  GravityFieldFactory.getNormalizedProvider(provider));
-                    propagator.addForceModel(holmesFeatherstone);
-                } else if (force instanceof DSSTThirdBody) {
-                    // Third body
-                    final CelestialBody body = ((DSSTThirdBody) force).getBody();
-                    final ForceModel third   = new ThirdBodyAttraction(body);
-                    propagator.addForceModel(third);
-                } else if (force instanceof DSSTAtmosphericDrag) {
-                    // Atmospheric drag
-                    final Atmosphere atm = ((DSSTAtmosphericDrag) force).getAtmosphere();
-                    final DragSensitive spacecraft = ((DSSTAtmosphericDrag) force).getSpacecraft();
-                    final ForceModel drag = new DragForce(atm, spacecraft);
-                    propagator.addForceModel(drag);
-                } else if (force instanceof DSSTSolarRadiationPressure) {
-                    // Solar radiation pressure
-                    final double ae   = ((DSSTSolarRadiationPressure) force).getEquatorialRadius();
-                    final RadiationSensitive spacecraft = ((DSSTSolarRadiationPressure) force).getSpacecraft();
-                    final ForceModel pressure = new SolarRadiationPressure(CelestialBodyFactory.getSun(), ae, spacecraft);
-                    propagator.addForceModel(pressure);
-                }
-            }
-            return propagator;
-        }
-
         /** Replace the instance with a data transfer object for serialization.
          * @return data transfer object that will be serialized
          * @exception NotSerializableException if one of the force models cannot be serialized
@@ -880,9 +810,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             yDot = new double[7];
 
             for (final DSSTForceModel forceModel : mapper.getForceModels()) {
-                final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
+                final EventDetector<?>[] modelDetectors = forceModel.getEventsDetectors();
                 if (modelDetectors != null) {
-                    for (final EventDetector detector : modelDetectors) {
+                    for (final EventDetector<?> detector : modelDetectors) {
                         setUpEventDetector(integrator, detector);
                     }
                 }

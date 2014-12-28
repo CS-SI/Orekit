@@ -455,7 +455,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public EventDetector[] getEventsDetectors() {
+    public EventDetector<?>[] getEventsDetectors() {
         return null;
     }
 

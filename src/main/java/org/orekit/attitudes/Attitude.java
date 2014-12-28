@@ -101,22 +101,6 @@ public class Attitude
         this(referenceFrame, new TimeStampedAngularCoordinates(date, attitude, spin, acceleration));
     }
 
-    /** Estimate spin between two orientations.
-     * <p>Estimation is based on a simple fixed rate rotation
-     * during the time interval between the two attitude.</p>
-     * @param start start orientation
-     * @param end end orientation
-     * @param dt time elapsed between the dates of the two orientations
-     * @return spin allowing to go from start to end orientation
-     * @deprecated as of 6.0 superseded by {@link
-     * AngularCoordinates#estimateRate(Rotation, Rotation, double)}
-     */
-    @Deprecated
-    public static Vector3D estimateSpin(final Rotation start, final Rotation end,
-                                        final double dt) {
-        return AngularCoordinates.estimateRate(start, end, dt);
-    }
-
     /** Get a time-shifted attitude.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on

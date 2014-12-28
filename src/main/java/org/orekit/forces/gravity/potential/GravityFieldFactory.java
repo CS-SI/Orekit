@@ -375,29 +375,6 @@ public class GravityFieldFactory {
         return new Unnormalizer(normalized);
     }
 
-    /** Get the gravity field coefficients provider from the first supported file.
-     * <p>
-     * If no {@link PotentialCoefficientsReader} has been added by calling {@link
-     * #addPotentialCoefficientsReader(PotentialCoefficientsReader)
-     * addPotentialCoefficientsReader} or if {@link #clearPotentialCoefficientsReaders()
-     * clearPotentialCoefficientsReaders} has been called afterwards,the {@link
-     * #addDefaultPotentialCoefficientsReaders() addDefaultPotentialCoefficientsReaders}
-     * method will be called automatically.
-     * </p>
-     * @return a gravity field coefficients provider containing already loaded data
-     * @exception OrekitException if some data is missing
-     * or if some loader specific error occurs
-     * @deprecated as of 6.0, replaced by {@link #getUnnormalizedProvider(int, int)}
-     */
-    public static PotentialCoefficientsProvider getPotentialProvider()
-        throws OrekitException {
-        final PotentialCoefficientsReader reader = readGravityField(Integer.MAX_VALUE, Integer.MAX_VALUE);
-        final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(false,
-                                                                                  reader.getMaxAvailableDegree(),
-                                                                                  reader.getMaxAvailableOrder());
-        return new ProviderConverter(new WrappingUnnormalizedProvider(provider));
-    }
-
     /** Read a gravity field coefficients provider from the first supported file.
      * <p>
      * If no {@link PotentialCoefficientsReader} has been added by calling {@link

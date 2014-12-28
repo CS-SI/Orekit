@@ -65,42 +65,4 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
      */
     NormalizedSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
 
-    /** Get a spherical harmonic cosine coefficient.
-     * <p>
-     * Note that this method is deprecated and will be removed in the future.
-     * The implementation provided by Orekit for compatibility reason is
-     * expected to be slower than it was in version 6.0. Users are advised to
-     * switch to the new API (see {@link #onDate(AbsoluteDate)}).
-     * </p>
-     * @param dateOffset date offset since reference date (s)
-     * @param n degree of the coefficient
-     * @param m order of the coefficient
-     * @return normalized coefficient Cnm
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order
-     * @deprecated as of 6.1, replaced with {@link #onDate(AbsoluteDate)}
-     */
-    @Deprecated
-    double getNormalizedCnm(double dateOffset, int n, int m)
-        throws OrekitException;
-
-    /** Get a spherical harmonic sine coefficient.
-     * <p>
-     * Note that this method is deprecated and will be removed in the future.
-     * The implementation provided by Orekit for compatibility reason is
-     * expected to be slower than it was in version 6.0. Users are advised to
-     * switch to the new API (see {@link #onDate(AbsoluteDate)}).
-     * </p>
-     * @param dateOffset date offset since reference date (s)
-     * @param n degree of the coefficient
-     * @param m order of the coefficient
-     * @return normalized coefficient Snm
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order
-     * @deprecated as of 6.1, replaced with {@link #onDate(AbsoluteDate)}
-     */
-    @Deprecated
-    double getNormalizedSnm(double dateOffset, int n, int m)
-        throws OrekitException;
-
 }

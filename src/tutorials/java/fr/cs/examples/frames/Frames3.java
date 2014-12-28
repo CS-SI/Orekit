@@ -52,7 +52,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 import fr.cs.examples.Autoconfiguration;
 
-/** Orekit tutorial for computing spacecraft related data WITHOUT using the deprecated SpacecraftFrame.
+/** Orekit tutorial for computing spacecraft related data.
  * @author Pascal Parraud
  * @author Luc Maisonobe
  */

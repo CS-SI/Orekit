@@ -55,38 +55,6 @@ public class KeplerianParametersTest {
     private double mu;
 
     @Test
-    @Deprecated
-    public void testOldConstructors() {
-        int inexistantType = 17;
-        int[] types = {
-            KeplerianOrbit.MEAN_ANOMALY,
-            KeplerianOrbit.ECCENTRIC_ANOMALY,
-            KeplerianOrbit.TRUE_ANOMALY,
-            inexistantType
-        };
-
-        for (int type : types) {
-            try {
-
-                KeplerianOrbit kep =
-                    new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                                       0.048363, type, FramesFactory.getEME2000(), date, mu);
-
-                PVCoordinates pvCoordinates = kep.getPVCoordinates();
-                EquinoctialOrbit param = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-                Assert.assertEquals(param.getA(),  kep.getA(), Utils.epsilonTest * kep.getA());
-                Assert.assertEquals(param.getEquinoctialEx(), kep.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(kep.getE()));
-                Assert.assertEquals(param.getEquinoctialEy(), kep.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(kep.getE()));
-                Assert.assertEquals(param.getHx(), kep.getHx(), Utils.epsilonAngle * FastMath.abs(kep.getI()));
-                Assert.assertEquals(param.getHy(), kep.getHy(), Utils.epsilonAngle * FastMath.abs(kep.getI()));
-                Assert.assertEquals(MathUtils.normalizeAngle(param.getLv(),kep.getLv()), kep.getLv(), Utils.epsilonAngle * FastMath.abs(kep.getLv()));
-            } catch (IllegalArgumentException iae) {
-                Assert.assertEquals(inexistantType, type);
-            }
-        }
-    }
-
-    @Test
     public void testKeplerianToKeplerian() {
 
         // elliptic orbit

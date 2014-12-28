@@ -723,7 +723,7 @@ public class HolmesFeatherstoneAttractionModel
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
+    public EventDetector<?>[] getEventsDetectors() {
         return new EventDetector[0];
     }
 

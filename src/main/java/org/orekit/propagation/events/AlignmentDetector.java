@@ -37,7 +37,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */
-public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentDetector> {
+public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;

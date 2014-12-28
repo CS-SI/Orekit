@@ -22,6 +22,12 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="update">
+        Removed old parts that were deprecated in previous versions.
+      </action>
+      <action dev="luc" type="update">
+        Updated dependency to Apache Commons Math 3.4, released on 2014-12-26.
+      </action>
       <action dev="luc" type="fix">
         Fixed null vector normalization when attempting to project to ground a point already on ground.
         Fixes issue #181.

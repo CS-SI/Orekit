@@ -162,34 +162,6 @@ public class DataProvidersManager {
     }
 
     /** Remove one provider.
-     * <p>
-     * The first supported provider extending the specified class (or implementing
-     * the interface) is removed and returned. For example, removing the default
-     * provider that loads data from files located somewhere in a directory hierarchy
-     * can be done by calling:
-     * <pre>
-     *   DataProvidersManager.getInstance().remove(DataDirectoryCrawler.class);
-     * </pre>
-     * </p>
-     * @param providerClass class (or one of the superclass's) of the provider to remove
-     * @return instance removed (null if no provider of the given class was supported)
-     * @see #addProvider(DataProvider)
-     * @see #clearProviders()
-     * @see #isSupported(Class)
-     * @see #getProviders()
-     * @deprecated as of 6.0, replaced by {@link #removeProvider(DataProvider)}
-     */
-    @Deprecated
-    public DataProvider removeProvider(final Class<? extends DataProvider> providerClass) {
-        for (final DataProvider provider : providers) {
-            if (providerClass.isInstance(provider)) {
-                return removeProvider(provider);
-            }
-        }
-        return null;
-    }
-
-    /** Remove one provider.
      * @param provider provider instance to remove
      * @return instance removed (null if the provider was not already present)
      * @see #addProvider(DataProvider)
@@ -217,26 +189,6 @@ public class DataProvidersManager {
      */
     public void clearProviders() {
         providers.clear();
-    }
-
-    /** Check if some type of provider is supported.
-     * @param providerClass class (or one of the superclass's) of the provider to check
-     * @return true if one provider of the given class is already in the supported list
-     * @see #addProvider(DataProvider)
-     * @see #removeProvider(Class)
-     * @see #clearProviders()
-     * @see #getProviders()
-     * @deprecated as of 6.0, replaced by {@link #isSupported(DataProvider)}
-     */
-    @Deprecated
-    public boolean isSupported(final Class<? extends DataProvider> providerClass) {
-        for (final Iterator<DataProvider> iterator = providers.iterator(); iterator.hasNext();) {
-            final DataProvider provider = iterator.next();
-            if (providerClass.isInstance(provider)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** Check if some provider is supported.

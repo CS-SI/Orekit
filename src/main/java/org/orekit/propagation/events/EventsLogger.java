@@ -83,7 +83,7 @@ public class EventsLogger implements Serializable {
      * @return the wrapping detector to add to the propagator
      * @param <T> class type for the generic version
      */
-    public <T extends EventDetector> EventDetector monitorDetector(final T monitoredDetector) {
+    public <T extends EventDetector<T>> LoggingWrapper<T> monitorDetector(final T monitoredDetector) {
         return new LoggingWrapper<T>(monitoredDetector);
     }
 
@@ -112,7 +112,7 @@ public class EventsLogger implements Serializable {
         private static final long serialVersionUID = 20131202L;
 
         /** Event detector triggered. */
-        private final EventDetector detector;
+        private final EventDetector<?> detector;
 
         /** Triggering state. */
         private final SpacecraftState state;
@@ -126,7 +126,7 @@ public class EventsLogger implements Serializable {
          * @param increasing indicator if the event switching function was increasing
          * or decreasing at event occurrence date
          */
-        private LoggedEvent(final EventDetector detector, final SpacecraftState state, final boolean increasing) {
+        private LoggedEvent(final EventDetector<?> detector, final SpacecraftState state, final boolean increasing) {
             this.detector   = detector;
             this.state      = state;
             this.increasing = increasing;
@@ -135,7 +135,7 @@ public class EventsLogger implements Serializable {
         /** Get the event detector triggered.
          * @return event detector triggered
          */
-        public EventDetector getEventDetector() {
+        public EventDetector<?> getEventDetector() {
             return detector;
         }
 
@@ -160,7 +160,7 @@ public class EventsLogger implements Serializable {
     /** Internal wrapper for events detectors.
      * @param <T> class type for the generic version
      */
-    private class LoggingWrapper<T extends EventDetector> extends AbstractReconfigurableDetector<LoggingWrapper<T>> {
+    private class LoggingWrapper<T extends EventDetector<T>> extends AbstractDetector<LoggingWrapper<T>> {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20131118L;
@@ -227,36 +227,22 @@ public class EventsLogger implements Serializable {
     /** Local class for handling events.
      * @param <T> class type for the generic version
      */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<LoggingWrapper<T>> {
+    private static class LocalHandler<T extends EventDetector<T>> implements EventHandler<LoggingWrapper<T>> {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing)
             throws OrekitException {
             wrapper.logEvent(s, increasing);
-            if (wrapper.detector instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) wrapper.detector).getHandler();
-                return handler.eventOccurred(s, wrapper.detector, increasing);
-            } else {
-                @SuppressWarnings("deprecation")
-                final EventDetector.Action a = wrapper.detector.eventOccurred(s, increasing);
-                return AbstractReconfigurableDetector.convert(a);
-            }
+            final EventHandler<T> handler = wrapper.detector.getHandler();
+            return handler.eventOccurred(s, wrapper.detector, increasing);
         }
 
         /** {@inheritDoc} */
         @Override
         public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState)
             throws OrekitException {
-            if (wrapper.detector instanceof AbstractReconfigurableDetector) {
-                @SuppressWarnings("unchecked")
-                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) wrapper.detector).getHandler();
-                return handler.resetState(wrapper.detector, oldState);
-            } else {
-                @SuppressWarnings("deprecation")
-                final SpacecraftState newState = wrapper.detector.resetState(oldState);
-                return newState;
-            }
+            final EventHandler<T> handler = wrapper.detector.getHandler();
+            return handler.resetState(wrapper.detector, oldState);
         }
 
     }

@@ -43,7 +43,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @author Pascal Parraud
  */
-public class DateDetector extends AbstractReconfigurableDetector<DateDetector> implements TimeStamped {
+public class DateDetector extends AbstractDetector<DateDetector> implements TimeStamped {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;

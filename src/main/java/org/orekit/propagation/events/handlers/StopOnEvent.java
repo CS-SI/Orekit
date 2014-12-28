@@ -28,7 +28,7 @@ import org.orekit.propagation.events.EventDetector;
  * @param <T> class type for the generic version
  * @since 6.1
  */
-public class StopOnEvent <T extends EventDetector> implements EventHandler<T> {
+public class StopOnEvent <T extends EventDetector<T>> implements EventHandler<T> {
 
     /**
      * Specific implementation of the eventOccurred interface.

@@ -183,22 +183,6 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public double getNormalizedCnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedCnm(n, m);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double getNormalizedSnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedSnm(n, m);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
 
         // computed Cnm and Snm coefficients

@@ -51,46 +51,6 @@ public class EquinoctialParametersTest {
     private double mu;
 
     @Test
-    @Deprecated
-    public void testOldConstructors() {
-
-        double ix = 1.200e-04;
-        double iy = -1.16e-04;
-        double inc = 2 * FastMath.asin(FastMath.sqrt((ix * ix + iy * iy) / 4.));
-        double hx = FastMath.tan(inc / 2.) * ix / (2 * FastMath.sin(inc / 2.));
-        double hy = FastMath.tan(inc / 2.) * iy / (2 * FastMath.sin(inc / 2.));
-
-        int inexistantType = 17;
-        int[] types = {
-            EquinoctialOrbit.MEAN_LATITUDE_ARGUMENT,
-            EquinoctialOrbit.ECCENTRIC_LATITUDE_ARGUMENT,
-            EquinoctialOrbit.TRUE_LATITUDE_ARGUMENT,
-            inexistantType
-        };
-
-        for (int type : types) {
-            try {
-
-                EquinoctialOrbit equi =
-                    new EquinoctialOrbit(42166.712, 0.5, -0.5, hx, hy,
-                                              5.300, PositionAngle.MEAN,
-                                              FramesFactory.getEME2000(), date, mu);
-
-                PVCoordinates pvCoordinates = equi.getPVCoordinates();
-                KeplerianOrbit param = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-                Assert.assertEquals(param.getA(),  equi.getA(), Utils.epsilonTest * equi.getA());
-                Assert.assertEquals(param.getEquinoctialEx(), equi.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(equi.getE()));
-                Assert.assertEquals(param.getEquinoctialEy(), equi.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(equi.getE()));
-                Assert.assertEquals(param.getHx(), equi.getHx(), Utils.epsilonAngle * FastMath.abs(equi.getI()));
-                Assert.assertEquals(param.getHy(), equi.getHy(), Utils.epsilonAngle * FastMath.abs(equi.getI()));
-                Assert.assertEquals(MathUtils.normalizeAngle(param.getLv(),equi.getLv()), equi.getLv(), Utils.epsilonAngle * FastMath.abs(equi.getLv()));
-            } catch (IllegalArgumentException iae) {
-                Assert.assertEquals(inexistantType, type);
-            }
-        }
-    }
-
-    @Test
     public void testEquinoctialToEquinoctialEll() {
 
         double ix = 1.200e-04;

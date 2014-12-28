@@ -175,19 +175,6 @@ public class TimeScalesFactory implements Serializable {
     }
 
     /** Get the Universal Time 1 scale.
-     * @return Universal Time 1 scale
-     * @exception OrekitException if some data can't be read or some
-     * file content is corrupted
-     * @see #getUTC()
-     * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
-     * @deprecated as of 6.1 replaced with {@link #getUT1(IERSConventions, boolean)}
-     */
-    @Deprecated
-    public static UT1Scale getUT1() throws OrekitException {
-        return getUT1(IERSConventions.IERS_2010, true);
-    }
-
-    /** Get the Universal Time 1 scale.
      * <p>
      * UT1 scale depends on both UTC scale and Earth Orientation Parameters,
      * so this method loads these data sets. See the {@link #getUTC()
@@ -330,15 +317,18 @@ public class TimeScalesFactory implements Serializable {
     }
 
     /** Get the Greenwich Mean Sidereal Time scale.
+     * @param conventions IERS conventions for which EOP parameters will provide dUT1
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return Greenwich Mean Sidereal Time scale
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
+     * @since 7.0
      */
-    public static GMSTScale getGMST() throws OrekitException {
+    public static GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) throws OrekitException {
         synchronized (TimeScalesFactory.class) {
 
             if (gmst == null) {
-                gmst = new GMSTScale(getUT1());
+                gmst = new GMSTScale(getUT1(conventions, simpleEOP));
             }
 
             return gmst;
