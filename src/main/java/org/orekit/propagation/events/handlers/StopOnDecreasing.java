@@ -31,7 +31,7 @@ import org.orekit.propagation.events.EventDetector;
  * @param <T> class type for the generic version
  * @since 6.1
  */
-public class StopOnDecreasing <T extends EventDetector<T>> implements EventHandler<T> {
+public class StopOnDecreasing <T extends EventDetector> implements EventHandler<T> {
 
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link

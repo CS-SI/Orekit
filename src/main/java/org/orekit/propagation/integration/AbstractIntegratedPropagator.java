@@ -60,7 +60,7 @@ import org.orekit.time.AbsoluteDate;
 public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Event detectors not related to force models. */
-    private final List<EventDetector<?>> detectors;
+    private final List<EventDetector> detectors;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
     private final AbstractIntegrator integrator;
@@ -96,7 +96,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param meanOrbit output only the mean orbit.
      */
     protected AbstractIntegratedPropagator(final AbstractIntegrator integrator, final boolean meanOrbit) {
-        detectors           = new ArrayList<EventDetector<?>>();
+        detectors           = new ArrayList<EventDetector>();
         additionalEquations = new ArrayList<AdditionalEquations>();
         this.integrator     = integrator;
         this.meanOrbit      = meanOrbit;
@@ -237,12 +237,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public <T extends EventDetector<T>> void addEventDetector(final T detector) {
+    public void addEventDetector(final EventDetector detector) {
         detectors.add(detector);
     }
 
     /** {@inheritDoc} */
-    public Collection<EventDetector<?>> getEventsDetectors() {
+    public Collection<EventDetector> getEventsDetectors() {
         return Collections.unmodifiableCollection(detectors);
     }
 
@@ -254,7 +254,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Set up all user defined event detectors.
      */
     protected void setUpUserEventDetectors() {
-        for (final EventDetector<?> detector : detectors) {
+        for (final EventDetector detector : detectors) {
             setUpEventDetector(integrator, detector);
         }
     }
@@ -263,8 +263,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param integ integrator into which event detector should be registered
      * @param detector event detector to wrap
      */
-    protected void setUpEventDetector(final AbstractIntegrator integ,
-                                      final EventDetector<?> detector) {
+    protected void setUpEventDetector(final AbstractIntegrator integ, final EventDetector detector) {
         integ.addEventHandler(new AdaptedEventDetector(detector),
                               detector.getMaxCheckInterval(),
                               detector.getThreshold(),
@@ -708,7 +707,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         implements org.apache.commons.math3.ode.events.EventHandler {
 
         /** Underlying event detector. */
-        private final EventDetector<?> detector;
+        private final EventDetector detector;
 
         /** Time of the previous call to g. */
         private double lastT;
@@ -719,7 +718,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Build a wrapped event detector.
          * @param detector event detector to wrap
         */
-        public AdaptedEventDetector(final EventDetector<?> detector) {
+        public AdaptedEventDetector(final EventDetector detector) {
             this.detector = detector;
             this.lastT    = Double.NaN;
             this.lastG    = Double.NaN;

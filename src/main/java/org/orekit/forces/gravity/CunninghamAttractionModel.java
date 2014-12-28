@@ -388,7 +388,7 @@ public class CunninghamAttractionModel
     }
 
     /** {@inheritDoc} */
-    public EventDetector<?>[] getEventsDetectors() {
+    public EventDetector[] getEventsDetectors() {
         return new EventDetector[0];
     }
 

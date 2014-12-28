@@ -33,7 +33,7 @@ import org.orekit.propagation.events.EventDetector;
  * @param <T> object type that the handler is called from
  * @since 6.1
  */
-public interface EventHandler<T extends EventDetector<T>> {
+public interface EventHandler<T extends EventDetector> {
 
     /** Enumerate for actions to be performed when an event occurs. */
     public enum Action {

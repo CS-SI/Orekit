@@ -20,7 +20,6 @@ import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 
@@ -44,11 +43,10 @@ import org.orekit.time.AbsoluteDate;
  * some processing, ignore it ...). The return value of the method will be used by
  * the propagator to stop or resume propagation, possibly changing the state vector.<p>
  *
- * @param <T> object type of the detector
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface EventDetector<T extends EventDetector<T>> extends Serializable {
+public interface EventDetector extends Serializable {
 
     /** Initialize event handler at the start of a propagation.
      * <p>
@@ -84,55 +82,6 @@ public interface EventDetector<T extends EventDetector<T>> extends Serializable 
      * @return maximal number of iterations in the event time search
      */
     int getMaxIterationCount();
-
-    /**
-     * Setup the maximum checking interval.
-     * <p>
-     * This will override a maximum checking interval if it has been configured previously.
-     * </p>
-     * @param newMaxCheck maximum checking interval (s)
-     * @return a new detector with updated configuration (the instance is not changed)
-     * @since 6.1
-     */
-    T withMaxCheck(final double newMaxCheck);
-
-    /**
-     * Setup the maximum number of iterations in the event time search.
-     * <p>
-     * This will override a number of iterations if it has been configured previously.
-     * </p>
-     * @param newMaxIter maximum number of iterations in the event time search
-     * @return a new detector with updated configuration (the instance is not changed)
-     * @since 6.1
-     */
-    T withMaxIter(final int newMaxIter);
-
-    /**
-     * Setup the convergence threshold.
-     * <p>
-     * This will override a convergence threshold if it has been configured previously.
-     * </p>
-     * @param newThreshold convergence threshold (s)
-     * @return a new detector with updated configuration (the instance is not changed)
-     * @since 6.1
-     */
-    T withThreshold(final double newThreshold);
-
-    /**
-     * Setup the event handler to call at event occurrences.
-     * <p>
-     * This will override a handler if it has been configured previously.
-     * </p>
-     * @param newHandler event handler to call at event occurrences
-     * @return a new detector with updated configuration (the instance is not changed)
-     * @since 6.1
-     */
-    T withHandler(final EventHandler<T> newHandler);
-
-    /** Get the handler.
-     * @return event handler to call at event occurrences
-     */
-    EventHandler<T> getHandler();
 
     /** Handle the event.
      * @param s SpaceCraft state to be used in the evaluation

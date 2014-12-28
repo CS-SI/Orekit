@@ -176,7 +176,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     }
 
     /** {@inheritDoc} */
-    public EventDetector<?>[] getEventsDetectors() {
+    public EventDetector[] getEventsDetectors() {
         return new EventDetector[] {
             new UmbraDetector(), new PenumbraDetector()
         };

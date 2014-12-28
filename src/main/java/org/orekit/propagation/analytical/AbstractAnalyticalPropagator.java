@@ -95,13 +95,13 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public <T extends EventDetector<T>> void addEventDetector(final T detector) {
+    public <T extends EventDetector> void addEventDetector(final T detector) {
         eventsStates.add(new EventState<T>(detector));
     }
 
     /** {@inheritDoc} */
-    public Collection<EventDetector<?>> getEventsDetectors() {
-        final List<EventDetector<?>> list = new ArrayList<EventDetector<?>>();
+    public Collection<EventDetector> getEventsDetectors() {
+        final List<EventDetector> list = new ArrayList<EventDetector>();
         for (final EventState<?> state : eventsStates) {
             list.add(state.getEventDetector());
         }

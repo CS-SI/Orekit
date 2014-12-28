@@ -25,7 +25,7 @@ import org.orekit.time.AbsoluteDate;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public abstract class AbstractDetector<T extends EventDetector<T>> implements EventDetector<T> {
+public abstract class AbstractDetector<T extends EventDetector> implements EventDetector {
 
     /** Default maximum checking interval (s). */
     public static final double DEFAULT_MAXCHECK = 600;
@@ -88,27 +88,61 @@ public abstract class AbstractDetector<T extends EventDetector<T>> implements Ev
         return threshold;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Setup the maximum checking interval.
+     * <p>
+     * This will override a maximum checking interval if it has been configured previously.
+     * </p>
+     * @param newMaxCheck maximum checking interval (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
     public T withMaxCheck(final double newMaxCheck) {
         return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Setup the maximum number of iterations in the event time search.
+     * <p>
+     * This will override a number of iterations if it has been configured previously.
+     * </p>
+     * @param newMaxIter maximum number of iterations in the event time search
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
     public T withMaxIter(final int newMaxIter) {
         return create(getMaxCheckInterval(), getThreshold(), newMaxIter,  getHandler());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Setup the convergence threshold.
+     * <p>
+     * This will override a convergence threshold if it has been configured previously.
+     * </p>
+     * @param newThreshold convergence threshold (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
     public T withThreshold(final double newThreshold) {
         return create(getMaxCheckInterval(), newThreshold, getMaxIterationCount(),  getHandler());
     }
 
-    /** {@inheritDoc} */
+    /**
+     * Setup the event handler to call at event occurrences.
+     * <p>
+     * This will override a handler if it has been configured previously.
+     * </p>
+     * @param newHandler event handler to call at event occurrences
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
     public T withHandler(final EventHandler<T> newHandler) {
         return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
-    /** {@inheritDoc} */
+    /** Get the handler.
+     * @return event handler to call at event occurrences
+     */
     public EventHandler<T> getHandler() {
         return handler;
     }

@@ -134,7 +134,7 @@ public class Relativity extends AbstractParameterizable implements ForceModel {
     }
 
     @Override
-    public EventDetector<?>[] getEventsDetectors() {
+    public EventDetector[] getEventsDetectors() {
         return null;
     }
 

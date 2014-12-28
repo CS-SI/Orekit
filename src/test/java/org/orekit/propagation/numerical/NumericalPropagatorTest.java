@@ -665,7 +665,7 @@ public class NumericalPropagatorTest {
         }
     }
 
-    private static class CheckingHandler<T extends EventDetector<T>> implements EventHandler<T> {
+    private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
 
         private final Action actionOnEvent;
         private boolean gotHere;

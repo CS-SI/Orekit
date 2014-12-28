@@ -61,7 +61,7 @@ import org.orekit.time.AbsoluteDate;
  *
  */
 
-public class EventFilter<T extends EventDetector<T>> extends AbstractDetector<EventFilter<T>> {
+public class EventFilter<T extends EventDetector> extends AbstractDetector<EventFilter<T>> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130409L;
@@ -232,21 +232,19 @@ public class EventFilter<T extends EventDetector<T>> extends AbstractDetector<Ev
     }
 
     /** Local handler. */
-    private static class LocalHandler<T extends EventDetector<T>> implements EventHandler<EventFilter<T>> {
+    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventFilter<T>> {
 
         /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final EventFilter<T> ef, final boolean increasing)
             throws OrekitException {
-            final EventHandler<T> handler = ef.rawDetector.getHandler();
-            return handler.eventOccurred(s, ef.rawDetector, ef.filter.getTriggeredIncreasing());
+            return ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */
         @Override
         public SpacecraftState resetState(final EventFilter<T> ef, final SpacecraftState oldState)
             throws OrekitException {
-            final EventHandler<T> handler = ef.rawDetector.getHandler();
-            return handler.resetState(ef.rawDetector, oldState);
+            return ef.rawDetector.resetState(oldState);
         }
 
     }

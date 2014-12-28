@@ -60,7 +60,7 @@ import org.orekit.utils.PVCoordinates;
      * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class ImpulseManeuver<T extends EventDetector<T>> extends AbstractDetector<ImpulseManeuver<T>> {
+public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<ImpulseManeuver<T>> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
@@ -181,7 +181,7 @@ public class ImpulseManeuver<T extends EventDetector<T>> extends AbstractDetecto
     /** Local handler.
      * @param <T> class type for the generic version
      */
-    private static class Handler<T extends EventDetector<T>> implements EventHandler<ImpulseManeuver<T>> {
+    private static class Handler<T extends EventDetector> implements EventHandler<ImpulseManeuver<T>> {
 
         /** {@inheritDoc} */
         public EventHandler.Action eventOccurred(final SpacecraftState s, final ImpulseManeuver<T> im,
@@ -189,9 +189,7 @@ public class ImpulseManeuver<T extends EventDetector<T>> extends AbstractDetecto
             throws OrekitException {
 
             // filter underlying event
-            final EventHandler.Action underlyingAction;
-            final EventHandler<T> handler = im.trigger.getHandler();
-            underlyingAction = handler.eventOccurred(s, im.trigger, increasing);
+            final EventHandler.Action underlyingAction = im.trigger.eventOccurred(s, increasing);
 
             return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
 

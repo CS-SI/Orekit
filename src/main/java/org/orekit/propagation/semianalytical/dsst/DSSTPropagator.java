@@ -810,9 +810,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             yDot = new double[7];
 
             for (final DSSTForceModel forceModel : mapper.getForceModels()) {
-                final EventDetector<?>[] modelDetectors = forceModel.getEventsDetectors();
+                final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
                 if (modelDetectors != null) {
-                    for (final EventDetector<?> detector : modelDetectors) {
+                    for (final EventDetector detector : modelDetectors) {
                         setUpEventDetector(integrator, detector);
                     }
                 }

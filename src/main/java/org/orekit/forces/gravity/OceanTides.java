@@ -176,7 +176,7 @@ public class OceanTides extends AbstractParameterizable implements ForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public EventDetector<?>[] getEventsDetectors() {
+    public EventDetector[] getEventsDetectors() {
         // delegate to underlying attraction model
         return attractionModel.getEventsDetectors();
     }

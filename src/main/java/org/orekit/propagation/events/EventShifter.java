@@ -37,7 +37,7 @@ import org.orekit.time.AbsoluteDate;
  * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class EventShifter<T extends EventDetector<T>> extends AbstractDetector<EventShifter<T>> {
+public class EventShifter<T extends EventDetector> extends AbstractDetector<EventShifter<T>> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
@@ -143,7 +143,7 @@ public class EventShifter<T extends EventDetector<T>> extends AbstractDetector<E
     }
 
     /** Local class for handling events. */
-    private static class LocalHandler<T extends EventDetector<T>> implements EventHandler<EventShifter<T>> {
+    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventShifter<T>> {
 
         /** Shifted state at even occurrence. */
         private SpacecraftState shiftedState;
@@ -161,8 +161,7 @@ public class EventShifter<T extends EventDetector<T>> extends AbstractDetector<E
                 shiftedState = s.shiftedBy(offset);
             }
 
-            final EventHandler<T> handler = shifter.detector.getHandler();
-            return handler.eventOccurred(shiftedState, shifter.detector, increasing);
+            return shifter.detector.eventOccurred(shiftedState, increasing);
 
         }
 
@@ -170,8 +169,7 @@ public class EventShifter<T extends EventDetector<T>> extends AbstractDetector<E
         @Override
         public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState)
             throws OrekitException {
-            final EventHandler<T> handler = shifter.detector.getHandler();
-            return handler.resetState(shifter.detector, shiftedState);
+            return shifter.detector.resetState(shiftedState);
         }
 
     }

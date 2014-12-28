@@ -171,7 +171,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    public EventDetector<?>[] getEventsDetectors() {
+    public EventDetector[] getEventsDetectors() {
         // TODO: add eclipses handling
         return null;
     }

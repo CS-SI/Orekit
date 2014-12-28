@@ -122,7 +122,7 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
     }
 
     /** {@inheritDoc} */
-    public EventDetector<?>[] getEventsDetectors() {
+    public EventDetector[] getEventsDetectors() {
         return new EventDetector[0];
     }
 

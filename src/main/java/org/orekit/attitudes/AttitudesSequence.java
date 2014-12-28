@@ -119,7 +119,7 @@ public class AttitudesSequence implements AttitudeProvider {
      * (used only if switchEvent is non null)
      * @param <T> class type for the generic version
      */
-    public <T extends EventDetector<T>> void addSwitchingCondition(final AttitudeProvider before,
+    public <T extends EventDetector> void addSwitchingCondition(final AttitudeProvider before,
                                                                    final T switchEvent,
                                                                    final boolean switchOnIncrease,
                                                                    final boolean switchOnDecrease,
@@ -158,7 +158,7 @@ public class AttitudesSequence implements AttitudeProvider {
     /** Switch specification.
      * @param <T> class type for the generic version
      */
-    private class Switch<T extends EventDetector<T>> extends AbstractDetector<Switch<T>> {
+    private class Switch<T extends EventDetector> extends AbstractDetector<Switch<T>> {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20141228L;
@@ -248,7 +248,7 @@ public class AttitudesSequence implements AttitudeProvider {
     /** Local handler.
      * @param <T> class type for the generic version
      */
-    private static class LocalHandler<T extends EventDetector<T>> implements EventHandler<Switch<T>> {
+    private static class LocalHandler<T extends EventDetector> implements EventHandler<Switch<T>> {
 
         /** {@inheritDoc} */
         public EventHandler.Action eventOccurred(final SpacecraftState s, final Switch<T> sw, final boolean increasing)
@@ -259,8 +259,7 @@ public class AttitudesSequence implements AttitudeProvider {
                 sw.performSwitch();
             }
 
-            final EventHandler<T> handler = sw.event.getHandler();
-            return handler.eventOccurred(s, sw.event, increasing);
+            return sw.event.eventOccurred(s, increasing);
 
         }
 
@@ -268,8 +267,7 @@ public class AttitudesSequence implements AttitudeProvider {
         @Override
         public SpacecraftState resetState(final Switch<T> sw, final SpacecraftState oldState)
             throws OrekitException {
-            final EventHandler<T> handler = sw.event.getHandler();
-            return handler.resetState(sw.event, oldState);
+            return sw.event.resetState(oldState);
         }
 
     }
