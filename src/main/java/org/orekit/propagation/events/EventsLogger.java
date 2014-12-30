@@ -83,7 +83,7 @@ public class EventsLogger implements Serializable {
      * @return the wrapping detector to add to the propagator
      * @param <T> class type for the generic version
      */
-    public <T extends EventDetector> LoggingWrapper<T> monitorDetector(final T monitoredDetector) {
+    public <T extends EventDetector> EventDetector monitorDetector(final T monitoredDetector) {
         return new LoggingWrapper<T>(monitoredDetector);
     }
 
