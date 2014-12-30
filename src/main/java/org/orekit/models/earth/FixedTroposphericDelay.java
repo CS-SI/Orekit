@@ -17,7 +17,7 @@
 package org.orekit.models.earth;
 
 import org.apache.commons.math3.analysis.BivariateFunction;
-import org.apache.commons.math3.analysis.interpolation.BicubicSplineInterpolator;
+import org.apache.commons.math3.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -58,7 +58,7 @@ public class FixedTroposphericDelay implements TroposphericDelayModel {
         this.xArr = xArr.clone();
         this.yArr = yArr.clone();
         this.fArr = fArr.clone();
-        delayFunction = new BicubicSplineInterpolator().interpolate(xArr, yArr, fArr);
+        delayFunction = new PiecewiseBicubicSplineInterpolator().interpolate(xArr, yArr, fArr);
     }
 
     /** Creates a new {@link FixedTroposphericDelay} instance, and loads the
@@ -75,7 +75,7 @@ public class FixedTroposphericDelay implements TroposphericDelayModel {
             xArr = loader.getAbscissaGrid();
             yArr = loader.getOrdinateGrid();
             fArr = loader.getValuesSamples();
-            delayFunction = new BicubicSplineInterpolator().interpolate(xArr, yArr, fArr);
+            delayFunction = new PiecewiseBicubicSplineInterpolator().interpolate(xArr, yArr, fArr);
         } else {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, supportedName);
         }

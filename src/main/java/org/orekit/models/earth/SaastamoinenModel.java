@@ -18,14 +18,13 @@ package org.orekit.models.earth;
 
 import org.apache.commons.math3.analysis.BivariateFunction;
 import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.interpolation.BicubicSplineInterpolator;
+import org.apache.commons.math3.analysis.interpolation.BicubicInterpolator;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
-
 import org.orekit.utils.InterpolationTableLoader;
 
 /** The modified Saastamoinen model. Estimates the path delay imposed to
@@ -173,7 +172,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
             try {
                 DataProvidersManager.getInstance().feed("^saastamoinen-correction\\.txt$", loader);
                 if (!loader.stillAcceptsData()) {
-                    func = new BicubicSplineInterpolator().interpolate(loader.getAbscissaGrid(),
+                    func = new BicubicInterpolator().interpolate(loader.getAbscissaGrid(),
                                                                        loader.getOrdinateGrid(),
                                                                        loader.getValuesSamples());
                 }
@@ -215,7 +214,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
                      0.028, 0.033, 0.039, 0.043, 0.047, 0.047} };
 
                 // the actual delta R is interpolated using a a bi-cubic spline interpolator
-                deltaR = new BicubicSplineInterpolator().interpolate(xValForR, yValForR, fval);
+                deltaR = new BicubicInterpolator().interpolate(xValForR, yValForR, fval);
             }
         }
     }
