@@ -106,8 +106,8 @@ public class JPLEphemeridesLoaderTest {
         Utils.setDataRoot("inpop");
 
         JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES,
-                                     JPLEphemeridesLoader.EphemerisType.SUN);
+                new JPLEphemeridesLoader("^inpop.*TCB.*littleendian.*\\.dat$",
+                                         JPLEphemeridesLoader.EphemerisType.SUN);
         Assert.assertEquals(22032.081e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY),
                             1.0e6);
