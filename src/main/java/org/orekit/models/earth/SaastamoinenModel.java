@@ -16,12 +16,21 @@
  */
 package org.orekit.models.earth;
 
+import java.util.Arrays;
+
 import org.apache.commons.math3.analysis.BivariateFunction;
 import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.interpolation.BicubicInterpolator;
+import org.apache.commons.math3.analysis.interpolation.BivariateGridInterpolator;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.exception.InsufficientDataException;
+import org.apache.commons.math3.exception.NoDataException;
+import org.apache.commons.math3.exception.NonMonotonicSequenceException;
+import org.apache.commons.math3.exception.NumberIsTooSmallException;
+import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
@@ -172,7 +181,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
             try {
                 DataProvidersManager.getInstance().feed("^saastamoinen-correction\\.txt$", loader);
                 if (!loader.stillAcceptsData()) {
-                    func = new BicubicInterpolator().interpolate(loader.getAbscissaGrid(),
+                    func = new BilinearInterpolator().interpolate(loader.getAbscissaGrid(),
                                                                        loader.getOrdinateGrid(),
                                                                        loader.getValuesSamples());
                 }
@@ -213,9 +222,179 @@ public class SaastamoinenModel implements TroposphericDelayModel {
                     {0.000, 0.001, 0.002, 0.004, 0.007, 0.011, 0.014, 0.018, 0.024,
                      0.028, 0.033, 0.039, 0.043, 0.047, 0.047} };
 
-                // the actual delta R is interpolated using a a bi-cubic spline interpolator
-                deltaR = new BicubicInterpolator().interpolate(xValForR, yValForR, fval);
+                // the actual delta R is interpolated using a a bilinear interpolator
+                deltaR = new BilinearInterpolator().interpolate(xValForR, yValForR, fval);
             }
         }
-    }
+        
+        /**
+         * Function that implements a standard bilinear interpolation as found
+         * in the Wikipedia reference <a href =
+         * "http://en.wikipedia.org/wiki/Bilinear_interpolation"> BiLinear
+         * Interpolation </a> This is a stand-in until Apache Math has a
+         * bilinear interpolator
+         */
+        private class BilinearInterpolatingFunction
+            implements BivariateFunction {
+
+            /**
+             * The minimum number of points that are needed to compute the
+             * function.
+             */
+            private static final int MIN_NUM_POINTS = 2;
+
+            /** Samples x-coordinates */
+            private final double[] xval;
+
+            /** Samples y-coordinates */
+            private final double[] yval;
+
+            /** Set of cubic splines patching the whole data grid */
+            private final double[][] fval;
+
+            /**
+             * @param x Sample values of the x-coordinate, in increasing order.
+             * @param y Sample values of the y-coordinate, in increasing order.
+             * @param f Values of the function on every grid point. the expected
+             *        number of elements.
+             * @throws DimensionMismatchException if the length of x and y don't
+             *         match the row, column height of f
+             * @throws IllegalArgumentException if any of the arguments are null
+             * @throws NoDataException if any of the arrays has zero length.
+             * @throws NonMonotonicSequenceException if {@code x} or {@code y}
+             *         are not strictly increasing.
+             */
+            public BilinearInterpolatingFunction(double[] x, double[] y, double[][] f)
+                throws DimensionMismatchException, IllegalArgumentException, NoDataException,
+                NonMonotonicSequenceException {
+
+                if (x == null || y == null || f == null || f[0] == null) {
+                    throw new IllegalArgumentException("All arguments must be non-null");
+                }
+
+                final int xLen = x.length;
+                final int yLen = y.length;
+
+                if (xLen == 0 || yLen == 0 || f.length == 0 || f[0].length == 0) {
+                    throw new NoDataException();
+                }
+
+                if (xLen < MIN_NUM_POINTS || yLen < MIN_NUM_POINTS || f.length < MIN_NUM_POINTS ||
+                    f[0].length < MIN_NUM_POINTS) {
+                    throw new InsufficientDataException();
+                }
+
+                if (xLen != f.length) {
+                    throw new DimensionMismatchException(xLen, f.length);
+                }
+
+                if (yLen != f[0].length) {
+                    throw new DimensionMismatchException(yLen, f[0].length);
+                }
+
+                MathArrays.checkOrder(x);
+                MathArrays.checkOrder(y);
+
+                xval = x.clone();
+                yval = y.clone();
+                fval = f.clone();
+            }
+
+            @Override
+            public double value(double x, double y) {
+                final int offset = 1;
+                final int count = offset + 1;
+                final int i = searchIndex(x, xval, offset, count);
+                final int j = searchIndex(y, yval, offset, count);
+
+                final double x1 = xval[i];
+                final double x2 = xval[i + 1];
+                final double y1 = yval[j];
+                final double y2 = yval[j + 1];
+                final double fQ11 = fval[i][j];
+                final double fQ21 = fval[i + 1][j];
+                final double fQ12 = fval[i][j + 1];
+                final double fQ22 = fval[i + 1][j + 1];
+
+                final double f = (fQ11 * (x2 - x) * (y2 - y) + fQ21 * (x - x1) * (y2 - y) + fQ12 * (x2 - x) * (y - y1) + fQ22 *
+                                                                                                                         (x - x1) *
+                                                                                                                         (y - y1)) /
+                                 ((x2 - x1) * (y2 - y1));
+
+                return f;
+            }
+
+            /**
+             * @param c Coordinate.
+             * @param val Coordinate samples.
+             * @param offset how far back from found value to offset for
+             *        querying
+             * @param count total number of elements forward from beginning that
+             *        will be queried
+             * @return the index in {@code val} corresponding to the interval
+             *         containing {@code c}.
+             * @throws OutOfRangeException if {@code c} is out of the range
+             *         defined by the boundary values of {@code val}.
+             */
+            private int searchIndex(double c, double[] val, int offset, int count) {
+                int r = Arrays.binarySearch(val, c);
+
+                if (r == -1 || r == -val.length - 1) {
+                    throw new OutOfRangeException(c, val[0], val[val.length - 1]);
+                }
+
+                if (r < 0) {
+                    // "c" in within an interpolation sub-interval, which
+                    // returns
+                    // negative
+                    // need to remove the negative sign for consistency
+                    r = -r - offset - 1;
+                } else {
+                    r -= offset;
+                }
+
+                if (r < 0) {
+                    r = 0;
+                }
+
+                if ((r + count) >= val.length) {
+                    // "c" is the last sample of the range: Return the index
+                    // of the sample at the lower end of the last sub-interval.
+                    r = val.length - count;
+                }
+
+                return r;
+            }
+
+        }
+
+        /**
+         * Class that generates a bilinear interpolator given This is a stand-in
+         * until Apache Math has its own bi-linear interpolator
+         */
+        private class BilinearInterpolator
+            implements BivariateGridInterpolator {
+
+            @Override
+            public BivariateFunction interpolate(double[] xval, double[] yval, double[][] fval)
+                throws NoDataException, DimensionMismatchException, NonMonotonicSequenceException,
+                NumberIsTooSmallException {
+
+                if (xval == null || yval == null || fval == null || fval[0] == null) {
+                    throw new IllegalArgumentException("Input arguments must all be non-null");
+                }
+
+                if (xval.length == 0 || yval.length == 0 || fval.length == 0) {
+                    throw new NoDataException();
+                }
+
+                MathArrays.checkOrder(xval);
+                MathArrays.checkOrder(yval);
+
+                return new BilinearInterpolatingFunction(xval, yval, fval);
+            }
+
+        }
+
+    }    
 }
