@@ -226,12 +226,13 @@ public class SaastamoinenModel implements TroposphericDelayModel {
                 deltaR = new BilinearInterpolator().interpolate(xValForR, yValForR, fval);
             }
         }
-        
+
         /**
-         * Function that implements a standard bilinear interpolation as found
+         * Function that implements a standard bilinear interpolation.
+         * The interpolation as found
          * in the Wikipedia reference <a href =
-         * "http://en.wikipedia.org/wiki/Bilinear_interpolation"> BiLinear
-         * Interpolation </a> This is a stand-in until Apache Math has a
+         * "http://en.wikipedia.org/wiki/Bilinear_interpolation">BiLinear
+         * Interpolation</a>. This is a stand-in until Apache Math has a
          * bilinear interpolator
          */
         private class BilinearInterpolatingFunction
@@ -243,13 +244,13 @@ public class SaastamoinenModel implements TroposphericDelayModel {
              */
             private static final int MIN_NUM_POINTS = 2;
 
-            /** Samples x-coordinates */
+            /** Samples x-coordinates. */
             private final double[] xval;
 
-            /** Samples y-coordinates */
+            /** Samples y-coordinates. */
             private final double[] yval;
 
-            /** Set of cubic splines patching the whole data grid */
+            /** Set of cubic splines patching the whole data grid. */
             private final double[][] fval;
 
             /**
@@ -264,7 +265,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
              * @throws NonMonotonicSequenceException if {@code x} or {@code y}
              *         are not strictly increasing.
              */
-            public BilinearInterpolatingFunction(double[] x, double[] y, double[][] f)
+            public BilinearInterpolatingFunction(final double[] x, final double[] y, final double[][] f)
                 throws DimensionMismatchException, IllegalArgumentException, NoDataException,
                 NonMonotonicSequenceException {
 
@@ -301,7 +302,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
             }
 
             @Override
-            public double value(double x, double y) {
+            public double value(final double x, final double y) {
                 final int offset = 1;
                 final int count = offset + 1;
                 final int i = searchIndex(x, xval, offset, count);
@@ -336,7 +337,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
              * @throws OutOfRangeException if {@code c} is out of the range
              *         defined by the boundary values of {@code val}.
              */
-            private int searchIndex(double c, double[] val, int offset, int count) {
+            private int searchIndex(final double c, final double[] val, final int offset, final int count) {
                 int r = Arrays.binarySearch(val, c);
 
                 if (r == -1 || r == -val.length - 1) {
@@ -369,14 +370,14 @@ public class SaastamoinenModel implements TroposphericDelayModel {
         }
 
         /**
-         * Class that generates a bilinear interpolator given This is a stand-in
-         * until Apache Math has its own bi-linear interpolator
+         * Class that generates a bilinear interpolator.
+         * This is a stand-in until Apache Math has its own bi-linear interpolator
          */
         private class BilinearInterpolator
             implements BivariateGridInterpolator {
 
             @Override
-            public BivariateFunction interpolate(double[] xval, double[] yval, double[][] fval)
+            public BivariateFunction interpolate(final double[] xval, final double[] yval, final double[][] fval)
                 throws NoDataException, DimensionMismatchException, NonMonotonicSequenceException,
                 NumberIsTooSmallException {
 
@@ -396,5 +397,6 @@ public class SaastamoinenModel implements TroposphericDelayModel {
 
         }
 
-    }    
+    }
+
 }
