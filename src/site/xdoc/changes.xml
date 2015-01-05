@@ -22,6 +22,10 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="hankg" type="add">
+        Added bilinear interpolator and use it on Saastamoinen model.
+        Implements feature #182.
+      </action>
       <action dev="luc" type="update">
         Removed old parts that were deprecated in previous versions.
       </action>
