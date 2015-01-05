@@ -20,8 +20,18 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="7.0" date="TBD"
-             description="TBD">
+    <release version="7.0" date="2015-01-10"
+             description="Version 7.0 is a major release of Orekit. It introduces several new
+             features and bug fixes. New features introduced in version 7.0 are the complete
+             DSST semi-analytical propagator with short-periodics terms (only mean elements
+             were available in previous version), extension to second order derivatives for
+             many models (Cartesian coordinates, angular coordinates, attitude modes, ...),
+             bilinear interpolator in Saastamoinen model, attitude overriding during impulsive
+             maneuvers, general relativity force model, geographic zone detector, and ecliptic
+             frame.
+             Several bugs have been fixed. One noteworthy fix concerns an inconsistency in
+             Eckstein-Hechler propagator velocity, which leads to a change of the generated
+             orbit type.">
       <action dev="hankg" type="add">
         Added bilinear interpolator and use it on Saastamoinen model.
         Implements feature #182.
@@ -1594,7 +1604,7 @@
       <action dev="luc" type="add" due-to="Silvia Ríos Bergantiños">
         Added spanish localization for error messages.
       </action>
-      <action dev="luc" type="add" due-to="Espen Bj&#248;rntvedt">
+      <action dev="luc" type="add" due-to="Espen Bjørntvedt">
         Added norse localization for error messages.
       </action>
       <action dev="luc" type="add" due-to="Francesco Coccoluto">
