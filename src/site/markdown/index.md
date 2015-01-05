@@ -82,6 +82,7 @@ Features
       * radiation pressure with eclipses
       * solid tides, with or without solid pole tide
       * ocean tides, with or without ocean pole tide
+      * general relativity
       * multiple maneuvers
       * state of the art ODE integrators (adaptive stepsize with error control,
         continuous output, switching functions, G-stop, step normalization ...)

@@ -55,17 +55,28 @@
       activate Propagator
       Propagator -> E : g
         activate E
-        Propagator -> E : g
+        deactivate E
+      Propagator -> E : g
         note right of E
           trying to find the exact date
           at which g sign changes
         end note
-        Propagator -> E : g
-        Propagator -> E : g
-        Propagator -> H : eventOccurred
+        activate E
+        deactivate E
+      Propagator -> E : g
+        activate E
+        deactivate E
+      Propagator -> E : g
+        activate E
+        deactivate E
+      Propagator -> E : eventOccurred
+        activate E
+        E -> H : eventOccurred
           activate H
-          H --> Propagator : action = CONTINUE
+          H --> E : action = CONTINUE
           deactivate H
+        E--> Propagator : action
+        deactivate E
       deactivate Propagator
     Propagator --> U : final state 
     deactivate Propagator

@@ -334,5 +334,5 @@ Semianalytical propagation is an intermediate between analytical and numerical p
 It retains the best of both worlds, speed from analytical models and accuracy from numerical models.
 Semianalytical propagation is implemented using Draper Semianalytical Satellite Theory (DSST).
 
-As of writing (mid-2014), the mean elements equations of motion models have been implemented
-and validated, the short periodic terms have been implemeted and are undergoing validation.
+Since version 7.0, both mean elements equations of motion modelsand short periodic terms
+have been implemented and validated.

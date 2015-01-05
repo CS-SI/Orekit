@@ -97,9 +97,7 @@
     }
 
     package frames #DDEBD8 {
-      class SpacecraftFrame
       class TopocentricFrame
-      PVCoordinatesProvider <|-- SpacecraftFrame
       PVCoordinatesProvider <|-- TopocentricFrame
    }
 
