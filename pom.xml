@@ -42,7 +42,7 @@
     <orekit.plantuml.version>7999</orekit.plantuml.version>
     <orekit.compiler.source>1.6</orekit.compiler.source>
     <orekit.compiler.target>1.6</orekit.compiler.target>
-    <orekit.buildnumber>${git.revision}; ${maven.build.timestamp}</orekit.buildnumber>
+    <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
   </properties>
 
   <developers>
@@ -461,14 +461,7 @@
           <archive>
             <manifestFile>${project.build.directory}/osgi/MANIFEST.MF</manifestFile>
             <manifestEntries>
-              <Specification-Title>${project.name}</Specification-Title>
-              <Specification-Version>${project.version}</Specification-Version>
-              <Specification-Vendor>${project.organization.name}</Specification-Vendor>
-              <Implementation-Title>${project.name}</Implementation-Title>
-              <Implementation-Version>${project.version}</Implementation-Version>
-              <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
-              <Implementation-Vendor-Id>org.orekit</Implementation-Vendor-Id>
-              <Implementation-Build>${orekit.buildnumber}</Implementation-Build>
+              <Implementation-Build>${orekit.implementation.build}</Implementation-Build>
               <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
               <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
             </manifestEntries>
