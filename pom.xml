@@ -464,7 +464,7 @@
         <version>${orekit.jgit.buildnumber.version}</version>
         <executions>
           <execution>
-            <phase>generate-resources</phase>
+            <phase>prepare-package</phase>
             <goals>
               <goal>extract-buildnumber</goal>
             </goals>
