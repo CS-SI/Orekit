@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="7.0" date="2015-01-10"
+    <release version="7.0" date="2015-01-11"
              description="Version 7.0 is a major release of Orekit. It introduces several new
              features and bug fixes. New features introduced in version 7.0 are the complete
              DSST semi-analytical propagator with short-periodics terms (only mean elements
