@@ -40,6 +40,8 @@
     <orekit.maven-surefire-report-plugin.version>2.18.1</orekit.maven-surefire-report-plugin.version>
     <orekit.jgit.buildnumber.version>1.2.8</orekit.jgit.buildnumber.version>
     <orekit.plantuml.version>7999</orekit.plantuml.version>
+    <orekit.compiler.source>1.6</orekit.compiler.source>
+    <orekit.compiler.target>1.6</orekit.compiler.target>
     <orekit.buildnumber>${git.revision}; ${maven.build.timestamp}</orekit.buildnumber>
   </properties>
 
@@ -261,8 +263,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>${orekit.maven-compiler-plugin.version}</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>${orekit.compiler.source}</source>
+          <target>${orekit.compiler.target}</target>
           <compilerArgument>-Xlint:deprecation</compilerArgument>
         </configuration>
       </plugin>
@@ -467,8 +469,8 @@
               <Implementation-Vendor>${project.organization.name}</Implementation-Vendor>
               <Implementation-Vendor-Id>org.orekit</Implementation-Vendor-Id>
               <Implementation-Build>${orekit.buildnumber}</Implementation-Build>
-              <X-Compile-Source-JDK>${maven.compiler.source}</X-Compile-Source-JDK>
-              <X-Compile-Target-JDK>${maven.compiler.target}</X-Compile-Target-JDK>
+              <X-Compile-Source-JDK>${orekit.compiler.source}</X-Compile-Source-JDK>
+              <X-Compile-Target-JDK>${orekit.compiler.target}</X-Compile-Target-JDK>
             </manifestEntries>
           </archive>
         </configuration>
