@@ -439,7 +439,7 @@
             </includes>
           </sourceFiles>
           <outputDirectory>
-            ${basedir}/target/site/images/design
+            ${project.build.directory}/site/images/design
           </outputDirectory>
         </configuration>
         <executions>
