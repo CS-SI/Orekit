@@ -41,14 +41,8 @@
  *  <li>{@link org.orekit.propagation.events.AltitudeDetector AltitudeDetector}
  *  detects altitude crossing (and by default stop at descending)
  *  </li>
- *  <li>{@link org.orekit.propagation.events.ApparentElevationDetector ApparentElevationDetector}
- *  detects apparent satellite raising/setting (and by default stop at setting)
- *  </li>
  *  <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
  *  detects apside crossing (and by default stop at perigee)
- *  </li>
- *  <li>{@link org.orekit.propagation.events.GroundMaskElevationDetector GroundMaskElevationDetector}
- *  detects satellite raising/setting according to an elevation mask (and by default stop at setting)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.CircularFieldOfViewDetector CircularFieldOfViewDetector}
  *  detects target entry/exit a satellite sensor field of view with a circular boundary
@@ -66,6 +60,9 @@
  *  </li>
  *  <li>{@link org.orekit.propagation.events.ElevationDetector ElevationDetector}
  *  detects satellite raising/setting (and by default stop at setting)
+ *  </li>
+ *  <li>{@link org.orekit.propagation.events.GeographicZoneDetector GeographicZoneDetector}
+ *  detects geographic boundaries crossings (and by default stop at zone exit)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.NodeDetector NodeDetector}
  *  detects node crossing (and by default stop at ascending node)

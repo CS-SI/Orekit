@@ -152,9 +152,9 @@ public class DataProvidersManager {
 
     /** Add a data provider to the supported list.
      * @param provider data provider to add
-     * @see #removeProvider(Class)
+     * @see #removeProvider(DataProvider)
      * @see #clearProviders()
-     * @see #isSupported(Class)
+     * @see #isSupported(DataProvider)
      * @see #getProviders()
      */
     public void addProvider(final DataProvider provider) {
@@ -183,8 +183,8 @@ public class DataProvidersManager {
 
     /** Remove all data providers.
      * @see #addProvider(DataProvider)
-     * @see #removeProvider(Class)
-     * @see #isSupported(Class)
+     * @see #removeProvider(DataProvider)
+     * @see #isSupported(DataProvider)
      * @see #getProviders()
      */
     public void clearProviders() {
@@ -212,9 +212,9 @@ public class DataProvidersManager {
     /** Get an unmodifiable view of the list of supported providers.
      * @return unmodifiable view of the list of supported providers
      * @see #addProvider(DataProvider)
-     * @see #removeProvider(Class)
+     * @see #removeProvider(DataProvider)
      * @see #clearProviders()
-     * @see #isSupported(Class)
+     * @see #isSupported(DataProvider)
      */
     public List<DataProvider> getProviders() {
         return Collections.unmodifiableList(providers);

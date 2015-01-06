@@ -259,7 +259,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /** Internal PVCoordinatesProvider for attitude computation. */
-    private class LocalPVProvider implements PVCoordinatesProvider {
+    private static class LocalPVProvider implements PVCoordinatesProvider {
 
         /** Current state. */
         private SpacecraftState currentState;

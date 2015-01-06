@@ -1614,7 +1614,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      * @author Petre Bazavan
      * @author Lucian Barbulescu
      */
-    private class UijVijCoefficients {
+    private static class UijVijCoefficients {
 
         /** The U₁<sup>j</sup> coefficients.
          * <p>

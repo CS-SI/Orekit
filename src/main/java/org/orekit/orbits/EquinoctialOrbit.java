@@ -99,8 +99,7 @@ public class EquinoctialOrbit extends Orbit {
      * @param hx tan(i/2) cos(Ω), first component of inclination vector
      * @param hy tan(i/2) sin(Ω), second component of inclination vector
      * @param l  (M or E or v) + ω + Ω, mean, eccentric or true longitude argument (rad)
-     * @param type type of longitude argument, must be one of {@link #MEAN_LATITUDE_ARGUMENT},
-     * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or  {@link #TRUE_LATITUDE_ARGUMENT}
+     * @param type type of longitude argument
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters

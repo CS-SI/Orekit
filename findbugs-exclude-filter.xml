@@ -30,6 +30,10 @@
     <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>
+  <Match>
+    <Class name="~.*\.GeographicZoneDetector$" />
+    <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
+  </Match>
 
   <!-- The following is an intentional behaviour, to be removed when class is suppressed -->
   <Match>
@@ -93,6 +97,12 @@
     <Method name="dTc" />
     <Local name="HP" />
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+
+  <!-- the approximate constants do belong to the model -->
+  <Match>
+    <Class name="~.*\.JB2006$"/>
+    <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
   
   <!-- The following is a false positive from findbugs -->

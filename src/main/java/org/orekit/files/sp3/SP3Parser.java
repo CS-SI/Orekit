@@ -144,7 +144,6 @@ public class SP3Parser implements OrbitFileParser {
 
         final SP3File file = pi.file;
 
-        @SuppressWarnings("resource")
         final Scanner scanner = new Scanner(line).useDelimiter("\\s+").useLocale(Locale.US);
 
         // CHECKSTYLE: stop FallThrough check
@@ -162,7 +161,7 @@ public class SP3Parser implements OrbitFileParser {
 
             pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
 
-            final int year = Integer.valueOf(v.substring(2));
+            final int year = Integer.parseInt(v.substring(2));
             final int month = scanner.nextInt();
             final int day = scanner.nextInt();
             final int hour = scanner.nextInt();
@@ -206,7 +205,7 @@ public class SP3Parser implements OrbitFileParser {
 
         // line 3 contains the number of satellites
         case 3:
-            pi.maxSatellites = Integer.valueOf(line.substring(4, 6).trim());
+            pi.maxSatellites = Integer.parseInt(line.substring(4, 6).trim());
             // fall-through intended - the line contains already the first entries
 
             // the following 4 lines contain additional satellite ids
@@ -236,7 +235,7 @@ public class SP3Parser implements OrbitFileParser {
             int startIdx = 9;
             while (satIdx < pi.maxSatellites && (startIdx + 3) <= lineLength) {
                 final SatelliteInformation satInfo = file.getSatellite(satIdx++);
-                final int exponent = Integer.valueOf(line.substring(startIdx, startIdx + 3).trim());
+                final int exponent = Integer.parseInt(line.substring(startIdx, startIdx + 3).trim());
                 // the accuracy is calculated as 2**exp (in m) -> can be safely
                 // converted to an integer as there will be no fraction
                 satInfo.setAccuracy((int) Math.pow(2d, exponent));
@@ -340,12 +339,12 @@ public class SP3Parser implements OrbitFileParser {
 
         switch (line.charAt(0)) {
         case '*': {
-            final int year = Integer.valueOf(line.substring(3, 7).trim());
-            final int month = Integer.valueOf(line.substring(8, 10).trim());
-            final int day = Integer.valueOf(line.substring(11, 13).trim());
-            final int hour = Integer.valueOf(line.substring(14, 16).trim());
-            final int minute = Integer.valueOf(line.substring(17, 19).trim());
-            final double second = Double.valueOf(line.substring(20, 31).trim());
+            final int year = Integer.parseInt(line.substring(3, 7).trim());
+            final int month = Integer.parseInt(line.substring(8, 10).trim());
+            final int day = Integer.parseInt(line.substring(11, 13).trim());
+            final int hour = Integer.parseInt(line.substring(14, 16).trim());
+            final int minute = Integer.parseInt(line.substring(17, 19).trim());
+            final double second = Double.parseDouble(line.substring(20, 31).trim());
 
             pi.latestEpoch = new AbsoluteDate(year, month, day,
                                               hour, minute, second,
@@ -359,15 +358,15 @@ public class SP3Parser implements OrbitFileParser {
             if (!file.containsSatellite(satelliteId)) {
                 pi.latestPosition = null;
             } else {
-                final double x = Double.valueOf(line.substring(4, 18).trim());
-                final double y = Double.valueOf(line.substring(18, 32).trim());
-                final double z = Double.valueOf(line.substring(32, 46).trim());
+                final double x = Double.parseDouble(line.substring(4, 18).trim());
+                final double y = Double.parseDouble(line.substring(18, 32).trim());
+                final double z = Double.parseDouble(line.substring(32, 46).trim());
 
                 // the position values are in km and have to be converted to m
                 pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
 
                 // clock (microsec)
-                pi.latestClock = Double.valueOf(line.substring(46, 60).trim());
+                pi.latestClock = Double.parseDouble(line.substring(46, 60).trim());
 
                 // the additional items are optional and not read yet
 
@@ -412,14 +411,14 @@ public class SP3Parser implements OrbitFileParser {
             final String satelliteId = line.substring(1, 4).trim();
 
             if (file.containsSatellite(satelliteId)) {
-                final double xv = Double.valueOf(line.substring(4, 18).trim());
-                final double yv = Double.valueOf(line.substring(18, 32).trim());
-                final double zv = Double.valueOf(line.substring(32, 46).trim());
+                final double xv = Double.parseDouble(line.substring(4, 18).trim());
+                final double yv = Double.parseDouble(line.substring(18, 32).trim());
+                final double zv = Double.parseDouble(line.substring(32, 46).trim());
 
                 // the velocity values are in dm/s and have to be converted to m/s
                 final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
 
-                final double clockRateChange = Double.valueOf(line.substring(46, 60).trim());
+                final double clockRateChange = Double.parseDouble(line.substring(46, 60).trim());
 
                 // the additional items are optional and not read yet
 

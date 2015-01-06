@@ -26,6 +26,7 @@ import java.net.URL;
 import java.nio.channels.UnsupportedAddressTypeException;
 import java.text.ParseException;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -287,7 +288,10 @@ public class ZipJarCrawler implements DataProvider {
 
                 /** {@inheritDoc} */
                 @Override
-                public EntryStream next() {
+                public EntryStream next() throws NoSuchElementException {
+                    if (next == null) {
+                        throw new NoSuchElementException();
+                    }
                     return next;
                 }
 

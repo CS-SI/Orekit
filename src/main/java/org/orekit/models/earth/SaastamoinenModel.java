@@ -235,7 +235,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
          * Interpolation</a>. This is a stand-in until Apache Math has a
          * bilinear interpolator
          */
-        private class BilinearInterpolatingFunction
+        private static class BilinearInterpolatingFunction
             implements BivariateFunction {
 
             /**
@@ -373,7 +373,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
          * Class that generates a bilinear interpolator.
          * This is a stand-in until Apache Math has its own bi-linear interpolator
          */
-        private class BilinearInterpolator
+        private static class BilinearInterpolator
             implements BivariateGridInterpolator {
 
             @Override

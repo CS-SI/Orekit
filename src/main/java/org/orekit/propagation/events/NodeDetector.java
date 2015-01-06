@@ -59,8 +59,8 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * to period/3 and to set the convergence threshold according to orbit size.</p>
      * @param orbit initial orbit
      * @param frame frame in which the equator is defined (typical
-     * values are {@link org.orekit.frames.FramesFactory#getEME2000() J<sub>2000</sub>} or
-     * {@link org.orekit.frames.FramesFactory#getITRF2005() ITRF 2005})
+     * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
+     * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public NodeDetector(final Orbit orbit, final Frame frame) {
         this(1.0e-13 * orbit.getKeplerianPeriod(), orbit, frame);
@@ -72,8 +72,8 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @param threshold convergence threshold (s)
      * @param orbit initial orbit
      * @param frame frame in which the equator is defined (typical
-     * values are {@link org.orekit.frames.FramesFactory#getEME2000() J<sub>2000</sub>} or
-     * {@link org.orekit.frames.FramesFactory#getITRF2005() ITRF 2005})
+     * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
+     * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
         this(2 * estimateNodesTimeSeparation(orbit) / 3, threshold,
@@ -92,8 +92,8 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param frame frame in which the equator is defined (typical
-     * values are {@link org.orekit.frames.FramesFactory#getEME2000() J<sub>2000</sub>} or
-     * {@link org.orekit.frames.FramesFactory#getITRF2005() ITRF 2005})
+     * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
+     * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      * @since 6.1
      */
     private NodeDetector(final double maxCheck, final double threshold,
