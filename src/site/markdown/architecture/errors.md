@@ -27,4 +27,5 @@ The error messages generated are automatically translated, with the available la
 * Greek,
 * Italian,
 * Norwegian,
+* Romanian,
 * Spanish.
