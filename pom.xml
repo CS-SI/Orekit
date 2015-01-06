@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
-  <packaging>bundle</packaging>
+  <packaging>jar</packaging>
   <version>7.0-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
@@ -282,6 +282,10 @@
         <version>${orekit.maven-bundle-plugin.version}</version>
         <extensions>true</extensions>
         <configuration>
+          <archive>
+            <forced>true</forced>
+          </archive>
+          <manifestLocation>${project.build.directory}/osgi</manifestLocation>
           <instructions>
             <Export-Package>org.orekit.*;version=${project.version};-noimport:=true</Export-Package>
             <Bundle-DocURL>${project.url}</Bundle-DocURL>
