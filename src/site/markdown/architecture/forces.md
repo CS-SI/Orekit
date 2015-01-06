@@ -78,6 +78,8 @@ The force models implemented are as follows:
 
 * ocean tides, with or without ocean pole tide,
 
+* post-Newtonian correction due to general relativity,
+
 * forces induced by maneuvers. At present, only constant thrust maneuvers 
   are implemented, with the possibility to define an impulse maneuver, thanks 
   to the event detector mechanism.
