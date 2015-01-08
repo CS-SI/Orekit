@@ -202,9 +202,7 @@ public class EquinoctialOrbit extends Orbit {
     public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
                             final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedPVCoordinates(date,
-                                          pvCoordinates.getPosition(), pvCoordinates.getVelocity(), pvCoordinates.getAcceleration()),
-             frame, mu);
+        this(new TimeStampedPVCoordinates(date, pvCoordinates), frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.

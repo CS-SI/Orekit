@@ -102,8 +102,7 @@ public class CartesianOrbit extends Orbit {
     public CartesianOrbit(final PVCoordinates pvaCoordinates, final Frame frame,
                           final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        this(new TimeStampedPVCoordinates(date, pvaCoordinates.getPosition(), pvaCoordinates.getVelocity(), pvaCoordinates.getAcceleration()),
-              frame, mu);
+        this(new TimeStampedPVCoordinates(date, pvaCoordinates), frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
