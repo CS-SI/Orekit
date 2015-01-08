@@ -120,6 +120,12 @@ public abstract class Orbit
     }
 
     /** Set the orbit from Cartesian parameters.
+     *
+     * <p> The acceleration provided in {@code pvCoordinates} is accessible using
+     * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
+     * use {@code mu} and the position to compute the acceleration, including
+     * {@link #shiftedBy(double)} and {@link #getPVCoordinates(AbsoluteDate, Frame)}.
+     *
      * @param pvCoordinates the position and velocity in the inertial frame
      * @param frame the frame in which the {@link TimeStampedPVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})

@@ -76,6 +76,12 @@ public class CartesianOrbit extends Orbit {
     private transient EquinoctialOrbit equinoctial;
 
     /** Constructor from Cartesian parameters.
+     *
+     * <p> The acceleration provided in {@code pvCoordinates} is accessible using
+     * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
+     * use {@code mu} and the position to compute the acceleration, including
+     * {@link #shiftedBy(double)} and {@link #getPVCoordinates(AbsoluteDate, Frame)}.
+     *
      * @param pvaCoordinates the position, velocity and acceleration of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
@@ -91,6 +97,12 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** Constructor from Cartesian parameters.
+     *
+     * <p> The acceleration provided in {@code pvCoordinates} is accessible using
+     * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
+     * use {@code mu} and the position to compute the acceleration, including
+     * {@link #shiftedBy(double)} and {@link #getPVCoordinates(AbsoluteDate, Frame)}.
+     *
      * @param pvaCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})

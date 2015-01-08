@@ -197,6 +197,12 @@ public class CircularOrbit
     }
 
     /** Constructor from cartesian parameters.
+     *
+     * <p> The acceleration provided in {@code pvCoordinates} is accessible using
+     * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
+     * use {@code mu} and the position to compute the acceleration, including
+     * {@link #shiftedBy(double)} and {@link #getPVCoordinates(AbsoluteDate, Frame)}.
+     *
      * @param pvCoordinates the {@link PVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
@@ -261,6 +267,12 @@ public class CircularOrbit
     }
 
     /** Constructor from cartesian parameters.
+     *
+     * <p> The acceleration provided in {@code pvCoordinates} is accessible using
+     * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
+     * use {@code mu} and the position to compute the acceleration, including
+     * {@link #shiftedBy(double)} and {@link #getPVCoordinates(AbsoluteDate, Frame)}.
+     *
      * @param pvCoordinates the {@link PVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
