@@ -55,6 +55,29 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         this.date = date;
     }
 
+    /**
+     * Build from position and velocity. Acceleration is set to zero.
+     *
+     * @param date coordinates date
+     * @param position the position vector (m)
+     * @param velocity the velocity vector (m/s)
+     */
+    public TimeStampedPVCoordinates(final AbsoluteDate date,
+                                    final Vector3D position,
+                                    final Vector3D velocity) {
+        this(date, position, velocity, Vector3D.ZERO);
+    }
+
+    /**
+     * Build from position velocity acceleration coordinates.
+     *
+     * @param date coordinates date
+     * @param pv position velocity, and acceleration coordinates, in meters and seconds.
+     */
+    public TimeStampedPVCoordinates(final AbsoluteDate date, final PVCoordinates pv) {
+        this(date, pv.getPosition(), pv.getVelocity(), pv.getAcceleration());
+    }
+
     /** Multiplicative constructor
      * <p>Build a TimeStampedPVCoordinates from another one and a scale factor.</p>
      * <p>The TimeStampedPVCoordinates built will be a * pv</p>

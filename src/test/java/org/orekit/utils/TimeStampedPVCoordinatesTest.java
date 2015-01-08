@@ -35,6 +35,47 @@ import org.orekit.time.AbsoluteDate;
 public class TimeStampedPVCoordinatesTest {
 
     @Test
+    public void testPVOnlyConstructor() {
+        //setup
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        Vector3D p = new Vector3D(1, 2, 3);
+        Vector3D v = new Vector3D(4, 5, 6);
+
+        //action
+        TimeStampedPVCoordinates actual = new TimeStampedPVCoordinates(date, p, v);
+
+        //verify
+        Assert.assertEquals(date, actual.getDate());
+        Assert.assertEquals(1, actual.getPosition().getX(), 0);
+        Assert.assertEquals(2, actual.getPosition().getY(), 0);
+        Assert.assertEquals(3, actual.getPosition().getZ(), 0);
+        Assert.assertEquals(4, actual.getVelocity().getX(), 0);
+        Assert.assertEquals(5, actual.getVelocity().getY(), 0);
+        Assert.assertEquals(6, actual.getVelocity().getZ(), 0);
+        Assert.assertEquals(Vector3D.ZERO, actual.getAcceleration());
+    }
+
+    @Test
+    public void testPVCoordinatesCopyConstructor() {
+        //setup
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        PVCoordinates pv = new PVCoordinates(new Vector3D(1, 2, 3), new Vector3D(4, 5, 6));
+
+        //action
+        TimeStampedPVCoordinates actual = new TimeStampedPVCoordinates(date, pv);
+
+        //verify
+        Assert.assertEquals(date, actual.getDate());
+        Assert.assertEquals(1, actual.getPosition().getX(), 0);
+        Assert.assertEquals(2, actual.getPosition().getY(), 0);
+        Assert.assertEquals(3, actual.getPosition().getZ(), 0);
+        Assert.assertEquals(4, actual.getVelocity().getX(), 0);
+        Assert.assertEquals(5, actual.getVelocity().getY(), 0);
+        Assert.assertEquals(6, actual.getVelocity().getZ(), 0);
+        Assert.assertEquals(Vector3D.ZERO, actual.getAcceleration());
+    }
+
+    @Test
     public void testLinearConstructors() {
         TimeStampedPVCoordinates pv1 = new TimeStampedPVCoordinates(AbsoluteDate.CCSDS_EPOCH,
                                                                     new Vector3D( 1,  0.1,   10),
