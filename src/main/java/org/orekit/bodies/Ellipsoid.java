@@ -96,7 +96,7 @@ public class Ellipsoid implements Serializable {
 
         // we define the points Q in the plane using two free variables τ and υ as:
         // Q = P + τ u + υ v
-        // were u and v are two unit vectors belonging to the plane
+        // where u and v are two unit vectors belonging to the plane
         // Q belongs to the 3D ellipsoid so:
         // (xQ / a)² + (yQ / b)² + (zQ / c)² = 1
         // combining both equations, we get:
