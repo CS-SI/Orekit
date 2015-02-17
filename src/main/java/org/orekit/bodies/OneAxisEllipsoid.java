@@ -67,11 +67,15 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     private double angularThreshold;
 
     /** Simple constructor.
-     * <p>The following table provides conventional parameters for global Earth models:</p>
+     * <p>Standard values for Earth models can be found in the {@link org.orekit.utils.Constants Constants} class:</p>
      * <table border="1" cellpadding="5">
      * <tr bgcolor="#ccccff"><th>model</th><th>a<sub>e</sub> (m)</th> <th>f</th></tr>
-     * <tr><td bgcolor="#eeeeff">GRS 80</td><td>6378137.0</td><td>1.0 / 298.257222101</td></tr>
-     * <tr><td bgcolor="#eeeeff">WGS84</td><td>6378137.0</td><td>1.0 / 298.257223563</td></tr>
+     * <tr><td bgcolor="#eeeeff">GRS 80</td>
+     *     <td>{@link org.orekit.utils.Constants#GRS80_EARTH_EQUATORIAL_RADIUS Constants.GRS80_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#GRS80_EARTH_FLATTENING Constants.GRS80_EARTH_FLATTENING}</td></tr>
+     * <tr><td bgcolor="#eeeeff">WGS84</td>
+     *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_EQUATORIAL_RADIUS Constants.WGS84_EARTH_EQUATORIAL_RADIUS}</td>
+     *     <td>{@link org.orekit.utils.Constants#WGS84_EARTH_FLATTENING Constants.WGS84_EARTH_FLATTENING}</td></tr>
      * </table>
      * @param ae equatorial radius
      * @param f the flattening (f = (a-b)/a)
