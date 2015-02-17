@@ -8,8 +8,8 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -20,6 +20,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -37,8 +38,8 @@ public class DihedralFieldOfViewDetectorTest {
     // Orbit
     private Orbit initialOrbit;
 
-    // Reference frame = ITRF 2005
-    private Frame itrf;
+    // WGS84 Earth model
+    private OneAxisEllipsoid earth;
 
     // Earth center pointing attitude provider
     private BodyCenterPointing earthCenterAttitudeLaw;
@@ -93,11 +94,13 @@ public class DihedralFieldOfViewDetectorTest {
                                                       FramesFactory.getEME2000(), initDate, mu);
 
 
-            // Reference frame = ITRF 2005
-            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            // WGS84 Earth model
+            earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                         Constants.WGS84_EARTH_FLATTENING,
+                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
             // Create earth center pointing attitude provider */
-            earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
+            earthCenterAttitudeLaw = new BodyCenterPointing(earth);
 
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());

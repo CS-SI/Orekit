@@ -58,7 +58,7 @@ public class NadirPointingTest {
     // Body mu
     private double mu;
 
-    // Reference frame = ITRF 2005C
+    // Reference frame = ITRF
     private Frame itrf;
 
     /** Test in the case of a spheric earth : nadir pointing shall be
@@ -74,7 +74,7 @@ public class NadirPointingTest {
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         // Create earth center pointing attitude provider
-        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
+        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(earthShape);
 
         // Create satellite position as circular parameters
         CircularOrbit circ =
@@ -111,7 +111,7 @@ public class NadirPointingTest {
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         // Create earth center pointing attitude provider
-        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
+        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(earthShape);
 
         //  Satellite on equatorial position
         // **********************************
@@ -320,7 +320,7 @@ public class NadirPointingTest {
             // Body mu
             mu = 3.9860047e14;
 
-            // Reference frame = ITRF 2005
+            // Reference frame = ITRF
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         } catch (OrekitException oe) {

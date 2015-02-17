@@ -180,9 +180,9 @@ public class Ellipsoid implements Serializable {
         // hence the terms D and E are both cancelled (regardless of θ) when
         //     τC = (β δ - γ ε) / (γ² - α β)
         //     υC = (α ε - γ δ) / (γ² - α β)
-        final double denom = gamma * gamma - alpha * beta;
-        final double tauC  = (beta  * delta   - gamma * epsilon) / denom;
-        final double nuC   = (alpha * epsilon - gamma * delta)   / denom;
+        final double denom = MathArrays.linearCombination(gamma, gamma,   -alpha, beta);
+        final double tauC  = MathArrays.linearCombination(beta,  delta,   -gamma, epsilon) / denom;
+        final double nuC   = MathArrays.linearCombination(alpha, epsilon, -gamma, delta)   / denom;
 
         // compute l and m
         // expanding the general equation, we get: A λ² + B μ² + C λμ + D λ + E μ + F = 0

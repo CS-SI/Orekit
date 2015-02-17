@@ -26,12 +26,14 @@ import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
@@ -128,7 +130,10 @@ public class AttitudeTest {
 
         EcksteinHechlerPropagator propagator =
                 new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-        propagator.setAttitudeProvider(new BodyCenterPointing(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        propagator.setAttitudeProvider(new BodyCenterPointing(earth));
         final Attitude initialAttitude = propagator.propagate(initialOrbit.getDate()).getAttitude();
 
         // set up a 5 points sample

@@ -42,6 +42,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
@@ -54,6 +55,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
@@ -362,7 +364,10 @@ public class SpacecraftStateTest {
                                                  TimeScalesFactory.getUTC());
         orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
-        attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        attitudeLaw = new BodyCenterPointing(earth);
         propagator =
             new EcksteinHechlerPropagator(orbit, attitudeLaw, mass,
                                           ae, mu, c20, c30, c40, c50, c60);

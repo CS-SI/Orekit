@@ -79,7 +79,7 @@ public class LofOffsetPointingTest {
 
         // Compare to body center pointing law
         //*************************************
-        final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric.getBodyFrame());
+        final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric);
         final Rotation centerRot = centerLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
         final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
         Assert.assertEquals(0., angleBodyCenter, Utils.epsilonAngle);

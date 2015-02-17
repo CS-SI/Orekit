@@ -32,8 +32,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
@@ -59,8 +60,8 @@ public class BodyCenterPointingTest {
     // Orbit
     private CircularOrbit circ;
 
-    // Reference frame = ITRF 2008
-    private Frame itrf;
+    // WGS84 Earth model
+    private OneAxisEllipsoid earth;
 
     // Transform from EME2000 to ITRF2008
     private Transform eme2000ToItrf;
@@ -68,7 +69,7 @@ public class BodyCenterPointingTest {
     // Earth center pointing attitude provider
     private BodyCenterPointing earthCenterAttitudeLaw;
 
-    /** Test if target is body center
+    /** Test if target is on Earth surface
      */
     @Test
     public void testTarget() throws OrekitException {
@@ -76,10 +77,9 @@ public class BodyCenterPointingTest {
         // Call get target method
         TimeStampedPVCoordinates target = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame());
 
-        // Check that target is body center
-        Assert.assertEquals(0.0, target.getPosition().getNorm(), Utils.epsilonTest);
-        Assert.assertEquals(0.0, target.getVelocity().getNorm(), Utils.epsilonTest);
-        Assert.assertEquals(0.0, target.getAcceleration().getNorm(), Utils.epsilonTest);
+        // Check that target is on Earth surface
+        GeodeticPoint gp = earth.transform(target.getPosition(), circ.getFrame(), date);
+        Assert.assertEquals(0.0, gp.getAltitude(), 1.0e-10);
         Assert.assertEquals(date, target.getDate());
 
     }
@@ -110,12 +110,11 @@ public class BodyCenterPointingTest {
         Line pointingLine = new Line(pvSatITRF2008C.getPosition(),
                                      pvSatITRF2008C.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       zSatITRF2008C),
-                                     1.0e-10);
+                                     2.0e-8);
 
-        // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
-        double distance = pointingLine.distance(Vector3D.ZERO);
+        // Check that the line contains Earth center
+        Assert.assertTrue(pointingLine.contains(Vector3D.ZERO));
 
-        Assert.assertTrue(distance < 1.e-8);
     }
 
     @Test
@@ -137,7 +136,7 @@ public class BodyCenterPointingTest {
 
         EcksteinHechlerPropagator propagator =
                 new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-        propagator.setAttitudeProvider(new BodyCenterPointing(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        propagator.setAttitudeProvider(earthCenterAttitudeLaw);
 
         List<WeightedObservedPoint> w0 = new ArrayList<WeightedObservedPoint>();
         List<WeightedObservedPoint> w1 = new ArrayList<WeightedObservedPoint>();
@@ -197,7 +196,7 @@ public class BodyCenterPointingTest {
 
         EcksteinHechlerPropagator propagator =
                 new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-        propagator.setAttitudeProvider(new BodyCenterPointing(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        propagator.setAttitudeProvider(earthCenterAttitudeLaw);
 
         double h = 0.01;
         SpacecraftState s0     = propagator.propagate(date);
@@ -245,14 +244,16 @@ public class BodyCenterPointingTest {
                                        FramesFactory.getEME2000(), date, mu);
 
 
-            // Reference frame = ITRF 2008
-            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            // WGS84 Earth model
+            earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                         Constants.WGS84_EARTH_FLATTENING,
+                                         FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
             // Transform from EME2000 to ITRF2008
-            eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);
+            eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earth.getBodyFrame(), date);
 
             // Create earth center pointing attitude provider */
-            earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
+            earthCenterAttitudeLaw = new BodyCenterPointing(earth);
 
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
@@ -263,7 +264,7 @@ public class BodyCenterPointingTest {
     @After
     public void tearDown() {
         date = null;
-        itrf = null;
+        earth = null;
         eme2000ToItrf = null;
         earthCenterAttitudeLaw = null;
         circ = null;

@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -114,11 +115,14 @@ public class TLEPropagatorTest {
     public void testBodyCenterInPointingDirection() throws OrekitException {
 
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            itrf);
         DistanceChecker checker = new DistanceChecker(itrf);
 
         // with Earth pointing attitude, distance should be small
         TLEPropagator propagator =
-                TLEPropagator.selectExtrapolator(tle, new BodyCenterPointing(itrf), Propagator.DEFAULT_MASS);
+                TLEPropagator.selectExtrapolator(tle, new BodyCenterPointing(earth), Propagator.DEFAULT_MASS);
         propagator.setMasterMode(900.0, checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
         Assert.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);

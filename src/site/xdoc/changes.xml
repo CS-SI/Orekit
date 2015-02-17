@@ -20,6 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed target point in BodyCenterPointing attitude.
+        Fixes issue #100.
+      </action>
+    </release>
     <release version="7.0" date="2015-01-11"
              description="Version 7.0 is a major release of Orekit. It introduces several new
              features and bug fixes. New features introduced in version 7.0 are the complete

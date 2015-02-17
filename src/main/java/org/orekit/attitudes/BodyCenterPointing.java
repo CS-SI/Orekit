@@ -17,9 +17,11 @@
 package org.orekit.attitudes;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
+import org.orekit.bodies.Ellipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -39,13 +41,27 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class BodyCenterPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140811L;
+    private static final long serialVersionUID = 20150217L;
+
+    /** Body ellipsoid.  */
+    private final Ellipsoid ellipsoid;
 
     /** Creates new instance.
      * @param bodyFrame Body frame
+     * @deprecated as of 7.1, replaced with {@link #BodyCenterPointing(OneAxisEllipsoid)}
      */
+    @Deprecated
     public BodyCenterPointing(final Frame bodyFrame) {
         super(bodyFrame);
+        this.ellipsoid = new Ellipsoid(bodyFrame, 0.0, 0.0, 0.0);
+    }
+
+    /** Creates new instance.
+     * @param shape Body shape
+     */
+    public BodyCenterPointing(final Ellipsoid shape) {
+        super(shape.getFrame());
+        this.ellipsoid = shape;
     }
 
     /** {@inheritDoc} */
@@ -53,10 +69,43 @@ public class BodyCenterPointing extends GroundPointing {
     protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
                                                    final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        final Transform t = getBodyFrame().getTransformTo(frame, date);
-        final TimeStampedPVCoordinates center =
-                new TimeStampedPVCoordinates(date, Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
-        return t.transformPVCoordinates(center);
+
+        // spacecraft coordinates in body frame
+        final TimeStampedPVCoordinates scInBodyFrame = pvProv.getPVCoordinates(date, getBodyFrame());
+
+        // central projection to ground (NOT the classical nadir point)
+        final double u     = scInBodyFrame.getPosition().getX() / ellipsoid.getA();
+        final double v     = scInBodyFrame.getPosition().getY() / ellipsoid.getB();
+        final double w     = scInBodyFrame.getPosition().getZ() / ellipsoid.getC();
+        final double d2    = u * u + v * v + w * w;
+        final double d     = FastMath.sqrt(d2);
+        final double ratio = 1.0 / d;
+        final Vector3D projectedP = new Vector3D(ratio, scInBodyFrame.getPosition());
+
+        // velocity
+        final double uDot     = scInBodyFrame.getVelocity().getX() / ellipsoid.getA();
+        final double vDot     = scInBodyFrame.getVelocity().getY() / ellipsoid.getB();
+        final double wDot     = scInBodyFrame.getVelocity().getZ() / ellipsoid.getC();
+        final double dDot     = MathArrays.linearCombination(u, uDot, v, vDot, w, wDot) / d;
+        final double ratioDot = -dDot / d2;
+        final Vector3D projectedV = new Vector3D(ratio,    scInBodyFrame.getVelocity(),
+                                                 ratioDot, scInBodyFrame.getPosition());
+
+        // acceleration
+        final double uDotDot      = scInBodyFrame.getAcceleration().getX() / ellipsoid.getA();
+        final double vDotDot      = scInBodyFrame.getAcceleration().getY() / ellipsoid.getB();
+        final double wDotDot      = scInBodyFrame.getAcceleration().getZ() / ellipsoid.getC();
+        final double dDotDot      = (MathArrays.linearCombination(u, uDotDot, v, vDotDot, w, wDotDot) +
+                                     uDot * uDot + vDot * vDot + wDot * wDot - dDot * dDot) / d;
+        final double ratioDotDot  = (2 * dDot * dDot - d * dDotDot) / (d * d2);
+        final Vector3D projectedA = new Vector3D(ratio,        scInBodyFrame.getAcceleration(),
+                                                 2 * ratioDot, scInBodyFrame.getVelocity(),
+                                                 ratioDotDot,  scInBodyFrame.getPosition());
+
+        final TimeStampedPVCoordinates projected =
+                new TimeStampedPVCoordinates(date, projectedP, projectedV, projectedA);
+        return getBodyFrame().getTransformTo(frame, date).transformPVCoordinates(projected);
+
     }
 
 }

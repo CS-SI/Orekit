@@ -228,7 +228,7 @@ public class OneAxisEllipsoidTest {
         TimeStampedPVCoordinates ground1 = model.projectToGround(body,    itrf);
         TimeStampedPVCoordinates ground2 = model.projectToGround(ground1, itrf);
         Assert.assertEquals(0.0, Vector3D.distance(ground1.getPosition(),     ground2.getPosition()),     1.0e-12);
-        Assert.assertEquals(0.0, Vector3D.distance(ground1.getVelocity(),     ground2.getVelocity()),     1.0e-12);
+        Assert.assertEquals(0.0, Vector3D.distance(ground1.getVelocity(),     ground2.getVelocity()),     2.0e-12);
         Assert.assertEquals(0.0, Vector3D.distance(ground1.getAcceleration(), ground2.getAcceleration()), 1.0e-12);
 
     }
