@@ -18,12 +18,10 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.BracketedUnivariateSolver;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
 import org.orekit.frames.Frame;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -188,56 +186,66 @@ public class Ellipse implements Serializable {
      */
     public Vector2D projectToEllipse(final Vector2D p) {
 
-        if (p.getX() <= ANGULAR_THRESHOLD * FastMath.abs(p.getY())) {
+        final double x = FastMath.abs(p.getX());
+        final double y = p.getY();
+
+        if (x <= ANGULAR_THRESHOLD * FastMath.abs(y)) {
             // the point is almost on the minor axis, approximate the ellipse with
             // the osculating circle whose center is at evolute cusp along minor axis
             final double osculatingRadius = a2 / b;
-            final double evoluteCuspZ     = FastMath.copySign(a * e2 / g, -p.getY());
-            final double deltaZ           = p.getY() - evoluteCuspZ;
-            final double ratio           = osculatingRadius / FastMath.hypot(deltaZ, p.getX());
-            return new Vector2D(ratio * p.getX(), evoluteCuspZ + ratio * deltaZ);
+            final double evoluteCuspZ     = FastMath.copySign(a * e2 / g, -y);
+            final double deltaZ           = y - evoluteCuspZ;
+            final double ratio            = osculatingRadius / FastMath.hypot(deltaZ, x);
+            return new Vector2D(FastMath.copySign(ratio * x, p.getX()),
+                                evoluteCuspZ + ratio * deltaZ);
         }
 
-        // find ellipse point closest to test point
-        if (FastMath.abs(p.getY()) <= ANGULAR_THRESHOLD * p.getX()) {
+        if (FastMath.abs(y) <= ANGULAR_THRESHOLD * x) {
             // the point is almost on the major axis
 
             final double osculatingRadius = b2 / a;
             final double evoluteCuspR     = a * e2;
-            final double deltaR           = p.getX() - evoluteCuspR;
+            final double deltaR           = x - evoluteCuspR;
             if (deltaR >= 0) {
                 // the point is outside of the ellipse evolute, approximate the ellipse
                 // with the osculating circle whose center is at evolute cusp along major axis
-                final double ratio = osculatingRadius / FastMath.hypot(p.getY(), deltaR);
-                return new Vector2D(evoluteCuspR + ratio * deltaR, ratio * p.getY());
+                final double ratio = osculatingRadius / FastMath.hypot(y, deltaR);
+                return new Vector2D(FastMath.copySign(evoluteCuspR + ratio * deltaR, p.getX()),
+                                    ratio * y);
             }
 
             // the point is on the part of the major axis within ellipse evolute
             // we can compute the closest ellipse point analytically
-            final double rEllipse = p.getX() / e2;
-            return new Vector2D(rEllipse, FastMath.copySign(g * FastMath.sqrt(a2 - rEllipse * rEllipse), p.getY()));
+            final double rEllipse = x / e2;
+            return new Vector2D(FastMath.copySign(rEllipse, p.getX()),
+                                FastMath.copySign(g * FastMath.sqrt(a2 - rEllipse * rEllipse), y));
 
         } else {
-
-            final ClosestPointFinder finder = new ClosestPointFinder(p);
-            final double rho;
-            if (e2 >= ANGULAR_THRESHOLD) {
-                // search the nadir point on the major axis,
-                // somewhere within the evolute, i.e. between 0 and a * e2
-                // we use a slight margin factor 1.1 to make sure we properly bracket
-                // the solution even for points very close to major axis
-                final BracketedUnivariateSolver<UnivariateFunction> solver =
-                        new BracketingNthOrderBrentSolver(ANGULAR_THRESHOLD * b, 5);
-                rho = solver.solve(100, finder, 0, 1.1 * a * e2);
-            } else {
-                // the evolute is almost reduced to the central point,
-                // the ellipsoid is almost a sphere
-                rho = 0;
+            final double k = FastMath.hypot(x / a, y / b);
+            double projectedX = x / k;
+            double projectedY = y / k;
+            double delta = Double.POSITIVE_INFINITY;
+            int count = 0;
+            while (delta > ANGULAR_THRESHOLD * a && count++ < 100) { // this loop usually converges in 3 iterations
+                final double omegaX     = evoluteFactorX * projectedX * projectedX * projectedX;
+                final double omegaY     = evoluteFactorY * projectedY * projectedY * projectedY;
+                final double dx         = x - omegaX;
+                final double dy         = y - omegaY;
+                final double alpha      = b2 * dx * dx + a2 * dy * dy;
+                final double beta       = b2 * omegaX * dx + a2 * omegaY * dy;
+                final double gamma      = b2 * omegaX * omegaX + a2 * omegaY * omegaY - a2 * b2;
+                final double deltaPrime = MathArrays.linearCombination(beta, beta, -alpha, gamma);
+                final double ratio      = (beta <= 0) ?
+                                          (FastMath.sqrt(deltaPrime) - beta) / alpha :
+                                          -gamma / (FastMath.sqrt(deltaPrime) + beta);
+                final double previousX  = projectedX;
+                final double previousY  = projectedY;
+                projectedX = omegaX + ratio * dx;
+                projectedY = omegaY + ratio * dy;
+                delta = FastMath.hypot(previousX - projectedX, previousY - projectedY);
             }
-            return finder.intersectionPoint(rho);
-
+            return new Vector2D(FastMath.copySign(projectedX, p.getX()), projectedY);
         }
-
     }
 
     /** Project position-velocity-acceleration on an ellipse.
@@ -307,119 +315,6 @@ public class Ellipse implements Serializable {
         final Vector3D eDotDot3D = new Vector3D(eDotDot2D.getX(), u, eDotDot2D.getY(), v);
 
         return new TimeStampedPVCoordinates(pv.getDate(), e3D, eDot3D, eDotDot3D);
-
-    }
-
-    /** Local class for finding closest point to ellipse.
-     * <p>
-     * We consider a guessed equatorial point E somewhere along
-     * the ellipse major axis, and within the ellipse evolute curve.
-     * This point is defined by its coordinates (ρ, 0).
-     * </p>
-     * <p>
-     * A point P belonging to line (E, A) can be computed from a
-     * parameter k as follows:
-     * </p>
-     *
-     * <pre>
-     *   u = ρ + k * (r - ρ)
-     *   v = 0 + k * (z - 0)
-     * </pre>
-     * <p>
-     * For some specific positive value of k, the line (E, A) intersects the
-     * ellipse at a point I which lies in the same quadrant as test point A.
-     * There is another intersection point with k negative, but this
-     * intersection point is not in the same quadrant as test point A.
-     * </p>
-     * <p>
-     * The line joining point I and the center of the corresponding osculating
-     * circle (i.e. the normal to the ellipse at point I) crosses major axis at
-     * another equatorial point E'. If E and E' are the same points, then the
-     * guessed point E is the true nadir. When the point I is close to the major
-     * axis, the intersection of the line I with equatorial line is not well
-     * defined, but the limit position of point E' can be computed, it is the
-     * cusp of the ellipse evolute.
-     * </p>
-     * <p>
-     * This class provides methods to compute I and to compute the offset
-     * between E' and E, which allows to find the value of ρ such that I is the
-     * closest point of the ellipse to A.
-     * </p>
-     */
-    private class ClosestPointFinder implements UnivariateFunction {
-
-        /** Test point. */
-        private final Vector2D p;
-
-        /** Simple constructor.
-         * @param p test point
-         */
-        public ClosestPointFinder(final Vector2D p) {
-            this.p = p;
-        }
-
-        /** Compute intersection point I.
-         * @param rho guessed equatorial point radius
-         * @return coordinates of intersection point I
-         */
-        private Vector2D intersectionPoint(final double rho) {
-            final double k = kOnEllipse(rho);
-            return new Vector2D(rho + k * (p.getX() - rho), k * p.getY());
-        }
-
-        /** Compute parameter k of intersection point I.
-         * @param rho guessed equatorial point radius
-         * @return value of parameter k such that line point belongs to the ellipse
-         */
-        private double kOnEllipse(final double rho) {
-
-            // rho defines a point on the ellipse major axis E with coordinates (rho, 0)
-            // the fixed test point A has coordinates (r, z)
-            // the coordinates (u, v) of point P belonging to line (E, A) can be
-            // computed from a parameter k as follows:
-            //     u = rho + k * (r - rho)
-            //     v = 0 + k * (z - 0)
-            // if P also belongs to the ellipse, the following quadratic
-            // equation in k holds: alpha * k^2 + 2 * beta * k + gamma = 0
-            final double dr = p.getX() - rho;
-            final double alpha = b2 * dr * dr + a2 * p.getY() * p.getY();
-            final double beta  = b2 * rho * dr;
-            final double gamma = b2 * (rho - a) * (rho + a);
-
-            // positive root of the quadratic equation
-            final double s = FastMath.sqrt(beta * beta - alpha * gamma);
-            return (beta > 0) ? -gamma / (s + beta) : (s - beta) / alpha;
-
-        }
-
-        /** Compute offset between guessed equatorial point and nadir.
-         * <p>
-         * We consider a guessed equatorial point E somewhere along the ellipse
-         * major axis, and within the ellipse evolute curve. The line (E, A)
-         * intersects the ellipse at some point I. The line segment starting at
-         * point I and going along the interior normal of the ellipse crosses
-         * major axis at another equatorial point E'. If E and E' are the same
-         * points, then the guessed point E is the true nadir. This method
-         * compute the offset between E and E' along major axis.
-         * </p>
-         * @param rho guessed equatorial point radius (point E is at coordinates
-         *        (rho, 0) in the ellipse canonical axes system)
-         * @return offset between E and E'
-         */
-        @Override
-        public double value(final double rho) {
-
-            // intersection of line (E, A) with ellipse
-            final double k = kOnEllipse(rho);
-            final double l = rho + k * (p.getX() - rho);
-
-            // equatorial point E' in the nadir direction of P
-            final double rhoPrime = l * e2;
-
-            // offset between guessed point and recovered nadir point
-            return rhoPrime - rho;
-
-        }
 
     }
 

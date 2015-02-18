@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Simplified Cartesian to ellipsoidal coordinates transform and greatly improved its performances.
+      </action>
       <action dev="luc" type="fix">
         Fixed target point in BodyCenterPointing attitude.
         Fixes issue #100.

@@ -217,7 +217,7 @@ public class YawSteeringTest {
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 7.0e-14);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-13);
 
     }
 

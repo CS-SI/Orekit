@@ -336,7 +336,7 @@ public class YawCompensationTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 6.0e-6 * evolutionAngleMinus);
+        Assert.assertEquals(0.0, errorAngleMinus, 7.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
@@ -348,7 +348,7 @@ public class YawCompensationTest {
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 6.0e-9);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-8);
 
     }
 

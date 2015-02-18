@@ -95,10 +95,10 @@ public class EllipseTest {
                             1.0e-15);
         Assert.assertEquals(0,
                             Vector3D.distance(g0.getVelocity(), ref.getVelocity()) / ref.getVelocity().getNorm(),
-                            2.0e-12);
+                            6.0e-12);
         Assert.assertEquals(0,
                             Vector3D.distance(g0.getAcceleration(), ref.getAcceleration()) / ref.getAcceleration().getNorm(),
-                            2.0e-8);
+                            8.0e-8);
 
     }
 

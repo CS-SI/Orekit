@@ -204,7 +204,7 @@ public class OneAxisEllipsoidTest {
 
         double[] errors = derivativesErrors(orbit, orbit.getDate(), eme2000, model);
         Assert.assertEquals(0, errors[0], 1.0e-16);
-        Assert.assertEquals(0, errors[1], 1.0e-12);
+        Assert.assertEquals(0, errors[1], 2.0e-12);
         Assert.assertEquals(0, errors[2], 2.0e-4);
 
     }
