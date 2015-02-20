@@ -224,9 +224,11 @@ public class Ellipse implements Serializable {
             final double k = FastMath.hypot(x / a, y / b);
             double projectedX = x / k;
             double projectedY = y / k;
-            double delta = Double.POSITIVE_INFINITY;
+            double deltaX = Double.POSITIVE_INFINITY;
+            double deltaY = Double.POSITIVE_INFINITY;
             int count = 0;
-            while (delta > ANGULAR_THRESHOLD * a && count++ < 100) { // this loop usually converges in 3 iterations
+            final double threshold = ANGULAR_THRESHOLD * ANGULAR_THRESHOLD * a2;
+            while ((deltaX * deltaX + deltaY * deltaY) > threshold && count++ < 100) { // this loop usually converges in 3 iterations
                 final double omegaX     = evoluteFactorX * projectedX * projectedX * projectedX;
                 final double omegaY     = evoluteFactorY * projectedY * projectedY * projectedY;
                 final double dx         = x - omegaX;
@@ -242,7 +244,8 @@ public class Ellipse implements Serializable {
                 final double previousY  = projectedY;
                 projectedX = omegaX + ratio * dx;
                 projectedY = omegaY + ratio * dy;
-                delta = FastMath.hypot(previousX - projectedX, previousY - projectedY);
+                deltaX     = projectedX - previousX;
+                deltaY     = projectedY - previousY;
             }
             return new Vector2D(FastMath.copySign(projectedX, p.getX()), projectedY);
         }
