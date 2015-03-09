@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Added automatic loading of Marshall Solar Activity Future Estimation data.
+        Fixes issue #191.
+      </action>
       <action dev="luc" type="update">
         Simplified Cartesian to ellipsoidal coordinates transform and greatly improved its performances.
       </action>

@@ -42,13 +42,15 @@ public interface DTM2000InputParameters extends Serializable {
 
     /** Gets the available data range minimum date.
      * @return the minimum date.
+     * @exception OrekitException if data cannot be loaded
      */
-    AbsoluteDate getMinDate();
+    AbsoluteDate getMinDate() throws OrekitException;
 
     /** Gets the available data range maximum date.
      * @return the maximum date.
+     * @exception OrekitException if data cannot be loaded
      */
-    AbsoluteDate getMaxDate();
+    AbsoluteDate getMaxDate() throws OrekitException;
 
     /** Get the value of the instantaneous solar flux.
      * @param date the current date

@@ -30,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataLoader;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -234,12 +235,18 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     }
 
     /** {@inheritDoc} */
-    public AbsoluteDate getMinDate() {
+    public AbsoluteDate getMinDate() throws OrekitException {
+        if (firstDate == null) {
+            DataProvidersManager.getInstance().feed(getSupportedNames(), this);
+        }
         return firstDate;
     }
 
     /** {@inheritDoc} */
-    public AbsoluteDate getMaxDate() {
+    public AbsoluteDate getMaxDate() throws OrekitException {
+        if (firstDate == null) {
+            DataProvidersManager.getInstance().feed(getSupportedNames(), this);
+        }
         return lastDate;
     }
 
