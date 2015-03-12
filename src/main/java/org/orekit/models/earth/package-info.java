@@ -1,12 +1,12 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * CS licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,17 +17,35 @@
 /**
  *
  * This package provides models that simulate certain physical phenomena
- * experienced in the atmosphere of the earth.
+ * of Earth and the near-Earth environment.
  * <p>
  * Currently the following models are included:
  *
  * <ul>
  *   <li>Tropospheric Delay</li>
  *   <li>Geomagnetic Field</li>
+ *   <li>Geoid</li>
  * </ul>
  * </p>
  *
+ * <h2>Geoid</h2>
+ *
+ * <p>A Geoid is an equipotential surface of Earth's gravity field. This package
+ * provides the means to compute a Geoid from the gravity field harmonic
+ * coefficients, as in the following example. See the comment for {@link Geoid}
+ * for some important caveats.
+ *
+ * <pre><code class="brush: java">
+ * ReferenceEllipsoid ellipsoid
+ *         = new ReferenceEllilpsoid(a, f, bodyFrame, GM, spin);
+ * Geoid geoid = new Geoid(
+ *         GravityFieldFactory.getNormalizedProvider(degree, order),
+ *         ellipsoid);
+ * double undulation = geoid.getUndulation(lat, lon, date);
+ * </code></pre>
+ *
  * @author T. Neidhart
+ * @author E. Ward
  *
  */
 package org.orekit.models.earth;
