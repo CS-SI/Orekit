@@ -1,3 +1,19 @@
+/* Contributed in the public domain.
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.models.earth;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -11,15 +27,12 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import static org.apache.commons.math3.util.FastMath.pow;
 
 /**
  * A geoid is a level surface of the gravity potential of a body. The gravity
@@ -138,7 +151,7 @@ public class Geoid implements EarthShape {
      *                           potential will be used. It is assumed that the
      *                           {@code geopotential} and the {@code
      *                           referenceEllipsoid} are defined in the same
-     *                           frame. Usually a {@link GravityFieldFactory#getConstantNormalizedProvider(int,
+     *                           frame. Usually a {@link org.orekit.forces.gravity.potential.GravityFieldFactory#getConstantNormalizedProvider(int,
      *                           int) constant geopotential} is used to define a
      *                           time-invariant Geoid.
      * @param referenceEllipsoid the normal gravity potential.
@@ -287,7 +300,7 @@ public class Geoid implements EarthShape {
 
         @Override
         public NormalizedSphericalHarmonics onDate(final AbsoluteDate date)
-                throws OrekitException {
+            throws OrekitException {
             return new NormalizedSphericalHarmonics() {
 
                 /** the original harmonics */
@@ -334,7 +347,7 @@ public class Geoid implements EarthShape {
                  */
                 // halfN = 1,2,3,4,5 for n = 2,4,6,8,10, respectively
                 final int halfN = n / 2;
-                Cnm = Cnm - gmRatio * pow(aRatio, halfN) *
+                Cnm = Cnm - gmRatio * FastMath.pow(aRatio, halfN) *
                         this.ellipsoid.getC2n0(halfN);
             }
             // return is a modified Cnm
@@ -359,7 +372,7 @@ public class Geoid implements EarthShape {
                                               final Vector3D closeInFrame,
                                               final Frame frame,
                                               final AbsoluteDate date)
-            throws OrekitException {
+        throws OrekitException {
         /*
          * It is assumed that the geoid is slowly varying over it's entire
          * surface. Therefore there will one local intersection.
@@ -384,13 +397,13 @@ public class Geoid implements EarthShape {
         final double d2 = line.pointAt(0.0).getNormSq();
         // the minimum abscissa, squared
         final double minAbscissa2 =
-                pow(ellipsoid.getPolarRadius() + MIN_UNDULATION, 2) - d2;
+                FastMath.pow(ellipsoid.getPolarRadius() + MIN_UNDULATION, 2) - d2;
         // smaller end point of the interval = 0.0 or intersection with
         // min_undulation sphere
         final double lowPoint = FastMath.sqrt(FastMath.max(minAbscissa2, 0.0));
         // the maximum abscissa, squared
         final double maxAbscissa2 =
-                pow(ellipsoid.getEquatorialRadius() + MAX_UNDULATION, 2) - d2;
+                FastMath.pow(ellipsoid.getEquatorialRadius() + MAX_UNDULATION, 2) - d2;
         // larger end point of the interval
         final double highPoint = FastMath.sqrt(maxAbscissa2);
 

@@ -1,12 +1,25 @@
+/* Contributed in the public domain.
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.models.earth;
 
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.utils.Constants;
-
-import static org.apache.commons.math3.util.FastMath.pow;
-import static org.apache.commons.math3.util.FastMath.sin;
-import static org.apache.commons.math3.util.FastMath.sqrt;
 
 /**
  * A Reference Ellipsoid for use in geodesy. The ellipsoid defines an
@@ -122,31 +135,34 @@ public class ReferenceEllipsoid extends OneAxisEllipsoid implements EarthShape {
          * Uses the equations from [2] as compiled in [1]. See Class comment.
          */
 
-        final double a = this.getEquatorialRadius();
-        final double f = this.getFlattening();
+        final double a  = this.getEquatorialRadius();
+        final double f  = this.getFlattening();
 
         // define derived constants, move to constructor for more speed
         // semi-minor axis
         final double b = a * (1 - f);
+        final double a2 = a * a;
+        final double b2 = b * b;
         // linear eccentricity
-        final double E = sqrt(pow(a, 2) - pow(b, 2));
+        final double E = FastMath.sqrt(a2 - b2);
         // first numerical eccentricity
         final double e = E / a;
         // second numerical eccentricity
         final double eprime = E / b;
         // an abbreviation for a common term
-        final double m = pow(this.spin * a, 2) * b / this.GM;
+        final double m = this.spin * this.spin * a2 * b / this.GM;
         // gravity at equator
         final double ya = this.GM / (a * b) *
                 (1 - 3. / 2. * m - 3. / 14. * eprime * m);
         // gravity at the poles
-        final double yb = this.GM / pow(a, 2) * (1 + m + 3. / 7. * eprime * m);
+        final double yb = this.GM / a2 * (1 + m + 3. / 7. * eprime * m);
         // another abbreviation for a common term
         final double kappa = (b * yb - a * ya) / (a * ya);
 
         // calculate normal gravity at the given latitude.
-        return ya * (1 + kappa * pow(sin(latitude), 2)) /
-                sqrt(1 - pow(e * sin(latitude), 2));
+        final double sin  = FastMath.sin(latitude);
+        final double sin2 = sin * sin;
+        return ya * (1 + kappa * sin2) / FastMath.sqrt(1 - e * e * sin2);
     }
 
     /**
@@ -170,25 +186,26 @@ public class ReferenceEllipsoid extends OneAxisEllipsoid implements EarthShape {
         // define derived constants, move to constructor for more speed
         // semi-minor axis
         final double b = a * (1 - f);
+        final double a2 = a * a;
+        final double b2 = b * b;
         // linear eccentricity
-        final double E = sqrt(pow(a, 2) - pow(b, 2));
+        final double E = FastMath.sqrt(a2 - b2);
         // first numerical eccentricity
         final double e = E / a;
         // an abbreviation for a common term
-        final double m = pow(this.spin * a, 2) * b / this.GM;
+        final double m = this.spin * this.spin * a2 * b / this.GM;
 
         /*
          * derive C2 using a linear approximation, good to ~1e-9, eq 2.118 in
          * Heiskanen & Moritz[2]. See comment for ReferenceEllipsoid
          */
-        final double J2 = 2. / 3. * f - 1. / 3. * m - 1. / 3. * pow(f, 2) +
-                2. / 21. * f * m;
-        final double C2 = -J2 / sqrt(5);
+        final double J2 = 2. / 3. * f - 1. / 3. * m - 1. / 3. * f * f + 2. / 21. * f * m;
+        final double C2 = -J2 / FastMath.sqrt(5);
 
         // eq 3-62 in chapter 3 of DMA TR 8350.2, calculated by scaling C2,0
-        return pow(-1, n) * 3 * pow(e, 2 * n) *
-                (1 - n - pow(5, 3. / 2.) * n * C2 / pow(e, 2)) /
-                ((2 * n + 1) * (2 * n + 3) * sqrt(4 * n + 1));
+        return (((n & 0x1) == 0) ? 3 : -3) * FastMath.pow(e, 2 * n) *
+                (1 - n - FastMath.pow(5, 3. / 2.) * n * C2 / (e * e)) /
+                ((2 * n + 1) * (2 * n + 3) * FastMath.sqrt(4 * n + 1));
     }
 
     @Override
@@ -213,7 +230,7 @@ public class ReferenceEllipsoid extends OneAxisEllipsoid implements EarthShape {
      * Get the GRS80 ellipsoid, attached to the given body frame.
      *
      * @param bodyFrame the earth centered fixed frame
-     * @return a WGS84 reference ellipsoid
+     * @return a GRS80 reference ellipsoid
      */
     public static ReferenceEllipsoid getGrs80(final Frame bodyFrame) {
         return new ReferenceEllipsoid(
