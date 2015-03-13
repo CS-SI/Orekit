@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="evan" type="add">
+        Added geoid model based on gravity field.
+        Fixes issue #192.
+      </action>
       <action dev="luc" type="fix">
         Added automatic loading of Marshall Solar Activity Future Estimation data.
         Fixes issue #191.
