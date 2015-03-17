@@ -202,9 +202,9 @@ public class GeoMagneticField {
 
     /** Calculate the magnetic field at the specified geodetic point identified
      * by latitude, longitude and altitude.
-     * @param latitude the latitude in decimal degrees
-     * @param longitude the longitude in decimal degrees
-     * @param height the altitude in kilometers above mean sea level
+     * @param latitude the WGS84 latitude in decimal degrees
+     * @param longitude the WGS84 longitude in decimal degrees
+     * @param height the height above the WGS84 ellipsoid in kilometers
      * @return the {@link GeoMagneticElements} at the given geodetic point
      */
     public GeoMagneticElements calculateField(final double latitude,
