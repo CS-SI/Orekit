@@ -25,15 +25,48 @@ import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.EGMFormatReader;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 
 public class GeoMagneticFieldTest {
+
+    /** maximum degree and order used in testing {@link Geoid}. */
+    @SuppressWarnings("javadoc")
+    private static final int maxOrder = 360, maxDegree = 360;
+    /** The WGS84 reference ellipsoid. */
+    private static ReferenceEllipsoid WGS84 = new ReferenceEllipsoid(
+            6378137.00, 1 / 298.257223563, FramesFactory.getGCRF(),
+            3.986004418e14, 7292115e-11);
+
+    /**
+     * The potential to use in {@link #getComponent()}. Set in {@link #setUpBefore()}.
+     */
+    private static NormalizedSphericalHarmonicsProvider potential;
+
+    /**
+     * load orekit data and gravity field.
+     *
+     * @throws Exception on error.
+     */
+    @BeforeClass
+    public static void setUpBefore() throws Exception {
+        Utils.setDataRoot("earth:geoid:regular-data");
+        GravityFieldFactory.clearPotentialCoefficientsReaders();
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96", false));
+        potential = GravityFieldFactory.getConstantNormalizedProvider(maxDegree, maxOrder);
+    }
 
     @Test
     public void testInterpolationYYY5() throws OrekitException {
@@ -114,6 +147,51 @@ public class GeoMagneticFieldTest {
             final GeoMagneticElements result = model.calculateField(testValues[i][2],
                                                                     testValues[i][3],
                                                                     testValues[i][1]);
+
+            // X
+            Assert.assertEquals(testValues[i][4], result.getFieldVector().getX(), eps);
+            // Y
+            Assert.assertEquals(testValues[i][5], result.getFieldVector().getY(), eps);
+            // Z
+            Assert.assertEquals(testValues[i][6], result.getFieldVector().getZ(), eps);
+            // H
+            Assert.assertEquals(testValues[i][7], result.getHorizontalIntensity(), eps);
+            // F
+            Assert.assertEquals(testValues[i][8], result.getTotalIntensity(), eps);
+            // inclination
+            Assert.assertEquals(testValues[i][9], result.getInclination(), degreeEps);
+            // declination
+            Assert.assertEquals(testValues[i][10], result.getDeclination(), degreeEps);
+        }
+    }
+
+    @Test
+    public void testWMMWithHeightAboveMSL() throws Exception {
+        // test results for test values provided as part of the WMM2015 Report
+        // using height above MSL instead of height above ellipsoid
+        // the results have been obtained from the NOAA online calculator:
+        // http://www.ngdc.noaa.gov/geomag-web/#igrfwmm
+        final double[][] testValues = {
+            // Date  Alt  Lat  Lon        X        Y         Z        H        F       I      D
+            //        km  deg  deg       nT       nT        nT       nT       nT     deg    deg
+            {2015.0, 100,  80,   0,  6314.2,  -471.6,  52269.1,  6331.8, 52651.2,  83.093, -4.271},
+            {2015.0, 100,   0, 120, 37534.4,   364.3, -10773.1, 37536.2, 39051.6, -16.013,  0.556},
+            {2015.0, 100, -80, 240,  5613.2, 14791.9, -50379.6, 15821.1, 52805.4, -72.565, 69.219}
+        };
+
+        final Geoid geoid = new Geoid(potential, WGS84);
+
+        final double eps = 1e-1;
+        final double degreeEps = 1e-2;
+        for (int i = 0; i < testValues.length; i++) {
+            final AbsoluteDate date = new AbsoluteDate(2015, 1, 1, TimeScalesFactory.getUTC());
+            final GeoMagneticField model = GeoMagneticFieldFactory.getWMM(testValues[i][0]);
+            final double undulation = geoid.getUndulation(FastMath.toRadians(testValues[i][2]),
+                                                          FastMath.toRadians(testValues[i][3]),
+                                                          date);
+            final GeoMagneticElements result = model.calculateField(testValues[i][2],
+                                                                    testValues[i][3],
+                                                                    testValues[i][1] + undulation/1000d);
 
             // X
             Assert.assertEquals(testValues[i][4], result.getFieldVector().getX(), eps);
@@ -340,12 +418,9 @@ public class GeoMagneticFieldTest {
     }
 
     private InputStream getResource(final String name) throws FileNotFoundException {
-        final String dataPath = System.getProperty(DataProvidersManager.OREKIT_DATA_PATH);
+        // the data path has multiple components, the resources are in the first one
+        final String dataPath = System.getProperty(DataProvidersManager.OREKIT_DATA_PATH).split(":")[0];
         return new FileInputStream(new File(dataPath, name));
     }
 
-    @BeforeClass
-    public static void setUp() throws Exception {
-        Utils.setDataRoot("earth");
-    }
 }
