@@ -27,6 +27,7 @@ import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Sampler for half track span.
  * @since 7.1
@@ -39,20 +40,20 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
     private final OneAxisEllipsoid ellipsoid;
 
     /** Half track sample. */
-    private final List<Pair<AbsoluteDate, GeodeticPoint>> halfTrack;
+    private final List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> halfTrack;
 
     /** Simple constructor.
      * @param ellipsoid ellipsoid over which track is sampled
      */
     public HalfTrackSampler(final OneAxisEllipsoid ellipsoid) {
         this.ellipsoid = ellipsoid;
-        this.halfTrack = new ArrayList<Pair<AbsoluteDate, GeodeticPoint>>();
+        this.halfTrack = new ArrayList<Pair<GeodeticPoint, TimeStampedPVCoordinates>>();
     }
 
     /** Get half track sample.
      * @return half track sample
      */
-    public List<Pair<AbsoluteDate, GeodeticPoint>> getHalfTrack() {
+    public List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> getHalfTrack() {
         return halfTrack;
     }
 
@@ -66,9 +67,17 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
         throws PropagationException {
         try {
-            final GeodeticPoint gp = ellipsoid.transform(currentState.getPVCoordinates(ellipsoid.getBodyFrame()).getPosition(),
-                                                         ellipsoid.getBodyFrame(), currentState.getDate());
-            halfTrack.add(new Pair<AbsoluteDate, GeodeticPoint>(currentState.getDate(), gp));
+
+            // find the sliding ground point below spacecraft
+            final TimeStampedPVCoordinates pv       = currentState.getPVCoordinates(ellipsoid.getBodyFrame());
+            final TimeStampedPVCoordinates groundPV = ellipsoid.projectToGround(pv, ellipsoid.getBodyFrame());
+
+            // geodetic coordinates
+            final GeodeticPoint gp =
+                    ellipsoid.transform(pv.getPosition(), ellipsoid.getBodyFrame(), currentState.getDate());
+
+            halfTrack.add(new Pair<GeodeticPoint, TimeStampedPVCoordinates>(gp, groundPV));
+
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }

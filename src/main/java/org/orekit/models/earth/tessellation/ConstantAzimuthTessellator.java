@@ -35,24 +35,27 @@ public class ConstantAzimuthTessellator extends EllipsoidTessellator {
 
     /** Simple constructor.
      * @param ellipsoid ellipsoid body on which the zone is defined
-     * @param width tiles width as a distance on surface (in meters)
-     * @param length tiles length as a distance on surface (in meters)
+     * @param fullWidth full tiles width as a distance on surface, including overlap (in meters)
+     * @param fullLength full tiles length as a distance on surface, including overlap (in meters)
+     * @param widthOverlap overlap between adjacent tiles (in meters)
+     * @param lengthOverlap overlap between adjacent tiles (in meters)
      * @param azimuth geographic azimuth of the tiles
      */
     public ConstantAzimuthTessellator(final OneAxisEllipsoid ellipsoid,
-                                     final double width, final double length,
-                                     final double azimuth) {
-        super(ellipsoid, width, length);
+                                      final double fullWidth, final double fullLength,
+                                      final double widthOverlap, final double lengthOverlap,
+                                      final double azimuth) {
+        super(ellipsoid, fullWidth, fullLength, widthOverlap, lengthOverlap);
         this.cos = FastMath.cos(azimuth);
         this.sin = FastMath.sin(azimuth);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected Vector3D alongTileDirection(final GeodeticPoint point) {
+    protected Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp) {
 
         // compute the horizontal direction at fixed azimuth
-        return new Vector3D(cos, point.getNorth(), sin, point.getEast());
+        return new Vector3D(cos, gp.getNorth(), sin, gp.getEast());
 
     }
 

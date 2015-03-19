@@ -18,9 +18,8 @@ package org.orekit.models.earth.tessellation;
 
 import java.util.List;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math3.analysis.solvers.UnivariateSolver;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -28,14 +27,11 @@ import org.apache.commons.math3.util.Pair;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Ellipsoid tessellator aligning tiles with along an orbit track.
@@ -44,11 +40,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class AlongTrackTessellator extends EllipsoidTessellator {
 
-    /** Orbit along which tiles should be aligned. */
-    private final Orbit orbit;
+    /** Number of sampling steps for the half-track. */
+    private static final int SAMPLING_STEPS = 1000;
 
     /** Ground track over one half orbit. */
-    private final List<Pair<AbsoluteDate, GeodeticPoint>> halfTrack;
+    private final List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> halfTrack;
 
     /** Minimum latitude reached. */
     private final double minLat;
@@ -58,112 +54,86 @@ public class AlongTrackTessellator extends EllipsoidTessellator {
 
     /** Simple constructor.
      * @param ellipsoid ellipsoid body on which the zone is defined
-     * @param width tiles width as a distance on surface (in meters)
-     * @param length tiles length as a distance on surface (in meters)
+     * @param fullWidth full tiles width as a distance on surface, including overlap (in meters)
+     * @param fullLength full tiles length as a distance on surface, including overlap (in meters)
+     * @param widthOverlap overlap between adjacent tiles (in meters)
+     * @param lengthOverlap overlap between adjacent tiles (in meters)
      * @param orbit orbit along which tiles should be aligned
      * @param isAscending indicator for zone tiling with respect to ascending
      * or descending orbits
      * @exception OrekitException if some frame conversion fails
      */
     public AlongTrackTessellator(final OneAxisEllipsoid ellipsoid,
-                                final double width, final double length,
-                                final Orbit orbit, final boolean isAscending)
+                                 final double fullWidth, final double fullLength,
+                                 final double widthOverlap, final double lengthOverlap,
+                                 final Orbit orbit, final boolean isAscending)
         throws OrekitException {
-        super(ellipsoid, width, length);
-        this.orbit          = orbit;
-        this.halfTrack      = findHalfTrack(orbit, getEllipsoid(), isAscending);
-        final double lStart = halfTrack.get(0).getSecond().getLatitude();
-        final double lEnd   = halfTrack.get(halfTrack.size() - 1).getSecond().getLatitude();
+        super(ellipsoid, fullWidth, fullLength, widthOverlap, lengthOverlap);
+        this.halfTrack      = findHalfTrack(orbit, ellipsoid, isAscending);
+        final double lStart = halfTrack.get(0).getFirst().getLatitude();
+        final double lEnd   = halfTrack.get(halfTrack.size() - 1).getFirst().getLatitude();
         this.minLat         = FastMath.min(lStart, lEnd);
         this.maxLat         = FastMath.max(lStart, lEnd);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected Vector3D alongTileDirection(final GeodeticPoint point)
+    protected Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp)
         throws OrekitException {
 
         // check the point can be reached
-        if (point.getLatitude() < minLat || point.getLatitude() > maxLat) {
+        if (gp.getLatitude() < minLat || gp.getLatitude() > maxLat) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_LATITUDE,
-                                      FastMath.toDegrees(point.getLatitude()),
+                                      FastMath.toDegrees(gp.getLatitude()),
                                       FastMath.toDegrees(minLat),
                                       FastMath.toDegrees(maxLat));
         }
 
         // bracket the point in the half track sample
+        // TODO: replace with a binary search bracketing
         int index = 1;
-        double latBefore = halfTrack.get(0).getSecond().getLatitude();
+        double latBefore = halfTrack.get(0).getFirst().getLatitude();
         while (index < halfTrack.size()) {
-            final double latAfter = halfTrack.get(index).getSecond().getLatitude();
-            if ((point.getLatitude() - latBefore) * (point.getLatitude() - latAfter) <= 0) {
+            final double latAfter = halfTrack.get(index).getFirst().getLatitude();
+            if ((gp.getLatitude() - latBefore) * (gp.getLatitude() - latAfter) <= 0) {
                 // we have found a bracketing for the latitude
                 break;
             }
             latBefore = latAfter;
             ++index;
         }
-        final AbsoluteDate before = halfTrack.get(index - 1).getFirst();
-        final AbsoluteDate after  = halfTrack.get(index).getFirst();
 
-        // find the exact point at which spacecraft crosses specified latitude
-        final UnivariateSolver solver           = new BracketingNthOrderBrentSolver(1.0e-3, 5);
-        final LatitudeCrossing latitudeCrossing = new LatitudeCrossing(point.getLatitude());
-        final double           root             = solver.solve(100, latitudeCrossing,
-                                                               before.durationFrom(orbit.getDate()),
-                                                               after.durationFrom(orbit.getDate()));
-        final TimeStampedPVCoordinates rawPV    = latitudeCrossing.getPV(root);
+        // ensure we can get points at index - 1, index, index + 1 and index + 2
+        index = FastMath.min(1, FastMath.max(index, halfTrack.size() - 3));
+
+        // interpolate ground sliding point at specified latitude
+        final HermiteInterpolator interpolator = new HermiteInterpolator();
+        for (int i = index - 1; i < index + 3; ++i) {
+            final Vector3D position = halfTrack.get(i).getSecond().getPosition();
+            final Vector3D velocity = halfTrack.get(i).getSecond().getVelocity();
+            interpolator.addSamplePoint(halfTrack.get(i).getFirst().getLatitude(),
+                                        new double[] {
+                                            position.getX(), position.getY(), position.getZ()
+                                        }, new double[] {
+                                            velocity.getX(), velocity.getY(), velocity.getZ()
+                                        });
+        }
+        final DerivativeStructure[] p  = interpolator.value(new DerivativeStructure(1, 1, 0, gp.getLatitude()));
+
+        // extract interpolated ground position/velocity
+        final Vector3D position = new Vector3D(p[0].getValue(),
+                                               p[1].getValue(),
+                                               p[2].getValue());
+        final Vector3D velocity = new Vector3D(p[0].getPartialDerivative(1),
+                                               p[1].getPartialDerivative(1),
+                                               p[2].getPartialDerivative(1));
 
         // adjust longitude to match the specified one
-        final Transform t = new Transform(rawPV.getDate(),
-                                          new Rotation(Vector3D.PLUS_K, rawPV.getPosition(),
-                                                       Vector3D.PLUS_K, getEllipsoid().transform(point)));
-        final TimeStampedPVCoordinates alignedPV = t.transformPVCoordinates(rawPV);
-
-        // find the sliding ground point below spacecraft
-        final TimeStampedPVCoordinates groundPV =
-                getEllipsoid().projectToGround(alignedPV, getEllipsoid().getBodyFrame());
+        final Rotation rotation      = new Rotation(Vector3D.PLUS_K, position, Vector3D.PLUS_K, point);
+        final Vector3D fixedVelocity = rotation.applyTo(velocity);
 
         // the tile direction is aligned with sliding point velocity
-        return groundPV.getVelocity().normalize();
-
-    }
-
-    /** Function evaluating to 0 at some latitude. */
-    private class LatitudeCrossing implements UnivariateFunction {
-
-        /** Target latitude. */
-        private final double latitude;
-
-        /** Simple constructor.
-         * @param latitude target latitude
-         */
-        public LatitudeCrossing(final double latitude) {
-            this.latitude = latitude;
-        }
-
-        /** Compute the spacecraft position/velocity in body frame.
-         * @param dt time offset since reference orbit
-         * @return position/velocity in body frame
-         * @exception OrekitException if position cannot be computed at specified date
-         */
-        public TimeStampedPVCoordinates getPV(final double dt) throws OrekitException {
-            return orbit.shiftedBy(dt).getPVCoordinates(getEllipsoid().getBodyFrame());
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public double value(final double dt) throws OrekitExceptionWrapper {
-            try {
-                final TimeStampedPVCoordinates pv = getPV(dt);
-                final GeodeticPoint            gp = getEllipsoid().transform(pv.getPosition(),
-                                                                             getEllipsoid().getBodyFrame(),
-                                                                             pv.getDate());
-                return gp.getLatitude() - latitude;
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
-        }
+        return fixedVelocity.normalize();
 
     }
 
@@ -175,9 +145,9 @@ public class AlongTrackTessellator extends EllipsoidTessellator {
      * @return time stamped ground points on the selected half track
      * @exception OrekitException if some frame conversion fails
      */
-    private static List<Pair<AbsoluteDate, GeodeticPoint>> findHalfTrack(final Orbit orbit,
-                                                                         final OneAxisEllipsoid ellipsoid,
-                                                                         final boolean isAscending)
+    private static List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> findHalfTrack(final Orbit orbit,
+                                                                                     final OneAxisEllipsoid ellipsoid,
+                                                                                     final boolean isAscending)
         throws OrekitException {
 
         try {
@@ -191,7 +161,7 @@ public class AlongTrackTessellator extends EllipsoidTessellator {
             // sample the half track
             propagator.clearEventsDetectors();
             final HalfTrackSampler sampler = new HalfTrackSampler(ellipsoid);
-            propagator.setMasterMode(handler.getEnd().durationFrom(handler.getStart()) / 100, sampler);
+            propagator.setMasterMode(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
 
             return sampler.getHalfTrack();
 
