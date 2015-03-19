@@ -1,4 +1,4 @@
-/* Copyright 2002-2014 CS Systèmes d'Information
+/* Copyright 2002-2015 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth;
+package org.orekit.models.earth.tessellation;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.geodeticPointCloseTo;
@@ -23,6 +23,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.models.earth.tessellation.Tile;
 
 public class TileTest {
 

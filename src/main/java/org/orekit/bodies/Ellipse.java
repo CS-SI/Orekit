@@ -321,4 +321,15 @@ public class Ellipse implements Serializable {
 
     }
 
+    /** Find the center of curvature (point on the evolute) at the nadir of a point.
+     * @param point point in the ellipse plane
+     * @return center of curvature of the ellipse directly at point nadir
+     * @since 7.1
+     */
+    public Vector2D getCenterOfCurvature(final Vector2D point) {
+        final Vector2D projected = projectToEllipse(point);
+        return new Vector2D(evoluteFactorX * projected.getX() * projected.getX() * projected.getX(),
+                            evoluteFactorY * projected.getY() * projected.getY() * projected.getY());
+    }
+
 }

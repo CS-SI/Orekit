@@ -1,4 +1,4 @@
-/* Copyright 2002-2014 CS Systèmes d'Information
+/* Copyright 2002-2015 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth;
+package org.orekit.models.earth.tessellation;
 
 import java.io.Serializable;
 
@@ -28,6 +28,8 @@ import org.orekit.bodies.GeodeticPoint;
  * are strictly between 0 and π radians and that the angles between
  * edges are also strictly between 0 and π radians.
  * </p>
+ * @see AlongTrackTessellator
+ * @see ConstantAzimuthTessellator
  * @author Luc Maisonobe
  */
 public class Tile implements Serializable {

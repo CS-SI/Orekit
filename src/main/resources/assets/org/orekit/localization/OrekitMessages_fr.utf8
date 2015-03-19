@@ -377,4 +377,7 @@ UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossible de calculer l''anoma
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = impossible de calculer l''orbite moyenne à partir de l''orbite osculatrice après {0} itérations
 
 # derivation order {0} is out of range
-OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>
+OUT_OF_RANGE_DERIVATION_ORDER = ordre de différentiation {0} hors domaine
+
+# out of range latitude: {0}, [{1}, {2}]
+OUT_OF_RANGE_LATITUDE = latitude {0} hors domaine [{1}, {2}]
