@@ -29,7 +29,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
  * to minimum latitude while decreasing events correspond to maximum latitude.
  * </p>
  * @since 7.1
- * @see AlongTrackTessellator
+ * @see AlongTrackAiming
  * @author Luc Maisonobe
  */
 class HalfTrackSpanDetector extends AbstractDetector<HalfTrackSpanDetector> {

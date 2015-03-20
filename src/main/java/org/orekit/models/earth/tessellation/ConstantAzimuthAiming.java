@@ -21,11 +21,11 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 
-/** Ellipsoid tessellator aligning tiles with respect to a geographic azimuth.
- * @see AlongTrackTessellator
+/** Class used to orient tiles with respect to a geographic azimuth.
+ * @see AlongTrackAiming
  * @author Luc Maisonobe
  */
-public class ConstantAzimuthTessellator extends EllipsoidTessellator {
+public class ConstantAzimuthAiming implements TileAiming {
 
     /** Cosine of the azimuth. */
     private final double cos;
@@ -35,24 +35,17 @@ public class ConstantAzimuthTessellator extends EllipsoidTessellator {
 
     /** Simple constructor.
      * @param ellipsoid ellipsoid body on which the zone is defined
-     * @param fullWidth full tiles width as a distance on surface, including overlap (in meters)
-     * @param fullLength full tiles length as a distance on surface, including overlap (in meters)
-     * @param widthOverlap overlap between adjacent tiles (in meters)
-     * @param lengthOverlap overlap between adjacent tiles (in meters)
      * @param azimuth geographic azimuth of the tiles
      */
-    public ConstantAzimuthTessellator(final OneAxisEllipsoid ellipsoid,
-                                      final double fullWidth, final double fullLength,
-                                      final double widthOverlap, final double lengthOverlap,
+    public ConstantAzimuthAiming(final OneAxisEllipsoid ellipsoid,
                                       final double azimuth) {
-        super(ellipsoid, fullWidth, fullLength, widthOverlap, lengthOverlap);
         this.cos = FastMath.cos(azimuth);
         this.sin = FastMath.sin(azimuth);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp) {
+    public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp) {
 
         // compute the horizontal direction at fixed azimuth
         return new Vector3D(cos, gp.getNorth(), sin, gp.getEast());

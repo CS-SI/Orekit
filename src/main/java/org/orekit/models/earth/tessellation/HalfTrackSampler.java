@@ -31,7 +31,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Sampler for half track span.
  * @since 7.1
- * @see AlongTrackTessellator
+ * @see AlongTrackAiming
  * @author Luc Maisonobe
  */
 class HalfTrackSampler implements OrekitFixedStepHandler {

@@ -22,7 +22,7 @@ import org.orekit.time.AbsoluteDate;
 
 /** Event handler for half track span.
  * @since 7.1
- * @see AlongTrackTessellator
+ * @see AlongTrackAiming
  * @author Luc Maisonobe
  */
 class HalfTrackSpanHandler implements EventHandler<HalfTrackSpanDetector> {

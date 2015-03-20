@@ -28,8 +28,8 @@ import org.orekit.bodies.GeodeticPoint;
  * are strictly between 0 and π radians and that the angles between
  * edges are also strictly between 0 and π radians.
  * </p>
- * @see AlongTrackTessellator
- * @see ConstantAzimuthTessellator
+ * @see AlongTrackAiming
+ * @see ConstantAzimuthAiming
  * @author Luc Maisonobe
  */
 public class Tile implements Serializable {

@@ -17,18 +17,17 @@
 package org.orekit.models.earth.tessellation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.BSPTree;
 import org.apache.commons.math3.geometry.partitioning.Hyperplane;
+import org.apache.commons.math3.geometry.partitioning.Region;
+import org.apache.commons.math3.geometry.partitioning.RegionFactory;
 import org.apache.commons.math3.geometry.partitioning.SubHyperplane;
-import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.apache.commons.math3.geometry.spherical.oned.ArcsSet;
 import org.apache.commons.math3.geometry.spherical.twod.Circle;
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
@@ -41,13 +40,16 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 
-/** Base class able to tessellate an interest zone on an ellipsoid in {@link Tile tiles}.
+/** Class used to tessellate an interest zone on an ellipsoid in {@link Tile tiles}.
  * @author Luc Maisonobe
  */
-public abstract class EllipsoidTessellator {
+public class EllipsoidTessellator {
 
     /** Split factor for tiles fine positioning. */
     private final int SPLITS = 4;
+
+    /** Aiming used for orienting tiles. */
+    private final TileAiming aiming;
 
     /** Underlying ellipsoid. */
     private final OneAxisEllipsoid ellipsoid;
@@ -66,15 +68,17 @@ public abstract class EllipsoidTessellator {
 
     /** Simple constructor.
      * @param ellipsoid underlying ellipsoid
+     * @param aiming aiming used for orienting tiles
      * @param fullWidth full tiles width as a distance on surface, including overlap (in meters)
      * @param fullLength full tiles length as a distance on surface, including overlap (in meters)
      * @param widthOverlap overlap between adjacent tiles (in meters)
      * @param lengthOverlap overlap between adjacent tiles (in meters)
      */
-    protected EllipsoidTessellator(final OneAxisEllipsoid ellipsoid,
+    protected EllipsoidTessellator(final OneAxisEllipsoid ellipsoid, final TileAiming aiming,
                                    final double fullWidth, final double fullLength,
                                    final double widthOverlap, final double lengthOverlap) {
         this.ellipsoid     = ellipsoid;
+        this.aiming        = aiming;
         this.splitWidth    = (fullWidth  - widthOverlap)  / SPLITS;
         this.splitLength   = (fullLength - lengthOverlap) / SPLITS;
         this.widthOverlap  = widthOverlap;
@@ -89,23 +93,66 @@ public abstract class EllipsoidTessellator {
     public List<Tile> tessellate(final SphericalPolygonsSet zone)
         throws OrekitException {
 
-        final List<Tile> tiles = new ArrayList<Tile>();
-        SphericalPolygonsSet remaining = zone;
+        final List<Tile>              tiles     = new ArrayList<Tile>();
+        final RegionFactory<Sphere2D> factory   = new RegionFactory<Sphere2D>();
+        SphericalPolygonsSet          remaining = zone;
 
         while (!remaining.isEmpty()) {
 
             // find a mesh covering at least one connected part of the zone
             final Mesh mesh = findMesh(remaining);
 
-            for (int acrossIndex = firstIndex(mesh.minAcrossIndex, mesh.maxAcrossIndex);
-                 acrossIndex < mesh.maxAcrossIndex + SPLITS;
-                 acrossIndex += SPLITS) {
-                // TODO
-            }
-            final List<Mesh.Node> boundary = mesh.getTaxicabBoundary();
+            // extract the tiles from the mesh
+            Region<Sphere2D> meshCoverage = factory.getComplement(new SphericalPolygonsSet(zone.getTolerance()));
+            final int minAcross = mesh.getMinAcrossIndex();
+            final int maxAcross = mesh.getMaxAcrossIndex();
+            for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += SPLITS) {
+                final int minAlong = FastMath.min(mesh.getMinAlongIndex(acrossIndex),
+                                                  mesh.getMinAlongIndex(acrossIndex + SPLITS));
+                final int maxAlong = FastMath.max(mesh.getMaxAlongIndex(acrossIndex),
+                                                  mesh.getMaxAlongIndex(acrossIndex + SPLITS));
+                for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += SPLITS) {
 
-            // TODO: implement tessellation
-            throw OrekitException.createInternalError(null);
+                    // get the base vertex nodes
+                    final Mesh.Node node0 = getTileVertexNode(mesh, alongIndex,          acrossIndex);
+                    final Mesh.Node node1 = getTileVertexNode(mesh, alongIndex + SPLITS, acrossIndex);
+                    final Mesh.Node node2 = getTileVertexNode(mesh, alongIndex + SPLITS, acrossIndex + SPLITS);
+                    final Mesh.Node node3 = getTileVertexNode(mesh, alongIndex,          acrossIndex + SPLITS);
+
+                    // apply tile overlap
+                    final Vector3D v0 = move(node0.getV(),
+                                             new Vector3D(-lengthOverlap, node0.getAlong(),
+                                                          -widthOverlap,  node0.getAcross()));
+                    final Vector3D v1 = move(node1.getV(),
+                                             new Vector3D(+lengthOverlap, node1.getAlong(),
+                                                          -widthOverlap,  node1.getAcross()));
+                    final Vector3D v2 = move(node2.getV(),
+                                             new Vector3D(+lengthOverlap, node2.getAlong(),
+                                                          +widthOverlap,  node2.getAcross()));
+                    final Vector3D v3 = move(node3.getV(),
+                                             new Vector3D(-lengthOverlap, node2.getAlong(),
+                                                          +widthOverlap,  node2.getAcross()));
+
+                    // create a quadrilateral region corresponding to the candidate tile
+                    final GeodeticPoint gp0 = ellipsoid.transform(v0, ellipsoid.getBodyFrame(), null);
+                    final GeodeticPoint gp1 = ellipsoid.transform(v1, ellipsoid.getBodyFrame(), null);
+                    final GeodeticPoint gp2 = ellipsoid.transform(v2, ellipsoid.getBodyFrame(), null);
+                    final GeodeticPoint gp3 = ellipsoid.transform(v3, ellipsoid.getBodyFrame(), null);
+                    final SphericalPolygonsSet quadrilateral =
+                            new SphericalPolygonsSet(zone.getTolerance(),
+                                                     toS2Point(gp0), toS2Point(gp1), toS2Point(gp2), toS2Point(gp3));
+
+                    if (!factory.intersection(remaining, quadrilateral).isEmpty()) {
+                        // the tile does cover part of the remaining zone, it contributes to the tesselation
+                        tiles.add(new Tile(gp0, gp1, gp2, gp3));
+                        meshCoverage = factory.union(meshCoverage, quadrilateral);
+                    }
+
+                }
+            }
+
+            // remove the part of the zone covered by the mesh
+            remaining = (SphericalPolygonsSet) factory.difference(remaining, meshCoverage);
 
         }
 
@@ -124,7 +171,7 @@ public abstract class EllipsoidTessellator {
         final InsideFinder finder = new InsideFinder(zone.getTolerance());
         zone.getTree(false).visit(finder);
         final Vector3D start = finder.getInsidePoint();
-        final Mesh mesh = new Mesh(zone, start);
+        final Mesh mesh = new Mesh(ellipsoid, zone, aiming, start);
 
         // mesh expansion loop
         boolean expanding = true;
@@ -140,7 +187,7 @@ public abstract class EllipsoidTessellator {
                 // retrieve an active node
                 final Mesh.Node node = newNodes.remove();
 
-                if (node.insideZone) {
+                if (node.isInside()) {
                     // the node is inside the zone, the mesh must contain its 8 neighbors
                     addAllNeighborsIfNeeded(node, mesh, newNodes);
                 }
@@ -154,7 +201,7 @@ public abstract class EllipsoidTessellator {
             final List<Mesh.Node> boundary = mesh.getTaxicabBoundary();
             Mesh.Node previous = boundary.get(boundary.size() - 1);
             for (final Mesh.Node node : boundary) {
-                if (meetInside(toS2Point(previous.gp), toS2Point(node.gp), zone)) {
+                if (meetInside(toS2Point(previous.getGP()), toS2Point(node.getGP()), zone)) {
                     // part of the mesh boundary is still inside the zone!
                     // the mesh must be expanded again
                     addAllNeighborsIfNeeded(previous, mesh, newNodes);
@@ -193,7 +240,7 @@ public abstract class EllipsoidTessellator {
      * @param base base node
      * @param direction direction of the neighbor
      * @param mesh complete mesh containing nodes
-     * @param newNodes queue where new node must be put
+     * @param newNodes queue where new node must be put (may be null)
      * @return neighbor node (which was either already present, or is created)
      * @exception OrekitException if tile direction cannot be computed
      */
@@ -208,15 +255,57 @@ public abstract class EllipsoidTessellator {
         if (node == null) {
 
             // create a new node
-            node = mesh.addNode(move(base.v, direction.motion(base, splitLength, splitWidth)),
+            node = mesh.addNode(move(base.getV(), direction.motion(base, splitLength, splitWidth)),
                                 alongIndex, acrossIndex);
 
-            // we have created a new node
-            newNodes.add(node);
+            if (newNodes != null) {
+                // we have created a new node
+                newNodes.add(node);
+            }
 
         }
 
         // return the node, regardless of it being a new one or not
+        return node;
+
+    }
+
+    /** Get a node to be used as a tile vertex, creating it if needed.
+     * @param mesh complete mesh containing nodes
+     * @param alongIndex index of the tile vertex node
+     * @param acrossIndex index of the tile vertex node
+     * @return tile vertex node
+     * @exception OrekitException if tile direction cannot be computed
+     */
+    private Mesh.Node getTileVertexNode(final Mesh mesh, final int alongIndex, final int acrossIndex)
+        throws OrekitException {
+
+        Mesh.Node node = mesh.getClosestExistingNode(alongIndex, acrossIndex);
+
+        while (node.getAlongIndex() < alongIndex) {
+            // the node is before desired index in the along direction
+            // we need to create intermediates nodes up to the desired index
+            node = addNeighborIfNeeded(node, Direction.PLUS_ALONG, mesh, null);
+        }
+
+        while (node.getAlongIndex() > alongIndex) {
+            // the node is after desired index in the along direction
+            // we need to create intermediates nodes up to the desired index
+            node = addNeighborIfNeeded(node, Direction.MINUS_ALONG, mesh, null);
+        }
+
+        while (node.getAcrossIndex() < acrossIndex) {
+            // the node is before desired index in the across direction
+            // we need to create intermediates nodes up to the desired index
+            node = addNeighborIfNeeded(node, Direction.PLUS_ACROSS, mesh, null);
+        }
+
+        while (node.getAcrossIndex() > acrossIndex) {
+            // the node is after desired index in the across direction
+            // we need to create intermediates nodes up to the desired index
+            node = addNeighborIfNeeded(node, Direction.MINUS_ACROSS, mesh, null);
+        }
+
         return node;
 
     }
@@ -236,14 +325,6 @@ public abstract class EllipsoidTessellator {
     protected S2Point toS2Point(final GeodeticPoint point) {
         return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
     }
-
-    /** Find the along tile direction for tessellation at specified point.
-     * @param point point on the ellipsoid (Cartesian coordinates)
-     * @param gp point on the ellipsoid (geodetic coordinates)
-     * @return normalized along tile direction
-     * @exception OrekitException if direction cannot be estimated
-     */
-    protected abstract Vector3D alongTileDirection(Vector3D point, GeodeticPoint gp) throws OrekitException;
 
     /** Move to a nearby point.
      * <p>
@@ -350,340 +431,6 @@ public abstract class EllipsoidTessellator {
 
         // node index of the first vertex of the first tile
         return minIndex - extraBefore;
-
-    }
-
-    /** Local class holding a mesh aligned along tiles axes. */
-    private class Mesh {
-
-        /** Zone of interest to tessellate. */
-        private final SphericalPolygonsSet zone;
-
-        /** Map containing nodes. */
-        private final Map<Long, Node> nodes;
-
-        /** Minimum along tile index. */
-        private int minAlongIndex;
-
-        /** Maximum along tile index. */
-        private int maxAlongIndex;
-
-        /** Minimum across tile index. */
-        private int minAcrossIndex;
-
-        /** Maximum across tile index. */
-        private int maxAcrossIndex;
-
-        /** Simple constructor.
-         * @param zone zone of interest to tessellate
-         * @param start location of the first node.
-         * @exception OrekitException if along direction of first tile cannot be computed
-         */
-        public Mesh(final SphericalPolygonsSet zone, final Vector3D start)
-            throws OrekitException {
-            this.zone           = zone;
-            this.nodes          = new HashMap<Long, Node>();
-            this.minAlongIndex  = 0;
-            this.maxAlongIndex  = 0;
-            this.minAcrossIndex = 0;
-            this.maxAcrossIndex = 0;
-            store(new Node(start, 0, 0));
-        }
-
-        /** Retrieve a node from its indices.
-         * @param alongIndex index in the along direction
-         * @param acrossIndex index in the across direction
-         * @return node or null if no node is available at these indices
-         */
-        public Node getNode(final int alongIndex, final int acrossIndex) {
-            return nodes.get(key(alongIndex, acrossIndex));
-        }
-
-        /** Add a node.
-         * @param v node location
-         * @param alongIndex index in the along direction
-         * @param acrossIndex index in the across direction
-         * @return added node
-         * @exception OrekitException if tile direction cannot be computed
-         */
-        public Node addNode(final Vector3D v, final int alongIndex, final int acrossIndex)
-            throws OrekitException {
-            final Node node = new Node(v, alongIndex, acrossIndex);
-            store(node);
-            return node;
-        }
-
-        /** Find the existing node closest to a location.
-         * @param alongIndex index in the along direction
-         * @param acrossIndex index in the across direction
-         * @return node or null if no node is available at these indices
-         */
-        public Node getClosestExistingNode(final int alongIndex, final int acrossIndex) {
-
-            // we know at least the first node (at 0, 0) exists, we use its
-            // taxicab distance to the desired location as a search limit
-            final int maxD = FastMath.max(FastMath.abs(alongIndex), FastMath.abs(acrossIndex));
-
-            // search for an existing point in increasing taxicab distances
-            for (int d = 0; d < maxD; ++d) {
-                for (int deltaAcross = 0; deltaAcross <= d; ++deltaAcross) {
-                    final int deltaAlong = d - deltaAcross;
-                    Node node = getNode(alongIndex - deltaAlong, acrossIndex - deltaAcross);
-                    if (node != null) {
-                        return node;
-                    }
-                    if (deltaAcross != 0) {
-                        node = getNode(alongIndex - deltaAlong, acrossIndex + deltaAcross);
-                        if (node != null) {
-                            return node;
-                        }
-                    }
-                    if (deltaAlong != 0) {
-                        node = getNode(alongIndex + deltaAlong, acrossIndex - deltaAcross);
-                        if (node != null) {
-                            return node;
-                        }
-                        if (deltaAcross != 0) {
-                            node = getNode(alongIndex + deltaAlong, acrossIndex + deltaAcross);
-                            if (node != null) {
-                                return node;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // at least the first node always exists
-            return getNode(0, 0);
-
-        }
-
-        /** Get the oriented list of nodes at mesh boundary, in taxicab geometry.
-         * @return list of nodes
-         */
-        public List<Node> getTaxicabBoundary() {
-
-            final List<Node> boundary = new ArrayList<Node>();
-
-            // search for the lower left corner
-            Node lowerLeft = null;
-            for (int i = minAlongIndex; lowerLeft == null && i <= maxAlongIndex; ++i) {
-                for (int j = minAcrossIndex; lowerLeft == null && j <= maxAcrossIndex; ++j) {
-                    lowerLeft = getNode(i, j);
-                }
-            }
-
-            // loop counterclockwise around the mesh
-            Direction direction = Direction.PLUS_ALONG;
-            Node node = lowerLeft;
-            do {
-                boundary.add(node);
-                Node neighbor = null;
-                while (neighbor == null) {
-                    neighbor = getNode(direction.neighborAlongIndex(node),
-                                       direction.neighborAcrossIndex(node));
-                    if (neighbor == null) {
-                        direction = direction.next();
-                    }
-                }
-                node = neighbor;
-            } while (node != lowerLeft);
-
-            return boundary;
-
-        }
-
-        /** Store a node.
-         * @param node to add
-         */
-        private void store(final Node node) {
-            minAlongIndex  = FastMath.min(minAlongIndex,  node.alongIndex);
-            maxAlongIndex  = FastMath.max(maxAlongIndex,  node.alongIndex);
-            minAcrossIndex = FastMath.min(minAcrossIndex, node.acrossIndex);
-            maxAcrossIndex = FastMath.max(maxAcrossIndex, node.acrossIndex);
-            nodes.put(key(node.alongIndex, node.acrossIndex), node);
-        }
-
-        /** Convert along and across indices to map key.
-         * @param alongIndex index in the along direction
-         * @param acrossIndex index in the across direction
-         * @return key map key
-         */
-        private long key(final int alongIndex, final int acrossIndex) {
-            return ((long) alongIndex) << 32 | (((long) acrossIndex) & 0xFFFFl);
-        }
-
-        /** Container for mesh nodes. */
-        private class Node {
-
-            /** Node position in Cartesian coordinates. */
-            private final Vector3D v;
-
-            /** Node position in geodetic coordinates. */
-            private final GeodeticPoint gp;
-
-            /** Along tile direction. */
-            private Vector3D along;
-
-            /** Indicator for node location with respect to interest zone. */
-            private final boolean insideZone;
-
-            /** Index in the along direction. */
-            private final int alongIndex;
-
-            /** Index in the across direction. */
-            private final int acrossIndex;
-
-            /** Create a node.
-             * @param v position in Cartesian coordinates
-             * @param alongIndex index in the along direction
-             * @param acrossIndex index in the across direction
-             * @exception OrekitException if tile direction cannot be computed
-             */
-            public Node(final Vector3D v, final int alongIndex, final int acrossIndex)
-                throws OrekitException {
-                this.v           = v;
-                this.gp          = ellipsoid.transform(v, ellipsoid.getBodyFrame(), null);
-                this.along       = alongTileDirection(v, gp);
-                this.insideZone  = zone.checkPoint(toS2Point(gp)) != Location.OUTSIDE;
-                this.alongIndex  = alongIndex;
-                this.acrossIndex = acrossIndex;
-            }
-
-        }
-
-    }
-
-    /** Neighboring directions. */
-    private enum Direction {
-
-        /** Along tile in the plus direction. */
-        PLUS_ALONG() {
-
-            /** {@inheritDoc} */
-            @Override
-            public Direction next() {
-                return PLUS_ACROSS;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public int neighborAlongIndex(final Mesh.Node base) {
-                return base.alongIndex + 1;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Vector3D motion(final Mesh.Node base,
-                                   final double alongDistance, final double acrossDistance) {
-                return new Vector3D(alongDistance, base.along);
-            }
-
-        },
-
-        /** Along tile in the minus direction. */
-        MINUS_ALONG() {
-
-            /** {@inheritDoc} */
-            @Override
-            public Direction next() {
-                return MINUS_ACROSS;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public int neighborAlongIndex(final Mesh.Node base) {
-                return base.alongIndex - 1;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Vector3D motion(final Mesh.Node base,
-                                   final double alongDistance, final double acrossDistance) {
-                return new Vector3D(-alongDistance, base.along);
-            }
-
-        },
-
-        /** Across tile in the plus direction. */
-        PLUS_ACROSS() {
-
-            /** {@inheritDoc} */
-            @Override
-            public Direction next() {
-                return MINUS_ALONG;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public int neighborAcrossIndex(final Mesh.Node base) {
-                return base.acrossIndex + 1;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Vector3D motion(final Mesh.Node base,
-                                   final double alongDistance, final double acrossDistance) {
-                return new Vector3D(acrossDistance,
-                                    Vector3D.crossProduct(base.v, base.along).normalize());
-            }
-
-        },
-
-        /** Across tile in the minus direction. */
-        MINUS_ACROSS() {
-
-            /** {@inheritDoc} */
-            @Override
-            public Direction next() {
-                return PLUS_ALONG;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public int neighborAcrossIndex(final Mesh.Node base) {
-                return base.acrossIndex - 1;
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public Vector3D motion(final Mesh.Node base,
-                                   final double alongDistance, final double acrossDistance) {
-                return new Vector3D(-acrossDistance,
-                                    Vector3D.crossProduct(base.v, base.along).normalize());
-            }
-
-        };
-
-        /** Get the next direction in counterclockwise order.
-         * @return next direction
-         */
-        public abstract Direction next();
-
-        /** Get the along index of neighbor.
-         * @param base base node
-         * @return along index of neighbor node
-         */
-        public int neighborAlongIndex(final Mesh.Node base) {
-            return base.alongIndex;
-        }
-
-        /** Get the across index of neighbor.
-         * @param base base node
-         * @return across index of neighbor node
-         */
-        public int neighborAcrossIndex(final Mesh.Node base) {
-            return base.acrossIndex;
-        }
-
-        /** Get the motion towards neighbor.
-         * @param base base node
-         * @param alongDistance distance for along tile motions
-         * @param acrossDistance distance for across tile motions
-         * @return motion towards neighbor
-         */
-        public abstract Vector3D motion(Mesh.Node base,
-                                        double alongDistance, double acrossDistance);
 
     }
 

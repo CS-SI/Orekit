@@ -34,11 +34,11 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Ellipsoid tessellator aligning tiles with along an orbit track.
- * @see ConstantAzimuthTessellator
+/** Class used to orient tiles along an orbit track.
+ * @see ConstantAzimuthAiming
  * @author Luc Maisonobe
  */
-public class AlongTrackTessellator extends EllipsoidTessellator {
+public class AlongTrackAiming implements TileAiming {
 
     /** Number of sampling steps for the half-track. */
     private static final int SAMPLING_STEPS = 1000;
@@ -54,21 +54,13 @@ public class AlongTrackTessellator extends EllipsoidTessellator {
 
     /** Simple constructor.
      * @param ellipsoid ellipsoid body on which the zone is defined
-     * @param fullWidth full tiles width as a distance on surface, including overlap (in meters)
-     * @param fullLength full tiles length as a distance on surface, including overlap (in meters)
-     * @param widthOverlap overlap between adjacent tiles (in meters)
-     * @param lengthOverlap overlap between adjacent tiles (in meters)
      * @param orbit orbit along which tiles should be aligned
      * @param isAscending indicator for zone tiling with respect to ascending
      * or descending orbits
      * @exception OrekitException if some frame conversion fails
      */
-    public AlongTrackTessellator(final OneAxisEllipsoid ellipsoid,
-                                 final double fullWidth, final double fullLength,
-                                 final double widthOverlap, final double lengthOverlap,
-                                 final Orbit orbit, final boolean isAscending)
+    public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending)
         throws OrekitException {
-        super(ellipsoid, fullWidth, fullLength, widthOverlap, lengthOverlap);
         this.halfTrack      = findHalfTrack(orbit, ellipsoid, isAscending);
         final double lStart = halfTrack.get(0).getFirst().getLatitude();
         final double lEnd   = halfTrack.get(halfTrack.size() - 1).getFirst().getLatitude();
@@ -78,7 +70,7 @@ public class AlongTrackTessellator extends EllipsoidTessellator {
 
     /** {@inheritDoc} */
     @Override
-    protected Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp)
+    public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp)
         throws OrekitException {
 
         // check the point can be reached
