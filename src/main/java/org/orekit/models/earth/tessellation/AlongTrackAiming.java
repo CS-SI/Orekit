@@ -46,12 +46,6 @@ public class AlongTrackAiming implements TileAiming {
     /** Ground track over one half orbit. */
     private final List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> halfTrack;
 
-    /** Minimum latitude reached. */
-    private final double minLat;
-
-    /** Maximum latitude reached. */
-    private final double maxLat;
-
     /** Simple constructor.
      * @param ellipsoid ellipsoid body on which the zone is defined
      * @param orbit orbit along which tiles should be aligned
@@ -62,10 +56,6 @@ public class AlongTrackAiming implements TileAiming {
     public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending)
         throws OrekitException {
         this.halfTrack      = findHalfTrack(orbit, ellipsoid, isAscending);
-        final double lStart = halfTrack.get(0).getFirst().getLatitude();
-        final double lEnd   = halfTrack.get(halfTrack.size() - 1).getFirst().getLatitude();
-        this.minLat         = FastMath.min(lStart, lEnd);
-        this.maxLat         = FastMath.max(lStart, lEnd);
     }
 
     /** {@inheritDoc} */
@@ -73,12 +63,14 @@ public class AlongTrackAiming implements TileAiming {
     public Vector3D alongTileDirection(final Vector3D point, final GeodeticPoint gp)
         throws OrekitException {
 
+        final double lStart = halfTrack.get(0).getFirst().getLatitude();
+        final double lEnd   = halfTrack.get(halfTrack.size() - 1).getFirst().getLatitude();
         // check the point can be reached
-        if (gp.getLatitude() < minLat || gp.getLatitude() > maxLat) {
+        if (gp.getLatitude() < FastMath.min(lStart, lEnd) || gp.getLatitude() > FastMath.max(lStart, lEnd)) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_LATITUDE,
                                       FastMath.toDegrees(gp.getLatitude()),
-                                      FastMath.toDegrees(minLat),
-                                      FastMath.toDegrees(maxLat));
+                                      FastMath.toDegrees(FastMath.min(lStart, lEnd)),
+                                      FastMath.toDegrees(FastMath.max(lStart, lEnd)));
         }
 
         // bracket the point in the half track sample
@@ -86,7 +78,7 @@ public class AlongTrackAiming implements TileAiming {
         int    iSup = halfTrack.size() - 1;
         while (iSup - iInf > 1) {
             final int iMiddle = (iSup + iInf) / 2;
-            if ((minLat < maxLat) ^ (halfTrack.get(iMiddle).getFirst().getLatitude() > gp.getLatitude())) {
+            if ((lStart < lEnd) ^ (halfTrack.get(iMiddle).getFirst().getLatitude() > gp.getLatitude())) {
                 // the specified latitude is in the second half
                 iInf = iMiddle;
             } else {
@@ -95,18 +87,17 @@ public class AlongTrackAiming implements TileAiming {
             }
         }
 
-        // ensure we can get points at iInf, iInf + 1, iInf + 2 and iInf + 3
-        iInf = FastMath.min(1, FastMath.max(iInf, halfTrack.size() - 4));
+        // ensure we can get points at iStart, iStart + 1, iStart + 2 and iStart + 3
+        final int iStart = FastMath.max(0, FastMath.min(iInf - 1, halfTrack.size() - 4));
 
         // interpolate ground sliding point at specified latitude
         final HermiteInterpolator interpolator = new HermiteInterpolator();
-        for (int i = iInf; i < iInf + 4; ++i) {
+        for (int i = iStart; i < iStart + 4; ++i) {
             final Vector3D position = halfTrack.get(i).getSecond().getPosition();
             final Vector3D velocity = halfTrack.get(i).getSecond().getVelocity();
             interpolator.addSamplePoint(halfTrack.get(i).getFirst().getLatitude(),
                                         new double[] {
-                                            position.getX(), position.getY(), position.getZ()
-                                        }, new double[] {
+                                            position.getX(), position.getY(), position.getZ(),
                                             velocity.getX(), velocity.getY(), velocity.getZ()
                                         });
         }
@@ -116,9 +107,9 @@ public class AlongTrackAiming implements TileAiming {
         final Vector3D position = new Vector3D(p[0].getValue(),
                                                p[1].getValue(),
                                                p[2].getValue());
-        final Vector3D velocity = new Vector3D(p[0].getPartialDerivative(1),
-                                               p[1].getPartialDerivative(1),
-                                               p[2].getPartialDerivative(1));
+        final Vector3D velocity = new Vector3D(p[3].getValue(),
+                                               p[4].getValue(),
+                                               p[5].getValue());
 
         // adjust longitude to match the specified one
         final Rotation rotation      = new Rotation(Vector3D.PLUS_K, position, Vector3D.PLUS_K, point);
@@ -154,6 +145,7 @@ public class AlongTrackAiming implements TileAiming {
             propagator.clearEventsDetectors();
             final HalfTrackSampler sampler = new HalfTrackSampler(ellipsoid);
             propagator.setMasterMode(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
+            propagator.propagate(handler.getStart(), handler.getEnd());
 
             return sampler.getHalfTrack();
 

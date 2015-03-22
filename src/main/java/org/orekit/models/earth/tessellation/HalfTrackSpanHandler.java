@@ -66,10 +66,6 @@ class HalfTrackSpanHandler implements EventHandler<HalfTrackSpanDetector> {
                                 final HalfTrackSpanDetector detector,
                                 final boolean increasing) {
         if (increasing ^ isAscending) {
-            // we have found the start of the span
-            start = s.getDate();
-            return Action.CONTINUE;
-        } else {
             // we have found an end event
             if (start == null) {
                 // we don't have the start event yet,
@@ -79,6 +75,10 @@ class HalfTrackSpanHandler implements EventHandler<HalfTrackSpanDetector> {
                 end = s.getDate();
                 return Action.STOP;
             }
+        } else {
+            // we have found the start of the span
+            start = s.getDate();
+            return Action.CONTINUE;
         }
     }
 
