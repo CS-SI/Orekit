@@ -82,25 +82,25 @@ public class AlongTrackAiming implements TileAiming {
         }
 
         // bracket the point in the half track sample
-        // TODO: replace with a binary search bracketing
-        int index = 1;
-        double latBefore = halfTrack.get(0).getFirst().getLatitude();
-        while (index < halfTrack.size()) {
-            final double latAfter = halfTrack.get(index).getFirst().getLatitude();
-            if ((gp.getLatitude() - latBefore) * (gp.getLatitude() - latAfter) <= 0) {
-                // we have found a bracketing for the latitude
-                break;
+        int    iInf = 0;
+        int    iSup = halfTrack.size() - 1;
+        while (iSup - iInf > 1) {
+            final int iMiddle = (iSup + iInf) / 2;
+            if ((minLat < maxLat) ^ (halfTrack.get(iMiddle).getFirst().getLatitude() > gp.getLatitude())) {
+                // the specified latitude is in the second half
+                iInf = iMiddle;
+            } else {
+                // the specified latitude is in the first half
+                iSup = iMiddle;
             }
-            latBefore = latAfter;
-            ++index;
         }
 
-        // ensure we can get points at index - 1, index, index + 1 and index + 2
-        index = FastMath.min(1, FastMath.max(index, halfTrack.size() - 3));
+        // ensure we can get points at iInf, iInf + 1, iInf + 2 and iInf + 3
+        iInf = FastMath.min(1, FastMath.max(iInf, halfTrack.size() - 4));
 
         // interpolate ground sliding point at specified latitude
         final HermiteInterpolator interpolator = new HermiteInterpolator();
-        for (int i = index - 1; i < index + 3; ++i) {
+        for (int i = iInf; i < iInf + 4; ++i) {
             final Vector3D position = halfTrack.get(i).getSecond().getPosition();
             final Vector3D velocity = halfTrack.get(i).getSecond().getVelocity();
             interpolator.addSamplePoint(halfTrack.get(i).getFirst().getLatitude(),
