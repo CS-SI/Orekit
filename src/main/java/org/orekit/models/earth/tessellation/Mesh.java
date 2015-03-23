@@ -101,14 +101,12 @@ class Mesh {
      * are no nodes with the specified acrossIndex.
      */
     public int getMinAlongIndex(final int acrossIndex) {
-        int min = maxAlongIndex + 1;
-        for (final Map.Entry<Long, Node> entry : nodes.entrySet()) {
-            final Node node = entry.getValue();
-            if (node.getAcrossIndex() == acrossIndex) {
-                min = FastMath.min(min, node.getAlongIndex());
+        for (int alongIndex = minAlongIndex; alongIndex <= maxAlongIndex; ++alongIndex) {
+            if (getNode(alongIndex, acrossIndex) != null) {
+                return alongIndex;
             }
         }
-        return min;
+        return maxAlongIndex + 1;
     }
 
     /** Get the maximum along tile index for a specific across index.
@@ -118,14 +116,12 @@ class Mesh {
      * are no nodes with the specified acrossIndex.
      */
     public int getMaxAlongIndex(final int acrossIndex) {
-        int max = minAlongIndex - 1;
-        for (final Map.Entry<Long, Node> entry : nodes.entrySet()) {
-            final Node node = entry.getValue();
-            if (node.getAcrossIndex() == acrossIndex) {
-                max = FastMath.max(max, node.getAlongIndex());
+        for (int alongIndex = maxAlongIndex; alongIndex >= minAlongIndex; --alongIndex) {
+            if (getNode(alongIndex, acrossIndex) != null) {
+                return alongIndex;
             }
         }
-        return max;
+        return minAlongIndex - 1;
     }
 
     /** Get the minimum across tile index.
