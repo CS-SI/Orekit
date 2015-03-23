@@ -67,7 +67,7 @@ class Mesh {
      * @exception OrekitException if along direction of first tile cannot be computed
      */
     public Mesh(final OneAxisEllipsoid ellipsoid, final SphericalPolygonsSet zone,
-                final TileAiming aiming, final Vector3D start)
+                final TileAiming aiming, final GeodeticPoint start)
         throws OrekitException {
         this.ellipsoid      = ellipsoid;
         this.zone           = zone;
@@ -290,6 +290,17 @@ class Mesh {
         private final int acrossIndex;
 
         /** Create a node.
+         * @param gp position in geodetic coordinates (my be null)
+         * @param alongIndex index in the along direction
+         * @param acrossIndex index in the across direction
+         * @exception OrekitException if tile direction cannot be computed
+         */
+        private Node(final GeodeticPoint gp, final int alongIndex, final int acrossIndex)
+            throws OrekitException {
+            this(ellipsoid.transform(gp), gp, alongIndex, acrossIndex);
+        }
+
+        /** Create a node.
          * @param v position in Cartesian coordinates
          * @param alongIndex index in the along direction
          * @param acrossIndex index in the across direction
@@ -297,8 +308,20 @@ class Mesh {
          */
         private Node(final Vector3D v, final int alongIndex, final int acrossIndex)
             throws OrekitException {
+            this(v, ellipsoid.transform(v, ellipsoid.getBodyFrame(), null), alongIndex, acrossIndex);
+        }
+
+        /** Create a node.
+         * @param v position in Cartesian coordinates
+         * @param gp position in geodetic coordinates (my be null)
+         * @param alongIndex index in the along direction
+         * @param acrossIndex index in the across direction
+         * @exception OrekitException if tile direction cannot be computed
+         */
+        private Node(final Vector3D v, final GeodeticPoint gp, final int alongIndex, final int acrossIndex)
+            throws OrekitException {
             this.v            = v;
-            this.gp           = ellipsoid.transform(v, ellipsoid.getBodyFrame(), null);
+            this.gp           = gp;
             this.along        = aiming.alongTileDirection(v, gp);
             this.across       = Vector3D.crossProduct(v, along).normalize();
             this.insideZone   = zone.checkPoint(new S2Point(gp.getLongitude(), 0.5 * FastMath.PI - gp.getLatitude())) != Location.OUTSIDE;

@@ -22,6 +22,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.partitioning.BSPTree;
 import org.apache.commons.math3.geometry.partitioning.BSPTreeVisitor;
 import org.apache.commons.math3.geometry.spherical.twod.Edge;
+import org.apache.commons.math3.geometry.spherical.twod.S2Point;
 import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
 import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
 import org.apache.commons.math3.geometry.spherical.twod.Vertex;
@@ -40,7 +41,7 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
     private final double tolerance;
 
     /** Inside point. */
-    private Vector3D insidePoint;
+    private S2Point insidePoint;
 
     /** Simple constructor.
      * @param tolerance below which points are consider to be identical
@@ -89,7 +90,7 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
                 n++;
             }
 
-            insidePoint = sumB.normalize();
+            insidePoint = new S2Point(sumB);
 
         }
 
@@ -98,7 +99,7 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
     /** Get the inside point.
      * @return inside point
      */
-    public Vector3D getInsidePoint() {
+    public S2Point getInsidePoint() {
         return insidePoint;
     }
 

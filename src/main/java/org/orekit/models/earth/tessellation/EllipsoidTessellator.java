@@ -19,6 +19,7 @@ package org.orekit.models.earth.tessellation;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -170,7 +171,7 @@ public class EllipsoidTessellator {
         // start mesh inside the zone
         final InsideFinder finder = new InsideFinder(zone.getTolerance());
         zone.getTree(false).visit(finder);
-        final Vector3D start = finder.getInsidePoint();
+        final GeodeticPoint start = toGeodetic(finder.getInsidePoint());
         final Mesh mesh = new Mesh(ellipsoid, zone, aiming, start);
 
         // mesh expansion loop
