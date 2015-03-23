@@ -19,7 +19,6 @@ package org.orekit.models.earth.tessellation;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Queue;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -36,6 +35,8 @@ import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
 import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
 import org.apache.commons.math3.geometry.spherical.twod.SubCircle;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
+import org.apache.commons.math3.util.Precision;
 import org.orekit.bodies.Ellipse;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -200,16 +201,18 @@ public class EllipsoidTessellator {
             // pointing out of the loop between two nodes
             expanding = false;
             final List<Mesh.Node> boundary = mesh.getTaxicabBoundary();
-            Mesh.Node previous = boundary.get(boundary.size() - 1);
-            for (final Mesh.Node node : boundary) {
-                if (meetInside(toS2Point(previous.getGP()), toS2Point(node.getGP()), zone)) {
-                    // part of the mesh boundary is still inside the zone!
-                    // the mesh must be expanded again
-                    addAllNeighborsIfNeeded(previous, mesh, newNodes);
-                    addAllNeighborsIfNeeded(node,     mesh, newNodes);
-                    expanding = true;
+            if (boundary.size() > 1) {
+                Mesh.Node previous = boundary.get(boundary.size() - 1);
+                for (final Mesh.Node node : boundary) {
+                    if (meetInside(toS2Point(previous.getGP()), toS2Point(node.getGP()), zone)) {
+                        // part of the mesh boundary is still inside the zone!
+                        // the mesh must be expanded again
+                        addAllNeighborsIfNeeded(previous, mesh, newNodes);
+                        addAllNeighborsIfNeeded(node,     mesh, newNodes);
+                        expanding = true;
+                    }
+                    previous = node;
                 }
-                previous = node;
             }
 
         }
@@ -339,6 +342,11 @@ public class EllipsoidTessellator {
      */
     private Vector3D move(final Vector3D start, final Vector3D motion) {
 
+        // safety check for too small motion
+        if (motion.getNorm() < Precision.EPSILON * start.getNorm()) {
+            return start;
+        }
+
         // find elliptic plane section
         final Vector3D normal      = Vector3D.crossProduct(start, motion);
         final Ellipse planeSection = ellipsoid.getPlaneSection(start, normal);
@@ -365,10 +373,11 @@ public class EllipsoidTessellator {
     private boolean meetInside(final S2Point s1, final S2Point s2,
                                final SphericalPolygonsSet zone) {
         final Circle  circle = new Circle(s1, s2, zone.getTolerance());
+        final double alpha1  = circle.toSubSpace(s1).getAlpha();
+        final double alpha2  = MathUtils.normalizeAngle(circle.toSubSpace(s2).getAlpha(),
+                                                        alpha1 + FastMath.PI);
         final SubCircle sub  = new SubCircle(circle,
-                                             new ArcsSet(circle.toSubSpace(s1).getAlpha(),
-                                                         circle.toSubSpace(s2).getAlpha(),
-                                                         zone.getTolerance()));
+                                             new ArcsSet(alpha1, alpha2, zone.getTolerance()));
         return recurseMeetInside(zone.getTree(false), sub);
 
     }

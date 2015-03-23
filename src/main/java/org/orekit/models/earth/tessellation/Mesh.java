@@ -212,30 +212,32 @@ class Mesh {
     public List<Node> getTaxicabBoundary() {
 
         final List<Node> boundary = new ArrayList<Node>();
+        if (nodes.size() < 2) {
+            boundary.add(getNode(0, 0));
+        } else {
 
-        // search for the lower left corner
-        Node lowerLeft = null;
-        for (int i = minAlongIndex; lowerLeft == null && i <= maxAlongIndex; ++i) {
-            for (int j = minAcrossIndex; lowerLeft == null && j <= maxAcrossIndex; ++j) {
-                lowerLeft = getNode(i, j);
-            }
-        }
-
-        // loop counterclockwise around the mesh
-        Direction direction = Direction.PLUS_ALONG;
-        Node node = lowerLeft;
-        do {
-            boundary.add(node);
-            Node neighbor = null;
-            while (neighbor == null) {
-                neighbor = getNode(direction.neighborAlongIndex(node),
-                                   direction.neighborAcrossIndex(node));
-                if (neighbor == null) {
-                    direction = direction.next();
+            // search for the lower left corner
+            Node lowerLeft = null;
+            for (int i = minAlongIndex; lowerLeft == null && i <= maxAlongIndex; ++i) {
+                for (int j = minAcrossIndex; lowerLeft == null && j <= maxAcrossIndex; ++j) {
+                    lowerLeft = getNode(i, j);
                 }
             }
-            node = neighbor;
-        } while (node != lowerLeft);
+
+            // loop counterclockwise around the mesh
+            Direction direction = Direction.PLUS_ALONG;
+            Node node = lowerLeft;
+            do {
+                boundary.add(node);
+                Node neighbor = null;
+                while (neighbor == null) {
+                    neighbor = getNode(direction.neighborAlongIndex(node),
+                                       direction.neighborAcrossIndex(node));
+                    direction =  (neighbor == null) ? direction.next() : direction.previous();
+                }
+                node = neighbor;
+            } while (node != lowerLeft);
+        }
 
         return boundary;
 

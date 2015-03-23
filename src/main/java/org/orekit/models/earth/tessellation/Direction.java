@@ -34,6 +34,12 @@ enum Direction {
 
         /** {@inheritDoc} */
         @Override
+        public Direction previous() {
+            return MINUS_ACROSS;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public int neighborAlongIndex(final Mesh.Node base) {
             return base.getAlongIndex() + 1;
         }
@@ -54,6 +60,12 @@ enum Direction {
         @Override
         public Direction next() {
             return MINUS_ACROSS;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Direction previous() {
+            return PLUS_ACROSS;
         }
 
         /** {@inheritDoc} */
@@ -82,6 +94,12 @@ enum Direction {
 
         /** {@inheritDoc} */
         @Override
+        public Direction previous() {
+            return PLUS_ALONG;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public int neighborAcrossIndex(final Mesh.Node base) {
             return base.getAcrossIndex() + 1;
         }
@@ -106,6 +124,12 @@ enum Direction {
 
         /** {@inheritDoc} */
         @Override
+        public Direction previous() {
+            return MINUS_ALONG;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public int neighborAcrossIndex(final Mesh.Node base) {
             return base.getAcrossIndex() - 1;
         }
@@ -123,6 +147,11 @@ enum Direction {
      * @return next direction
      */
     public abstract Direction next();
+
+    /** Get the previous direction in counterclockwise order.
+     * @return previous direction
+     */
+    public abstract Direction previous();
 
     /** Get the along index of neighbor.
      * @param base base node
