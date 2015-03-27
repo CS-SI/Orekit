@@ -193,6 +193,9 @@ public class FramesFactory {
     private static final Map<IERSConventions, List<EOPHistoryLoader>> EOP_HISTORY_LOADERS =
         new HashMap<IERSConventions, List<EOPHistoryLoader>>();
 
+    /** Threshold for EOP continuity. */
+    private static double EOP_CONTINUITY_THRESHOLD = 5 * Constants.JULIAN_DAY;
+
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
      * nor a default constructor. This private constructor prevents
@@ -339,6 +342,19 @@ public class FramesFactory {
         }
     }
 
+    /** Set the threshold to check EOP continuity.
+     * <p>
+     * The default threshold (used if this method is never called)
+     * is 5 Julian days. If after loading EOP entries some holes
+     * between entries exceed this threshold, an exception will
+     * be triggered.
+     * </p>
+     * @param threshold threshold to use for checking EOP continuity (in seconds)
+     */
+    public static void setEOPContinuityThreshold(final double threshold) {
+        EOP_CONTINUITY_THRESHOLD = threshold;
+    }
+
     /** Get Earth Orientation Parameters history.
      * <p>
      * If no {@link EOPHistoryLoader} has been added by calling {@link
@@ -385,7 +401,7 @@ public class FramesFactory {
             }
 
             final EOPHistory history = new EOPHistory(conventions, data, simpleEOP);
-            history.checkEOPContinuity(5 * Constants.JULIAN_DAY);
+            history.checkEOPContinuity(EOP_CONTINUITY_THRESHOLD);
             return history;
 
         }
