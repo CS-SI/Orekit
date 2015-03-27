@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added ellipsoid tessellation, with tiles either oriented along track
+        (ascending or descending) or at constant azimuth.
+      </action>
       <action dev="luc" type="fix">
         Added customization of EOP continuity check threshold.
         Fixes issue #194.
