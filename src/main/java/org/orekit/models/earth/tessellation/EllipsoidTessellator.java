@@ -25,7 +25,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.BSPTree;
 import org.apache.commons.math3.geometry.partitioning.Hyperplane;
-import org.apache.commons.math3.geometry.partitioning.Region;
 import org.apache.commons.math3.geometry.partitioning.RegionFactory;
 import org.apache.commons.math3.geometry.partitioning.SubHyperplane;
 import org.apache.commons.math3.geometry.spherical.oned.ArcsSet;
@@ -43,6 +42,10 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 
 /** Class used to tessellate an interest zone on an ellipsoid in {@link Tile tiles}.
+ * <p>
+ * This class is typically used for Earth Observation missions, in order to
+ * create tiles that may be used as the basis of visibility event detectors.
+ * </p>
  * @author Luc Maisonobe
  */
 public class EllipsoidTessellator {
@@ -73,12 +76,14 @@ public class EllipsoidTessellator {
      * @param aiming aiming used for orienting tiles
      * @param fullWidth full tiles width as a distance on surface, including overlap (in meters)
      * @param fullLength full tiles length as a distance on surface, including overlap (in meters)
-     * @param widthOverlap overlap between adjacent tiles (in meters)
-     * @param lengthOverlap overlap between adjacent tiles (in meters)
+     * @param widthOverlap overlap between adjacent tiles (in meters), if negative the tiles
+     * will have a gap between each other instead of an overlap
+     * @param lengthOverlap overlap between adjacent tiles (in meters), if negative the tiles
+     * will have a gap between each other instead of an overlap
      */
-    protected EllipsoidTessellator(final OneAxisEllipsoid ellipsoid, final TileAiming aiming,
-                                   final double fullWidth, final double fullLength,
-                                   final double widthOverlap, final double lengthOverlap) {
+    public EllipsoidTessellator(final OneAxisEllipsoid ellipsoid, final TileAiming aiming,
+                                final double fullWidth, final double fullLength,
+                                final double widthOverlap, final double lengthOverlap) {
         this.ellipsoid     = ellipsoid;
         this.aiming        = aiming;
         this.splitWidth    = (fullWidth  - widthOverlap)  / SPLITS;
@@ -105,7 +110,6 @@ public class EllipsoidTessellator {
             final Mesh mesh = findMesh(remaining);
 
             // extract the tiles from the mesh
-            Region<Sphere2D> meshCoverage = factory.getComplement(new SphericalPolygonsSet(zone.getTolerance()));
             final int minAcross = mesh.getMinAcrossIndex();
             final int maxAcross = mesh.getMaxAcrossIndex();
             for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += SPLITS) {
@@ -122,38 +126,49 @@ public class EllipsoidTessellator {
                     final Mesh.Node node3 = getTileVertexNode(mesh, alongIndex,          acrossIndex + SPLITS);
 
                     // apply tile overlap
-                    final Vector3D v0 = move(node0.getV(),
-                                             new Vector3D(-lengthOverlap, node0.getAlong(),
-                                                          -widthOverlap,  node0.getAcross()));
-                    final Vector3D v1 = move(node1.getV(),
-                                             new Vector3D(+lengthOverlap, node1.getAlong(),
-                                                          -widthOverlap,  node1.getAcross()));
-                    final Vector3D v2 = move(node2.getV(),
-                                             new Vector3D(+lengthOverlap, node2.getAlong(),
-                                                          +widthOverlap,  node2.getAcross()));
-                    final Vector3D v3 = move(node3.getV(),
-                                             new Vector3D(-lengthOverlap, node2.getAlong(),
-                                                          +widthOverlap,  node2.getAcross()));
+                    final GeodeticPoint gp0 = move(node0.getGP(),
+                                                   new Vector3D(-lengthOverlap, node0.getAlong(),
+                                                                -widthOverlap,  node0.getAcross()));
+                    final GeodeticPoint gp1 = move(node1.getGP(),
+                                                   new Vector3D(+lengthOverlap, node1.getAlong(),
+                                                                -widthOverlap,  node1.getAcross()));
+                    final GeodeticPoint gp2 = move(node2.getGP(),
+                                                   new Vector3D(+lengthOverlap, node2.getAlong(),
+                                                                +widthOverlap,  node2.getAcross()));
+                    final GeodeticPoint gp3 = move(node3.getGP(),
+                                                   new Vector3D(-lengthOverlap, node2.getAlong(),
+                                                                +widthOverlap,  node2.getAcross()));
 
                     // create a quadrilateral region corresponding to the candidate tile
-                    final GeodeticPoint gp0 = ellipsoid.transform(v0, ellipsoid.getBodyFrame(), null);
-                    final GeodeticPoint gp1 = ellipsoid.transform(v1, ellipsoid.getBodyFrame(), null);
-                    final GeodeticPoint gp2 = ellipsoid.transform(v2, ellipsoid.getBodyFrame(), null);
-                    final GeodeticPoint gp3 = ellipsoid.transform(v3, ellipsoid.getBodyFrame(), null);
                     final SphericalPolygonsSet quadrilateral =
                             new SphericalPolygonsSet(zone.getTolerance(),
                                                      toS2Point(gp0), toS2Point(gp1), toS2Point(gp2), toS2Point(gp3));
 
                     if (!factory.intersection(remaining, quadrilateral).isEmpty()) {
-                        // the tile does cover part of the remaining zone, it contributes to the tesselation
+
+                        // the tile does cover part of the zone, it contributes to the tessellation
                         tiles.add(new Tile(gp0, gp1, gp2, gp3));
-                        meshCoverage = factory.union(meshCoverage, quadrilateral);
+
+                        // ensure the taxicab boundary follows the built tile sides
+                        for (int k = 1; k < SPLITS; ++k) {
+                            getTileVertexNode(mesh, alongIndex + k,      acrossIndex);
+                            getTileVertexNode(mesh, alongIndex + k,      acrossIndex + SPLITS);
+                            getTileVertexNode(mesh, alongIndex,          acrossIndex + k);
+                            getTileVertexNode(mesh, alongIndex + SPLITS, acrossIndex + k);
+                        }
+
                     }
 
                 }
             }
 
             // remove the part of the zone covered by the mesh
+            final List<Mesh.Node> boundary = mesh.getTaxicabBoundary();
+            final S2Point[] vertices = new S2Point[boundary.size()];
+            for (int i = 0; i < vertices.length; ++i) {
+                vertices[i] = toS2Point(boundary.get(i).getGP());
+            }
+            final SphericalPolygonsSet meshCoverage = new SphericalPolygonsSet(zone.getTolerance(), vertices);
             remaining = (SphericalPolygonsSet) factory.difference(remaining, meshCoverage);
 
         }
@@ -259,7 +274,7 @@ public class EllipsoidTessellator {
         if (node == null) {
 
             // create a new node
-            node = mesh.addNode(move(base.getV(), direction.motion(base, splitLength, splitWidth)),
+            node = mesh.addNode(move(base.getGP(), direction.motion(base, splitLength, splitWidth)),
                                 alongIndex, acrossIndex);
 
             if (newNodes != null) {
@@ -330,21 +345,24 @@ public class EllipsoidTessellator {
         return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
     }
 
-    /** Move to a nearby point.
+    /** Move to a nearby point along surface.
      * <p>
      * The motion will be approximated, assuming the body surface has constant
      * curvature along the motion direction. The approximation will be accurate
      * for short distances, and error will increase as distance increases.
      * </p>
-     * @param start start point
+     * @param startGP start point
      * @param motion straight motion, which must be curved back to surface
      * @return arrival point, approximately at specified distance from start
+     * @exception OrekitException if points cannot be converted to geodetic coordinates
      */
-    private Vector3D move(final Vector3D start, final Vector3D motion) {
+    private GeodeticPoint move(final GeodeticPoint startGP, final Vector3D motion)
+        throws OrekitException {
 
         // safety check for too small motion
+        final Vector3D start = ellipsoid.transform(startGP);
         if (motion.getNorm() < Precision.EPSILON * start.getNorm()) {
-            return start;
+            return startGP;
         }
 
         // find elliptic plane section
@@ -355,12 +373,16 @@ public class EllipsoidTessellator {
         final Vector2D omega2D = planeSection.getCenterOfCurvature(planeSection.toPlane(start));
         final Vector3D omega3D = planeSection.toSpace(omega2D);
 
-        // compute arrival point, assuming constant radius of curvature
+        // compute approximated arrival point, assuming constant radius of curvature
         final Vector3D delta = start.subtract(omega3D);
         final double   theta = motion.getNorm() / delta.getNorm();
-        return new Vector3D(1, omega3D,
-                            FastMath.cos(theta), delta,
-                            FastMath.sin(theta) / theta, motion);
+        final Vector3D approximated = new Vector3D(1, omega3D,
+                                                   FastMath.cos(theta), delta,
+                                                   FastMath.sin(theta) / theta, motion);
+
+        // fix altitude
+        final GeodeticPoint approximatedGP = ellipsoid.transform(approximated, ellipsoid.getBodyFrame(), null);
+        return new GeodeticPoint(approximatedGP.getLatitude(), approximatedGP.getLongitude(), 0.0);
 
     }
 

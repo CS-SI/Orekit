@@ -148,15 +148,15 @@ class Mesh {
     }
 
     /** Add a node.
-     * @param v node location
+     * @param gp node location
      * @param alongIndex index in the along direction
      * @param acrossIndex index in the across direction
      * @return added node
      * @exception OrekitException if tile direction cannot be computed
      */
-    public Node addNode(final Vector3D v, final int alongIndex, final int acrossIndex)
+    public Node addNode(final GeodeticPoint gp, final int alongIndex, final int acrossIndex)
         throws OrekitException {
-        final Node node = new Node(v, alongIndex, acrossIndex);
+        final Node node = new Node(gp, alongIndex, acrossIndex);
         store(node);
         return node;
     }
@@ -225,18 +225,38 @@ class Mesh {
             }
 
             // loop counterclockwise around the mesh
-            Direction direction = Direction.PLUS_ALONG;
+            Direction direction = Direction.MINUS_ACROSS;
             Node node = lowerLeft;
             do {
                 boundary.add(node);
                 Node neighbor = null;
-                while (neighbor == null) {
+                do {
+                    direction = direction.next();
                     neighbor = getNode(direction.neighborAlongIndex(node),
                                        direction.neighborAcrossIndex(node));
-                    direction =  (neighbor == null) ? direction.next() : direction.previous();
-                }
+                } while (neighbor == null);
+                direction = direction.next().next();
                 node = neighbor;
             } while (node != lowerLeft);
+        }
+
+        // filter out infinitely thin parts corresponding to spikes
+        // joining outliers points to the main mesh
+        boolean changed = true;
+        while (changed && boundary.size() > 1) {
+            changed = false;
+            final int n = boundary.size();
+            for (int i = 0; i < n; ++i) {
+                final int previousIndex = (i + n - 1) % n;
+                final int nextIndex     = (i + 1)     % n;
+                if (boundary.get(previousIndex) == boundary.get(nextIndex)) {
+                    // the current point is an infinitely thin spike, remove it
+                    boundary.remove(FastMath.max(i, nextIndex));
+                    boundary.remove(FastMath.min(i, nextIndex));
+                    changed = true;
+                    break;
+                }
+            }
         }
 
         return boundary;
@@ -266,9 +286,6 @@ class Mesh {
     /** Container for mesh nodes. */
     public class Node {
 
-        /** Node position in Cartesian coordinates. */
-        private final Vector3D v;
-
         /** Node position in geodetic coordinates. */
         private final GeodeticPoint gp;
 
@@ -295,43 +312,13 @@ class Mesh {
          */
         private Node(final GeodeticPoint gp, final int alongIndex, final int acrossIndex)
             throws OrekitException {
-            this(ellipsoid.transform(gp), gp, alongIndex, acrossIndex);
-        }
-
-        /** Create a node.
-         * @param v position in Cartesian coordinates
-         * @param alongIndex index in the along direction
-         * @param acrossIndex index in the across direction
-         * @exception OrekitException if tile direction cannot be computed
-         */
-        private Node(final Vector3D v, final int alongIndex, final int acrossIndex)
-            throws OrekitException {
-            this(v, ellipsoid.transform(v, ellipsoid.getBodyFrame(), null), alongIndex, acrossIndex);
-        }
-
-        /** Create a node.
-         * @param v position in Cartesian coordinates
-         * @param gp position in geodetic coordinates (my be null)
-         * @param alongIndex index in the along direction
-         * @param acrossIndex index in the across direction
-         * @exception OrekitException if tile direction cannot be computed
-         */
-        private Node(final Vector3D v, final GeodeticPoint gp, final int alongIndex, final int acrossIndex)
-            throws OrekitException {
-            this.v            = v;
-            this.gp           = gp;
-            this.along        = aiming.alongTileDirection(v, gp);
-            this.across       = Vector3D.crossProduct(v, along).normalize();
-            this.insideZone   = zone.checkPoint(new S2Point(gp.getLongitude(), 0.5 * FastMath.PI - gp.getLatitude())) != Location.OUTSIDE;
-            this.alongIndex   = alongIndex;
-            this.acrossIndex  = acrossIndex;
-        }
-
-        /** Get the node position in Cartesian coordinates.
-         * @return node position in Cartesian coordinates
-         */
-        public Vector3D getV() {
-            return v;
+            final Vector3D v = ellipsoid.transform(gp);
+            this.gp          = gp;
+            this.along       = aiming.alongTileDirection(v, gp);
+            this.across      = Vector3D.crossProduct(v, along).normalize();
+            this.insideZone  = zone.checkPoint(new S2Point(gp.getLongitude(), 0.5 * FastMath.PI - gp.getLatitude())) != Location.OUTSIDE;
+            this.alongIndex  = alongIndex;
+            this.acrossIndex = acrossIndex;
         }
 
         /** Get the node position in geodetic coordinates.

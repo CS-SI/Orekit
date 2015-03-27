@@ -17,17 +17,16 @@
 package org.orekit.models.earth.tessellation;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.apache.commons.math3.geometry.partitioning.RegionFactory;
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
 import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
 import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
 import org.apache.commons.math3.util.FastMath;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -40,32 +39,33 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class EllipsoidTesselatorTest {
+public class EllipsoidTessellatorTest {
 
     @Test
-    public void testNoOverlap() throws OrekitException {
-        final EllipsoidTessellator tesselator =
+    public void testAlongDescendingTrack() throws OrekitException {
+        final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false),
-                                         100000.0, 300000.0, 0.0, 0.0);
-        final List<Tile> tiles = tesselator.tessellate(buildFrance());
-        for (final Tile tile : tiles) {
-            final GeodeticPoint[] v = tile.getVertices();
-            System.out.format(Locale.US, "%8.4f %8.4f%n",
-                              FastMath.toDegrees(v[0].getLongitude()),
-                              FastMath.toDegrees(v[0].getLatitude()));
-            System.out.format(Locale.US, "%8.4f %8.4f%n",
-                              FastMath.toDegrees(v[1].getLongitude()),
-                              FastMath.toDegrees(v[1].getLatitude()));
-            System.out.format(Locale.US, "%8.4f %8.4f%n",
-                              FastMath.toDegrees(v[2].getLongitude()),
-                              FastMath.toDegrees(v[2].getLatitude()));
-            System.out.format(Locale.US, "%8.4f %8.4f%n",
-                              FastMath.toDegrees(v[3].getLongitude()),
-                              FastMath.toDegrees(v[3].getLatitude()));
-            System.out.format(Locale.US, "%8.4f %8.4f%n",
-                              FastMath.toDegrees(v[0].getLongitude()),
-                              FastMath.toDegrees(v[0].getLatitude()));
-        }
+                                         50000.0, 150000.0, 5000.0, 5000.0);
+        final List<Tile> tiles = tessellator.tessellate(buildFrance());
+        Assert.assertEquals(122, tiles.size());
+    }
+
+    @Test
+    public void testAlongAscendingTrack() throws OrekitException {
+        final EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, true),
+                                         50000.0, 150000.0, 5000.0, 5000.0);
+        final List<Tile> tiles = tessellator.tessellate(buildFrance());
+        Assert.assertEquals(123, tiles.size());
+    }
+
+    @Test
+    public void testConstantAzimuth() throws OrekitException {
+        final EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120)),
+                                         50000.0, 150000.0, -5000.0, -5000.0);
+        final List<Tile> tiles = tessellator.tessellate(buildFrance());
+        Assert.assertEquals(93, tiles.size());
     }
 
     @Before
