@@ -27,8 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 
@@ -55,6 +57,19 @@ public class EOPHistoryTest {
                 // no more data after end date
                 Assert.assertEquals(0.0, dt, 1.0e-10);
             }
+        }
+    }
+
+    @Test
+    public void testContinuityThreshold() {
+        try {
+            FramesFactory.setEOPContinuityThreshold(0.5 * Constants.JULIAN_DAY);
+            AbsoluteDate date = new AbsoluteDate(2004, 1, 4, TimeScalesFactory.getUTC());
+            FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getUT1MinusUTC(date);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES,
+                                oe.getSpecifier());
         }
     }
 

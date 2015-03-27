@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Added customization of EOP continuity check threshold.
+        Fixes issue #194.
+      </action>
       <action dev="evan" type="add">
         Added geoid model based on gravity field.
         Fixes issue #192.
