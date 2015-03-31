@@ -45,7 +45,8 @@ import org.orekit.utils.IERSConventions;
  * and prediction purposes. Prediction series are only available for
  * pole motion xp, yp and UT1-UTC, they are not available for
  * pole offsets (Δδψ/Δδε and x/y).</p>
- * <p>A bulletin A published on Modified Julian day mjd will contain:
+ * <p>A bulletin A published on Modified Julian day mjd (nominally a
+ * Thursday) will generally contain:
  * </p>
  * <ul>
  *   <li>rapid service xp, yp and UT1-UTC data from mjd-6 to mjd</li>
@@ -58,6 +59,15 @@ import org.orekit.utils.IERSConventions;
  *       Δδψ/Δδε and x/y data from day 2 of month m-2 to day 1 of month
  *       m-1</li>
  * </ul>
+ * <p>
+ * There are some discrepancies in the rapid service time range above,
+ * mainly when the nominal publication Thursday corresponds to holidays.
+ * In this case a bulletin may be published the day before and have a 6
+ * days span only for rapid data, and a later bulletin will have an 8 days
+ * span to recover the normal schedule. This occurred for bulletin A Vol.
+ * XVIII No. 047, bulletin A Vol. XVIII No. 048, bulletin A Vol. XXI No.
+ * 052 and bulletin A Vol. XXII No. 001.
+ * </p>
  * <p>Rapid service for pole offsets appears irregular. As extreme examples
  * bulletin A Vol. XXVI No. 037 from 2013-09-12 contained 15 entries
  * for pole offsets, from mjd-22 to mjd-8, bulletin A Vol. XXVI No. 039
@@ -83,6 +93,15 @@ import org.orekit.utils.IERSConventions;
  * final values sections of a last file. In this case, the value retained
  * will be the one extracted from the final values section in the more
  * recent file.
+ * </p>
+ * <p>
+ * If only one bulletin A file is read and it correspond to the first bulletin
+ * of a month, it will have a roughly one month wide hole between the
+ * final data and the rapid data. This hole will trigger an error as EOP
+ * continuity is checked by default for at most 5 days holes. In this case,
+ * users should call something like {@link FramesFactory#setEOPContinuityThreshold(double)
+ * FramesFactory.setEOPContinuityThreshold(Constants.JULIAN_YEAR)} to prevent
+ * the error to be triggered.
  * </p>
  * <p>The bulletin A files are recognized thanks to their base names,
  * which must match the pattern <code>bulletina-xxxx-###.txt</code>,

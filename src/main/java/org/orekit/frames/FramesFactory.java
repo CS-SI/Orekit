@@ -349,6 +349,13 @@ public class FramesFactory {
      * between entries exceed this threshold, an exception will
      * be triggered.
      * </p>
+     * <p>
+     * One case when calling this method is really useful is for
+     * applications that use a single Bulletin A, as these bulletins
+     * have a roughly one month wide hole for the first bulletin of
+     * each month, which contains older final data in addition to the
+     * rapid data and the predicted data.
+     * </p>
      * @param threshold threshold to use for checking EOP continuity (in seconds)
      */
     public static void setEOPContinuityThreshold(final double threshold) {
