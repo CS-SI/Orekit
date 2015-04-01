@@ -22,6 +22,9 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added a way to load TAI-UTC data from Bulletin A.
+      </action>
+      <action dev="luc" type="add">
         Added ellipsoid tessellation, with tiles either oriented along track
         (ascending or descending) or at constant azimuth.
       </action>

@@ -40,6 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
 public class UTCScaleTest {
@@ -275,16 +276,12 @@ public class UTCScaleTest {
             }
         });
 
-        // the UTC-TAI model includes hard-coded linear models. The validity of the last entry
-        // extends from 1968-01-01 to the first leap second on 1972-01-01. However, we do not
-        // have any leap seconds in this test case, so the validity artificially extends to
-        // infinity. The last model is: dt = 4.2131700 + (MJD - 39126) x 0.002592 in seconds
-        // this value is of course false (there ARE leap seconds), but the test intend to check
-        // we avoid a NullPointerException that was identified in 2012.
-        double dtRef = 4.2131700 + (DateComponents.J2000_EPOCH.getMJD() - 39126) * 0.002592;
-        double dt    = TimeScalesFactory.getUTC().offsetToTAI(DateComponents.J2000_EPOCH,
-                                                              TimeComponents.H00);
-        Assert.assertEquals(dtRef, dt, 1.0e-14);
+        try {
+            TimeScalesFactory.getUTC();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED, oe.getSpecifier());
+        }
 
     }
 

@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -151,20 +150,18 @@ public class TimeScalesFactory implements Serializable {
         synchronized (TimeScalesFactory.class) {
 
             if (utc == null) {
-                SortedMap<DateComponents, Integer> entries =
-                    new TreeMap<DateComponents, Integer>();
-                boolean loaded = false;
+                SortedMap<DateComponents, Integer> entries = null;
                 if (loaders.isEmpty()) {
                     addDefaultUTCTAILoader();
                 }
                 for (UTCTAILoader loader : loaders) {
                     DataProvidersManager.getInstance().feed(loader.getSupportedNames(), loader);
-                    if (!loader.stillAcceptsData()) {
-                        entries = loader.loadTimeSteps();
-                        loaded = true;
+                    entries = loader.loadTimeSteps();
+                    if (!entries.isEmpty()) {
+                        break;
                     }
                 }
-                if (!loaded) {
+                if (entries.isEmpty()) {
                     throw new OrekitException(OrekitMessages.NO_IERS_UTC_TAI_HISTORY_DATA_LOADED);
                 }
                 utc = new UTCScale(entries);

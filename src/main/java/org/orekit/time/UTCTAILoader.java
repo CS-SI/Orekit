@@ -19,6 +19,7 @@ package org.orekit.time;
 import java.util.SortedMap;
 
 import org.orekit.data.DataLoader;
+import org.orekit.errors.OrekitException;
 
 /** Interface for loading UTC-TAI offsets data files.
  * @author Pascal Parraud
@@ -32,8 +33,9 @@ public interface UTCTAILoader extends DataLoader {
      * in the {@link UTCScale UTCScale} class itself.
      * </p>
      * @return sorted UTC-TAI offsets entries (may be empty)
+     * @exception OrekitException if time steps are inconsistent
      */
-    SortedMap<DateComponents, Integer> loadTimeSteps();
+    SortedMap<DateComponents, Integer> loadTimeSteps() throws OrekitException;
 
     /** Get the regular expression for supported UTC-TAI offsets files names.
      * @return regular expression for supported UTC-TAI offsets files names

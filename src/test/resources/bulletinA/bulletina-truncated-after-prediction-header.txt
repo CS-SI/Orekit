@@ -1,0 +1,37 @@
+                                                                                
+      **********************************************************************   
+      *   This file is a faked BULLETIN A created for test purposes        *   
+      **********************************************************************   
+      COMBINED EARTH ORIENTATION PARAMETERS:                                    
+                                                                                
+                              IERS Rapid Service                                
+              MJD      x    error     y    error   UT1-UTC   error              
+                       "      "       "      "        s        s                
+    5 12 30  53734  .05486 .00002  .38460 .00003  -.661163  .000008          
+    5 12 31  53735  .05378 .00002  .38384 .00002  -.661145  .000009          
+    6  1  1  53736  .05269 .00002  .38329 .00003   .338787  .000008          
+    6  1  2  53737  .05174 .00002  .38292 .00002   .338545  .000009          
+    6  1  3  53738  .05090 .00001  .38266 .00002   .338072  .000009          
+    6  1  4  53739  .05015 .00001  .38236 .00003   .337379  .000010          
+    6  1  5  53740  .04949 .00001  .38203 .00003   .336476  .000010          
+                                                                                
+      _______________________________________________________________________   
+                                                                                
+      PREDICTIONS:                                                              
+      The following formulas will not reproduce the predictions given below,    
+      but may be used to extend the predictions beyond the end of this table.   
+                                                                                
+      x =   .0337 -  .0743 cos A -  .1283 sin A +  .0956 cos C +  .1453 sin C   
+      y =   .3559 -  .1247 cos A +  .0675 sin A +  .1453 cos C -  .0956 sin C   
+         UT1-UTC =   .3324 -  .00042 (MJD - 53745) - (UT2-UT1)                  
+                                                                                
+      where A = 2*pi*(MJD-53740)/365.25 and C = 2*pi*(MJD-53740)/435.           
+                                                                                
+         TAI-UTC(MJD 53741) = 33.0                                              
+      The accuracy may be estimated from the expressions:                       
+      S x,y = 0.00068 (MJD-53740)**0.80   S t = 0.00025 (MJD-53740)**0.75       
+      Estimated accuracies are:  Predictions     10 d   20 d   30 d   40 d      
+                                 Polar coord's  0.004  0.007  0.010  0.013      
+                                 UT1-UTC        0.0014 0.0024 0.0032 0.0040     
+                                                                                
+                    MJD      x(arcsec)   y(arcsec)   UT1-UTC(sec)               

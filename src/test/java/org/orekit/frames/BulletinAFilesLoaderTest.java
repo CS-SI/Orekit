@@ -39,7 +39,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testStartDate() throws OrekitException {
         setRoot("bulletinA");
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME).fillHistory(null, history);
+        new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt").fillHistory(null, history);
         Assert.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56475),
                                              TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, history, true).getStartDate());
@@ -49,7 +49,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testEndDate() throws OrekitException {
         setRoot("bulletinA");
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        new BulletinAFilesLoader(FramesFactory.BULLETINA_FILENAME).fillHistory(null, history);
+        new BulletinAFilesLoader("bulletina-xxvi-\\d\\d\\d\\.txt").fillHistory(null, history);
         Assert.assertTrue(getMaxGap(history) < 2);
         Assert.assertEquals(new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 56968),
                                              TimeScalesFactory.getUTC()),
