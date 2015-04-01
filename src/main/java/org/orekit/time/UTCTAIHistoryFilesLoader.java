@@ -40,7 +40,7 @@ import org.orekit.errors.OrekitMessages;
  * hierarchy.</p>
  * @author Luc Maisonobe
  */
-class UTCTAIHistoryFilesLoader implements UTCTAILoader {
+public class UTCTAIHistoryFilesLoader implements UTCTAILoader {
 
     /** Supported files name pattern. */
     private static final String SUPPORTED_NAMES = "^UTC-TAI\\.history$";

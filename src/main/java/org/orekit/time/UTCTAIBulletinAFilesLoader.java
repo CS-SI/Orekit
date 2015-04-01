@@ -44,7 +44,7 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 7.1
  */
-class UTCTAIBulletinAFilesLoader implements UTCTAILoader {
+public class UTCTAIBulletinAFilesLoader implements UTCTAILoader {
 
     /** Regular expression matching blanks at start of line. */
     private static final String LINE_START_REGEXP     = "^\\p{Blank}+";
