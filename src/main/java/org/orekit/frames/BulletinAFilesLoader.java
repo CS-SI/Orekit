@@ -45,7 +45,7 @@ import org.orekit.utils.IERSConventions;
  * and prediction purposes. Prediction series are only available for
  * pole motion xp, yp and UT1-UTC, they are not available for
  * pole offsets (Δδψ/Δδε and x/y).</p>
- * <p>A bulletin A published on Modified Julian day mjd (nominally a
+ * <p>A bulletin A published on Modified Julian Day mjd (nominally a
  * Thursday) will generally contain:
  * </p>
  * <ul>
