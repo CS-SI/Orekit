@@ -327,7 +327,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
         }
 
         /** Get the data fields from a line.
-         * @param line to parse
+         * @param line line to parse
          * @return extracted fields, or null if line does not match data format
          */
         public String[] getFields(final String line) {
