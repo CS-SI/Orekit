@@ -22,6 +22,11 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added support for USNO tai-utc.dat file, enabled by default, in
+        addition to the legacy support for IERS UTC-TAI.history file
+        which is still supported and also enabled by default.
+      </action>
+      <action dev="luc" type="add">
         Added a way to load TAI-UTC data from Bulletin A. Using this feature
         is however NOT recommended as there are known issues in TAI-UTC data
         in some bulletin A (for example bulletina-xix-001.txt from 2006-01-05

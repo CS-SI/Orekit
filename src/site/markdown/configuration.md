@@ -241,8 +241,8 @@ download on orekit forge:
 [https://www.orekit.org/forge/projects/orekit/files](https://www.orekit.org/forge/projects/orekit/files).
 Setting the `orekit.data.path` property to the location of this file on a local computer is enough to
 use Orekit efficiently, but the preferred setup is to expand the zip file in the user
-home folder so that new IERS files can be added easily when they become avialble. In this
-case, data is loaded by puttin the following code in the main application:
+home folder so that new IERS files can be added easily when they become available. In this
+case, data is loaded by putting the following code in the main application:
 
     final File home = new File(System.getProperty("user.home"));
     final File orekitDir = new File(home, "orekit-data");
@@ -275,8 +275,9 @@ the XML format and the columns format.
 
 |          default naming pattern          |       format       |                          data type                                                       |                                                                    source                                                                        |
 |------------------------------------------|--------------------|------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| tai-utc.dat[.gz]                         |  USNO tai-utc      | leap seconds introduction history                                                        | [http://maia.usno.navy.mil/ser7/tai-utc.dat](http://maia.usno.navy.mil/ser7/tai-utc.dat)                                                         |
 | UTC-TAI.history[.gz]                     |  IERS history      | leap seconds introduction history                                                        | [http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history](http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history)                                   |
-| bulletina-xxxx-\#\#\#.txt[.gz]           |  IERS Bulletin A   | weekly Earth Orientation Parameters, IAU-1980 and IAU-2000, rapid service and prediction | [ftp://ftp.iers.org/products/eop/rapid/bulletina/](ftp://ftp.iers.org/products/eop/rapid/bulletina/)                                 |
+| bulletina-xxxx-\#\#\#.txt[.gz]           |  IERS Bulletin A   | weekly Earth Orientation Parameters, IAU-1980 and IAU-2000, rapid service and prediction | [ftp://ftp.iers.org/products/eop/rapid/bulletina/](ftp://ftp.iers.org/products/eop/rapid/bulletina/)                                             |
 | bulletinb.\#\#\#[.gz]                    |  IERS Bulletin B   | monthly Earth Orientation Parameters model IAU 2006/2000A, final values                  | [ftp://ftp.iers.org/products/eop/bulletinb/format_2009/](ftp://ftp.iers.org/products/eop/bulletinb/format_2009/)                                 |
 | eopc04\_08\_IAU2000.\#\#[.gz]            |  IERS EOP 08 C04   | yearly Earth Orientation Parameters model IAU 2006/2000A                                 | [ftp://ftp.iers.org/products/eop/long-term/c04\_08/iau2000/](ftp://ftp.iers.org/products/eop/long-term/c04_08/iau2000/)                          |
 | eopc04\_08.\#\#[.gz]                     |  IERS EOP 08 C04   | yearly Earth Orientation Parameters model IAU 1980                                       | [ftp://ftp.iers.org/products/eop/long-term/c04\_08/iau1980/](ftp://ftp.iers.org/products/eop/long-term/c04_08/iau1980/)                          |

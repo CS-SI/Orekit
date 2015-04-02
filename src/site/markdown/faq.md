@@ -134,13 +134,15 @@ Runtime errors
 This error is probably *the* most frequent one, or at least it's the first one new users encounter.
 
 Orekit needs some external data to be loaded in order to run. This includes UTC-TAI history for leap
-seconds handling, Earth Orientation Parameters for transforms to and from Earth fixed frames, or planetar
+seconds handling, Earth Orientation Parameters for transforms to and from Earth fixed frames, or planetary
 ephemerides for Sun direction, for example.
 
 The error message "no IERS UTC-TAI history data loaded" means the UTC-TAI history file which is used for leap
 seconds management was not found. As leap seconds are used each time a UTC date is used, this message is
 often seen very early and is the first one unsuspecting users experience. It often means the user forgot
-to configure Orekit to load data.
+to configure Orekit to load data. Orekit supports by default either the IERS UTC-TAI.history file or the
+USNO tai-utc.dat file. If either file is found in the Orekit configuration, it will be automatically loaded
+and the message should not appear.
 
 Configuring data loading is explained in the configuration page For a start, the simplest configuration
 is to download the orekit-data.zip file from the download page and to either set the "orekit.data.path" Java
