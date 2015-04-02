@@ -77,7 +77,7 @@ public class TimeScalesFactory implements Serializable {
     private static GMSTScale gmst = null;
 
     /** UTCTAI offsets loaders. */
-    private static List<UTCTAIOffsetLoader> loaders = new ArrayList<UTCTAIOffsetLoader>();
+    private static List<UTCTAIOffsetsLoader> loaders = new ArrayList<UTCTAIOffsetsLoader>();
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -93,24 +93,22 @@ public class TimeScalesFactory implements Serializable {
      * @see UTCTAIHistoryFilesLoader
      * @see UTCTAIBulletinAFilesLoader
      * @see #getUTC()
-     * @see #clearUTCTAILoaders()
+     * @see #clearUTCTAIOffsetsLoaders()
+     * @since 7.1
      */
-    public static void addUTCTAIOffsetLoader(final UTCTAIOffsetLoader loader) {
+    public static void addUTCTAIOffsetsLoader(final UTCTAIOffsetsLoader loader) {
         loaders.add(loader);
     }
 
     /** Add a loader for UTC-TAI offsets history files.
      * @param loader custom loader to add
-     * @see TAIUTCDatFilesLoader
-     * @see UTCTAIHistoryFilesLoader
-     * @see UTCTAIBulletinAFilesLoader
      * @see #getUTC()
      * @see #clearUTCTAILoaders()
-     * @deprecated as of 7.1, replaced with {@link #addUTCTAIOffsetLoader(UTCTAIOffsetLoader)}
+     * @deprecated as of 7.1, replaced with {@link #addUTCTAIOffsetsLoader(UTCTAIOffsetsLoader)}
      */
     @Deprecated
     public static void addUTCTAILoader(final UTCTAILoader loader) {
-        addUTCTAIOffsetLoader(new UTCTAIOffsetLoader() {
+        addUTCTAIOffsetsLoader(new UTCTAIOffsetsLoader() {
 
             /** {@inheritDoc} */
             @Override
@@ -146,11 +144,11 @@ public class TimeScalesFactory implements Serializable {
      * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history">IERS UTC-TAI.history file</a>
      * @see #getUTC()
      * @see #clearUTCTAILoaders()
-     * @deprecated as of 7.1, replaced with {@link #addDefaultUTCTAILoaders()}
+     * @deprecated as of 7.1, replaced with {@link #addDefaultUTCTAIOffsetsLoaders()}
      */
     @Deprecated
     public static void addDefaultUTCTAILoader() {
-        addUTCTAIOffsetLoader(new UTCTAIHistoryFilesLoader());
+        addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader());
     }
 
     /** Add the default loaders for UTC-TAI offsets history files (both IERS and USNO).
@@ -169,19 +167,32 @@ public class TimeScalesFactory implements Serializable {
      * @see TAIUTCDatFilesLoader
      * @see UTCTAIHistoryFilesLoader
      * @see #getUTC()
-     * @see #clearUTCTAILoaders()
+     * @see #clearUTCTAIOffsetsLoaders()
+     * @since 7.1
      */
-    public static void addDefaultUTCTAILoaders() {
-        addUTCTAIOffsetLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES));
-        addUTCTAIOffsetLoader(new UTCTAIHistoryFilesLoader());
+    public static void addDefaultUTCTAIOffsetsLoaders() {
+        addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES));
+        addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader());
     }
 
     /** Clear loaders for UTC-TAI offsets history files.
      * @see #getUTC()
      * @see #addUTCTAILoader(UTCTAILoader)
-     * @see #addDefaultUTCTAILoaders()
+     * @see #addDefaultUTCTAILoader
+     * @deprecated as of 7.1, replaced with {@link #clearUTCTAIOffsetsLoaders()}
      */
+    @Deprecated
     public static void clearUTCTAILoaders() {
+        loaders.clear();
+    }
+
+    /** Clear loaders for UTC-TAI offsets history files.
+     * @see #getUTC()
+     * @see #addUTCTAIOffsetsLoader(UTCTAIOffsetsLoader)
+     * @see #addDefaultUTCTAIOffsetsLoaders()
+     * @since 7.1
+     */
+    public static void clearUTCTAIOffsetsLoaders() {
         loaders.clear();
     }
 
@@ -205,7 +216,7 @@ public class TimeScalesFactory implements Serializable {
      * If no {@link UTCTAILoader} has been added by calling {@link
      * #addUTCTAILoader(UTCTAILoader) addUTCTAILoader} or if {@link
      * #clearUTCTAILoaders() clearUTCTAILoaders} has been called afterwards,
-     * the {@link #addDefaultUTCTAILoaders() addDefaultUTCTAILoaders} method
+     * the {@link #addDefaultUTCTAIOffsetsLoaders() addDefaultUTCTAILoaders} method
      * will be called automatically.
      * </p>
      * @return Universal Time Coordinate scale
@@ -213,7 +224,7 @@ public class TimeScalesFactory implements Serializable {
      * file content is corrupted
      * @see #addUTCTAILoader(UTCTAILoader)
      * @see #clearUTCTAILoaders()
-     * @see #addDefaultUTCTAILoaders()
+     * @see #addDefaultUTCTAIOffsetsLoaders()
      */
     public static UTCScale getUTC() throws OrekitException {
         synchronized (TimeScalesFactory.class) {
@@ -221,9 +232,9 @@ public class TimeScalesFactory implements Serializable {
             if (utc == null) {
                 List<OffsetModel> entries = null;
                 if (loaders.isEmpty()) {
-                    addDefaultUTCTAILoaders();
+                    addDefaultUTCTAIOffsetsLoaders();
                 }
-                for (UTCTAIOffsetLoader loader : loaders) {
+                for (UTCTAIOffsetsLoader loader : loaders) {
                     entries = loader.loadOffsets();
                     if (!entries.isEmpty()) {
                         break;

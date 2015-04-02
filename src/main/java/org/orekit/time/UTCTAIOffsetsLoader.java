@@ -24,7 +24,7 @@ import org.orekit.errors.OrekitException;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public interface UTCTAIOffsetLoader {
+public interface UTCTAIOffsetsLoader {
 
     /** Load UTC-TAI offsets entries.
      * @return sorted UTC-TAI offsets entries (if the linear offsets used

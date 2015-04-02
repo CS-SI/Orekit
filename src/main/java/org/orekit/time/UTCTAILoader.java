@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitException;
 
 /** Interface for loading UTC-TAI offsets data files.
  * @author Pascal Parraud
- * @deprecated as of 7.1, replaced with {@link UTCTAIOffsetLoader}
+ * @deprecated as of 7.1, replaced with {@link UTCTAIOffsetsLoader}
  */
 @Deprecated
 public interface UTCTAILoader extends DataLoader {

@@ -65,7 +65,7 @@ public class TAIUTCDatAFilesLoaderTest {
     public void testOnlyPre1972Data() throws OrekitException {
 
         Utils.setDataRoot("USNO");
-        TimeScalesFactory.addUTCTAIOffsetLoader(new TAIUTCDatFilesLoader("tai-utc-only-pre-1972-data.dat"));
+        TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader("tai-utc-only-pre-1972-data.dat"));
 
         // linear models between 1961 and 1972
         checkOffset(1961,  1,  2,  -(1.422818 +   1 * 0.001296));  // MJD 37300 +   1
@@ -98,7 +98,7 @@ public class TAIUTCDatAFilesLoaderTest {
     public void testModifiedLinearData() throws OrekitException {
 
         Utils.setDataRoot("USNO");
-        TimeScalesFactory.addUTCTAIOffsetLoader(new TAIUTCDatFilesLoader("tai-utc-modified-linear.dat"));
+        TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader("tai-utc-modified-linear.dat"));
 
         // linear models between 1961 and 1972
         checkOffset(1961,  1,  2,  -(1.4000000 +   1 * 0.001000));  // MJD 37300 +   1
@@ -153,7 +153,7 @@ public class TAIUTCDatAFilesLoaderTest {
 
     private void checkException(String name, OrekitMessages message) {
         Utils.setDataRoot("USNO");
-        TimeScalesFactory.addUTCTAIOffsetLoader(new TAIUTCDatFilesLoader(name));
+        TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(name));
         try {
             TimeScalesFactory.getUTC();
             Assert.fail("an exception should have been thrown");

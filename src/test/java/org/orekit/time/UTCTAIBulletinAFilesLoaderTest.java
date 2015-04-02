@@ -30,7 +30,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     public void test2006Leap() throws OrekitException {
         Utils.setDataRoot("bulletinA");
         // this file contains a single leap second on 2006-01-01, from 32s to 33s
-        TimeScalesFactory.addUTCTAIOffsetLoader(new UTCTAIBulletinAFilesLoader("bulletina-xix-001\\.txt$"));
+        TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xix-001\\.txt$"));
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
@@ -62,7 +62,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
         //    TAI-UTC(MJD 54832) = 33.0
         // whereas the value should be 34.0, as the leap second was introduced
         // just before this day
-        TimeScalesFactory.addUTCTAIOffsetLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxi-053-original\\.txt$"));
+        TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxi-053-original\\.txt$"));
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
@@ -84,7 +84,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     public void test2009FixedLeap() throws OrekitException {
         Utils.setDataRoot("bulletinA");
         // this file is a fixed version of IERS bulletin
-        TimeScalesFactory.addUTCTAIOffsetLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxi-053-fixed\\.txt$"));
+        TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxi-053-fixed\\.txt$"));
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
@@ -106,7 +106,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     public void testNoLeap() throws OrekitException {
         Utils.setDataRoot("bulletinA");
         // these files contains no leap seconds
-        TimeScalesFactory.addUTCTAIOffsetLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxvi.*\\.txt$"));
+        TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxvi.*\\.txt$"));
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
@@ -168,7 +168,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
     private void checkException(String name, OrekitMessages message) {
         Utils.setDataRoot("bulletinA");
-        TimeScalesFactory.addUTCTAIOffsetLoader(new UTCTAIBulletinAFilesLoader(name));
+        TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader(name));
         try {
             TimeScalesFactory.getUTC();
             Assert.fail("an exception should have been thrown");

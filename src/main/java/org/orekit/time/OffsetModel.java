@@ -18,7 +18,7 @@ package org.orekit.time;
 
 
 /** TAI UTC offset model.
- * @see UTCTAIOffsetLoader
+ * @see UTCTAIOffsetsLoader
  * @author Luc Maisonobe
  * @since 7.1
  */

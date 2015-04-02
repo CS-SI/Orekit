@@ -59,7 +59,7 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetLoader {
+public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
 
     /** Regular expression for supported files names. */
     private final String supportedNames;

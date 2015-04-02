@@ -39,7 +39,7 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class TAIUTCDatFilesLoader implements UTCTAIOffsetLoader {
+public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
 
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "^tai-utc\\.dat$";

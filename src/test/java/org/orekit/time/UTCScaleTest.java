@@ -254,7 +254,7 @@ public class UTCScaleTest {
     public void testEmptyOffsets() throws Exception {
         Utils.setDataRoot("no-data");
 
-        TimeScalesFactory.addUTCTAIOffsetLoader(new UTCTAIOffsetLoader() {
+        TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIOffsetsLoader() {
             public List<OffsetModel> loadOffsets() {
                 return Collections.emptyList();
             }
