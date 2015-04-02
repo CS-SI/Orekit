@@ -109,6 +109,7 @@ with version 4.1, Orekit depends only on officially released versions of Apache 
   Orekit 5.0.3 | Apache Commons Math 2.2
   Orekit 6.0   | Apache Commons Math 3.2
   Orekit 6.1   | Apache Commons Math 3.2
+  Orekit 7.0   | Apache Commons Math 3.4.1
 
 ### The orekit-data.zip file you provide is not up to date. Can you update it?
 
