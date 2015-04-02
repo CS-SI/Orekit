@@ -39,6 +39,19 @@ import org.orekit.errors.OrekitMessages;
  * for discontinuities.
  * </p>
  * <p>
+ * Note that extracting UTC-TAI from bulletin A files is <em>NOT</em>
+ * recommended. There are known issues in some past bulletin A
+ * (for example bulletina-xix-001.txt from 2006-01-05 has a wrong year
+ * for last leap second and bulletina-xxi-053.tx from 2008-12-31 has an
+ * off by one value for TAI-UTC on MJD 54832). This is a known problem,
+ * and the Earth Orientation Department at USNO told us this TAI-UTC
+ * data was only provided as a convenience and this data should rather
+ * be sourced from other official files. As the bulletin A files are
+ * a record of past publications, they cannot modify archived bulletins,
+ * hence the errors above will remain forever. This UTC-TAI loader should
+ * therefore be used with great care.
+ * </p>
+ * <p>
  * This class is immutable and hence thread-safe
  * </p>
  * @author Luc Maisonobe
@@ -296,7 +309,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAILoader {
             int offset = firstTaiMUtc.getValue();
             final int refMJD = firstTaiMUtc.getKey();
             for (final int leapMJD : leapDays) {
-                if (leapMJD >= refMJD) {
+                if (leapMJD > refMJD) {
                     break;
                 }
                 --offset;
@@ -310,7 +323,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAILoader {
             // check for missing time steps
             for (final Map.Entry<Integer, Integer> refTaiMUtc : taiUtc.entrySet()) {
                 final DateComponents refDC = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH,
-                                                                refTaiMUtc.getKey());
+                                                                refTaiMUtc.getKey() + 1);
                 final SortedMap<DateComponents, Integer> before = timeSteps.headMap(refDC);
                 if (!before.isEmpty()) {
                     final DateComponents timeStepDC = before.lastKey();

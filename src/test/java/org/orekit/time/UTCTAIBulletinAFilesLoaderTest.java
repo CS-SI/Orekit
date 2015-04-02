@@ -55,10 +55,14 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void test2009Leap() throws OrekitException {
+    public void test2009WrongLeap() throws OrekitException {
         Utils.setDataRoot("bulletinA");
-        // this file contains a single leap second on 2009-01-01, from 33s to 34s
-        TimeScalesFactory.addUTCTAILoader(new UTCTAIBulletinAFilesLoader("bulletina-xxi.*\\.txt$"));
+        // this file contains a single leap second on 2009-01-01, from 33s to 34s,
+        // but it has a known ERROR in it, as line 66 reads:
+        //    TAI-UTC(MJD 54832) = 33.0
+        // whereas the value should be 34.0, as the leap second was introduced
+        // just before this day
+        TimeScalesFactory.addUTCTAILoader(new UTCTAIBulletinAFilesLoader("bulletina-xxi-053-original\\.txt$"));
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
@@ -70,15 +74,31 @@ public class UTCTAIBulletinAFilesLoaderTest {
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
 
-        // correct values, as the single leap second is close enough
+        // expected incorrect values, as the file contains an error
+        checkOffset("2008-01-01", -32.0); // the real value should be -33.0
+        checkOffset("2009-06-30", -33.0); // the real value should be -34.0
+
+    }
+
+    @Test
+    public void test2009FixedLeap() throws OrekitException {
+        Utils.setDataRoot("bulletinA");
+        // this file is a fixed version of IERS bulletin
+        TimeScalesFactory.addUTCTAILoader(new UTCTAIBulletinAFilesLoader("bulletina-xxi-053-fixed\\.txt$"));
+
+        UTCScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
+        Assert.assertEquals(1.4228180,
+                            afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
+                            1.0e-12);
+        afterLeap = new AbsoluteDate(2009, 1, 1, 0, 0, 0.0, utc);
+        Assert.assertEquals(1.0,
+                            afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
+                            1.0e-12);
+
+        // correct values, as the original file error has been fixed
         checkOffset("2008-01-01", -33.0);
         checkOffset("2009-06-30", -34.0);
-
-        // expected wrong estimation as the leap seconds from 1997-01-01, 1999-01-01 and2006-01-01 are not known from the file read
-        checkOffset("1996-04-03", -33.0);
-
-        // expected wrong estimation as the leap second from 2012-07-01 is not known from the file read
-        checkOffset("2013-01-22", -34.0);
 
     }
 
