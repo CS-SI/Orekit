@@ -22,7 +22,13 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
-        Added a way to load TAI-UTC data from Bulletin A.
+        Added a way to load TAI-UTC data from Bulletin A. Using this feature
+        is however NOT recommended as there are known issues in TAI-UTC data
+        in some bulletin A (for example bulletina-xix-001.txt from 2006-01-05
+        has a wrong year for last leap second and bulletina-xxi-053.txt from
+        2008-12-31 has an off by one value for TAI-UTC on MJD 54832). This
+        feature is therefore not enabled by default, and users wishing to
+        rely on it should do it carefully and take their own responsibilities.
       </action>
       <action dev="luc" type="add">
         Added ellipsoid tessellation, with tiles either oriented along track
