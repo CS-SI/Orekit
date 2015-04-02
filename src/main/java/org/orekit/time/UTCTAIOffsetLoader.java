@@ -16,32 +16,21 @@
  */
 package org.orekit.time;
 
-import java.util.SortedMap;
+import java.util.List;
 
-import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 
 /** Interface for loading UTC-TAI offsets data files.
- * @author Pascal Parraud
- * @deprecated as of 7.1, replaced with {@link UTCTAIOffsetLoader}
+ * @author Luc Maisonobe
+ * @since 7.1
  */
-@Deprecated
-public interface UTCTAILoader extends DataLoader {
+public interface UTCTAIOffsetLoader {
 
     /** Load UTC-TAI offsets entries.
-     * <p>
-     * Only the integer offsets used since 1972-01-01 are loaded here, the
-     * linear offsets used between 1961-01-01 and 1971-12-31 are hard-coded
-     * in the {@link UTCScale UTCScale} class itself.
-     * </p>
-     * @return sorted UTC-TAI offsets entries (may be empty)
+     * @return sorted UTC-TAI offsets entries (if the linear offsets used
+     * prior to 1972 are missing, they will be inserted automatically)
      * @exception OrekitException if time steps are inconsistent
      */
-    SortedMap<DateComponents, Integer> loadTimeSteps() throws OrekitException;
-
-    /** Get the regular expression for supported UTC-TAI offsets files names.
-     * @return regular expression for supported UTC-TAI offsets files names
-     */
-    String getSupportedNames();
+    List<OffsetModel> loadOffsets() throws OrekitException;
 
 }

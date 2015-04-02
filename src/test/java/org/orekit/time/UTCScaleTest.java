@@ -21,13 +21,11 @@ package org.orekit.time;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -256,23 +254,9 @@ public class UTCScaleTest {
     public void testEmptyOffsets() throws Exception {
         Utils.setDataRoot("no-data");
 
-        TimeScalesFactory.addUTCTAILoader(new UTCTAILoader() {
-            SortedMap<DateComponents, Integer> data = new TreeMap<DateComponents, Integer>();
-
-            public SortedMap<DateComponents, Integer> loadTimeSteps() {
-                return data;
-            }
-
-            public String getSupportedNames() {
-                return "";
-            }
-
-            public boolean stillAcceptsData() {
-                return false;
-            }
-
-            public void loadData(InputStream input, String name) throws IOException {
-                throw new IOException();
+        TimeScalesFactory.addUTCTAIOffsetLoader(new UTCTAIOffsetLoader() {
+            public List<OffsetModel> loadOffsets() {
+                return Collections.emptyList();
             }
         });
 

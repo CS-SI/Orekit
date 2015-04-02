@@ -19,8 +19,6 @@ package org.orekit.time;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.TimeStampedCacheException;
@@ -40,20 +38,15 @@ import org.orekit.utils.TimeStampedCache;
  * one second leap was introduced at the end of 2005, the UTC time sequence was
  * 2005-12-31T23:59:59 UTC, followed by 2005-12-31T23:59:60 UTC, followed by
  * 2006-01-01T00:00:00 UTC.</p>
- * <p>The OREKIT library retrieves the post-1972 constant time steps data thanks
- * to the {@link org.orekit.data.DataProvidersManager DataProvidersManager} class.
- * The linear models used between 1961 and 1972 are built-in in the class itself.</p>
  * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
- * so there is no public constructor. Every call to {@link TimeScalesFactory#getUTC()}
- * will create a new {@link UTCScale} instance, sharing the UTC-TAI offset table between
- * all instances.</p>
+ * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
 public class UTCScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
+    private static final long serialVersionUID = 20150402L;
 
     /** Time steps. */
     private transient TimeStampedCache<UTCTAIOffset> cache;
@@ -62,29 +55,16 @@ public class UTCScale implements TimeScale {
      * Used to create the prototype instance of this class that is used to
      * clone all subsequent instances of {@link UTCScale}. Initializes the offset
      * table that is shared among all instances.
-     * @param entries user supplied entries
+     * @param offsets UTC-TAI offsets
      * @exception OrekitException if cache cannot be set up
      */
-    UTCScale(final SortedMap<DateComponents, Integer> entries) throws OrekitException {
+    UTCScale(final List<OffsetModel> offsets) throws OrekitException {
+
         // create cache
-        final List<UTCTAIOffset> data = new Generator(entries).getOffsets();
-        cache = new ImmutableTimeStampedCache<UTCTAIOffset>(2, data);
-    }
+        final List<UTCTAIOffset> data = new ArrayList<UTCTAIOffset>(offsets.size());
 
-    /** Generator for leap seconds entries. */
-    private static class Generator {
-
-        /** List of {@link UTCTAIOffset} entries. */
-        private final List<UTCTAIOffset> offsets;
-
-        /** Simple constructor.
-         * @param entries user supplied entries
-         */
-        public Generator(final SortedMap<DateComponents, Integer> entries) {
-
-            offsets = new ArrayList<UTCTAIOffset>();
-
-            // set up the linear offsets used between 1961-01-01 and 1971-12-31
+        if (offsets.get(0).getStart().getYear() > 1968) {
+            // the pre-1972 linear offsets are missing, add them manually
             // excerpt from UTC-TAI.history file:
             //  1961  Jan.  1 - 1961  Aug.  1     1.422 818 0s + (MJD - 37 300) x 0.001 296s
             //        Aug.  1 - 1962  Jan.  1     1.372 818 0s +        ""
@@ -99,51 +79,33 @@ public class UTCScale implements TimeScale {
             //        Sept. 1 - 1966  Jan.  1     3.840 130 0s +        ""
             //  1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s
             //  1968  Feb.  1 - 1972  Jan.  1     4.213 170 0s +        ""
-            addOffsetModel(new DateComponents(1961,  1, 1), 37300, 1.4228180, 0.0012960);
-            addOffsetModel(new DateComponents(1961,  8, 1), 37300, 1.3728180, 0.0012960);
-            addOffsetModel(new DateComponents(1962,  1, 1), 37665, 1.8458580, 0.0011232);
-            addOffsetModel(new DateComponents(1963, 11, 1), 37665, 1.9458580, 0.0011232);
-            addOffsetModel(new DateComponents(1964,  1, 1), 38761, 3.2401300, 0.0012960);
-            addOffsetModel(new DateComponents(1964,  4, 1), 38761, 3.3401300, 0.0012960);
-            addOffsetModel(new DateComponents(1964,  9, 1), 38761, 3.4401300, 0.0012960);
-            addOffsetModel(new DateComponents(1965,  1, 1), 38761, 3.5401300, 0.0012960);
-            addOffsetModel(new DateComponents(1965,  3, 1), 38761, 3.6401300, 0.0012960);
-            addOffsetModel(new DateComponents(1965,  7, 1), 38761, 3.7401300, 0.0012960);
-            addOffsetModel(new DateComponents(1965,  9, 1), 38761, 3.8401300, 0.0012960);
-            addOffsetModel(new DateComponents(1966,  1, 1), 39126, 4.3131700, 0.0025920);
-            addOffsetModel(new DateComponents(1968,  2, 1), 39126, 4.2131700, 0.0025920);
-
-            // add leap second entries in chronological order
-            for (Map.Entry<DateComponents, Integer> entry : entries.entrySet()) {
-                addOffsetModel(entry.getKey(), 0, entry.getValue(), 0);
-            }
-
+            offsets.add( 0, new OffsetModel(new DateComponents(1961,  1, 1), 37300, 1.4228180, 0.0012960));
+            offsets.add( 1, new OffsetModel(new DateComponents(1961,  8, 1), 37300, 1.3728180, 0.0012960));
+            offsets.add( 2, new OffsetModel(new DateComponents(1962,  1, 1), 37665, 1.8458580, 0.0011232));
+            offsets.add( 3, new OffsetModel(new DateComponents(1963, 11, 1), 37665, 1.9458580, 0.0011232));
+            offsets.add( 4, new OffsetModel(new DateComponents(1964,  1, 1), 38761, 3.2401300, 0.0012960));
+            offsets.add( 5, new OffsetModel(new DateComponents(1964,  4, 1), 38761, 3.3401300, 0.0012960));
+            offsets.add( 6, new OffsetModel(new DateComponents(1964,  9, 1), 38761, 3.4401300, 0.0012960));
+            offsets.add( 7, new OffsetModel(new DateComponents(1965,  1, 1), 38761, 3.5401300, 0.0012960));
+            offsets.add( 8, new OffsetModel(new DateComponents(1965,  3, 1), 38761, 3.6401300, 0.0012960));
+            offsets.add( 9, new OffsetModel(new DateComponents(1965,  7, 1), 38761, 3.7401300, 0.0012960));
+            offsets.add(10, new OffsetModel(new DateComponents(1965,  9, 1), 38761, 3.8401300, 0.0012960));
+            offsets.add(11, new OffsetModel(new DateComponents(1966,  1, 1), 39126, 4.3131700, 0.0025920));
+            offsets.add(12, new OffsetModel(new DateComponents(1968,  2, 1), 39126, 4.2131700, 0.0025920));
         }
 
-        /** Retrieve the generated offsets.
-         *
-         * @return the {@link UTCTAIOffset}s.
-         */
-        public List<UTCTAIOffset> getOffsets() {
-            return this.offsets;
-        }
+        UTCTAIOffset previous = null;
 
-        /** Add an offset model.
-         * <p>
-         * This method <em>must</em> be called in chronological order.
-         * </p>
-         * @param date date of the constant offset model start
-         * @param mjdRef reference date of the linear model as a modified julian day
-         * @param offset offset at reference date in seconds (TAI minus UTC)
-         * @param slope offset slope in seconds per UTC day (TAI minus UTC / dUTC)
-         */
-        private void addOffsetModel(final DateComponents date, final int mjdRef,
-                                    final double offset, final double slope) {
+        // link the offsets together
+        final TimeScale tai = TimeScalesFactory.getTAI();
+        for (final OffsetModel o : offsets) {
 
-            final TimeScale tai = TimeScalesFactory.getTAI();
+            final DateComponents date   = o.getStart();
+            final int            mjdRef = o.getMJDRef();
+            final double         offset = o.getOffset();
+            final double         slope  = o.getSlope();
 
             // start of the leap
-            final UTCTAIOffset previous    = offsets.isEmpty() ? null : offsets.get(offsets.size() - 1);
             final double previousOffset    = (previous == null) ? 0.0 : previous.getOffset(date, TimeComponents.H00);
             final AbsoluteDate leapStart   = new AbsoluteDate(date, tai).shiftedBy(previousOffset);
 
@@ -155,12 +117,12 @@ public class UTCScale implements TimeScale {
             final double normalizedSlope   = slope / Constants.JULIAN_DAY;
             final double leap              = leapEnd.durationFrom(leapStart) / (1 + normalizedSlope);
 
-            if (previous != null) {
-                previous.setValidityEnd(leapStart);
-            }
-            offsets.add(new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, normalizedSlope));
+            previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, normalizedSlope);
+            data.add(previous);
 
         }
+
+        cache = new ImmutableTimeStampedCache<UTCTAIOffset>(2, data);
 
     }
 

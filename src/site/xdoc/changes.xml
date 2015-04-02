@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Added a simpler interface for creating custom UTC-TAI offsets loaders.
+      </action>
       <action dev="luc" type="add">
         Added support for USNO tai-utc.dat file, enabled by default, in
         addition to the legacy support for IERS UTC-TAI.history file
