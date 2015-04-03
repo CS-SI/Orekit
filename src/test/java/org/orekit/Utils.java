@@ -72,7 +72,8 @@ public class Utils {
                 Utils.clearFactoryMaps(c);
             }
         }
-        TimeScalesFactory.clearUTCTAILoaders();
+        FramesFactory.setEOPContinuityThreshold(5 * Constants.JULIAN_DAY);
+        TimeScalesFactory.clearUTCTAIOffsetsLoaders();
         Utils.clearJPLEphemeridesConstants();
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.clearOceanTidesReaders();        
