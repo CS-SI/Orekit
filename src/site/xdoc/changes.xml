@@ -21,6 +21,14 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="tn" type="add">
+        Added support to load WMM coefficients from the official model file
+        provided by NOAA.
+      </action>
+      <action dev="tn" type="fix">
+        Fixed javadoc of method "GeoMagneticField#calculateField(...)": 
+        the provided altitude is expected to be a height above the WGS84 ellipsoid.
+      </action>
       <action dev="luc" type="update">
         Added a simpler interface for creating custom UTC-TAI offsets loaders.
       </action>

@@ -30,8 +30,16 @@ import org.orekit.data.DataLoader;
 /** Loads geomagnetic field models from a given input stream. A stream may contain multiple
  * models, the loader reads all available models in consecutive order.
  * <p>
- * The format of the expected model file is the following:
- * </p>
+ * The format of the expected model file is either:
+ * <ul>
+ *   <li>combined format as used by the geomag software, available from the
+ *       <a href="http://www.ngdc.noaa.gov/IAGA/vmod/igrf.html">IGRF model site</a>;
+ *       supports multiple epochs per file</li>
+ *   <li>original format as used by the
+ *       <a href="http://www.ngdc.noaa.gov/geomag/WMM/DoDWMM.shtml">WMM model site</a>.
+ * </ul>
+ * <p>
+ * <b>Combined Format</b>
  * <pre>
  *     {model name} {epoch} {nMax} {nMaxSec} {nMax3} {validity start} {validity end} {minAlt} {maxAlt} {model name} {line number}
  * {n} {m} {gnm} {hnm} {dgnm} {dhnm} {model name} {line number}
@@ -44,6 +52,21 @@ import org.orekit.data.DataLoader;
  * 1  0  -29496.6       0.0      11.6       0.0                        WMM2010   1
  * 1  1   -1586.3    4944.4      16.5     -25.9                        WMM2010   2
  * </pre>
+ * <p>
+ * <b>Original WMM Format</b>
+ * <pre>
+ *    {epoch} {model name} {validity start}
+ * {n} {m} {gnm} {hnm} {dgnm} {dhnm}
+ * </pre>
+ * <p>
+ * Example:
+ * </p>
+ * <pre>
+ *    2015.0            WMM-2015        12/15/2014
+ *  1  0  -29438.5       0.0       10.7        0.0
+ *  1  1   -1501.1    4796.2       17.9      -26.8
+ * </pre>
+ *
  * @author Thomas Neidhart
  */
 public class GeoMagneticModelLoader implements DataLoader {
@@ -87,7 +110,7 @@ public class GeoMagneticModelLoader implements DataLoader {
      * @return the parsed geomagnetic field model
      * @throws IOException if an I/O error occurs
      */
-    private GeoMagneticField readModel(final StreamTokenizer stream) throws IOException {
+    private GeoMagneticField readModel(final StreamTokenizer stream) throws IOException, ParseException {
 
         // check whether there is another model available in the stream
         final int ttype = stream.nextToken();
@@ -95,6 +118,14 @@ public class GeoMagneticModelLoader implements DataLoader {
             return null;
         }
 
+        if (ttype == StreamTokenizer.TT_WORD) {
+            return readCombinedFormat(stream);
+        } else {
+            return readOriginalWMMFormat(stream);
+        }
+    }
+
+    private GeoMagneticField readCombinedFormat(final StreamTokenizer stream) throws IOException {    
         final String modelName = stream.sval;
         stream.nextToken();
         final double epoch = stream.nval;
@@ -123,8 +154,6 @@ public class GeoMagneticModelLoader implements DataLoader {
         stream.nextToken();
         @SuppressWarnings("unused")
         final double altmax = stream.nval;
-
-        // the min/max altitude values are ignored by now
 
         stream.nextToken();
         stream.nextToken();
@@ -162,4 +191,66 @@ public class GeoMagneticModelLoader implements DataLoader {
 
         return model;
     }
+
+    private GeoMagneticField readOriginalWMMFormat(final StreamTokenizer stream)
+            throws IOException, ParseException {
+
+        // hard-coded values in original WMM format
+        final int nMax = 12;
+        final int nMaxSecVar = 12;
+
+        // the validity start is encoded in format MM/dd/yyyy
+        // use the slash as whitespace character to get separate tokens
+        stream.whitespaceChars('/', '/');
+
+        final double epoch = stream.nval;
+        stream.nextToken();
+        final String modelName = stream.sval;
+        stream.nextToken();
+        final double month = stream.nval;
+        stream.nextToken();
+        final double day = stream.nval;
+        stream.nextToken();
+        final double year = stream.nval;
+
+        final double startYear = GeoMagneticField.getDecimalYear((int) day, (int) month, (int) year);
+
+        final GeoMagneticField model = new GeoMagneticField(modelName, epoch, nMax, nMaxSecVar,
+                                                            startYear, epoch + 5.0);
+
+        // loop to get model data from file
+        boolean done = false;
+        int n;
+        int m;
+
+        do {
+            stream.nextToken();
+            n = (int) stream.nval;
+            stream.nextToken();
+            m = (int) stream.nval;
+
+            stream.nextToken();
+            final double gnm = stream.nval;
+            stream.nextToken();
+            final double hnm = stream.nval;
+            stream.nextToken();
+            final double dgnm = stream.nval;
+            stream.nextToken();
+            final double dhnm = stream.nval;
+
+            model.setMainFieldCoefficients(n, m, gnm, hnm);
+            if (n <= nMaxSecVar && m <= nMaxSecVar) {
+                model.setSecularVariationCoefficients(n, m, dgnm, dhnm);
+            }
+
+            done = n == nMax && m == nMax;
+        } while (!done);
+
+        // the original format closes with two delimiting lines of '9's
+        stream.nextToken();
+        stream.nextToken();
+
+        return model;
+    }
+
 }

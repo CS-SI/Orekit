@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.StringTokenizer;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -54,6 +55,44 @@ public class GeoMagneticFieldTest {
      * The potential to use in {@link #getComponent()}. Set in {@link #setUpBefore()}.
      */
     private static NormalizedSphericalHarmonicsProvider potential;
+
+    // test results for test values provided as part of the WMM2015 Report
+    private final double[][] wmmTestValues = {
+        // Date  Alt  Lat  Lon        X        Y         Z        H        F       I      D
+        //        km  deg  deg       nT       nT        nT       nT       nT     deg    deg
+        {2015.0,   0,  80,   0,  6627.1,  -445.9,  54432.3,  6642.1, 54836.0,  83.04, -3.85},
+        {2015.0,   0,   0, 120, 39518.2,   392.9, -11252.4, 39520.2, 41090.9, -15.89,  0.57},
+        {2015.0,   0, -80, 240,  5797.3, 15761.1, -52919.1, 16793.5, 55519.8, -72.39, 69.81},
+        {2015.0, 100,  80,   0,  6314.3,  -471.6,  52269.8,  6331.9, 52652.0,  83.09, -4.27},
+        {2015.0, 100,   0, 120, 37535.6,   364.4, -10773.4, 37537.3, 39052.7, -16.01,  0.56},
+        {2015.0, 100, -80, 240,  5613.1, 14791.5, -50378.6, 15820.7, 52804.4, -72.57, 69.22},
+        {2017.5,   0,  80,   0,  6599.4,  -317.1,  54459.2,  6607.0, 54858.5,  83.08, -2.75},
+        {2017.5,   0,   0, 120, 39571.4,   222.5, -11030.1, 39572.0, 41080.5, -15.57,  0.32},
+        {2017.5,   0, -80, 240,  5873.8, 15781.4, -52687.9, 16839.1, 55313.4, -72.28, 69.58},
+        {2017.5, 100,  80,   0,  6290.5,  -348.5,  52292.7,  6300.1, 52670.9,  83.13, -3.17},
+        {2017.5, 100,   0, 120, 37585.5,   209.5, -10564.2, 37586.1, 39042.5, -15.70,  0.32},
+        {2017.5, 100, -80, 240,  5683.5, 14808.8, -50163.0, 15862.0, 52611.1, -72.45, 69.00}
+    };
+
+    // test results for test values provided as part of the WMM2015 Report
+    // the results for the IGRF12 model have been obtained from the NOAA
+    // online calculator: http://www.ngdc.noaa.gov/geomag-web/#igrfwmm
+    private final double[][] igrfTestValues = {
+        // Date  Alt  Lat  Lon        X        Y         Z        H        F       I      D
+        //        km  deg  deg       nT       nT        nT       nT       nT     deg    deg
+        {2015.0,   0,  80,   0,  6630.9,  -447.2,  54434.5,  6645.9, 54838.7,  83.039, -3.858},
+        {2015.0,   0,   0, 120, 39519.3,   388.6, -11251.7, 39521.3, 41091.7, -15.891,  0.563},
+        {2015.0,   0, -80, 240,  5808.8, 15754.8, -52945.5, 16791.5, 55544.4, -72.403, 69.761},
+        {2015.0, 100,  80,   0,  6317.2,  -472.6,  52272.0,  6334.9, 52654.5,  83.090, -4.278},
+        {2015.0, 100,   0, 120, 37536.9,   361.2, -10773.1, 37538.6, 39053.9, -16.012,  0.551},
+        {2015.0, 100, -80, 240,  5622.8, 14786.8, -50401.4, 15819.8, 52825.8, -72.574, 69.180},
+        {2017.5,   0,  80,   0,  6601.0,  -316.4,  54455.5,  6608.5, 54855.0,  83.080, -2.744},
+        {2017.5,   0,   0, 120, 39568.1,   225.0, -11041.4, 39568.7, 41080.3, -15.591,  0.325},
+        {2017.5,   0, -80, 240,  5894.7, 15768.1, -52696.8, 16833.9, 55320.2, -72.283, 69.502},
+        {2017.5, 100,  80,   0,  6291.6,  -347.2,  52289.9,  6301.2, 52668.2,  83.128, -3.158},
+        {2017.5, 100,   0, 120, 37583.0,   212.3, -10575.1, 37583.6, 39043.0, -15.715,  0.323},
+        {2017.5, 100, -80, 240,  5702.0, 14797.8, -50170.0, 15858.3, 52616.7, -72.458, 68.927}
+    };
 
     /**
      * load orekit data and gravity field.
@@ -122,46 +161,28 @@ public class GeoMagneticFieldTest {
         // have been adapted.
         runSampleFile(FieldModel.WMM, "sample_coords.txt", "sample_out_WMM2015.txt");
 
-        // test results for test values provided as part of the WMM2015 Report
-        final double[][] testValues = {
-            // Date  Alt  Lat  Lon        X        Y         Z        H        F       I      D
-            //        km  deg  deg       nT       nT        nT       nT       nT     deg    deg
-            {2015.0,   0,  80,   0,  6627.1,  -445.9,  54432.3,  6642.1, 54836.0,  83.04, -3.85},
-            {2015.0,   0,   0, 120, 39518.2,   392.9, -11252.4, 39520.2, 41090.9, -15.89,  0.57},
-            {2015.0,   0, -80, 240,  5797.3, 15761.1, -52919.1, 16793.5, 55519.8, -72.39, 69.81},
-            {2015.0, 100,  80,   0,  6314.3,  -471.6,  52269.8,  6331.9, 52652.0,  83.09, -4.27},
-            {2015.0, 100,   0, 120, 37535.6,   364.4, -10773.4, 37537.3, 39052.7, -16.01,  0.56},
-            {2015.0, 100, -80, 240,  5613.1, 14791.5, -50378.6, 15820.7, 52804.4, -72.57, 69.22},
-            {2017.5,   0,  80,   0,  6599.4,  -317.1,  54459.2,  6607.0, 54858.5,  83.08, -2.75},
-            {2017.5,   0,   0, 120, 39571.4,   222.5, -11030.1, 39572.0, 41080.5, -15.57,  0.32},
-            {2017.5,   0, -80, 240,  5873.8, 15781.4, -52687.9, 16839.1, 55313.4, -72.28, 69.58},
-            {2017.5, 100,  80,   0,  6290.5,  -348.5,  52292.7,  6300.1, 52670.9,  83.13, -3.17},
-            {2017.5, 100,   0, 120, 37585.5,   209.5, -10564.2, 37586.1, 39042.5, -15.70,  0.32},
-            {2017.5, 100, -80, 240,  5683.5, 14808.8, -50163.0, 15862.0, 52611.1, -72.45, 69.00}
-        };
-
         final double eps = 1e-1;
         final double degreeEps = 1e-2;
-        for (int i = 0; i < testValues.length; i++) {
-            final GeoMagneticField model = GeoMagneticFieldFactory.getWMM(testValues[i][0]);
-            final GeoMagneticElements result = model.calculateField(testValues[i][2],
-                                                                    testValues[i][3],
-                                                                    testValues[i][1]);
+        for (int i = 0; i < wmmTestValues.length; i++) {
+            final GeoMagneticField model = GeoMagneticFieldFactory.getWMM(wmmTestValues[i][0]);
+            final GeoMagneticElements result = model.calculateField(wmmTestValues[i][2],
+                                                                    wmmTestValues[i][3],
+                                                                    wmmTestValues[i][1]);
 
             // X
-            Assert.assertEquals(testValues[i][4], result.getFieldVector().getX(), eps);
+            Assert.assertEquals(wmmTestValues[i][4], result.getFieldVector().getX(), eps);
             // Y
-            Assert.assertEquals(testValues[i][5], result.getFieldVector().getY(), eps);
+            Assert.assertEquals(wmmTestValues[i][5], result.getFieldVector().getY(), eps);
             // Z
-            Assert.assertEquals(testValues[i][6], result.getFieldVector().getZ(), eps);
+            Assert.assertEquals(wmmTestValues[i][6], result.getFieldVector().getZ(), eps);
             // H
-            Assert.assertEquals(testValues[i][7], result.getHorizontalIntensity(), eps);
+            Assert.assertEquals(wmmTestValues[i][7], result.getHorizontalIntensity(), eps);
             // F
-            Assert.assertEquals(testValues[i][8], result.getTotalIntensity(), eps);
+            Assert.assertEquals(wmmTestValues[i][8], result.getTotalIntensity(), eps);
             // inclination
-            Assert.assertEquals(testValues[i][9], result.getInclination(), degreeEps);
+            Assert.assertEquals(wmmTestValues[i][9], result.getInclination(), degreeEps);
             // declination
-            Assert.assertEquals(testValues[i][10], result.getDeclination(), degreeEps);
+            Assert.assertEquals(wmmTestValues[i][10], result.getDeclination(), degreeEps);
         }
     }
 
@@ -220,51 +241,30 @@ public class GeoMagneticFieldTest {
         // have been adapted.
         runSampleFile(FieldModel.IGRF, "sample_coords.txt", "sample_out_IGRF12.txt");
 
-        // test results for test values provided as part of the WMM2015 Report
-        // the results for the IGRF12 model have been obtained from the NOAA
-        // online calculator: http://www.ngdc.noaa.gov/geomag-web/#igrfwmm
-
-        final double[][] testValues = {
-            // Date  Alt  Lat  Lon        X        Y         Z        H        F       I      D
-            //        km  deg  deg       nT       nT        nT       nT       nT     deg    deg
-            {2015.0,   0,  80,   0,  6630.9,  -447.2,  54434.5,  6645.9, 54838.7,  83.039, -3.858},
-            {2015.0,   0,   0, 120, 39519.3,   388.6, -11251.7, 39521.3, 41091.7, -15.891,  0.563},
-            {2015.0,   0, -80, 240,  5808.8, 15754.8, -52945.5, 16791.5, 55544.4, -72.403, 69.761},
-            {2015.0, 100,  80,   0,  6317.2,  -472.6,  52272.0,  6334.9, 52654.5,  83.090, -4.278},
-            {2015.0, 100,   0, 120, 37536.9,   361.2, -10773.1, 37538.6, 39053.9, -16.012,  0.551},
-            {2015.0, 100, -80, 240,  5622.8, 14786.8, -50401.4, 15819.8, 52825.8, -72.574, 69.180},
-            {2017.5,   0,  80,   0,  6601.0,  -316.4,  54455.5,  6608.5, 54855.0,  83.080, -2.744},
-            {2017.5,   0,   0, 120, 39568.1,   225.0, -11041.4, 39568.7, 41080.3, -15.591,  0.325},
-            {2017.5,   0, -80, 240,  5894.7, 15768.1, -52696.8, 16833.9, 55320.2, -72.283, 69.502},
-            {2017.5, 100,  80,   0,  6291.6,  -347.2,  52289.9,  6301.2, 52668.2,  83.128, -3.158},
-            {2017.5, 100,   0, 120, 37583.0,   212.3, -10575.1, 37583.6, 39043.0, -15.715,  0.323},
-            {2017.5, 100, -80, 240,  5702.0, 14797.8, -50170.0, 15858.3, 52616.7, -72.458, 68.927}
-        };
-
         final double eps = 1e-1;
         final double degreeEps = 1e-2;
-        for (int i = 0; i < testValues.length; i++) {
-            final GeoMagneticField model = GeoMagneticFieldFactory.getIGRF(testValues[i][0]);
-            final GeoMagneticElements result = model.calculateField(testValues[i][2],
-                                                                    testValues[i][3],
-                                                                    testValues[i][1]);
+        for (int i = 0; i < igrfTestValues.length; i++) {
+            final GeoMagneticField model = GeoMagneticFieldFactory.getIGRF(igrfTestValues[i][0]);
+            final GeoMagneticElements result = model.calculateField(igrfTestValues[i][2],
+                                                                    igrfTestValues[i][3],
+                                                                    igrfTestValues[i][1]);
 
             final Vector3D b = result.getFieldVector();
 
             // X
-            Assert.assertEquals(testValues[i][4], b.getX(), eps);
+            Assert.assertEquals(igrfTestValues[i][4], b.getX(), eps);
             // Y
-            Assert.assertEquals(testValues[i][5], b.getY(), eps);
+            Assert.assertEquals(igrfTestValues[i][5], b.getY(), eps);
             // Z
-            Assert.assertEquals(testValues[i][6], b.getZ(), eps);
+            Assert.assertEquals(igrfTestValues[i][6], b.getZ(), eps);
             // H
-            Assert.assertEquals(testValues[i][7], result.getHorizontalIntensity(), eps);
+            Assert.assertEquals(igrfTestValues[i][7], result.getHorizontalIntensity(), eps);
             // F
-            Assert.assertEquals(testValues[i][8], result.getTotalIntensity(), eps);
+            Assert.assertEquals(igrfTestValues[i][8], result.getTotalIntensity(), eps);
             // inclination
-            Assert.assertEquals(testValues[i][9], result.getInclination(), degreeEps);
+            Assert.assertEquals(igrfTestValues[i][9], result.getInclination(), degreeEps);
             // declination
-            Assert.assertEquals(testValues[i][10], result.getDeclination(), degreeEps);
+            Assert.assertEquals(igrfTestValues[i][10], result.getDeclination(), degreeEps);
         }
     }
 
@@ -296,6 +296,48 @@ public class GeoMagneticFieldTest {
         Assert.assertEquals(2015, transformedModel.validFrom(), 1e0);
         Assert.assertEquals(2020, transformedModel.validTo(), 1e0);
         Assert.assertEquals(2017, transformedModel.getEpoch(), 1e0);
+    }
+
+    @Test
+    public void testLoadOriginalWMMModel() throws Exception {
+        GeoMagneticModelLoader loader = new GeoMagneticModelLoader();
+
+        InputStream input = getResource("WMM2015.COF");
+        loader.loadData(input, "WMM2015.COF");
+        
+        Collection<GeoMagneticField> models = loader.getModels();
+        Assert.assertNotNull(models);
+        Assert.assertEquals(1, models.size());
+
+        GeoMagneticField wmmModel = models.iterator().next();
+        Assert.assertEquals("WMM-2015", wmmModel.getModelName());
+        Assert.assertEquals(2015, wmmModel.getEpoch(), 1e-9);
+
+        final double eps = 1e-1;
+        final double degreeEps = 1e-2;
+        for (int i = 0; i < wmmTestValues.length; i++) {
+            if (wmmTestValues[i][0] != wmmModel.getEpoch()) {
+                continue;
+            }
+            final GeoMagneticElements result = wmmModel.calculateField(wmmTestValues[i][2],
+                                                                       wmmTestValues[i][3],
+                                                                       wmmTestValues[i][1]);
+
+            // X
+            Assert.assertEquals(wmmTestValues[i][4], result.getFieldVector().getX(), eps);
+            // Y
+            Assert.assertEquals(wmmTestValues[i][5], result.getFieldVector().getY(), eps);
+            // Z
+            Assert.assertEquals(wmmTestValues[i][6], result.getFieldVector().getZ(), eps);
+            // H
+            Assert.assertEquals(wmmTestValues[i][7], result.getHorizontalIntensity(), eps);
+            // F
+            Assert.assertEquals(wmmTestValues[i][8], result.getTotalIntensity(), eps);
+            // inclination
+            Assert.assertEquals(wmmTestValues[i][9], result.getInclination(), degreeEps);
+            // declination
+            Assert.assertEquals(wmmTestValues[i][10], result.getDeclination(), degreeEps);
+        }
     }
 
     public void runSampleFile(final FieldModel type, final String inputFile, final String outputFile)
