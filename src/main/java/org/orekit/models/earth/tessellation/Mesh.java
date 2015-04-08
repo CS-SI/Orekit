@@ -325,9 +325,10 @@ class Mesh {
     }
 
     /** Get the oriented list of <em>enabled</em> nodes at mesh boundary, in taxicab geometry.
+     * @param simplified if true, don't include intermediate points along almost straight lines
      * @return list of nodes
      */
-    public List<Node> getTaxicabBoundary() {
+    public List<Node> getTaxicabBoundary(final boolean simplified) {
 
         final List<Node> boundary = new ArrayList<Node>();
         if (nodes.size() < 2) {
@@ -380,6 +381,25 @@ class Mesh {
             }
         }
 
+        if (simplified) {
+            for (int i = 0; i < boundary.size(); ++i) {
+                final int  n        = boundary.size();
+                final Node previous = boundary.get((i + n - 1) % n);
+                final int  pl       = previous.getAlongIndex();
+                final int  pc       = previous.getAcrossIndex();
+                final Node current  = boundary.get(i);
+                final int  cl       = current.getAlongIndex();
+                final int  cc       = current.getAcrossIndex();
+                final Node next     = boundary.get((i + 1)     % n);
+                final int  nl       = next.getAlongIndex();
+                final int  nc       = next.getAcrossIndex();
+                if ((pl == cl && cl == nl) || (pc == cc && cc == nc)) {
+                    // the current point is a spurious intermediate in a straight line, remove it
+                    boundary.remove(i--);
+                }
+            }
+        }
+
         return boundary;
 
     }
@@ -392,7 +412,7 @@ class Mesh {
         if (coverage == null) {
 
             // lazy build of mesh coverage
-            final List<Mesh.Node> boundary = getTaxicabBoundary();
+            final List<Mesh.Node> boundary = getTaxicabBoundary(false);
             final S2Point[] vertices = new S2Point[boundary.size()];
             for (int i = 0; i < vertices.length; ++i) {
                 vertices[i] = toS2Point(boundary.get(i).getGP());
