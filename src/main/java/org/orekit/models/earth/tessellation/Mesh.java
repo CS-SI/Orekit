@@ -41,6 +41,9 @@ class Mesh {
     /** Zone of interest to tessellate. */
     private final SphericalPolygonsSet zone;
 
+    /** Zone covered by the mesh. */
+    private SphericalPolygonsSet coverage;
+
     /** Aiming used for orienting tiles. */
     private final TileAiming aiming;
 
@@ -71,6 +74,7 @@ class Mesh {
         throws OrekitException {
         this.ellipsoid      = ellipsoid;
         this.zone           = zone;
+        this.coverage       = null;
         this.aiming         = aiming;
         this.nodes          = new HashMap<Long, Node>();
         this.minAlongIndex  = 0;
@@ -138,6 +142,13 @@ class Mesh {
         return maxAcrossIndex;
     }
 
+    /** Get the number of nodes.
+     * @return number of nodes
+     */
+    public int getNumberOfNodes() {
+        return nodes.size();
+    }
+
     /** Retrieve a node from its indices.
      * @param alongIndex index in the along direction
      * @param acrossIndex index in the across direction
@@ -159,6 +170,19 @@ class Mesh {
         final Node node = new Node(gp, alongIndex, acrossIndex);
         store(node);
         return node;
+    }
+
+    /** Get the nodes that lie inside the interest zone.
+     * @return nodes that lie inside the interest zone
+     */
+    public List<Node> getInsideNodes() {
+        final List<Node> insideNodes = new ArrayList<Node>();
+        for (final Map.Entry<Long, Node> entry : nodes.entrySet()) {
+            if (entry.getValue().isInside()) {
+                insideNodes.add(entry.getValue());
+            }
+        }
+        return insideNodes;
     }
 
     /** Find the existing node closest to a location.
@@ -204,6 +228,23 @@ class Mesh {
         // at least the first node always exists
         return getNode(0, 0);
 
+    }
+
+    /** Find the existing node closest to a location.
+     * @param location reference location in Cartesian coordinates
+     * @return node or null if no node is available at these indices
+     */
+    public Node getClosestExistingNode(final Vector3D location) {
+        Node selected = null;
+        double min = Double.POSITIVE_INFINITY;
+        for (final Map.Entry<Long, Node> entry : nodes.entrySet()) {
+            final double distance = Vector3D.distance(location, entry.getValue().getV());
+            if (distance < min) {
+                selected = entry.getValue();
+                min      = distance;
+            }
+        }
+        return selected;
     }
 
     /** Get the oriented list of nodes at mesh boundary, in taxicab geometry.
@@ -263,15 +304,50 @@ class Mesh {
 
     }
 
+    /** Get the zone covered by the mesh.
+     * @return mesh coverage
+     */
+    public SphericalPolygonsSet getCoverage() {
+
+        if (coverage == null) {
+
+            // lazy build of mesh coverage
+            final List<Mesh.Node> boundary = getTaxicabBoundary();
+            final S2Point[] vertices = new S2Point[boundary.size()];
+            for (int i = 0; i < vertices.length; ++i) {
+                vertices[i] = toS2Point(boundary.get(i).getGP());
+            }
+            coverage = new SphericalPolygonsSet(zone.getTolerance(), vertices);
+        }
+
+        return coverage;
+
+    }
+
+    /** Convert a point on the ellipsoid to the unit 2-sphere.
+     * @param point point on the ellipsoid
+     * @return point on the unit 2-sphere
+     */
+    protected S2Point toS2Point(final GeodeticPoint point) {
+        return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
+    }
+
     /** Store a node.
      * @param node to add
      */
     private void store(final Node node) {
+
+        // the new node invalidates current estimation of the coverage
+        coverage = null;
+
+        // update min/max indices
         minAlongIndex  = FastMath.min(minAlongIndex,  node.alongIndex);
         maxAlongIndex  = FastMath.max(maxAlongIndex,  node.alongIndex);
         minAcrossIndex = FastMath.min(minAcrossIndex, node.acrossIndex);
         maxAcrossIndex = FastMath.max(maxAcrossIndex, node.acrossIndex);
+
         nodes.put(key(node.alongIndex, node.acrossIndex), node);
+
     }
 
     /** Convert along and across indices to map key.
@@ -289,10 +365,13 @@ class Mesh {
         /** Node position in geodetic coordinates. */
         private final GeodeticPoint gp;
 
-        /** Along tile direction. */
+        /** Node position in Cartesian coordinates. */
+        private final Vector3D v;
+
+        /** Normalized along tile direction. */
         private final Vector3D along;
 
-        /** Across tile direction. */
+        /** Normalized across tile direction. */
         private final Vector3D across;
 
         /** Indicator for node location with respect to interest zone. */
@@ -312,7 +391,7 @@ class Mesh {
          */
         private Node(final GeodeticPoint gp, final int alongIndex, final int acrossIndex)
             throws OrekitException {
-            final Vector3D v = ellipsoid.transform(gp);
+            this.v           = ellipsoid.transform(gp);
             this.gp          = gp;
             this.along       = aiming.alongTileDirection(v, gp);
             this.across      = Vector3D.crossProduct(v, along).normalize();
@@ -328,15 +407,22 @@ class Mesh {
             return gp;
         }
 
-        /** Get the along tile direction.
-         * @return along tile direction
+        /** Get the node position in Cartesian coordinates.
+         * @return vode position in Cartesian coordinates
+         */
+        public Vector3D getV() {
+            return v;
+        }
+
+        /** Get the normalized along tile direction.
+         * @return normalized along tile direction
          */
         public Vector3D getAlong() {
             return along;
         }
 
-        /** Get the across tile direction.
-         * @return across tile direction
+        /** Get the normalized across tile direction.
+         * @return normalized across tile direction
          */
         public Vector3D getAcross() {
             return across;

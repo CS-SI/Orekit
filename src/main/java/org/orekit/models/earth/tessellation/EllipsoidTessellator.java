@@ -17,8 +17,11 @@
 package org.orekit.models.earth.tessellation;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -94,86 +97,65 @@ public class EllipsoidTessellator {
 
     /** Tessellate a zone of interest into tiles.
      * @param zone zone of interest to tessellate
-     * @return a list of tiles covering the zone of interest
+     * @return a list of lists of tiles covering the zone of interest,
+     * each sub-list corresponding to a part not connected to the other
+     * parts (for example for islands)
      * @exception OrekitException if the zone cannot be tessellated
      */
-    public List<Tile> tessellate(final SphericalPolygonsSet zone)
+    public List<List<Tile>> tessellate(final SphericalPolygonsSet zone)
         throws OrekitException {
 
-        final List<Tile>              tiles     = new ArrayList<Tile>();
+        final Map<Mesh, List<Tile>>   map       = new IdentityHashMap<Mesh, List<Tile>>();
         final RegionFactory<Sphere2D> factory   = new RegionFactory<Sphere2D>();
         SphericalPolygonsSet          remaining = zone;
 
         while (!remaining.isEmpty()) {
 
             // find a mesh covering at least one connected part of the zone
-            final Mesh mesh = findMesh(remaining);
+            final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
+            Mesh mesh = createMesh(remaining);
+            mergingSeeds.add(mesh.getNode(0, 0));
+            List<Tile> tiles = null;
+            while (!mergingSeeds.isEmpty()) {
 
-            // extract the tiles from the mesh
-            final int minAcross = mesh.getMinAcrossIndex();
-            final int maxAcross = mesh.getMaxAcrossIndex();
-            for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += SPLITS) {
-                final int minAlong = FastMath.min(mesh.getMinAlongIndex(acrossIndex),
-                                                  mesh.getMinAlongIndex(acrossIndex + SPLITS));
-                final int maxAlong = FastMath.max(mesh.getMaxAlongIndex(acrossIndex),
-                                                  mesh.getMaxAlongIndex(acrossIndex + SPLITS));
-                for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += SPLITS) {
+                // expand the mesh around the seed
+                neighborExpandMesh(mesh, mergingSeeds, zone);
 
-                    // get the base vertex nodes
-                    final Mesh.Node node0 = getTileVertexNode(mesh, alongIndex,          acrossIndex);
-                    final Mesh.Node node1 = getTileVertexNode(mesh, alongIndex + SPLITS, acrossIndex);
-                    final Mesh.Node node2 = getTileVertexNode(mesh, alongIndex + SPLITS, acrossIndex + SPLITS);
-                    final Mesh.Node node3 = getTileVertexNode(mesh, alongIndex,          acrossIndex + SPLITS);
+                // extract the tiles from the mesh
+                // this further expands the mesh so tiles dimensions are multiples of SPLITS,
+                // hence it must be performed here before checking meshes independence
+                tiles = extractTiles(mesh, zone);
 
-                    // apply tile overlap
-                    final GeodeticPoint gp0 = move(node0.getGP(),
-                                                   new Vector3D(-lengthOverlap, node0.getAlong(),
-                                                                -widthOverlap,  node0.getAcross()));
-                    final GeodeticPoint gp1 = move(node1.getGP(),
-                                                   new Vector3D(+lengthOverlap, node1.getAlong(),
-                                                                -widthOverlap,  node1.getAcross()));
-                    final GeodeticPoint gp2 = move(node2.getGP(),
-                                                   new Vector3D(+lengthOverlap, node2.getAlong(),
-                                                                +widthOverlap,  node2.getAcross()));
-                    final GeodeticPoint gp3 = move(node3.getGP(),
-                                                   new Vector3D(-lengthOverlap, node2.getAlong(),
-                                                                +widthOverlap,  node2.getAcross()));
+                // check the mesh is independent from existing meshes
+                mergingSeeds.clear();
+                for (final Map.Entry<Mesh, List<Tile>> entry : map.entrySet()) {
+                    if (!factory.intersection(mesh.getCoverage(), entry.getKey().getCoverage()).isEmpty()) {
+                        // the meshes are not independent, they intersect each other!
 
-                    // create a quadrilateral region corresponding to the candidate tile
-                    final SphericalPolygonsSet quadrilateral =
-                            new SphericalPolygonsSet(zone.getTolerance(),
-                                                     toS2Point(gp0), toS2Point(gp1), toS2Point(gp2), toS2Point(gp3));
-
-                    if (!factory.intersection(remaining, quadrilateral).isEmpty()) {
-
-                        // the tile does cover part of the zone, it contributes to the tessellation
-                        tiles.add(new Tile(gp0, gp1, gp2, gp3));
-
-                        // ensure the taxicab boundary follows the built tile sides
-                        for (int k = 1; k < SPLITS; ++k) {
-                            getTileVertexNode(mesh, alongIndex + k,      acrossIndex);
-                            getTileVertexNode(mesh, alongIndex + k,      acrossIndex + SPLITS);
-                            getTileVertexNode(mesh, alongIndex,          acrossIndex + k);
-                            getTileVertexNode(mesh, alongIndex + SPLITS, acrossIndex + k);
-                        }
+                        // merge the two meshes together
+                        mesh = mergeMeshes(mesh, entry.getKey(), mergingSeeds);
+                        map.remove(entry.getKey());
+                        break;
 
                     }
-
                 }
+
             }
 
             // remove the part of the zone covered by the mesh
-            final List<Mesh.Node> boundary = mesh.getTaxicabBoundary();
-            final S2Point[] vertices = new S2Point[boundary.size()];
-            for (int i = 0; i < vertices.length; ++i) {
-                vertices[i] = toS2Point(boundary.get(i).getGP());
-            }
-            final SphericalPolygonsSet meshCoverage = new SphericalPolygonsSet(zone.getTolerance(), vertices);
-            remaining = (SphericalPolygonsSet) factory.difference(remaining, meshCoverage);
+            remaining = (SphericalPolygonsSet) factory.difference(remaining, mesh.getCoverage());
+
+            map.put(mesh, tiles);
 
         }
 
-        return tiles;
+        // concatenate the lists from the independent meshes
+        final List<List<Tile>> tilesLists = new ArrayList<List<Tile>>(map.size());
+        for (final Map.Entry<Mesh, List<Tile>> entry : map.entrySet()) {
+            tilesLists.add(entry.getValue());
+        }
+
+        return tilesLists;
 
     }
 
@@ -182,18 +164,36 @@ public class EllipsoidTessellator {
      * @return a mesh covering at least one connected part of the zone
      * @exception OrekitException if tile direction cannot be computed
      */
-    private Mesh findMesh(final SphericalPolygonsSet zone) throws OrekitException {
+    private Mesh createMesh(final SphericalPolygonsSet zone) throws OrekitException {
 
         // start mesh inside the zone
         final InsideFinder finder = new InsideFinder(zone.getTolerance());
         zone.getTree(false).visit(finder);
         final GeodeticPoint start = toGeodetic(finder.getInsidePoint());
-        final Mesh mesh = new Mesh(ellipsoid, zone, aiming, start);
+        return new Mesh(ellipsoid, zone, aiming, start);
+
+    }
+
+    /** Expand a mesh so it surrounds at least one connected part of a zone.
+     * <p>
+     * This part of mesh expansion is neighbors based. It includes the seed
+     * node neighbors, and their neighbors, and the neighbors of their
+     * neighbors until the path-connected sub-parts of the zone these nodes
+     * belong to are completely surrounded by the mesh taxicab boundary.
+     * </p>
+     * @param mesh mesh to expand
+     * @param seeds seed nodes (already in the mesh) from which to start expansion
+     * @param zone zone to mesh
+     * @exception OrekitException if tile direction cannot be computed
+     */
+    private void neighborExpandMesh(final Mesh mesh, final Collection<Mesh.Node> seeds,
+                                    final SphericalPolygonsSet zone)
+        throws OrekitException {
 
         // mesh expansion loop
         boolean expanding = true;
         final Queue<Mesh.Node> newNodes = new LinkedList<Mesh.Node>();
-        newNodes.add(mesh.getNode(0, 0));
+        newNodes.addAll(seeds);
         while (expanding) {
 
             // first expansion step: set up the mesh so that all its
@@ -232,7 +232,155 @@ public class EllipsoidTessellator {
 
         }
 
-        return mesh;
+    }
+
+    /** Extract tiles from a mesh.
+     * @param mesh mesh from which tiles should be extracted
+     * @param zone zone covered by the mesh
+     * @return extracted tiles
+     * @exception OrekitException if tile direction cannot be computed
+     */
+    private List<Tile> extractTiles(final Mesh mesh, final SphericalPolygonsSet zone)
+        throws OrekitException {
+
+        final List<Tile> tiles = new ArrayList<Tile>();
+
+        final int minAcross = mesh.getMinAcrossIndex();
+        final int maxAcross = mesh.getMaxAcrossIndex();
+        for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += SPLITS) {
+            final int minAlong = FastMath.min(mesh.getMinAlongIndex(acrossIndex),
+                                              mesh.getMinAlongIndex(acrossIndex + SPLITS));
+            final int maxAlong = FastMath.max(mesh.getMaxAlongIndex(acrossIndex),
+                                              mesh.getMaxAlongIndex(acrossIndex + SPLITS));
+            for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += SPLITS) {
+
+                // get the base vertex nodes
+                final Mesh.Node node0 = createNode(mesh, alongIndex,          acrossIndex);
+                final Mesh.Node node1 = createNode(mesh, alongIndex + SPLITS, acrossIndex);
+                final Mesh.Node node2 = createNode(mesh, alongIndex + SPLITS, acrossIndex + SPLITS);
+                final Mesh.Node node3 = createNode(mesh, alongIndex,          acrossIndex + SPLITS);
+
+                // apply tile overlap
+                final GeodeticPoint gp0 = move(node0.getGP(),
+                                               new Vector3D(-lengthOverlap, node0.getAlong(),
+                                                            -widthOverlap,  node0.getAcross()));
+                final GeodeticPoint gp1 = move(node1.getGP(),
+                                               new Vector3D(+lengthOverlap, node1.getAlong(),
+                                                            -widthOverlap,  node1.getAcross()));
+                final GeodeticPoint gp2 = move(node2.getGP(),
+                                               new Vector3D(+lengthOverlap, node2.getAlong(),
+                                                            +widthOverlap,  node2.getAcross()));
+                final GeodeticPoint gp3 = move(node3.getGP(),
+                                               new Vector3D(-lengthOverlap, node2.getAlong(),
+                                                            +widthOverlap,  node2.getAcross()));
+
+                // create a quadrilateral region corresponding to the candidate tile
+                final SphericalPolygonsSet quadrilateral =
+                        new SphericalPolygonsSet(zone.getTolerance(),
+                                                 toS2Point(gp0), toS2Point(gp1), toS2Point(gp2), toS2Point(gp3));
+
+                if (!new RegionFactory<Sphere2D>().intersection(zone, quadrilateral).isEmpty()) {
+
+                    // the tile does cover part of the zone, it contributes to the tessellation
+                    tiles.add(new Tile(gp0, gp1, gp2, gp3));
+
+                    // ensure the taxicab boundary follows the built tile sides
+                    for (int k = 1; k < SPLITS; ++k) {
+                        createNode(mesh, alongIndex + k,      acrossIndex);
+                        createNode(mesh, alongIndex + k,      acrossIndex + SPLITS);
+                        createNode(mesh, alongIndex,          acrossIndex + k);
+                        createNode(mesh, alongIndex + SPLITS, acrossIndex + k);
+                    }
+
+                }
+
+            }
+        }
+
+        return tiles;
+
+    }
+
+    /** Merge two meshes together.
+     * @param mesh1 first mesh
+     * @param mesh2 second mesh
+     * @param mergingSeeds collection were to put the nodes created during the merge
+     * @return merged mesh (really one of the instances)
+     * @exception OrekitException if tile direction cannot be computed
+     */
+    private Mesh mergeMeshes(final Mesh mesh1, final Mesh mesh2,
+                             final Collection<Mesh.Node> mergingSeeds)
+        throws OrekitException {
+
+        // select the way merge will be performed
+        final Mesh larger;
+        final Mesh smaller;
+        if (mesh1.getNumberOfNodes() >= mesh2.getNumberOfNodes()) {
+            // the larger new mesh should absorb the smaller existing mesh
+            larger  = mesh1;
+            smaller = mesh2;
+        } else {
+            // the larger existing mesh should absorb the smaller new mesh
+            larger  = mesh2;
+            smaller = mesh1;
+        }
+
+        // prepare seed nodes for next iteration
+        for (final Mesh.Node insideNode : smaller.getInsideNodes()) {
+
+            // beware we cannot reuse the node itself as the two meshes are not aligned!
+            // we have to create new nodes around the previous location
+            Mesh.Node node = larger.getClosestExistingNode(insideNode.getV());
+
+            while (estimateAlongMotion(node, insideNode.getV()) > +splitLength) {
+                // the node is before desired index in the along direction
+                // we need to create intermediates nodes up to the desired index
+                node = addNeighborIfNeeded(node, Direction.PLUS_ALONG, larger, mergingSeeds);
+            }
+
+            while (estimateAlongMotion(node, insideNode.getV()) < -splitLength) {
+                // the node is after desired index in the along direction
+                // we need to create intermediates nodes up to the desired index
+                node = addNeighborIfNeeded(node, Direction.MINUS_ALONG, larger, mergingSeeds);
+            }
+
+            while (estimateAcrossMotion(node, insideNode.getV()) > +splitWidth) {
+                // the node is before desired index in the across direction
+                // we need to create intermediates nodes up to the desired index
+                node = addNeighborIfNeeded(node, Direction.PLUS_ACROSS, larger, mergingSeeds);
+            }
+
+            while (estimateAcrossMotion(node, insideNode.getV()) < -splitWidth) {
+                // the node is after desired index in the across direction
+                // we need to create intermediates nodes up to the desired index
+                node = addNeighborIfNeeded(node, Direction.MINUS_ACROSS, larger, mergingSeeds);
+            }
+
+            // now we are close to the inside node,
+            // make sure the four surrounding nodes are available
+            if (estimateAlongMotion(node, insideNode.getV()) < 0.0) {
+                final Mesh.Node alongPlus = addNeighborIfNeeded(node, Direction.PLUS_ALONG,  larger, mergingSeeds);   // (+1,  0)
+                if (estimateAcrossMotion(node, insideNode.getV()) < 0.0) {
+                    addNeighborIfNeeded(node,       Direction.PLUS_ACROSS, larger, mergingSeeds);                     // ( 0, +1)
+                    addNeighborIfNeeded(alongPlus,  Direction.PLUS_ACROSS, larger, mergingSeeds);                     // (+1, +1)
+                } else {
+                    addNeighborIfNeeded(node,       Direction.MINUS_ACROSS, larger, mergingSeeds);                    // ( 0, -1)
+                    addNeighborIfNeeded(alongPlus,  Direction.MINUS_ACROSS, larger, mergingSeeds);                    // (+1, -1)
+                }
+            } else {
+                final Mesh.Node alongMinus = addNeighborIfNeeded(node, Direction.MINUS_ALONG,  larger, mergingSeeds); // (-1,  0)
+                if (estimateAcrossMotion(node, insideNode.getV()) < 0.0) {
+                    addNeighborIfNeeded(node,       Direction.PLUS_ACROSS, larger, mergingSeeds);                     // ( 0, +1)
+                    addNeighborIfNeeded(alongMinus, Direction.PLUS_ACROSS, larger, mergingSeeds);                     // (-1, +1)
+                } else {
+                    addNeighborIfNeeded(node,       Direction.MINUS_ACROSS, larger, mergingSeeds);                    // ( 0, -1)
+                    addNeighborIfNeeded(alongMinus, Direction.MINUS_ACROSS, larger, mergingSeeds);                    // (-1, -1)
+                }
+            }
+
+        }
+
+        return larger;
 
     }
 
@@ -243,7 +391,7 @@ public class EllipsoidTessellator {
      * @exception OrekitException if tile direction cannot be computed
      */
     private void addAllNeighborsIfNeeded(final Mesh.Node base, final Mesh mesh,
-                                         final Queue<Mesh.Node> newNodes)
+                                         final Collection<Mesh.Node> newNodes)
         throws OrekitException {
         final Mesh.Node alongMinus = addNeighborIfNeeded(base, Direction.MINUS_ALONG, mesh, newNodes); // (-1,  0)
         final Mesh.Node alongPlus  = addNeighborIfNeeded(base, Direction.PLUS_ALONG,  mesh, newNodes); // (+1,  0)
@@ -264,7 +412,7 @@ public class EllipsoidTessellator {
      * @exception OrekitException if tile direction cannot be computed
      */
     private Mesh.Node addNeighborIfNeeded(final Mesh.Node base, final Direction direction,
-                                          final Mesh mesh, final Queue<Mesh.Node> newNodes)
+                                          final Mesh mesh, final Collection<Mesh.Node> newNodes)
         throws OrekitException {
 
         final int alongIndex  = direction.neighborAlongIndex(base);
@@ -289,14 +437,14 @@ public class EllipsoidTessellator {
 
     }
 
-    /** Get a node to be used as a tile vertex, creating it if needed.
+    /** Get a node, creating it if needed.
      * @param mesh complete mesh containing nodes
      * @param alongIndex index of the tile vertex node
      * @param acrossIndex index of the tile vertex node
-     * @return tile vertex node
+     * @return created node
      * @exception OrekitException if tile direction cannot be computed
      */
-    private Mesh.Node getTileVertexNode(final Mesh mesh, final int alongIndex, final int acrossIndex)
+    private Mesh.Node createNode(final Mesh mesh, final int alongIndex, final int acrossIndex)
         throws OrekitException {
 
         Mesh.Node node = mesh.getClosestExistingNode(alongIndex, acrossIndex);
@@ -384,6 +532,24 @@ public class EllipsoidTessellator {
         final GeodeticPoint approximatedGP = ellipsoid.transform(approximated, ellipsoid.getBodyFrame(), null);
         return new GeodeticPoint(approximatedGP.getLatitude(), approximatedGP.getLongitude(), 0.0);
 
+    }
+
+    /** Estimate an approximate motion in the along direction.
+     * @param start node at start of motion
+     * @param end desired point at end of motion
+     * @return approximate motion in the along direction
+     */
+    private double estimateAlongMotion(final Mesh.Node start, final Vector3D end) {
+        return Vector3D.dotProduct(start.getAlong(), end.subtract(start.getV()));
+    }
+
+    /** Estimate an approximate motion in the across direction.
+     * @param start node at start of motion
+     * @param end desired point at end of motion
+     * @return approximate motion in the across direction
+     */
+    private double estimateAcrossMotion(final Mesh.Node start, final Vector3D end) {
+        return Vector3D.dotProduct(start.getAcross(), end.subtract(start.getV()));
     }
 
     /** Check if an arc meets the inside of a zone.

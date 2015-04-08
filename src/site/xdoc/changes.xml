@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed overlapping issue in ellipsoid tessellation, typically for independent
+        zones (like islands) close together.
+        Fixes issue #195.
+      </action>
       <action dev="tn" type="add">
         Added support to load WMM coefficients from the official model file
         provided by NOAA.

@@ -18,6 +18,7 @@ package org.orekit.models.earth.tessellation;
 
 import java.util.List;
 
+import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.apache.commons.math3.geometry.partitioning.RegionFactory;
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
 import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
@@ -27,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -46,8 +48,10 @@ public class EllipsoidTessellatorTest {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false),
                                          50000.0, 150000.0, 5000.0, 5000.0);
-        final List<Tile> tiles = tessellator.tessellate(buildFrance());
-        Assert.assertEquals(122, tiles.size());
+        final List<List<Tile>> tiles = tessellator.tessellate(buildFrance());
+        Assert.assertEquals(2,   tiles.size());
+        Assert.assertEquals(117, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(5,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
     }
 
     @Test
@@ -55,8 +59,10 @@ public class EllipsoidTessellatorTest {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, true),
                                          50000.0, 150000.0, 5000.0, 5000.0);
-        final List<Tile> tiles = tessellator.tessellate(buildFrance());
-        Assert.assertEquals(123, tiles.size());
+        final List<List<Tile>> tiles = tessellator.tessellate(buildFrance());
+        Assert.assertEquals(2,   tiles.size());
+        Assert.assertEquals(117, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(6,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
     }
 
     @Test
@@ -64,8 +70,49 @@ public class EllipsoidTessellatorTest {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120)),
                                          50000.0, 150000.0, -5000.0, -5000.0);
-        final List<Tile> tiles = tessellator.tessellate(buildFrance());
-        Assert.assertEquals(93, tiles.size());
+        final List<List<Tile>> tiles = tessellator.tessellate(buildFrance());
+        Assert.assertEquals(2,  tiles.size());
+        Assert.assertEquals(89, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(4,  FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
+        checkTilesDontOverlap(tiles);
+    }
+
+    @Test
+    public void testIslandJoining() throws OrekitException {
+        final EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120.0)),
+                                         150000.0, 250000.0, -5000.0, -5000.0);
+        final List<List<Tile>> tiles = tessellator.tessellate(buildFrance());
+        Assert.assertEquals(1,  tiles.size());
+        Assert.assertEquals(27, tiles.get(0).size());
+        checkTilesDontOverlap(tiles);
+    }
+
+    private void checkTilesDontOverlap(final List<List<Tile>> tiles) {
+        for (final List<Tile> list : tiles) {
+            for (final Tile tile : list) {
+                final SphericalPolygonsSet quadrilateral =
+                        new SphericalPolygonsSet(1.0e-10,
+                                                 toS2Point(tile.getVertices()[0]),
+                                                 toS2Point(tile.getVertices()[1]),
+                                                 toS2Point(tile.getVertices()[2]),
+                                                 toS2Point(tile.getVertices()[3]));
+                for (final List<Tile> otherList : tiles) {
+                    for (final Tile otherTile : otherList) {
+                        if (otherTile != tile) {
+                            for (final GeodeticPoint vertex : otherTile.getVertices()) {
+                                Assert.assertEquals("tiles overlap at: " + vertex,
+                                                    Location.OUTSIDE, quadrilateral.checkPoint(toS2Point(vertex)));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private S2Point toS2Point(final GeodeticPoint point) {
+        return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
     }
 
     @Before
