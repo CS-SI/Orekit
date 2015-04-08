@@ -110,7 +110,7 @@ public class GeoMagneticModelLoader implements DataLoader {
      * @return the parsed geomagnetic field model
      * @throws IOException if an I/O error occurs
      */
-    private GeoMagneticField readModel(final StreamTokenizer stream) throws IOException, ParseException {
+    private GeoMagneticField readModel(final StreamTokenizer stream) throws IOException {
 
         // check whether there is another model available in the stream
         final int ttype = stream.nextToken();
@@ -125,7 +125,13 @@ public class GeoMagneticModelLoader implements DataLoader {
         }
     }
 
-    private GeoMagneticField readCombinedFormat(final StreamTokenizer stream) throws IOException {    
+    /** Read a magnetic field from combined format.
+     * @param stream the stream to read the model from
+     * @return magnetic field
+     * @throws IOException if some read error occurs
+     */
+    private GeoMagneticField readCombinedFormat(final StreamTokenizer stream)
+        throws IOException {
         final String modelName = stream.sval;
         stream.nextToken();
         final double epoch = stream.nval;
@@ -192,8 +198,13 @@ public class GeoMagneticModelLoader implements DataLoader {
         return model;
     }
 
+    /** Read a magnetic field from original WMM files.
+     * @param stream the stream to read the model from
+     * @return magnetic field
+     * @throws IOException if some read error occurs
+     */
     private GeoMagneticField readOriginalWMMFormat(final StreamTokenizer stream)
-            throws IOException, ParseException {
+        throws IOException {
 
         // hard-coded values in original WMM format
         final int nMax = 12;
