@@ -16,7 +16,10 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.apache.commons.math3.geometry.partitioning.RegionFactory;
@@ -49,9 +52,39 @@ public class EllipsoidTessellatorTest {
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false),
                                          50000.0, 150000.0, 5000.0, 5000.0);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance());
+        printTiles(tiles);
         Assert.assertEquals(2,   tiles.size());
         Assert.assertEquals(117, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
         Assert.assertEquals(5,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
+    }
+
+    private void printTiles(List<List<Tile>>tiles) {
+        try {
+            PrintStream out = new PrintStream("/home/luc/x.dat");
+            for (List<Tile> list : tiles) {
+                for (Tile tile : list) {
+                    out.format(Locale.US, "%7.3f %7.3f %n",
+                               FastMath.toDegrees(tile.getVertices()[0].getLongitude()),
+                               FastMath.toDegrees(tile.getVertices()[0].getLatitude()));
+                    out.format(Locale.US, "%7.3f %7.3f %n",
+                               FastMath.toDegrees(tile.getVertices()[1].getLongitude()),
+                               FastMath.toDegrees(tile.getVertices()[1].getLatitude()));
+                    out.format(Locale.US, "%7.3f %7.3f %n",
+                               FastMath.toDegrees(tile.getVertices()[2].getLongitude()),
+                               FastMath.toDegrees(tile.getVertices()[2].getLatitude()));
+                    out.format(Locale.US, "%7.3f %7.3f %n",
+                               FastMath.toDegrees(tile.getVertices()[3].getLongitude()),
+                               FastMath.toDegrees(tile.getVertices()[3].getLatitude()));
+                    out.format(Locale.US, "%7.3f %7.3f %n",
+                               FastMath.toDegrees(tile.getVertices()[0].getLongitude()),
+                               FastMath.toDegrees(tile.getVertices()[0].getLatitude()));
+                    out.format(Locale.US, "&%n");
+                }
+            }
+            out.close();
+        } catch (IOException ioe) {
+            Assert.fail(ioe.getLocalizedMessage());
+        }
     }
 
     @Test

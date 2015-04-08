@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Queue;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.BSPTree;
 import org.apache.commons.math3.geometry.partitioning.Hyperplane;
 import org.apache.commons.math3.geometry.partitioning.RegionFactory;
@@ -38,8 +37,6 @@ import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
 import org.apache.commons.math3.geometry.spherical.twod.SubCircle;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
-import org.apache.commons.math3.util.Precision;
-import org.orekit.bodies.Ellipse;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -170,7 +167,7 @@ public class EllipsoidTessellator {
         final InsideFinder finder = new InsideFinder(zone.getTolerance());
         zone.getTree(false).visit(finder);
         final GeodeticPoint start = toGeodetic(finder.getInsidePoint());
-        return new Mesh(ellipsoid, zone, aiming, start);
+        return new Mesh(ellipsoid, zone, aiming, splitLength, splitWidth, start);
 
     }
 
@@ -255,24 +252,20 @@ public class EllipsoidTessellator {
             for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += SPLITS) {
 
                 // get the base vertex nodes
-                final Mesh.Node node0 = createNode(mesh, alongIndex,          acrossIndex);
-                final Mesh.Node node1 = createNode(mesh, alongIndex + SPLITS, acrossIndex);
-                final Mesh.Node node2 = createNode(mesh, alongIndex + SPLITS, acrossIndex + SPLITS);
-                final Mesh.Node node3 = createNode(mesh, alongIndex,          acrossIndex + SPLITS);
+                final Mesh.Node node0 = mesh.addNode(alongIndex,          acrossIndex);
+                final Mesh.Node node1 = mesh.addNode(alongIndex + SPLITS, acrossIndex);
+                final Mesh.Node node2 = mesh.addNode(alongIndex + SPLITS, acrossIndex + SPLITS);
+                final Mesh.Node node3 = mesh.addNode(alongIndex,          acrossIndex + SPLITS);
 
                 // apply tile overlap
-                final GeodeticPoint gp0 = move(node0.getGP(),
-                                               new Vector3D(-lengthOverlap, node0.getAlong(),
-                                                            -widthOverlap,  node0.getAcross()));
-                final GeodeticPoint gp1 = move(node1.getGP(),
-                                               new Vector3D(+lengthOverlap, node1.getAlong(),
-                                                            -widthOverlap,  node1.getAcross()));
-                final GeodeticPoint gp2 = move(node2.getGP(),
-                                               new Vector3D(+lengthOverlap, node2.getAlong(),
-                                                            +widthOverlap,  node2.getAcross()));
-                final GeodeticPoint gp3 = move(node3.getGP(),
-                                               new Vector3D(-lengthOverlap, node2.getAlong(),
-                                                            +widthOverlap,  node2.getAcross()));
+                final GeodeticPoint gp0 = node0.move(new Vector3D(-lengthOverlap, node0.getAlong(),
+                                                                  -widthOverlap,  node0.getAcross()));
+                final GeodeticPoint gp1 = node1.move(new Vector3D(+lengthOverlap, node1.getAlong(),
+                                                                  -widthOverlap,  node1.getAcross()));
+                final GeodeticPoint gp2 = node2.move(new Vector3D(+lengthOverlap, node2.getAlong(),
+                                                                  +widthOverlap,  node2.getAcross()));
+                final GeodeticPoint gp3 = node3.move(new Vector3D(-lengthOverlap, node2.getAlong(),
+                                                                  +widthOverlap,  node2.getAcross()));
 
                 // create a quadrilateral region corresponding to the candidate tile
                 final SphericalPolygonsSet quadrilateral =
@@ -285,11 +278,11 @@ public class EllipsoidTessellator {
                     tiles.add(new Tile(gp0, gp1, gp2, gp3));
 
                     // ensure the taxicab boundary follows the built tile sides
-                    for (int k = 1; k < SPLITS; ++k) {
-                        createNode(mesh, alongIndex + k,      acrossIndex);
-                        createNode(mesh, alongIndex + k,      acrossIndex + SPLITS);
-                        createNode(mesh, alongIndex,          acrossIndex + k);
-                        createNode(mesh, alongIndex + SPLITS, acrossIndex + k);
+                    for (int k = 0; k < SPLITS; ++k) {
+                        mesh.addNode(alongIndex + k,      acrossIndex).setEnabled(true);
+                        mesh.addNode(alongIndex + k + 1,  acrossIndex + SPLITS).setEnabled(true);
+                        mesh.addNode(alongIndex,          acrossIndex + k + 1).setEnabled(true);
+                        mesh.addNode(alongIndex + SPLITS, acrossIndex + k).setEnabled(true);
                     }
 
                 }
@@ -335,48 +328,37 @@ public class EllipsoidTessellator {
             while (estimateAlongMotion(node, insideNode.getV()) > +splitLength) {
                 // the node is before desired index in the along direction
                 // we need to create intermediates nodes up to the desired index
-                node = addNeighborIfNeeded(node, Direction.PLUS_ALONG, larger, mergingSeeds);
+                node = larger.addNode(node.getAlongIndex() + 1, node.getAcrossIndex());
             }
 
             while (estimateAlongMotion(node, insideNode.getV()) < -splitLength) {
                 // the node is after desired index in the along direction
                 // we need to create intermediates nodes up to the desired index
-                node = addNeighborIfNeeded(node, Direction.MINUS_ALONG, larger, mergingSeeds);
+                node = larger.addNode(node.getAlongIndex() - 1, node.getAcrossIndex());
             }
 
             while (estimateAcrossMotion(node, insideNode.getV()) > +splitWidth) {
                 // the node is before desired index in the across direction
                 // we need to create intermediates nodes up to the desired index
-                node = addNeighborIfNeeded(node, Direction.PLUS_ACROSS, larger, mergingSeeds);
+                node = larger.addNode(node.getAlongIndex(), node.getAcrossIndex() + 1);
             }
 
             while (estimateAcrossMotion(node, insideNode.getV()) < -splitWidth) {
                 // the node is after desired index in the across direction
                 // we need to create intermediates nodes up to the desired index
-                node = addNeighborIfNeeded(node, Direction.MINUS_ACROSS, larger, mergingSeeds);
+                node = larger.addNode(node.getAlongIndex(), node.getAcrossIndex() - 1);
             }
 
             // now we are close to the inside node,
             // make sure the four surrounding nodes are available
-            if (estimateAlongMotion(node, insideNode.getV()) < 0.0) {
-                final Mesh.Node alongPlus = addNeighborIfNeeded(node, Direction.PLUS_ALONG,  larger, mergingSeeds);   // (+1,  0)
-                if (estimateAcrossMotion(node, insideNode.getV()) < 0.0) {
-                    addNeighborIfNeeded(node,       Direction.PLUS_ACROSS, larger, mergingSeeds);                     // ( 0, +1)
-                    addNeighborIfNeeded(alongPlus,  Direction.PLUS_ACROSS, larger, mergingSeeds);                     // (+1, +1)
-                } else {
-                    addNeighborIfNeeded(node,       Direction.MINUS_ACROSS, larger, mergingSeeds);                    // ( 0, -1)
-                    addNeighborIfNeeded(alongPlus,  Direction.MINUS_ACROSS, larger, mergingSeeds);                    // (+1, -1)
-                }
-            } else {
-                final Mesh.Node alongMinus = addNeighborIfNeeded(node, Direction.MINUS_ALONG,  larger, mergingSeeds); // (-1,  0)
-                if (estimateAcrossMotion(node, insideNode.getV()) < 0.0) {
-                    addNeighborIfNeeded(node,       Direction.PLUS_ACROSS, larger, mergingSeeds);                     // ( 0, +1)
-                    addNeighborIfNeeded(alongMinus, Direction.PLUS_ACROSS, larger, mergingSeeds);                     // (-1, +1)
-                } else {
-                    addNeighborIfNeeded(node,       Direction.MINUS_ACROSS, larger, mergingSeeds);                    // ( 0, -1)
-                    addNeighborIfNeeded(alongMinus, Direction.MINUS_ACROSS, larger, mergingSeeds);                    // (-1, -1)
-                }
-            }
+            final int otherAlong  = (estimateAlongMotion(node, insideNode.getV()) < 0.0) ?
+                                    node.getAlongIndex()  - 1 : node.getAlongIndex() + 1;
+            final int otherAcross = (estimateAcrossMotion(node, insideNode.getV()) < 0.0) ?
+                                    node.getAcrossIndex()  - 1 : node.getAcrossIndex() + 1;
+            addNode(node.getAlongIndex(), node.getAcrossIndex(), larger, mergingSeeds);
+            addNode(node.getAlongIndex(), otherAcross,           larger, mergingSeeds);
+            addNode(otherAlong,           node.getAcrossIndex(), larger, mergingSeeds);
+            addNode(otherAlong,           otherAcross,           larger, mergingSeeds);
 
         }
 
@@ -393,86 +375,37 @@ public class EllipsoidTessellator {
     private void addAllNeighborsIfNeeded(final Mesh.Node base, final Mesh mesh,
                                          final Collection<Mesh.Node> newNodes)
         throws OrekitException {
-        final Mesh.Node alongMinus = addNeighborIfNeeded(base, Direction.MINUS_ALONG, mesh, newNodes); // (-1,  0)
-        final Mesh.Node alongPlus  = addNeighborIfNeeded(base, Direction.PLUS_ALONG,  mesh, newNodes); // (+1,  0)
-        addNeighborIfNeeded(alongMinus, Direction.MINUS_ACROSS, mesh, newNodes);                       // (-1, -1)
-        addNeighborIfNeeded(base,       Direction.MINUS_ACROSS, mesh, newNodes);                       // ( 0, -1)
-        addNeighborIfNeeded(alongPlus,  Direction.MINUS_ACROSS, mesh, newNodes);                       // (+1, -1)
-        addNeighborIfNeeded(alongMinus, Direction.PLUS_ACROSS,  mesh, newNodes);                       // (-1, +1)
-        addNeighborIfNeeded(base,       Direction.PLUS_ACROSS,  mesh, newNodes);                       // ( 0, +1)
-        addNeighborIfNeeded(alongPlus,  Direction.PLUS_ACROSS,  mesh, newNodes);                       // (+1, +1)
+        addNode(base.getAlongIndex() - 1, base.getAcrossIndex() - 1, mesh, newNodes);
+        addNode(base.getAlongIndex() - 1, base.getAcrossIndex(),     mesh, newNodes);
+        addNode(base.getAlongIndex() - 1, base.getAcrossIndex() + 1, mesh, newNodes);
+        addNode(base.getAlongIndex(),     base.getAcrossIndex() - 1, mesh, newNodes);
+        addNode(base.getAlongIndex(),     base.getAcrossIndex() + 1, mesh, newNodes);
+        addNode(base.getAlongIndex() + 1, base.getAcrossIndex() - 1, mesh, newNodes);
+        addNode(base.getAlongIndex() + 1, base.getAcrossIndex(),     mesh, newNodes);
+        addNode(base.getAlongIndex() + 1, base.getAcrossIndex() + 1, mesh, newNodes);
     }
 
-    /** Add a neighbor node to a mesh if not already present.
-     * @param base base node
-     * @param direction direction of the neighbor
+    /** Add a node to a mesh if not already present.
+     * @param alongIndex index in the along direction
+     * @param acrossIndex index in the across direction
      * @param mesh complete mesh containing nodes
-     * @param newNodes queue where new node must be put (may be null)
+     * @param newNodes queue where new node must be put
      * @return neighbor node (which was either already present, or is created)
      * @exception OrekitException if tile direction cannot be computed
      */
-    private Mesh.Node addNeighborIfNeeded(final Mesh.Node base, final Direction direction,
-                                          final Mesh mesh, final Collection<Mesh.Node> newNodes)
+    private Mesh.Node addNode(final int alongIndex, final int acrossIndex,
+                              final Mesh mesh, final Collection<Mesh.Node> newNodes)
         throws OrekitException {
 
-        final int alongIndex  = direction.neighborAlongIndex(base);
-        final int acrossIndex = direction.neighborAcrossIndex(base);
-        Mesh.Node node        = mesh.getNode(alongIndex, acrossIndex);
+        final Mesh.Node node = mesh.addNode(alongIndex, acrossIndex);
 
-        if (node == null) {
-
-            // create a new node
-            node = mesh.addNode(move(base.getGP(), direction.motion(base, splitLength, splitWidth)),
-                                alongIndex, acrossIndex);
-
-            if (newNodes != null) {
-                // we have created a new node
-                newNodes.add(node);
-            }
-
+        if (!node.isEnabled()) {
+            // enable the node
+            node.setEnabled(true);
+            newNodes.add(node);
         }
 
         // return the node, regardless of it being a new one or not
-        return node;
-
-    }
-
-    /** Get a node, creating it if needed.
-     * @param mesh complete mesh containing nodes
-     * @param alongIndex index of the tile vertex node
-     * @param acrossIndex index of the tile vertex node
-     * @return created node
-     * @exception OrekitException if tile direction cannot be computed
-     */
-    private Mesh.Node createNode(final Mesh mesh, final int alongIndex, final int acrossIndex)
-        throws OrekitException {
-
-        Mesh.Node node = mesh.getClosestExistingNode(alongIndex, acrossIndex);
-
-        while (node.getAlongIndex() < alongIndex) {
-            // the node is before desired index in the along direction
-            // we need to create intermediates nodes up to the desired index
-            node = addNeighborIfNeeded(node, Direction.PLUS_ALONG, mesh, null);
-        }
-
-        while (node.getAlongIndex() > alongIndex) {
-            // the node is after desired index in the along direction
-            // we need to create intermediates nodes up to the desired index
-            node = addNeighborIfNeeded(node, Direction.MINUS_ALONG, mesh, null);
-        }
-
-        while (node.getAcrossIndex() < acrossIndex) {
-            // the node is before desired index in the across direction
-            // we need to create intermediates nodes up to the desired index
-            node = addNeighborIfNeeded(node, Direction.PLUS_ACROSS, mesh, null);
-        }
-
-        while (node.getAcrossIndex() > acrossIndex) {
-            // the node is after desired index in the across direction
-            // we need to create intermediates nodes up to the desired index
-            node = addNeighborIfNeeded(node, Direction.MINUS_ACROSS, mesh, null);
-        }
-
         return node;
 
     }
@@ -491,47 +424,6 @@ public class EllipsoidTessellator {
      */
     protected S2Point toS2Point(final GeodeticPoint point) {
         return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
-    }
-
-    /** Move to a nearby point along surface.
-     * <p>
-     * The motion will be approximated, assuming the body surface has constant
-     * curvature along the motion direction. The approximation will be accurate
-     * for short distances, and error will increase as distance increases.
-     * </p>
-     * @param startGP start point
-     * @param motion straight motion, which must be curved back to surface
-     * @return arrival point, approximately at specified distance from start
-     * @exception OrekitException if points cannot be converted to geodetic coordinates
-     */
-    private GeodeticPoint move(final GeodeticPoint startGP, final Vector3D motion)
-        throws OrekitException {
-
-        // safety check for too small motion
-        final Vector3D start = ellipsoid.transform(startGP);
-        if (motion.getNorm() < Precision.EPSILON * start.getNorm()) {
-            return startGP;
-        }
-
-        // find elliptic plane section
-        final Vector3D normal      = Vector3D.crossProduct(start, motion);
-        final Ellipse planeSection = ellipsoid.getPlaneSection(start, normal);
-
-        // find the center of curvature (point on the evolute) below start point
-        final Vector2D omega2D = planeSection.getCenterOfCurvature(planeSection.toPlane(start));
-        final Vector3D omega3D = planeSection.toSpace(omega2D);
-
-        // compute approximated arrival point, assuming constant radius of curvature
-        final Vector3D delta = start.subtract(omega3D);
-        final double   theta = motion.getNorm() / delta.getNorm();
-        final Vector3D approximated = new Vector3D(1, omega3D,
-                                                   FastMath.cos(theta), delta,
-                                                   FastMath.sin(theta) / theta, motion);
-
-        // fix altitude
-        final GeodeticPoint approximatedGP = ellipsoid.transform(approximated, ellipsoid.getBodyFrame(), null);
-        return new GeodeticPoint(approximatedGP.getLatitude(), approximatedGP.getLongitude(), 0.0);
-
     }
 
     /** Estimate an approximate motion in the along direction.

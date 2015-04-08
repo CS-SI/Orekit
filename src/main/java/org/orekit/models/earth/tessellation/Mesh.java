@@ -22,10 +22,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
 import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
+import org.orekit.bodies.Ellipse;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -47,6 +50,12 @@ class Mesh {
     /** Aiming used for orienting tiles. */
     private final TileAiming aiming;
 
+    /** Distance between nodes in the along direction. */
+    private final double alongGap;
+
+    /** Distance between nodes in the across direction. */
+    private final double acrossGap;
+
     /** Map containing nodes. */
     private final Map<Long, Node> nodes;
 
@@ -66,22 +75,32 @@ class Mesh {
      * @param ellipsoid underlying ellipsoid
      * @param zone zone of interest to tessellate
      * @param aiming aiming used for orienting tiles
+     * @param alongGap distance between nodes in the along direction
+     * @param acrossGap distance between nodes in the across direction
      * @param start location of the first node.
      * @exception OrekitException if along direction of first tile cannot be computed
      */
     public Mesh(final OneAxisEllipsoid ellipsoid, final SphericalPolygonsSet zone,
-                final TileAiming aiming, final GeodeticPoint start)
+                final TileAiming aiming, final double alongGap, final double acrossGap,
+                final GeodeticPoint start)
         throws OrekitException {
         this.ellipsoid      = ellipsoid;
         this.zone           = zone;
         this.coverage       = null;
         this.aiming         = aiming;
+        this.alongGap       = alongGap;
+        this.acrossGap      = acrossGap;
         this.nodes          = new HashMap<Long, Node>();
         this.minAlongIndex  = 0;
         this.maxAlongIndex  = 0;
         this.minAcrossIndex = 0;
         this.maxAcrossIndex = 0;
-        store(new Node(start, 0, 0));
+
+        // create an enabled first node at origin
+        final Node origin = new Node(start, 0, 0);
+        origin.setEnabled(true);
+        store(origin);
+
     }
 
     /** Get the minimum along tile index.
@@ -152,24 +171,82 @@ class Mesh {
     /** Retrieve a node from its indices.
      * @param alongIndex index in the along direction
      * @param acrossIndex index in the across direction
-     * @return node or null if no node is available at these indices
+     * @return node or null if no nodes are available at these indices
+     * @see #addNode(int, int)
      */
     public Node getNode(final int alongIndex, final int acrossIndex) {
         return nodes.get(key(alongIndex, acrossIndex));
     }
 
     /** Add a node.
-     * @param gp node location
+     * <p>
+     * This method is similar to {@link #getNode(int, int) getNode} except
+     * it creates the node if it doesn't alreay exists. All created nodes
+     * have a status set to {@code disabled}.
+     * </p>
      * @param alongIndex index in the along direction
      * @param acrossIndex index in the across direction
-     * @return added node
+     * @return node at specified indices, guaranteed to be non-null
      * @exception OrekitException if tile direction cannot be computed
+     * @see #getNode(int, int)
      */
-    public Node addNode(final GeodeticPoint gp, final int alongIndex, final int acrossIndex)
+    public Node addNode(final int alongIndex, final int acrossIndex)
         throws OrekitException {
-        final Node node = new Node(gp, alongIndex, acrossIndex);
-        store(node);
+
+        // create intermediate (disabled) nodes, up to specified indices
+        Node node = getExistingAncestor(alongIndex, acrossIndex);
+        while (node.getAlongIndex() != alongIndex || node.getAcrossIndex() != acrossIndex) {
+            final Direction direction;
+            if (node.getAlongIndex() < alongIndex) {
+                direction = Direction.PLUS_ALONG;
+            } else if (node.getAlongIndex() > alongIndex) {
+                direction = Direction.MINUS_ALONG;
+            } else if (node.getAcrossIndex() < acrossIndex) {
+                direction = Direction.PLUS_ACROSS;
+            } else {
+                direction = Direction.MINUS_ACROSS;
+            }
+            final GeodeticPoint gp = node.move(direction.motion(node, alongGap, acrossGap));
+            node = new Node(gp, direction.neighborAlongIndex(node), direction.neighborAcrossIndex(node));
+            store(node);
+        }
+
         return node;
+
+    }
+
+    /** Find the closest existing ancestor of a node.
+     * <p>
+     * The path from origin to any node is first in the along direction,
+     * and then in the across direction. Using always the same path pattern
+     * ensures consistent distortion of the mesh.
+     * </p>
+     * @param alongIndex index in the along direction
+     * @param acrossIndex index in the across direction
+     * @return an existing node in the path from origin to specified indices
+     */
+    private Node getExistingAncestor(final int alongIndex, final int acrossIndex) {
+
+        // start from the desired node indices
+        int l = alongIndex;
+        int c = acrossIndex;
+        Node node = getNode(l, c);
+
+        // rewind the path backward, up to origin,
+        // that is first in the across direction, then in the along direction
+        // the loop WILL end as there is at least one node at (0, 0)
+        while (node == null) {
+            if (c != 0) {
+                c += c > 0 ? -1 : +1;
+            } else {
+                l += l > 0 ? -1 : +1;
+            }
+            node = getNode(l, c);
+        }
+
+        // we have found an existing ancestor
+        return node;
+
     }
 
     /** Get the nodes that lie inside the interest zone.
@@ -247,7 +324,7 @@ class Mesh {
         return selected;
     }
 
-    /** Get the oriented list of nodes at mesh boundary, in taxicab geometry.
+    /** Get the oriented list of <em>enabled</em> nodes at mesh boundary, in taxicab geometry.
      * @return list of nodes
      */
     public List<Node> getTaxicabBoundary() {
@@ -262,6 +339,9 @@ class Mesh {
             for (int i = minAlongIndex; lowerLeft == null && i <= maxAlongIndex; ++i) {
                 for (int j = minAcrossIndex; lowerLeft == null && j <= maxAcrossIndex; ++j) {
                     lowerLeft = getNode(i, j);
+                    if (lowerLeft != null && !lowerLeft.isEnabled()) {
+                        lowerLeft = null;
+                    }
                 }
             }
 
@@ -275,7 +355,7 @@ class Mesh {
                     direction = direction.next();
                     neighbor = getNode(direction.neighborAlongIndex(node),
                                        direction.neighborAcrossIndex(node));
-                } while (neighbor == null);
+                } while (neighbor == null || !neighbor.isEnabled());
                 direction = direction.next().next();
                 node = neighbor;
             } while (node != lowerLeft);
@@ -383,6 +463,9 @@ class Mesh {
         /** Index in the across direction. */
         private final int acrossIndex;
 
+        /** Indicator for construction nodes used only as intermediate points (disabled) vs. real nodes (enabled). */
+        private boolean enabled;
+
         /** Create a node.
          * @param gp position in geodetic coordinates (my be null)
          * @param alongIndex index in the along direction
@@ -398,6 +481,21 @@ class Mesh {
             this.insideZone  = zone.checkPoint(new S2Point(gp.getLongitude(), 0.5 * FastMath.PI - gp.getLatitude())) != Location.OUTSIDE;
             this.alongIndex  = alongIndex;
             this.acrossIndex = acrossIndex;
+            this.enabled     = false;
+        }
+
+        /** Set the enabled property.
+         * @param enabled if true, the node will be considered a real enabled node
+         */
+        public void setEnabled(final boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        /** Check if a node is enabled.
+         * @return true if the node is enabled
+         */
+        public boolean isEnabled() {
+            return enabled;
         }
 
         /** Get the node position in geodetic coordinates.
@@ -447,6 +545,45 @@ class Mesh {
          */
         public int getAcrossIndex() {
             return acrossIndex;
+        }
+
+        /** Move to a nearby point along surface.
+         * <p>
+         * The motion will be approximated, assuming the body surface has constant
+         * curvature along the motion direction. The approximation will be accurate
+         * for short distances, and error will increase as distance increases.
+         * </p>
+         * @param motion straight motion, which must be curved back to surface
+         * @return arrival point, approximately at specified distance from node
+         * @exception OrekitException if points cannot be converted to geodetic coordinates
+         */
+        public GeodeticPoint move(final Vector3D motion)
+            throws OrekitException {
+
+            // safety check for too small motion
+            if (motion.getNorm() < Precision.EPSILON * v.getNorm()) {
+                return gp;
+            }
+
+            // find elliptic plane section
+            final Vector3D normal      = Vector3D.crossProduct(v, motion);
+            final Ellipse planeSection = ellipsoid.getPlaneSection(v, normal);
+
+            // find the center of curvature (point on the evolute) below start point
+            final Vector2D omega2D = planeSection.getCenterOfCurvature(planeSection.toPlane(v));
+            final Vector3D omega3D = planeSection.toSpace(omega2D);
+
+            // compute approximated arrival point, assuming constant radius of curvature
+            final Vector3D delta = v.subtract(omega3D);
+            final double   theta = motion.getNorm() / delta.getNorm();
+            final Vector3D approximated = new Vector3D(1, omega3D,
+                                                       FastMath.cos(theta), delta,
+                                                       FastMath.sin(theta) / theta, motion);
+
+            // fix altitude
+            final GeodeticPoint approximatedGP = ellipsoid.transform(approximated, ellipsoid.getBodyFrame(), null);
+            return new GeodeticPoint(approximatedGP.getLatitude(), approximatedGP.getLongitude(), 0.0);
+
         }
 
     }

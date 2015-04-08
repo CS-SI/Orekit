@@ -74,7 +74,7 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
 
             // geodetic coordinates
             final GeodeticPoint gp =
-                    ellipsoid.transform(pv.getPosition(), ellipsoid.getBodyFrame(), currentState.getDate());
+                    ellipsoid.transform(groundPV.getPosition(), ellipsoid.getBodyFrame(), currentState.getDate());
 
             halfTrack.add(new Pair<GeodeticPoint, TimeStampedPVCoordinates>(gp, groundPV));
 
