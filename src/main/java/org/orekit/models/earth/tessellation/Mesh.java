@@ -420,7 +420,8 @@ class Mesh {
             coverage = new SphericalPolygonsSet(zone.getTolerance(), vertices);
         }
 
-        return coverage;
+        // as caller may modify the BSP tree, we must provide a copy of our safe instance
+        return (SphericalPolygonsSet) coverage.copySelf();
 
     }
 

@@ -272,7 +272,7 @@ public class EllipsoidTessellator {
                         new SphericalPolygonsSet(zone.getTolerance(),
                                                  toS2Point(gp0), toS2Point(gp1), toS2Point(gp2), toS2Point(gp3));
 
-                if (!new RegionFactory<Sphere2D>().intersection(zone, quadrilateral).isEmpty()) {
+                if (!new RegionFactory<Sphere2D>().intersection(zone.copySelf(), quadrilateral).isEmpty()) {
 
                     // the tile does cover part of the zone, it contributes to the tessellation
                     tiles.add(new Tile(gp0, gp1, gp2, gp3));
