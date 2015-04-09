@@ -212,7 +212,7 @@ public class EllipsoidTessellator {
             // completely surrounds the zone, i.e. there are no peaks
             // pointing out of the loop between two nodes
             expanding = false;
-            final List<Mesh.Node> boundary = mesh.getTaxicabBoundary(true);
+            final List<Mesh.Node> boundary = mesh.getTaxicabBoundary(false);
             if (boundary.size() > 1) {
                 Mesh.Node previous = boundary.get(boundary.size() - 1);
                 for (final Mesh.Node node : boundary) {

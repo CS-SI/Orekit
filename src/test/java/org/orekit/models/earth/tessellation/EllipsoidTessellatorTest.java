@@ -51,7 +51,7 @@ public class EllipsoidTessellatorTest {
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance());
         Assert.assertEquals(2,   tiles.size());
         Assert.assertEquals(117, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
-        Assert.assertEquals(6,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(5,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
     }
 
     @Test

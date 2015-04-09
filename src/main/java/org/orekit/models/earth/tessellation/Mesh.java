@@ -412,7 +412,7 @@ class Mesh {
         if (coverage == null) {
 
             // lazy build of mesh coverage
-            final List<Mesh.Node> boundary = getTaxicabBoundary(false);
+            final List<Mesh.Node> boundary = getTaxicabBoundary(true);
             final S2Point[] vertices = new S2Point[boundary.size()];
             for (int i = 0; i < vertices.length; ++i) {
                 vertices[i] = toS2Point(boundary.get(i).getGP());
