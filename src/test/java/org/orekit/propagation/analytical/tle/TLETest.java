@@ -79,6 +79,34 @@ public class TLETest {
     }
 
     @Test
+    public void testIssue196() throws OrekitException {
+
+        String line1A = "1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20";
+        String line1B = "1 27421U 02021A   02124.48976499  -.0002147  00000-0 -89879-2 0    20";
+        String line2 = "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62";
+
+        Assert.assertTrue(TLE.isFormatOK(line1A, line2));
+        TLE tleA = new TLE(line1A, line2);
+        Assert.assertTrue(TLE.isFormatOK(line1B, line2));
+        TLE tleB = new TLE(line1B, line2);
+        Assert.assertEquals(tleA.getSatelliteNumber(),         tleB.getSatelliteNumber(), 0);
+        Assert.assertEquals(tleA.getLaunchYear(),              tleB.getLaunchYear());
+        Assert.assertEquals(tleA.getLaunchNumber(),            tleB.getLaunchNumber());
+        Assert.assertEquals(tleA.getLaunchPiece(),             tleB.getLaunchPiece());
+        Assert.assertEquals(tleA.getBStar(),                   tleB.getBStar(), 0);
+        Assert.assertEquals(tleA.getEphemerisType(),           tleB.getEphemerisType());
+        Assert.assertEquals(tleA.getI(),                       tleB.getI(), 1e-10);
+        Assert.assertEquals(tleA.getRaan(),                    tleB.getRaan(), 1e-10);
+        Assert.assertEquals(tleA.getE(),                       tleB.getE(), 1e-10);
+        Assert.assertEquals(tleA.getPerigeeArgument(),         tleB.getPerigeeArgument(), 1e-10);
+        Assert.assertEquals(tleA.getMeanAnomaly(),             tleB.getMeanAnomaly(), 1e-10);
+        Assert.assertEquals(tleA.getMeanMotion(),              tleB.getMeanMotion(), 0);
+        Assert.assertEquals(tleA.getRevolutionNumberAtEpoch(), tleB.getRevolutionNumberAtEpoch(), 0);
+        Assert.assertEquals(tleA.getElementNumber(),           tleB.getElementNumber(), 0);
+
+    }
+
+    @Test
     public void testSymmetry() throws OrekitException {
         checkSymmetry("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
                       "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");

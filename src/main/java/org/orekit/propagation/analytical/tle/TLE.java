@@ -71,7 +71,7 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Pattern for line 1. */
     private static final Pattern LINE_1_PATTERN =
-        Pattern.compile("1 [ 0-9]{5}U [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} [ +-][.][ 0-9]{8} " +
+        Pattern.compile("1 [ 0-9]{5}U [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ +-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
                         "[ +-][ 0-9]{5}[+-][ 0-9] [ +-][ 0-9]{5}[+-][ 0-9] [ 0-9] [ 0-9]{4}[ 0-9]");
 
     /** Pattern for line 2. */
@@ -432,7 +432,8 @@ public class TLE implements TimeStamped, Serializable {
      * @return value of the double
      */
     private double parseDouble(final String line, final int start, final int length) {
-        return Double.parseDouble(line.substring(start, start + length).replace(' ', '0'));
+        final String field = line.substring(start, start + length).trim();
+        return field.length() > 0 ? Double.parseDouble(field.replace(' ', '0')) : 0;
     }
 
     /** Parse an integer.
@@ -442,7 +443,8 @@ public class TLE implements TimeStamped, Serializable {
      * @return value of the integer
      */
     private int parseInteger(final String line, final int start, final int length) {
-        return Integer.parseInt(line.substring(start, start + length).replace(' ', '0'));
+        final String field = line.substring(start, start + length).trim();
+        return field.length() > 0 ? Integer.parseInt(field.replace(' ', '0')) : 0;
     }
 
     /** Parse a year written on 2 digits.

@@ -22,6 +22,10 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Allowed slightly malformed TLE to be parsed.
+        Fixes issue #196.
+      </action>
+      <action dev="luc" type="fix">
         Fixed overlapping issue in ellipsoid tessellation, typically for independent
         zones (like islands) close together.
         Fixes issue #195.
