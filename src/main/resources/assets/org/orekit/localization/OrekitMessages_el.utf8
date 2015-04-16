@@ -148,6 +148,9 @@ MISSING_SECOND_TLE_LINE = αναμένεται μια δεύτερη TLE γρα�
 # TLE lines do not refer to the same object:\n{0}\n{1}
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = οι γραμμές TLE δεν αναφέρονται στο ίδιο αντικείμενο:\n{0}\n{1}  
 
+# invalid TLE parameter for object {0}: {1} = {2}
+TLE_INVALID_PARAMETER = <MISSING TRANSLATION>
+
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = λάθος άθροισμα ελέγχου για τη γραμμή TLE {0}, αναμενόμενο {1} αλλά πήρε {2} ({3})
 

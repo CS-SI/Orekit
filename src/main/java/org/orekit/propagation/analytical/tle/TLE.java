@@ -264,7 +264,8 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Get the first line.
      * @return first line
-     * @exception OrekitException if UTC conversion cannot be done
+     * @exception OrekitException if UTC conversion cannot be done or
+     * some parameter is too large to fit format
      */
     public String getLine1()
         throws OrekitException {
@@ -276,8 +277,10 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Get the second line.
      * @return second line
+     * @exception OrekitException if some parameter is too large to fit format
      */
-    public String getLine2() {
+    public String getLine2()
+        throws OrekitException {
         if (line2 == null) {
             buildLine2();
         }
@@ -285,7 +288,8 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Build the line 1 from the parsed elements.
-     * @exception OrekitException if UTC conversion cannot be done
+     * @exception OrekitException if UTC conversion cannot be done or
+     * some parameter is too large to fit format
      */
     private void buildLine1()
         throws OrekitException {
@@ -296,38 +300,39 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append('1');
 
         buffer.append(' ');
-        buffer.append(addPadding(satelliteNumber, '0', 5, true));
+        buffer.append(addPadding("satelliteNumber-1", satelliteNumber, '0', 5, true));
         buffer.append(classification);
 
         buffer.append(' ');
-        buffer.append(addPadding(launchYear % 100, '0', 2, true));
-        buffer.append(addPadding(launchNumber, '0', 3, true));
-        buffer.append(addPadding(launchPiece, ' ', 3, false));
+        buffer.append(addPadding("launchYear",   launchYear % 100, '0', 2, true));
+        buffer.append(addPadding("launchNumber", launchNumber, '0', 3, true));
+        buffer.append(addPadding("launchPiece",  launchPiece, ' ', 3, false));
 
         buffer.append(' ');
         final TimeScale utc = TimeScalesFactory.getUTC();
         final int year = epoch.getComponents(utc).getDate().getYear();
-        buffer.append(addPadding(year % 100, '0', 2, true));
+        buffer.append(addPadding("year", year % 100, '0', 2, true));
         final double day = 1.0 + epoch.durationFrom(new AbsoluteDate(year, 1, 1, utc)) / Constants.JULIAN_DAY;
         buffer.append(f38.format(day));
 
         buffer.append(' ');
         final double n1 = meanMotionFirstDerivative * 1.86624e9 / FastMath.PI;
-        final String sn1 = addPadding(new DecimalFormat(".00000000", SYMBOLS).format(n1), ' ', 10, true);
+        final String sn1 = addPadding("meanMotionFirstDerivative",
+                                      new DecimalFormat(".00000000", SYMBOLS).format(n1), ' ', 10, true);
         buffer.append(sn1);
 
         buffer.append(' ');
         final double n2 = meanMotionSecondDerivative * 5.3747712e13 / FastMath.PI;
-        buffer.append(addPadding(formatExponentMarkerFree(n2, 5), ' ', 8, true));
+        buffer.append(formatExponentMarkerFree("meanMotionSecondDerivative", n2, 5, ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(addPadding(formatExponentMarkerFree(bStar, 5), ' ', 8, true));
+        buffer.append(formatExponentMarkerFree("B*", bStar, 5, ' ', 8, true));
 
         buffer.append(' ');
         buffer.append(ephemerisType);
 
         buffer.append(' ');
-        buffer.append(addPadding(elementNumber, ' ', 4, true));
+        buffer.append(addPadding("elementNumber", elementNumber, ' ', 4, true));
 
         buffer.append(Integer.toString(checksum(buffer)));
 
@@ -336,25 +341,37 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Format a real number without 'e' exponent marker.
+     * @param name parameter name
      * @param d number to format
      * @param mantissaSize size of the mantissa (not counting initial '-' or ' ' for sign)
-     * @return formatted number
+     * @param c padding character
+     * @param size desired size
+     * @param rightJustified if true, the resulting string is
+     * right justified (i.e. space are added to the left)
+     * @return formatted and padded number
+     * @exception OrekitException if parameter is too large to fit format
      */
-    private String formatExponentMarkerFree(final double d, final int mantissaSize) {
+    private String formatExponentMarkerFree(final String name, final double d, final int mantissaSize,
+                                            final char c, final int size, final boolean rightJustified)
+        throws OrekitException {
         final double dAbs = FastMath.abs(d);
         int exponent = (dAbs < 1.0e-9) ? -9 : (int) FastMath.ceil(FastMath.log10(dAbs));
         final long mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
         if (mantissa == 0) {
             exponent = 0;
         }
-        final String sMantissa = addPadding((int) mantissa, '0', mantissaSize, true);
+        final String sMantissa = addPadding(name, (int) mantissa, '0', mantissaSize, true);
         final String sExponent = Integer.toString(FastMath.abs(exponent));
-        return (d <  0 ? '-' : ' ') + sMantissa + (exponent <= 0 ? '-' : '+') + sExponent;
+        final String formatted = (d <  0 ? '-' : ' ') + sMantissa + (exponent <= 0 ? '-' : '+') + sExponent;
+
+        return addPadding(name, formatted, c, size, rightJustified);
+
     }
 
     /** Build the line 2 from the parsed elements.
+     * @exception OrekitException if some parameter is too large to fit format
      */
-    private void buildLine2() {
+    private void buildLine2() throws OrekitException {
 
         final StringBuffer buffer = new StringBuffer();
         final DecimalFormat f34   = new DecimalFormat("##0.0000", SYMBOLS);
@@ -363,22 +380,22 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append('2');
 
         buffer.append(' ');
-        buffer.append(addPadding(satelliteNumber, '0', 5, true));
+        buffer.append(addPadding("satelliteNumber-2", satelliteNumber, '0', 5, true));
 
         buffer.append(' ');
-        buffer.append(addPadding(f34.format(FastMath.toDegrees(inclination)), ' ', 8, true));
+        buffer.append(addPadding("inclination", f34.format(FastMath.toDegrees(inclination)), ' ', 8, true));
         buffer.append(' ');
-        buffer.append(addPadding(f34.format(FastMath.toDegrees(raan)), ' ', 8, true));
+        buffer.append(addPadding("raan", f34.format(FastMath.toDegrees(raan)), ' ', 8, true));
         buffer.append(' ');
-        buffer.append(addPadding((int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true));
+        buffer.append(addPadding("eccentricity", (int) FastMath.rint(eccentricity * 1.0e7), '0', 7, true));
         buffer.append(' ');
-        buffer.append(addPadding(f34.format(FastMath.toDegrees(pa)), ' ', 8, true));
+        buffer.append(addPadding("pa", f34.format(FastMath.toDegrees(pa)), ' ', 8, true));
         buffer.append(' ');
-        buffer.append(addPadding(f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true));
+        buffer.append(addPadding("meanAnomaly", f34.format(FastMath.toDegrees(meanAnomaly)), ' ', 8, true));
 
         buffer.append(' ');
-        buffer.append(addPadding(f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true));
-        buffer.append(addPadding(revolutionNumberAtEpoch, ' ', 5, true));
+        buffer.append(addPadding("meanMotion", f211.format(meanMotion * 43200.0 / FastMath.PI), ' ', 11, true));
+        buffer.append(addPadding("revolutionNumberAtEpoch", revolutionNumberAtEpoch, ' ', 5, true));
 
         buffer.append(Integer.toString(checksum(buffer)));
 
@@ -387,28 +404,39 @@ public class TLE implements TimeStamped, Serializable {
     }
 
     /** Add padding characters before an integer.
+     * @param name parameter name
      * @param k integer to pad
      * @param c padding character
      * @param size desired size
      * @param rightJustified if true, the resulting string is
      * right justified (i.e. space are added to the left)
      * @return padded string
+     * @exception OrekitException if parameter is too large to fit format
      */
-    private String addPadding(final int k, final char c,
-                              final int size, final boolean rightJustified) {
-        return addPadding(Integer.toString(k), c, size, rightJustified);
+    private String addPadding(final String name, final int k, final char c,
+                              final int size, final boolean rightJustified)
+        throws OrekitException {
+        return addPadding(name, Integer.toString(k), c, size, rightJustified);
     }
 
     /** Add padding characters to a string.
+     * @param name parameter name
      * @param string string to pad
      * @param c padding character
      * @param size desired size
      * @param rightJustified if true, the resulting string is
      * right justified (i.e. space are added to the left)
      * @return padded string
+     * @exception OrekitException if parameter is too large to fit format
      */
-    private String addPadding(final String string, final char c,
-                              final int size, final boolean rightJustified) {
+    private String addPadding(final String name, final String string, final char c,
+                              final int size, final boolean rightJustified)
+        throws OrekitException {
+
+        if (string.length() > size) {
+            throw new OrekitException(OrekitMessages.TLE_INVALID_PARAMETER,
+                                      satelliteNumber, name, string);
+        }
 
         final StringBuffer padding = new StringBuffer();
         for (int i = 0; i < size; ++i) {

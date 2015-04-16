@@ -24,13 +24,18 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
@@ -137,6 +142,133 @@ public class TLETest {
     public void testBug77() throws OrekitException {
         checkSymmetry("1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
                       "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
+    }
+
+    @Test
+    public void testDirectConstruction() throws OrekitException {
+        TLE tleA = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
+                           new AbsoluteDate(new DateComponents(2012, 26),
+                                            new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                            TimeScalesFactory.getUTC()),
+                           taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
+                           0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
+                           FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+        TLE tleB =  new TLE("1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
+                            "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
+        Assert.assertEquals(tleA.getSatelliteNumber(),         tleB.getSatelliteNumber(), 0);
+        Assert.assertEquals(tleA.getLaunchYear(),              tleB.getLaunchYear());
+        Assert.assertEquals(tleA.getLaunchNumber(),            tleB.getLaunchNumber());
+        Assert.assertEquals(tleA.getLaunchPiece(),             tleB.getLaunchPiece());
+        Assert.assertEquals(tleA.getBStar(),                   tleB.getBStar(), 0);
+        Assert.assertEquals(tleA.getEphemerisType(),           tleB.getEphemerisType());
+        Assert.assertEquals(tleA.getI(),                       tleB.getI(), 1e-10);
+        Assert.assertEquals(tleA.getRaan(),                    tleB.getRaan(), 1e-10);
+        Assert.assertEquals(tleA.getE(),                       tleB.getE(), 1e-10);
+        Assert.assertEquals(tleA.getPerigeeArgument(),         tleB.getPerigeeArgument(), 1e-10);
+        Assert.assertEquals(tleA.getMeanAnomaly(),             tleB.getMeanAnomaly(), 1e-10);
+        Assert.assertEquals(tleA.getMeanMotion(),              tleB.getMeanMotion(), 0);
+        Assert.assertEquals(tleA.getRevolutionNumberAtEpoch(), tleB.getRevolutionNumberAtEpoch(), 0);
+        Assert.assertEquals(tleA.getElementNumber(),           tleB.getElementNumber(), 0);
+    }
+
+    @Test
+    public void testBug77TooLargeSecondDerivative() throws OrekitException {
+        try {
+            TLE tle = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
+                              new AbsoluteDate(new DateComponents(2012, 26),
+                                               new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                               TimeScalesFactory.getUTC()),
+                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.99999e11, 3),
+                              0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
+                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+            tle.getLine1();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals(5555, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("meanMotionSecondDerivative", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testBug77TooLargeBStar() throws OrekitException {
+        try {
+            TLE tle = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
+                              new AbsoluteDate(new DateComponents(2012, 26),
+                                               new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                               TimeScalesFactory.getUTC()),
+                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
+                              0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
+                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.99999e11);
+            tle.getLine1();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals(5555, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("B*", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testBug77TooLargeEccentricity() throws OrekitException {
+        try {
+            TLE tle = new TLE(5555, 'U', 1971, 86, "J", 0, 908,
+                              new AbsoluteDate(new DateComponents(2012, 26),
+                                               new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                               TimeScalesFactory.getUTC()),
+                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
+                              1.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
+                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+            tle.getLine2();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals(5555, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("eccentricity", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testBug77TooLargeSatelliteNumber1() throws OrekitException {
+        try {
+            TLE tle = new TLE(1000000, 'U', 1971, 86, "J", 0, 908,
+                              new AbsoluteDate(new DateComponents(2012, 26),
+                                               new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                               TimeScalesFactory.getUTC()),
+                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
+                              0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
+                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+            tle.getLine1();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals(1000000, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("satelliteNumber-1", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testBug77TooLargeSatelliteNumber2() throws OrekitException {
+        try {
+            TLE tle = new TLE(1000000, 'U', 1971, 86, "J", 0, 908,
+                              new AbsoluteDate(new DateComponents(2012, 26),
+                                               new TimeComponents(0.96078249 * Constants.JULIAN_DAY),
+                                               TimeScalesFactory.getUTC()),
+                              taylorConvert(12.26882470, 1), taylorConvert(-0.00000004, 2), taylorConvert(0.00001e-9, 3),
+                              0.0075476, FastMath.toRadians(74.0161), FastMath.toRadians(328.9888),
+                              FastMath.toRadians(228.9750), FastMath.toRadians(30.6709), 80454, 0.01234e-9);
+            tle.getLine2();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TLE_INVALID_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals(1000000, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals("satelliteNumber-2", oe.getParts()[1]);
+        }
+    }
+
+    final double taylorConvert(final double m, final int n) {
+        // convert one term of TLE mean motion Taylor series
+        return  m * 2 * FastMath.PI * CombinatoricsUtils.factorial(n) / FastMath.pow(Constants.JULIAN_DAY, n);
     }
 
     @Test(expected=OrekitException.class)

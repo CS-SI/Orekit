@@ -148,6 +148,9 @@ MISSING_SECOND_TLE_LINE = une seconde ligne de TLE était attendue après la lig
 # TLE lines do not refer to the same object:\n{0}\n{1}
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = les lignes de TLE ne font pas référence au même objet :\n{0}\n{1}
 
+# invalid TLE parameter for object {0}: {1} = {2}
+TLE_INVALID_PARAMETER = paramètre TLE invalide pour l''objet {0} : {1} = {2}
+
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = somme de contrôle incorrecte pour la ligne TLE {0}, {2} au lieu de la valeur {1} attendue ({3})
 

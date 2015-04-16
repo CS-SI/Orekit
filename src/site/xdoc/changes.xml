@@ -22,6 +22,10 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Added protections against TLE parameters too large to fit in the format.
+        Fixes issue #77.
+      </action>
+      <action dev="luc" type="fix">
         Allowed slightly malformed TLE to be parsed.
         Fixes issue #196.
       </action>

@@ -148,6 +148,9 @@ MISSING_SECOND_TLE_LINE = esperaba una segunda línea TLE después de la línea 
 # TLE lines do not refer to the same object:\n{0}\n{1}
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = las líneas TLE no se refieren al mismo objeto:\n{0}\n{1}
 
+# invalid TLE parameter for object {0}: {1} = {2}
+TLE_INVALID_PARAMETER = <MISSING TRANSLATION>
+
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = suma de control incorrecta para la línea TLE {0}, en vez del valor esperado {1} se obtiene {2} ({3})
 

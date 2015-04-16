@@ -97,6 +97,7 @@ public enum OrekitMessages implements Localizable {
     NOT_TLE_LINES("lines {0} and {1} are not TLE lines:\n{0}: \"{2}\"\n{1}: \"{3}\""),
     MISSING_SECOND_TLE_LINE("expected a second TLE line after line {0}:\n{0}: \"{1}\""),
     TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT("TLE lines do not refer to the same object:\n{0}\n{1}"),
+    TLE_INVALID_PARAMETER("invalid TLE parameter for object {0}: {1} = {2}"),
     TLE_CHECKSUM_ERROR("wrong checksum of TLE line {0}, expected {1} but got {2} ({3})"),
     NO_TLE_DATA_AVAILABLE("no TLE data available"),
     NOT_POSITIVE_SPACECRAFT_MASS("spacecraft mass is not positive: {0} kg"),
