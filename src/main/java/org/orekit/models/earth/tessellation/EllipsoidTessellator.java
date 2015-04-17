@@ -50,8 +50,8 @@ import org.orekit.errors.OrekitException;
  */
 public class EllipsoidTessellator {
 
-    /** Split factor for tiles fine positioning. */
-    private final int SPLITS = 4;
+    /** Number of segments tiles sides are split into for tiles fine positioning. */
+    private final int splits;
 
     /** Aiming used for orienting tiles. */
     private final TileAiming aiming;
@@ -80,16 +80,19 @@ public class EllipsoidTessellator {
      * will have a gap between each other instead of an overlap
      * @param lengthOverlap overlap between adjacent tiles (in meters), if negative the tiles
      * will have a gap between each other instead of an overlap
+     * @param splits number of segments tiles sides are split into for tiles fine positioning
      */
     public EllipsoidTessellator(final OneAxisEllipsoid ellipsoid, final TileAiming aiming,
                                 final double fullWidth, final double fullLength,
-                                final double widthOverlap, final double lengthOverlap) {
+                                final double widthOverlap, final double lengthOverlap,
+                                final int splits) {
         this.ellipsoid     = ellipsoid;
         this.aiming        = aiming;
-        this.splitWidth    = (fullWidth  - widthOverlap)  / SPLITS;
-        this.splitLength   = (fullLength - lengthOverlap) / SPLITS;
+        this.splitWidth    = (fullWidth  - widthOverlap)  / splits;
+        this.splitLength   = (fullLength - lengthOverlap) / splits;
         this.widthOverlap  = widthOverlap;
         this.lengthOverlap = lengthOverlap;
+        this.splits        = splits;
     }
 
     /** Tessellate a zone of interest into tiles.
@@ -244,18 +247,18 @@ public class EllipsoidTessellator {
 
         final int minAcross = mesh.getMinAcrossIndex();
         final int maxAcross = mesh.getMaxAcrossIndex();
-        for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += SPLITS) {
+        for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += splits) {
             final int minAlong = FastMath.min(mesh.getMinAlongIndex(acrossIndex),
-                                              mesh.getMinAlongIndex(acrossIndex + SPLITS));
+                                              mesh.getMinAlongIndex(acrossIndex + splits));
             final int maxAlong = FastMath.max(mesh.getMaxAlongIndex(acrossIndex),
-                                              mesh.getMaxAlongIndex(acrossIndex + SPLITS));
-            for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += SPLITS) {
+                                              mesh.getMaxAlongIndex(acrossIndex + splits));
+            for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += splits) {
 
                 // get the base vertex nodes
                 final Mesh.Node node0 = mesh.addNode(alongIndex,          acrossIndex);
-                final Mesh.Node node1 = mesh.addNode(alongIndex + SPLITS, acrossIndex);
-                final Mesh.Node node2 = mesh.addNode(alongIndex + SPLITS, acrossIndex + SPLITS);
-                final Mesh.Node node3 = mesh.addNode(alongIndex,          acrossIndex + SPLITS);
+                final Mesh.Node node1 = mesh.addNode(alongIndex + splits, acrossIndex);
+                final Mesh.Node node2 = mesh.addNode(alongIndex + splits, acrossIndex + splits);
+                final Mesh.Node node3 = mesh.addNode(alongIndex,          acrossIndex + splits);
 
                 // apply tile overlap
                 final GeodeticPoint gp0 = node0.move(new Vector3D(-lengthOverlap, node0.getAlong(),
@@ -278,11 +281,11 @@ public class EllipsoidTessellator {
                     tiles.add(new Tile(gp0, gp1, gp2, gp3));
 
                     // ensure the taxicab boundary follows the built tile sides
-                    for (int k = 0; k < SPLITS; ++k) {
+                    for (int k = 0; k < splits; ++k) {
                         mesh.addNode(alongIndex + k,      acrossIndex).setEnabled(true);
-                        mesh.addNode(alongIndex + k + 1,  acrossIndex + SPLITS).setEnabled(true);
+                        mesh.addNode(alongIndex + k + 1,  acrossIndex + splits).setEnabled(true);
                         mesh.addNode(alongIndex,          acrossIndex + k + 1).setEnabled(true);
-                        mesh.addNode(alongIndex + SPLITS, acrossIndex + k).setEnabled(true);
+                        mesh.addNode(alongIndex + splits, acrossIndex + k).setEnabled(true);
                     }
 
                 }
@@ -511,10 +514,10 @@ public class EllipsoidTessellator {
 
         // number of tiles needed to cover the full indices range
         final int range      = maxIndex - minIndex;
-        final int nbTiles    = (range + SPLITS - 1) / SPLITS;
+        final int nbTiles    = (range + splits - 1) / splits;
 
         // extra nodes that must be added to complete the tiles
-        final int extraNodes = nbTiles * SPLITS  - range;
+        final int extraNodes = nbTiles * splits  - range;
 
         // balance the extra nodes before min index and after maxIndex
         final int extraBefore = (extraNodes + 1) / 2;
