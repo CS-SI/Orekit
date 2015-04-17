@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth.tessellation;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
@@ -86,6 +87,24 @@ public class EllipsoidTessellatorTest {
         Assert.assertEquals(1,  tiles.size());
         Assert.assertEquals(27, tiles.get(0).size());
         checkTilesDontOverlap(tiles);
+    }
+
+    @Test
+    public void testSmallzone() throws OrekitException, IOException {
+
+        TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
+        EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, aiming, 50000.0, 150000.0, 0, 0, 4);
+
+        SphericalPolygonsSet small = buildSimpleZone(new double[][] {
+            { 43.6543, 1.4268 }, { 43.6120, 1.4179 }, { 43.6016, 1.3994 }, { 43.5682, 1.4159 },
+            { 43.5707, 1.4358 }, { 43.5573, 1.4941 }, { 43.6041, 1.4866 }
+        });
+
+        final List<List<Tile>> tiles = tessellator.tessellate(small);
+        Assert.assertEquals(1, tiles.size());
+        Assert.assertEquals(1, tiles.get(0).size());
+
     }
 
     private void checkTilesDontOverlap(final List<List<Tile>> tiles) {

@@ -248,10 +248,14 @@ public class EllipsoidTessellator {
         final int minAcross = mesh.getMinAcrossIndex();
         final int maxAcross = mesh.getMaxAcrossIndex();
         for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += splits) {
-            final int minAlong = FastMath.min(mesh.getMinAlongIndex(acrossIndex),
-                                              mesh.getMinAlongIndex(acrossIndex + splits));
-            final int maxAlong = FastMath.max(mesh.getMaxAlongIndex(acrossIndex),
-                                              mesh.getMaxAlongIndex(acrossIndex + splits));
+
+            int minAlong = mesh.getMaxAlongIndex() + 1;
+            int maxAlong = mesh.getMinAlongIndex() - 1;
+            for (int c = acrossIndex; c <= acrossIndex + splits; ++c) {
+                minAlong = FastMath.min(minAlong, mesh.getMinAlongIndex(c));
+                maxAlong = FastMath.max(maxAlong, mesh.getMaxAlongIndex(c));
+            }
+
             for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += splits) {
 
                 // get the base vertex nodes
