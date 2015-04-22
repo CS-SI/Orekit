@@ -38,7 +38,7 @@ public class OrekitStepHandlerTest {
         final double mu = CelestialBodyFactory.getEarth().getGM();
         FactoryManagedFrame inertialFrame = FramesFactory.getEME2000();
 
-        final double propagationTime = 86400.0;// seconds
+        final double propagationTime = 7200.0;// seconds
         final double fixedStepSize = 3600; // seconds
 
         final double semimajorAxis = 8000e3; // meters
@@ -77,7 +77,7 @@ public class OrekitStepHandlerTest {
         kepler.propagate(initialDate.shiftedBy(propagationTime));
 
         final double stepSizeInSeconds = 120;
-        final long longestWaitTimeMS = 10;
+        final long longestWaitTimeMS = 20;
         ExecutorService service = Executors.newSingleThreadExecutor();
         for (double elapsedTime = 0; elapsedTime <= propagationTime; elapsedTime += stepSizeInSeconds) {
             final double dt = elapsedTime;

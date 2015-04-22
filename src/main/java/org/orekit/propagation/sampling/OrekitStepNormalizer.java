@@ -102,17 +102,18 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
                 lastDate = interpolator.getPreviousDate();
                 interpolator.setInterpolatedDate(lastDate);
                 lastState = interpolator.getInterpolatedState();
-
-                // take the propagation direction into account
-                forward = interpolator.getCurrentDate().compareTo(lastDate) >= 0;
-                if (!forward) {
-                    h = -h;
-                }
-
+            }
+            
+            // take the propagation direction into account
+            double step = h;
+            forward = interpolator.getCurrentDate().compareTo(lastDate) >= 0;
+            if (!forward) {
+                step = -h;
             }
 
+
             // use the interpolator to push fixed steps events to the underlying handler
-            AbsoluteDate nextTime = lastDate.shiftedBy(h);
+            AbsoluteDate nextTime = lastDate.shiftedBy(step);
             boolean nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentDate()) > 0);
             while (nextInStep) {
 
@@ -125,7 +126,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
                 lastState = interpolator.getInterpolatedState();
 
                 // prepare next iteration
-                nextTime = nextTime.shiftedBy(h);
+                nextTime = nextTime.shiftedBy(step);
                 nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentDate()) > 0);
 
             }
