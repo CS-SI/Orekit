@@ -103,7 +103,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
                 interpolator.setInterpolatedDate(lastDate);
                 lastState = interpolator.getInterpolatedState();
             }
-            
+
             // take the propagation direction into account
             double step = h;
             forward = interpolator.getCurrentDate().compareTo(lastDate) >= 0;
