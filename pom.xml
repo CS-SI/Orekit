@@ -40,6 +40,7 @@
     <orekit.maven-surefire-report-plugin.version>2.18.1</orekit.maven-surefire-report-plugin.version>
     <orekit.jgit.buildnumber.version>1.2.8</orekit.jgit.buildnumber.version>
     <orekit.plantuml.version>7999</orekit.plantuml.version>
+    <orekit.apache-commons-math.version>3.5</orekit.apache-commons-math.version>
     <orekit.compiler.source>1.6</orekit.compiler.source>
     <orekit.compiler.target>1.6</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
@@ -242,7 +243,7 @@
   	<dependency>
   		<groupId>org.apache.commons</groupId>
   		<artifactId>commons-math3</artifactId>
-  		<version>3.5</version>
+  		<version>${orekit.apache-commons-math.version}</version>
   		<type>jar</type>
   		<optional>false</optional>
   	</dependency>
@@ -573,7 +574,7 @@
           <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
           <links>
             <link>http://docs.oracle.com/javase/6/docs/api/</link>
-            <link>http://commons.apache.org/math/javadocs/api-3.4</link>
+            <link>http://commons.apache.org/math/javadocs/api-${orekit.apache-commons-math.version}</link>
           </links>
         </configuration>
         <reportSets>
