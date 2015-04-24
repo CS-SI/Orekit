@@ -48,7 +48,7 @@ public class BodyCenterPointing extends GroundPointing {
 
     /** Creates new instance.
      * @param bodyFrame Body frame
-     * @deprecated as of 7.1, replaced with {@link #BodyCenterPointing(OneAxisEllipsoid)}
+     * @deprecated as of 7.1, replaced with {@link #BodyCenterPointing(Ellipsoid)}
      */
     @Deprecated
     public BodyCenterPointing(final Frame bodyFrame) {

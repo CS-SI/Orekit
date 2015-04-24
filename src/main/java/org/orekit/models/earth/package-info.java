@@ -32,8 +32,8 @@
  *
  * <p>A Geoid is an equipotential surface of Earth's gravity field. This package
  * provides the means to compute a Geoid from the gravity field harmonic
- * coefficients, as in the following example. See the comment for {@link Geoid}
- * for some important caveats.
+ * coefficients, as in the following example. See the comment for {@link
+ * org.orekit.models.earth.Geoid} for some important caveats.
  *
  * <pre><code class="brush: java">
  * ReferenceEllipsoid ellipsoid
