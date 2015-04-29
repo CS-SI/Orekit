@@ -92,8 +92,10 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return FieldRotation<T> rate allowing to go from start to end orientations
      */
-    public static <T extends RealFieldElement<T>> FieldVector3D<T>
-    estimateRate(final FieldRotation<T> start, final FieldRotation<T> end, final double dt) {
+    public static <T extends RealFieldElement<T>>
+        FieldVector3D<T> estimateRate(final FieldRotation<T> start,
+                                      final FieldRotation<T> end,
+                                      final double dt) {
         final FieldRotation<T> evolution = start.applyTo(end.revert());
         return new FieldVector3D<T>(evolution.getAngle().divide(dt), evolution.getAxis());
     }
@@ -284,9 +286,11 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * AngularDerivativesFilter, Collection)}
      */
     @Deprecated
-    public static <T extends RealFieldElement<T>> FieldAngularCoordinates<T>
-    interpolate(final AbsoluteDate date, final boolean useRotationRates,
-                final Collection<Pair<AbsoluteDate, FieldAngularCoordinates<T>>> sample)
+    public static <T extends RealFieldElement<T>>
+        FieldAngularCoordinates<T> interpolate(final AbsoluteDate date,
+                                               final boolean useRotationRates,
+                                               final Collection<Pair<AbsoluteDate,
+                                               FieldAngularCoordinates<T>>> sample)
         throws OrekitException {
         final List<TimeStampedFieldAngularCoordinates<T>> list = new ArrayList<TimeStampedFieldAngularCoordinates<T>>(sample.size());
         for (final Pair<AbsoluteDate, FieldAngularCoordinates<T>> pair : sample) {

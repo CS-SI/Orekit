@@ -265,20 +265,20 @@ public abstract class ODMParser {
         throws OrekitException {
         switch (keyValue.getKeyword()) {
 
-        case CREATION_DATE:
-            if (!comment.isEmpty()) {
-                odmFile.setHeaderComment(comment);
-                comment.clear();
-            }
-            odmFile.setCreationDate(new AbsoluteDate(keyValue.getValue(), TimeScalesFactory.getUTC()));
-            return true;
+            case CREATION_DATE:
+                if (!comment.isEmpty()) {
+                    odmFile.setHeaderComment(comment);
+                    comment.clear();
+                }
+                odmFile.setCreationDate(new AbsoluteDate(keyValue.getValue(), TimeScalesFactory.getUTC()));
+                return true;
 
-        case ORIGINATOR:
-            odmFile.setOriginator(keyValue.getValue());
-            return true;
+            case ORIGINATOR:
+                odmFile.setOriginator(keyValue.getValue());
+                return true;
 
-        default:
-            return false;
+            default:
+                return false;
 
         }
 
@@ -295,63 +295,63 @@ public abstract class ODMParser {
                                          final ODMMetaData metaData, final List<String> comment)
         throws OrekitException {
         switch (keyValue.getKeyword()) {
-        case OBJECT_NAME:
-            if (!comment.isEmpty()) {
-                metaData.setComment(comment);
-                comment.clear();
-            }
-            metaData.setObjectName(keyValue.getValue());
-            return true;
-
-        case OBJECT_ID: {
-            metaData.setObjectID(keyValue.getValue());
-            final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(keyValue.getValue());
-            if (matcher.matches()) {
-                metaData.setLaunchYear(Integer.parseInt(matcher.group(1)));
-                metaData.setLaunchNumber(Integer.parseInt(matcher.group(2)));
-                metaData.setLaunchPiece(matcher.group(3));
-            }
-            return true;
-        }
-
-        case CENTER_NAME:
-            metaData.setCenterName(keyValue.getValue());
-            final String canonicalValue;
-            if (keyValue.getValue().equals("SOLAR SYSTEM BARYCENTER") || keyValue.getValue().equals("SSB")) {
-                canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
-            } else if (keyValue.getValue().equals("EARTH MOON BARYCENTER") || keyValue.getValue().equals("EARTH-MOON BARYCENTER") ||
-                       keyValue.getValue().equals("EARTH BARYCENTER") || keyValue.getValue().equals("EMB")) {
-                canonicalValue = "EARTH_MOON";
-            } else {
-                canonicalValue = keyValue.getValue();
-            }
-            for (final CenterName c : CenterName.values()) {
-                if (c.name().equals(canonicalValue)) {
-                    metaData.setHasCreatableBody(true);
-                    metaData.setCenterBody(c.getCelestialBody());
-                    metaData.getODMFile().setMuCreated(c.getCelestialBody().getGM());
+            case OBJECT_NAME:
+                if (!comment.isEmpty()) {
+                    metaData.setComment(comment);
+                    comment.clear();
                 }
+                metaData.setObjectName(keyValue.getValue());
+                return true;
+
+            case OBJECT_ID: {
+                metaData.setObjectID(keyValue.getValue());
+                final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(keyValue.getValue());
+                if (matcher.matches()) {
+                    metaData.setLaunchYear(Integer.parseInt(matcher.group(1)));
+                    metaData.setLaunchNumber(Integer.parseInt(matcher.group(2)));
+                    metaData.setLaunchPiece(matcher.group(3));
+                }
+                return true;
             }
-            return true;
 
-        case REF_FRAME:
-            metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(getConventions(), isSimpleEOP()));
-            return true;
+            case CENTER_NAME:
+                metaData.setCenterName(keyValue.getValue());
+                final String canonicalValue;
+                if (keyValue.getValue().equals("SOLAR SYSTEM BARYCENTER") || keyValue.getValue().equals("SSB")) {
+                    canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
+                } else if (keyValue.getValue().equals("EARTH MOON BARYCENTER") || keyValue.getValue().equals("EARTH-MOON BARYCENTER") ||
+                        keyValue.getValue().equals("EARTH BARYCENTER") || keyValue.getValue().equals("EMB")) {
+                    canonicalValue = "EARTH_MOON";
+                } else {
+                    canonicalValue = keyValue.getValue();
+                }
+                for (final CenterName c : CenterName.values()) {
+                    if (c.name().equals(canonicalValue)) {
+                        metaData.setHasCreatableBody(true);
+                        metaData.setCenterBody(c.getCelestialBody());
+                        metaData.getODMFile().setMuCreated(c.getCelestialBody().getGM());
+                    }
+                }
+                return true;
 
-        case REF_FRAME_EPOCH:
-            metaData.setFrameEpochString(keyValue.getValue());
-            return true;
+            case REF_FRAME:
+                metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(getConventions(), isSimpleEOP()));
+                return true;
 
-        case TIME_SYSTEM:
-            final OrbitFile.TimeSystem timeSystem = OrbitFile.TimeSystem.valueOf(keyValue.getValue());
-            metaData.setTimeSystem(timeSystem);
-            if (metaData.getFrameEpochString() != null) {
-                metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem));
-            }
-            return true;
+            case REF_FRAME_EPOCH:
+                metaData.setFrameEpochString(keyValue.getValue());
+                return true;
 
-        default:
-            return false;
+            case TIME_SYSTEM:
+                final OrbitFile.TimeSystem timeSystem = OrbitFile.TimeSystem.valueOf(keyValue.getValue());
+                metaData.setTimeSystem(timeSystem);
+                if (metaData.getFrameEpochString() != null) {
+                    metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem));
+                }
+                return true;
+
+            default:
+                return false;
         }
     }
 
@@ -367,186 +367,186 @@ public abstract class ODMParser {
         throws OrekitException {
         switch (keyValue.getKeyword()) {
 
-        case EPOCH:
-            general.setEpochComment(comment);
-            comment.clear();
-            general.setEpoch(parseDate(keyValue.getValue(), general.getTimeSystem()));
-            return true;
+            case EPOCH:
+                general.setEpochComment(comment);
+                comment.clear();
+                general.setEpoch(parseDate(keyValue.getValue(), general.getTimeSystem()));
+                return true;
 
-        case SEMI_MAJOR_AXIS:
-            general.setKeplerianElementsComment(comment);
-            comment.clear();
-            general.setA(keyValue.getDoubleValue() * 1000);
-            general.setHasKeplerianElements(true);
-            return true;
+            case SEMI_MAJOR_AXIS:
+                general.setKeplerianElementsComment(comment);
+                comment.clear();
+                general.setA(keyValue.getDoubleValue() * 1000);
+                general.setHasKeplerianElements(true);
+                return true;
 
-        case ECCENTRICITY:
-            general.setE(keyValue.getDoubleValue());
-            return true;
+            case ECCENTRICITY:
+                general.setE(keyValue.getDoubleValue());
+                return true;
 
-        case INCLINATION:
-            general.setI(FastMath.toRadians(keyValue.getDoubleValue()));
-            return true;
+            case INCLINATION:
+                general.setI(FastMath.toRadians(keyValue.getDoubleValue()));
+                return true;
 
-        case RA_OF_ASC_NODE:
-            general.setRaan(FastMath.toRadians(keyValue.getDoubleValue()));
-            return true;
+            case RA_OF_ASC_NODE:
+                general.setRaan(FastMath.toRadians(keyValue.getDoubleValue()));
+                return true;
 
-        case ARG_OF_PERICENTER:
-            general.setPa(FastMath.toRadians(keyValue.getDoubleValue()));
-            return true;
+            case ARG_OF_PERICENTER:
+                general.setPa(FastMath.toRadians(keyValue.getDoubleValue()));
+                return true;
 
-        case TRUE_ANOMALY:
-            general.setAnomalyType("TRUE");
-            general.setAnomaly(FastMath.toRadians(keyValue.getDoubleValue()));
-            return true;
+            case TRUE_ANOMALY:
+                general.setAnomalyType("TRUE");
+                general.setAnomaly(FastMath.toRadians(keyValue.getDoubleValue()));
+                return true;
 
-        case MEAN_ANOMALY:
-            general.setAnomalyType("MEAN");
-            general.setAnomaly(FastMath.toRadians(keyValue.getDoubleValue()));
-            return true;
+            case MEAN_ANOMALY:
+                general.setAnomalyType("MEAN");
+                general.setAnomaly(FastMath.toRadians(keyValue.getDoubleValue()));
+                return true;
 
-        case GM:
-            general.setMuParsed(keyValue.getDoubleValue() * 1e9);
-            return true;
+            case GM:
+                general.setMuParsed(keyValue.getDoubleValue() * 1e9);
+                return true;
 
-        case MASS:
-            comment.addAll(0, general.getSpacecraftComment());
-            general.setSpacecraftComment(comment);
-            comment.clear();
-            general.setMass(keyValue.getDoubleValue());
-            return true;
+            case MASS:
+                comment.addAll(0, general.getSpacecraftComment());
+                general.setSpacecraftComment(comment);
+                comment.clear();
+                general.setMass(keyValue.getDoubleValue());
+                return true;
 
-        case SOLAR_RAD_AREA:
-            comment.addAll(0, general.getSpacecraftComment());
-            general.setSpacecraftComment(comment);
-            comment.clear();
-            general.setSolarRadArea(keyValue.getDoubleValue());
-            return true;
+            case SOLAR_RAD_AREA:
+                comment.addAll(0, general.getSpacecraftComment());
+                general.setSpacecraftComment(comment);
+                comment.clear();
+                general.setSolarRadArea(keyValue.getDoubleValue());
+                return true;
 
-        case SOLAR_RAD_COEFF:
-            comment.addAll(0, general.getSpacecraftComment());
-            general.setSpacecraftComment(comment);
-            comment.clear();
-            general.setSolarRadCoeff(keyValue.getDoubleValue());
-            return true;
+            case SOLAR_RAD_COEFF:
+                comment.addAll(0, general.getSpacecraftComment());
+                general.setSpacecraftComment(comment);
+                comment.clear();
+                general.setSolarRadCoeff(keyValue.getDoubleValue());
+                return true;
 
-        case DRAG_AREA:
-            comment.addAll(0, general.getSpacecraftComment());
-            general.setSpacecraftComment(comment);
-            comment.clear();
-            general.setDragArea(keyValue.getDoubleValue());
-            return true;
+            case DRAG_AREA:
+                comment.addAll(0, general.getSpacecraftComment());
+                general.setSpacecraftComment(comment);
+                comment.clear();
+                general.setDragArea(keyValue.getDoubleValue());
+                return true;
 
-        case DRAG_COEFF:
-            comment.addAll(0, general.getSpacecraftComment());
-            general.setSpacecraftComment(comment);
-            comment.clear();
-            general.setDragCoeff(keyValue.getDoubleValue());
-            return true;
+            case DRAG_COEFF:
+                comment.addAll(0, general.getSpacecraftComment());
+                general.setSpacecraftComment(comment);
+                comment.clear();
+                general.setDragCoeff(keyValue.getDoubleValue());
+                return true;
 
-        case COV_REF_FRAME:
-            general.setCovarianceComment(comment);
-            comment.clear();
-            final CCSDSFrame covFrame = parseCCSDSFrame(keyValue.getValue());
-            if (covFrame.isLof()) {
-                general.setCovRefLofType(covFrame.getLofType());
-            } else {
-                general.setCovRefFrame(covFrame.getFrame(getConventions(), isSimpleEOP()));
-            }
-            return true;
+            case COV_REF_FRAME:
+                general.setCovarianceComment(comment);
+                comment.clear();
+                final CCSDSFrame covFrame = parseCCSDSFrame(keyValue.getValue());
+                if (covFrame.isLof()) {
+                    general.setCovRefLofType(covFrame.getLofType());
+                } else {
+                    general.setCovRefFrame(covFrame.getFrame(getConventions(), isSimpleEOP()));
+                }
+                return true;
 
-        case CX_X:
-            general.createCovarianceMatrix();
-            general.setCovarianceMatrixEntry(0, 0, keyValue.getDoubleValue());
-            return true;
+            case CX_X:
+                general.createCovarianceMatrix();
+                general.setCovarianceMatrixEntry(0, 0, keyValue.getDoubleValue());
+                return true;
 
-        case CY_X:
-            general.setCovarianceMatrixEntry(0, 1, keyValue.getDoubleValue());
-            return true;
+            case CY_X:
+                general.setCovarianceMatrixEntry(0, 1, keyValue.getDoubleValue());
+                return true;
 
-        case CY_Y:
-            general.setCovarianceMatrixEntry(1, 1, keyValue.getDoubleValue());
-            return true;
+            case CY_Y:
+                general.setCovarianceMatrixEntry(1, 1, keyValue.getDoubleValue());
+                return true;
 
-        case CZ_X:
-            general.setCovarianceMatrixEntry(0, 2, keyValue.getDoubleValue());
-            return true;
+            case CZ_X:
+                general.setCovarianceMatrixEntry(0, 2, keyValue.getDoubleValue());
+                return true;
 
-        case CZ_Y:
-            general.setCovarianceMatrixEntry(1, 2, keyValue.getDoubleValue());
-            return true;
+            case CZ_Y:
+                general.setCovarianceMatrixEntry(1, 2, keyValue.getDoubleValue());
+                return true;
 
-        case CZ_Z:
-            general.setCovarianceMatrixEntry(2, 2, keyValue.getDoubleValue());
-            return true;
+            case CZ_Z:
+                general.setCovarianceMatrixEntry(2, 2, keyValue.getDoubleValue());
+                return true;
 
-        case CX_DOT_X:
-            general.setCovarianceMatrixEntry(0, 3, keyValue.getDoubleValue());
-            return true;
+            case CX_DOT_X:
+                general.setCovarianceMatrixEntry(0, 3, keyValue.getDoubleValue());
+                return true;
 
-        case CX_DOT_Y:
-            general.setCovarianceMatrixEntry(1, 3, keyValue.getDoubleValue());
-            return true;
+            case CX_DOT_Y:
+                general.setCovarianceMatrixEntry(1, 3, keyValue.getDoubleValue());
+                return true;
 
-        case CX_DOT_Z:
-            general.setCovarianceMatrixEntry(2, 3, keyValue.getDoubleValue());
-            return true;
+            case CX_DOT_Z:
+                general.setCovarianceMatrixEntry(2, 3, keyValue.getDoubleValue());
+                return true;
 
-        case CX_DOT_X_DOT:
-            general.setCovarianceMatrixEntry(3, 3, keyValue.getDoubleValue());
-            return true;
+            case CX_DOT_X_DOT:
+                general.setCovarianceMatrixEntry(3, 3, keyValue.getDoubleValue());
+                return true;
 
-        case CY_DOT_X:
-            general.setCovarianceMatrixEntry(0, 4, keyValue.getDoubleValue());
-            return true;
+            case CY_DOT_X:
+                general.setCovarianceMatrixEntry(0, 4, keyValue.getDoubleValue());
+                return true;
 
-        case CY_DOT_Y:
-            general.setCovarianceMatrixEntry(1, 4, keyValue.getDoubleValue());
-            return true;
+            case CY_DOT_Y:
+                general.setCovarianceMatrixEntry(1, 4, keyValue.getDoubleValue());
+                return true;
 
-        case CY_DOT_Z:
-            general.setCovarianceMatrixEntry(2, 4, keyValue.getDoubleValue());
-            return true;
+            case CY_DOT_Z:
+                general.setCovarianceMatrixEntry(2, 4, keyValue.getDoubleValue());
+                return true;
 
-        case CY_DOT_X_DOT:
-            general.setCovarianceMatrixEntry(3, 4, keyValue.getDoubleValue());
-            return true;
+            case CY_DOT_X_DOT:
+                general.setCovarianceMatrixEntry(3, 4, keyValue.getDoubleValue());
+                return true;
 
-        case CY_DOT_Y_DOT:
-            general.setCovarianceMatrixEntry(4, 4, keyValue.getDoubleValue());
-            return true;
+            case CY_DOT_Y_DOT:
+                general.setCovarianceMatrixEntry(4, 4, keyValue.getDoubleValue());
+                return true;
 
-        case CZ_DOT_X:
-            general.setCovarianceMatrixEntry(0, 5, keyValue.getDoubleValue());
-            return true;
+            case CZ_DOT_X:
+                general.setCovarianceMatrixEntry(0, 5, keyValue.getDoubleValue());
+                return true;
 
-        case CZ_DOT_Y:
-            general.setCovarianceMatrixEntry(1, 5, keyValue.getDoubleValue());
-            return true;
+            case CZ_DOT_Y:
+                general.setCovarianceMatrixEntry(1, 5, keyValue.getDoubleValue());
+                return true;
 
-        case CZ_DOT_Z:
-            general.setCovarianceMatrixEntry(2, 5, keyValue.getDoubleValue());
-            return true;
+            case CZ_DOT_Z:
+                general.setCovarianceMatrixEntry(2, 5, keyValue.getDoubleValue());
+                return true;
 
-        case CZ_DOT_X_DOT:
-            general.setCovarianceMatrixEntry(3, 5, keyValue.getDoubleValue());
-            return true;
+            case CZ_DOT_X_DOT:
+                general.setCovarianceMatrixEntry(3, 5, keyValue.getDoubleValue());
+                return true;
 
-        case CZ_DOT_Y_DOT:
-            general.setCovarianceMatrixEntry(4, 5, keyValue.getDoubleValue());
-            return true;
+            case CZ_DOT_Y_DOT:
+                general.setCovarianceMatrixEntry(4, 5, keyValue.getDoubleValue());
+                return true;
 
-        case CZ_DOT_Z_DOT:
-            general.setCovarianceMatrixEntry(5, 5, keyValue.getDoubleValue());
-            return true;
+            case CZ_DOT_Z_DOT:
+                general.setCovarianceMatrixEntry(5, 5, keyValue.getDoubleValue());
+                return true;
 
-        case USER_DEFINED_X:
-            general.setUserDefinedParameters(keyValue.getKey(), keyValue.getValue());
-            return true;
+            case USER_DEFINED_X:
+                general.setUserDefinedParameters(keyValue.getKey(), keyValue.getValue());
+                return true;
 
-        default:
-            return false;
+            default:
+                return false;
         }
     }
 
@@ -567,40 +567,40 @@ public abstract class ODMParser {
     protected AbsoluteDate parseDate(final String date, final OrbitFile.TimeSystem timeSystem)
         throws OrekitException {
         switch (timeSystem) {
-        case GMST:
-            return new AbsoluteDate(date, TimeScalesFactory.getGMST(conventions, false));
-        case GPS:
-            return new AbsoluteDate(date, TimeScalesFactory.getGPS());
-        case TAI:
-            return new AbsoluteDate(date, TimeScalesFactory.getTAI());
-        case TCB:
-            return new AbsoluteDate(date, TimeScalesFactory.getTCB());
-        case TDB:
-            return new AbsoluteDate(date, TimeScalesFactory.getTDB());
-        case TCG:
-            return new AbsoluteDate(date, TimeScalesFactory.getTCG());
-        case TT:
-            return new AbsoluteDate(date, TimeScalesFactory.getTT());
-        case UT1:
-            return new AbsoluteDate(date, TimeScalesFactory.getUT1(conventions, false));
-        case UTC:
-            return new AbsoluteDate(date, TimeScalesFactory.getUTC());
-        case MET: {
-            final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
-            final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                    clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                    clock.getTime().getSecondsInDay();
-            return missionReferenceDate.shiftedBy(offset);
-        }
-        case MRT: {
-            final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
-            final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                    clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                    clock.getTime().getSecondsInDay();
-            return missionReferenceDate.shiftedBy(offset);
-        }
-        default:
-            throw OrekitException.createInternalError(null);
+            case GMST:
+                return new AbsoluteDate(date, TimeScalesFactory.getGMST(conventions, false));
+            case GPS:
+                return new AbsoluteDate(date, TimeScalesFactory.getGPS());
+            case TAI:
+                return new AbsoluteDate(date, TimeScalesFactory.getTAI());
+            case TCB:
+                return new AbsoluteDate(date, TimeScalesFactory.getTCB());
+            case TDB:
+                return new AbsoluteDate(date, TimeScalesFactory.getTDB());
+            case TCG:
+                return new AbsoluteDate(date, TimeScalesFactory.getTCG());
+            case TT:
+                return new AbsoluteDate(date, TimeScalesFactory.getTT());
+            case UT1:
+                return new AbsoluteDate(date, TimeScalesFactory.getUT1(conventions, false));
+            case UTC:
+                return new AbsoluteDate(date, TimeScalesFactory.getUTC());
+            case MET: {
+                final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
+                final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
+                        clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
+                        clock.getTime().getSecondsInDay();
+                return missionReferenceDate.shiftedBy(offset);
+            }
+            case MRT: {
+                final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
+                final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
+                        clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
+                        clock.getTime().getSecondsInDay();
+                return missionReferenceDate.shiftedBy(offset);
+            }
+            default:
+                throw OrekitException.createInternalError(null);
         }
     }
 

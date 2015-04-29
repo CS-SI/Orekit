@@ -431,18 +431,18 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
         final int f107Group;
         final int apGroup;
         switch (strengthLevel) {
-        case STRONG :
-            f107Group = 3;
-            apGroup   = 6;
-            break;
-        case AVERAGE :
-            f107Group = 4;
-            apGroup   = 7;
-            break;
-        default :
-            f107Group = 5;
-            apGroup   = 8;
-            break;
+            case STRONG :
+                f107Group = 3;
+                apGroup   = 6;
+                break;
+            case AVERAGE :
+                f107Group = 4;
+                apGroup   = 7;
+                break;
+            default :
+                f107Group = 5;
+                apGroup   = 8;
+                break;
         }
 
         // read the data

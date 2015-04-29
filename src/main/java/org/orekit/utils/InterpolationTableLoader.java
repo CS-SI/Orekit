@@ -109,41 +109,41 @@ public class InterpolationTableLoader implements DataLoader {
         do {
             switch (tokenizer.nextToken()) {
 
-            case StreamTokenizer.TT_EOF:
-                done = true;
-                break;
+                case StreamTokenizer.TT_EOF:
+                    done = true;
+                    break;
 
-            case StreamTokenizer.TT_EOL:
-                // end of header row
-                if (yValues.size() > 0) {
-                    headerRow = false;
-                }
-                tokenCount = 0;
-                break;
-
-            case StreamTokenizer.TT_NUMBER:
-                if (headerRow) {
-                    yValues.add(tokenizer.nval);
-                } else {
-                    if (tokenCount == 0) {
-                        xValues.add(tokenizer.nval);
-                        cellValues.add(new LinkedList<Double>());
-                    } else {
-                        cellValues.getLast().add(tokenizer.nval);
+                case StreamTokenizer.TT_EOL:
+                    // end of header row
+                    if (yValues.size() > 0) {
+                        headerRow = false;
                     }
-                }
-                tokenCount++;
-                break;
+                    tokenCount = 0;
+                    break;
 
-            case StreamTokenizer.TT_WORD:
-                // we are in the header row now
-                if (tokenizer.sval.startsWith("Table")) {
-                    headerRow = true;
-                }
-                break;
+                case StreamTokenizer.TT_NUMBER:
+                    if (headerRow) {
+                        yValues.add(tokenizer.nval);
+                    } else {
+                        if (tokenCount == 0) {
+                            xValues.add(tokenizer.nval);
+                            cellValues.add(new LinkedList<Double>());
+                        } else {
+                            cellValues.getLast().add(tokenizer.nval);
+                        }
+                    }
+                    tokenCount++;
+                    break;
 
-            default:
-                break;
+                case StreamTokenizer.TT_WORD:
+                    // we are in the header row now
+                    if (tokenizer.sval.startsWith("Table")) {
+                        headerRow = true;
+                    }
+                    break;
+
+                default:
+                    break;
             }
 
         } while (!done);

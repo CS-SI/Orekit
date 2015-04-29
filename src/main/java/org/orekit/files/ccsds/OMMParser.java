@@ -157,62 +157,62 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
                 switch (pi.keyValue.getKeyword()) {
-                case CCSDS_OMM_VERS:
-                    file.setFormatVersion(pi.keyValue.getDoubleValue());
-                    break;
+                    case CCSDS_OMM_VERS:
+                        file.setFormatVersion(pi.keyValue.getDoubleValue());
+                        break;
 
-                case MEAN_ELEMENT_THEORY:
-                    file.getMetaData().setMeanElementTheory(pi.keyValue.getValue());
-                    break;
+                    case MEAN_ELEMENT_THEORY:
+                        file.getMetaData().setMeanElementTheory(pi.keyValue.getValue());
+                        break;
 
-                case MEAN_MOTION:
-                    file.setMeanMotion(pi.keyValue.getDoubleValue() * FastMath.PI / 43200.0);
-                    break;
+                    case MEAN_MOTION:
+                        file.setMeanMotion(pi.keyValue.getDoubleValue() * FastMath.PI / 43200.0);
+                        break;
 
-                case EPHEMERIS_TYPE:
-                    file.setTLERelatedParametersComment(pi.commentTmp);
-                    pi.commentTmp.clear();
-                    file.setEphemerisType(Integer.parseInt(pi.keyValue.getValue()));
-                    break;
+                    case EPHEMERIS_TYPE:
+                        file.setTLERelatedParametersComment(pi.commentTmp);
+                        pi.commentTmp.clear();
+                        file.setEphemerisType(Integer.parseInt(pi.keyValue.getValue()));
+                        break;
 
-                case CLASSIFICATION_TYPE:
-                    file.setClassificationType(pi.keyValue.getValue().charAt(0));
-                    break;
+                    case CLASSIFICATION_TYPE:
+                        file.setClassificationType(pi.keyValue.getValue().charAt(0));
+                        break;
 
-                case NORAD_CAT_ID:
-                    file.setNoradID(Integer.parseInt(pi.keyValue.getValue()));
-                    break;
+                    case NORAD_CAT_ID:
+                        file.setNoradID(Integer.parseInt(pi.keyValue.getValue()));
+                        break;
 
-                case ELEMENT_SET_NO:
-                    file.setElementSetNo(pi.keyValue.getValue());
-                    break;
+                    case ELEMENT_SET_NO:
+                        file.setElementSetNo(pi.keyValue.getValue());
+                        break;
 
-                case REV_AT_EPOCH:
-                    file.setRevAtEpoch(Integer.parseInt(pi.keyValue.getValue()));
-                    break;
+                    case REV_AT_EPOCH:
+                        file.setRevAtEpoch(Integer.parseInt(pi.keyValue.getValue()));
+                        break;
 
-                case BSTAR:
-                    file.setbStar(pi.keyValue.getDoubleValue());
-                    break;
+                    case BSTAR:
+                        file.setbStar(pi.keyValue.getDoubleValue());
+                        break;
 
-                case MEAN_MOTION_DOT:
-                    file.setMeanMotionDot(pi.keyValue.getDoubleValue() * FastMath.PI / 1.86624e9);
-                    break;
+                    case MEAN_MOTION_DOT:
+                        file.setMeanMotionDot(pi.keyValue.getDoubleValue() * FastMath.PI / 1.86624e9);
+                        break;
 
-                case MEAN_MOTION_DDOT:
-                    file.setMeanMotionDotDot(pi.keyValue.getDoubleValue() *
-                                             FastMath.PI / 5.3747712e13);
-                    break;
+                    case MEAN_MOTION_DDOT:
+                        file.setMeanMotionDotDot(pi.keyValue.getDoubleValue() *
+                                                 FastMath.PI / 5.3747712e13);
+                        break;
 
-                default:
-                    boolean parsed = false;
-                    parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                    parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                    parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
-                    parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
-                    if (!parsed) {
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
-                    }
+                    default:
+                        boolean parsed = false;
+                        parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
+                        parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
+                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
+                        parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
+                        if (!parsed) {
+                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                        }
                 }
             }
             reader.close();

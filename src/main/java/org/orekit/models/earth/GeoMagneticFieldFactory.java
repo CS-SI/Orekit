@@ -68,12 +68,12 @@ public class GeoMagneticFieldFactory {
         throws OrekitException {
 
         switch (type) {
-        case WMM:
-            return getWMM(year);
-        case IGRF:
-            return getIGRF(year);
-        default:
-            throw new OrekitException(OrekitMessages.NON_EXISTENT_GEOMAGNETIC_MODEL, type.name(), year);
+            case WMM:
+                return getWMM(year);
+            case IGRF:
+                return getIGRF(year);
+            default:
+                throw new OrekitException(OrekitMessages.NON_EXISTENT_GEOMAGNETIC_MODEL, type.name(), year);
         }
     }
 

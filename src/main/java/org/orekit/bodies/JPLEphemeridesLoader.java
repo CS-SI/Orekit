@@ -271,40 +271,40 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;
         switch (generateType) {
-        case SOLAR_SYSTEM_BARYCENTER : {
-            scale = -1.0;
-            final JPLEphemeridesLoader parentLoader =
-                    new JPLEphemeridesLoader(supportedNames, EphemerisType.EARTH_MOON);
-            final CelestialBody parentBody =
-                    parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
-            definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
-            rawPVProvider = new EphemerisRawPVProvider();
-            break;
-        }
-        case EARTH_MOON :
-            scale         = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
-            definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
-            rawPVProvider = new EphemerisRawPVProvider();
-            break;
-        case EARTH :
-            scale         = 1.0;
-            definingFrameAlignedWithICRF = FramesFactory.getGCRF();
-            rawPVProvider = new ZeroRawPVProvider();
-            break;
-        case MOON :
-            scale         =  1.0;
-            definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
-            rawPVProvider = new EphemerisRawPVProvider();
-            break;
-        default : {
-            scale = 1.0;
-            final JPLEphemeridesLoader parentLoader =
-                    new JPLEphemeridesLoader(supportedNames, EphemerisType.SOLAR_SYSTEM_BARYCENTER);
-            final CelestialBody parentBody =
-                    parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
-            definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
-            rawPVProvider = new EphemerisRawPVProvider();
-        }
+            case SOLAR_SYSTEM_BARYCENTER : {
+                scale = -1.0;
+                final JPLEphemeridesLoader parentLoader =
+                        new JPLEphemeridesLoader(supportedNames, EphemerisType.EARTH_MOON);
+                final CelestialBody parentBody =
+                        parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
+                definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
+                rawPVProvider = new EphemerisRawPVProvider();
+                break;
+            }
+            case EARTH_MOON :
+                scale         = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
+                definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
+                rawPVProvider = new EphemerisRawPVProvider();
+                break;
+            case EARTH :
+                scale         = 1.0;
+                definingFrameAlignedWithICRF = FramesFactory.getGCRF();
+                rawPVProvider = new ZeroRawPVProvider();
+                break;
+            case MOON :
+                scale         =  1.0;
+                definingFrameAlignedWithICRF =  FramesFactory.getGCRF();
+                rawPVProvider = new EphemerisRawPVProvider();
+                break;
+            default : {
+                scale = 1.0;
+                final JPLEphemeridesLoader parentLoader =
+                        new JPLEphemeridesLoader(supportedNames, EphemerisType.SOLAR_SYSTEM_BARYCENTER);
+                final CelestialBody parentBody =
+                        parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
+                definingFrameAlignedWithICRF = parentBody.getInertiallyOrientedFrame();
+                rawPVProvider = new EphemerisRawPVProvider();
+            }
         }
 
         // build the celestial body
@@ -340,55 +340,55 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         // coefficient in au³/day²
         final double rawGM;
         switch (body) {
-        case SOLAR_SYSTEM_BARYCENTER :
-            return getLoadedGravitationalCoefficient(EphemerisType.SUN)        +
-                   getLoadedGravitationalCoefficient(EphemerisType.MERCURY)    +
-                   getLoadedGravitationalCoefficient(EphemerisType.VENUS)      +
-                   getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) +
-                   getLoadedGravitationalCoefficient(EphemerisType.MARS)       +
-                   getLoadedGravitationalCoefficient(EphemerisType.JUPITER)    +
-                   getLoadedGravitationalCoefficient(EphemerisType.SATURN)     +
-                   getLoadedGravitationalCoefficient(EphemerisType.URANUS)     +
-                   getLoadedGravitationalCoefficient(EphemerisType.NEPTUNE)    +
-                   getLoadedGravitationalCoefficient(EphemerisType.PLUTO);
-        case SUN :
-            rawGM = getLoadedConstant("GMS", "GM_Sun");
-            break;
-        case MERCURY :
-            rawGM = getLoadedConstant("GM1", "GM_Mer");
-            break;
-        case VENUS :
-            rawGM = getLoadedConstant("GM2", "GM_Ven");
-            break;
-        case EARTH_MOON :
-            rawGM = getLoadedConstant("GMB", "GM_EMB");
-            break;
-        case EARTH :
-            return getLoadedEarthMoonMassRatio() *
-                   getLoadedGravitationalCoefficient(EphemerisType.MOON);
-        case MOON :
-            return getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) /
-                   (1.0 + getLoadedEarthMoonMassRatio());
-        case MARS :
-            rawGM = getLoadedConstant("GM4", "GM_Mar");
-            break;
-        case JUPITER :
-            rawGM = getLoadedConstant("GM5", "GM_Jup");
-            break;
-        case SATURN :
-            rawGM = getLoadedConstant("GM6", "GM_Sat");
-            break;
-        case URANUS :
-            rawGM = getLoadedConstant("GM7", "GM_Ura");
-            break;
-        case NEPTUNE :
-            rawGM = getLoadedConstant("GM8", "GM_Nep");
-            break;
-        case PLUTO :
-            rawGM = getLoadedConstant("GM9", "GM_Plu");
-            break;
-        default :
-            throw OrekitException.createInternalError(null);
+            case SOLAR_SYSTEM_BARYCENTER :
+                return getLoadedGravitationalCoefficient(EphemerisType.SUN)        +
+                        getLoadedGravitationalCoefficient(EphemerisType.MERCURY)    +
+                        getLoadedGravitationalCoefficient(EphemerisType.VENUS)      +
+                        getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) +
+                        getLoadedGravitationalCoefficient(EphemerisType.MARS)       +
+                        getLoadedGravitationalCoefficient(EphemerisType.JUPITER)    +
+                        getLoadedGravitationalCoefficient(EphemerisType.SATURN)     +
+                        getLoadedGravitationalCoefficient(EphemerisType.URANUS)     +
+                        getLoadedGravitationalCoefficient(EphemerisType.NEPTUNE)    +
+                        getLoadedGravitationalCoefficient(EphemerisType.PLUTO);
+            case SUN :
+                rawGM = getLoadedConstant("GMS", "GM_Sun");
+                break;
+            case MERCURY :
+                rawGM = getLoadedConstant("GM1", "GM_Mer");
+                break;
+            case VENUS :
+                rawGM = getLoadedConstant("GM2", "GM_Ven");
+                break;
+            case EARTH_MOON :
+                rawGM = getLoadedConstant("GMB", "GM_EMB");
+                break;
+            case EARTH :
+                return getLoadedEarthMoonMassRatio() *
+                        getLoadedGravitationalCoefficient(EphemerisType.MOON);
+            case MOON :
+                return getLoadedGravitationalCoefficient(EphemerisType.EARTH_MOON) /
+                        (1.0 + getLoadedEarthMoonMassRatio());
+            case MARS :
+                rawGM = getLoadedConstant("GM4", "GM_Mar");
+                break;
+            case JUPITER :
+                rawGM = getLoadedConstant("GM5", "GM_Jup");
+                break;
+            case SATURN :
+                rawGM = getLoadedConstant("GM6", "GM_Sat");
+                break;
+            case URANUS :
+                rawGM = getLoadedConstant("GM7", "GM_Ura");
+                break;
+            case NEPTUNE :
+                rawGM = getLoadedConstant("GM8", "GM_Nep");
+                break;
+            case PLUTO :
+                rawGM = getLoadedConstant("GM9", "GM_Plu");
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
         }
 
         final double au    = getLoadedAstronomicalUnit();

@@ -124,17 +124,17 @@ public class EquinoctialOrbit extends Orbit {
         this.hy = hy;
 
         switch (type) {
-        case MEAN :
-            this.lv = eccentricToTrue(meanToEccentric(l));
-            break;
-        case ECCENTRIC :
-            this.lv = eccentricToTrue(l);
-            break;
-        case TRUE :
-            this.lv = l;
-            break;
-        default :
-            throw OrekitException.createInternalError(null);
+            case MEAN :
+                this.lv = eccentricToTrue(meanToEccentric(l));
+                break;
+            case ECCENTRIC :
+                this.lv = eccentricToTrue(l);
+                break;
+            case TRUE :
+                this.lv = l;
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
         }
 
     }
@@ -637,21 +637,21 @@ public class EquinoctialOrbit extends Orbit {
         final double ksi;
         final double n = FastMath.sqrt(gm / a) / a;
         switch (type) {
-        case MEAN :
-            pDot[5] += n;
-            break;
-        case ECCENTRIC :
-            oMe2 = 1 - ex * ex - ey * ey;
-            ksi  = 1 + ex * FastMath.cos(lv) + ey * FastMath.sin(lv);
-            pDot[5] += n * ksi / oMe2;
-            break;
-        case TRUE :
-            oMe2 = 1 - ex * ex - ey * ey;
-            ksi  = 1 + ex * FastMath.cos(lv) + ey * FastMath.sin(lv);
-            pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
-            break;
-        default :
-            throw OrekitException.createInternalError(null);
+            case MEAN :
+                pDot[5] += n;
+                break;
+            case ECCENTRIC :
+                oMe2 = 1 - ex * ex - ey * ey;
+                ksi  = 1 + ex * FastMath.cos(lv) + ey * FastMath.sin(lv);
+                pDot[5] += n * ksi / oMe2;
+                break;
+            case TRUE :
+                oMe2 = 1 - ex * ex - ey * ey;
+                ksi  = 1 + ex * FastMath.cos(lv) + ey * FastMath.sin(lv);
+                pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
         }
     }
 

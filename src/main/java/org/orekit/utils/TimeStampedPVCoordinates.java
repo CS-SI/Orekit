@@ -255,48 +255,48 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
 
         // add sample points
         switch (filter) {
-        case USE_P :
-            // populate sample with position data, ignoring velocity
-            for (final TimeStampedPVCoordinates pv : sample) {
-                final Vector3D position = pv.getPosition();
-                interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                            new double[] {
-                                                position.getX(), position.getY(), position.getZ()
-                                            });
-            }
-            break;
-        case USE_PV :
-            // populate sample with position and velocity data
-            for (final TimeStampedPVCoordinates pv : sample) {
-                final Vector3D position = pv.getPosition();
-                final Vector3D velocity = pv.getVelocity();
-                interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                            new double[] {
-                                                position.getX(), position.getY(), position.getZ()
-                                            }, new double[] {
-                                                velocity.getX(), velocity.getY(), velocity.getZ()
-                                            });
-            }
-            break;
-        case USE_PVA :
-            // populate sample with position, velocity and acceleration data
-            for (final TimeStampedPVCoordinates pv : sample) {
-                final Vector3D position     = pv.getPosition();
-                final Vector3D velocity     = pv.getVelocity();
-                final Vector3D acceleration = pv.getAcceleration();
-                interpolator.addSamplePoint(pv.getDate().durationFrom(date),
-                                            new double[] {
-                                                position.getX(),     position.getY(),     position.getZ()
-                                            }, new double[] {
-                                                velocity.getX(),     velocity.getY(),     velocity.getZ()
-                                            }, new double[] {
-                                                acceleration.getX(), acceleration.getY(), acceleration.getZ()
-                                            });
-            }
-            break;
-        default :
-            // this should never happen
-            throw OrekitException.createInternalError(null);
+            case USE_P :
+                // populate sample with position data, ignoring velocity
+                for (final TimeStampedPVCoordinates pv : sample) {
+                    final Vector3D position = pv.getPosition();
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
+                                                new double[] {
+                                                              position.getX(), position.getY(), position.getZ()
+                                                });
+                }
+                break;
+            case USE_PV :
+                // populate sample with position and velocity data
+                for (final TimeStampedPVCoordinates pv : sample) {
+                    final Vector3D position = pv.getPosition();
+                    final Vector3D velocity = pv.getVelocity();
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
+                                                new double[] {
+                                                    position.getX(), position.getY(), position.getZ()
+                                                }, new double[] {
+                                                    velocity.getX(), velocity.getY(), velocity.getZ()
+                                                });
+                }
+                break;
+            case USE_PVA :
+                // populate sample with position, velocity and acceleration data
+                for (final TimeStampedPVCoordinates pv : sample) {
+                    final Vector3D position     = pv.getPosition();
+                    final Vector3D velocity     = pv.getVelocity();
+                    final Vector3D acceleration = pv.getAcceleration();
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
+                                                new double[] {
+                                                    position.getX(),     position.getY(),     position.getZ()
+                                                }, new double[] {
+                                                    velocity.getX(),     velocity.getY(),     velocity.getZ()
+                                                }, new double[] {
+                                                    acceleration.getX(), acceleration.getY(), acceleration.getZ()
+                                                });
+                }
+                break;
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
         }
 
         // interpolate

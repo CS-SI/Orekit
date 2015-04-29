@@ -25,7 +25,7 @@
     <orekit.maven-assembly-plugin.version>2.5.3</orekit.maven-assembly-plugin.version>
     <orekit.maven-bundle-plugin.version>2.5.3</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.11</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>2.13</orekit.maven-checkstyle-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>2.15</orekit.maven-checkstyle-plugin.version>
     <orekit.maven-clean-plugin.version>2.6.1</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.1</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>2.10.1</orekit.maven-javadoc-plugin.version>

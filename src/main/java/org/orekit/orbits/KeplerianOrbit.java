@@ -143,21 +143,19 @@ public class KeplerianOrbit extends Orbit {
 
         final double tmpV;
         switch (type) {
-        case MEAN :
-            tmpV = (a < 0) ?
-                     hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly, e)) :
-                     ellipticEccentricToTrue(meanToEllipticEccentric(anomaly));
-            break;
-        case ECCENTRIC :
-            tmpV = (a < 0) ?
-                     hyperbolicEccentricToTrue(anomaly) :
-                     ellipticEccentricToTrue(anomaly);
-            break;
-        case TRUE :
-            tmpV = anomaly;
-            break;
-        default : // this should never happen
-            throw OrekitException.createInternalError(null);
+            case MEAN :
+                tmpV = (a < 0) ? hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly, e)) :
+                    ellipticEccentricToTrue(meanToEllipticEccentric(anomaly));
+                break;
+            case ECCENTRIC :
+                tmpV = (a < 0) ? hyperbolicEccentricToTrue(anomaly) :
+                    ellipticEccentricToTrue(anomaly);
+                break;
+            case TRUE :
+                tmpV = anomaly;
+                break;
+            default : // this should never happen
+                throw OrekitException.createInternalError(null);
         }
 
         // check true anomaly range
@@ -1138,21 +1136,21 @@ public class KeplerianOrbit extends Orbit {
         final double absA = FastMath.abs(a);
         final double n    = FastMath.sqrt(gm / absA) / absA;
         switch (type) {
-        case MEAN :
-            pDot[5] += n;
-            break;
-        case ECCENTRIC :
-            oMe2 = FastMath.abs(1 - e * e);
-            ksi  = 1 + e * FastMath.cos(v);
-            pDot[5] += n * ksi / oMe2;
-            break;
-        case TRUE :
-            oMe2 = FastMath.abs(1 - e * e);
-            ksi  = 1 + e * FastMath.cos(v);
-            pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
-            break;
-        default :
-            throw OrekitException.createInternalError(null);
+            case MEAN :
+                pDot[5] += n;
+                break;
+            case ECCENTRIC :
+                oMe2 = FastMath.abs(1 - e * e);
+                ksi  = 1 + e * FastMath.cos(v);
+                pDot[5] += n * ksi / oMe2;
+                break;
+            case TRUE :
+                oMe2 = FastMath.abs(1 - e * e);
+                ksi  = 1 + e * FastMath.cos(v);
+                pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
         }
     }
 

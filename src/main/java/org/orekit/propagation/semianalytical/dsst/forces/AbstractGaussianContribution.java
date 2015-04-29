@@ -1116,35 +1116,35 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         public GaussQuadrature(final int numberOfPoints) {
 
             switch(numberOfPoints) {
-            case 12 :
-                this.nodePoints  = P_12.clone();
-                this.nodeWeights = W_12.clone();
-                break;
-            case 16 :
-                this.nodePoints  = P_16.clone();
-                this.nodeWeights = W_16.clone();
-                break;
-            case 20 :
-                this.nodePoints  = P_20.clone();
-                this.nodeWeights = W_20.clone();
-                break;
-            case 24 :
-                this.nodePoints  = P_24.clone();
-                this.nodeWeights = W_24.clone();
-                break;
-            case 32 :
-                this.nodePoints  = P_32.clone();
-                this.nodeWeights = W_32.clone();
-                break;
-            case 40 :
-                this.nodePoints  = P_40.clone();
-                this.nodeWeights = W_40.clone();
-                break;
-            case 48 :
-            default :
-                this.nodePoints  = P_48.clone();
-                this.nodeWeights = W_48.clone();
-                break;
+                case 12 :
+                    this.nodePoints  = P_12.clone();
+                    this.nodeWeights = W_12.clone();
+                    break;
+                case 16 :
+                    this.nodePoints  = P_16.clone();
+                    this.nodeWeights = W_16.clone();
+                    break;
+                case 20 :
+                    this.nodePoints  = P_20.clone();
+                    this.nodeWeights = W_20.clone();
+                    break;
+                case 24 :
+                    this.nodePoints  = P_24.clone();
+                    this.nodeWeights = W_24.clone();
+                    break;
+                case 32 :
+                    this.nodePoints  = P_32.clone();
+                    this.nodeWeights = W_32.clone();
+                    break;
+                case 40 :
+                    this.nodePoints  = P_40.clone();
+                    this.nodeWeights = W_40.clone();
+                    break;
+                case 48 :
+                default :
+                    this.nodePoints  = P_48.clone();
+                    this.nodeWeights = W_48.clone();
+                    break;
             }
 
         }

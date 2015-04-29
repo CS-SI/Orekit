@@ -144,186 +144,192 @@ public class SP3Parser implements OrbitFileParser {
 
         final SP3File file = pi.file;
 
-        final Scanner scanner = new Scanner(line).useDelimiter("\\s+").useLocale(Locale.US);
+        Scanner scanner = null;
+        try {
+            scanner = new Scanner(line).useDelimiter("\\s+").useLocale(Locale.US);
 
-        // CHECKSTYLE: stop FallThrough check
+            // CHECKSTYLE: stop FallThrough check
 
-        switch (lineNumber) {
-        // version, epoch, data used and agency information
-        case 1: {
-            scanner.skip("#");
-            final String v = scanner.next();
+            switch (lineNumber) {
 
-            final char version = v.substring(0, 1).toLowerCase().charAt(0);
-            if (version != 'a' && version != 'b' && version != 'c') {
-                throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
+                // version, epoch, data used and agency information
+                case 1: {
+                    scanner.skip("#");
+                    final String v = scanner.next();
+
+                    final char version = v.substring(0, 1).toLowerCase().charAt(0);
+                    if (version != 'a' && version != 'b' && version != 'c') {
+                        throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
+                    }
+
+                    pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
+
+                    final int year = Integer.parseInt(v.substring(2));
+                    final int month = scanner.nextInt();
+                    final int day = scanner.nextInt();
+                    final int hour = scanner.nextInt();
+                    final int minute = scanner.nextInt();
+                    final double second = scanner.nextDouble();
+
+                    final AbsoluteDate epoch = new AbsoluteDate(year, month, day,
+                                                                hour, minute, second,
+                                                                TimeScalesFactory.getGPS());
+
+                    file.setEpoch(epoch);
+
+                    final int numEpochs = scanner.nextInt();
+                    file.setNumberOfEpochs(numEpochs);
+
+                    // data used indicator
+                    file.setDataUsed(scanner.next());
+
+                    file.setCoordinateSystem(scanner.next());
+                    file.setOrbitType(SP3OrbitType.valueOf(scanner.next()));
+                    file.setAgency(scanner.next());
+                    break;
+                }
+
+                // additional date/time references in gps/julian day notation
+                case 2: {
+                    scanner.skip("##");
+
+                    // gps week
+                    file.setGpsWeek(scanner.nextInt());
+                    // seconds of week
+                    file.setSecondsOfWeek(scanner.nextDouble());
+                    // epoch interval
+                    file.setEpochInterval(scanner.nextDouble());
+                    // julian day
+                    file.setJulianDay(scanner.nextInt());
+                    // day fraction
+                    file.setDayFraction(scanner.nextDouble());
+                    break;
+                }
+
+                // line 3 contains the number of satellites
+                case 3:
+                    pi.maxSatellites = Integer.parseInt(line.substring(4, 6).trim());
+                    // fall-through intended - the line contains already the first entries
+
+                    // the following 4 lines contain additional satellite ids
+                case 4:
+                case 5:
+                case 6:
+                case 7: {
+                    final int lineLength = line.length();
+                    int count = file.getSatelliteCount();
+                    int startIdx = 9;
+                    while (count++ < pi.maxSatellites && (startIdx + 3) <= lineLength) {
+                        final String satId = line.substring(startIdx, startIdx + 3).trim();
+                        file.addSatellite(satId);
+                        startIdx += 3;
+                    }
+                    break;
+                }
+
+                // the following 5 lines contain general accuracy information for each satellite
+                case 8:
+                case 9:
+                case 10:
+                case 11:
+                case 12: {
+                    final int lineLength = line.length();
+                    int satIdx = (lineNumber - 8) * 17;
+                    int startIdx = 9;
+                    while (satIdx < pi.maxSatellites && (startIdx + 3) <= lineLength) {
+                        final SatelliteInformation satInfo = file.getSatellite(satIdx++);
+                        final int exponent = Integer.parseInt(line.substring(startIdx, startIdx + 3).trim());
+                        // the accuracy is calculated as 2**exp (in m) -> can be safely
+                        // converted to an integer as there will be no fraction
+                        satInfo.setAccuracy((int) Math.pow(2d, exponent));
+                        startIdx += 3;
+                    }
+                    break;
+                }
+
+                case 13: {
+                    file.setType(getFileType(line.substring(3, 5).trim()));
+
+                    // now identify the time system in use
+                    final String tsStr = line.substring(9, 12).trim();
+                    final TimeSystem ts = TimeSystem.GPS;
+                    if (!tsStr.equalsIgnoreCase("ccc")) {
+                        TimeSystem.valueOf(tsStr);
+                    }
+                    file.setTimeSystem(ts);
+
+                    switch (ts) {
+                        case GPS:
+                            pi.timeScale = TimeScalesFactory.getGPS();
+                            break;
+
+                        case GAL:
+                            pi.timeScale = TimeScalesFactory.getGST();
+                            break;
+
+                        case GLO:
+                        case QZS:
+                            throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_TIMESYSTEM, ts.name());
+
+                        case TAI:
+                            pi.timeScale = TimeScalesFactory.getTAI();
+                            break;
+
+                        case UTC:
+                            pi.timeScale = TimeScalesFactory.getUTC();
+                            break;
+
+                        default:
+                            pi.timeScale = TimeScalesFactory.getGPS();
+                            break;
+                    }
+                    break;
+                }
+
+                case 14:
+                    // ignore additional custom fields
+                    break;
+
+                    // load base numbers for the standard deviations of
+                    // position/velocity/clock components
+                case 15: {
+                    // String base = line.substring(3, 13).trim();
+                    // if (!base.equals("0.0000000")) {
+                    //    // (mm or 10**-4 mm/sec)
+                    //    pi.posVelBase = Double.valueOf(base);
+                    // }
+
+                    // base = line.substring(14, 26).trim();
+                    // if (!base.equals("0.000000000")) {
+                    //    // (psec or 10**-4 psec/sec)
+                    //    pi.clockBase = Double.valueOf(base);
+                    // }
+                    break;
+                }
+
+                case 16:
+                case 17:
+                case 18:
+                    // ignore additional custom parameters
+                    break;
+
+                case 19:
+                case 20:
+                case 21:
+                case 22:
+                    // ignore comment lines
+                    break;
+                default:
+                    // ignore -> method should only be called up to line 22
+                    break;
             }
 
-            pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
+            // CHECKSTYLE: resume FallThrough check
 
-            final int year = Integer.parseInt(v.substring(2));
-            final int month = scanner.nextInt();
-            final int day = scanner.nextInt();
-            final int hour = scanner.nextInt();
-            final int minute = scanner.nextInt();
-            final double second = scanner.nextDouble();
-
-            final AbsoluteDate epoch = new AbsoluteDate(year, month, day,
-                                                        hour, minute, second,
-                                                        TimeScalesFactory.getGPS());
-
-            file.setEpoch(epoch);
-
-            final int numEpochs = scanner.nextInt();
-            file.setNumberOfEpochs(numEpochs);
-
-            // data used indicator
-            file.setDataUsed(scanner.next());
-
-            file.setCoordinateSystem(scanner.next());
-            file.setOrbitType(SP3OrbitType.valueOf(scanner.next()));
-            file.setAgency(scanner.next());
-        }
-            break;
-
-        // additional date/time references in gps/julian day notation
-        case 2: {
-            scanner.skip("##");
-
-            // gps week
-            file.setGpsWeek(scanner.nextInt());
-            // seconds of week
-            file.setSecondsOfWeek(scanner.nextDouble());
-            // epoch interval
-            file.setEpochInterval(scanner.nextDouble());
-            // julian day
-            file.setJulianDay(scanner.nextInt());
-            // day fraction
-            file.setDayFraction(scanner.nextDouble());
-        }
-            break;
-
-        // line 3 contains the number of satellites
-        case 3:
-            pi.maxSatellites = Integer.parseInt(line.substring(4, 6).trim());
-            // fall-through intended - the line contains already the first entries
-
-            // the following 4 lines contain additional satellite ids
-        case 4:
-        case 5:
-        case 6:
-        case 7: {
-            final int lineLength = line.length();
-            int count = file.getSatelliteCount();
-            int startIdx = 9;
-            while (count++ < pi.maxSatellites && (startIdx + 3) <= lineLength) {
-                final String satId = line.substring(startIdx, startIdx + 3).trim();
-                file.addSatellite(satId);
-                startIdx += 3;
+        } finally {
+            if (scanner != null) {
+                scanner.close();
             }
-        }
-            break;
-
-        // the following 5 lines contain general accuracy information for each satellite
-        case 8:
-        case 9:
-        case 10:
-        case 11:
-        case 12: {
-            final int lineLength = line.length();
-            int satIdx = (lineNumber - 8) * 17;
-            int startIdx = 9;
-            while (satIdx < pi.maxSatellites && (startIdx + 3) <= lineLength) {
-                final SatelliteInformation satInfo = file.getSatellite(satIdx++);
-                final int exponent = Integer.parseInt(line.substring(startIdx, startIdx + 3).trim());
-                // the accuracy is calculated as 2**exp (in m) -> can be safely
-                // converted to an integer as there will be no fraction
-                satInfo.setAccuracy((int) Math.pow(2d, exponent));
-                startIdx += 3;
-            }
-        }
-            break;
-
-        case 13: {
-            file.setType(getFileType(line.substring(3, 5).trim()));
-
-            // now identify the time system in use
-            final String tsStr = line.substring(9, 12).trim();
-            final TimeSystem ts = TimeSystem.GPS;
-            if (!tsStr.equalsIgnoreCase("ccc")) {
-                TimeSystem.valueOf(tsStr);
-            }
-            file.setTimeSystem(ts);
-
-            switch (ts) {
-            case GPS:
-                pi.timeScale = TimeScalesFactory.getGPS();
-                break;
-
-            case GAL:
-                pi.timeScale = TimeScalesFactory.getGST();
-                break;
-
-            case GLO:
-            case QZS:
-                throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_TIMESYSTEM, ts.name());
-
-            case TAI:
-                pi.timeScale = TimeScalesFactory.getTAI();
-                break;
-
-            case UTC:
-                pi.timeScale = TimeScalesFactory.getUTC();
-                break;
-
-            default:
-                pi.timeScale = TimeScalesFactory.getGPS();
-                break;
-            }
-        }
-            break;
-
-        case 14:
-            // ignore additional custom fields
-            break;
-
-        // load base numbers for the standard deviations of
-        // position/velocity/clock components
-        case 15: {
-            // String base = line.substring(3, 13).trim();
-            // if (!base.equals("0.0000000")) {
-            //    // (mm or 10**-4 mm/sec)
-            //    pi.posVelBase = Double.valueOf(base);
-            // }
-
-            // base = line.substring(14, 26).trim();
-            // if (!base.equals("0.000000000")) {
-            //    // (psec or 10**-4 psec/sec)
-            //    pi.clockBase = Double.valueOf(base);
-            // }
-        }
-            break;
-
-        case 16:
-        case 17:
-        case 18:
-            // ignore additional custom parameters
-            break;
-
-        case 19:
-        case 20:
-        case 21:
-        case 22:
-            // ignore comment lines
-            break;
-        default:
-            // ignore -> method should only be called up to line 22
-            break;
-        }
-
-        // CHECKSTYLE: resume FallThrough check
-        if (scanner != null) {
-            scanner.close();
         }
 
     }
@@ -338,118 +344,118 @@ public class SP3Parser implements OrbitFileParser {
         final SP3File file = pi.file;
 
         switch (line.charAt(0)) {
-        case '*': {
-            final int year = Integer.parseInt(line.substring(3, 7).trim());
-            final int month = Integer.parseInt(line.substring(8, 10).trim());
-            final int day = Integer.parseInt(line.substring(11, 13).trim());
-            final int hour = Integer.parseInt(line.substring(14, 16).trim());
-            final int minute = Integer.parseInt(line.substring(17, 19).trim());
-            final double second = Double.parseDouble(line.substring(20, 31).trim());
+            case '*': {
+                final int year = Integer.parseInt(line.substring(3, 7).trim());
+                final int month = Integer.parseInt(line.substring(8, 10).trim());
+                final int day = Integer.parseInt(line.substring(11, 13).trim());
+                final int hour = Integer.parseInt(line.substring(14, 16).trim());
+                final int minute = Integer.parseInt(line.substring(17, 19).trim());
+                final double second = Double.parseDouble(line.substring(20, 31).trim());
 
-            pi.latestEpoch = new AbsoluteDate(year, month, day,
-                                              hour, minute, second,
-                                              pi.timeScale);
-        }
-            break;
+                pi.latestEpoch = new AbsoluteDate(year, month, day,
+                                                  hour, minute, second,
+                                                  pi.timeScale);
+                break;
+            }
 
-        case 'P': {
-            final String satelliteId = line.substring(1, 4).trim();
+            case 'P': {
+                final String satelliteId = line.substring(1, 4).trim();
 
-            if (!file.containsSatellite(satelliteId)) {
-                pi.latestPosition = null;
-            } else {
-                final double x = Double.parseDouble(line.substring(4, 18).trim());
-                final double y = Double.parseDouble(line.substring(18, 32).trim());
-                final double z = Double.parseDouble(line.substring(32, 46).trim());
+                if (!file.containsSatellite(satelliteId)) {
+                    pi.latestPosition = null;
+                } else {
+                    final double x = Double.parseDouble(line.substring(4, 18).trim());
+                    final double y = Double.parseDouble(line.substring(18, 32).trim());
+                    final double z = Double.parseDouble(line.substring(32, 46).trim());
 
-                // the position values are in km and have to be converted to m
-                pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
+                    // the position values are in km and have to be converted to m
+                    pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
 
-                // clock (microsec)
-                pi.latestClock = Double.parseDouble(line.substring(46, 60).trim());
+                    // clock (microsec)
+                    pi.latestClock = Double.parseDouble(line.substring(46, 60).trim());
 
-                // the additional items are optional and not read yet
+                    // the additional items are optional and not read yet
 
-                // if (line.length() >= 73) {
-                // // x-sdev (b**n mm)
-                // int xStdDevExp = Integer.valueOf(line.substring(61,
-                // 63).trim());
-                // // y-sdev (b**n mm)
-                // int yStdDevExp = Integer.valueOf(line.substring(64,
-                // 66).trim());
-                // // z-sdev (b**n mm)
-                // int zStdDevExp = Integer.valueOf(line.substring(67,
-                // 69).trim());
-                // // c-sdev (b**n psec)
-                // int cStdDevExp = Integer.valueOf(line.substring(70,
-                // 73).trim());
-                //
-                // pi.posStdDevRecord =
-                // new PositionStdDevRecord(Math.pow(pi.posVelBase, xStdDevExp),
-                // Math.pow(pi.posVelBase,
-                // yStdDevExp), Math.pow(pi.posVelBase, zStdDevExp),
-                // Math.pow(pi.clockBase, cStdDevExp));
-                //
-                // String clockEventFlag = line.substring(74, 75);
-                // String clockPredFlag = line.substring(75, 76);
-                // String maneuverFlag = line.substring(78, 79);
-                // String orbitPredFlag = line.substring(79, 80);
-                // }
+                    // if (line.length() >= 73) {
+                    // // x-sdev (b**n mm)
+                    // int xStdDevExp = Integer.valueOf(line.substring(61,
+                    // 63).trim());
+                    // // y-sdev (b**n mm)
+                    // int yStdDevExp = Integer.valueOf(line.substring(64,
+                    // 66).trim());
+                    // // z-sdev (b**n mm)
+                    // int zStdDevExp = Integer.valueOf(line.substring(67,
+                    // 69).trim());
+                    // // c-sdev (b**n psec)
+                    // int cStdDevExp = Integer.valueOf(line.substring(70,
+                    // 73).trim());
+                    //
+                    // pi.posStdDevRecord =
+                    // new PositionStdDevRecord(Math.pow(pi.posVelBase, xStdDevExp),
+                    // Math.pow(pi.posVelBase,
+                    // yStdDevExp), Math.pow(pi.posVelBase, zStdDevExp),
+                    // Math.pow(pi.clockBase, cStdDevExp));
+                    //
+                    // String clockEventFlag = line.substring(74, 75);
+                    // String clockPredFlag = line.substring(75, 76);
+                    // String maneuverFlag = line.substring(78, 79);
+                    // String orbitPredFlag = line.substring(79, 80);
+                    // }
 
-                if (!pi.hasVelocityEntries) {
+                    if (!pi.hasVelocityEntries) {
+                        final SatelliteTimeCoordinate coord =
+                                new SatelliteTimeCoordinate(pi.latestEpoch,
+                                                            pi.latestPosition,
+                                                            pi.latestClock);
+                        file.addSatelliteCoordinate(satelliteId, coord);
+                    }
+                }
+                break;
+            }
+
+            case 'V': {
+                final String satelliteId = line.substring(1, 4).trim();
+
+                if (file.containsSatellite(satelliteId)) {
+                    final double xv = Double.parseDouble(line.substring(4, 18).trim());
+                    final double yv = Double.parseDouble(line.substring(18, 32).trim());
+                    final double zv = Double.parseDouble(line.substring(32, 46).trim());
+
+                    // the velocity values are in dm/s and have to be converted to m/s
+                    final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
+
+                    final double clockRateChange = Double.parseDouble(line.substring(46, 60).trim());
+
+                    // the additional items are optional and not read yet
+
+                    // if (line.length() >= 73) {
+                    // // xvel-sdev (b**n 10**-4 mm/sec)
+                    // int xVstdDevExp = Integer.valueOf(line.substring(61,
+                    // 63).trim());
+                    // // yvel-sdev (b**n 10**-4 mm/sec)
+                    // int yVstdDevExp = Integer.valueOf(line.substring(64,
+                    // 66).trim());
+                    // // zvel-sdev (b**n 10**-4 mm/sec)
+                    // int zVstdDevExp = Integer.valueOf(line.substring(67,
+                    // 69).trim());
+                    // // clkrate-sdev (b**n 10**-4 psec/sec)
+                    // int clkStdDevExp = Integer.valueOf(line.substring(70,
+                    // 73).trim());
+                    // }
+
                     final SatelliteTimeCoordinate coord =
-                        new SatelliteTimeCoordinate(pi.latestEpoch,
-                                                    pi.latestPosition,
-                                                    pi.latestClock);
+                            new SatelliteTimeCoordinate(pi.latestEpoch,
+                                                        new PVCoordinates(pi.latestPosition, velocity),
+                                                        pi.latestClock,
+                                                        clockRateChange);
                     file.addSatelliteCoordinate(satelliteId, coord);
                 }
+                break;
             }
-        }
-            break;
 
-        case 'V': {
-            final String satelliteId = line.substring(1, 4).trim();
-
-            if (file.containsSatellite(satelliteId)) {
-                final double xv = Double.parseDouble(line.substring(4, 18).trim());
-                final double yv = Double.parseDouble(line.substring(18, 32).trim());
-                final double zv = Double.parseDouble(line.substring(32, 46).trim());
-
-                // the velocity values are in dm/s and have to be converted to m/s
-                final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
-
-                final double clockRateChange = Double.parseDouble(line.substring(46, 60).trim());
-
-                // the additional items are optional and not read yet
-
-                // if (line.length() >= 73) {
-                // // xvel-sdev (b**n 10**-4 mm/sec)
-                // int xVstdDevExp = Integer.valueOf(line.substring(61,
-                // 63).trim());
-                // // yvel-sdev (b**n 10**-4 mm/sec)
-                // int yVstdDevExp = Integer.valueOf(line.substring(64,
-                // 66).trim());
-                // // zvel-sdev (b**n 10**-4 mm/sec)
-                // int zVstdDevExp = Integer.valueOf(line.substring(67,
-                // 69).trim());
-                // // clkrate-sdev (b**n 10**-4 psec/sec)
-                // int clkStdDevExp = Integer.valueOf(line.substring(70,
-                // 73).trim());
-                // }
-
-                final SatelliteTimeCoordinate coord =
-                    new SatelliteTimeCoordinate(pi.latestEpoch,
-                                                new PVCoordinates(pi.latestPosition, velocity),
-                                                pi.latestClock,
-                                                clockRateChange);
-                file.addSatelliteCoordinate(satelliteId, coord);
-            }
-        }
-            break;
-
-        default:
-            // ignore everything else
-            break;
+            default:
+                // ignore everything else
+                break;
         }
     }
 

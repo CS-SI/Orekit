@@ -176,9 +176,10 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @exception OrekitException if the number of point is too small for interpolating
      */
     @SuppressWarnings("unchecked")
-    public static <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
-    interpolate(final AbsoluteDate date, final AngularDerivativesFilter filter,
-                final Collection<TimeStampedFieldAngularCoordinates<T>> sample)
+    public static <T extends RealFieldElement<T>>
+        TimeStampedFieldAngularCoordinates<T> interpolate(final AbsoluteDate date,
+                                                          final AngularDerivativesFilter filter,
+                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample)
         throws OrekitException {
 
         // get field properties
@@ -246,21 +247,21 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                     break;
                 }
                 switch (filter) {
-                case USE_RRA:
-                    // populate sample with rotation, rotation rate and acceleration data
-                    interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1], rodrigues[2]);
-                    break;
-                case USE_RR:
-                    // populate sample with rotation and rotation rate data
-                    interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1]);
-                    break;
-                case USE_R:
-                    // populate sample with rotation data only
-                    interpolator.addSamplePoint(dt, rodrigues[0]);
-                    break;
-                default :
-                    // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    case USE_RRA:
+                        // populate sample with rotation, rotation rate and acceleration data
+                        interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1], rodrigues[2]);
+                        break;
+                    case USE_RR:
+                        // populate sample with rotation and rotation rate data
+                        interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1]);
+                        break;
+                    case USE_R:
+                        // populate sample with rotation data only
+                        interpolator.addSamplePoint(dt, rodrigues[0]);
+                        break;
+                    default :
+                        // this should never happen
+                        throw OrekitException.createInternalError(null);
                 }
             }
 
@@ -440,8 +441,9 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return angular coordinates
      */
-    private static <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
-    createFromModifiedRodrigues(final T[][] r, final TimeStampedFieldAngularCoordinates<T> offset) {
+    private static <T extends RealFieldElement<T>>
+        TimeStampedFieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r,
+                                                                          final TimeStampedFieldAngularCoordinates<T> offset) {
 
         // rotation
         final T rSquared = r[0][0].multiply(r[0][0]).add(r[0][1].multiply(r[0][1])).add(r[0][2].multiply(r[0][2]));

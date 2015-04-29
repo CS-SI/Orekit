@@ -757,14 +757,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 final EventHandler.Action whatNext = detector.eventOccurred(getCompleteState(t, y), increasing);
 
                 switch (whatNext) {
-                case STOP :
-                    return Action.STOP;
-                case RESET_STATE :
-                    return Action.RESET_STATE;
-                case RESET_DERIVATIVES :
-                    return Action.RESET_DERIVATIVES;
-                default :
-                    return Action.CONTINUE;
+                    case STOP :
+                        return Action.STOP;
+                    case RESET_STATE :
+                        return Action.RESET_STATE;
+                    case RESET_DERIVATIVES :
+                        return Action.RESET_DERIVATIVES;
+                    default :
+                        return Action.CONTINUE;
                 }
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);

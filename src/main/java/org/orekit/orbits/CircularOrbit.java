@@ -129,17 +129,17 @@ public class CircularOrbit
         this.raan = raan;
 
         switch (type) {
-        case MEAN :
-            this.alphaV = eccentricToTrue(meanToEccentric(alpha));
-            break;
-        case ECCENTRIC :
-            this.alphaV = eccentricToTrue(alpha);
-            break;
-        case TRUE :
-            this.alphaV = alpha;
-            break;
-        default :
-            throw OrekitException.createInternalError(null);
+            case MEAN :
+                this.alphaV = eccentricToTrue(meanToEccentric(alpha));
+                break;
+            case ECCENTRIC :
+                this.alphaV = eccentricToTrue(alpha);
+                break;
+            case TRUE :
+                this.alphaV = alpha;
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
         }
 
         serializePV = false;
@@ -179,17 +179,17 @@ public class CircularOrbit
         this.raan = raan;
 
         switch (type) {
-        case MEAN :
-            this.alphaV = eccentricToTrue(meanToEccentric(alpha));
-            break;
-        case ECCENTRIC :
-            this.alphaV = eccentricToTrue(alpha);
-            break;
-        case TRUE :
-            this.alphaV = alpha;
-            break;
-        default :
-            throw OrekitException.createInternalError(null);
+            case MEAN :
+                this.alphaV = eccentricToTrue(meanToEccentric(alpha));
+                break;
+            case ECCENTRIC :
+                this.alphaV = eccentricToTrue(alpha);
+                break;
+            case TRUE :
+                this.alphaV = alpha;
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
         }
 
         serializePV = true;
@@ -800,21 +800,21 @@ public class CircularOrbit
         final double ksi;
         final double n = FastMath.sqrt(gm / a) / a;
         switch (type) {
-        case MEAN :
-            pDot[5] += n;
-            break;
-        case ECCENTRIC :
-            oMe2  = 1 - ex * ex - ey * ey;
-            ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
-            pDot[5] += n * ksi / oMe2;
-            break;
-        case TRUE :
-            oMe2  = 1 - ex * ex - ey * ey;
-            ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
-            pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
-            break;
-        default :
-            throw OrekitException.createInternalError(null);
+            case MEAN :
+                pDot[5] += n;
+                break;
+            case ECCENTRIC :
+                oMe2  = 1 - ex * ex - ey * ey;
+                ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
+                pDot[5] += n * ksi / oMe2;
+                break;
+            case TRUE :
+                oMe2  = 1 - ex * ex - ey * ey;
+                ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
+                pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
+                break;
+            default :
+                throw OrekitException.createInternalError(null);
         }
     }
 

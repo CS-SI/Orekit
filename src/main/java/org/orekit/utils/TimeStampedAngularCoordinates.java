@@ -316,21 +316,21 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
 
                 final double[][] rodrigues = fixed.getModifiedRodrigues(sign);
                 switch (filter) {
-                case USE_RRA:
-                    // populate sample with rotation, rotation rate and acceleration data
-                    interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1], rodrigues[2]);
-                    break;
-                case USE_RR:
-                    // populate sample with rotation and rotation rate data
-                    interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1]);
-                    break;
-                case USE_R:
-                    // populate sample with rotation data only
-                    interpolator.addSamplePoint(dt, rodrigues[0]);
-                    break;
-                default :
-                    // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    case USE_RRA:
+                        // populate sample with rotation, rotation rate and acceleration data
+                        interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1], rodrigues[2]);
+                        break;
+                    case USE_RR:
+                        // populate sample with rotation and rotation rate data
+                        interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1]);
+                        break;
+                    case USE_R:
+                        // populate sample with rotation data only
+                        interpolator.addSamplePoint(dt, rodrigues[0]);
+                        break;
+                    default :
+                        // this should never happen
+                        throw OrekitException.createInternalError(null);
                 }
             }
 

@@ -150,90 +150,90 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
                 }
                 switch (pi.keyValue.getKeyword()) {
 
-                case CCSDS_OPM_VERS:
-                    file.setFormatVersion(pi.keyValue.getDoubleValue());
-                    break;
+                    case CCSDS_OPM_VERS:
+                        file.setFormatVersion(pi.keyValue.getDoubleValue());
+                        break;
 
-                case X:
-                    pi.x = pi.keyValue.getDoubleValue() * 1000;
-                    break;
+                    case X:
+                        pi.x = pi.keyValue.getDoubleValue() * 1000;
+                        break;
 
-                case Y:
-                    pi.y = pi.keyValue.getDoubleValue() * 1000;
-                    break;
+                    case Y:
+                        pi.y = pi.keyValue.getDoubleValue() * 1000;
+                        break;
 
-                case Z:
-                    pi.z = pi.keyValue.getDoubleValue() * 1000;
-                    break;
+                    case Z:
+                        pi.z = pi.keyValue.getDoubleValue() * 1000;
+                        break;
 
-                case X_DOT:
-                    pi.x_dot = pi.keyValue.getDoubleValue() * 1000;
-                    break;
+                    case X_DOT:
+                        pi.x_dot = pi.keyValue.getDoubleValue() * 1000;
+                        break;
 
-                case Y_DOT:
-                    pi.y_dot = pi.keyValue.getDoubleValue() * 1000;
-                    break;
+                    case Y_DOT:
+                        pi.y_dot = pi.keyValue.getDoubleValue() * 1000;
+                        break;
 
-                case Z_DOT:
-                    pi.z_dot = pi.keyValue.getDoubleValue() * 1000;
-                    break;
+                    case Z_DOT:
+                        pi.z_dot = pi.keyValue.getDoubleValue() * 1000;
+                        break;
 
-                case MAN_EPOCH_IGNITION:
-                    if (pi.maneuver != null) {
-                        file.addManeuver(pi.maneuver);
-                    }
-                    pi.maneuver = new OPMFile.Maneuver();
-                    pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getTimeSystem()));
-                    if (!pi.commentTmp.isEmpty()) {
-                        pi.maneuver.setComment(pi.commentTmp);
-                        pi.commentTmp.clear();
-                    }
-                    break;
+                    case MAN_EPOCH_IGNITION:
+                        if (pi.maneuver != null) {
+                            file.addManeuver(pi.maneuver);
+                        }
+                        pi.maneuver = new OPMFile.Maneuver();
+                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getTimeSystem()));
+                        if (!pi.commentTmp.isEmpty()) {
+                            pi.maneuver.setComment(pi.commentTmp);
+                            pi.commentTmp.clear();
+                        }
+                        break;
 
-                case MAN_DURATION:
-                    pi.maneuver.setDuration(pi.keyValue.getDoubleValue());
-                    break;
+                    case MAN_DURATION:
+                        pi.maneuver.setDuration(pi.keyValue.getDoubleValue());
+                        break;
 
-                case MAN_DELTA_MASS:
-                    pi.maneuver.setDeltaMass(pi.keyValue.getDoubleValue());
-                    break;
+                    case MAN_DELTA_MASS:
+                        pi.maneuver.setDeltaMass(pi.keyValue.getDoubleValue());
+                        break;
 
-                case MAN_REF_FRAME:
-                    final CCSDSFrame manFrame = parseCCSDSFrame(pi.keyValue.getValue());
-                    if (manFrame.isLof()) {
-                        pi.maneuver.setRefLofType(manFrame.getLofType());
-                    } else {
-                        pi.maneuver.setRefFrame(manFrame.getFrame(getConventions(), isSimpleEOP()));
-                    }
-                    break;
+                    case MAN_REF_FRAME:
+                        final CCSDSFrame manFrame = parseCCSDSFrame(pi.keyValue.getValue());
+                        if (manFrame.isLof()) {
+                            pi.maneuver.setRefLofType(manFrame.getLofType());
+                        } else {
+                            pi.maneuver.setRefFrame(manFrame.getFrame(getConventions(), isSimpleEOP()));
+                        }
+                        break;
 
-                case MAN_DV_1:
-                    pi.maneuver.setdV(new Vector3D(pi.keyValue.getDoubleValue() * 1000,
-                                                   pi.maneuver.getDV().getY(),
-                                                   pi.maneuver.getDV().getZ()));
-                    break;
+                    case MAN_DV_1:
+                        pi.maneuver.setdV(new Vector3D(pi.keyValue.getDoubleValue() * 1000,
+                                                       pi.maneuver.getDV().getY(),
+                                                       pi.maneuver.getDV().getZ()));
+                        break;
 
-                case MAN_DV_2:
-                    pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
-                                                   pi.keyValue.getDoubleValue() * 1000,
-                                                   pi.maneuver.getDV().getZ()));
-                    break;
+                    case MAN_DV_2:
+                        pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
+                                                       pi.keyValue.getDoubleValue() * 1000,
+                                                       pi.maneuver.getDV().getZ()));
+                        break;
 
-                case MAN_DV_3:
-                    pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
-                                                   pi.maneuver.getDV().getY(),
-                                                   pi.keyValue.getDoubleValue() * 1000));
-                    break;
+                    case MAN_DV_3:
+                        pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
+                                                       pi.maneuver.getDV().getY(),
+                                                       pi.keyValue.getDoubleValue() * 1000));
+                        break;
 
-                default:
-                    boolean parsed = false;
-                    parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                    parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                    parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
-                    parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
-                    if (!parsed) {
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
-                    }
+                    default:
+                        boolean parsed = false;
+                        parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
+                        parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
+                        parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
+                        parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
+                        if (!parsed) {
+                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                        }
                 }
 
             }

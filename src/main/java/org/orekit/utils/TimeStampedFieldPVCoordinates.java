@@ -354,9 +354,10 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * @return a new position-velocity, interpolated at specified date
      */
     @SuppressWarnings("unchecked")
-    public static <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-    interpolate(final AbsoluteDate date, final CartesianDerivativesFilter filter,
-                final Collection<TimeStampedFieldPVCoordinates<T>> sample) {
+    public static <T extends RealFieldElement<T>>
+        TimeStampedFieldPVCoordinates<T> interpolate(final AbsoluteDate date,
+                                                     final CartesianDerivativesFilter filter,
+                                                     final Collection<TimeStampedFieldPVCoordinates<T>> sample) {
 
         // get field properties
         final T prototype = sample.iterator().next().getPosition().getX();
@@ -367,36 +368,36 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
 
         // add sample points
         switch (filter) {
-        case USE_P :
-            // populate sample with position data, ignoring velocity
-            for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
-                final FieldVector3D<T> position = datedPV.getPosition();
-                interpolator.addSamplePoint(zero.add(datedPV.getDate().durationFrom(date)),
-                                            position.toArray());
-            }
-            break;
-        case USE_PV :
-            // populate sample with position and velocity data
-            for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
-                final FieldVector3D<T> position = datedPV.getPosition();
-                final FieldVector3D<T> velocity = datedPV.getVelocity();
-                interpolator.addSamplePoint(zero.add(datedPV.getDate().durationFrom(date)),
-                                            position.toArray(), velocity.toArray());
-            }
-            break;
-        case USE_PVA :
-            // populate sample with position, velocity and acceleration data
-            for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
-                final FieldVector3D<T> position     = datedPV.getPosition();
-                final FieldVector3D<T> velocity     = datedPV.getVelocity();
-                final FieldVector3D<T> acceleration = datedPV.getAcceleration();
-                interpolator.addSamplePoint(zero.add(datedPV.getDate().durationFrom(date)),
-                                            position.toArray(), velocity.toArray(), acceleration.toArray());
-            }
-            break;
-        default :
-            // this should never happen
-            throw OrekitException.createInternalError(null);
+            case USE_P :
+                // populate sample with position data, ignoring velocity
+                for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
+                    final FieldVector3D<T> position = datedPV.getPosition();
+                    interpolator.addSamplePoint(zero.add(datedPV.getDate().durationFrom(date)),
+                                                position.toArray());
+                }
+                break;
+            case USE_PV :
+                // populate sample with position and velocity data
+                for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
+                    final FieldVector3D<T> position = datedPV.getPosition();
+                    final FieldVector3D<T> velocity = datedPV.getVelocity();
+                    interpolator.addSamplePoint(zero.add(datedPV.getDate().durationFrom(date)),
+                                                position.toArray(), velocity.toArray());
+                }
+                break;
+            case USE_PVA :
+                // populate sample with position, velocity and acceleration data
+                for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
+                    final FieldVector3D<T> position     = datedPV.getPosition();
+                    final FieldVector3D<T> velocity     = datedPV.getVelocity();
+                    final FieldVector3D<T> acceleration = datedPV.getAcceleration();
+                    interpolator.addSamplePoint(zero.add(datedPV.getDate().durationFrom(date)),
+                                                position.toArray(), velocity.toArray(), acceleration.toArray());
+                }
+                break;
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
         }
 
         // interpolate

@@ -215,23 +215,23 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         final DerivativeStructure y;
         final DerivativeStructure z;
         switch(order) {
-        case 0 :
-            x = new DerivativeStructure(1, 0, position.getX());
-            y = new DerivativeStructure(1, 0, position.getY());
-            z = new DerivativeStructure(1, 0, position.getZ());
-            break;
-        case 1 :
-            x = new DerivativeStructure(1, 1, position.getX(), velocity.getX());
-            y = new DerivativeStructure(1, 1, position.getY(), velocity.getY());
-            z = new DerivativeStructure(1, 1, position.getZ(), velocity.getZ());
-            break;
-        case 2 :
-            x = new DerivativeStructure(1, 2, position.getX(), velocity.getX(), acceleration.getX());
-            y = new DerivativeStructure(1, 2, position.getY(), velocity.getY(), acceleration.getY());
-            z = new DerivativeStructure(1, 2, position.getZ(), velocity.getZ(), acceleration.getZ());
-            break;
-        default :
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+            case 0 :
+                x = new DerivativeStructure(1, 0, position.getX());
+                y = new DerivativeStructure(1, 0, position.getY());
+                z = new DerivativeStructure(1, 0, position.getZ());
+                break;
+            case 1 :
+                x = new DerivativeStructure(1, 1, position.getX(), velocity.getX());
+                y = new DerivativeStructure(1, 1, position.getY(), velocity.getY());
+                z = new DerivativeStructure(1, 1, position.getZ(), velocity.getZ());
+                break;
+            case 2 :
+                x = new DerivativeStructure(1, 2, position.getX(), velocity.getX(), acceleration.getX());
+                y = new DerivativeStructure(1, 2, position.getY(), velocity.getY(), acceleration.getY());
+                z = new DerivativeStructure(1, 2, position.getZ(), velocity.getZ(), acceleration.getZ());
+                break;
+            default :
+                throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
         }
 
         return new FieldVector3D<DerivativeStructure>(x, y, z);

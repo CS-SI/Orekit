@@ -405,20 +405,20 @@ public class AbsoluteDate
         // time code identification and reference epoch
         final AbsoluteDate epoch;
         switch (preambleField1 & 0x70) {
-        case 0x10:
-            // the reference epoch is CCSDS epoch 1958-01-01T00:00:00 TAI
-            epoch = CCSDS_EPOCH;
-            break;
-        case 0x20:
-            // the reference epoch is agency defined
-            if (agencyDefinedEpoch == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_DATE_MISSING_AGENCY_EPOCH);
-            }
-            epoch = agencyDefinedEpoch;
-            break;
-        default :
-            throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField1));
+            case 0x10:
+                // the reference epoch is CCSDS epoch 1958-01-01T00:00:00 TAI
+                epoch = CCSDS_EPOCH;
+                break;
+            case 0x20:
+                // the reference epoch is agency defined
+                if (agencyDefinedEpoch == null) {
+                    throw new OrekitException(OrekitMessages.CCSDS_DATE_MISSING_AGENCY_EPOCH);
+                }
+                epoch = agencyDefinedEpoch;
+                break;
+            default :
+                throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
+                                          formatByte(preambleField1));
         }
 
         // time field lengths

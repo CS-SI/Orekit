@@ -155,64 +155,64 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
                 switch (pi.keyValue.getKeyword()) {
-                case CCSDS_OEM_VERS:
-                    file.setFormatVersion(pi.keyValue.getDoubleValue());
-                    break;
+                    case CCSDS_OEM_VERS:
+                        file.setFormatVersion(pi.keyValue.getDoubleValue());
+                        break;
 
-                case META_START:
-                    file.addEphemeridesBlock();
-                    pi.lastEphemeridesBlock = file.getEphemeridesBlocks().get(file.getEphemeridesBlocks().size() - 1);
-                    pi.lastEphemeridesBlock.getMetaData().setLaunchYear(getLaunchYear());
-                    pi.lastEphemeridesBlock.getMetaData().setLaunchNumber(getLaunchNumber());
-                    pi.lastEphemeridesBlock.getMetaData().setLaunchPiece(getLaunchPiece());
-                    break;
+                    case META_START:
+                        file.addEphemeridesBlock();
+                        pi.lastEphemeridesBlock = file.getEphemeridesBlocks().get(file.getEphemeridesBlocks().size() - 1);
+                        pi.lastEphemeridesBlock.getMetaData().setLaunchYear(getLaunchYear());
+                        pi.lastEphemeridesBlock.getMetaData().setLaunchNumber(getLaunchNumber());
+                        pi.lastEphemeridesBlock.getMetaData().setLaunchPiece(getLaunchPiece());
+                        break;
 
-                case START_TIME:
-                    pi.lastEphemeridesBlock.setStartTime(parseDate(pi.keyValue.getValue(),
-                                                                   pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
-                    break;
+                    case START_TIME:
+                        pi.lastEphemeridesBlock.setStartTime(parseDate(pi.keyValue.getValue(),
+                                                                       pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                        break;
 
-                case USEABLE_START_TIME:
-                    pi.lastEphemeridesBlock.setUseableStartTime(parseDate(pi.keyValue.getValue(),
-                                                                          pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
-                    break;
+                    case USEABLE_START_TIME:
+                        pi.lastEphemeridesBlock.setUseableStartTime(parseDate(pi.keyValue.getValue(),
+                                                                              pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                        break;
 
-                case USEABLE_STOP_TIME:
-                    pi.lastEphemeridesBlock.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
-                    break;
+                    case USEABLE_STOP_TIME:
+                        pi.lastEphemeridesBlock.setUseableStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                        break;
 
-                case STOP_TIME:
-                    pi.lastEphemeridesBlock.setStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
-                    break;
+                    case STOP_TIME:
+                        pi.lastEphemeridesBlock.setStopTime(parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
+                        break;
 
-                case INTERPOLATION:
-                    pi.lastEphemeridesBlock.setInterpolationMethod(pi.keyValue.getValue());
-                    break;
+                    case INTERPOLATION:
+                        pi.lastEphemeridesBlock.setInterpolationMethod(pi.keyValue.getValue());
+                        break;
 
-                case INTERPOLATION_DEGREE:
-                    pi.lastEphemeridesBlock.setInterpolationDegree(Integer .parseInt(pi.keyValue.getValue()));
-                    break;
+                    case INTERPOLATION_DEGREE:
+                        pi.lastEphemeridesBlock.setInterpolationDegree(Integer .parseInt(pi.keyValue.getValue()));
+                        break;
 
-                case META_STOP:
-                    file.setMuUsed();
-                    parseEphemeridesDataLines(reader, pi);
-                    break;
+                    case META_STOP:
+                        file.setMuUsed();
+                        parseEphemeridesDataLines(reader, pi);
+                        break;
 
-                case COVARIANCE_START:
-                    parseCovarianceDataLines(reader, pi);
-                    break;
+                    case COVARIANCE_START:
+                        parseCovarianceDataLines(reader, pi);
+                        break;
 
-                default:
-                    boolean parsed = false;
-                    parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                    parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                    if (pi.lastEphemeridesBlock != null) {
-                        parsed = parsed || parseMetaDataEntry(pi.keyValue,
-                                                              pi.lastEphemeridesBlock.getMetaData(), pi.commentTmp);
-                    }
-                    if (!parsed) {
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
-                    }
+                    default:
+                        boolean parsed = false;
+                        parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
+                        parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
+                        if (pi.lastEphemeridesBlock != null) {
+                            parsed = parsed || parseMetaDataEntry(pi.keyValue,
+                                                                  pi.lastEphemeridesBlock.getMetaData(), pi.commentTmp);
+                        }
+                        if (!parsed) {
+                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                        }
                 }
             }
             file.checkTimeSystems();
@@ -273,23 +273,23 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                     }
                 } else {
                     switch (pi.keyValue.getKeyword()) {
-                    case META_START:
-                        pi.lastEphemeridesBlock.setEphemeridesDataLinesComment(pi.commentTmp);
-                        pi.commentTmp.clear();
-                        pi.lineNumber--;
-                        reader.reset();
-                        return;
-                    case COVARIANCE_START:
-                        pi.lastEphemeridesBlock.setEphemeridesDataLinesComment(pi.commentTmp);
-                        pi.commentTmp.clear();
-                        pi.lineNumber--;
-                        reader.reset();
-                        return;
-                    case COMMENT:
-                        pi.commentTmp.add(pi.keyValue.getValue());
-                        break;
-                    default :
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                        case META_START:
+                            pi.lastEphemeridesBlock.setEphemeridesDataLinesComment(pi.commentTmp);
+                            pi.commentTmp.clear();
+                            pi.lineNumber--;
+                            reader.reset();
+                            return;
+                        case COVARIANCE_START:
+                            pi.lastEphemeridesBlock.setEphemeridesDataLinesComment(pi.commentTmp);
+                            pi.commentTmp.clear();
+                            pi.lineNumber--;
+                            reader.reset();
+                            return;
+                        case COMMENT:
+                            pi.commentTmp.add(pi.keyValue.getValue());
+                            break;
+                        default :
+                            throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                     }
                 }
             }
@@ -342,27 +342,27 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                 }
             } else {
                 switch (pi.keyValue.getKeyword()) {
-                case EPOCH :
-                    i                = 0;
-                    pi.covRefLofType = null;
-                    pi.covRefFrame   = null;
-                    pi.lastMatrix    = MatrixUtils.createRealMatrix(6, 6);
-                    pi.epoch         = parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
-                    break;
-                case COV_REF_FRAME :
-                    final CCSDSFrame frame = parseCCSDSFrame(pi.keyValue.getValue());
-                    if (frame.isLof()) {
-                        pi.covRefLofType = frame.getLofType();
-                        pi.covRefFrame   = null;
-                    } else {
+                    case EPOCH :
+                        i                = 0;
                         pi.covRefLofType = null;
-                        pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP());
-                    }
-                    break;
-                case COVARIANCE_STOP :
-                    return;
-                default :
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
+                        pi.covRefFrame   = null;
+                        pi.lastMatrix    = MatrixUtils.createRealMatrix(6, 6);
+                        pi.epoch         = parseDate(pi.keyValue.getValue(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
+                        break;
+                    case COV_REF_FRAME :
+                        final CCSDSFrame frame = parseCCSDSFrame(pi.keyValue.getValue());
+                        if (frame.isLof()) {
+                            pi.covRefLofType = frame.getLofType();
+                            pi.covRefFrame   = null;
+                        } else {
+                            pi.covRefLofType = null;
+                            pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP());
+                        }
+                        break;
+                    case COVARIANCE_STOP :
+                        return;
+                    default :
+                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
             }
         }

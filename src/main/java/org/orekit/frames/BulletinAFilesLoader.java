@@ -421,22 +421,22 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
                  section = nextSection(remaining, reader, name)) {
 
                 switch (section) {
-                case EOP_RAPID_SERVICE :
-                case EOP_FINAL_VALUES  :
-                case EOP_PREDICTION    :
-                    loadXYDT(section, reader, name);
-                    break;
-                case POLE_OFFSETS_IAU_1980_RAPID_SERVICE :
-                case POLE_OFFSETS_IAU_1980_FINAL_VALUES  :
-                    loadPoleOffsets(section, false, reader, name);
-                    break;
-                case POLE_OFFSETS_IAU_2000_RAPID_SERVICE :
-                case POLE_OFFSETS_IAU_2000_FINAL_VALUES  :
-                    loadPoleOffsets(section, true, reader, name);
-                    break;
-                default :
-                    // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    case EOP_RAPID_SERVICE :
+                    case EOP_FINAL_VALUES  :
+                    case EOP_PREDICTION    :
+                        loadXYDT(section, reader, name);
+                        break;
+                    case POLE_OFFSETS_IAU_1980_RAPID_SERVICE :
+                    case POLE_OFFSETS_IAU_1980_FINAL_VALUES  :
+                        loadPoleOffsets(section, false, reader, name);
+                        break;
+                    case POLE_OFFSETS_IAU_2000_RAPID_SERVICE :
+                    case POLE_OFFSETS_IAU_2000_FINAL_VALUES  :
+                        loadPoleOffsets(section, true, reader, name);
+                        break;
+                    default :
+                        // this should never happen
+                        throw OrekitException.createInternalError(null);
                 }
 
                 // remove the already parsed section from the list
