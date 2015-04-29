@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -544,8 +545,9 @@ class TesseralContribution implements DSSTForceModel {
             }
 
             // loop through all non-resonant (j,m) pairs
-            for (int m : nonResOrders.keySet()) {
-                final List<Integer> listJ = nonResOrders.get(m);
+            for (final Map.Entry<Integer, List<Integer>> entry : nonResOrders.entrySet()) {
+                final int           m     = entry.getKey();
+                final List<Integer> listJ = entry.getValue();
 
                 for (int j : listJ) {
                     // Phase angle

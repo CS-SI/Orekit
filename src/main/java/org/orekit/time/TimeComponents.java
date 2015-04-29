@@ -215,14 +215,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     /** {@inheritDoc} */
     public int compareTo(final TimeComponents other) {
-        final double seconds = getSecondsInDay();
-        final double otherSeconds = other.getSecondsInDay();
-        if (seconds < otherSeconds) {
-            return -1;
-        } else if (seconds > otherSeconds) {
-            return 1;
-        }
-        return 0;
+        return Double.compare(getSecondsInDay(), other.getSecondsInDay());
     }
 
     /** {@inheritDoc} */

@@ -388,7 +388,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
         }
 
-        for (final Double period : cCos.keySet()) {
+        for (final Map.Entry<Double, List<List<Double>>> entry : cCos.entrySet()) {
+
+            final double period = entry.getKey();
 
             // add the pulsating layer for the current period
             final double[][] cArrayCos = toArray(cCos.get(period));

@@ -817,13 +817,7 @@ public class AbsoluteDate
      * is before, simultaneous, or after the specified date.
      */
     public int compareTo(final AbsoluteDate date) {
-        final double delta = durationFrom(date);
-        if (delta < 0) {
-            return -1;
-        } else if (delta > 0) {
-            return +1;
-        }
-        return 0;
+        return Double.compare(durationFrom(date),  0);
     }
 
     /** {@inheritDoc} */
