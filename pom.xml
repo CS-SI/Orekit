@@ -490,6 +490,16 @@
           </archive>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${orekit.maven-checkstyle-plugin.version}</version>
+        <configuration>
+          <configLocation>${basedir}/checkstyle.xml</configLocation>
+          <enableRulesSummary>false</enableRulesSummary>
+          <headerLocation>${basedir}/license-header.txt</headerLocation>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
