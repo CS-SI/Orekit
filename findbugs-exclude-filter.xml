@@ -158,4 +158,20 @@
     <Bug pattern="SF_SWITCH_FALLTHROUGH" />
   </Match>
 
+  <!-- the following is a false positive as the listFiles method is called
+       on a parameter already known to be a directory (so it does not return null) -->
+  <Match>
+    <Class name="~.*\.DirectoryCrawler$"/>
+    <Method name="feed"   params="java.util.regex.Pattern,org.orekit.data.DataLoader,java.io.File" returns="boolean" />
+    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" />
+  </Match>
+
+  <!-- the following is a false positive as the Direction.next() always return non-null
+       and Direction is an enumerate that can't be changed -->
+  <Match>
+    <Class name="~.*\.Mesh$"/>
+    <Method name="getTaxicabBoundary"   params="boolean" />
+    <Bug pattern="NP_NULL_PARAM_DEREF" />
+  </Match>
+
 </FindBugsFilter>

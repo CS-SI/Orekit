@@ -20,27 +20,28 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.findbugs-maven-plugin.version>3.0.0</orekit.findbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.7.2.201409121644</orekit.jacoco-maven-plugin.version>
-    <orekit.maven-assembly-plugin.version>2.5.3</orekit.maven-assembly-plugin.version>
-    <orekit.maven-bundle-plugin.version>2.5.3</orekit.maven-bundle-plugin.version>
+    <orekit.findbugs-maven-plugin.version>3.0.1</orekit.findbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.7.4.201502262128</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-assembly-plugin.version>2.5.4</orekit.maven-assembly-plugin.version>
+    <orekit.maven-bundle-plugin.version>2.5.4</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.11</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>2.15</orekit.maven-checkstyle-plugin.version>
     <orekit.maven-clean-plugin.version>2.6.1</orekit.maven-clean-plugin.version>
-    <orekit.maven-compiler-plugin.version>3.1</orekit.maven-compiler-plugin.version>
-    <orekit.maven-javadoc-plugin.version>2.10.1</orekit.maven-javadoc-plugin.version>
-    <orekit.maven-jar-plugin.version>2.5</orekit.maven-jar-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.3</orekit.maven-compiler-plugin.version>
+    <orekit.maven-javadoc-plugin.version>2.10.3</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-jar-plugin.version>2.6</orekit.maven-jar-plugin.version>
     <orekit.maven-jxr-plugin.version>2.5</orekit.maven-jxr-plugin.version>
     <orekit.maven-plantuml-plugin.version>7940</orekit.maven-plantuml-plugin.version>
-    <orekit.maven-project-info-reports-plugin.version>2.7</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-project-info-reports-plugin.version>2.8</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>2.7</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.4</orekit.maven-site-plugin.version>
     <orekit.maven-source-plugin.version>2.4</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>2.18.1</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>2.18.1</orekit.maven-surefire-report-plugin.version>
-    <orekit.jgit.buildnumber.version>1.2.8</orekit.jgit.buildnumber.version>
+    <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
     <orekit.plantuml.version>7999</orekit.plantuml.version>
     <orekit.apache-commons-math.version>3.5</orekit.apache-commons-math.version>
+    <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.6</orekit.compiler.source>
     <orekit.compiler.target>1.6</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
@@ -206,7 +207,7 @@
   </licenses>
 
   <scm>
-    <connection>scm:git:http://www.orekit.org/git/orekit</connection>
+    <connection>scm:git:https://www.orekit.org/git/orekit-main.git</connection>
     <developerConnection>scm:git:ssh://git@www.orekit.org/orekit-main.git</developerConnection>
     <url>https://www.orekit.org/forge/projects/orekit/repository</url>
   </scm>
@@ -250,7 +251,7 @@
   	<dependency>
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
-  		<version>4.11</version>
+  		<version>${orekit.junit.version}</version>
   		<type>jar</type>
   		<scope>test</scope>
   		<optional>false</optional>
