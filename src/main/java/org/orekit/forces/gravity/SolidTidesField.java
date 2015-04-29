@@ -62,13 +62,13 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
     private final LoveNumbers love;
 
     /** Function computing frequency dependent terms (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂). */
-    private final TimeFunction<double []> deltaCSFunction;
+    private final TimeFunction<double[]> deltaCSFunction;
 
     /** Permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used. */
     private final double deltaC20PermanentTide;
 
     /** Function computing pole tide terms (ΔC₂₁, ΔS₂₁). */
-    private final TimeFunction<double []> poleTideFunction;
+    private final TimeFunction<double[]> poleTideFunction;
 
     /** Rotating body frame. */
     private final Frame centralBodyFrame;
@@ -105,8 +105,8 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
      * @param centralTideSystem tide system used in the central attraction model
      * @param bodies tide generating bodies (typically Sun and Moon)
      */
-    public SolidTidesField(final LoveNumbers love, final TimeFunction<double []> deltaCSFunction,
-                           final double deltaC20PermanentTide, final TimeFunction<double []> poleTideFunction,
+    public SolidTidesField(final LoveNumbers love, final TimeFunction<double[]> deltaCSFunction,
+                           final double deltaC20PermanentTide, final TimeFunction<double[]> poleTideFunction,
                            final Frame centralBodyFrame, final double ae, final double mu,
                            final TideSystem centralTideSystem, final CelestialBody ... bodies) {
 

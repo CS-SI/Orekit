@@ -1168,9 +1168,11 @@ public class DSSTThirdBody  implements DSSTForceModel {
             this.nMax = nMax;
             this.sMax = sMax;
 
-            this.gns = new double[nMax + 1][sMax + 1];
-            this.dgnsda = new double[nMax + 1][sMax + 1];
-            this.dgnsdgamma = new double[nMax + 1][sMax + 1];
+            final int rows    = nMax + 1;
+            final int columns = sMax + 1;
+            this.gns          = new double[rows][columns];
+            this.dgnsda       = new double[rows][columns];
+            this.dgnsdgamma   = new double[rows][columns];
 
             // Generate the coefficients
             generateCoefficients();
@@ -1852,8 +1854,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
             this.jMax = jMax;
 
             // allocate iterpolator for the coefficients
-            this.cij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1][6];
-            this.sij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1][6];
+            final int rows = jMax + 1;
+            this.cij = new ShortPeriodicsInterpolatedCoefficient[rows][6];
+            this.sij = new ShortPeriodicsInterpolatedCoefficient[rows][6];
 
             for (int j = 0; j <= jMax; j++) {
                 for (int i = 0; i < 6; i++) {

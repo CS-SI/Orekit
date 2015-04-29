@@ -728,8 +728,9 @@ class ZonalContribution implements DSSTForceModel {
 
             this.di = new ShortPeriodicsInterpolatedCoefficient[6];
 
-            this.cij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1][6];
-            this.sij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1][6];
+            final int rows = jMax + 1;
+            this.cij = new ShortPeriodicsInterpolatedCoefficient[rows][6];
+            this.sij = new ShortPeriodicsInterpolatedCoefficient[rows][6];
 
             this.rhoj = new double[jMax + 1];
             this.sigmaj  = new double[jMax + 1];
@@ -815,7 +816,7 @@ class ZonalContribution implements DSSTForceModel {
          */
         private void computeDiCoefficients(final AbsoluteDate date) throws OrekitException {
             final double[] meanElementRates = computeMeanElementRates(date);
-            final double [] currentDi = new double[6];
+            final double[] currentDi = new double[6];
 
             // Add the coefficients to the interpolation grid
             for (int i = 0; i < 6; i++) {
@@ -835,7 +836,7 @@ class ZonalContribution implements DSSTForceModel {
          */
         private void computeCijSijCoefficients(final AbsoluteDate date) {
             // The C<sub>i</sub>⁰ coefficients
-            final double [] currentCi0 = new double[] {0., 0., 0., 0., 0., 0.};
+            final double[] currentCi0 = new double[] {0., 0., 0., 0., 0., 0.};
             for (int j = 1; j <= jMax; j++) {
 
                 // Create local arrays

@@ -62,7 +62,8 @@ public class CoefficientsFactory {
 
         // Initialization
         final int sDim = FastMath.min(sMax + 1, nMax) + 1;
-        final double[][] Qns = new double[nMax + 1][];
+        final int rows = nMax + 1;
+        final double[][] Qns = new double[rows][];
         for (int i = 0; i <= nMax; i++) {
             final int snDim = FastMath.min(i + 1, sDim);
             Qns[i] = new double[snDim];

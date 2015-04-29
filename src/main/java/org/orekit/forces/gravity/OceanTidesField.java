@@ -66,7 +66,7 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
     private final FundamentalNutationArguments arguments;
 
     /** Function computing pole tide terms (ΔC₂₁, ΔS₂₁). */
-    private final TimeFunction<double []> poleTideFunction;
+    private final TimeFunction<double[]> poleTideFunction;
 
     /** Simple constructor.
      * @param ae central body reference radius
@@ -80,7 +80,7 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
     public OceanTidesField(final double ae, final double mu,
                            final List<OceanTidesWave> waves,
                            final FundamentalNutationArguments arguments,
-                           final TimeFunction<double []> poleTideFunction)
+                           final TimeFunction<double[]> poleTideFunction)
         throws OrekitException {
 
         // store mode parameters
@@ -154,8 +154,9 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
     public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
 
         // computed Cnm and Snm coefficients
-        final double[][] cnm = new double[degree + 1][];
-        final double[][] snm = new double[degree + 1][];
+        final int        rows = degree + 1;
+        final double[][] cnm  = new double[rows][];
+        final double[][] snm  = new double[rows][];
         for (int i = 0; i <= degree; ++i) {
             final int m = FastMath.min(i, order) + 1;
             cnm[i] = new double[m];

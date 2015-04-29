@@ -45,10 +45,12 @@ public class LnsCoefficients {
      */
     public LnsCoefficients(final int nMax, final int sMax,
             final double[][] Qns, final TreeMap<NSKey, Double> Vns, final double roa) {
-        this.lns = new double[nMax + 1][sMax + 1];
-        this.dlns = new double[nMax + 1][sMax + 1];
+        final int rows    = nMax + 1;
+        final int columns = sMax + 1;
+        this.lns          = new double[rows][columns];
+        this.dlns         = new double[rows][columns];
 
-        final double[] roaPow = new double[nMax + 1];
+        final double[] roaPow = new double[rows];
         roaPow[0] = 1.;
         for (int i = 1; i <= nMax; i++) {
             roaPow[i] = roa * roaPow[i - 1];

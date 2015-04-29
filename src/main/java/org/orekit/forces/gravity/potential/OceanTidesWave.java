@@ -102,10 +102,11 @@ public class OceanTidesWave {
         this.order    = order;
 
         // distribute the coefficients
-        this.cPlus  = new double[degree + 1][];
-        this.sPlus  = new double[degree + 1][];
-        this.cMinus = new double[degree + 1][];
-        this.sMinus = new double[degree + 1][];
+        final int rows = degree + 1;
+        this.cPlus     = new double[rows][];
+        this.sPlus     = new double[rows][];
+        this.cMinus    = new double[rows][];
+        this.sMinus    = new double[rows][];
         for (int i = 0; i <= degree; ++i) {
             final int m = FastMath.min(i, order) + 1;
             final double[][] row = coefficients[i];

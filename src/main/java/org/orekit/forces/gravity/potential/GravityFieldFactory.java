@@ -432,7 +432,8 @@ public class GravityFieldFactory {
         throws OrekitException {
 
         // allocate a triangular array
-        final double[][] factor = new double[degree + 1][];
+        final int rows = degree + 1;
+        final double[][] factor = new double[rows][];
         factor[0] = new double[] {
             1.0
         };

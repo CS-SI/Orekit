@@ -178,6 +178,6 @@ public enum OceanLoadDeformationCoefficients {
      * @return load deformation coefficients for ocean tides
      * @exception OrekitException if coefficients cannot be loaded
      */
-    public abstract double [] getCoefficients() throws OrekitException;
+    public abstract double[] getCoefficients() throws OrekitException;
 
 }

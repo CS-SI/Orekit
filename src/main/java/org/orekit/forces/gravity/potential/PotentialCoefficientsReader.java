@@ -365,7 +365,8 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      * @return built array
      */
     protected static double[][] buildTriangularArray(final int degree, final int order, final double value) {
-        final double[][] array = new double[degree + 1][];
+        final int rows = degree + 1;
+        final double[][] array = new double[rows][];
         for (int k = 0; k < array.length; ++k) {
             array[k] = buildRow(k, order, value);
         }
