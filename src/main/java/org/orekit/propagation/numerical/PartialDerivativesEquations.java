@@ -351,7 +351,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                                         new DerivativeStructure(nbVars, 1,    s.getMass()) :
                                         new DerivativeStructure(nbVars, 1, 6, s.getMass());
 
-        // TODO:  we should compute attitude partial derivatives with respect to position/velocity
+        // we should compute attitude partial derivatives with respect to position/velocity
+        // see issue #200
         final Rotation rotation = s.getAttitude().getRotation();
         final FieldRotation<DerivativeStructure> dsR =
                 new FieldRotation<DerivativeStructure>(new DerivativeStructure(nbVars, 1, rotation.getQ0()),
