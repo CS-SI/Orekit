@@ -354,7 +354,7 @@ public class Jacobianizer {
 
         /** {@inheritDoc} */
         public void addMassDerivative(final double q) {
-            // TODO: we don't compute (yet) the mass part of the Jacobian, we just ignore this
+            // we don't compute (yet) the mass part of the Jacobian, we just ignore this
         }
 
     }
