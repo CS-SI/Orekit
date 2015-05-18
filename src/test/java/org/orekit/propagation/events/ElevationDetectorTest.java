@@ -521,7 +521,7 @@ public class ElevationDetectorTest {
         Assert.assertEquals(6, events.size());
 
         // despite the events 2 and 3 are closer to each other than the convergence threshold
-        // the second one is not merged into the firs one
+        // the second one is not merged into the first one
         AbsoluteDate d2 = events.get(2).getState().getDate();
         AbsoluteDate d3 = events.get(3).getState().getDate();
         Assert.assertEquals(0.6501, d3.durationFrom(d2), 0.01);
