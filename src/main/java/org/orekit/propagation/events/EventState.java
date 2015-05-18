@@ -244,7 +244,19 @@ public class EventState<T extends EventDetector> implements Serializable {
                             ta = forward ? ta.shiftedBy(convergence) : ta.shiftedBy(-convergence);
                             ga = f.value(ta.durationFrom(t0));
                         } while ((g0Positive ^ (ga >= 0)) && (forward ^ (ta.compareTo(tb) >= 0)));
-                        --i;
+
+                        if (forward ^ (ta.compareTo(tb) >= 0)) {
+                            // we were able to skip this spurious root
+                            --i;
+                        } else {
+                            // we can't avoid this root before the end of the step,
+                            // we have to handle it despite it is close to the former one
+                            // maybe we have two very close roots
+                            pendingEventTime = root;
+                            pendingEvent = true;
+                            return true;
+                        }
+
                     } else if ((previousEventTime == null) ||
                                (FastMath.abs(previousEventTime.durationFrom(root)) > convergence)) {
                         pendingEventTime = root;
