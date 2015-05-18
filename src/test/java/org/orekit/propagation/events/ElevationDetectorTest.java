@@ -520,7 +520,7 @@ public class ElevationDetectorTest {
         List<LoggedEvent> events = logger.getLoggedEvents();
         Assert.assertEquals(6, events.size());
 
-        // despite the last two events are closer to each other than the convergence threshold
+        // despite the events 2 and 3 are closer to each other than the convergence threshold
         // the second one is not merged into the firs one
         AbsoluteDate d2 = events.get(2).getState().getDate();
         AbsoluteDate d3 = events.get(3).getState().getDate();
