@@ -210,7 +210,7 @@ public class EllipsoidTessellator {
         // start mesh inside the zone
         final InsideFinder finder = new InsideFinder(zone.getTolerance());
         zone.getTree(false).visit(finder);
-        final GeodeticPoint start = toGeodetic(finder.getInsidePoint());
+        final S2Point start = finder.getInsidePoint();
         return new Mesh(ellipsoid, zone, aiming, alongGap, acrossGap, start);
 
     }
@@ -260,7 +260,7 @@ public class EllipsoidTessellator {
             if (boundary.size() > 1) {
                 Mesh.Node previous = boundary.get(boundary.size() - 1);
                 for (final Mesh.Node node : boundary) {
-                    if (meetInside(toS2Point(previous.getGP()), toS2Point(node.getGP()), zone)) {
+                    if (meetInside(previous.getS2P(), node.getS2P(), zone)) {
                         // part of the mesh boundary is still inside the zone!
                         // the mesh must be expanded again
                         addAllNeighborsIfNeeded(previous, mesh, newNodes);
@@ -309,24 +309,23 @@ public class EllipsoidTessellator {
                 final Mesh.Node node3 = mesh.addNode(alongIndex,                acrossIndex + quantization);
 
                 // apply tile overlap
-                final GeodeticPoint gp0 = node0.move(new Vector3D(-0.5 * lengthOverlap, node0.getAlong(),
-                                                                  -0.5 * widthOverlap,  node0.getAcross()));
-                final GeodeticPoint gp1 = node1.move(new Vector3D(+0.5 * lengthOverlap, node1.getAlong(),
-                                                                  -0.5 * widthOverlap,  node1.getAcross()));
-                final GeodeticPoint gp2 = node2.move(new Vector3D(+0.5 * lengthOverlap, node2.getAlong(),
-                                                                  +0.5 * widthOverlap,  node2.getAcross()));
-                final GeodeticPoint gp3 = node3.move(new Vector3D(-0.5 * lengthOverlap, node2.getAlong(),
-                                                                  +0.5 * widthOverlap,  node2.getAcross()));
+                final S2Point s2p0 = node0.move(new Vector3D(-0.5 * lengthOverlap, node0.getAlong(),
+                                                             -0.5 * widthOverlap,  node0.getAcross()));
+                final S2Point s2p1 = node1.move(new Vector3D(+0.5 * lengthOverlap, node1.getAlong(),
+                                                             -0.5 * widthOverlap,  node1.getAcross()));
+                final S2Point s2p2 = node2.move(new Vector3D(+0.5 * lengthOverlap, node2.getAlong(),
+                                                             +0.5 * widthOverlap,  node2.getAcross()));
+                final S2Point s2p3 = node3.move(new Vector3D(-0.5 * lengthOverlap, node2.getAlong(),
+                                                             +0.5 * widthOverlap,  node2.getAcross()));
 
                 // create a quadrilateral region corresponding to the candidate tile
                 final SphericalPolygonsSet quadrilateral =
-                        new SphericalPolygonsSet(zone.getTolerance(),
-                                                 toS2Point(gp0), toS2Point(gp1), toS2Point(gp2), toS2Point(gp3));
+                        new SphericalPolygonsSet(zone.getTolerance(), s2p0, s2p1, s2p2, s2p3);
 
                 if (!new RegionFactory<Sphere2D>().intersection(zone.copySelf(), quadrilateral).isEmpty()) {
 
                     // the tile does cover part of the zone, it contributes to the tessellation
-                    tiles.add(new Tile(gp0, gp1, gp2, gp3));
+                    tiles.add(new Tile(toGeodetic(s2p0), toGeodetic(s2p1), toGeodetic(s2p2), toGeodetic(s2p3)));
 
                     // ensure the taxicab boundary follows the built tile sides
                     for (int k = 0; k < quantization; ++k) {
@@ -467,14 +466,6 @@ public class EllipsoidTessellator {
      */
     protected GeodeticPoint toGeodetic(final S2Point point) {
         return new GeodeticPoint(0.5 * FastMath.PI - point.getPhi(), point.getTheta(), 0.0);
-    }
-
-    /** Convert a point on the ellipsoid to the unit 2-sphere.
-     * @param point point on the ellipsoid
-     * @return point on the unit 2-sphere
-     */
-    protected S2Point toS2Point(final GeodeticPoint point) {
-        return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
     }
 
     /** Estimate an approximate motion in the along direction.

@@ -82,7 +82,7 @@ class Mesh {
      */
     public Mesh(final OneAxisEllipsoid ellipsoid, final SphericalPolygonsSet zone,
                 final TileAiming aiming, final double alongGap, final double acrossGap,
-                final GeodeticPoint start)
+                final S2Point start)
         throws OrekitException {
         this.ellipsoid      = ellipsoid;
         this.zone           = zone;
@@ -220,8 +220,8 @@ class Mesh {
             } else {
                 direction = Direction.MINUS_ACROSS;
             }
-            final GeodeticPoint gp = node.move(direction.motion(node, alongGap, acrossGap));
-            node = new Node(gp, direction.neighborAlongIndex(node), direction.neighborAcrossIndex(node));
+            final S2Point s2p = node.move(direction.motion(node, alongGap, acrossGap));
+            node = new Node(s2p, direction.neighborAlongIndex(node), direction.neighborAcrossIndex(node));
             store(node);
         }
 
@@ -429,7 +429,7 @@ class Mesh {
             final List<Mesh.Node> boundary = getTaxicabBoundary(true);
             final S2Point[] vertices = new S2Point[boundary.size()];
             for (int i = 0; i < vertices.length; ++i) {
-                vertices[i] = toS2Point(boundary.get(i).getGP());
+                vertices[i] = boundary.get(i).getS2P();
             }
             coverage = new SphericalPolygonsSet(zone.getTolerance(), vertices);
         }
@@ -437,14 +437,6 @@ class Mesh {
         // as caller may modify the BSP tree, we must provide a copy of our safe instance
         return (SphericalPolygonsSet) coverage.copySelf();
 
-    }
-
-    /** Convert a point on the ellipsoid to the unit 2-sphere.
-     * @param point point on the ellipsoid
-     * @return point on the unit 2-sphere
-     */
-    protected S2Point toS2Point(final GeodeticPoint point) {
-        return new S2Point(point.getLongitude(), 0.5 * FastMath.PI - point.getLatitude());
     }
 
     /** Store a node.
@@ -477,8 +469,8 @@ class Mesh {
     /** Container for mesh nodes. */
     public class Node {
 
-        /** Node position in geodetic coordinates. */
-        private final GeodeticPoint gp;
+        /** Node position in spherical coordinates. */
+        private final S2Point s2p;
 
         /** Node position in Cartesian coordinates. */
         private final Vector3D v;
@@ -502,18 +494,19 @@ class Mesh {
         private boolean enabled;
 
         /** Create a node.
-         * @param gp position in geodetic coordinates (my be null)
+         * @param s2p position in spherical coordinates (my be null)
          * @param alongIndex index in the along direction
          * @param acrossIndex index in the across direction
          * @exception OrekitException if tile direction cannot be computed
          */
-        private Node(final GeodeticPoint gp, final int alongIndex, final int acrossIndex)
+        private Node(final S2Point s2p, final int alongIndex, final int acrossIndex)
             throws OrekitException {
+            final GeodeticPoint gp = new GeodeticPoint(0.5 * FastMath.PI - s2p.getPhi(), s2p.getTheta(), 0.0);
             this.v           = ellipsoid.transform(gp);
-            this.gp          = gp;
+            this.s2p         = s2p;
             this.along       = aiming.alongTileDirection(v, gp);
             this.across      = Vector3D.crossProduct(v, along).normalize();
-            this.insideZone  = zone.checkPoint(new S2Point(gp.getLongitude(), 0.5 * FastMath.PI - gp.getLatitude())) != Location.OUTSIDE;
+            this.insideZone  = zone.checkPoint(s2p) != Location.OUTSIDE;
             this.alongIndex  = alongIndex;
             this.acrossIndex = acrossIndex;
             this.enabled     = false;
@@ -533,11 +526,11 @@ class Mesh {
             return enabled;
         }
 
-        /** Get the node position in geodetic coordinates.
-         * @return vode position in geodetic coordinates
+        /** Get the node position in spherical coordinates.
+         * @return vode position in spherical coordinates
          */
-        public GeodeticPoint getGP() {
-            return gp;
+        public S2Point getS2P() {
+            return s2p;
         }
 
         /** Get the node position in Cartesian coordinates.
@@ -592,12 +585,12 @@ class Mesh {
          * @return arrival point, approximately at specified distance from node
          * @exception OrekitException if points cannot be converted to geodetic coordinates
          */
-        public GeodeticPoint move(final Vector3D motion)
+        public S2Point move(final Vector3D motion)
             throws OrekitException {
 
             // safety check for too small motion
             if (motion.getNorm() < Precision.EPSILON * v.getNorm()) {
-                return gp;
+                return s2p;
             }
 
             // find elliptic plane section
@@ -615,9 +608,9 @@ class Mesh {
                                                        FastMath.cos(theta), delta,
                                                        FastMath.sin(theta) / theta, motion);
 
-            // fix altitude
+            // convert to spherical coordinates
             final GeodeticPoint approximatedGP = ellipsoid.transform(approximated, ellipsoid.getBodyFrame(), null);
-            return new GeodeticPoint(approximatedGP.getLatitude(), approximatedGP.getLongitude(), 0.0);
+            return new S2Point(approximatedGP.getLongitude(), 0.5 * FastMath.PI - approximatedGP.getLatitude());
 
         }
 
