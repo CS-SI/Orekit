@@ -440,11 +440,10 @@ public class EllipsoidTessellator {
      * @param acrossIndex index in the across direction
      * @param mesh complete mesh containing nodes
      * @param newNodes queue where new node must be put
-     * @return neighbor node (which was either already present, or is created)
      * @exception OrekitException if tile direction cannot be computed
      */
-    private Mesh.Node addNode(final int alongIndex, final int acrossIndex,
-                              final Mesh mesh, final Collection<Mesh.Node> newNodes)
+    private void addNode(final int alongIndex, final int acrossIndex,
+                         final Mesh mesh, final Collection<Mesh.Node> newNodes)
         throws OrekitException {
 
         final Mesh.Node node = mesh.addNode(alongIndex, acrossIndex);
@@ -454,9 +453,6 @@ public class EllipsoidTessellator {
             node.setEnabled(true);
             newNodes.add(node);
         }
-
-        // return the node, regardless of it being a new one or not
-        return node;
 
     }
 
