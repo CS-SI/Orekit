@@ -309,14 +309,14 @@ public class EllipsoidTessellator {
                 final Mesh.Node node3 = mesh.addNode(alongIndex,                acrossIndex + quantization);
 
                 // apply tile overlap
-                final GeodeticPoint gp0 = node0.move(new Vector3D(-lengthOverlap, node0.getAlong(),
-                                                                  -widthOverlap,  node0.getAcross()));
-                final GeodeticPoint gp1 = node1.move(new Vector3D(+lengthOverlap, node1.getAlong(),
-                                                                  -widthOverlap,  node1.getAcross()));
-                final GeodeticPoint gp2 = node2.move(new Vector3D(+lengthOverlap, node2.getAlong(),
-                                                                  +widthOverlap,  node2.getAcross()));
-                final GeodeticPoint gp3 = node3.move(new Vector3D(-lengthOverlap, node2.getAlong(),
-                                                                  +widthOverlap,  node2.getAcross()));
+                final GeodeticPoint gp0 = node0.move(new Vector3D(-0.5 * lengthOverlap, node0.getAlong(),
+                                                                  -0.5 * widthOverlap,  node0.getAcross()));
+                final GeodeticPoint gp1 = node1.move(new Vector3D(+0.5 * lengthOverlap, node1.getAlong(),
+                                                                  -0.5 * widthOverlap,  node1.getAcross()));
+                final GeodeticPoint gp2 = node2.move(new Vector3D(+0.5 * lengthOverlap, node2.getAlong(),
+                                                                  +0.5 * widthOverlap,  node2.getAcross()));
+                final GeodeticPoint gp3 = node3.move(new Vector3D(-0.5 * lengthOverlap, node2.getAlong(),
+                                                                  +0.5 * widthOverlap,  node2.getAcross()));
 
                 // create a quadrilateral region corresponding to the candidate tile
                 final SphericalPolygonsSet quadrilateral =
