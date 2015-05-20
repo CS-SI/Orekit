@@ -168,6 +168,20 @@ class Mesh {
         return nodes.size();
     }
 
+    /** Get the distance between nodes in the along direction.
+     * @return distance between nodes in the along direction
+     */
+    public double getAlongGap() {
+        return alongGap;
+    }
+
+    /** Get the distance between nodes in the across direction.
+     * @return distance between nodes in the across direction
+     */
+    public double getAcrossGap() {
+        return acrossGap;
+    }
+
     /** Retrieve a node from its indices.
      * @param alongIndex index in the along direction
      * @param acrossIndex index in the across direction

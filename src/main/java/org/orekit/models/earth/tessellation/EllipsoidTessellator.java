@@ -41,17 +41,25 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 
-/** Class used to tessellate an interest zone on an ellipsoid in {@link Tile tiles}.
+/** Class used to tessellate an interest zone on an ellipsoid in either
+ * {@link Tile tiles} or grids of {@link GeodeticPoint geodetic points}.
  * <p>
  * This class is typically used for Earth Observation missions, in order to
  * create tiles that may be used as the basis of visibility event detectors.
+ * </p>
+ * <p>
+ * One should note that as tessellation essentially creates a 2 dimensional
+ * almost Cartesian map, it can never perfectly fulfill geometrical dimensions
+ * because neither sphere nor ellipsoid are developable surfaces. This implies
+ * that the tesselation will always be distorted, and distorsion increases as
+ * the size of the zone to be tessallated increases.
  * </p>
  * @author Luc Maisonobe
  */
 public class EllipsoidTessellator {
 
     /** Number of segments tiles sides are split into for tiles fine positioning. */
-    private final int splits;
+    private final int quantization;
 
     /** Aiming used for orienting tiles. */
     private final TileAiming aiming;
@@ -59,61 +67,90 @@ public class EllipsoidTessellator {
     /** Underlying ellipsoid. */
     private final OneAxisEllipsoid ellipsoid;
 
-    /** Tile half width (distance on ellipsoid surface). */
-    private final double splitWidth;
-
-    /** Tile half length (distance on ellipsoid surface). */
-    private final double splitLength;
-
-    /** Overlap between adjacent tiles (distance on ellipsoid surface). */
-    private final double widthOverlap;
-
-    /** Overlap between adjacent tiles (distance on ellipsoid surface). */
-    private final double lengthOverlap;
-
     /** Simple constructor.
+     * <p>
+     * The {@code quantization} parameter is used internally to adjust points positioning.
+     * For example when quantization is set to 4, a complete tile that has 4 corner points
+     * separated by the tile lengths will really be computed on a grid containing 25 points
+     * (5 rows of 5 points, as each side will be split in 4 segments, hence will have 5
+     * points). This quantization allows rough adjustment to balance margins around the
+     * zone of interest and improves geometric accuracy as the along and across directions
+     * are readjusted at each points.
+     * </p>
+     * <p>
+     * It is recommended to use at least 2 as the quantization parameter for tiling. The
+     * rationale is that using only 1 for quantization would imply all points used are tiles
+     * vertices, and hence would lead small zones to generate 4 tiles with a shared vertex
+     * inside the zone and the 4 tiles covering the four quadrants at North-West, North-East,
+     * South-East and South-West. A quantization value of at least 2 allows to shift the
+     * tiles so the center point is an inside point rather than a tile vertex, hence allowing
+     * a single tile to cover the small zone. A value even greater like 4 or 8 would allow even
+     * finer positioning to balance the tiles margins around the zone.
+     * </p>
      * @param ellipsoid underlying ellipsoid
      * @param aiming aiming used for orienting tiles
+     * @param quantization number of segments tiles sides are split into for tiles fine positioning
+     */
+    public EllipsoidTessellator(final OneAxisEllipsoid ellipsoid, final TileAiming aiming,
+                                final int quantization) {
+        this.ellipsoid    = ellipsoid;
+        this.aiming       = aiming;
+        this.quantization = quantization;
+    }
+
+    /** Tessellate a zone of interest into tiles.
+     * <p>
+     * The distance between a vertex at a tile corner and the vertex at the same corner
+     * in the next vertex are computed by subtracting the overlap width (resp. overlap length)
+     * from the full width (resp. full length). If for example the full width is specified to
+     * be 55 km and the overlap in width is specified to be +5 km, successive tiles would span
+     * as follows:
+     * </p>
+     * <ul>
+     *   <li>tile 1 covering from   0km to  55km</li>
+     *   <li>tile 2 covering from  50km to 105km</li>
+     *   <li>tile 3 covering from 100km to 155km</li>
+     *   <li>...</li>
+     * </ul>
+     * <p>
+     * In order to achieve the same 50 km step but using a 5km gap instead of an overlap, one would
+     * need to specify the full width to be 45 km and the overlap to be -5 km. With these settings,
+     * successive tiles would span as follows:
+     * </p>
+     * <ul>
+     *   <li>tile 1 covering from   0km to  45km</li>
+     *   <li>tile 2 covering from  50km to  95km</li>
+     *   <li>tile 3 covering from 100km to 155km</li>
+     *   <li>...</li>
+     * </ul>
+     * @param zone zone of interest to tessellate
      * @param fullWidth full tiles width as a distance on surface, including overlap (in meters)
      * @param fullLength full tiles length as a distance on surface, including overlap (in meters)
      * @param widthOverlap overlap between adjacent tiles (in meters), if negative the tiles
      * will have a gap between each other instead of an overlap
      * @param lengthOverlap overlap between adjacent tiles (in meters), if negative the tiles
      * will have a gap between each other instead of an overlap
-     * @param splits number of segments tiles sides are split into for tiles fine positioning
-     */
-    public EllipsoidTessellator(final OneAxisEllipsoid ellipsoid, final TileAiming aiming,
-                                final double fullWidth, final double fullLength,
-                                final double widthOverlap, final double lengthOverlap,
-                                final int splits) {
-        this.ellipsoid     = ellipsoid;
-        this.aiming        = aiming;
-        this.splitWidth    = (fullWidth  - widthOverlap)  / splits;
-        this.splitLength   = (fullLength - lengthOverlap) / splits;
-        this.widthOverlap  = widthOverlap;
-        this.lengthOverlap = lengthOverlap;
-        this.splits        = splits;
-    }
-
-    /** Tessellate a zone of interest into tiles.
-     * @param zone zone of interest to tessellate
      * @return a list of lists of tiles covering the zone of interest,
      * each sub-list corresponding to a part not connected to the other
      * parts (for example for islands)
      * @exception OrekitException if the zone cannot be tessellated
      */
-    public List<List<Tile>> tessellate(final SphericalPolygonsSet zone)
+    public List<List<Tile>> tessellate(final SphericalPolygonsSet zone,
+                                       final double fullWidth, final double fullLength,
+                                       final double widthOverlap, final double lengthOverlap)
         throws OrekitException {
 
-        final Map<Mesh, List<Tile>>   map       = new IdentityHashMap<Mesh, List<Tile>>();
-        final RegionFactory<Sphere2D> factory   = new RegionFactory<Sphere2D>();
-        SphericalPolygonsSet          remaining = zone;
+        final double                  splitWidth  = (fullWidth  - widthOverlap)  / quantization;
+        final double                  splitLength = (fullLength - lengthOverlap) / quantization;
+        final Map<Mesh, List<Tile>>   map         = new IdentityHashMap<Mesh, List<Tile>>();
+        final RegionFactory<Sphere2D> factory     = new RegionFactory<Sphere2D>();
+        SphericalPolygonsSet          remaining   = zone;
 
         while (!remaining.isEmpty()) {
 
             // find a mesh covering at least one connected part of the zone
             final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
-            Mesh mesh = createMesh(remaining);
+            Mesh mesh = createMesh(remaining, splitLength, splitWidth);
             mergingSeeds.add(mesh.getNode(0, 0));
             List<Tile> tiles = null;
             while (!mergingSeeds.isEmpty()) {
@@ -124,7 +161,7 @@ public class EllipsoidTessellator {
                 // extract the tiles from the mesh
                 // this further expands the mesh so tiles dimensions are multiples of SPLITS,
                 // hence it must be performed here before checking meshes independence
-                tiles = extractTiles(mesh, zone);
+                tiles = extractTiles(mesh, zone, lengthOverlap, widthOverlap);
 
                 // check the mesh is independent from existing meshes
                 mergingSeeds.clear();
@@ -161,16 +198,20 @@ public class EllipsoidTessellator {
 
     /** Compute a mesh completely surrounding at least one connected part of a zone.
      * @param zone zone to mesh
+     * @param alongGap distance between nodes in the along direction
+     * @param acrossGap distance between nodes in the across direction
      * @return a mesh covering at least one connected part of the zone
      * @exception OrekitException if tile direction cannot be computed
      */
-    private Mesh createMesh(final SphericalPolygonsSet zone) throws OrekitException {
+    private Mesh createMesh(final SphericalPolygonsSet zone,
+                            final double alongGap, final double acrossGap)
+        throws OrekitException {
 
         // start mesh inside the zone
         final InsideFinder finder = new InsideFinder(zone.getTolerance());
         zone.getTree(false).visit(finder);
         final GeodeticPoint start = toGeodetic(finder.getInsidePoint());
-        return new Mesh(ellipsoid, zone, aiming, splitLength, splitWidth, start);
+        return new Mesh(ellipsoid, zone, aiming, alongGap, acrossGap, start);
 
     }
 
@@ -237,32 +278,35 @@ public class EllipsoidTessellator {
     /** Extract tiles from a mesh.
      * @param mesh mesh from which tiles should be extracted
      * @param zone zone covered by the mesh
+     * @param lengthOverlap overlap between adjacent tiles
+     * @param widthOverlap overlap between adjacent tiles
      * @return extracted tiles
      * @exception OrekitException if tile direction cannot be computed
      */
-    private List<Tile> extractTiles(final Mesh mesh, final SphericalPolygonsSet zone)
+    private List<Tile> extractTiles(final Mesh mesh, final SphericalPolygonsSet zone,
+                                    final double lengthOverlap, final double widthOverlap)
         throws OrekitException {
 
         final List<Tile> tiles = new ArrayList<Tile>();
 
         final int minAcross = mesh.getMinAcrossIndex();
         final int maxAcross = mesh.getMaxAcrossIndex();
-        for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += splits) {
+        for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += quantization) {
 
             int minAlong = mesh.getMaxAlongIndex() + 1;
             int maxAlong = mesh.getMinAlongIndex() - 1;
-            for (int c = acrossIndex; c <= acrossIndex + splits; ++c) {
+            for (int c = acrossIndex; c <= acrossIndex + quantization; ++c) {
                 minAlong = FastMath.min(minAlong, mesh.getMinAlongIndex(c));
                 maxAlong = FastMath.max(maxAlong, mesh.getMaxAlongIndex(c));
             }
 
-            for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += splits) {
+            for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += quantization) {
 
                 // get the base vertex nodes
-                final Mesh.Node node0 = mesh.addNode(alongIndex,          acrossIndex);
-                final Mesh.Node node1 = mesh.addNode(alongIndex + splits, acrossIndex);
-                final Mesh.Node node2 = mesh.addNode(alongIndex + splits, acrossIndex + splits);
-                final Mesh.Node node3 = mesh.addNode(alongIndex,          acrossIndex + splits);
+                final Mesh.Node node0 = mesh.addNode(alongIndex,                acrossIndex);
+                final Mesh.Node node1 = mesh.addNode(alongIndex + quantization, acrossIndex);
+                final Mesh.Node node2 = mesh.addNode(alongIndex + quantization, acrossIndex + quantization);
+                final Mesh.Node node3 = mesh.addNode(alongIndex,                acrossIndex + quantization);
 
                 // apply tile overlap
                 final GeodeticPoint gp0 = node0.move(new Vector3D(-lengthOverlap, node0.getAlong(),
@@ -285,11 +329,11 @@ public class EllipsoidTessellator {
                     tiles.add(new Tile(gp0, gp1, gp2, gp3));
 
                     // ensure the taxicab boundary follows the built tile sides
-                    for (int k = 0; k < splits; ++k) {
-                        mesh.addNode(alongIndex + k,      acrossIndex).setEnabled(true);
-                        mesh.addNode(alongIndex + k + 1,  acrossIndex + splits).setEnabled(true);
-                        mesh.addNode(alongIndex,          acrossIndex + k + 1).setEnabled(true);
-                        mesh.addNode(alongIndex + splits, acrossIndex + k).setEnabled(true);
+                    for (int k = 0; k < quantization; ++k) {
+                        mesh.addNode(alongIndex + k,            acrossIndex).setEnabled(true);
+                        mesh.addNode(alongIndex + k + 1,        acrossIndex + quantization).setEnabled(true);
+                        mesh.addNode(alongIndex,                acrossIndex + k + 1).setEnabled(true);
+                        mesh.addNode(alongIndex + quantization, acrossIndex + k).setEnabled(true);
                     }
 
                 }
@@ -332,25 +376,25 @@ public class EllipsoidTessellator {
             // we have to create new nodes around the previous location
             Mesh.Node node = larger.getClosestExistingNode(insideNode.getV());
 
-            while (estimateAlongMotion(node, insideNode.getV()) > +splitLength) {
+            while (estimateAlongMotion(node, insideNode.getV()) > +mesh1.getAlongGap()) {
                 // the node is before desired index in the along direction
                 // we need to create intermediates nodes up to the desired index
                 node = larger.addNode(node.getAlongIndex() + 1, node.getAcrossIndex());
             }
 
-            while (estimateAlongMotion(node, insideNode.getV()) < -splitLength) {
+            while (estimateAlongMotion(node, insideNode.getV()) < -mesh1.getAlongGap()) {
                 // the node is after desired index in the along direction
                 // we need to create intermediates nodes up to the desired index
                 node = larger.addNode(node.getAlongIndex() - 1, node.getAcrossIndex());
             }
 
-            while (estimateAcrossMotion(node, insideNode.getV()) > +splitWidth) {
+            while (estimateAcrossMotion(node, insideNode.getV()) > +mesh1.getAcrossGap()) {
                 // the node is before desired index in the across direction
                 // we need to create intermediates nodes up to the desired index
                 node = larger.addNode(node.getAlongIndex(), node.getAcrossIndex() + 1);
             }
 
-            while (estimateAcrossMotion(node, insideNode.getV()) < -splitWidth) {
+            while (estimateAcrossMotion(node, insideNode.getV()) < -mesh1.getAcrossGap()) {
                 // the node is after desired index in the across direction
                 // we need to create intermediates nodes up to the desired index
                 node = larger.addNode(node.getAlongIndex(), node.getAcrossIndex() - 1);
@@ -518,10 +562,10 @@ public class EllipsoidTessellator {
 
         // number of tiles needed to cover the full indices range
         final int range      = maxIndex - minIndex;
-        final int nbTiles    = (range + splits - 1) / splits;
+        final int nbTiles    = (range + quantization - 1) / quantization;
 
         // extra nodes that must be added to complete the tiles
-        final int extraNodes = nbTiles * splits  - range;
+        final int extraNodes = nbTiles * quantization  - range;
 
         // balance the extra nodes before min index and after maxIndex
         final int extraBefore = (extraNodes + 1) / 2;
