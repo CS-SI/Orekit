@@ -144,7 +144,7 @@ public class EllipsoidTessellator {
         final double                  splitLength = (fullLength - lengthOverlap) / quantization;
         final Map<Mesh, List<Tile>>   map         = new IdentityHashMap<Mesh, List<Tile>>();
         final RegionFactory<Sphere2D> factory     = new RegionFactory<Sphere2D>();
-        SphericalPolygonsSet          remaining   = zone;
+        SphericalPolygonsSet          remaining   = (SphericalPolygonsSet) zone.copySelf();
 
         while (!remaining.isEmpty()) {
 
