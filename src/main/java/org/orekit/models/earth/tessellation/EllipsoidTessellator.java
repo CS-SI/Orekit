@@ -100,6 +100,9 @@ public class EllipsoidTessellator {
 
     /** Tessellate a zone of interest into tiles.
      * <p>
+     * The created tiles will completely cover the zone of interest.
+     * </p>
+     * <p>
      * The distance between a vertex at a tile corner and the vertex at the same corner
      * in the next vertex are computed by subtracting the overlap width (resp. overlap length)
      * from the full width (resp. full length). If for example the full width is specified to
@@ -159,7 +162,7 @@ public class EllipsoidTessellator {
                 neighborExpandMesh(mesh, mergingSeeds, zone);
 
                 // extract the tiles from the mesh
-                // this further expands the mesh so tiles dimensions are multiples of SPLITS,
+                // this further expands the mesh so tiles dimensions are multiples of quantization,
                 // hence it must be performed here before checking meshes independence
                 tiles = extractTiles(mesh, zone, lengthOverlap, widthOverlap);
 
@@ -193,6 +196,76 @@ public class EllipsoidTessellator {
         }
 
         return tilesLists;
+
+    }
+
+    /** Sample a zone of interest into a grid of {@link GeodeticPoint geodetic points}.
+     * <p>
+     * The created points will be entirely within the zone of interest.
+     * </p>
+     * @param zone zone of interest to tessellate
+     * @param width grid cells width as a distance on surface (in meters)
+     * @param length grid cells length as a distance on surface (in meters)
+     * @return a list of lists of points covering the zone of interest,
+     * each sub-list corresponding to a part not connected to the other
+     * parts (for example for islands)
+     * @exception OrekitException if the zone cannot be sampled
+     */
+    public List<List<GeodeticPoint>> sample(final SphericalPolygonsSet zone,
+                                            final double width, final double length)
+        throws OrekitException {
+
+        final Map<Mesh, List<GeodeticPoint>> map       = new IdentityHashMap<Mesh, List<GeodeticPoint>>();
+        final RegionFactory<Sphere2D>        factory   = new RegionFactory<Sphere2D>();
+        SphericalPolygonsSet                 remaining = (SphericalPolygonsSet) zone.copySelf();
+
+        while (!remaining.isEmpty()) {
+
+            // find a mesh covering at least one connected part of the zone
+            final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
+            Mesh mesh = createMesh(remaining, length, width);
+            mergingSeeds.add(mesh.getNode(0, 0));
+            List<GeodeticPoint> grid = null;
+            while (!mergingSeeds.isEmpty()) {
+
+                // expand the mesh around the seed
+                neighborExpandMesh(mesh, mergingSeeds, zone);
+
+                // extract the grid from the mesh
+                // this further expands the mesh so grid cells dimensions are multiples of quantization,
+                // hence it must be performed here before checking meshes independence
+                grid = extractGrid(mesh, zone);
+
+                // check the mesh is independent from existing meshes
+                mergingSeeds.clear();
+                for (final Map.Entry<Mesh, List<GeodeticPoint>> entry : map.entrySet()) {
+                    if (!factory.intersection(mesh.getCoverage(), entry.getKey().getCoverage()).isEmpty()) {
+                        // the meshes are not independent, they intersect each other!
+
+                        // merge the two meshes together
+                        mesh = mergeMeshes(mesh, entry.getKey(), mergingSeeds);
+                        map.remove(entry.getKey());
+                        break;
+
+                    }
+                }
+
+            }
+
+            // remove the part of the zone covered by the mesh
+            remaining = (SphericalPolygonsSet) factory.difference(remaining, mesh.getCoverage());
+
+            map.put(mesh, grid);
+
+        }
+
+        // concatenate the lists from the independent meshes
+        final List<List<GeodeticPoint>> gridsLists = new ArrayList<List<GeodeticPoint>>(map.size());
+        for (final Map.Entry<Mesh, List<GeodeticPoint>> entry : map.entrySet()) {
+            gridsLists.add(entry.getValue());
+        }
+
+        return gridsLists;
 
     }
 
@@ -341,6 +414,67 @@ public class EllipsoidTessellator {
         }
 
         return tiles;
+
+    }
+
+    /** Extract a grid from a mesh.
+     * @param mesh mesh from which grid should be extracted
+     * @param zone zone covered by the mesh
+     * @return extracted grid
+     * @exception OrekitException if tile direction cannot be computed
+     */
+    private List<GeodeticPoint> extractGrid(final Mesh mesh, final SphericalPolygonsSet zone)
+        throws OrekitException {
+
+        // find how to select grid points taking quantization into account
+        // to have the largest possible number of points while still
+        // being inside the zone of interest
+        int selectedAcrossModulus = -1;
+        int selectedAlongModulus  = -1;
+        int selectedCount         = -1;
+        for (int acrossModulus = 0; acrossModulus < quantization; ++acrossModulus) {
+            for (int alongModulus = 0; alongModulus < quantization; ++alongModulus) {
+
+                // count how many points would be selected for the current modulus
+                int count = 0;
+                for (int across = mesh.getMinAcrossIndex() + acrossModulus;
+                        across <= mesh.getMaxAcrossIndex();
+                        across += quantization) {
+                    for (int along = mesh.getMinAlongIndex() + alongModulus;
+                            along <= mesh.getMaxAlongIndex();
+                            along += quantization) {
+                        final Mesh.Node  node = mesh.getNode(along, across);
+                        if (node != null && node.isInside()) {
+                            ++count;
+                        }
+                    }
+                }
+
+                if (count > selectedCount) {
+                    // current modulus are better than the selected ones
+                    selectedAcrossModulus = acrossModulus;
+                    selectedAlongModulus  = alongModulus;
+                    selectedCount         = count;
+                }
+            }
+        }
+
+        // extract the grid points
+        final List<GeodeticPoint> grid = new ArrayList<GeodeticPoint>(selectedCount);
+        for (int across = mesh.getMinAcrossIndex() + selectedAcrossModulus;
+                across <= mesh.getMaxAcrossIndex();
+                across += quantization) {
+            for (int along = mesh.getMinAlongIndex() + selectedAlongModulus;
+                    along <= mesh.getMaxAlongIndex();
+                    along += quantization) {
+                final Mesh.Node  node = mesh.getNode(along, across);
+                if (node != null && node.isInside()) {
+                    grid.add(toGeodetic(node.getS2P()));
+                }
+            }
+        }
+
+        return grid;
 
     }
 
