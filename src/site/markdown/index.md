@@ -137,10 +137,13 @@ Features
   
     * loading of SP3-a and SP3-c orbit files
 
-  * Atmosphere models
+  * Earth models
   
     * tropospheric delay (modified Saastamoinen)
     * geomagnetic field (WMM, IGRF)
+    * geoid model from any gravity field
+    * tessellation of zones of interest as tiles
+    * sampling of zones of interest as grids of points
     
   * Customizable data loading
 
