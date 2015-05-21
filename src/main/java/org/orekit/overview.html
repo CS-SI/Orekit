@@ -157,7 +157,7 @@ discrete events. Here is a short list of the features offered by the library:</p
                yaw compensation, yaw-steering)</li>
           <li>orbit referenced attitudes (LOF aligned, offset on all axes)</li>
           <li>space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)</li>
-          <li>tabulated attitudes/li>
+          <li>tabulated attitudes</li>
         </ul>
       </li>
     </ul>
@@ -167,10 +167,13 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>loading of SP3-a and SP3-c orbit files</li>
     </ul>
   </li>
-  <li>Atmosphere models
+  <li>Earth models
     <ul>
       <li>tropospheric delay (modified Saastamoinen)</li>
       <li>geomagnetic field (WMM, IGRF)</li>
+      <li>geoid model from any gravity field</li>
+      <li>tessellation of zones of interest as tiles</li>
+      <li>sampling of zones of interest as grids of points</li>
     </ul>
   </li>
   <li>Customizable data loading
@@ -187,7 +190,7 @@ discrete events. Here is a short list of the features offered by the library:</p
 
 <h2>3. Dependency</h2>
 <p>
-OREKIT has only one dependency: the <a href="http://commons.apache.org/math/">commons-math</a>
+OREKIT has only one dependency: the <a href="http://commons.apache.org/math/">Apache Commons Math</a>
 open-source library. This library provides mathematical tools for many purposes: geometry,
 polynomial equations, differential equations, and more... It is distributed under the
 business-friendly Apache Software License version 2.0.

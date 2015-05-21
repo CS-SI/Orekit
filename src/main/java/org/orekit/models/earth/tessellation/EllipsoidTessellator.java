@@ -199,14 +199,14 @@ public class EllipsoidTessellator {
 
     }
 
-    /** Sample a zone of interest into a grid of {@link GeodeticPoint geodetic points}.
+    /** Sample a zone of interest into a grid sample of {@link GeodeticPoint geodetic points}.
      * <p>
      * The created points will be entirely within the zone of interest.
      * </p>
-     * @param zone zone of interest to tessellate
-     * @param width grid cells width as a distance on surface (in meters)
-     * @param length grid cells length as a distance on surface (in meters)
-     * @return a list of lists of points covering the zone of interest,
+     * @param zone zone of interest to sample
+     * @param width grid sample cells width as a distance on surface (in meters)
+     * @param length grid sample cells length as a distance on surface (in meters)
+     * @return a list of lists of points sampling the zone of interest,
      * each sub-list corresponding to a part not connected to the other
      * parts (for example for islands)
      * @exception OrekitException if the zone cannot be sampled
@@ -215,26 +215,28 @@ public class EllipsoidTessellator {
                                             final double width, final double length)
         throws OrekitException {
 
-        final Map<Mesh, List<GeodeticPoint>> map       = new IdentityHashMap<Mesh, List<GeodeticPoint>>();
-        final RegionFactory<Sphere2D>        factory   = new RegionFactory<Sphere2D>();
-        SphericalPolygonsSet                 remaining = (SphericalPolygonsSet) zone.copySelf();
+        final double                         splitWidth  = width  / quantization;
+        final double                         splitLength = length / quantization;
+        final Map<Mesh, List<GeodeticPoint>> map         = new IdentityHashMap<Mesh, List<GeodeticPoint>>();
+        final RegionFactory<Sphere2D>        factory     = new RegionFactory<Sphere2D>();
+        SphericalPolygonsSet                 remaining   = (SphericalPolygonsSet) zone.copySelf();
 
         while (!remaining.isEmpty()) {
 
             // find a mesh covering at least one connected part of the zone
             final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
-            Mesh mesh = createMesh(remaining, length, width);
+            Mesh mesh = createMesh(remaining, splitLength, splitWidth);
             mergingSeeds.add(mesh.getNode(0, 0));
-            List<GeodeticPoint> grid = null;
+            List<GeodeticPoint> sample = null;
             while (!mergingSeeds.isEmpty()) {
 
                 // expand the mesh around the seed
                 neighborExpandMesh(mesh, mergingSeeds, zone);
 
-                // extract the grid from the mesh
-                // this further expands the mesh so grid cells dimensions are multiples of quantization,
+                // extract the sample from the mesh
+                // this further expands the mesh so sample cells dimensions are multiples of quantization,
                 // hence it must be performed here before checking meshes independence
-                grid = extractGrid(mesh, zone);
+                sample = extractSample(mesh, zone);
 
                 // check the mesh is independent from existing meshes
                 mergingSeeds.clear();
@@ -255,17 +257,17 @@ public class EllipsoidTessellator {
             // remove the part of the zone covered by the mesh
             remaining = (SphericalPolygonsSet) factory.difference(remaining, mesh.getCoverage());
 
-            map.put(mesh, grid);
+            map.put(mesh, sample);
 
         }
 
         // concatenate the lists from the independent meshes
-        final List<List<GeodeticPoint>> gridsLists = new ArrayList<List<GeodeticPoint>>(map.size());
+        final List<List<GeodeticPoint>> sampleLists = new ArrayList<List<GeodeticPoint>>(map.size());
         for (final Map.Entry<Mesh, List<GeodeticPoint>> entry : map.entrySet()) {
-            gridsLists.add(entry.getValue());
+            sampleLists.add(entry.getValue());
         }
 
-        return gridsLists;
+        return sampleLists;
 
     }
 
@@ -417,16 +419,16 @@ public class EllipsoidTessellator {
 
     }
 
-    /** Extract a grid from a mesh.
+    /** Extract a sample of points from a mesh.
      * @param mesh mesh from which grid should be extracted
      * @param zone zone covered by the mesh
      * @return extracted grid
      * @exception OrekitException if tile direction cannot be computed
      */
-    private List<GeodeticPoint> extractGrid(final Mesh mesh, final SphericalPolygonsSet zone)
+    private List<GeodeticPoint> extractSample(final Mesh mesh, final SphericalPolygonsSet zone)
         throws OrekitException {
 
-        // find how to select grid points taking quantization into account
+        // find how to select sample points taking quantization into account
         // to have the largest possible number of points while still
         // being inside the zone of interest
         int selectedAcrossModulus = -1;
@@ -459,8 +461,8 @@ public class EllipsoidTessellator {
             }
         }
 
-        // extract the grid points
-        final List<GeodeticPoint> grid = new ArrayList<GeodeticPoint>(selectedCount);
+        // extract the sample points
+        final List<GeodeticPoint> sample = new ArrayList<GeodeticPoint>(selectedCount);
         for (int across = mesh.getMinAcrossIndex() + selectedAcrossModulus;
                 across <= mesh.getMaxAcrossIndex();
                 across += quantization) {
@@ -469,12 +471,12 @@ public class EllipsoidTessellator {
                     along += quantization) {
                 final Mesh.Node  node = mesh.getNode(along, across);
                 if (node != null && node.isInside()) {
-                    grid.add(toGeodetic(node.getS2P()));
+                    sample.add(toGeodetic(node.getS2P()));
                 }
             }
         }
 
-        return grid;
+        return sample;
 
     }
 

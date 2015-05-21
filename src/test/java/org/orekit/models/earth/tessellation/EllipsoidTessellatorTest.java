@@ -45,7 +45,7 @@ import org.orekit.utils.IERSConventions;
 public class EllipsoidTessellatorTest {
 
     @Test
-    public void testAlongDescendingTrack() throws OrekitException {
+    public void testTilesAlongDescendingTrack() throws OrekitException {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
@@ -56,7 +56,17 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testAlongAscendingTrack() throws OrekitException {
+    public void testSampleAlongDescendingTrack() throws OrekitException {
+        final EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 4);
+        final List<List<GeodeticPoint>> samples = tessellator.sample(buildFrance(), 25000.0, 50000.0);
+        Assert.assertEquals(2,   samples.size());
+        Assert.assertEquals(452, FastMath.max(samples.get(0).size(), samples.get(1).size()));
+        Assert.assertEquals(9,   FastMath.min(samples.get(0).size(), samples.get(1).size()));
+    }
+
+    @Test
+    public void testTilesAlongAscendingTrack() throws OrekitException {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, true), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
@@ -67,7 +77,18 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testConstantAzimuth() throws OrekitException {
+    public void testSampleAlongAscendingTrack() throws OrekitException {
+        final EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, true), 4);
+        final List<List<GeodeticPoint>> samples = tessellator.sample(buildFrance(),
+                                                              25000.0, 50000.0);
+        Assert.assertEquals(2,   samples.size());
+        Assert.assertEquals(452, FastMath.max(samples.get(0).size(), samples.get(1).size()));
+        Assert.assertEquals(10,  FastMath.min(samples.get(0).size(), samples.get(1).size()));
+    }
+
+    @Test
+    public void testTilesConstantAzimuth() throws OrekitException {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120)), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
@@ -79,7 +100,17 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testIslandJoining() throws OrekitException {
+    public void testSampleConstantAzimuth() throws OrekitException {
+        final EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120)), 4);
+        final List<List<GeodeticPoint>> samples = tessellator.sample(buildFrance(), 25000.0, 50000.0);
+        Assert.assertEquals(2,   samples.size());
+        Assert.assertEquals(455, FastMath.max(samples.get(0).size(), samples.get(1).size()));
+        Assert.assertEquals(9,   FastMath.min(samples.get(0).size(), samples.get(1).size()));
+    }
+
+    @Test
+    public void testTilesIslandJoining() throws OrekitException {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120.0)), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
@@ -90,7 +121,7 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testSmallzone() throws OrekitException, IOException {
+    public void testTilesSmallzone() throws OrekitException, IOException {
 
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
         EllipsoidTessellator tessellator =

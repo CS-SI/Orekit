@@ -16,7 +16,8 @@
  */
 /**
  *
- * This package provides ways to do tessellation of zones of interest over Earth surface.
+ * This package provides ways to do tessellation and sampling of zones of
+ * interest over an ellipsoid surface.
  * @since 7.1
  * @author Luc Maisonobe
  */

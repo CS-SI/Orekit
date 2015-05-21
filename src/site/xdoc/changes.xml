@@ -22,7 +22,7 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
-        Added a way to sample a zone as grids of inside points.
+        Added a way to sample a zone on an ellipsoid as grids of inside points.
         Fixes issue #201.
       </action>
       <action dev="luc" type="fix">
