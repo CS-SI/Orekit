@@ -136,6 +136,7 @@ Features
   * Orbit file handling
   
     * loading of SP3-a and SP3-c orbit files
+    * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
 
   * Earth models
   
