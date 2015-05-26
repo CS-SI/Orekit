@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Javier Martin Avila">
+        Fixed resetting of SecularAndHarmonic fitting.
+        Fixes issue #205.
+      </action>
       <action dev="luc" type="add">
         Added a way to sample a zone on an ellipsoid as grids of inside points.
         Fixes issue #201.
