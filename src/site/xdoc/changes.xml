@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Activated two commented-out tests for DTM2000, after ensuring we
+        get the same results as the original fortran implementation.
+        Fixes issue #204.
+      </action>
       <action dev="luc" type="fix" due-to="Javier Martin Avila">
         Fixed resetting of SecularAndHarmonic fitting.
         Fixes issue #205.

@@ -17,8 +17,6 @@
 package org.orekit.forces.drag;
 
 
-import java.text.ParseException;
-
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,7 +34,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class DTM2000Test {
 
     @Test
-    public void testWithOriginalTestsCases() throws OrekitException, ParseException {
+    public void testWithOriginalTestsCases() throws OrekitException {
 
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
@@ -71,9 +69,9 @@ public class DTM2000Test {
 
         // Computation and results
         myRo = atm.getDensity(185, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assert.assertEquals(0, (roTestCase -myRo)/roTestCase, 1e-14);
-        Assert.assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
-        Assert.assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
+        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
+        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
 //      IDEM., day=275
 
@@ -82,9 +80,9 @@ public class DTM2000Test {
         tinfTestCase=    1157.1933514185;
 
         myRo = atm.getDensity(275, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assert.assertEquals(0, (roTestCase -myRo)/roTestCase, 1e-14);
-        Assert.assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
-        Assert.assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
+        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
+        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
 //      IDEM., day=355
 
@@ -93,9 +91,9 @@ public class DTM2000Test {
         tinfTestCase=    1033.0282703200;
 
         myRo = atm.getDensity(355, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assert.assertEquals(0, (roTestCase -myRo)/roTestCase, 2e-14);
-        Assert.assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
-        Assert.assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
+        Assert.assertEquals(roTestCase, myRo , roTestCase * 2e-14);
+        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
+        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 //      IDEM., day=85
 
         roTestCase=    2.9983740796297e-17* 1000;
@@ -103,9 +101,9 @@ public class DTM2000Test {
         tinfTestCase=    1169.5485768345;
 
         myRo = atm.getDensity(85, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assert.assertEquals(0, (roTestCase -myRo)/roTestCase, 1e-14);
-        Assert.assertEquals(0, (tzTestCase-atm.getT())/tzTestCase, 1e-13);
-        Assert.assertEquals(0, (tinfTestCase-atm.getTinf())/tinfTestCase, 1e-13);
+        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
+        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
 
 //      alt=500.
@@ -124,17 +122,40 @@ public class DTM2000Test {
 //      ro=    1.3150282384722D-16
 //      tz=    793.65487014559
 //      tinf=    793.65549802348
-//        roTestCase =    1.3150282384722E-16;
-//        tzTestCase=    793.65487014559;
-//        tinfTestCase=    793.65549802348;
+        // note that the values above are the ones present in the original fortran source comments
+        // however, running this original source (converted to double precision) does
+        // not yield the results in the comments, but instead gives the following results
+        // as all the other tests cases do behave correctly, we assume the comments are wrong
+        // and prefer to ensure we get the same result as the original CODE
+        // as we don't have access to any other tests cases, we can't really decide if this is
+        // the best approach. Indeed, we are able to get the same results as original fortran
+        roTestCase =    1.5699108952425600E-016* 1000;
+        tzTestCase=     841.20244319707786;
+        tinfTestCase=   841.20529446301430;
 
-        atm.getDensity(15, 500*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
+        myRo = atm.getDensity(15, 500*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
+        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
+        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
 //      IDEM., alt=800.
 //      ro=    1.9556768571305D-18
 //      tz=    793.65549797919
 //      tinf=    793.65549802348
-        atm.getDensity(15, 800*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
+        // note that the values above are the ones present in the original fortran source comments
+        // however, running this original source (converted to double precision) does
+        // not yield the results in the comments, but instead gives the following results
+        // as all the other tests cases do behave correctly, we assume the comments are wrong
+        // and prefer to ensure we get the same result as the original CODE
+        // as we don't have access to any other tests cases, we can't really decide if this is
+        // the best approach. Indeed, we are able to get the same results as original fortran
+        roTestCase =    2.4123751406975562E-018* 1000;
+        tzTestCase=     841.20529391519096;
+        tinfTestCase=   841.20529446301430;
+        myRo = atm.getDensity(15, 800*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
+        Assert.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
+        Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
     }
 
