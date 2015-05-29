@@ -167,7 +167,7 @@ public abstract class Orbit
         throws IllegalArgumentException {
         if (!frame.isPseudoInertial()) {
             throw OrekitException.createIllegalArgumentException(
-                OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS,
+                OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                 frame.getName());
         }
     }

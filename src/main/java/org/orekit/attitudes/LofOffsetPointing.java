@@ -46,7 +46,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class LofOffsetPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140811L;
+    private static final long serialVersionUID = 20150529L;
 
     /** Rotation from local orbital frame. */
     private final AttitudeProvider attitudeLaw;
@@ -61,10 +61,29 @@ public class LofOffsetPointing extends GroundPointing {
      * @param shape Body shape
      * @param attLaw Attitude law
      * @param satPointingVector satellite vector defining the pointing direction
+     * @deprecated as of 7.1, replaced with {@link #LofOffsetPointing(Frame, BodyShape, AttitudeProvider, Vector3D)}
      */
+    @Deprecated
     public LofOffsetPointing(final BodyShape shape, final AttitudeProvider attLaw,
                              final Vector3D satPointingVector) {
         super(shape.getBodyFrame());
+        this.shape = shape;
+        this.attitudeLaw = attLaw;
+        this.satPointingVector = satPointingVector;
+    }
+
+    /** Creates new instance.
+     * @param inertialFrame frame in which orbital velocities are computed
+     * @param shape Body shape
+     * @param attLaw Attitude law
+     * @param satPointingVector satellite vector defining the pointing direction
+     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
+     * @since 7.1
+     */
+    public LofOffsetPointing(final Frame inertialFrame, final BodyShape shape,
+                             final AttitudeProvider attLaw, final Vector3D satPointingVector)
+        throws OrekitException {
+        super(inertialFrame, shape.getBodyFrame());
         this.shape = shape;
         this.attitudeLaw = attLaw;
         this.satPointingVector = satPointingVector;

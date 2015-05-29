@@ -96,12 +96,12 @@ public class Frames3 {
                                                    earthFrame);
 
             // Target pointing attitude provider over satellite nadir at date, without yaw compensation
-            NadirPointing nadirLaw = new NadirPointing(earth);
+            NadirPointing nadirLaw = new NadirPointing(eme2000, earth);
 
             // Target pointing attitude provider with yaw compensation
             final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             YawSteering yawSteeringLaw =
-                new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
+                new YawSteering(eme2000, nadirLaw, sun, Vector3D.MINUS_I);
 
             // Propagator : Eckstein-Hechler analytic propagator
             Propagator propagator =

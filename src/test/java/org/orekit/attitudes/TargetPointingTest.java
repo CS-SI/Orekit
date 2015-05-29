@@ -29,6 +29,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -85,10 +86,10 @@ public class TargetPointingTest {
         Vector3D pTargetITRF2005C = earthShape.transform(geoTargetITRF2005C);
 
         // Attitude law definition from geodetic point target
-        TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005C, earthShape);
+        TargetPointing geoTargetAttitudeLaw = new TargetPointing(circ.getFrame(), geoTargetITRF2005C, earthShape);
 
         //  Attitude law definition from position/velocity target
-        TargetPointing pvTargetAttitudeLaw = new TargetPointing(itrf, pTargetITRF2005C);
+        TargetPointing pvTargetAttitudeLaw = new TargetPointing(circ.getFrame(), itrf, pTargetITRF2005C);
 
         // Check that both attitude are the same
         // Get satellite rotation for target pointing law
@@ -126,7 +127,7 @@ public class TargetPointingTest {
         GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
 
         //  Attitude law definition
-        TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005, earthShape);
+        TargetPointing geoTargetAttitudeLaw = new TargetPointing(circ.getFrame(), geoTargetITRF2005, earthShape);
 
         // Check that observed ground point is the same as defined target
         Vector3D pObservedEME2000 = geoTargetAttitudeLaw.getTargetPV(circ, date, FramesFactory.getEME2000()).getPosition();
@@ -136,6 +137,50 @@ public class TargetPointingTest {
         Assert.assertEquals(geoObserved.getLatitude(), geoTargetITRF2005.getLatitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoObserved.getAltitude(), geoTargetITRF2005.getAltitude(), 1.e-8);
 
+    }
+
+    @Test
+    public void testIssue115() throws OrekitException {
+
+        //  Satellite position
+        // ********************
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
+                                   FramesFactory.getEME2000(), date, mu);
+
+        //  Attitude law
+        // **************
+
+        // Elliptic earth shape
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
+
+        // Target definition as a geodetic point
+        GeodeticPoint geoTargetITRF = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
+
+        //  Attitude law definition
+        TargetPointing geoTargetAttitudeLaw = new TargetPointing(circ.getFrame(), geoTargetITRF, earthShape);
+
+        // Check that observed ground point is the same as defined target
+        Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
+        Attitude att1 = geoTargetAttitudeLaw.getAttitude(circ, date, cirf);
+        Attitude att2 = geoTargetAttitudeLaw.getAttitude(circ, date, itrf);
+        Attitude att3 = att2.withReferenceFrame(cirf);
+        Assert.assertEquals(0.0, att3.getRotation().applyInverseTo(att1.getRotation()).getAngle(), 1.0e-15);
+
+    }
+
+    @Test
+    public void testWrongFrame() {
+        try {
+            // in the following line, the frames have been intentionnally reversed
+            new TargetPointing(itrf, FramesFactory.getEME2000(),
+                               new Vector3D(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0));
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oe.getSpecifier());
+            Assert.assertEquals(itrf.getName(), oe.getParts()[0]);
+        }
     }
 
     /** Test with nadir target : Check that when the target is the same as nadir target at date,
@@ -157,14 +202,14 @@ public class TargetPointingTest {
         // *******************************************************
         // Definition of nadir target
         // Create nadir pointing attitude provider
-        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 
         // Check nadir target
         Vector3D pNadirTarget  = nadirAttitudeLaw.getTargetPV(circOrbit, date, itrf).getPosition();
         GeodeticPoint geoNadirTarget = earthShape.transform(pNadirTarget, itrf, date);
 
         // Create target attitude provider
-        TargetPointing targetAttitudeLaw = new TargetPointing(geoNadirTarget, earthShape);
+        TargetPointing targetAttitudeLaw = new TargetPointing(circOrbit.getFrame(), geoNadirTarget, earthShape);
 
         //  1/ Test that attitudes are the same at date
         // *********************************************
@@ -224,7 +269,7 @@ public class TargetPointingTest {
 
         // Create target pointing attitude provider
         GeodeticPoint geoTarget = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
-        TargetPointing targetAttitudeLaw = new TargetPointing(geoTarget, earthShape);
+        TargetPointing targetAttitudeLaw = new TargetPointing(FramesFactory.getEME2000(), geoTarget, earthShape);
 
         //  Satellite position
         // ********************
@@ -276,7 +321,7 @@ public class TargetPointingTest {
 
         // Create nadir pointing attitude provider
         // **********************************
-        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(circ.getFrame(), earthShape);
 
         // Get observed ground point from nadir pointing law
         Vector3D pNadirObservedEME2000 = nadirAttitudeLaw.getTargetPV(circ, date, FramesFactory.getEME2000()).getPosition();
@@ -286,7 +331,7 @@ public class TargetPointingTest {
 
         // Create target pointing attitude provider with target equal to nadir target
         // *********************************************************************
-        TargetPointing targetLawRef = new TargetPointing(itrf, pNadirObservedITRF2005);
+        TargetPointing targetLawRef = new TargetPointing(circ.getFrame(), itrf, pNadirObservedITRF2005);
 
         // Get attitude rotation in EME2000
         Rotation rotSatRefEME2000 = targetLawRef.getAttitude(circ, date, circ.getFrame()).getRotation();
@@ -296,7 +341,7 @@ public class TargetPointingTest {
         GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLatitude(),
                                                     geoNadirObserved.getLongitude() - FastMath.toRadians(5), geoNadirObserved.getAltitude());
         Vector3D pTargetITRF2005C = earthShape.transform(geoTarget);
-        TargetPointing targetLaw = new TargetPointing(itrf, pTargetITRF2005C);
+        TargetPointing targetLaw = new TargetPointing(circ.getFrame(), itrf, pTargetITRF2005C);
 
         // Get attitude rotation
         Rotation rotSatEME2000 = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
@@ -325,7 +370,7 @@ public class TargetPointingTest {
 
         // Create target pointing attitude provider
         GeodeticPoint geoTarget = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
-        AttitudeProvider law = new TargetPointing(geoTarget, earthShape);
+        AttitudeProvider law = new TargetPointing(FramesFactory.getEME2000(), geoTarget, earthShape);
 
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
@@ -374,10 +419,10 @@ public class TargetPointingTest {
             // Body mu
             mu = 3.9860047e14;
 
-            // Reference frame = ITRF 2005
+            // Reference frame = ITRF
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
-            // Transform from EME2000 to ITRF2005
+            // Transform from EME2000 to ITRF
             eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);
 
         } catch (OrekitException oe) {

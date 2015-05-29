@@ -87,7 +87,7 @@ public class CircularFieldOfViewDetectorTest {
             Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
             Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
             initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
-                                                      FramesFactory.getEME2000(), initDate, mu);
+                                                FramesFactory.getEME2000(), initDate, mu);
 
 
             // WGS84 Earth model
@@ -96,7 +96,7 @@ public class CircularFieldOfViewDetectorTest {
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
             // Create earth center pointing attitude provider */
-            earthCenterAttitudeLaw = new BodyCenterPointing(earth);
+            earthCenterAttitudeLaw = new BodyCenterPointing(initialOrbit.getFrame(), earth);
 
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());

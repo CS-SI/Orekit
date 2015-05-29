@@ -214,7 +214,7 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
                 if (FramesFactory.getFrame(predefined).isPseudoInertial()) {
                     return FramesFactory.getFrame(predefined);
                 } else {
-                    throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS,
+                    throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                                               frameName);
                 }
             }

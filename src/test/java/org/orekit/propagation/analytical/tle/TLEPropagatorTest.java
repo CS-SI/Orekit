@@ -122,7 +122,9 @@ public class TLEPropagatorTest {
 
         // with Earth pointing attitude, distance should be small
         TLEPropagator propagator =
-                TLEPropagator.selectExtrapolator(tle, new BodyCenterPointing(earth), Propagator.DEFAULT_MASS);
+                TLEPropagator.selectExtrapolator(tle,
+                                                 new BodyCenterPointing(FramesFactory.getTEME(), earth),
+                                                 Propagator.DEFAULT_MASS);
         propagator.setMasterMode(900.0, checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
         Assert.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);

@@ -133,7 +133,7 @@ public class AttitudeTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        propagator.setAttitudeProvider(new BodyCenterPointing(earth));
+        propagator.setAttitudeProvider(new BodyCenterPointing(initialOrbit.getFrame(), earth));
         final Attitude initialAttitude = propagator.propagate(initialOrbit.getDate()).getAttitude();
 
         // set up a 5 points sample

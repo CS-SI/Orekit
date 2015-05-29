@@ -74,19 +74,19 @@ public class LofOffsetPointingTest {
         // Create lof aligned law
         //************************
         final LofOffset lofLaw = new LofOffset(circ.getFrame(), LOFType.VVLH);
-        final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.PLUS_K);
+        final LofOffsetPointing lofPointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, lofLaw, Vector3D.PLUS_K);
         final Rotation lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Compare to body center pointing law
         //*************************************
-        final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric);
+        final BodyCenterPointing centerLaw = new BodyCenterPointing(circ.getFrame(), earthSpheric);
         final Rotation centerRot = centerLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
         final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
         Assert.assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
         // Compare to nadir pointing law
         //*******************************
-        final NadirPointing nadirLaw = new NadirPointing(earthSpheric);
+        final NadirPointing nadirLaw = new NadirPointing(circ.getFrame(), earthSpheric);
         final Rotation nadirRot = nadirLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
         final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
         Assert.assertEquals(0., angleNadir, Utils.epsilonAngle);
@@ -100,7 +100,7 @@ public class LofOffsetPointingTest {
                                    FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.VVLH, RotationOrder.XYX, FastMath.PI, 0, 0);
-        final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
+        final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
         try {
             pointing.getTargetPV(circ, date, circ.getFrame());
             Assert.fail("an exception should have been thrown");
@@ -122,7 +122,7 @@ public class LofOffsetPointingTest {
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         final AttitudeProvider law =
-            new LofOffsetPointing(earthSpheric,
+            new LofOffsetPointing(orbit.getFrame(), earthSpheric,
                                   new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYX, 0.1, 0.2, 0.3),
                                   Vector3D.PLUS_K);
 

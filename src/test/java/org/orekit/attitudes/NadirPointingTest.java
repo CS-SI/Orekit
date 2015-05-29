@@ -71,10 +71,11 @@ public class NadirPointingTest {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
 
         // Create nadir pointing attitude provider
-        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
 
         // Create earth center pointing attitude provider
-        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(earthShape);
+        BodyCenterPointing earthCenterAttitudeLaw =
+                new BodyCenterPointing(FramesFactory.getEME2000(), earthShape);
 
         // Create satellite position as circular parameters
         CircularOrbit circ =
@@ -108,10 +109,11 @@ public class NadirPointingTest {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Create nadir pointing attitude provider
-        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
 
         // Create earth center pointing attitude provider
-        BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(earthShape);
+        BodyCenterPointing earthCenterAttitudeLaw =
+                new BodyCenterPointing(FramesFactory.getEME2000(), earthShape);
 
         //  Satellite on equatorial position
         // **********************************
@@ -186,7 +188,7 @@ public class NadirPointingTest {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Create earth center pointing attitude provider
-        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
 
         //  Satellite on any position
         CircularOrbit circ =
@@ -230,7 +232,7 @@ public class NadirPointingTest {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Create earth center pointing attitude provider
-        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
+        NadirPointing nadirAttitudeLaw = new NadirPointing(FramesFactory.getEME2000(), earthShape);
 
         //  Satellite on any position
         CircularOrbit circ =
@@ -269,7 +271,7 @@ public class NadirPointingTest {
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Create earth center pointing attitude provider
-        NadirPointing law = new NadirPointing(earthShape);
+        NadirPointing law = new NadirPointing(FramesFactory.getEME2000(), earthShape);
 
         //  Satellite on any position
         KeplerianOrbit orbit =

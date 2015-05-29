@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = ramme {0} har dybden {1}, den kan ikke ha en forgjenger 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = ikke understøttet baneramme, støttete typer: {0} og {1}
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = ikke pseudo-treghet ramme "{0}" er ikke passende for å definere baner
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = ikke pseudo-treghet ramme "{0}"
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = data rotmappen {0} finnes ikke

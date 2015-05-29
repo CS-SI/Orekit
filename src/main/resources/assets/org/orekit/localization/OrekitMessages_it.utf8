@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = il riferimento {0} ha profondità {1}: non può avere un
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = riferimento orbitale locale non supportato, riferimenti supportati : {0} e {1}
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = il riferimento non pseudo-inerziale "{0}" non è adatto per definire delle orbite
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = il riferimento non è pseudo-inerziale "{0}"
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = cartella di dati radice {0} inesistente

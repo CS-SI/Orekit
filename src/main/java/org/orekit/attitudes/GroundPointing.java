@@ -22,9 +22,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -44,7 +44,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public abstract class GroundPointing implements AttitudeProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140811L;
+    private static final long serialVersionUID = 20150529L;
 
     /** J axis. */
     private static final PVCoordinates PLUS_J =
@@ -54,15 +54,42 @@ public abstract class GroundPointing implements AttitudeProvider {
     private static final PVCoordinates PLUS_K =
             new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
 
+    /** Inertial frame. */
+    private final Frame inertialFrame;
+
     /** Body frame. */
     private final Frame bodyFrame;
 
     /** Default constructor.
      * Build a new instance with arbitrary default elements.
      * @param bodyFrame the frame that rotates with the body
+     * @deprecated as of 7.1 replaced with {@link #GroundPointing(Frame, Frame)}
      */
+    @Deprecated
     protected GroundPointing(final Frame bodyFrame) {
-        this.bodyFrame = bodyFrame;
+        Frame frame = bodyFrame;
+        while (!frame.isPseudoInertial()) {
+            frame = frame.getParent();
+        }
+        this.inertialFrame = frame;
+        this.bodyFrame     = bodyFrame;
+    }
+
+    /** Default constructor.
+     * Build a new instance with arbitrary default elements.
+     * @param inertialFrame frame in which orbital velocities are computed
+     * @param bodyFrame the frame that rotates with the body
+     * @exception OrekitException if the first frame specified is not a pseudo-inertial frame
+     * @since 7.1
+     */
+    protected GroundPointing(final Frame inertialFrame, final Frame bodyFrame)
+        throws OrekitException {
+        if (!inertialFrame.isPseudoInertial()) {
+            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
+                                      inertialFrame.getName());
+        }
+        this.inertialFrame = inertialFrame;
+        this.bodyFrame     = bodyFrame;
     }
 
     /** Get the body frame.
@@ -91,9 +118,9 @@ public abstract class GroundPointing implements AttitudeProvider {
         throws OrekitException {
 
         // satellite-target relative vector
-        final PVCoordinates pva  = pvProv.getPVCoordinates(date, frame);
+        final PVCoordinates pva  = pvProv.getPVCoordinates(date, inertialFrame);
         final TimeStampedPVCoordinates delta =
-                new TimeStampedPVCoordinates(date, pva, getTargetPV(pvProv, date, frame));
+                new TimeStampedPVCoordinates(date, pva, getTargetPV(pvProv, date, inertialFrame));
 
         // spacecraft and target should be away from each other to define a pointing direction
         if (delta.getPosition().getNorm() == 0.0) {
@@ -114,9 +141,14 @@ public abstract class GroundPointing implements AttitudeProvider {
         final PVCoordinates los    = delta.normalize();
         final PVCoordinates normal = PVCoordinates.crossProduct(delta, velocity).normalize();
 
-        final TimeStampedAngularCoordinates ac =
-                new TimeStampedAngularCoordinates(date, los, normal, PLUS_K, PLUS_J, 1.0e-9);
+        AngularCoordinates ac = new AngularCoordinates(los, normal, PLUS_K, PLUS_J, 1.0e-9);
 
+        if (frame != inertialFrame) {
+            // prepend transform from specified frame to inertial frame
+            ac = ac.addOffset(frame.getTransformTo(inertialFrame, date).getAngular());
+        }
+
+        // build the attitude
         return new Attitude(date, frame, ac);
 
     }

@@ -55,7 +55,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class YawCompensation extends GroundPointing implements AttitudeProviderModifier {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140811L;
+    private static final long serialVersionUID = 20150529L;
 
     /** J axis. */
     private static final PVCoordinates PLUS_J =
@@ -70,9 +70,23 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
 
     /** Creates a new instance.
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
+     * @deprecated as of 7.1, replaced with  {@likn #YawCompensation(Frame, GroundPointing)}
      */
+    @Deprecated
     public YawCompensation(final GroundPointing groundPointingLaw) {
         super(groundPointingLaw.getBodyFrame());
+        this.groundPointingLaw = groundPointingLaw;
+    }
+
+    /** Creates a new instance.
+     * @param inertialFrame frame in which orbital velocities are computed
+     * @param groundPointingLaw ground pointing attitude provider without yaw compensation
+     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
+     * @since 7.1
+     */
+    public YawCompensation(final Frame inertialFrame, final GroundPointing groundPointingLaw)
+        throws OrekitException {
+        super(inertialFrame, groundPointingLaw.getBodyFrame());
         this.groundPointingLaw = groundPointingLaw;
     }
 

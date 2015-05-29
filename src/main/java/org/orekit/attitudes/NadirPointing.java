@@ -45,17 +45,32 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class NadirPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 9077899256315179822L;
+    private static final long serialVersionUID = 20150529L;
 
     /** Body shape.  */
     private final BodyShape shape;
 
     /** Creates new instance.
      * @param shape Body shape
+     * @deprecated as of 7.1, replaced with {@link #NadirPointing(Frame, BodyShape)}
      */
+    @Deprecated
     public NadirPointing(final BodyShape shape) {
         // Call constructor of superclass
         super(shape.getBodyFrame());
+        this.shape = shape;
+    }
+
+    /** Creates new instance.
+     * @param inertialFrame frame in which orbital velocities are computed
+     * @param shape Body shape
+     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
+     * @since 7.1
+     */
+    public NadirPointing(final Frame inertialFrame, final BodyShape shape)
+        throws OrekitException {
+        // Call constructor of superclass
+        super(inertialFrame, shape.getBodyFrame());
         this.shape = shape;
     }
 

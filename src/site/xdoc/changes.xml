@@ -22,6 +22,10 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Specify inertial frame to compute orbital velocity for ground pointing laws.
+        Fixes issue #115.
+      </action>
+      <action dev="luc" type="fix" >
         Activated two commented-out tests for DTM2000, after ensuring we
         get the same results as the original fortran implementation.
         Fixes issue #204.

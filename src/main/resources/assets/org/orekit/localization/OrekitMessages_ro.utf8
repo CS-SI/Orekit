@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = sistemul de coordonate {0} are nivelul {1}, nu poate ave
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistem orbital de coordonate nesuportat, tipuri suportate: {0} și {1}
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = sistemul de coordonate non pseudo-inerțial "{0}" nu este potrivit pentru definirea orbitelor
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = sistemul de coordonate non pseudo-inerțial "{0}"
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = directorul rădăcină al datelor {0} nu există

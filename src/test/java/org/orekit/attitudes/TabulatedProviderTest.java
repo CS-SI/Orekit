@@ -71,7 +71,7 @@ public class TabulatedProviderTest {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
-        AttitudeProvider   referenceProvider = new NadirPointing(earthShape);
+        AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
         List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
         final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
@@ -86,7 +86,7 @@ public class TabulatedProviderTest {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
-        AttitudeProvider   referenceProvider = new NadirPointing(earthShape);
+        AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
         List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
         final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
@@ -101,7 +101,7 @@ public class TabulatedProviderTest {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
-        AttitudeProvider   referenceProvider = new NadirPointing(earthShape);
+        AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
         List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
         final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
@@ -116,7 +116,7 @@ public class TabulatedProviderTest {
         double             samplingRate      = 60.0;
         double             checkingRate      = 10.0;
         int                n                 = 8;
-        AttitudeProvider   referenceProvider = new NadirPointing(earthShape);
+        AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
         List<TimeStampedAngularCoordinates> sample = createSample(samplingRate, referenceProvider);
         final double       margin            = samplingRate * n / 2;
         final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);

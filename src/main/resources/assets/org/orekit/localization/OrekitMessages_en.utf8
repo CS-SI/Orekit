@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = frame {0} has depth {1}, it cannot have an ancestor {2} 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = unsupported local orbital frame, supported types: {0} and {1}
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = non pseudo-inertial frame "{0}" is not suitable for defining orbits
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = non pseudo-inertial frame "{0}"
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = data root directory {0} does not exist

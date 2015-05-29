@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = Koordinatennetz {0} hat eine Tiefe von {1}, es kann nich
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = nicht unterstütztes lokales Koordinatennetz, unterstützte Typen: {0} und {1}
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = nicht pseudo-inertiales Koordinatennetz "{0}" ist nicht geeignet um eine Umlaufbahn zu definieren
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = nicht pseudo-inertiales Koordinatennetz "{0}"
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = Datenstammverzeichnis {0} existiert nicht

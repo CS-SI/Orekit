@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = o sistema de referencia {0} está a unha profundidade do
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local non soportado, sistemas de referencia soportados : {0} e {1}
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = o sistema de referencia non pseudo-inercial "{0}" non está adaptado á definición de órbitas
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = sistema de referencia non pseudo-inercial "{0}"
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = repertorio de datos raíz {0} inexistente

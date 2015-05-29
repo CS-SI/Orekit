@@ -41,14 +41,14 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class BodyCenterPointing extends GroundPointing {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20150217L;
+    private static final long serialVersionUID = 20150529L;
 
     /** Body ellipsoid.  */
     private final Ellipsoid ellipsoid;
 
     /** Creates new instance.
      * @param bodyFrame Body frame
-     * @deprecated as of 7.1, replaced with {@link #BodyCenterPointing(Ellipsoid)}
+     * @deprecated as of 7.1, replaced with {@link #BodyCenterPointing(Frame, Ellipsoid)}
      */
     @Deprecated
     public BodyCenterPointing(final Frame bodyFrame) {
@@ -57,10 +57,14 @@ public class BodyCenterPointing extends GroundPointing {
     }
 
     /** Creates new instance.
+     * @param inertialFrame frame in which orbital velocities are computed
      * @param shape Body shape
+     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
+     * @since 7.1
      */
-    public BodyCenterPointing(final Ellipsoid shape) {
-        super(shape.getFrame());
+    public BodyCenterPointing(final Frame inertialFrame, final Ellipsoid shape)
+        throws OrekitException {
+        super(inertialFrame, shape.getFrame());
         this.ellipsoid = shape;
     }
 

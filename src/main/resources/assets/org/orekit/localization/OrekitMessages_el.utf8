@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = το πλαίσιο {0} έχει βάθος {1}, δεν 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = μη υποστηριζόμενο τοπικό τροχιακό πλαίσιο,υποστηριζόμενοι τύποι {0} και {1}  
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = το μη ψευδο-αδρανειακό σύστημα "{0}" δεν είναι κατάλληλο για τον καθορισμό των τροχιών
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = το μη ψευδο-αδρανειακό σύστημα "{0}"
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = Ο ριζικός κατάλογος δεδομένων {0} δεν υπάρχει

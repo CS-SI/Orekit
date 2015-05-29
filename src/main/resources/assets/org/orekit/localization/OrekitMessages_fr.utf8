@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = le repère {0} est à une profondeur de {1}, il ne peut 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local non supporté, repères supportés : {0} et {1}
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = le repère non pseudo-inertiel "{0}" n''est pas adapté à la définition d''orbites
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = le repère "{0}" n''est pas psuedo-inertiel
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = répertoire de données racine {0} inexistant
