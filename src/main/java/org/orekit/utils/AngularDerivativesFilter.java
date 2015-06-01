@@ -57,7 +57,7 @@ public enum AngularDerivativesFilter {
 
     /** Get the filter corresponding to a maximum derivation order.
      * @param order maximum derivation order
-     * @return the month corresponding to the string
+     * @return the filter corresponding to derivation order
      * @exception IllegalArgumentException if the order is out of range
      */
     public static AngularDerivativesFilter getFilter(final int order)
