@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" >
+        Improved frames transforms efficiency for various Earth frames.
+      </action>
       <action dev="luc" type="fix" >
         Specify inertial frame to compute orbital velocity for ground pointing laws.
         Fixes issue #115.

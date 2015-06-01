@@ -251,7 +251,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
         Vector3D dif = hfOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
-        Assert.assertEquals(0, dif.getNorm(), 3e-7);
+        Assert.assertEquals(0, dif.getNorm(), 3.1e-7);
         Assert.assertTrue(propagator.getCalls() < 3500);
 
     }

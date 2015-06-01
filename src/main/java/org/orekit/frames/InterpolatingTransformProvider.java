@@ -38,6 +38,7 @@ import org.orekit.utils.TimeStampedGenerator;
  * by the interpolation process.
  * </p>
  * @see GenericTimeStampedCache
+ * @see ShiftingTransformProvider
  * @author Luc Maisonobe
  */
 public class InterpolatingTransformProvider implements TransformProvider {
