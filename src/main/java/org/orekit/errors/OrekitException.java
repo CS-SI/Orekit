@@ -262,7 +262,7 @@ public class OrekitException extends Exception {
         final Localizable specifier = OrekitMessages.INTERNAL_ERROR;
 
         /** Parts to insert in the format (no translation). */
-        final String parts     = "orekit@c-s.fr";
+        final String parts     = "orekit-developers@orekit.org";
 
         return new RuntimeException() {
 
