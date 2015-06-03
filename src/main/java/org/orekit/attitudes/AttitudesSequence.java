@@ -18,7 +18,7 @@ package org.orekit.attitudes;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.orekit.errors.OrekitException;
@@ -51,7 +51,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class AttitudesSequence implements AttitudeProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5140034224175180354L;
+    private static final long serialVersionUID = 20150603L;
 
     /** Active provider. */
     private AttitudeProvider active;
@@ -63,7 +63,7 @@ public class AttitudesSequence implements AttitudeProvider {
      */
     public AttitudesSequence() {
         active = null;
-        switchingMap = new HashMap<AttitudeProvider, Collection<Switch<?>>>();
+        switchingMap = new IdentityHashMap<AttitudeProvider, Collection<Switch<?>>>();
     }
 
     /** Reset the active provider.
@@ -98,16 +98,9 @@ public class AttitudesSequence implements AttitudeProvider {
 
     /** Add a switching condition between two attitude providers.
      * <p>
-     * An attitude provider may have several different switch events associated to
-     * it. Depending on which event is triggered, the appropriate provider is
-     * switched to.
-     * </p>
-     * <p>
-     * The switch events specified here must <em>not</em> be registered to the
-     * propagator directly. The proper way to register these events is to
-     * call {@link #registerSwitchEvents(Propagator)} once after all switching
-     * conditions have been set up. The reason for this is that the events will
-     * be wrapped before being registered.
+     * This method simply calls {@link #addSwitchingCondition(AttitudeProvider, EventDetector,
+     * boolean, boolean, AttitudeProvider, SwitchHandler) addSwitchingCondition} with the
+     * switch handler set to null.
      * </p>
      * @param before attitude provider before the switch event occurrence
      * @param switchEvent event triggering the attitude providers switch (may be null
@@ -120,10 +113,55 @@ public class AttitudesSequence implements AttitudeProvider {
      * @param <T> class type for the generic version
      */
     public <T extends EventDetector> void addSwitchingCondition(final AttitudeProvider before,
-                                                                   final T switchEvent,
-                                                                   final boolean switchOnIncrease,
-                                                                   final boolean switchOnDecrease,
-                                                                   final AttitudeProvider after) {
+                                                                final T switchEvent,
+                                                                final boolean switchOnIncrease,
+                                                                final boolean switchOnDecrease,
+                                                                final AttitudeProvider after) {
+        addSwitchingCondition(before, switchEvent, switchOnIncrease, switchOnDecrease, after, null);
+    }
+
+    /** Add a switching condition between two attitude providers.
+     * <p>
+     * An attitude provider may have several different switch events associated to
+     * it. Depending on which event is triggered, the appropriate provider is
+     * switched to.
+     * </p>
+     * <p>
+     * The switch events specified here must <em>not</em> be registered to the
+     * propagator directly. The proper way to register these events is to
+     * call {@link #registerSwitchEvents(Propagator)} once after all switching
+     * conditions have been set up. The reason for this is that the events will
+     * be wrapped before being registered.
+     * </p>
+     * <p>
+     * If the underlying detector has an event handler associated to it, this handler
+     * will be triggered (i.e. its {@link EventHandler#eventOccurred(SpacecraftState,
+     * EventDetector, boolean) eventOccurred} method will be called), <em>only</em>
+     * if the event really triggers an attitude switch. As an example, suppose an
+     * eclipse detector is used to switch from day to night attitude mode when entering
+     * eclipse, with {@code switchOnIncrease} set to {@code false} and {@code switchOnDecrease}
+     * set to {@code true}. Then the handler would be triggers at eclipse entry, but <em>not</em> at
+     * eclipse exit as no attitude switch would be triggered, despite the raw eclipse event
+     * does exist.
+     * </p>
+     * @param before attitude provider before the switch event occurrence
+     * @param switchEvent event triggering the attitude providers switch (may be null
+     * for a provider without any ending condition, in this case the after provider
+     * is not referenced and may be null too)
+     * @param switchOnIncrease if true, switch is triggered on increasing event
+     * @param switchOnDecrease if true, switch is triggered on decreasing event
+     * @param after attitude provider to activate after the switch event occurrence
+     * (used only if switchEvent is non null)
+     * @param handler handler to call for notifying when switch occurs (may be null)
+     * @param <T> class type for the generic version
+     * @since 7.1
+     */
+    public <T extends EventDetector> void addSwitchingCondition(final AttitudeProvider before,
+                                                                final T switchEvent,
+                                                                final boolean switchOnIncrease,
+                                                                final boolean switchOnDecrease,
+                                                                final AttitudeProvider after,
+                                                                final SwitchHandler handler) {
 
         // add the before provider if not already known
         if (!switchingMap.containsKey(before)) {
@@ -141,7 +179,9 @@ public class AttitudesSequence implements AttitudeProvider {
             }
 
             // add the switching condition
-            switchingMap.get(before).add(new Switch<T>(switchEvent, switchOnIncrease, switchOnDecrease, after));
+            switchingMap.get(before).add(new Switch<T>(switchEvent,
+                                                       switchOnIncrease, switchOnDecrease,
+                                                       before, after, handler));
 
         }
 
@@ -172,22 +212,31 @@ public class AttitudesSequence implements AttitudeProvider {
         /** Event direction triggering the switch. */
         private final boolean switchOnDecrease;
 
-        /** Next attitude provider. */
-        private final AttitudeProvider next;
+        /** Attitude provider before switch. */
+        private final AttitudeProvider before;
+
+        /** Attitude provider after switch. */
+        private final AttitudeProvider after;
+
+        /** Handler to call for notifying when switch occurs (may be null). */
+        private final SwitchHandler switchHandler;
 
         /** Simple constructor.
          * @param event event
          * @param switchOnIncrease if true, switch is triggered on increasing event
          * @param switchOnDecrease if true, switch is triggered on decreasing event
          * otherwise switch is triggered on decreasing event
-         * @param next next attitude provider
+         * @param before attitude provider before switch
+         * @param after attitude provider after switch
+         * @param switchHandler handler to call for notifying when switch occurs (may be null)
          */
         public Switch(final T event,
-                      final boolean switchOnIncrease,
-                      final boolean switchOnDecrease,
-                      final AttitudeProvider next) {
+                      final boolean switchOnIncrease, final boolean switchOnDecrease,
+                      final AttitudeProvider before, final AttitudeProvider after,
+                      final SwitchHandler switchHandler) {
             this(event.getMaxCheckInterval(), event.getThreshold(), event.getMaxIterationCount(),
-                 new LocalHandler<T>(), event, switchOnIncrease, switchOnDecrease, next);
+                 new LocalHandler<T>(), event, switchOnIncrease, switchOnDecrease, before, after,
+                 switchHandler);
         }
 
         /** Private constructor with full parameters.
@@ -204,18 +253,23 @@ public class AttitudesSequence implements AttitudeProvider {
          * @param switchOnIncrease if true, switch is triggered on increasing event
          * @param switchOnDecrease if true, switch is triggered on decreasing event
          * otherwise switch is triggered on decreasing event
-         * @param next next attitude provider
+         * @param before attitude provider before switch
+         * @param after attitude provider after switch
+         * @param switchHandler handler to call for notifying when switch occurs (may be null)
          * @since 6.1
          */
         private Switch(final double maxCheck, final double threshold,
                        final int maxIter, final EventHandler<Switch<T>> handler, final T event,
                        final boolean switchOnIncrease, final boolean switchOnDecrease,
-                       final AttitudeProvider next) {
+                       final AttitudeProvider before, final AttitudeProvider after,
+                       final SwitchHandler switchHandler) {
             super(maxCheck, threshold, maxIter, handler);
             this.event            = event;
             this.switchOnIncrease = switchOnIncrease;
             this.switchOnDecrease = switchOnDecrease;
-            this.next             = next;
+            this.before           = before;
+            this.after            = after;
+            this.switchHandler    = switchHandler;
         }
 
         /** {@inheritDoc} */
@@ -223,13 +277,7 @@ public class AttitudesSequence implements AttitudeProvider {
         protected Switch<T> create(final double newMaxCheck, final double newThreshold,
                                    final int newMaxIter, final EventHandler<Switch<T>> newHandler) {
             return new Switch<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                 event, switchOnIncrease, switchOnDecrease, next);
-        }
-
-        /** Perform the switch.
-         */
-        public void performSwitch() {
-            active = next;
+                                 event, switchOnIncrease, switchOnDecrease, before, after, switchHandler);
         }
 
         /** {@inheritDoc} */
@@ -248,18 +296,26 @@ public class AttitudesSequence implements AttitudeProvider {
     /** Local handler.
      * @param <T> class type for the generic version
      */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<Switch<T>> {
+    private class LocalHandler<T extends EventDetector> implements EventHandler<Switch<T>> {
 
         /** {@inheritDoc} */
         public EventHandler.Action eventOccurred(final SpacecraftState s, final Switch<T> sw, final boolean increasing)
             throws OrekitException {
 
-            if ((increasing && sw.switchOnIncrease) || (!increasing && sw.switchOnDecrease)) {
+            if (active == sw.before &&
+                ((increasing && sw.switchOnIncrease) || (!increasing && sw.switchOnDecrease))) {
+
                 // switch to next attitude provider
-                sw.performSwitch();
+                if (sw.switchHandler != null) {
+                    sw.switchHandler.switchOccurred(active, sw.after, s);
+                }
+                active = sw.after;
+
+                // trigger the underlying event *only* when it really triggers a switch
+                return sw.event.eventOccurred(s, increasing);
             }
 
-            return sw.event.eventOccurred(s, increasing);
+            return Action.CONTINUE;
 
         }
 
@@ -269,6 +325,26 @@ public class AttitudesSequence implements AttitudeProvider {
             throws OrekitException {
             return sw.event.resetState(oldState);
         }
+
+    }
+
+    /** Interface for attitude switch notifications.
+     * <p>
+     * This interface is intended to be implemented by users who want to be
+     * notified when an attitude switch occurs.
+     * </p>
+     * @since 7.1
+     */
+    public interface SwitchHandler {
+
+        /** Method called when attitude is switched from one law to another law.
+         * @param before attitude law used up to the switch
+         * @param after attitude law used after the switch
+         * @param state state at siwtch time (with attitude computed using the {@code before} law)
+         * @exception OrekitException if some unexpected condition occurs
+         */
+        void switchOccurred(AttitudeProvider before, AttitudeProvider after, SpacecraftState state)
+            throws OrekitException;
 
     }
 

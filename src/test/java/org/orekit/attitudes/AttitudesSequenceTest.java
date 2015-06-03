@@ -69,17 +69,21 @@ public class AttitudesSequenceTest {
         final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
-        final EclipseDetector ed = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        final EventDetector dayNightEvent = logger.monitorDetector(ed.withHandler(new ContinueOnEvent<EclipseDetector>() {
-            public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
-                setInEclipse(s.getDate(), !increasing);
-                return EventHandler.Action.CONTINUE;
-            }
-        }));
-        final EventDetector nightDayEvent = logger.monitorDetector(ed.withHandler(new ContinueOnEvent<EclipseDetector>()));
-        attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);
-        attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
-        if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
+        final EclipseDetector ed =
+                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                withHandler(new ContinueOnEvent<EclipseDetector>() {
+                    public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
+                        setInEclipse(s.getDate(), !increasing);
+                        return EventHandler.Action.CONTINUE;
+                    }
+                });
+        final EventDetector monitored = logger.monitorDetector(ed);
+        final Handler dayToNightHandler = new Handler();
+        attitudesSequence.addSwitchingCondition(dayObservationLaw, monitored,
+                                                false, true, nightRestingLaw, dayToNightHandler);
+        attitudesSequence.addSwitchingCondition(nightRestingLaw, monitored,
+                                                true, false, dayObservationLaw);
+        if (ed.g(new SpacecraftState(initialOrbit)) >= 0) {
             // initial position is in daytime
             setInEclipse(initialDate, false);
             attitudesSequence.resetActiveProvider(dayObservationLaw);
@@ -111,7 +115,7 @@ public class AttitudesSequenceTest {
 
                     // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
                     // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
-                    final double eclipseAngle = dayNightEvent.g(currentState);
+                    final double eclipseAngle = ed.g(currentState);
 
                     if (currentState.getDate().compareTo(lastChange) > 0) {
                         if (inEclipse) {
@@ -131,8 +135,18 @@ public class AttitudesSequenceTest {
         // Propagate from the initial date for the fixed duration
         propagator.propagate(initialDate.shiftedBy(12600.));
 
-        Assert.assertEquals(8, logger.getLoggedEvents().size());
+        Assert.assertEquals(4, logger.getLoggedEvents().size());
+        Assert.assertEquals(2, dayToNightHandler.count);
 
+    }
+
+    private static class Handler implements AttitudesSequence.SwitchHandler {
+        private int count = 0;
+        @Override
+        public void switchOccurred(AttitudeProvider before,
+                                   AttitudeProvider after, SpacecraftState state) {
+            ++count;
+        }
     }
 
     private void setInEclipse(AbsoluteDate lastChange, boolean inEclipse) {
