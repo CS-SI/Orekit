@@ -139,7 +139,8 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     public Propagator convert(final Propagator source,
                               final double timeSpan,
                               final int nbPoints,
-                              final Collection<String> freeParameters) throws OrekitException {
+                              final Collection<String> freeParameters)
+        throws OrekitException, IllegalArgumentException {
 
         checkParameters(freeParameters);
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
@@ -158,7 +159,8 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     public Propagator convert(final Propagator source,
                               final double timeSpan,
                               final int nbPoints,
-                              final String ... freeParameters) throws OrekitException {
+                              final String ... freeParameters)
+        throws OrekitException, IllegalArgumentException {
 
         checkParameters(freeParameters);
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
@@ -175,7 +177,8 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      */
     public Propagator convert(final List<SpacecraftState> states,
                               final boolean positionOnly,
-                              final Collection<String> freeParameters) throws OrekitException {
+                              final Collection<String> freeParameters)
+        throws OrekitException, IllegalArgumentException {
 
         checkParameters(freeParameters);
 
@@ -197,7 +200,8 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      */
     public Propagator convert(final List<SpacecraftState> states,
                               final boolean positionOnly,
-                              final String ... freeParameters) throws OrekitException {
+                              final String ... freeParameters)
+        throws OrekitException, IllegalArgumentException {
 
         checkParameters(freeParameters);
 
