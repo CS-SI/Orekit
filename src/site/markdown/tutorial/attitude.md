@@ -112,10 +112,10 @@ So, don't forget to set the current active law according to the current state:
 
     if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
         // initial position is in daytime
-        attitudesSequence.resetActiveLaw(dayObservationLaw);
+        attitudesSequence.resetActiveProvider(dayObservationLaw);
     } else {
         // initial position is in nighttime
-        attitudesSequence.resetActiveLaw(nightRestingLaw);
+        attitudesSequence.resetActiveProvider(nightRestingLaw);
     }
 
 Now, let's choose some propagator to compute the spacecraft motion. We will use
