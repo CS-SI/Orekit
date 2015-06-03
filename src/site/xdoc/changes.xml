@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added factory methods to create AbsoluteDate instances from MJD or JD.
+        Fixes issue #193.
+      </action>
       <action dev="luc" type="fix" due-to="Joris Olympio">
         Fixed wrong attitude switches when an event occurs but the active attitude mode
         is not the one it relates to.

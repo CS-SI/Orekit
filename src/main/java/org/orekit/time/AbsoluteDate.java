@@ -604,6 +604,32 @@ public class AbsoluteDate
         return "0x" + Integer.toHexString(data).toUpperCase();
     }
 
+    /** Build an instance corresponding to a Julian Day date.
+     * @param jd Julian day
+     * @param secondsSinceNoon seconds in the Julian day
+     * (BEWARE, Julian days start at noon, so 0.0 is noon)
+     * @param timeScale time scale in which the seconds in day are defined
+     * @return a new instant
+     */
+    public static AbsoluteDate createJDDate(final int jd, final double secondsSinceNoon,
+                                             final TimeScale timeScale) {
+        return new AbsoluteDate(new DateComponents(DateComponents.JULIAN_EPOCH, jd),
+                                TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
+    }
+
+    /** Build an instance corresponding to a Modified Julian Day date.
+     * @param mjd modified Julian day
+     * @param secondsInDay seconds in the day
+     * @param timeScale time scale in which the seconds in day are defined
+     * @return a new instant
+     */
+    public static AbsoluteDate createMJDDate(final int mjd, final double secondsInDay,
+                                             final TimeScale timeScale) {
+        return new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                new TimeComponents(secondsInDay),
+                                timeScale);
+    }
+
     /** Build an instance corresponding to a GPS date.
      * <p>GPS dates are provided as a week number starting at
      * {@link #GPS_EPOCH GPS epoch} and as a number of milliseconds
