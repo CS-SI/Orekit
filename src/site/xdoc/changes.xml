@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Ensure Keplerian propagator uses the specified mu and not only the one from the initial orbit.
+        Fixes issue #184.
+      </action>
       <action dev="luc" type="update" >
         Improved frames transforms efficiency for various Earth frames.
       </action>
