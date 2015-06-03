@@ -85,7 +85,7 @@ public interface EventDetector extends Serializable {
 
     /** Handle the event.
      * @param s SpaceCraft state to be used in the evaluation
-     * @param increasing with the event occured in an "increasing" or "decreasing" slope direction
+     * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
      * @return the Action that the calling detector should pass back to the evaluation system
      * @exception OrekitException if some specific error occurs
      * @since 7.0
