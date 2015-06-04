@@ -41,7 +41,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -76,7 +76,6 @@ public class EarthObservation {
                                                           Constants.EIGEN5C_EARTH_MU);
 
             // Attitudes sequence definition
-            final AttitudesSequence attitudesSequence = new AttitudesSequence();
             final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                                      RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
             final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
@@ -84,32 +83,25 @@ public class EarthObservation {
             final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
             final EventDetector dayNightEvent =
                 new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
-                withHandler(new EventHandler<EclipseDetector>() {
-                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector detector, final boolean increasing) {
-                        if (!increasing) {
-                            output.add(s.getDate() + " : event occurred, entering eclipse => switching to night law");
-                        }
-                        return Action.CONTINUE;
-                    }
-                    public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
-                        return oldState;
-                    }
-                });
+                withHandler(new ContinueOnEvent<EclipseDetector>());
             final EventDetector nightDayEvent =
                 new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
-                withHandler(new EventHandler<EclipseDetector>() {
-                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector detector, final boolean increasing) {
-                        if (increasing) {
-                            output.add(s.getDate() + " : event occurred, exiting eclipse => switching to day law");
-                        }
-                        return Action.CONTINUE;
-                    }
-                    public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
-                        return oldState;
-                    }
-                });
-            attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);
-            attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
+                withHandler(new ContinueOnEvent<EclipseDetector>());
+
+            final AttitudesSequence attitudesSequence = new AttitudesSequence();
+            final AttitudesSequence.SwitchHandler switchHandler =
+                            new AttitudesSequence.SwitchHandler() {
+                                public void switchOccurred(AttitudeProvider preceding, AttitudeProvider following,
+                                                           SpacecraftState s) {
+                                    if (preceding == dayObservationLaw) {
+                                        output.add(s.getDate() + ": switching to night law");
+                                    } else {
+                                        output.add(s.getDate() + ": switching to day law");
+                                    }
+                                }
+                            };
+            attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw, switchHandler);
+            attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw, switchHandler);
             if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
                 // initial position is in daytime
                 attitudesSequence.resetActiveProvider(dayObservationLaw);

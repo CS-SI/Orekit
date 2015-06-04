@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Fixed attitudes sequence behavior in backward propagation.
+        Fixes issue #206.
+      </action>
       <action dev="luc" type="add" >
         Added factory methods to create AbsoluteDate instances from MJD or JD.
         Fixes issue #193.

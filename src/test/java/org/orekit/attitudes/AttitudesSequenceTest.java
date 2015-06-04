@@ -17,6 +17,7 @@
 package org.orekit.attitudes;
 
 
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -34,6 +35,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventsLogger;
@@ -78,11 +80,12 @@ public class AttitudesSequenceTest {
                     }
                 });
         final EventDetector monitored = logger.monitorDetector(ed);
-        final Handler dayToNightHandler = new Handler();
+        final Handler dayToNightHandler = new Handler(dayObservationLaw, nightRestingLaw);
+        final Handler nightToDayHandler = new Handler(nightRestingLaw, dayObservationLaw);
         attitudesSequence.addSwitchingCondition(dayObservationLaw, monitored,
                                                 false, true, nightRestingLaw, dayToNightHandler);
         attitudesSequence.addSwitchingCondition(nightRestingLaw, monitored,
-                                                true, false, dayObservationLaw);
+                                                true, false, dayObservationLaw, nightToDayHandler);
         if (ed.g(new SpacecraftState(initialOrbit)) >= 0) {
             // initial position is in daytime
             setInEclipse(initialDate, false);
@@ -96,7 +99,7 @@ public class AttitudesSequenceTest {
         // Propagator : consider the analytical Eckstein-Hechler model
         final Propagator propagator = new EcksteinHechlerPropagator(initialOrbit, attitudesSequence,
                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                                                    Constants.EIGEN5C_EARTH_MU, Constants.EIGEN5C_EARTH_C20,
+                                                                    Constants.EIGEN5C_EARTH_MU,  Constants.EIGEN5C_EARTH_C20,
                                                                     Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
                                                                     Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
 
@@ -135,18 +138,74 @@ public class AttitudesSequenceTest {
         // Propagate from the initial date for the fixed duration
         propagator.propagate(initialDate.shiftedBy(12600.));
 
-        Assert.assertEquals(4, logger.getLoggedEvents().size());
+        // as we have 2 switch events (even if they share the same underlying event detector),
+        // and these events are triggered at both eclipse entry and exit, we get 8
+        // raw events on 2 orbits
+        Assert.assertEquals(8, logger.getLoggedEvents().size());
+
+        // we have 4 attitudes switch on 2 orbits, 2 of each type
         Assert.assertEquals(2, dayToNightHandler.count);
+        Assert.assertEquals(2, nightToDayHandler.count);
+
+    }
+
+    @Test
+    public void testBackwardPropagation() throws OrekitException {
+
+        //  Initial state definition : date, orbit
+        final AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
+        final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+        final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+        final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
+                                                      FramesFactory.getEME2000(), initialDate,
+                                                      Constants.EIGEN5C_EARTH_MU);
+
+        final AttitudesSequence attitudesSequence = new AttitudesSequence();
+        final AttitudeProvider past    = new InertialProvider(Rotation.IDENTITY);
+        final AttitudeProvider current = new InertialProvider(Rotation.IDENTITY);
+        final AttitudeProvider future  = new InertialProvider(Rotation.IDENTITY);
+        final Handler handler = new Handler(current, past);
+        attitudesSequence.addSwitchingCondition(past, new DateDetector(initialDate.shiftedBy(-500.0)),
+                                                true, false, current, handler);
+        attitudesSequence.addSwitchingCondition(current, new DateDetector(initialDate.shiftedBy(+500.0)),
+                                                true, false, future);
+        attitudesSequence.resetActiveProvider(current);
+
+        final Propagator propagator = new EcksteinHechlerPropagator(initialOrbit, attitudesSequence,
+                                                                    Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                                                    Constants.EIGEN5C_EARTH_MU,  Constants.EIGEN5C_EARTH_C20,
+                                                                    Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
+                                                                    Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
+
+        // Register the switching events to the propagator
+        attitudesSequence.registerSwitchEvents(propagator);
+
+        SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(-10000.0));
+        Assert.assertEquals(-500.0, finalState.getDate().durationFrom(initialDate), 10e-3);
+        Assert.assertEquals(1, handler.count);
 
     }
 
     private static class Handler implements AttitudesSequence.SwitchHandler {
-        private int count = 0;
+
+        private AttitudeProvider expectedPrevious;
+        private AttitudeProvider expectedNext;
+        private int count;
+
+        public Handler(final AttitudeProvider expectedPrevious, final AttitudeProvider expectedNext) {
+            this.expectedPrevious = expectedPrevious;
+            this.expectedNext     = expectedNext;
+            this.count            = 0;
+        }
+
         @Override
-        public void switchOccurred(AttitudeProvider before,
-                                   AttitudeProvider after, SpacecraftState state) {
+        public void switchOccurred(AttitudeProvider previous, AttitudeProvider next,
+                                   SpacecraftState state) {
+            Assert.assertTrue(previous == expectedPrevious);
+            Assert.assertTrue(next     == expectedNext);
             ++count;
         }
+
     }
 
     private void setInEclipse(AbsoluteDate lastChange, boolean inEclipse) {
