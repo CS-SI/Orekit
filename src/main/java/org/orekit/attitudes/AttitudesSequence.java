@@ -17,9 +17,7 @@
 package org.orekit.attitudes;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -56,28 +54,21 @@ public class AttitudesSequence implements AttitudeProvider {
     /** Active provider. */
     private AttitudeProvider active;
 
-    /** Switching events map. */
-    private final Map<AttitudeProvider, Collection<Switch<?>>> switchingMap;
+    /** Switching events list. */
+    private final List<Switch> switches;
 
     /** Constructor for an initially empty sequence.
      */
     public AttitudesSequence() {
-        active       = null;
-        switchingMap = new IdentityHashMap<AttitudeProvider, Collection<Switch<?>>>();
+        active   = null;
+        switches = new ArrayList<Switch>();
     }
 
     /** Reset the active provider.
      * @param provider provider to activate
      */
     public void resetActiveProvider(final AttitudeProvider provider) {
-
-        // add the provider if not already known
-        if (!switchingMap.containsKey(provider)) {
-            switchingMap.put(provider, new ArrayList<Switch<?>>());
-        }
-
         active = provider;
-
     }
 
     /** Register all wrapped switch events to the propagator.
@@ -90,10 +81,8 @@ public class AttitudesSequence implements AttitudeProvider {
      * @param propagator propagator that will handle the events
      */
     public void registerSwitchEvents(final Propagator propagator) {
-        for (final Collection<Switch<?>> collection : switchingMap.values()) {
-            for (final Switch<?> s : collection) {
-                propagator.addEventDetector(s);
-            }
+        for (final Switch s : switches) {
+            propagator.addEventDetector(s);
         }
     }
 
@@ -166,23 +155,13 @@ public class AttitudesSequence implements AttitudeProvider {
                                                                 final AttitudeProvider future,
                                                                 final SwitchHandler handler) {
 
-        // add the providers if not already known
-        if (!switchingMap.containsKey(past)) {
-            switchingMap.put(past, new ArrayList<Switch<?>>());
-        }
-        if (!switchingMap.containsKey(future)) {
-            switchingMap.put(future, new ArrayList<Switch<?>>());
-        }
-
         // if it is the first switching condition, assume first active law is the past
         if (active == null) {
             active = past;
         }
 
         // add the switching condition
-        switchingMap.get(past).add(new Switch<T>(switchEvent,
-                                                 switchOnIncrease, switchOnDecrease,
-                                                 past, future, handler));
+        switches.add(new Switch(switchEvent, switchOnIncrease, switchOnDecrease, past, future, handler));
 
     }
 
@@ -195,15 +174,14 @@ public class AttitudesSequence implements AttitudeProvider {
     }
 
     /** Switch specification.
-     * @param <T> class type for the generic version
      */
-    private class Switch<T extends EventDetector> extends AbstractDetector<Switch<T>> {
+    private class Switch extends AbstractDetector<Switch> {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20141228L;
 
         /** Event. */
-        private final T event;
+        private final EventDetector event;
 
         /** Event direction triggering the switch. */
         private final boolean switchOnIncrease;
@@ -235,12 +213,12 @@ public class AttitudesSequence implements AttitudeProvider {
          * @param future attitude provider applicable for times in the switch event occurrence future
          * @param switchHandler handler to call for notifying when switch occurs (may be null)
          */
-        public Switch(final T event,
+        public Switch(final EventDetector event,
                       final boolean switchOnIncrease, final boolean switchOnDecrease,
                       final AttitudeProvider past, final AttitudeProvider future,
                       final SwitchHandler switchHandler) {
             this(event.getMaxCheckInterval(), event.getThreshold(), event.getMaxIterationCount(),
-                 new LocalHandler<T>(), event, switchOnIncrease, switchOnDecrease, past, future,
+                 new LocalHandler(), event, switchOnIncrease, switchOnDecrease, past, future,
                  switchHandler);
         }
 
@@ -264,7 +242,7 @@ public class AttitudesSequence implements AttitudeProvider {
          * @since 6.1
          */
         private Switch(final double maxCheck, final double threshold,
-                       final int maxIter, final EventHandler<Switch<T>> handler, final T event,
+                       final int maxIter, final EventHandler<Switch> handler, final EventDetector event,
                        final boolean switchOnIncrease, final boolean switchOnDecrease,
                        final AttitudeProvider past, final AttitudeProvider future,
                        final SwitchHandler switchHandler) {
@@ -281,10 +259,10 @@ public class AttitudesSequence implements AttitudeProvider {
 
         /** {@inheritDoc} */
         @Override
-        protected Switch<T> create(final double newMaxCheck, final double newThreshold,
-                                   final int newMaxIter, final EventHandler<Switch<T>> newHandler) {
-            return new Switch<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                 event, switchOnIncrease, switchOnDecrease, past, future, switchHandler);
+        protected Switch create(final double newMaxCheck, final double newThreshold,
+                                   final int newMaxIter, final EventHandler<Switch> newHandler) {
+            return new Switch(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                              event, switchOnIncrease, switchOnDecrease, past, future, switchHandler);
         }
 
         /** {@inheritDoc} */
@@ -307,13 +285,11 @@ public class AttitudesSequence implements AttitudeProvider {
 
     }
 
-    /** Local handler.
-     * @param <T> class type for the generic version
-     */
-    private class LocalHandler<T extends EventDetector> implements EventHandler<Switch<T>> {
+    /** Local handler. */
+    private class LocalHandler implements EventHandler<Switch> {
 
         /** {@inheritDoc} */
-        public EventHandler.Action eventOccurred(final SpacecraftState s, final Switch<T> sw, final boolean increasing)
+        public EventHandler.Action eventOccurred(final SpacecraftState s, final Switch sw, final boolean increasing)
             throws OrekitException {
 
             if (active == sw.preceding &&
@@ -334,7 +310,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final Switch<T> sw, final SpacecraftState oldState)
+        public SpacecraftState resetState(final Switch sw, final SpacecraftState oldState)
             throws OrekitException {
             return sw.event.resetState(oldState);
         }
