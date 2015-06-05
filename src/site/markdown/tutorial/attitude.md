@@ -90,8 +90,12 @@ acts as a loop. We also define a handler to monitor attitude switches:
                       }
                   }
               };
-    attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw,   switchHandler);
-    attitudesSequence.addSwitchingCondition(nightRestingLaw,   nightDayEvent, true, false, dayObservationLaw, switchHandler);
+    attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent,
+                                            false, true, 10.0,
+                                            AngularDerivativesFilter.USE_R, nightRestingLaw,   switchHandler);
+    attitudesSequence.addSwitchingCondition(nightRestingLaw,   nightDayEvent,
+                                            true, false, 10.0,
+                                            AngularDerivativesFilter.USE_R, dayObservationLaw, switchHandler);
 
 An `AttitudesSequence` needs at least one switching condition to be meaningful,
 but there is no upper limit.

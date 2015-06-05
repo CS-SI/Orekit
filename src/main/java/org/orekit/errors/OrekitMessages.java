@@ -114,6 +114,7 @@ public enum OrekitMessages implements Localizable {
     ANGLE_TYPE_NOT_SUPPORTED("angle type not supported, supported angles: {0}, {1} and {2}"),
     SATELLITE_COLLIDED_WITH_TARGET("satellite collided with target"),
     ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND("attitude pointing law misses ground"),
+    TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH("{0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds"),
     ORBIT_AND_ATTITUDE_DATES_MISMATCH("orbit date ({0}) does not match attitude date ({1})"),
     FRAMES_MISMATCH("frame {0} does not match frame {1}"),
     INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION("initial state not specified for orbit propagation"),

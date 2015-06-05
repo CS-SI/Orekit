@@ -45,6 +45,7 @@ import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -100,8 +101,12 @@ public class EarthObservation {
                                     }
                                 }
                             };
-            attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw, switchHandler);
-            attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw, switchHandler);
+            attitudesSequence.addSwitchingCondition(dayObservationLaw, nightRestingLaw, dayNightEvent,
+                                                    false, true, 10.0,
+                                                    AngularDerivativesFilter.USE_R, switchHandler);
+            attitudesSequence.addSwitchingCondition(nightRestingLaw, dayObservationLaw, nightDayEvent,
+                                                    true, false, 10.0,
+                                                    AngularDerivativesFilter.USE_R, switchHandler);
             if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
                 // initial position is in daytime
                 attitudesSequence.resetActiveProvider(dayObservationLaw);

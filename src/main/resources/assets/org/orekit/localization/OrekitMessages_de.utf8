@@ -199,6 +199,9 @@ SATELLITE_COLLIDED_WITH_TARGET = Satellit kollidierte mit Ziel
 # attitude pointing law misses ground
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = Attitude Pointing Law zeigt nicht zur Erde
 
+# {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = <MISSING TRANSLATION>
+
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = Datum der Umlaufbahn ({0}) stimmt nicht mit den Lagedatum überein ({1})
 

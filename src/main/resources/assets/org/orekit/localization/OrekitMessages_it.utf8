@@ -199,6 +199,9 @@ SATELLITE_COLLIDED_WITH_TARGET = il satellite si è schiantato sull''obiettivo
 # attitude pointing law misses ground
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = la legge di puntamento dell''assetto non punta verso il suolo
 
+# {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = <MISSING TRANSLATION>
+
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = la data d''orbita ({0}) non corrisponde alla data dell''assetto ({1})
 

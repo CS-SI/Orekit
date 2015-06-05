@@ -199,6 +199,9 @@ SATELLITE_COLLIDED_WITH_TARGET = satelitul s-a ciocnit de ținta sa
 # attitude pointing law misses ground
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = legea de indicare a atitudinii nu indică către pământ
 
+# {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = <MISSING TRANSLATION>
+
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = data orbitală ({0}) nu corespunde datei ({1}) corespunzătoare atitudinii
 

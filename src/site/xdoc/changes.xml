@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added smooth attitude transitions in attitudes sequences, with derivatives
+        continuity at both endpoints of the transition that can be forced to match
+        rotation, rotation rate and rotation acceleration.
+        Fixes issue #6.
+      </action>
       <action dev="luc" type="fix" >
         Fixed attitudes sequence behavior in backward propagation.
         Fixes issue #206.
