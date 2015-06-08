@@ -169,7 +169,7 @@ Features
 
   * The top level packages provided by Orekit are the following one:
 
-![Orekit top packages](../images/design/top-packages.png)
+![Orekit top packages](./images/design/top-packages.png)
 
 Free software
 -------------
