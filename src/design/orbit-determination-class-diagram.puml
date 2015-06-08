@@ -77,7 +77,9 @@
               their own modifiers
             end note
             class MeasurementBias
-            class ClockDrift
+            class FixedDelay
+            class StationPositionOffset
+            class OtherModifier
 
             Measurement *--> "*" MeasurementModifier
             class "..." as OtherMeasurement #D5E0D5/E2EBE2
@@ -88,11 +90,12 @@
             Measurement <|.. OtherMeasurement
             Range      ..|> Measurement
             RangeRate  ..|> Measurement
-            AzEl       ..|> Measurement
-            AlphaDelta ..|> Measurement
+            Azimuth    ..|> Measurement
+            Elevation  ..|> Measurement
             PV         ..|> Measurement
             MeasurementModifier <|.. MeasurementBias
-            MeasurementModifier <|.. ClockDrift
+            MeasurementModifier <|.. FixedDelay
+            MeasurementModifier <|.. StationPositionOffset
             MeasurementModifier <|.. OtherModifier
 
             BatchLSEstimator *--> "*" Measurement
