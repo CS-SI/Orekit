@@ -1,0 +1,125 @@
+' Copyright 2002-2015 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+
+  package org.orekit #ECEBD8 {
+
+    package propagation #DDEBD8 {
+        package event #CEEBD8 {
+            class DateDetector
+        }
+        interface Propagator
+        DateDetector "*" <-- Propagator : monitors
+    }
+
+    package estimation #DDEBD8 {
+
+        package leastsquares #CEEBD8 {
+
+            class MeasurementHandler
+            class BatchLSEstimator {
+              +addMeasurement()
+              +setParameterType(name, type)
+              +estimate()
+              +getEstimatedOrbit()
+              +getEstimatedParameter(name)
+            }
+
+            DateDetector --> MeasurementHandler : triggers
+
+            MeasurementHandler --> BatchLSEstimator : fetch residuals
+            Propagator <-- BatchLSEstimator : run
+
+        }
+
+        package measurements #CEEBD8 {
+
+            interface Measurement {
+              +isValid()
+              +isEnabled()
+              +getSimulatedValue()
+              +getObservedValue()
+              +getPartialDerivatives()
+              +addModifier(modifier)
+            }
+
+            interface MeasurementModifier {
+              +apply(spacecraftState, baseValue)
+            }
+
+            class "..." as OtherModifier #D5E0D5/E2EBE2
+            note top
+              users can provide
+              their own modifiers
+            end note
+            class MeasurementBias
+            class ClockDrift
+
+            Measurement *--> "*" MeasurementModifier
+            class "..." as OtherMeasurement #D5E0D5/E2EBE2
+            note top
+              users can provide
+              their own measurements
+            end note
+            Measurement <|.. OtherMeasurement
+            Range      ..|> Measurement
+            RangeRate  ..|> Measurement
+            AzEl       ..|> Measurement
+            AlphaDelta ..|> Measurement
+            PV         ..|> Measurement
+            MeasurementModifier <|.. MeasurementBias
+            MeasurementModifier <|.. ClockDrift
+            MeasurementModifier <|.. OtherModifier
+
+            BatchLSEstimator *--> "*" Measurement
+            Measurement <--o MeasurementHandler
+
+        }
+
+
+        enum ParameterType {
+            +FIXED
+            +ESTIMATED
+        }
+        MeasurementModifier --> ParameterType
+        ParameterType <-- BatchLSEstimator
+
+    }
+
+  }
+
+  package org.apache.commons.math4.fitting.leastsquares #ECEBD8 {
+
+          interface LeastSquaresProblem
+          interface LeastSquaresOptimizer
+          LeastSquaresOptimizer -right-> LeastSquaresProblem  : optimize
+          BatchLSEstimator *--> "1" LeastSquaresProblem : orbit determination problem
+          BatchLSEstimator *--> "1" LeastSquaresOptimizer
+
+  }
+
+@enduml
