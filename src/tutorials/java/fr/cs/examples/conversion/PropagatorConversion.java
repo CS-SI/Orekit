@@ -113,7 +113,9 @@ public class PropagatorConversion {
             numProp.addForceModel(gravity);
             
             // Propagator factory
-            PropagatorBuilder builder = new KeplerianPropagatorBuilder(mu, inertialFrame);
+            PropagatorBuilder builder = new KeplerianPropagatorBuilder(mu, inertialFrame,
+                                                                       OrbitType.KEPLERIAN,
+                                                                       PositionAngle.TRUE);
 
             // Propagator converter
             PropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, 1.e-6, 5000);

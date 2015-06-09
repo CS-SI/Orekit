@@ -24,6 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
@@ -86,7 +88,9 @@ public class TLEConverterTest {
                                                                 tle.getLaunchNumber(),
                                                                 tle.getLaunchPiece(),
                                                                 tle.getElementNumber(),
-                                                                tle.getRevolutionNumberAtEpoch());
+                                                                tle.getRevolutionNumberAtEpoch(),
+                                                                OrbitType.CARTESIAN,
+                                                                PositionAngle.TRUE);
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
 

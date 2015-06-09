@@ -20,15 +20,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 
 /** Builder for Keplerian propagator.
  * @author Pascal Parraud
@@ -46,15 +46,38 @@ public class KeplerianPropagatorBuilder extends AbstractParameterizable
     /** List of the free parameters names. */
     private Collection<String> freeParameters;
 
+    /** Orbit type to use. */
+    private final OrbitType orbitType;
+
+    /** Position angle type to use. */
+    private final PositionAngle positionAngle;
+
     /** Build a new instance.
      * @param mu central attraction coefficient (m³/s²)
      * @param frame the frame in which the orbit is propagated
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @deprecated as of 7.1, replaced with {@link #KeplerianPropagatorBuilder(double,
+     * Frame, OrbitType, PositionAngle)}
      */
-    public KeplerianPropagatorBuilder(final double mu,
-                                      final Frame frame) {
-        this.mu    = mu;
-        this.frame = frame;
+    @Deprecated
+    public KeplerianPropagatorBuilder(final double mu, final Frame frame) {
+        this(mu, frame, OrbitType.KEPLERIAN, PositionAngle.TRUE);
+    }
+
+    /** Build a new instance.
+     * @param mu central attraction coefficient (m³/s²)
+     * @param frame the frame in which the orbit is propagated
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param orbitType orbit type to use
+     * @param positionAngle position angle type to use
+     * @since 7.1
+     */
+    public KeplerianPropagatorBuilder(final double mu, final Frame frame,
+                                      final OrbitType orbitType, final PositionAngle positionAngle) {
+        this.mu            = mu;
+        this.frame         = frame;
+        this.orbitType     = orbitType;
+        this.positionAngle = positionAngle;
     }
 
     /** {@inheritDoc} */
@@ -65,15 +88,19 @@ public class KeplerianPropagatorBuilder extends AbstractParameterizable
             throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
         }
 
-        final KeplerianOrbit orb = new KeplerianOrbit(new PVCoordinates(new Vector3D(parameters[0],
-                                                                                     parameters[1],
-                                                                                     parameters[2]),
-                                                                        new Vector3D(parameters[3],
-                                                                                     parameters[4],
-                                                                                     parameters[5])),
-                                                      frame, date, mu);
+        final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
 
         return new KeplerianPropagator(orb);
+    }
+
+    /** {@inheritDoc} */
+    public OrbitType getOrbitType() {
+        return orbitType;
+    }
+
+    /** {@inheritDoc} */
+    public PositionAngle getPositionAngle() {
+        return positionAngle;
     }
 
     /** {@inheritDoc} */

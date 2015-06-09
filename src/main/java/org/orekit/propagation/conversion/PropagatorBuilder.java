@@ -21,6 +21,8 @@ import java.util.Collection;
 import org.apache.commons.math3.ode.ParameterizedODE;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 
@@ -38,6 +40,24 @@ public interface PropagatorBuilder extends ParameterizedODE {
      */
     Propagator buildPropagator(final AbsoluteDate date, final double[] parameters)
         throws OrekitException;
+
+    /** Get the orbit type expected for the 6 first parameters in
+     * {@link #buildPropagator(AbsoluteDate, double[])}.
+     * @return orbit type to use in {@link #buildPropagator(AbsoluteDate, double[])}
+     * @see #buildPropagator(AbsoluteDate, double[])
+     * @see #getPositionAngle()
+     * @since 7.1
+     */
+    OrbitType getOrbitType();
+
+    /** Get the position angle type expected for the 6 first parameters in
+     * {@link #buildPropagator(AbsoluteDate, double[])}.
+     * @return position angle type to use in {@link #buildPropagator(AbsoluteDate, double[])}
+     * @see #buildPropagator(AbsoluteDate, double[])
+     * @see #getOrbitType()
+     * @since 7.1
+     */
+    PositionAngle getPositionAngle();
 
     /** Get the frame in which the orbit is propagated.
      * @return frame in which the orbit is propagated
