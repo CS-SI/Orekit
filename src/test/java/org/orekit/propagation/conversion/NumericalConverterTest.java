@@ -41,6 +41,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -114,9 +115,11 @@ public class NumericalConverterTest {
                             final String... freeParameters)
         throws OrekitException, IOException, ParseException {
 
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(mu,
-                                                                            propagator.getFrame(),
-                                                                            new DormandPrince853IntegratorBuilder(minStep, maxStep, dP));
+        NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(mu,
+                                                       propagator.getFrame(),
+                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
+                                                       OrbitType.CARTESIAN, PositionAngle.TRUE);
 
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
@@ -170,7 +173,9 @@ public class NumericalConverterTest {
 
         NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(mu,
                                                                             propagator.getFrame(),
-                                                                            foiBuilder);
+                                                                            foiBuilder,
+                                                                            OrbitType.CARTESIAN,
+                                                                            PositionAngle.TRUE);
 
         builder.addForceModel(drag);
         builder.addForceModel(gravity);

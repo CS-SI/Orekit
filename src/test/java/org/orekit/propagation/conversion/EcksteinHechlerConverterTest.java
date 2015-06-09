@@ -31,6 +31,8 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -44,12 +46,12 @@ public class EcksteinHechlerConverterTest {
 
     @Test
     public void testConversionPositionVelocity() throws OrekitException {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.90e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.13e-8);
     }
 
     @Test
     public void testConversionPositionOnly() throws OrekitException {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 8.24e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 3.55e-8);
     }
 
     protected void checkFit(final Orbit orbit,
@@ -66,7 +68,9 @@ public class EcksteinHechlerConverterTest {
             sample.add(p.propagate(orbit.getDate().shiftedBy(dt)));
         }
 
-        PropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(p.getFrame(), provider);
+        PropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(p.getFrame(), provider,
+                                                                         OrbitType.CIRCULAR,
+                                                                         PositionAngle.TRUE);
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder,
                                                                                              threshold,

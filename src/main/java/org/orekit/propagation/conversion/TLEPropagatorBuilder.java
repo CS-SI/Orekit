@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -29,11 +28,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 
 /** Builder for TLEPropagator.
  * @author Pascal Parraud
@@ -78,6 +79,12 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
     /** Ballistic coefficient. */
     private double bStar;
 
+    /** Orbit type to use. */
+    private final OrbitType orbitType;
+
+    /** Position angle type to use. */
+    private final PositionAngle positionAngle;
+
     /** Build a new instance.
      * @param satelliteNumber satellite number
      * @param classification classification (U for unclassified)
@@ -87,6 +94,34 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
      * @param elementNumber element number
      * @param revolutionNumberAtEpoch revolution number at epoch
      * @throws OrekitException if the TEME frame cannot be set
+     * @deprecated as of 7.1, replaced with {@link #TLEPropagatorBuilder(int,
+     * char, int, int, String, int, int, OrbitType, PositionAngle)}
+     */
+    @Deprecated
+    public TLEPropagatorBuilder(final int satelliteNumber,
+                                final char classification,
+                                final int launchYear,
+                                final int launchNumber,
+                                final String launchPiece,
+                                final int elementNumber,
+                                final int revolutionNumberAtEpoch)
+        throws OrekitException {
+        this(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
+             elementNumber, revolutionNumberAtEpoch, OrbitType.CARTESIAN, PositionAngle.TRUE);
+    }
+
+    /** Build a new instance.
+     * @param satelliteNumber satellite number
+     * @param classification classification (U for unclassified)
+     * @param launchYear launch year (all digits)
+     * @param launchNumber launch number
+     * @param launchPiece launch piece
+     * @param elementNumber element number
+     * @param revolutionNumberAtEpoch revolution number at epoch
+     * @param orbitType orbit type to use
+     * @param positionAngle position angle type to use
+     * @throws OrekitException if the TEME frame cannot be set
+     * @since 7.1
      */
     public TLEPropagatorBuilder(final int satelliteNumber,
                                 final char classification,
@@ -94,7 +129,9 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
                                 final int launchNumber,
                                 final String launchPiece,
                                 final int elementNumber,
-                                final int revolutionNumberAtEpoch) throws OrekitException {
+                                final int revolutionNumberAtEpoch,
+                                final OrbitType orbitType, final PositionAngle positionAngle)
+        throws OrekitException {
         super(B_STAR);
         this.satelliteNumber         = satelliteNumber;
         this.classification          = classification;
@@ -106,6 +143,8 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
         this.bStar                   = 0.0;
         this.mu                      = TLEPropagator.getMU();
         this.frame                   = FramesFactory.getTEME();
+        this.orbitType               = orbitType;
+        this.positionAngle           = positionAngle;
     }
 
     /** {@inheritDoc} */
@@ -116,13 +155,12 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
             throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
         }
 
-        final KeplerianOrbit orb = new KeplerianOrbit(new PVCoordinates(new Vector3D(parameters[0],
-                                                                                     parameters[1],
-                                                                                     parameters[2]),
-                                                                        new Vector3D(parameters[3],
-                                                                                     parameters[4],
-                                                                                     parameters[5])),
-                                                      frame, date, mu);
+        // create the orbit
+        final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(),
+                                                         date, mu, frame);
+
+        // we really need a Keplerian orbit type
+        final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orb);
 
         final Iterator<String> freeItr = freeParameters.iterator();
         for (int i = 6; i < parameters.length; i++) {
@@ -136,14 +174,24 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
 
         final TLE tle = new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
                                 TLE.DEFAULT, elementNumber, date,
-                                orb.getKeplerianMeanMotion(), 0.0, 0.0,
-                                orb.getE(), MathUtils.normalizeAngle(orb.getI(), FastMath.PI),
-                                MathUtils.normalizeAngle(orb.getPerigeeArgument(), FastMath.PI),
-                                MathUtils.normalizeAngle(orb.getRightAscensionOfAscendingNode(), FastMath.PI),
-                                MathUtils.normalizeAngle(orb.getMeanAnomaly(), FastMath.PI),
+                                kep.getKeplerianMeanMotion(), 0.0, 0.0,
+                                kep.getE(), MathUtils.normalizeAngle(orb.getI(), FastMath.PI),
+                                MathUtils.normalizeAngle(kep.getPerigeeArgument(), FastMath.PI),
+                                MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), FastMath.PI),
+                                MathUtils.normalizeAngle(kep.getMeanAnomaly(), FastMath.PI),
                                 revolutionNumberAtEpoch, bStar);
 
         return TLEPropagator.selectExtrapolator(tle);
+    }
+
+    /** {@inheritDoc} */
+    public OrbitType getOrbitType() {
+        return orbitType;
+    }
+
+    /** {@inheritDoc} */
+    public PositionAngle getPositionAngle() {
+        return positionAngle;
     }
 
     /** {@inheritDoc} */
