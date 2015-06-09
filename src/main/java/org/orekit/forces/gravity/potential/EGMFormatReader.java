@@ -41,13 +41,30 @@ import org.orekit.utils.Constants;
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
 
+    private final boolean useWgs84Coefficients;
+
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
      */
     public EGMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
-        super(supportedNames, missingCoefficientsAllowed);
+        this(supportedNames, missingCoefficientsAllowed, false);
     }
+
+    /**
+     * Simple constructor that allows overriding 'standard' EGM96 ae and mu with
+     * WGS84 variants
+     * 
+     * @param supportedNames
+     * @param missingCoefficientsAllowed
+     * @param useWgs84Coefficients
+     */
+    public EGMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed,
+                           final boolean useWgs84Coefficients) {
+        super(supportedNames, missingCoefficientsAllowed);
+        this.useWgs84Coefficients = useWgs84Coefficients;
+    }
+
 
     /** {@inheritDoc} */
     public void loadData(final InputStream input, final String name)
@@ -58,9 +75,16 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
 
         // both EGM96 and EGM2008 use the same values for ae and mu
         // if a new EGM model changes them, we should have some selection logic
-        // based on file name (a better way would be to have the data in the file...)
-        setAe(Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
-        setMu(Constants.EGM96_EARTH_MU);
+        // based on file name (a better way would be to have the data in the
+        // file...)
+        if (this.useWgs84Coefficients) {
+            setAe(Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
+            setMu(Constants.WGS84_EARTH_MU);
+        } else {
+            setAe(Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+            setMu(Constants.EGM96_EARTH_MU);
+        }
+
         final String lowerCaseName = name.toLowerCase(Locale.US);
         if (lowerCaseName.contains("2008") || lowerCaseName.contains("zerotide")) {
             setTideSystem(TideSystem.ZERO_TIDE);
