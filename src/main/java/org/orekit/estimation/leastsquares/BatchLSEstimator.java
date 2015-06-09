@@ -17,18 +17,30 @@
 package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
+import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.MeasurementModifier;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.time.AbsoluteDate;
 
 
 /** Least squares estimator for orbit determination.
@@ -37,29 +49,50 @@ import org.orekit.propagation.conversion.PropagatorBuilder;
  */
 public class BatchLSEstimator {
 
+    /** Builder for propagator. */
+    private final PropagatorBuilder propagatorBuilder;
+
     /** Measurements. */
     private final List<Measurement> measurements;
-
-    /** Build for propagator. */
-    private final PropagatorBuilder builder;
 
     /** Parameters. */
     private final Map<String, Parameter> parameters;
 
+    /** Orbit date. */
+    private AbsoluteDate date;
+
+    /** Solver for least squares problem. */
+    private final LeastSquaresOptimizer optimizer;
+
+    /** Builder for the least squares problem. */
+    private final LeastSquaresBuilder lsBuilder;
+
+    /** Model function. */
+    private final Model model;
+
+    /** Low level view of the optimum. */
+    private LeastSquaresProblem.Evaluation optimum;
+
     /** Simple constructor.
-     * @param builder builder to user for propagation
+     * @param propagatorBuilder builder to user for propagation
+     * @param optimizer solver for least squares problem
      */
-    public BatchLSEstimator(final PropagatorBuilder builder) {
-        this.builder      = builder;
-        this.measurements = new ArrayList<Measurement>();
-        this.parameters   = new HashMap<String, Parameter>();
+    public BatchLSEstimator(final PropagatorBuilder propagatorBuilder,
+                            final LeastSquaresOptimizer optimizer) {
+        this.propagatorBuilder = propagatorBuilder;
+        this.measurements      = new ArrayList<Measurement>();
+        this.parameters        = new HashMap<String, Parameter>();
+        this.optimizer         = optimizer;
+        this.lsBuilder         = new LeastSquaresBuilder();
+        this.model             = new Model();
+        lsBuilder.model(model);
     }
 
-    /** Get all the parameters.
-     * @return all the supported parameters
+    /** Get the parameters.
+     * @return model parameters map (the map keys are the parameters names)
      */
-    public Collection<Parameter> getParameters() {
-        return parameters.values();
+    public Map<String, Parameter> getParameters() {
+        return Collections.unmodifiableMap(parameters);
     }
 
     /** Add a measurement.
@@ -89,15 +122,165 @@ public class BatchLSEstimator {
 
     }
 
+    /** Set the maximum number of iterations.
+     * @param maxIterations maxIterations maximum number of iterations
+     */
+    public void setMaxIterations(final int maxIterations) {
+        lsBuilder.maxIterations(maxIterations);
+    }
+
+    /**
+     * Set convergence thresholds on RMS.
+     * @param relTol the relative tolerance.
+     * @param absTol the absolute tolerance.
+     * @see EvaluationRmsChecker
+     */
+    public void setConvergenceThreshold(final double relTol, final double absTol) {
+        lsBuilder.checker(new EvaluationRmsChecker(relTol, absTol));
+    }
+
     /** Estimate the orbit and the parameters.
      * <p>
      * The estimated parameters are available using {@link #getParameters()}
      * </p>
+     * @param initialGuess initial guess for the orbit
      * @return estimated orbit
+     * @exception OrekitException if orbit cannot be determined
      */
-    public Orbit estimate() {
+    public Orbit estimate(final Orbit initialGuess) throws OrekitException {
+
+        date = initialGuess.getDate();
+
+        // compute problem dimension
+        int n = 6;
+        for (final Map.Entry<String, Parameter> entry : getParameters().entrySet()) {
+            final Parameter parameter = entry.getValue();
+            if (parameter.isEstimated()) {
+                n += parameter.getDimension();
+            }
+        }
+
+        // create start point
+        final double[] start = new double[n];
+        propagatorBuilder.getOrbitType().mapOrbitToArray(initialGuess,
+                                                         propagatorBuilder.getPositionAngle(),
+                                                         start);
+        n = 6;
+        for (final Map.Entry<String, Parameter> entry : getParameters().entrySet()) {
+            final Parameter parameter = entry.getValue();
+            if (parameter.isEstimated()) {
+                System.arraycopy(parameter.getValue(), 0, start, n, parameter.getDimension());
+                n += parameter.getDimension();
+            }
+        }
+        lsBuilder.start(start);
+
+        // create target
+        int p = 0;
+        for (final Measurement measurement : measurements) {
+            if (measurement.isEnabled()) {
+                p += measurement.getDimension();
+            }
+        }
+        final double[] target = new double[p];
+        p = 0;
+        for (final Measurement measurement : measurements) {
+            if (measurement.isEnabled()) {
+                System.arraycopy(measurement.getObservedValue(), 0, target, p, measurement.getDimension());
+                p += measurement.getDimension();
+            }
+        }
+        lsBuilder.target(target);
+
+        // solve the problem
+        optimum = optimizer.optimize(lsBuilder.build());
+
+        // extract the orbit
+        return createOrbit(optimum.getPoint());
+
+    }
+
+    /** Create the orbit corresponding to an evaluation point.
+     * @param point evaluation point
+     * @return orbit
+     * @exception OrekitException if orbit cannot be created with the current point
+     */
+    private Orbit createOrbit(final RealVector point)
+        throws OrekitException {
+
+        // extract only the orbital parameters from the point
+        final double[] orbitArray = new double[6];
+        for (int i = 0; i < orbitArray.length; ++i) {
+            orbitArray[i] = point.getEntry(i);
+        }
+
+        return propagatorBuilder.buildInitialOrbit(date, orbitArray);
+
+    }
+
+    /** Fetch a simulated measurement during propagation.
+     * @param index index of the measurement first component
+     * @param value simulated value for the measurement
+     */
+    private void fetchSimulatedMeasurement(final int index, final double[] value) {
         // TODO
-        throw OrekitException.createInternalError(null);
+    }
+
+    /** Bridge between {@link Measurement measurements} and {@link LeastSquaresProblem
+     * least squares problems}.
+     */
+    private class Model implements MultivariateJacobianFunction {
+
+        /** {@inheritDoc} */
+        @Override
+        public Pair<RealVector, RealMatrix> value(final RealVector point) {
+            // TODO
+            return null;
+        }
+
+    }
+
+    /** Bridge between {@link org.orekit.propagation.events.EventDetector events} and
+     * {@link Measurement measurements}.
+     */
+    private class MeasurementHandler implements EventHandler<DateDetector> {
+
+        /** Underlying measurement. */
+        private final Measurement measurement;
+
+        /** Index of the first measurement component in the estimator. */
+        private final int index;
+
+        /** Simple constructor.
+         * @param measurement underlying measurement
+         * @param index index of the first measurement component in the estimator
+         */
+        public MeasurementHandler(final Measurement measurement, final int index) {
+            this.measurement = measurement;
+            this.index       = index;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Action eventOccurred(final SpacecraftState s, final DateDetector detector,
+                                    final boolean increasing)
+                                                    throws OrekitException {
+
+            // fetch the simulated measurement value to the estimator
+            fetchSimulatedMeasurement(index, measurement.getSimulatedValue(s, getParameters()));
+
+            return Action.CONTINUE;
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState)
+                        throws OrekitException {
+            // never really called as eventOccurred always returns Action.CONTINUE
+            return oldState;
+        }
+
     }
 
 }

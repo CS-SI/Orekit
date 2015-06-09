@@ -49,7 +49,7 @@
 
             DateDetector --> MeasurementHandler : triggers
 
-            MeasurementHandler --> BatchLSEstimator : fetch residuals
+            MeasurementHandler --> BatchLSEstimator : fetch values
             Propagator <-- BatchLSEstimator : run
 
         }
