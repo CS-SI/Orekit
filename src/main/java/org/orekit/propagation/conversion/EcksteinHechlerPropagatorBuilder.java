@@ -185,10 +185,15 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
             throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
         }
 
-        final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date,
-                                                         provider.getMu(), frame);
+        return new EcksteinHechlerPropagator(buildInitialOrbit(date, parameters), provider);
 
-        return new EcksteinHechlerPropagator(orb, provider);
+    }
+
+    /** {@inheritDoc} */
+    public Orbit buildInitialOrbit(final AbsoluteDate date, final double[] parameters)
+        throws OrekitException {
+        return getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date,
+                                              provider.getMu(), frame);
     }
 
     /** {@inheritDoc} */

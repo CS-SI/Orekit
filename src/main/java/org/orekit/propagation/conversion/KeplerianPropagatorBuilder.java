@@ -88,9 +88,16 @@ public class KeplerianPropagatorBuilder extends AbstractParameterizable
             throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
         }
 
-        final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
+        return new KeplerianPropagator(buildInitialOrbit(date, parameters));
 
-        return new KeplerianPropagator(orb);
+    }
+
+    /** {@inheritDoc} */
+    public Orbit buildInitialOrbit(final AbsoluteDate date, final double[] parameters)
+        throws OrekitException {
+
+        return getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
+
     }
 
     /** {@inheritDoc} */

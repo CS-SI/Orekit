@@ -156,8 +156,7 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
         }
 
         // create the orbit
-        final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(),
-                                                         date, mu, frame);
+        final Orbit orb = buildInitialOrbit(date, parameters);
 
         // we really need a Keplerian orbit type
         final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orb);
@@ -182,6 +181,12 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
                                 revolutionNumberAtEpoch, bStar);
 
         return TLEPropagator.selectExtrapolator(tle);
+    }
+
+    /** {@inheritDoc} */
+    public Orbit buildInitialOrbit(final AbsoluteDate date, final double[] parameters)
+        throws OrekitException {
+        return getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
     }
 
     /** {@inheritDoc} */

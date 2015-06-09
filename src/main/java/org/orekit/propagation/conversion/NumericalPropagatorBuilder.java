@@ -137,7 +137,7 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
             throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
         }
 
-        final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
+        final Orbit orb = buildInitialOrbit(date, parameters);
 
         final Attitude attitude = attProvider.getAttitude(orb, date, frame);
 
@@ -163,6 +163,12 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
         propagator.resetInitialState(state);
 
         return propagator;
+    }
+
+    /** {@inheritDoc} */
+    public Orbit buildInitialOrbit(final AbsoluteDate date, final double[] parameters)
+        throws OrekitException {
+        return getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
     }
 
     /** {@inheritDoc} */
