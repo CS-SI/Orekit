@@ -136,7 +136,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Tide system. */
     private TideSystem tideSystem;
 
-    /** Indicator for normalized coeffcients. */
+    /** Indicator for normalized coefficients. */
     private boolean normalized;
 
     /** Reference date. */
