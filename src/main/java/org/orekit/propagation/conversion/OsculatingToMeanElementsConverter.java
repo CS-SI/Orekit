@@ -17,6 +17,8 @@
 package org.orekit.propagation.conversion;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 
@@ -74,7 +76,9 @@ public class OsculatingToMeanElementsConverter {
         propagator.resetInitialState(state);
         final FiniteDifferencePropagatorConverter converter =
                 new FiniteDifferencePropagatorConverter(new KeplerianPropagatorBuilder(state.getMu(),
-                                                                                       state.getFrame()),
+                                                                                       state.getFrame(),
+                                                                                       OrbitType.KEPLERIAN,
+                                                                                       PositionAngle.MEAN),
                                                         1.e-6, MAX_EVALUATION);
         final Propagator prop = converter.convert(propagator, timeSpan, satelliteRevolution * 36);
         return prop.getInitialState();

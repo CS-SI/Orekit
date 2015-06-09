@@ -392,13 +392,9 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
         // very rough first guess using osculating parameters of first sample point
         final double[] initial = new double[6 + parameters.size()];
-        final PVCoordinates pv = states.get(0).getPVCoordinates(frame);
-        initial[0] = pv.getPosition().getX();
-        initial[1] = pv.getPosition().getY();
-        initial[2] = pv.getPosition().getZ();
-        initial[3] = pv.getVelocity().getX();
-        initial[4] = pv.getVelocity().getY();
-        initial[5] = pv.getVelocity().getZ();
+        builder.getOrbitType().mapOrbitToArray(states.get(0).getOrbit(),
+                                               builder.getPositionAngle(),
+                                               initial);
         int i = 6;
         for (String name : parameters) {
             initial[i++] = builder.getParameter(name);

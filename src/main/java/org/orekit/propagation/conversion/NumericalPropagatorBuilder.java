@@ -22,20 +22,18 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 
 /** Builder for numerical propagator.
  * @author Pascal Parraud
@@ -64,21 +62,48 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
     /** List of the free parameters names. */
     private Collection<String> freeParameters;
 
+    /** Orbit type to use. */
+    private final OrbitType orbitType;
+
+    /** Position angle type to use. */
+    private final PositionAngle positionAngle;
+
     /** Build a new instance.
      * @param mu central attraction coefficient (m³/s²)
      * @param frame the frame in which the orbit is propagated
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param builder first order integrator builder
+     * @deprecated as of 7.1, replaced with {@link #NumericalPropagatorBuilder(double,
+     * Frame, FirstOrderIntegratorBuilder, OrbitType, PositionAngle)}
      */
+    @Deprecated
     public NumericalPropagatorBuilder(final double mu,
                                       final Frame frame,
                                       final FirstOrderIntegratorBuilder builder) {
-        this.mu          = mu;
-        this.frame       = frame;
-        this.builder     = builder;
-        this.forceModels = new ArrayList<ForceModel>();
-        this.mass        = Propagator.DEFAULT_MASS;
-        this.attProvider = Propagator.DEFAULT_LAW;
+        this(mu, frame, builder, OrbitType.CARTESIAN, PositionAngle.TRUE);
+    }
+
+    /** Build a new instance.
+     * @param mu central attraction coefficient (m³/s²)
+     * @param frame the frame in which the orbit is propagated
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param builder first order integrator builder
+     * @param orbitType orbit type to use
+     * @param positionAngle position angle type to use
+     * @since 7.1
+     */
+    public NumericalPropagatorBuilder(final double mu,
+                                      final Frame frame,
+                                      final FirstOrderIntegratorBuilder builder,
+                                      final OrbitType orbitType, final PositionAngle positionAngle) {
+        this.mu            = mu;
+        this.frame         = frame;
+        this.builder       = builder;
+        this.forceModels   = new ArrayList<ForceModel>();
+        this.mass          = Propagator.DEFAULT_MASS;
+        this.attProvider   = Propagator.DEFAULT_LAW;
+        this.orbitType     = orbitType;
+        this.positionAngle = positionAngle;
     }
 
     /** Set the attitude provider.
@@ -112,13 +137,7 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
             throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
         }
 
-        final Orbit orb = new CartesianOrbit(new PVCoordinates(new Vector3D(parameters[0],
-                                                                            parameters[1],
-                                                                            parameters[2]),
-                                                               new Vector3D(parameters[3],
-                                                                            parameters[4],
-                                                                            parameters[5])),
-                                              frame, date, mu);
+        final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
 
         final Attitude attitude = attProvider.getAttitude(orb, date, frame);
 
@@ -135,7 +154,8 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
         }
 
         final NumericalPropagator propagator = new NumericalPropagator(builder.buildIntegrator(orb));
-        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitType(getOrbitType());
+        propagator.setPositionAngleType(getPositionAngle());
         propagator.setAttitudeProvider(attProvider);
         for (ForceModel model : forceModels) {
             propagator.addForceModel(model);
@@ -143,6 +163,16 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
         propagator.resetInitialState(state);
 
         return propagator;
+    }
+
+    /** {@inheritDoc} */
+    public OrbitType getOrbitType() {
+        return orbitType;
+    }
+
+    /** {@inheritDoc} */
+    public PositionAngle getPositionAngle() {
+        return positionAngle;
     }
 
     /** {@inheritDoc} */

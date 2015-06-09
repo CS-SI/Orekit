@@ -185,7 +185,9 @@ public enum OrbitType {
      * </p>
      * @param orbit orbit to map
      * @param type type of the angle
-     * @param stateVector flat array into which the state vector should be mapped */
+     * @param stateVector flat array into which the state vector should be mapped
+     * (it can have more than 6 elements, extra elements are untouched)
+     */
     public abstract void mapOrbitToArray(Orbit orbit, PositionAngle type, double[] stateVector);
 
      /** Convert state array to orbital parameters.
@@ -196,6 +198,7 @@ public enum OrbitType {
      * method for the corresponding orbit type in terms of parameters order and meaning.
      * </p>
      * @param array state as a flat array
+     * (it can have more than 6 elements, extra elements are ignored)
      * @param type type of the angle
      * @param date integration date
      * @param mu central attraction coefficient used for propagation (m³/s²)
