@@ -72,6 +72,50 @@ public interface Measurement extends TimeStamped {
      */
     int getDimension();
 
+    /** Get the theoretical standard deviation.
+     * <p>
+     * The theoretical standard deviation is a theoretical value
+     * used for normalizing the residuals. It acts as a weighting
+     * factor to mix appropriately measurements with different units
+     * and different accuracy. The value has the same dimension as
+     * the measurement itself (i.e. when a residual is divided by
+     * this value, it becomes dimensionless).
+     * </p>
+     * @return expected standard deviation
+     * @see #getWeight()
+     */
+    double[] getTheoreticalStandardDeviation();
+
+    /** Get the current weight associated with the measurement
+     * <p>
+     * The weight is used on residuals already normalized thanks to
+     * {@link #getTheoreticalStandardDeviation()} to increase or
+     * decrease relative effect of some measurements with respect to
+     * other measurements. It is a dimensionless value, typically between
+     * 0 and 1 (but it can really have any non-negative value).
+     * </p>
+     * @return current weight
+     * @see #getWeight()
+     * @see #getTheoreticalStandardDeviation()
+     */
+    double[] getWeight();
+
+    /** Set the current weight associated with the measurement
+     * <p>
+     * The weight is used on residuals already normalized thanks to
+     * {@link #getTheoreticalStandardDeviation()} to increase or
+     * decrease relative effect of some measurements with respect to
+     * other measurements. It is a dimensionless value, typically between
+     * 0 and 1 (but it can really have any non-negative value).
+     * </p>
+     * <p>
+     * The default value of the weight is 1.
+     * </p>
+     * @param weight weight to set (must be non-negative)
+     * @see #getWeight()
+     */
+    void setWeight(double[] weight);
+
     /** Get the simulated value.
      * <p>
      * The simulated value is the <em>addition</em> of the raw theoretical
