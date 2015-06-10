@@ -16,11 +16,18 @@
  */
 package org.orekit.estimation;
 
+
+
 /** Class representing a single parameter that can be estimated.
+ * <p>
+ * {@link #compareTo(Parameter) Comparison} and {@link #equals(Object) equality}
+ * are evaluated only with respect to name. This implies that sorted collections
+ * of parameters are sorted lexicographically.
+ * </p>
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class Parameter {
+public class Parameter implements Comparable<Parameter> {
 
     /** Name of the parameter. */
     private final String name;
@@ -84,6 +91,28 @@ public class Parameter {
      */
     public boolean isEstimated() {
         return estimated;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int compareTo(final Parameter p) {
+        return getName().compareTo(p.getName());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean equals(final Object o) {
+        if ((o != null) && (o instanceof Parameter)) {
+            return getName().equals(((Parameter) o).getName());
+        } else {
+            return false;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int hashCode() {
+        return getName().hashCode();
     }
 
 }

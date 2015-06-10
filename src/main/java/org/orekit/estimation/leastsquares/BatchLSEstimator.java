@@ -18,9 +18,9 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
@@ -31,11 +31,13 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.MeasurementModifier;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.events.DateDetector;
@@ -56,19 +58,22 @@ public class BatchLSEstimator {
     private final List<Measurement> measurements;
 
     /** Parameters. */
-    private final Map<String, Parameter> parameters;
+    private final SortedSet<Parameter> parameters;
 
     /** Orbit date. */
     private AbsoluteDate date;
+
+    /** Date of the first enabled measurement. */
+    private AbsoluteDate firstDate;
+
+    /** Date of the last enabled measurement. */
+    private AbsoluteDate lastDate;
 
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
 
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
-
-    /** Model function. */
-    private final Model model;
 
     /** Low level view of the optimum. */
     private LeastSquaresProblem.Evaluation optimum;
@@ -81,18 +86,29 @@ public class BatchLSEstimator {
                             final LeastSquaresOptimizer optimizer) {
         this.propagatorBuilder = propagatorBuilder;
         this.measurements      = new ArrayList<Measurement>();
-        this.parameters        = new HashMap<String, Parameter>();
+        this.parameters        = new TreeSet<Parameter>();
         this.optimizer         = optimizer;
         this.lsBuilder         = new LeastSquaresBuilder();
-        this.model             = new Model();
-        lsBuilder.model(model);
+
+        // set up the model
+        lsBuilder.model(new Model());
+
+        // our model computes value and Jacobian in one call,
+        // so we don't use the lazy evaluation feature
+        lsBuilder.lazyEvaluation(false);
+
+        // we manage weight by ourselves, as we change them during
+        // iterations (setting to 0 the identified outliers measurements)
+        // so the least squares problem should not see our weights
+        lsBuilder.weight(null);
+
     }
 
     /** Get the parameters.
-     * @return model parameters map (the map keys are the parameters names)
+     * @return model parameters set (lexicographically sorted using parameter names)
      */
-    public Map<String, Parameter> getParameters() {
-        return Collections.unmodifiableMap(parameters);
+    public SortedSet<Parameter> getParameters() {
+        return Collections.unmodifiableSortedSet(parameters);
     }
 
     /** Add a measurement.
@@ -109,13 +125,16 @@ public class BatchLSEstimator {
         // add parameters
         for (final MeasurementModifier modifier : measurement.getModifiers()) {
             for (final Parameter parameter : modifier.getParameters()) {
-                final Parameter existing = parameters.get(parameter.getName());
-                if (existing == null) {
-                    parameters.put(parameter.getName(), parameter);
-                } else if (existing != parameter) {
-                    // we have two different parameters sharing the same name
-                    throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
-                                              parameter.getName());
+                if (parameters.contains(parameter)) {
+                    // a parameter with this name already exists in the set,
+                    // check if it is really the same parameter or a duplicated name
+                    if (parameters.tailSet(parameter).first() != parameter) {
+                        // we have two different parameters sharing the same name
+                        throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
+                                                  parameter.getName());
+                    }
+                } else {
+                    parameters.add(parameter);
                 }
             }
         }
@@ -153,8 +172,7 @@ public class BatchLSEstimator {
 
         // compute problem dimension
         int n = 6;
-        for (final Map.Entry<String, Parameter> entry : getParameters().entrySet()) {
-            final Parameter parameter = entry.getValue();
+        for (final Parameter parameter : parameters) {
             if (parameter.isEstimated()) {
                 n += parameter.getDimension();
             }
@@ -166,8 +184,7 @@ public class BatchLSEstimator {
                                                          propagatorBuilder.getPositionAngle(),
                                                          start);
         n = 6;
-        for (final Map.Entry<String, Parameter> entry : getParameters().entrySet()) {
-            final Parameter parameter = entry.getValue();
+        for (final Parameter parameter : parameters) {
             if (parameter.isEstimated()) {
                 System.arraycopy(parameter.getValue(), 0, start, n, parameter.getDimension());
                 n += parameter.getDimension();
@@ -193,28 +210,68 @@ public class BatchLSEstimator {
         lsBuilder.target(target);
 
         // solve the problem
-        optimum = optimizer.optimize(lsBuilder.build());
+        try {
+            optimum = optimizer.optimize(lsBuilder.build());
+        } catch (OrekitExceptionWrapper oew) {
+            throw oew.getException();
+        }
 
         // extract the orbit
-        return createOrbit(optimum.getPoint());
+        return configurePropagator(optimum.getPoint(), false).getInitialState().getOrbit();
 
     }
 
-    /** Create the orbit corresponding to an evaluation point.
+    /** Configure the propagator and parameters corresponding to an evaluation point.
      * @param point evaluation point
-     * @return orbit
+     * @param setUpEvents if true, events detectors will be set up
+     * @return configured propagator
      * @exception OrekitException if orbit cannot be created with the current point
      */
-    private Orbit createOrbit(final RealVector point)
+    private Propagator configurePropagator(final RealVector point, final boolean setUpEvents)
         throws OrekitException {
 
-        // extract only the orbital parameters from the point
-        final double[] orbitArray = new double[6];
-        for (int i = 0; i < orbitArray.length; ++i) {
-            orbitArray[i] = point.getEntry(i);
+        // set up the propagator
+        final Propagator propagator =
+                propagatorBuilder.buildPropagator(date, point.toArray());
+
+        // set up the measurement modifiers parameters
+        int n = 6;
+        for (final Parameter parameter : parameters) {
+            if (parameter.isEstimated()) {
+                final double[] parameterValue = new double[parameter.getDimension()];
+                for (int i = 0; i < parameterValue.length; ++i) {
+                    parameterValue[i] = point.getEntry(n + i);
+                }
+                parameter.setValue(parameterValue);
+                n += parameter.getDimension();
+            }
         }
 
-        return propagatorBuilder.buildInitialOrbit(date, orbitArray);
+        if (setUpEvents) {
+
+            firstDate = AbsoluteDate.FUTURE_INFINITY;
+            lastDate  = AbsoluteDate.PAST_INFINITY;
+
+            // set up events to handle measurements
+            int p = 0;
+            for (final Measurement measurement : measurements) {
+                if (measurement.isEnabled()) {
+                    final AbsoluteDate       md = measurement.getDate();
+                    if (md.compareTo(firstDate) < 0) {
+                        firstDate = md;
+                    }
+                    if (md.compareTo(lastDate) > 0) {
+                        lastDate = md;
+                    }
+                    final MeasurementHandler mh = new MeasurementHandler(measurement, p);
+                    propagator.addEventDetector(new DateDetector(md).withHandler(mh));
+                    p += measurement.getDimension();
+                }
+            }
+
+        }
+
+        return propagator;
 
     }
 
@@ -233,9 +290,19 @@ public class BatchLSEstimator {
 
         /** {@inheritDoc} */
         @Override
-        public Pair<RealVector, RealMatrix> value(final RealVector point) {
-            // TODO
-            return null;
+        public Pair<RealVector, RealMatrix> value(final RealVector point)
+            throws OrekitExceptionWrapper {
+            try {
+
+                final Propagator propagator = configurePropagator(point, true);
+                propagator.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
+
+                // TODO
+                return null;
+
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
         }
 
     }

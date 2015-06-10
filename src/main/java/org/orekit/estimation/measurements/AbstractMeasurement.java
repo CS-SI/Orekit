@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
@@ -81,18 +81,18 @@ public abstract class AbstractMeasurement implements Measurement {
      * The theoretical value does not have <em>any</em> modifiers applied.
      * </p>
      * @param state orbital state at measurement date
-     * @param parameters model parameters map
+     * @param parameters model parameters set
      * @return theoretical value (array of size {@link #getDimension()}
      * @exception OrekitException if value cannot be computed
-     * @see #getSimulatedValue(SpacecraftState, Map)
+     * @see #getSimulatedValue(SpacecraftState, SortedSet)
      */
     protected abstract double[] getTheoreticalValue(final SpacecraftState state,
-                                                    final Map<String, Parameter> parameters)
+                                                    final SortedSet<Parameter> parameters)
         throws OrekitException;
 
     /** {@inheritDoc} */
     @Override
-    public double[] getSimulatedValue(final SpacecraftState state, final Map<String, Parameter> parameters)
+    public double[] getSimulatedValue(final SpacecraftState state, final SortedSet<Parameter> parameters)
         throws OrekitException {
 
         // compute the theoretical value

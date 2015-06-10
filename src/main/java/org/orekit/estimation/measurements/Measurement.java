@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
@@ -122,12 +123,11 @@ public interface Measurement extends TimeStamped {
      * value and all the modifiers that apply to the measurement.
      * </p>
      * @param state orbital state at measurement date
-     * @param parameters model parameters map (the map keys are the
-     * parameters names)
+     * @param parameters model parameters set
      * @return simulated value (array of size {@link #getDimension()}
      * @exception OrekitException if value cannot be computed
      */
-    double[] getSimulatedValue(SpacecraftState state, Map<String, Parameter> parameters)
+    double[] getSimulatedValue(SpacecraftState state, SortedSet<Parameter> parameters)
         throws OrekitException;
 
     /** Get the observed value.

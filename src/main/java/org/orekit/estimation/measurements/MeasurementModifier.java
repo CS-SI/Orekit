@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.List;
-import java.util.Map;
+import java.util.SortedSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
@@ -57,15 +57,14 @@ public interface MeasurementModifier {
 
     /** Apply a modifier to a simulated measurement.
      * @param state orbital state at measurement date
-     * @param parameters model parameters map (the map keys are the
-     * parameters names)
+     * @param parameters model parameters set
      * @param baseValue measurement value before the modifier is applied
      * (sum of theoretical value and previous modifiers already applied)
      * @param measurement measurement to which the modifier applies
      * @return simulated measurement value with modifier applied
      * @exception OrekitException if modifier cannot be applied
      */
-    double[] apply(SpacecraftState state, Map<String, Parameter> parameters,
+    double[] apply(SpacecraftState state, SortedSet<Parameter> parameters,
                    double[] baseValue, Measurement measurement)
         throws OrekitException;
 
