@@ -41,6 +41,7 @@ import org.orekit.utils.Constants;
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
 
+    /** Flag for using WGS84 values for equatorial radius and central attraction coefficient. */
     private final boolean useWgs84Coefficients;
 
     /** Simple constructor.
@@ -53,11 +54,12 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
 
     /**
      * Simple constructor that allows overriding 'standard' EGM96 ae and mu with
-     * WGS84 variants
-     * 
-     * @param supportedNames
-     * @param missingCoefficientsAllowed
-     * @param useWgs84Coefficients
+     * WGS84 variants.
+     *
+     * @param supportedNames regular expression for supported files names
+     * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
+     * @param useWgs84Coefficients if true, the WGS84 values will be used for equatorial radius
+     * and central attraction coefficient
      */
     public EGMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed,
                            final boolean useWgs84Coefficients) {
