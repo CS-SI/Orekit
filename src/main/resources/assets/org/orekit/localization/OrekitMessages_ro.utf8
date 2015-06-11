@@ -250,6 +250,9 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = date neașteptate, două valor
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = parametrul {0} necunoscut, parametrii cunoscuți: {1}
 
+# duplicated parameter name {0}
+DUPLICATED_PARAMETER_NAME = <MISSING TRANSLATION>
+
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = starea adiționala "{0}" necunoscută
 

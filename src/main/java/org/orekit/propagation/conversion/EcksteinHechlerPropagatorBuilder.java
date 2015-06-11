@@ -16,18 +16,11 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.ode.AbstractParameterizable;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -38,23 +31,10 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
-                                              implements PropagatorBuilder {
+public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Provider for un-normalized coefficients. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
-
-    /** Frame in which the orbit is propagated. */
-    private final Frame frame;
-
-    /** List of the free parameters names. */
-    private Collection<String> freeParameters;
-
-    /** Orbit type to use. */
-    private final OrbitType orbitType;
-
-    /** Position angle type to use. */
-    private final PositionAngle positionAngle;
 
     /** Build a new instance.
      * @param frame the frame in which the orbit is propagated
@@ -80,10 +60,8 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
     public EcksteinHechlerPropagatorBuilder(final Frame frame,
                                             final UnnormalizedSphericalHarmonicsProvider provider,
                                             final OrbitType orbitType, final PositionAngle positionAngle) {
-        this.frame    = frame;
+        super(frame, provider.getMu(), orbitType, positionAngle);
         this.provider = provider;
-        this.orbitType     = orbitType;
-        this.positionAngle = positionAngle;
     }
 
     /** Build a new instance.
@@ -181,51 +159,8 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
     /** {@inheritDoc} */
     public Propagator buildPropagator(final AbsoluteDate date, final double[] parameters)
         throws OrekitException {
-
-        if (parameters.length != (freeParameters.size() + 6)) {
-            throw new OrekitIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
-        }
-
-        final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date,
-                                                         provider.getMu(), frame);
-
-        return new EcksteinHechlerPropagator(orb, provider);
-    }
-
-    /** {@inheritDoc} */
-    public OrbitType getOrbitType() {
-        return orbitType;
-    }
-
-    /** {@inheritDoc} */
-    public PositionAngle getPositionAngle() {
-        return positionAngle;
-    }
-
-    /** {@inheritDoc} */
-    public Frame getFrame() {
-        return frame;
-    }
-
-    /** {@inheritDoc} */
-    public void setFreeParameters(final Collection<String> parameters)
-        throws IllegalArgumentException {
-        freeParameters = new ArrayList<String>();
-        for (String name : parameters) {
-            complainIfNotSupported(name);
-        }
-        freeParameters.addAll(parameters);
-    }
-
-    /** {@inheritDoc} */
-    public double getParameter(final String name)
-        throws IllegalArgumentException {
-        return 0;
-    }
-
-    /** {@inheritDoc} */
-    public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
+        checkParameters(parameters);
+        return new EcksteinHechlerPropagator(createInitialOrbit(date, parameters), provider);
     }
 
 }

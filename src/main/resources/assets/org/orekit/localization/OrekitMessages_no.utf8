@@ -250,6 +250,9 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = uventete to høydeverdier: {0}
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = ustøttet parameter navn {0}, støttete navn: {1}
 
+# duplicated parameter name {0}
+DUPLICATED_PARAMETER_NAME = <MISSING TRANSLATION>
+
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = ukjent ytterligere tilstand "{0}"
 

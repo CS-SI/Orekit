@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.Collection;
+import java.util.List;
 
-import org.apache.commons.math3.ode.ParameterizedODE;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -30,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  * @since 6.0
  */
-public interface PropagatorBuilder extends ParameterizedODE {
+public interface PropagatorBuilder {
 
     /** Build a propagator.
      * @param date date associated to the parameters to configure the initial state
@@ -66,10 +66,38 @@ public interface PropagatorBuilder extends ParameterizedODE {
 
     /** Set the free parameters in order to build the propagator.
      * <p>
-     * The parameters must belong to the list returned by {@link #getParametersNames()}
+     * The parameters must belong to the list returned by {@link #getSupportedParameters()}
      * </p>
      * @param parameters free parameters to set when building the propagator
+     * @exception OrekitIllegalArgumentException if one of the parameters is not supported
      */
-    void setFreeParameters(final Collection<String> parameters);
+    void setFreeParameters(List<String> parameters)
+        throws OrekitIllegalArgumentException;
+
+    /** Get the names of the supported parameters.
+     * @return parameters names
+     * @since 7.1
+     */
+    List<String> getSupportedParameters();
+
+    /** Get the free parameters used to build the propagator.
+     * @return free parameters used when building the propagator
+     * @since 7.1
+     */
+    List<String> getFreeParameters();
+
+    /** Get parameter value from its name.
+     * @param name parameter name
+     * @return parameter value
+     * @exception OrekitIllegalArgumentException if parameter is not supported
+     */
+    double getParameter(String name) throws OrekitIllegalArgumentException;
+
+    /** Set parameter value from its name.
+     * @param name parameter name
+     * @param value parameter value
+     * @exception OrekitIllegalArgumentException if parameter is not supported
+     */
+    void setParameter(String name, double value) throws OrekitIllegalArgumentException;
 
 }
