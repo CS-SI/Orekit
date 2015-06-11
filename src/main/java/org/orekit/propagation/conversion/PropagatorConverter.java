@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
@@ -44,7 +43,7 @@ public interface PropagatorConverter {
     Propagator convert(final Propagator source,
                        final double timeSpan,
                        final int nbPoints,
-                       final Collection<String> freeParameters) throws OrekitException;
+                       final List<String> freeParameters) throws OrekitException;
 
     /** Convert a propagator into another one.
      * @param source propagator to convert
@@ -68,7 +67,7 @@ public interface PropagatorConverter {
      */
     Propagator convert(final List<SpacecraftState> states,
                        final boolean positionOnly,
-                       final Collection<String> freeParameters) throws OrekitException;
+                       final List<String> freeParameters) throws OrekitException;
 
     /** Find the propagator that minimize the mean square error for a sample of {@link SpacecraftState states}.
      * @param states spacecraft states sample to fit

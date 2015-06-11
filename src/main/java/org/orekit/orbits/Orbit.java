@@ -24,7 +24,9 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -166,9 +168,8 @@ public abstract class Orbit
     private static void ensurePseudoInertialFrame(final Frame frame)
         throws IllegalArgumentException {
         if (!frame.isPseudoInertial()) {
-            throw OrekitException.createIllegalArgumentException(
-                OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
-                frame.getName());
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
+                                                     frame.getName());
         }
     }
 
@@ -361,7 +362,7 @@ public abstract class Orbit
                     cachedJacobian = jacobianTrueWrtCartesian;
                     break;
                 default :
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
         }
 
@@ -409,7 +410,7 @@ public abstract class Orbit
                     cachedJacobian = jacobianWrtParametersTrue;
                     break;
                 default :
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
         }
 

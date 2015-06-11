@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -621,7 +622,7 @@ public class TLE implements TimeStamped, Serializable {
         try {
             return getLine1() + System.getProperty("line.separator") + getLine2();
         } catch (OrekitException oe) {
-            throw OrekitException.createInternalError(oe);
+            throw new OrekitInternalError(oe);
         }
     }
 

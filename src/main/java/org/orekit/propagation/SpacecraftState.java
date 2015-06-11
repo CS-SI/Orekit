@@ -31,6 +31,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -246,14 +247,13 @@ public class SpacecraftState
         throws IllegalArgumentException {
         if (FastMath.abs(orbit.getDate().durationFrom(attitude.getDate())) >
             DATE_INCONSISTENCY_THRESHOLD) {
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
-                  orbit.getDate(), attitude.getDate());
+            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
+                                                     orbit.getDate(), attitude.getDate());
         }
         if (orbit.getFrame() != attitude.getReferenceFrame()) {
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.FRAMES_MISMATCH,
-                  orbit.getFrame().getName(), attitude.getReferenceFrame().getName());
+            throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
+                                                     orbit.getFrame().getName(),
+                                                     attitude.getReferenceFrame().getName());
         }
     }
 

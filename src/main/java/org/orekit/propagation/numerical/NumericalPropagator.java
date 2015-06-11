@@ -27,6 +27,7 @@ import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
@@ -468,7 +469,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** {@inheritDoc} */
         public void addMassDerivative(final double q) {
             if (q > 0) {
-                throw OrekitException.createIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
+                throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
             }
             yDot[6] += q;
         }

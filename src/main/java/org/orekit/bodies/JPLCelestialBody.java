@@ -23,6 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
@@ -293,7 +294,7 @@ class JPLCelestialBody implements CelestialBody {
                 return (JPLCelestialBody) new JPLEphemeridesLoader(supportedNames, generateType).loadCelestialBody(name);
 
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
 
         }

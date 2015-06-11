@@ -28,7 +28,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
@@ -101,11 +102,11 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         // safety check
         if (maxSlots < 1) {
-            throw OrekitException.createIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL, maxSlots, 1);
+            throw new OrekitIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL, maxSlots, 1);
         }
         if (neighborsSize < 2) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
-                                                                 neighborsSize, 2);
+            throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
+                                                      neighborsSize, 2);
         }
 
         this.reference         = new AtomicReference<AbsoluteDate>();
@@ -237,7 +238,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         lock.readLock().lock();
         try {
             if (slots.isEmpty()) {
-                throw OrekitException.createIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
+                throw new OrekitIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
             }
             return slots.get(0).getEarliest();
         } finally {
@@ -256,7 +257,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         lock.readLock().lock();
         try {
             if (slots.isEmpty()) {
-                throw OrekitException.createIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
+                throw new OrekitIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
             }
             return slots.get(slots.size() - 1).getLatest();
         } finally {

@@ -17,15 +17,15 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -39,13 +39,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder implements PropagatorBuilder {
-
-    /** Central attraction coefficient (m³/s²). */
-    private final double mu;
-
-    /** Frame in which the orbit is propagated. */
-    private final Frame frame;
+public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
     private final FirstOrderIntegratorBuilder builder;
@@ -58,15 +52,6 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
 
     /** Attitude provider. */
     private AttitudeProvider attProvider;
-
-    /** List of the free parameters names. */
-    private Collection<String> freeParameters;
-
-    /** Orbit type to use. */
-    private final OrbitType orbitType;
-
-    /** Position angle type to use. */
-    private final PositionAngle positionAngle;
 
     /** Build a new instance.
      * @param mu central attraction coefficient (m³/s²)
@@ -96,14 +81,11 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
                                       final Frame frame,
                                       final FirstOrderIntegratorBuilder builder,
                                       final OrbitType orbitType, final PositionAngle positionAngle) {
-        this.mu            = mu;
-        this.frame         = frame;
-        this.builder       = builder;
-        this.forceModels   = new ArrayList<ForceModel>();
-        this.mass          = Propagator.DEFAULT_MASS;
-        this.attProvider   = Propagator.DEFAULT_LAW;
-        this.orbitType     = orbitType;
-        this.positionAngle = positionAngle;
+        super(frame, mu, orbitType, positionAngle);
+        this.builder     = builder;
+        this.forceModels = new ArrayList<ForceModel>();
+        this.mass        = Propagator.DEFAULT_MASS;
+        this.attProvider = Propagator.DEFAULT_LAW;
     }
 
     /** Set the attitude provider.
@@ -127,26 +109,32 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
      */
     public void addForceModel(final ForceModel model) {
         forceModels.add(model);
+        for (final String name : model.getParametersNames()) {
+            // add model parameters, taking care of
+            // Newtonian central attraction which is already supported by base class
+            if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
+                super.setParameter(name, model.getParameter(name));
+            } else {
+                addSupportedParameter(name);
+            }
+        }
     }
 
     /** {@inheritDoc} */
     public NumericalPropagator buildPropagator(final AbsoluteDate date, final double[] parameters)
         throws OrekitException {
 
-        if (parameters.length != (freeParameters.size() + 6)) {
-            throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
-        }
+        checkParameters(parameters);
+        final Orbit orb = createInitialOrbit(date, parameters);
 
-        final Orbit orb = buildInitialOrbit(date, parameters);
-
-        final Attitude attitude = attProvider.getAttitude(orb, date, frame);
+        final Attitude attitude = attProvider.getAttitude(orb, date, getFrame());
 
         final SpacecraftState state = new SpacecraftState(orb, attitude, mass);
 
-        final Iterator<String> freeItr = freeParameters.iterator();
+        final Iterator<String> freeItr = getFreeParameters().iterator();
         for (int i = 6; i < parameters.length; i++) {
             final String free = freeItr.next();
-            for (String available : getParametersNames()) {
+            for (String available : getSupportedParameters()) {
                 if (free.equals(available)) {
                     setParameter(free, parameters[i]);
                 }
@@ -166,77 +154,33 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public Orbit buildInitialOrbit(final AbsoluteDate date, final double[] parameters)
-        throws OrekitException {
-        return getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
-    }
-
-    /** {@inheritDoc} */
-    public OrbitType getOrbitType() {
-        return orbitType;
-    }
-
-    /** {@inheritDoc} */
-    public PositionAngle getPositionAngle() {
-        return positionAngle;
-    }
-
-    /** {@inheritDoc} */
-    public Frame getFrame() {
-        return frame;
-    }
-
-    /** {@inheritDoc} */
-    public void setFreeParameters(final Collection<String> parameters)
-        throws IllegalArgumentException {
-        freeParameters = new ArrayList<String>();
-        for (String name : parameters) {
-            if (!isSupported(name)) {
-                throw OrekitException.createIllegalArgumentException(LocalizedFormats.UNKNOWN_PARAMETER, name);
-            }
-        }
-        freeParameters.addAll(parameters);
-    }
-
-    /** {@inheritDoc} */
-    public Collection<String> getParametersNames() {
-        final Collection<String> parametersNames = new ArrayList<String>();
-        for (ForceModel model : forceModels) {
-            parametersNames.addAll(model.getParametersNames());
-        }
-        return parametersNames;
-    }
-
-    /** {@inheritDoc} */
-    public boolean isSupported(final String name) {
-        for (ForceModel model : forceModels) {
-            if (model.isSupported(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** {@inheritDoc} */
+    @Override
     public double getParameter(final String name)
-        throws IllegalArgumentException {
+        throws OrekitIllegalArgumentException {
         for (ForceModel model : forceModels) {
             if (model.isSupported(name)) {
                 return model.getParameter(name);
             }
         }
-        throw new IllegalArgumentException(name);
+        return super.getParameter(name);
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
+        throws OrekitIllegalArgumentException {
         for (ForceModel model : forceModels) {
             if (model.isSupported(name)) {
                 model.setParameter(name, value);
-                break;
+                if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
+                    // the central attraction must be configured
+                    // in both the force model and the base class
+                    super.setParameter(name, value);
+                }
+                return;
             }
         }
+        super.setParameter(name, value);
     }
 
 }

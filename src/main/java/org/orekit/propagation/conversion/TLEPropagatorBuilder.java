@@ -16,16 +16,12 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -40,8 +36,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractParameterizable
-                                  implements PropagatorBuilder {
+public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Parameter name for B* coefficient. */
     public static final String B_STAR = "BSTAR";
@@ -67,23 +62,8 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
     /** Revolution number at epoch. */
     private final int revolutionNumberAtEpoch;
 
-    /** Central attraction coefficient (m³/s²). */
-    private final double mu;
-
-    /** TEME frame. */
-    private final Frame frame;
-
-    /** List of the free parameters names. */
-    private Collection<String> freeParameters;
-
     /** Ballistic coefficient. */
     private double bStar;
-
-    /** Orbit type to use. */
-    private final OrbitType orbitType;
-
-    /** Position angle type to use. */
-    private final PositionAngle positionAngle;
 
     /** Build a new instance.
      * @param satelliteNumber satellite number
@@ -132,7 +112,8 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
                                 final int revolutionNumberAtEpoch,
                                 final OrbitType orbitType, final PositionAngle positionAngle)
         throws OrekitException {
-        super(B_STAR);
+        super(FramesFactory.getTEME(), TLEPropagator.getMU(), orbitType, positionAngle);
+        addSupportedParameter(B_STAR);
         this.satelliteNumber         = satelliteNumber;
         this.classification          = classification;
         this.launchYear              = launchYear;
@@ -141,30 +122,23 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
         this.elementNumber           = elementNumber;
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
         this.bStar                   = 0.0;
-        this.mu                      = TLEPropagator.getMU();
-        this.frame                   = FramesFactory.getTEME();
-        this.orbitType               = orbitType;
-        this.positionAngle           = positionAngle;
     }
 
     /** {@inheritDoc} */
     public Propagator buildPropagator(final AbsoluteDate date, final double[] parameters)
         throws OrekitException {
 
-        if (parameters.length != (freeParameters.size() + 6)) {
-            throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
-        }
-
         // create the orbit
-        final Orbit orb = buildInitialOrbit(date, parameters);
+        checkParameters(parameters);
+        final Orbit orb = createInitialOrbit(date, parameters);
 
         // we really need a Keplerian orbit type
         final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orb);
 
-        final Iterator<String> freeItr = freeParameters.iterator();
+        final Iterator<String> freeItr = getFreeParameters().iterator();
         for (int i = 6; i < parameters.length; i++) {
             final String free = freeItr.next();
-            for (String available : getParametersNames()) {
+            for (String available : getSupportedParameters()) {
                 if (free.equals(available)) {
                     setParameter(free, parameters[i]);
                 }
@@ -184,48 +158,25 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
     }
 
     /** {@inheritDoc} */
-    public Orbit buildInitialOrbit(final AbsoluteDate date, final double[] parameters)
-        throws OrekitException {
-        return getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
-    }
-
-    /** {@inheritDoc} */
-    public OrbitType getOrbitType() {
-        return orbitType;
-    }
-
-    /** {@inheritDoc} */
-    public PositionAngle getPositionAngle() {
-        return positionAngle;
-    }
-
-    /** {@inheritDoc} */
-    public Frame getFrame() {
-        return frame;
-    }
-
-    /** {@inheritDoc} */
-    public void setFreeParameters(final Collection<String> parameters)
-        throws IllegalArgumentException {
-        freeParameters = new ArrayList<String>();
-        for (String name : parameters) {
-            complainIfNotSupported(name);
-        }
-        freeParameters.addAll(parameters);
-    }
-
-    /** {@inheritDoc} */
+    @Override
     public double getParameter(final String name)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        return bStar;
+        throws OrekitIllegalArgumentException {
+        if (B_STAR.equals(name)) {
+            return bStar;
+        } else {
+            return super.getParameter(name);
+        }
     }
 
     /** {@inheritDoc} */
+    @Override
     public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        bStar = value * 1.e-4;
+        throws OrekitIllegalArgumentException {
+        if (B_STAR.equals(name)) {
+            bStar = value;
+        } else {
+            super.setParameter(name, value);
+        }
     }
 
 }

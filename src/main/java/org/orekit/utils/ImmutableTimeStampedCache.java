@@ -23,7 +23,8 @@ import java.util.List;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
@@ -83,14 +84,12 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
                                      final Collection<? extends T> data) {
         // parameter check
         if (neighborsSize > data.size()) {
-            throw OrekitException
-                .createIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
-                                                data.size(), neighborsSize);
+            throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
+                                                     data.size(), neighborsSize);
         }
         if (neighborsSize < 1) {
-            throw OrekitException
-                .createIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL,
-                                                neighborsSize, 0);
+            throw new OrekitIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL,
+                                                     neighborsSize, 0);
         }
 
         // assign instance variables
@@ -209,15 +208,13 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         /** {@inheritDoc} */
         @Override
         public T getEarliest() {
-            throw OrekitException
-                .createIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
+            throw new OrekitIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
         };
 
         /** {@inheritDoc} */
         @Override
         public T getLatest() {
-            throw OrekitException
-                .createIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
+            throw new OrekitIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
         }
 
         /** {@inheritDoc} */

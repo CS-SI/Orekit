@@ -30,6 +30,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.OrekitParseException;
 import org.orekit.time.DateComponents;
 import org.orekit.utils.Constants;
 
@@ -131,8 +132,8 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
             // match current header or data line
             final Matcher matcher = LINES[FastMath.min(LINES.length, lineNumber) - 1].matcher(line);
             if (!matcher.matches()) {
-                throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                           lineNumber, name, line);
+                throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                               lineNumber, name, line);
             }
 
             if (lineNumber == 3) {

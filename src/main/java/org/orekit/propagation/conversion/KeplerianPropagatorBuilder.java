@@ -16,14 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -34,23 +28,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class KeplerianPropagatorBuilder extends AbstractParameterizable
-                                        implements PropagatorBuilder {
-
-    /** Central attraction coefficient (m³/s²). */
-    private final double mu;
-
-    /** Frame in which the orbit is propagated. */
-    private final Frame frame;
-
-    /** List of the free parameters names. */
-    private Collection<String> freeParameters;
-
-    /** Orbit type to use. */
-    private final OrbitType orbitType;
-
-    /** Position angle type to use. */
-    private final PositionAngle positionAngle;
+public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Build a new instance.
      * @param mu central attraction coefficient (m³/s²)
@@ -74,66 +52,14 @@ public class KeplerianPropagatorBuilder extends AbstractParameterizable
      */
     public KeplerianPropagatorBuilder(final double mu, final Frame frame,
                                       final OrbitType orbitType, final PositionAngle positionAngle) {
-        this.mu            = mu;
-        this.frame         = frame;
-        this.orbitType     = orbitType;
-        this.positionAngle = positionAngle;
+        super(frame, mu, orbitType, positionAngle);
     }
 
     /** {@inheritDoc} */
     public Propagator buildPropagator(final AbsoluteDate date, final double[] parameters)
         throws OrekitException {
-
-        if (parameters.length != (freeParameters.size() + 6)) {
-            throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
-        }
-
-        return new KeplerianPropagator(buildInitialOrbit(date, parameters));
-
-    }
-
-    /** {@inheritDoc} */
-    public Orbit buildInitialOrbit(final AbsoluteDate date, final double[] parameters)
-        throws OrekitException {
-
-        return getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
-
-    }
-
-    /** {@inheritDoc} */
-    public OrbitType getOrbitType() {
-        return orbitType;
-    }
-
-    /** {@inheritDoc} */
-    public PositionAngle getPositionAngle() {
-        return positionAngle;
-    }
-
-    /** {@inheritDoc} */
-    public Frame getFrame() {
-        return frame;
-    }
-
-    /** {@inheritDoc} */
-    public void setFreeParameters(final Collection<String> parameters)
-        throws IllegalArgumentException {
-        freeParameters = new ArrayList<String>();
-        for (String name : parameters) {
-            complainIfNotSupported(name);
-        }
-        freeParameters.addAll(parameters);
-    }
-
-    /** {@inheritDoc} */
-    public double getParameter(final String name)
-        throws IllegalArgumentException {
-        return 0;
-    }
-
-    /** {@inheritDoc} */
-    public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
+        checkParameters(parameters);
+        return new KeplerianPropagator(createInitialOrbit(date, parameters));
     }
 
 }

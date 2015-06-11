@@ -19,6 +19,7 @@ package org.orekit.frames;
 import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 
 
 /** Base class for the predefined frames that are managed by {@link FramesFactory}.
@@ -86,7 +87,7 @@ public class FactoryManagedFrame extends Frame {
                 // retrieve a managed frame
                 return FramesFactory.getFrame(Predefined.valueOf(name));
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

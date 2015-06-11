@@ -23,7 +23,8 @@ import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -119,8 +120,8 @@ public class CircularOrbit
         throws IllegalArgumentException {
         super(frame, date, mu);
         if (ex * ex + ey * ey >= 1.0) {
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
+            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
+                                                     getClass().getName());
         }
         this.a    =  a;
         this.ex   = ex;
@@ -139,7 +140,7 @@ public class CircularOrbit
                 this.alphaV = alpha;
                 break;
             default :
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
 
         serializePV = false;
@@ -169,8 +170,8 @@ public class CircularOrbit
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
         if (ex * ex + ey * ey >= 1.0) {
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
+            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
+                                                     getClass().getName());
         }
         this.a    =  a;
         this.ex   = ex;
@@ -189,7 +190,7 @@ public class CircularOrbit
                 this.alphaV = alpha;
                 break;
             default :
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
 
         serializePV = true;
@@ -222,8 +223,8 @@ public class CircularOrbit
         final double rV2OnMu = r * V2 / mu;
 
         if (rV2OnMu > 2) {
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
+            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
+                                                     getClass().getName());
         }
 
         a = r / (2 - rV2OnMu);
@@ -814,7 +815,7 @@ public class CircularOrbit
                 pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
                 break;
             default :
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
     }
 

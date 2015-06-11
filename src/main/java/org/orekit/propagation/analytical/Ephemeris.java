@@ -27,6 +27,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -252,7 +253,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
                 return new Ephemeris(states, interpolationPoints);
             } catch (OrekitException oe) {
                 // this should never happen
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

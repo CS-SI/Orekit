@@ -30,6 +30,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.OrekitParseException;
 import org.orekit.time.DateComponents;
 import org.orekit.utils.Constants;
 
@@ -210,8 +211,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                 if (inHeader) {
                     if ((tab.length == 2) && PRODUCT_TYPE.equals(tab[0])) {
                         if (!GRAVITY_FIELD.equals(tab[1])) {
-                            throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                                       lineNumber, name, line);
+                            throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                           lineNumber, name, line);
                         }
                     } else if ((tab.length == 2) && GRAVITY_CONSTANT.equals(tab[0])) {
                         setMu(parseDouble(tab[1]));
@@ -232,8 +233,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         } else if (TIDE_UNKNOWN.equals(tab[1])) {
                             tideSystem = TideSystem.UNKNOWN;
                         } else {
-                            throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                                       lineNumber, name, line);
+                            throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                           lineNumber, name, line);
                         }
                     } else if ((tab.length == 2) && NORMALIZATION_INDICATOR.equals(tab[0])) {
                         if (NORMALIZED.equals(tab[1])) {
@@ -241,8 +242,8 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         } else if (UNNORMALIZED.equals(tab[1])) {
                             normalized = false;
                         } else {
-                            throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                                       lineNumber, name, line);
+                            throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                           lineNumber, name, line);
                         }
                     } else if ((tab.length == 2) && END_OF_HEADER.equals(tab[0])) {
                         inHeader = false;
@@ -322,13 +323,13 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         }
 
                     } else {
-                        throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                                   lineNumber, name, line);
+                        throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                       lineNumber, name, line);
                     }
                 }
             } catch (NumberFormatException nfe) {
-                final ParseException pe = OrekitException.createParseException(
-                        OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
+                final OrekitParseException pe = new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                                         lineNumber, name, line);
                 pe.initCause(nfe);
                 throw pe;
             }

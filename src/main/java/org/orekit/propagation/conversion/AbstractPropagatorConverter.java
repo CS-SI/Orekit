@@ -84,7 +84,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private Propagator adapted;
 
     /** List of the desired free parameters names. */
-    private Collection<String> parameters;
+    private List<String> parameters;
 
     /** List of the available free parameters names. */
     private final Collection<String> availableParameters;
@@ -117,7 +117,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                                           final int maxIterations) {
         this.builder             = builder;
         this.frame               = builder.getFrame();
-        this.availableParameters = builder.getParametersNames();
+        this.availableParameters = builder.getSupportedParameters();
         this.optimizer           = new LevenbergMarquardtOptimizer();
         this.maxIterations       = maxIterations;
         this.sample              = new ArrayList<SpacecraftState>();
@@ -139,7 +139,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     public Propagator convert(final Propagator source,
                               final double timeSpan,
                               final int nbPoints,
-                              final Collection<String> freeParameters)
+                              final List<String> freeParameters)
         throws OrekitException, IllegalArgumentException {
 
         checkParameters(freeParameters);
@@ -177,7 +177,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      */
     public Propagator convert(final List<SpacecraftState> states,
                               final boolean positionOnly,
-                              final Collection<String> freeParameters)
+                              final List<String> freeParameters)
         throws OrekitException, IllegalArgumentException {
 
         checkParameters(freeParameters);

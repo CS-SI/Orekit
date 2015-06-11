@@ -33,6 +33,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
 import org.orekit.utils.Constants;
@@ -436,7 +437,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
                         break;
                     default :
                         // this should never happen
-                        throw OrekitException.createInternalError(null);
+                        throw new OrekitInternalError(null);
                 }
 
                 // remove the already parsed section from the list

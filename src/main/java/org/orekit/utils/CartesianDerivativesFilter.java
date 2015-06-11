@@ -16,7 +16,7 @@
  */
 package org.orekit.utils;
 
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
 /** Enumerate for selecting which derivatives to use in {@link TimeStampedPVCoordinates} and
@@ -67,7 +67,7 @@ public enum CartesianDerivativesFilter {
                 return filter;
             }
         }
-        throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
     }
 
 }

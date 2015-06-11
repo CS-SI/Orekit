@@ -21,7 +21,7 @@ import java.util.Arrays;
 import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 
 /** Base class for nutation series terms.
  * @param <T> the type of the field elements
@@ -217,7 +217,7 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
             return new GeneralTerm<S>(cL, cLPrime, cF, cD, cOmega,
                                       cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
         } else {
-            throw OrekitException.createInternalError(null);
+            throw new OrekitInternalError(null);
         }
 
     }
