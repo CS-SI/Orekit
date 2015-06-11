@@ -27,39 +27,53 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-
+/** Class modeling a range measurement from a ground station.
+ * @author Thierry Ceolin
+ * @since 7.1
+ */
 public class RangeRate extends AbstractMeasurement {
 
+    /** Ground station from which measurement is performed. */
     private final TopocentricFrame station;
-    
-    public RangeRate(final TopocentricFrame station, final AbsoluteDate date, final double rangerate, final double sigma) {
+
+    /** Simple constructor.
+     * @param station ground station from which measurement is performed
+     * @param date date of the measurement
+     * @param rangeRate observed value
+     * @param sigma theoretical standard deviation
+     */
+    public RangeRate(final TopocentricFrame station, final AbsoluteDate date,
+                     final double rangeRate, final double sigma) {
         super(date,
               new double[] {
-                            rangerate
-        }, 
-              new double[] {
-                            sigma
-        });
+                  rangeRate
+              }, new double[] {
+                  sigma
+              });
         this.station = station;
     }
+
+    /** {@inheritDoc} */
     @Override
-    public double[][] getPartialDerivatives(SpacecraftState state,
-                                            Map<String, double[]> parameters)
+    public double[][] getPartialDerivatives(final SpacecraftState state,
+                                            final Map<String, double[]> parameters)
         throws OrekitException {
         // TODO Auto-generated method stub
         return null;
     }
 
+    /** {@inheritDoc} */
     @Override
-    protected double[] getTheoreticalValue(SpacecraftState state,
-                                           SortedSet<Parameter> parameters)
+    protected double[] getTheoreticalValue(final SpacecraftState state,
+                                           final SortedSet<Parameter> parameters)
         throws OrekitException {
-        PVCoordinates scInStationFrame = state.getPVCoordinates(station);
-        Vector3D lignevisee = scInStationFrame.getPosition().normalize();
-        
+        final PVCoordinates scInStationFrame = state.getPVCoordinates(station);
+        final Vector3D lineOfSight = scInStationFrame.getPosition().normalize();
+
         return new double[] {
-                             lignevisee.dotProduct(scInStationFrame.getVelocity())
-                             };
+            Vector3D.dotProduct(scInStationFrame.getVelocity(), lineOfSight)
+        };
+
     }
 
 }
