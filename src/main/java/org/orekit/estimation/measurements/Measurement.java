@@ -115,7 +115,7 @@ public interface Measurement extends TimeStamped {
      * @param weight weight to set (must be non-negative)
      * @see #getWeight()
      */
-    void setWeight(double[] weight);
+    void setWeight(double ... weight);
 
     /** Get the simulated value.
      * <p>

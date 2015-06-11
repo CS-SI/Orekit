@@ -17,6 +17,7 @@
 package org.orekit.estimation.measurements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
@@ -38,6 +39,12 @@ public abstract class AbstractMeasurement implements Measurement {
     /** Observed value. */
     private final double[] observed;
 
+    /** Theoretical standard deviation. */
+    private final double[] sigma;
+
+    /** Weight. */
+    private final double[] weight;
+
     /** Modifiers that apply to the measurement.*/
     private final List<MeasurementModifier> modifiers;
 
@@ -50,10 +57,14 @@ public abstract class AbstractMeasurement implements Measurement {
      * </p>
      * @param date date of the measurement
      * @param observed observed value
+     * @param sigma theoretical standard deviation
      */
-    public AbstractMeasurement(final AbsoluteDate date, final double[] observed) {
+    public AbstractMeasurement(final AbsoluteDate date, final double[] observed, final double[] sigma) {
         this.date      = date;
         this.observed  = observed.clone();
+        this.sigma     = sigma.clone();
+        this.weight    = new double[observed.length];
+        Arrays.fill(weight, 1.0);
         this.modifiers = new ArrayList<MeasurementModifier>();
         setEnabled(true);
     }
@@ -74,6 +85,24 @@ public abstract class AbstractMeasurement implements Measurement {
     @Override
     public int getDimension() {
         return observed.length;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] getTheoreticalStandardDeviation() {
+        return sigma.clone();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double[] getWeight() {
+        return weight.clone();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setWeight(final double ... weight) {
+        System.arraycopy(weight, 0, this.weight, 0, getDimension());
     }
 
     /** Get the theoretical value.
