@@ -37,6 +37,7 @@ import org.apache.commons.math3.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -316,7 +317,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     public BoundedPropagator getGeneratedEphemeris()
         throws IllegalStateException {
         if (getMode() != EPHEMERIS_GENERATION_MODE) {
-            throw OrekitException.createIllegalStateException(OrekitMessages.PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE);
+            throw new OrekitIllegalStateException(OrekitMessages.PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE);
         }
         return ((EphemerisModeHandler) modeHandler).getEphemeris();
     }

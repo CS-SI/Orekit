@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -396,7 +397,7 @@ public class IntegratedEphemeris
                 return new IntegratedEphemeris(startDate, minDate, maxDate, mapper, meanOrbit, model,
                                                unmanaged, Arrays.asList(providers), equations);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

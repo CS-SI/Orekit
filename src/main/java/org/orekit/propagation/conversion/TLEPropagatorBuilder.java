@@ -24,6 +24,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -152,7 +153,7 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
         throws OrekitException {
 
         if (parameters.length != (freeParameters.size() + 6)) {
-            throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
+            throw new OrekitIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
         }
 
         // create the orbit

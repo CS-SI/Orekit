@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
@@ -141,7 +142,7 @@ public class EOPHistory implements Serializable {
             return beforeLeap ? interpolated : interpolated + 1.0;
         } catch (TimeStampedCacheException tce) {
             //this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -186,7 +187,7 @@ public class EOPHistory implements Serializable {
             return interpolated;
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -225,7 +226,7 @@ public class EOPHistory implements Serializable {
             return new PoleCorrection(interpolated[0], interpolated[1]);
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -253,7 +254,7 @@ public class EOPHistory implements Serializable {
             return interpolator.value(0);
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -281,7 +282,7 @@ public class EOPHistory implements Serializable {
             return interpolator.value(0);
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -375,7 +376,7 @@ public class EOPHistory implements Serializable {
                 // retrieve a managed frame
                 return new EOPHistory(conventions, entries, simpleEOP);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

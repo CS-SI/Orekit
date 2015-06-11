@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -444,7 +445,7 @@ public class DEFile {
         try {
             return new String(record, offset, length, "US-ASCII").trim();
         } catch (UnsupportedEncodingException uee) {
-            throw OrekitException.createInternalError(uee);
+            throw new OrekitInternalError(uee);
         }
     }
 

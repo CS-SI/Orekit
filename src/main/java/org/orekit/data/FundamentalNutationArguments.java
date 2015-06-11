@@ -33,6 +33,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
@@ -377,7 +378,7 @@ public class FundamentalNutationArguments implements Serializable {
                 // retrieve a managed frame
                 return new FundamentalNutationArguments(conventions, timeScale, coefficients);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

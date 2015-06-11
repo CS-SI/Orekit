@@ -26,6 +26,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -261,7 +262,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                         break;
                     default :
                         // this should never happen
-                        throw OrekitException.createInternalError(null);
+                        throw new OrekitInternalError(null);
                 }
             }
 
@@ -281,7 +282,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
         }
 
         // this should never happen
-        throw OrekitException.createInternalError(null);
+        throw new OrekitInternalError(null);
 
     }
 

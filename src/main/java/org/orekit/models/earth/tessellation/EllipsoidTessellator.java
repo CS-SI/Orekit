@@ -40,6 +40,7 @@ import org.apache.commons.math3.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 
 /** Class used to tessellate an interest zone on an ellipsoid in either
  * {@link Tile tiles} or grids of {@link GeodeticPoint geodetic points}.
@@ -671,7 +672,7 @@ public class EllipsoidTessellator {
                     }
                 default:
                     // this should not happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
         }
     }

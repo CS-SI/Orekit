@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.OrbitFile;
 import org.orekit.time.AbsoluteDate;
@@ -600,7 +601,7 @@ public abstract class ODMParser {
                 return missionReferenceDate.shiftedBy(offset);
             }
             default:
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
     }
 

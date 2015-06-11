@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.ode.AbstractParameterizable;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
@@ -182,7 +183,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
         throws OrekitException {
 
         if (parameters.length != (freeParameters.size() + 6)) {
-            throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
+            throw new OrekitIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
         }
 
         final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date,

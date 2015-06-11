@@ -38,6 +38,7 @@ import org.orekit.data.PolynomialParser;
 import org.orekit.data.PolynomialParser.Unit;
 import org.orekit.data.SimpleTimeStampedTableParser;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.EOPHistory;
@@ -1056,7 +1057,7 @@ public enum IERSConventions {
                             meanPoleY = interpolated[1];
                         } catch (TimeStampedCacheException tsce) {
                             // this should never happen
-                            throw OrekitException.createInternalError(tsce);
+                            throw new OrekitInternalError(tsce);
                         }
                     } else {
 

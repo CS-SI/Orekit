@@ -21,7 +21,7 @@ import java.util.Collection;
 import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.analysis.interpolation.FieldHermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -397,7 +397,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                 break;
             default :
                 // this should never happen
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
 
         // interpolate

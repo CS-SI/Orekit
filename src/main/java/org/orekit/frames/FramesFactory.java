@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -524,7 +525,7 @@ public class FramesFactory {
             case TEME :
                 return getTEME();
             default :
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
     }
 
@@ -573,7 +574,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             final Frame parent = getMOD(conventions);
 
@@ -646,7 +647,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
@@ -708,7 +709,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
@@ -760,7 +761,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
@@ -840,7 +841,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
@@ -913,7 +914,7 @@ public class FramesFactory {
         if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
             // this should never happen as this method is private and called
             // only above with controlled input
-            throw OrekitException.createInternalError(null);
+            throw new OrekitInternalError(null);
         }
 
         synchronized (FramesFactory.class) {
@@ -937,7 +938,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
@@ -1020,7 +1021,7 @@ public class FramesFactory {
         if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
             // this should never happen as this method is private and called
             // only above with controlled input
-            throw OrekitException.createInternalError(null);
+            throw new OrekitInternalError(null);
         }
 
         synchronized (FramesFactory.class) {
@@ -1045,7 +1046,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             final int interpolationPoints;
             final int pointsPerDay;
@@ -1127,7 +1128,7 @@ public class FramesFactory {
         if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
             // this should never happen as this method is private and called
             // only above with controlled input
-            throw OrekitException.createInternalError(null);
+            throw new OrekitInternalError(null);
         }
 
         synchronized (FramesFactory.class) {
@@ -1153,7 +1154,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
 
             // try to find an already built frame

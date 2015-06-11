@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -134,7 +135,7 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
         throws OrekitException {
 
         if (parameters.length != (freeParameters.size() + 6)) {
-            throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
+            throw new OrekitIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
         }
 
         final Orbit orb = getOrbitType().mapArrayToOrbit(parameters, getPositionAngle(), date, mu, frame);
@@ -186,7 +187,7 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
         freeParameters = new ArrayList<String>();
         for (String name : parameters) {
             if (!isSupported(name)) {
-                throw OrekitException.createIllegalArgumentException(LocalizedFormats.UNKNOWN_PARAMETER, name);
+                throw new OrekitIllegalArgumentException(LocalizedFormats.UNKNOWN_PARAMETER, name);
             }
         }
         freeParameters.addAll(parameters);

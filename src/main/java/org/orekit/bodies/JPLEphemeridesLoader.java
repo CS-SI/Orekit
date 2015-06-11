@@ -33,6 +33,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
@@ -388,7 +389,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 rawGM = getLoadedConstant("GM9", "GM_Plu");
                 break;
             default :
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
 
         final double au    = getLoadedAstronomicalUnit();
@@ -772,7 +773,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         try {
             return new String(record, offset, length, "US-ASCII").trim();
         } catch (UnsupportedEncodingException uee) {
-            throw OrekitException.createInternalError(uee);
+            throw new OrekitInternalError(uee);
         }
     }
 

@@ -21,7 +21,7 @@ import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
 /** Class representing a date broken up as year, month and day components.
@@ -143,8 +143,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         // very rough range check
         // (just to avoid ArrayOutOfboundException in MonthDayFactory later)
         if ((month < 1) || (month > 12)) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_MONTH,
-                                                                 month);
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_MONTH, month);
         }
 
         // start by trusting the parameters
@@ -158,8 +157,8 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         // check the parameters for mismatch
         // (i.e. invalid date components, like 29 february on non-leap years)
         if ((year != check.year) || (month != check.month) || (day != check.day)) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_YEAR_MONTH_DAY,
-                                                                 year, month, day);
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_YEAR_MONTH_DAY,
+                                                      year, month, day);
         }
 
     }
@@ -187,8 +186,8 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
         throws IllegalArgumentException {
         this(J2000_EPOCH, new DateComponents(year - 1, 12, 31).getJ2000Day() + dayNumber);
         if (dayNumber != getDayOfYear()) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_DAY_NUMBER_IN_YEAR,
-                                                                 dayNumber, year);
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_DAY_NUMBER_IN_YEAR,
+                                                     dayNumber, year);
         }
     }
 
@@ -259,8 +258,8 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
         // check the parameters for invalid date components
         if ((week != d.getCalendarWeek()) || (dayOfWeek != d.getDayOfWeek())) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_WEEK_DATE,
-                                                                 wYear, week, dayOfWeek);
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_WEEK_DATE,
+                                                     wYear, week, dayOfWeek);
         }
 
         return d;
@@ -315,7 +314,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
                                             Integer.parseInt(weekMatcher.group(3)));
         }
 
-        throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_DATE, string);
+        throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_DATE, string);
 
     }
 

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ImmutableTimeStampedCache;
@@ -140,7 +141,7 @@ public class UTCScale implements TimeScale {
                 return -cache.getNeighbors(date).get(0).getOffset(date);
             } catch (TimeStampedCacheException tce) {
                 // this should never happen as boundaries have been handled in the previous statements
-                throw OrekitException.createInternalError(tce);
+                throw new OrekitInternalError(tce);
             }
         }
     }
@@ -169,7 +170,7 @@ public class UTCScale implements TimeScale {
                 }
             } catch (TimeStampedCacheException tce) {
                 // this should never happen as boundaries have been handled in the previous statements
-                throw OrekitException.createInternalError(tce);
+                throw new OrekitInternalError(tce);
             }
         }
 
@@ -216,7 +217,7 @@ public class UTCScale implements TimeScale {
                 return date.compareTo(cache.getNeighbors(date).get(0).getValidityStart()) < 0;
             } catch (TimeStampedCacheException tce) {
                 // this should never happen as boundaries have been handled in the previous statements
-                throw OrekitException.createInternalError(tce);
+                throw new OrekitInternalError(tce);
             }
         }
     }
@@ -237,7 +238,7 @@ public class UTCScale implements TimeScale {
                 return cache.getNeighbors(date).get(0).getLeap();
             } catch (TimeStampedCacheException tce) {
                 // this should never happen as boundaries have been handled in the previous statements
-                throw OrekitException.createInternalError(tce);
+                throw new OrekitInternalError(tce);
             }
         }
     }
@@ -265,7 +266,7 @@ public class UTCScale implements TimeScale {
             try {
                 return TimeScalesFactory.getUTC();
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 
