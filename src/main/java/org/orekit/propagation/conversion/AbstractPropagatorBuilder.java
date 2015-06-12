@@ -111,7 +111,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** {@inheritDoc}
      * <p>
-     * The abstract base class only supports {@link #MU}, specialized propagator
+     * The abstract base class only supports {@link
+     * NewtonianAttraction#CENTRAL_ATTRACTION_COEFFICIENT}, specialized propagator
      * builders may support more parameters.
      * </p>
      */
@@ -125,7 +126,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** {@inheritDoc}
      * <p>
-     * The abstract base class only supports {@link #MU}, specialized propagator
+     * The abstract base class only supports {@link
+     * NewtonianAttraction#CENTRAL_ATTRACTION_COEFFICIENT}, specialized propagator
      * builders may support more parameters.
      * </p>
      */
