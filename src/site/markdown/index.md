@@ -133,6 +133,23 @@ Features
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
       * tabulated attitudes
 
+  * Orbit determination
+  
+    * batch least squares fitting of orbit
+    * several predefined measurements
+      * range
+      * range rate
+      * azimuth
+      * elevation
+      * position-velocity
+    * possibility to add custom measurements
+    * several predefined modifiers
+      * tropospheric effects
+      * antenna mounts
+      * biases
+      * delays
+    * possibility to add custom measurement modifiers (even for predefined events)
+
   * Orbit file handling
   
     * loading of SP3-a and SP3-c orbit files
