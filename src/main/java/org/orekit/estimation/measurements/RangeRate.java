@@ -21,7 +21,6 @@ import java.util.SortedSet;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -33,18 +32,21 @@ import org.orekit.utils.PVCoordinates;
 public class RangeRate extends AbstractMeasurement {
 
     /** Ground station from which measurement is performed. */
-    private final TopocentricFrame station;
+    private final GroundStation station;
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param rangeRate observed value
      * @param sigma theoretical standard deviation
+     * @exception OrekitException if a {@link Parameter} name conflict occurs
      */
-    public RangeRate(final TopocentricFrame station, final AbsoluteDate date,
-                     final double rangeRate, final double sigma) {
+    public RangeRate(final GroundStation station, final AbsoluteDate date,
+                     final double rangeRate, final double sigma)
+        throws OrekitException {
         super(date, rangeRate, sigma);
         this.station = station;
+        addSupportedParameter(station.getPositionOffset());
     }
 
     /** {@inheritDoc} */
@@ -57,7 +59,7 @@ public class RangeRate extends AbstractMeasurement {
         final Evaluation evaluation = new Evaluation(this, state, parameters);
 
         // range rate value
-        final PVCoordinates scInStationFrame = state.getPVCoordinates(station);
+        final PVCoordinates scInStationFrame = state.getPVCoordinates(station.getOffsetFrame());
         final Vector3D      lineOfSight      = scInStationFrame.getPosition().normalize();
         evaluation.setValue(Vector3D.dotProduct(scInStationFrame.getVelocity(), lineOfSight));
 

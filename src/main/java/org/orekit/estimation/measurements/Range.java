@@ -20,7 +20,6 @@ import java.util.SortedSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
-import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -32,18 +31,21 @@ import org.orekit.utils.PVCoordinates;
 public class Range extends AbstractMeasurement {
 
     /** Ground station from which measurement is performed. */
-    private final TopocentricFrame station;
+    private final GroundStation station;
 
     /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param range observed value
      * @param sigma theoretical standard deviation
+     * @exception OrekitException if a {@link Parameter} name conflict occurs
      */
-    public Range(final TopocentricFrame station, final AbsoluteDate date,
-                 final double range, final double sigma) {
+    public Range(final GroundStation station, final AbsoluteDate date,
+                 final double range, final double sigma)
+        throws OrekitException {
         super(date, range, sigma);
         this.station = station;
+        addSupportedParameter(station.getPositionOffset());
     }
 
     /** {@inheritDoc} */
@@ -56,7 +58,7 @@ public class Range extends AbstractMeasurement {
         final Evaluation evaluation = new Evaluation(this, state, parameters);
 
         // range value
-        final PVCoordinates scInStationFrame = state.getPVCoordinates(station);
+        final PVCoordinates scInStationFrame = state.getPVCoordinates(station.getOffsetFrame());
         evaluation.setValue(scInStationFrame.getPosition().getNorm());
 
         // TODO compute partial derivatives
