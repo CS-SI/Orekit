@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.List;
-import java.util.Map;
 import java.util.SortedSet;
 
 import org.orekit.errors.OrekitException;
@@ -37,7 +36,7 @@ import org.orekit.time.TimeStamped;
  * </p>
  * <p>
  * The theoretical values can be modified by registering one or several {@link
- * MeasurementModifier MeasurementModifier} objects. These objects will manage notions
+ * EvaluationModifier MeasurementModifier} objects. These objects will manage notions
  * like tropospheric delays, biases, ...
  * </p>
  * @author Luc Maisonobe
@@ -117,19 +116,6 @@ public interface Measurement extends TimeStamped {
      */
     void setWeight(double ... weight);
 
-    /** Get the simulated value.
-     * <p>
-     * The simulated value is the <em>addition</em> of the raw theoretical
-     * value and all the modifiers that apply to the measurement.
-     * </p>
-     * @param state orbital state at measurement date
-     * @param parameters model parameters set
-     * @return simulated value (array of size {@link #getDimension()}
-     * @exception OrekitException if value cannot be computed
-     */
-    double[] getSimulatedValue(SpacecraftState state, SortedSet<Parameter> parameters)
-        throws OrekitException;
-
     /** Get the observed value.
      * <p>
      * The observed value is the value that was measured by the instrument.
@@ -138,31 +124,38 @@ public interface Measurement extends TimeStamped {
      */
     double[] getObservedValue();
 
-    /** Get the partial derivatives of the {@link #getSimulatedValue(SpacecraftState, Map)}
-     * simulated measurement with respect to current state Cartesian coordinates.
-     * @param state orbital state at measurement date
-     * @param parameters model parameters map
-     * @return partial derivatives of the simulated value (array of size
-     * {@link #getDimension() x 6}
-     * @exception OrekitException if derivatives cannot be computed
-     */
-    double[][] getPartialDerivatives(SpacecraftState state, Map<String, double[]> parameters)
-        throws OrekitException;
-
     /** Add a modifier.
      * <p>
      * The modifiers are applied in the order in which they are added in order to
-     * compute the {@link #getSimulatedValue(SpacecraftState, Map) simulated value}.
+     * {@link #evaluate(SpacecraftState, SortedSet) evaluate} the measurement.
      * </p>
      * @param modifier modifier to add
      * @see #getModifiers()
      */
-    void addModifier(MeasurementModifier modifier);
+    void addModifier(EvaluationModifier modifier);
 
     /** Get the modifiers that apply to a measurement.
      * @return modifiers that apply to a measurement
-     * @see #addModifier(MeasurementModifier)
+     * @see #addModifier(EvaluationModifier)
      */
-    List<MeasurementModifier> getModifiers();
+    List<EvaluationModifier> getModifiers();
+
+    /** Get the parameters supported by this measurement.
+     * @return parameters supported by this measurement
+     */
+    SortedSet<Parameter> getSupportedParameters();
+
+    /** Evaluate the measurement.
+     * <p>
+     * The evaluated value is the <em>combination</em> of the raw theoretical
+     * value and all the modifiers that apply to the measurement.
+     * </p>
+     * @param state orbital state at measurement date
+     * @param parameters model parameters set
+     * @return evaluated measurement
+     * @exception OrekitException if value cannot be computed
+     */
+    Evaluation evaluate(SpacecraftState state, SortedSet<Parameter> parameters)
+        throws OrekitException;
 
 }

@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Map;
 import java.util.SortedSet;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -44,35 +43,27 @@ public class RangeRate extends AbstractMeasurement {
      */
     public RangeRate(final TopocentricFrame station, final AbsoluteDate date,
                      final double rangeRate, final double sigma) {
-        super(date,
-              new double[] {
-                  rangeRate
-              }, new double[] {
-                  sigma
-              });
+        super(date, rangeRate, sigma);
         this.station = station;
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[][] getPartialDerivatives(final SpacecraftState state,
-                                            final Map<String, double[]> parameters)
+    protected Evaluation theoreticalEvaluation(final SpacecraftState state,
+                                               final SortedSet<Parameter> parameters)
         throws OrekitException {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
-    /** {@inheritDoc} */
-    @Override
-    protected double[] getTheoreticalValue(final SpacecraftState state,
-                                           final SortedSet<Parameter> parameters)
-        throws OrekitException {
+        // prepare the evaluation
+        final Evaluation evaluation = new Evaluation(this, state, parameters);
+
+        // range rate value
         final PVCoordinates scInStationFrame = state.getPVCoordinates(station);
-        final Vector3D lineOfSight = scInStationFrame.getPosition().normalize();
+        final Vector3D      lineOfSight      = scInStationFrame.getPosition().normalize();
+        evaluation.setValue(Vector3D.dotProduct(scInStationFrame.getVelocity(), lineOfSight));
 
-        return new double[] {
-            Vector3D.dotProduct(scInStationFrame.getVelocity(), lineOfSight)
-        };
+        // TODO compute partial derivatives
+
+        return evaluation;
 
     }
 

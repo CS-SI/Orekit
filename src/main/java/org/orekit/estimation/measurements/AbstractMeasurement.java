@@ -21,8 +21,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Parameter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -32,6 +34,9 @@ import org.orekit.time.AbsoluteDate;
  * @since 7.1
  */
 public abstract class AbstractMeasurement implements Measurement {
+
+    /** List of the supported parameters. */
+    private SortedSet<Parameter> supportedParameters;
 
     /** Date of the measurement. */
     private final AbsoluteDate date;
@@ -46,12 +51,36 @@ public abstract class AbstractMeasurement implements Measurement {
     private final double[] weight;
 
     /** Modifiers that apply to the measurement.*/
-    private final List<MeasurementModifier> modifiers;
+    private final List<EvaluationModifier> modifiers;
 
     /** Enabling status. */
     private boolean enabled;
 
-    /** Simple constructor.
+    /** Simple constructor for mono-dimensional measurements.
+     * <p>
+     * At construction, a measurement is enabled.
+     * </p>
+     * @param date date of the measurement
+     * @param observed observed value
+     * @param sigma theoretical standard deviation
+     */
+    public AbstractMeasurement(final AbsoluteDate date, final double observed, final double sigma) {
+        this.supportedParameters = new TreeSet<Parameter>();
+        this.date       = date;
+        this.observed   = new double[] {
+            observed
+        };
+        this.sigma      = new double[] {
+            sigma
+        };
+        this.weight     = new double[] {
+            1.0
+        };
+        this.modifiers = new ArrayList<EvaluationModifier>();
+        setEnabled(true);
+    }
+
+    /** Simple constructor, for multi-dimensional measurements.
      * <p>
      * At construction, a measurement is enabled.
      * </p>
@@ -60,13 +89,38 @@ public abstract class AbstractMeasurement implements Measurement {
      * @param sigma theoretical standard deviation
      */
     public AbstractMeasurement(final AbsoluteDate date, final double[] observed, final double[] sigma) {
-        this.date      = date;
-        this.observed  = observed.clone();
-        this.sigma     = sigma.clone();
-        this.weight    = new double[observed.length];
+        this.supportedParameters = new TreeSet<Parameter>();
+        this.date       = date;
+        this.observed   = observed.clone();
+        this.sigma      = sigma.clone();
+        this.weight     = new double[observed.length];
         Arrays.fill(weight, 1.0);
-        this.modifiers = new ArrayList<MeasurementModifier>();
+        this.modifiers = new ArrayList<EvaluationModifier>();
         setEnabled(true);
+    }
+
+    /** Add a supported parameter.
+     * @param parameter supported parameter
+     * @exception OrekitException if a parameter with the same name already exists
+     */
+    protected void addSupportedParameter(final Parameter parameter)
+        throws OrekitException {
+        if (supportedParameters.contains(parameter)) {
+            // a parameter with this name already exists in the set,
+            // check if it is really the same parameter or a duplicated name
+            if (supportedParameters.tailSet(parameter).first() != parameter) {
+                // we have two different parameters sharing the same name
+                throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
+                                          parameter.getName());
+            }
+        } else {
+            supportedParameters.add(parameter);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public SortedSet<Parameter> getSupportedParameters() {
+        return Collections.unmodifiableSortedSet(supportedParameters);
     }
 
     /** {@inheritDoc} */
@@ -105,34 +159,34 @@ public abstract class AbstractMeasurement implements Measurement {
         System.arraycopy(weight, 0, this.weight, 0, getDimension());
     }
 
-    /** Get the theoretical value.
+    /** Compute the theoretical value.
      * <p>
      * The theoretical value does not have <em>any</em> modifiers applied.
      * </p>
      * @param state orbital state at measurement date
      * @param parameters model parameters set
-     * @return theoretical value (array of size {@link #getDimension()}
+     * @return theoretical value
      * @exception OrekitException if value cannot be computed
-     * @see #getSimulatedValue(SpacecraftState, SortedSet)
+     * @see #evaluate(SpacecraftState, SortedSet)
      */
-    protected abstract double[] getTheoreticalValue(final SpacecraftState state,
-                                                    final SortedSet<Parameter> parameters)
+    protected abstract Evaluation theoreticalEvaluation(final SpacecraftState state,
+                                                        final SortedSet<Parameter> parameters)
         throws OrekitException;
 
     /** {@inheritDoc} */
     @Override
-    public double[] getSimulatedValue(final SpacecraftState state, final SortedSet<Parameter> parameters)
+    public Evaluation evaluate(final SpacecraftState state, final SortedSet<Parameter> parameters)
         throws OrekitException {
 
         // compute the theoretical value
-        double[] value = getTheoreticalValue(state, parameters);
+        final Evaluation evaluation = theoreticalEvaluation(state, parameters);
 
         // apply the modifiers
-        for (final MeasurementModifier modifier : modifiers) {
-            value = modifier.apply(state, parameters, value, this);
+        for (final EvaluationModifier modifier : modifiers) {
+            modifier.modify(evaluation);
         }
 
-        return value;
+        return evaluation;
 
     }
 
@@ -150,13 +204,13 @@ public abstract class AbstractMeasurement implements Measurement {
 
     /** {@inheritDoc} */
     @Override
-    public void addModifier(final MeasurementModifier modifier) {
+    public void addModifier(final EvaluationModifier modifier) {
         modifiers.add(modifier);
     }
 
     /** {@inheritDoc} */
     @Override
-    public List<MeasurementModifier> getModifiers() {
+    public List<EvaluationModifier> getModifiers() {
         return Collections.unmodifiableList(modifiers);
     }
 

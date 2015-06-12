@@ -29,26 +29,31 @@
   package org.orekit.estimation.measurements #ECEBD8 {
 
     interface Measurement {
+      +getDimension()
       +isEnabled()
+      +setEnabled()
       +getObservedValue()
+      +getSupportedParameters()
       +getTheoreticalStandardDeviation()
       +getWeight()
       +setWeight()
       +addModifier(modifier)
+      +getModifiers()
       +evaluate(state, parameters)
     }
     
     class Evaluation {
+      +getMeasurement()
       +getState()
       +getParameters()
-      +getTimeOffset()
-      +getSimulatedValue()
-      +getPartialDerivatives()
+      +[get|set]TimeOffset()
+      +[get|set]Value()
+      +[get|set]StateDerivatives()
+      +[get|set]ParameterDerivatives()
     }
     
     interface EvaluationModifier {
-      +getParameters()
-      +isSupported(parameter)
+      +getSupportedParameters()
       +modify(evaluation)
     }
     
@@ -58,13 +63,12 @@
     Measurement --> Evaluation : create
     Evaluation <-- EvaluationModifier : modify
     class "..." as OtherMeasurement
-    OtherMeasurement ..|> Measurement
-    Range      ..|> Measurement
-    RangeRate  ..|> Measurement
-    AzimuthElevation  ..|> Measurement
-    PV         ..|> Measurement
+    OtherMeasurement   ..|> Measurement
+    Range              ..|> Measurement
+    RangeRate          ..|> Measurement
+    AzimuthElevation   ..|> Measurement
+    PV                 ..|> Measurement
     EvaluationModifier <|.. Bias
-    EvaluationModifier <|.. StationPositionOffset
     EvaluationModifier <|.. CardanAntennaMount
     EvaluationModifier <|.. OtherModifier
 

@@ -17,14 +17,12 @@
 package org.orekit.estimation.measurements;
 
 import java.util.List;
-import java.util.SortedSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
-import org.orekit.propagation.SpacecraftState;
 
 
-/** Interface for measurements modifiers used for orbit determination.
+/** Interface for measurements evaluations modifiers used for orbit determination.
  * <p>
  * Modifiers are used to take some physical corrections into account in
  * the theoretical {@link Measurement measurement} model. They can be
@@ -42,30 +40,18 @@ import org.orekit.propagation.SpacecraftState;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public interface MeasurementModifier {
+public interface EvaluationModifier {
 
-    /** Get the parameters used by this modifier.
-     * @return parameters used by this modifier
+    /** Get the parameters supported by this modifier.
+     * @return parameters supported by this modifier
      */
-    List<Parameter> getParameters();
+    List<Parameter> getSupportedParameters();
 
-    /** Check if a parameter is used by this modifier.
-     * @param parameter parameter
-     * @return true if parameter is used by this modifier
-     */
-    boolean isSupported(Parameter parameter);
-
-    /** Apply a modifier to a simulated measurement.
-     * @param state orbital state at measurement date
-     * @param parameters model parameters set
-     * @param baseValue measurement value before the modifier is applied
-     * (sum of theoretical value and previous modifiers already applied)
-     * @param measurement measurement to which the modifier applies
-     * @return simulated measurement value with modifier applied
+    /** Apply a modifier to an evaluated measurement.
+     * @param evaluation measurement evaluation to modify
      * @exception OrekitException if modifier cannot be applied
      */
-    double[] apply(SpacecraftState state, SortedSet<Parameter> parameters,
-                   double[] baseValue, Measurement measurement)
+    void modify(final Evaluation evaluation)
         throws OrekitException;
 
 }

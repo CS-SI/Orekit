@@ -19,10 +19,10 @@
  * determination measurements.
  * Both the theoretical values and the modifications that can be applied
  * to them. All measurements must implement the {@link
- *  org.orekit.estimation.measurements.Measurements} interface, which is the
+ * org.orekit.estimation.measurements.Measurement} interface, which is the
  * public API that the engine will use to deal with all measurements. The
  * theoretical values can be modified by registering one or several {@link
- * org.orekit.estimation.measurements.MeasurementModifier} objects. These
+ * org.orekit.estimation.measurements.EvaluationModifier} objects. These
  * objects will manage notions like tropospheric delays, biases, ...
  * @since 7.1
  * @author Luc Maisonobe

@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Map;
 import java.util.SortedSet;
 
 import org.orekit.errors.OrekitException;
@@ -43,33 +42,27 @@ public class Range extends AbstractMeasurement {
      */
     public Range(final TopocentricFrame station, final AbsoluteDate date,
                  final double range, final double sigma) {
-        super(date,
-              new double[] {
-                  range
-              }, new double[] {
-                  sigma
-              });
+        super(date, range, sigma);
         this.station = station;
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[][] getPartialDerivatives(final SpacecraftState state,
-                                            final Map<String, double[]> parameters)
+    protected Evaluation theoreticalEvaluation(final SpacecraftState state,
+                                               final SortedSet<Parameter> parameters)
         throws OrekitException {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
-    /** {@inheritDoc} */
-    @Override
-    protected double[] getTheoreticalValue(final SpacecraftState state,
-                                           final SortedSet<Parameter> parameters)
-        throws OrekitException {
+        // prepare the evaluation
+        final Evaluation evaluation = new Evaluation(this, state, parameters);
+
+        // range value
         final PVCoordinates scInStationFrame = state.getPVCoordinates(station);
-        return new double[] {
-                             scInStationFrame.getPosition().getNorm()
-        };
+        evaluation.setValue(scInStationFrame.getPosition().getNorm());
+
+        // TODO compute partial derivatives
+
+        return evaluation;
+
     }
 
 }

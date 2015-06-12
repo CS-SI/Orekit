@@ -20,7 +20,7 @@
  * Users will typically create one instance of this object, register all
  * observation data as {@link org.orekit.estimation.measurements.Measurement
  * measurements} with their included {@link
- * org.orekit.estimation.measurements.MeasurementModifier modifiers}, and
+ * org.orekit.estimation.measurements.EvaluationModifier modifiers}, and
  * run the {@link org.orekit.estimation.leastsquares.BatchLSEstimator least
  * squares estimator}. At the end of the process, the orbital state and the
  * estimated parameters will be available.

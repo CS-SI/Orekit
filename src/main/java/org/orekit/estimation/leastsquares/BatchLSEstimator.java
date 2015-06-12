@@ -34,8 +34,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Parameter;
+import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
-import org.orekit.estimation.measurements.MeasurementModifier;
+import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -123,8 +124,8 @@ public class BatchLSEstimator {
         measurements.add(measurement);
 
         // add parameters
-        for (final MeasurementModifier modifier : measurement.getModifiers()) {
-            for (final Parameter parameter : modifier.getParameters()) {
+        for (final EvaluationModifier modifier : measurement.getModifiers()) {
+            for (final Parameter parameter : modifier.getSupportedParameters()) {
                 if (parameters.contains(parameter)) {
                     // a parameter with this name already exists in the set,
                     // check if it is really the same parameter or a duplicated name
@@ -277,9 +278,9 @@ public class BatchLSEstimator {
 
     /** Fetch a simulated measurement during propagation.
      * @param index index of the measurement first component
-     * @param value simulated value for the measurement
+     * @param evaluation measurement evaluation
      */
-    private void fetchSimulatedMeasurement(final int index, final double[] value) {
+    private void fetchSimulatedMeasurement(final int index, final Evaluation evaluation) {
         // TODO
     }
 
@@ -334,7 +335,7 @@ public class BatchLSEstimator {
                                                     throws OrekitException {
 
             // fetch the simulated measurement value to the estimator
-            fetchSimulatedMeasurement(index, measurement.getSimulatedValue(s, getParameters()));
+            fetchSimulatedMeasurement(index, measurement.evaluate(s, getParameters()));
 
             return Action.CONTINUE;
 
