@@ -151,11 +151,10 @@ public interface Measurement extends TimeStamped {
      * value and all the modifiers that apply to the measurement.
      * </p>
      * @param state orbital state at measurement date
-     * @param parameters model parameters set
      * @return evaluated measurement
      * @exception OrekitException if value cannot be computed
      */
-    Evaluation evaluate(SpacecraftState state, SortedSet<Parameter> parameters)
+    Evaluation evaluate(SpacecraftState state)
         throws OrekitException;
 
 }

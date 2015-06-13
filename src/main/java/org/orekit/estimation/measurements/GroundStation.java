@@ -16,15 +16,23 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
+import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.frames.Transform;
 
 /** Class modeling a ground station that can perform some measurements.
+ * <p>
+ * This class adds a position offset parameter to a base {@link TopocentricFrame
+ * topocentric frame}.
+ * </p>
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class GroundStation {
+public class GroundStation extends Parameter {
 
     /** Suffix for ground station position offset parameter name. */
     public static final String OFFSET_SUFFIX = "-offset";
@@ -32,15 +40,40 @@ public class GroundStation {
     /** Base frame associated with the station. */
     private final TopocentricFrame baseFrame;
 
-    /** Position offset parameter. */
-    private final Parameter positionOffset;
+    /** Offset frame associated with the station, taking offset parameter into account. */
+    private TopocentricFrame offsetFrame;
 
     /** Simple constructor.
      * @param baseFrame base frame associated with the station
+     * @exception OrekitException if some frame transforms cannot be computed
      */
-    public GroundStation(final TopocentricFrame baseFrame) {
+    public GroundStation(final TopocentricFrame baseFrame)
+        throws OrekitException {
+
+        super(baseFrame.getName() + OFFSET_SUFFIX);
         this.baseFrame = baseFrame;
-        positionOffset = new Parameter(baseFrame.getName() + OFFSET_SUFFIX, new double[3], false);
+
+        // position offset parameter
+        setValue(0.0, 0.0, 0.0);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void valueChanged(final double[] newValue) throws OrekitException {
+
+        // estimate new origin for offset frame, in body frame
+        final Frame     bodyFrame    = baseFrame.getParent();
+        final Transform baseToBody   = baseFrame.getTransformTo(bodyFrame, null);
+        final Vector3D  origin       = baseToBody.transformPosition(new Vector3D(newValue[0],
+                                                                                 newValue[1],
+                                                                                 newValue[2]));
+        final GeodeticPoint originGP = baseFrame.getParentShape().transform(origin, bodyFrame, null);
+
+        // create a new topocentric frame at parameterized origin
+        offsetFrame = new TopocentricFrame(baseFrame.getParentShape(), originGP,
+                                           baseFrame.getName() + OFFSET_SUFFIX);
+
     }
 
     /** Get the base frame associated with the station.
@@ -60,20 +93,7 @@ public class GroundStation {
      * @return offset frame associated with the station
      */
     public TopocentricFrame getOffsetFrame() {
-        final GeodeticPoint gp    = baseFrame.getPoint();
-        final double[]      delta = positionOffset.getValue();
-        return new TopocentricFrame(baseFrame.getParentShape(),
-                                    new GeodeticPoint(gp.getLatitude()  + delta[0],
-                                                      gp.getLongitude() + delta[1],
-                                                      gp.getAltitude()  + delta[2]),
-                                    baseFrame.getName());
-    }
-
-    /** Get the position offset parameter.
-     * @return position offset parameter
-     */
-    public Parameter getPositionOffset() {
-        return positionOffset;
+        return offsetFrame;
     }
 
 }

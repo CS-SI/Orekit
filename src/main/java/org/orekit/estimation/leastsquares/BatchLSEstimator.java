@@ -105,10 +105,10 @@ public class BatchLSEstimator {
 
     }
 
-    /** Get the parameters.
-     * @return model parameters set (lexicographically sorted using parameter names)
+    /** Get the parameters supported by this estimator (including measurements and modifiers).
+     * @return parameters supported by this estimator (including measurements and modifiers)
      */
-    public SortedSet<Parameter> getParameters() {
+    public SortedSet<Parameter> getSupportedParameters() {
         return Collections.unmodifiableSortedSet(parameters);
     }
 
@@ -335,7 +335,7 @@ public class BatchLSEstimator {
                                                     throws OrekitException {
 
             // fetch the simulated measurement value to the estimator
-            fetchSimulatedMeasurement(index, measurement.evaluate(s, getParameters()));
+            fetchSimulatedMeasurement(index, measurement.evaluate(s));
 
             return Action.CONTINUE;
 

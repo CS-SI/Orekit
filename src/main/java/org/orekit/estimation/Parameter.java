@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation;
 
+import org.orekit.errors.OrekitException;
 
 
 /** Class representing a single parameter that can be estimated.
@@ -27,7 +28,7 @@ package org.orekit.estimation;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class Parameter implements Comparable<Parameter> {
+public abstract class Parameter implements Comparable<Parameter> {
 
     /** Name of the parameter. */
     private final String name;
@@ -39,14 +40,15 @@ public class Parameter implements Comparable<Parameter> {
     private boolean estimated;
 
     /** Simple constructor.
+     * <p>
+     * At construction, the parameter is configured as <em>not</em> estimated
+     * and it is <em>not</em> initialized.
+     * </p>
      * @param name name of the parameter
-     * @param value initial value
-     * @param estimated if true, the parameter will be estimated
      */
-    public Parameter(final String name, final double[] value, final boolean estimated) {
+    protected Parameter(final String name) {
         this.name      = name;
-        this.value     = value.clone();
-        this.estimated = estimated;
+        this.estimated = false;
     }
 
     /** Get name.
@@ -72,10 +74,18 @@ public class Parameter implements Comparable<Parameter> {
 
     /** Set parameter value.
      * @param value new value
+     * @exception OrekitException if value is invalid
      */
-    public void setValue(final double[] value) {
+    public void setValue(final double ... value) throws OrekitException {
         System.arraycopy(value, 0, this.value, 0, value.length);
+        valueChanged(this.value);
     }
+
+    /** Notify that the values has been changed.
+     * @param newValue new value
+     * @exception OrekitException if value is invalid
+     */
+    protected abstract void valueChanged(final double[] newValue) throws OrekitException;
 
     /** Configure a parameter estimation status.
      * @param estimated if true the parameter will be estimated,

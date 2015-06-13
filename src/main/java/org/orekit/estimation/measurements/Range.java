@@ -16,10 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.SortedSet;
-
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.Parameter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -38,24 +35,24 @@ public class Range extends AbstractMeasurement {
      * @param date date of the measurement
      * @param range observed value
      * @param sigma theoretical standard deviation
-     * @exception OrekitException if a {@link Parameter} name conflict occurs
+     * @exception OrekitException if a {@link org.orekit.estimation.Parameter}
+     * name conflict occurs
      */
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma)
         throws OrekitException {
         super(date, range, sigma);
         this.station = station;
-        addSupportedParameter(station.getPositionOffset());
+        addSupportedParameter(station);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation theoreticalEvaluation(final SpacecraftState state,
-                                               final SortedSet<Parameter> parameters)
+    protected Evaluation theoreticalEvaluation(final SpacecraftState state)
         throws OrekitException {
 
         // prepare the evaluation
-        final Evaluation evaluation = new Evaluation(this, state, parameters);
+        final Evaluation evaluation = new Evaluation(this, state);
 
         // range value
         final PVCoordinates scInStationFrame = state.getPVCoordinates(station.getOffsetFrame());

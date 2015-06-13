@@ -18,11 +18,9 @@ package org.orekit.estimation.measurements;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedSet;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.Parameter;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class holding a theoretical evaluation of one {@link Measurement measurement}.
@@ -36,9 +34,6 @@ public class Evaluation {
 
     /** State of the spacecraft. */
     private final SpacecraftState state;
-
-    /** Model parameters. */
-    private final SortedSet<Parameter> parameters;
 
     /** Time offset from state date to measurement date. */
     private double timeOffset;
@@ -55,13 +50,10 @@ public class Evaluation {
     /** Simple constructor.
      * @param measurement associated measurement
      * @param state state of the spacecraft
-     * @param parameters model parameters
      */
-    public Evaluation(final Measurement measurement, final SpacecraftState state,
-                      final SortedSet<Parameter> parameters) {
+    public Evaluation(final Measurement measurement, final SpacecraftState state) {
         this.measurement           = measurement;
         this.state                 = state;
-        this.parameters            = parameters;
         this.parametersDerivatives = new HashMap<String, double[][]>();
     }
 
@@ -77,13 +69,6 @@ public class Evaluation {
      */
     public SpacecraftState getState() {
         return state;
-    }
-
-    /** Get the model parameters.
-     * @return model parameters
-     */
-    public SortedSet<Parameter> getParameters() {
-        return parameters;
     }
 
     /** Get the time offset from state date to measurement date.

@@ -39,13 +39,12 @@
       +setWeight()
       +addModifier(modifier)
       +getModifiers()
-      +evaluate(state, parameters)
+      +evaluate(state)
     }
     
     class Evaluation {
       +getMeasurement()
       +getState()
-      +getParameters()
       +[get|set]TimeOffset()
       +[get|set]Value()
       +[get|set]StateDerivatives()

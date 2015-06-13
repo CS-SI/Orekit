@@ -164,22 +164,20 @@ public abstract class AbstractMeasurement implements Measurement {
      * The theoretical value does not have <em>any</em> modifiers applied.
      * </p>
      * @param state orbital state at measurement date
-     * @param parameters model parameters set
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftState, SortedSet)
      */
-    protected abstract Evaluation theoreticalEvaluation(final SpacecraftState state,
-                                                        final SortedSet<Parameter> parameters)
+    protected abstract Evaluation theoreticalEvaluation(final SpacecraftState state)
         throws OrekitException;
 
     /** {@inheritDoc} */
     @Override
-    public Evaluation evaluate(final SpacecraftState state, final SortedSet<Parameter> parameters)
+    public Evaluation evaluate(final SpacecraftState state)
         throws OrekitException {
 
         // compute the theoretical value
-        final Evaluation evaluation = theoreticalEvaluation(state, parameters);
+        final Evaluation evaluation = theoreticalEvaluation(state);
 
         // apply the modifiers
         for (final EvaluationModifier modifier : modifiers) {

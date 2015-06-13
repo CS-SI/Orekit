@@ -78,3 +78,20 @@ generic events handling mechanism and the orbit determination framework. At each
 and Jacobians from the propagator side, it calls the measurement methods to get the residuals and the partial
 derivatives on the measurements side, and it fetches the least squares estimator with the combined values, to be
 provided back to the Apache Commons Math algorithm, thus closing the loop.
+
+The orbital state is always estimated. Users can also estimate some model or measurements parameters. These parameters
+are modeled using the `Parameter` class, which is essentially  a key-value pair with multi-dimensional values. The
+parameters can be flagged as estimated or fixed, and the values can be modified. Each measurement or modifier that
+support some parameters will create one instance for each parameter. The `BatchLSEstimator` estimator will retrieve
+all the parameters and the caller can select the set of parameters that should be estimated for a given run. At each
+iteration of the least squares solver, the test values for the estimated parameters will be reset.
+
+![orbit determination parameters class diagram](../images/design/orbit-determination-parameters-class-diagram.png)
+
+The class diagram above depicts the parameter update mechanism for the case of ground station position offset. The
+`Range` and `RangeRate` measurements classes refer to a `GroundStation` instance (one instance shared by all
+measurements using this station) that itself is a 3-dimensional parameter representing the adjustable
+offset for station position. When station position offset is flagged to be estimated, the `BatchLSEstimator` will
+change its value at each iteration. The `Range` and `RangeRate` measurements theoretical values will therefore
+be computed naturally using the updated station position.
+

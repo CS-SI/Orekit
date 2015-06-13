@@ -16,11 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.SortedSet;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.Parameter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -39,24 +36,24 @@ public class RangeRate extends AbstractMeasurement {
      * @param date date of the measurement
      * @param rangeRate observed value
      * @param sigma theoretical standard deviation
-     * @exception OrekitException if a {@link Parameter} name conflict occurs
+     * @exception OrekitException if a {@link org.orekit.estimation.Parameter}
+     * name conflict occurs
      */
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma)
         throws OrekitException {
         super(date, rangeRate, sigma);
         this.station = station;
-        addSupportedParameter(station.getPositionOffset());
+        addSupportedParameter(station);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation theoreticalEvaluation(final SpacecraftState state,
-                                               final SortedSet<Parameter> parameters)
+    protected Evaluation theoreticalEvaluation(final SpacecraftState state)
         throws OrekitException {
 
         // prepare the evaluation
-        final Evaluation evaluation = new Evaluation(this, state, parameters);
+        final Evaluation evaluation = new Evaluation(this, state);
 
         // range rate value
         final PVCoordinates scInStationFrame = state.getPVCoordinates(station.getOffsetFrame());
