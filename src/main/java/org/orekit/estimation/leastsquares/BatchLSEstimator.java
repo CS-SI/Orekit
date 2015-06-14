@@ -26,24 +26,14 @@ import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Parameter;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.EvaluationModifier;
+import org.orekit.estimation.measurements.Measurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.time.AbsoluteDate;
 
 
 /** Least squares estimator for orbit determination.
@@ -55,20 +45,11 @@ public class BatchLSEstimator {
     /** Builder for propagator. */
     private final PropagatorBuilder propagatorBuilder;
 
-    /** Measurements. */
-    private final List<Measurement> measurements;
-
     /** Parameters. */
     private final SortedSet<Parameter> parameters;
 
-    /** Orbit date. */
-    private AbsoluteDate date;
-
-    /** Date of the first enabled measurement. */
-    private AbsoluteDate firstDate;
-
-    /** Date of the last enabled measurement. */
-    private AbsoluteDate lastDate;
+    /** Measurements. */
+    private final List<Measurement> measurements;
 
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
@@ -85,14 +66,11 @@ public class BatchLSEstimator {
      */
     public BatchLSEstimator(final PropagatorBuilder propagatorBuilder,
                             final LeastSquaresOptimizer optimizer) {
-        this.propagatorBuilder = propagatorBuilder;
         this.measurements      = new ArrayList<Measurement>();
         this.parameters        = new TreeSet<Parameter>();
         this.optimizer         = optimizer;
         this.lsBuilder         = new LeastSquaresBuilder();
-
-        // set up the model
-        lsBuilder.model(new Model());
+        this.propagatorBuilder = propagatorBuilder;
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -169,8 +147,6 @@ public class BatchLSEstimator {
      */
     public Orbit estimate(final Orbit initialGuess) throws OrekitException {
 
-        date = initialGuess.getDate();
-
         // compute problem dimension
         int n = 6;
         for (final Parameter parameter : parameters) {
@@ -210,6 +186,10 @@ public class BatchLSEstimator {
         }
         lsBuilder.target(target);
 
+        // set up the model
+        final Model model = new Model(propagatorBuilder, initialGuess.getDate(), parameters, measurements);
+        lsBuilder.model(model);
+
         // solve the problem
         try {
             optimum = optimizer.optimize(lsBuilder.build());
@@ -217,137 +197,8 @@ public class BatchLSEstimator {
             throw oew.getException();
         }
 
-        // extract the orbit
-        return configurePropagator(optimum.getPoint(), false).getInitialState().getOrbit();
-
-    }
-
-    /** Configure the propagator and parameters corresponding to an evaluation point.
-     * @param point evaluation point
-     * @param setUpEvents if true, events detectors will be set up
-     * @return configured propagator
-     * @exception OrekitException if orbit cannot be created with the current point
-     */
-    private Propagator configurePropagator(final RealVector point, final boolean setUpEvents)
-        throws OrekitException {
-
-        // set up the propagator
-        final Propagator propagator =
-                propagatorBuilder.buildPropagator(date, point.toArray());
-
-        // set up the measurement modifiers parameters
-        int n = 6;
-        for (final Parameter parameter : parameters) {
-            if (parameter.isEstimated()) {
-                final double[] parameterValue = new double[parameter.getDimension()];
-                for (int i = 0; i < parameterValue.length; ++i) {
-                    parameterValue[i] = point.getEntry(n + i);
-                }
-                parameter.setValue(parameterValue);
-                n += parameter.getDimension();
-            }
-        }
-
-        if (setUpEvents) {
-
-            firstDate = AbsoluteDate.FUTURE_INFINITY;
-            lastDate  = AbsoluteDate.PAST_INFINITY;
-
-            // set up events to handle measurements
-            int p = 0;
-            for (final Measurement measurement : measurements) {
-                if (measurement.isEnabled()) {
-                    final AbsoluteDate       md = measurement.getDate();
-                    if (md.compareTo(firstDate) < 0) {
-                        firstDate = md;
-                    }
-                    if (md.compareTo(lastDate) > 0) {
-                        lastDate = md;
-                    }
-                    final MeasurementHandler mh = new MeasurementHandler(measurement, p);
-                    propagator.addEventDetector(new DateDetector(md).withHandler(mh));
-                    p += measurement.getDimension();
-                }
-            }
-
-        }
-
-        return propagator;
-
-    }
-
-    /** Fetch a simulated measurement during propagation.
-     * @param index index of the measurement first component
-     * @param evaluation measurement evaluation
-     */
-    private void fetchSimulatedMeasurement(final int index, final Evaluation evaluation) {
-        // TODO
-    }
-
-    /** Bridge between {@link Measurement measurements} and {@link LeastSquaresProblem
-     * least squares problems}.
-     */
-    private class Model implements MultivariateJacobianFunction {
-
-        /** {@inheritDoc} */
-        @Override
-        public Pair<RealVector, RealMatrix> value(final RealVector point)
-            throws OrekitExceptionWrapper {
-            try {
-
-                final Propagator propagator = configurePropagator(point, true);
-                propagator.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
-
-                // TODO
-                return null;
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
-        }
-
-    }
-
-    /** Bridge between {@link org.orekit.propagation.events.EventDetector events} and
-     * {@link Measurement measurements}.
-     */
-    private class MeasurementHandler implements EventHandler<DateDetector> {
-
-        /** Underlying measurement. */
-        private final Measurement measurement;
-
-        /** Index of the first measurement component in the estimator. */
-        private final int index;
-
-        /** Simple constructor.
-         * @param measurement underlying measurement
-         * @param index index of the first measurement component in the estimator
-         */
-        public MeasurementHandler(final Measurement measurement, final int index) {
-            this.measurement = measurement;
-            this.index       = index;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public Action eventOccurred(final SpacecraftState s, final DateDetector detector,
-                                    final boolean increasing)
-                                                    throws OrekitException {
-
-            // fetch the simulated measurement value to the estimator
-            fetchSimulatedMeasurement(index, measurement.evaluate(s));
-
-            return Action.CONTINUE;
-
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState)
-                        throws OrekitException {
-            // never really called as eventOccurred always returns Action.CONTINUE
-            return oldState;
-        }
+        // extract the orbit (the parameters are also set to optimum as a side effect)
+        return model.createPropagator(optimum.getPoint()).getInitialState().getOrbit();
 
     }
 
