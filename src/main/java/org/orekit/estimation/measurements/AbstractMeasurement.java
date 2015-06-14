@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -36,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 public abstract class AbstractMeasurement implements Measurement {
 
     /** List of the supported parameters. */
-    private SortedSet<Parameter> supportedParameters;
+    private List<Parameter> supportedParameters;
 
     /** Date of the measurement. */
     private final AbsoluteDate date;
@@ -65,7 +63,7 @@ public abstract class AbstractMeasurement implements Measurement {
      * @param sigma theoretical standard deviation
      */
     public AbstractMeasurement(final AbsoluteDate date, final double observed, final double sigma) {
-        this.supportedParameters = new TreeSet<Parameter>();
+        this.supportedParameters = new ArrayList<Parameter>();
         this.date       = date;
         this.observed   = new double[] {
             observed
@@ -89,7 +87,7 @@ public abstract class AbstractMeasurement implements Measurement {
      * @param sigma theoretical standard deviation
      */
     public AbstractMeasurement(final AbsoluteDate date, final double[] observed, final double[] sigma) {
-        this.supportedParameters = new TreeSet<Parameter>();
+        this.supportedParameters = new ArrayList<Parameter>();
         this.date       = date;
         this.observed   = observed.clone();
         this.sigma      = sigma.clone();
@@ -105,22 +103,29 @@ public abstract class AbstractMeasurement implements Measurement {
      */
     protected void addSupportedParameter(final Parameter parameter)
         throws OrekitException {
-        if (supportedParameters.contains(parameter)) {
-            // a parameter with this name already exists in the set,
-            // check if it is really the same parameter or a duplicated name
-            if (supportedParameters.tailSet(parameter).first() != parameter) {
-                // we have two different parameters sharing the same name
-                throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
-                                          parameter.getName());
+
+        // compare against existing parameters
+        for (final Parameter existing : supportedParameters) {
+            if (existing.getName().equals(parameter.getName())) {
+                if (existing == parameter) {
+                    // the parameter was already known
+                    return;
+                } else {
+                    // we have two different parameters sharing the same name
+                    throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
+                                              parameter.getName());
+                }
             }
-        } else {
-            supportedParameters.add(parameter);
         }
+
+        // it is a new parameter
+        supportedParameters.add(parameter);
+
     }
 
     /** {@inheritDoc} */
-    public SortedSet<Parameter> getSupportedParameters() {
-        return Collections.unmodifiableSortedSet(supportedParameters);
+    public List<Parameter> getSupportedParameters() {
+        return Collections.unmodifiableList(supportedParameters);
     }
 
     /** {@inheritDoc} */
@@ -166,7 +171,7 @@ public abstract class AbstractMeasurement implements Measurement {
      * @param state orbital state at measurement date
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
-     * @see #evaluate(SpacecraftState, SortedSet)
+     * @see #evaluate(SpacecraftStatet)
      */
     protected abstract Evaluation theoreticalEvaluation(final SpacecraftState state)
         throws OrekitException;

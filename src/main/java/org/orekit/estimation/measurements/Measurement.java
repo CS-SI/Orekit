@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.List;
-import java.util.SortedSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
@@ -127,7 +126,7 @@ public interface Measurement extends TimeStamped {
     /** Add a modifier.
      * <p>
      * The modifiers are applied in the order in which they are added in order to
-     * {@link #evaluate(SpacecraftState, SortedSet) evaluate} the measurement.
+     * {@link #evaluate(SpacecraftState) evaluate} the measurement.
      * </p>
      * @param modifier modifier to add
      * @see #getModifiers()
@@ -143,7 +142,7 @@ public interface Measurement extends TimeStamped {
     /** Get the parameters supported by this measurement.
      * @return parameters supported by this measurement
      */
-    SortedSet<Parameter> getSupportedParameters();
+    List<Parameter> getSupportedParameters();
 
     /** Evaluate the measurement.
      * <p>

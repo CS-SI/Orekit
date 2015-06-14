@@ -19,8 +19,6 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
@@ -33,7 +31,7 @@ import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 
 
 /** Least squares estimator for orbit determination.
@@ -43,13 +41,13 @@ import org.orekit.propagation.conversion.PropagatorBuilder;
 public class BatchLSEstimator {
 
     /** Builder for propagator. */
-    private final PropagatorBuilder propagatorBuilder;
-
-    /** Parameters. */
-    private final SortedSet<Parameter> parameters;
+    private final NumericalPropagatorBuilder propagatorBuilder;
 
     /** Measurements. */
     private final List<Measurement> measurements;
+
+    /** Measurements parameters. */
+    private final List<Parameter> measurementsParameters;
 
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
@@ -63,14 +61,17 @@ public class BatchLSEstimator {
     /** Simple constructor.
      * @param propagatorBuilder builder to user for propagation
      * @param optimizer solver for least squares problem
+     * @exception OrekitException if some propagator parameter cannot be retrieved
      */
-    public BatchLSEstimator(final PropagatorBuilder propagatorBuilder,
-                            final LeastSquaresOptimizer optimizer) {
-        this.measurements      = new ArrayList<Measurement>();
-        this.parameters        = new TreeSet<Parameter>();
-        this.optimizer         = optimizer;
-        this.lsBuilder         = new LeastSquaresBuilder();
-        this.propagatorBuilder = propagatorBuilder;
+    public BatchLSEstimator(final NumericalPropagatorBuilder propagatorBuilder,
+                            final LeastSquaresOptimizer optimizer)
+        throws OrekitException {
+
+        this.propagatorBuilder      = propagatorBuilder;
+        this.measurements           = new ArrayList<Measurement>();
+        this.measurementsParameters = new ArrayList<Parameter>();
+        this.optimizer              = optimizer;
+        this.lsBuilder              = new LeastSquaresBuilder();
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -86,8 +87,8 @@ public class BatchLSEstimator {
     /** Get the parameters supported by this estimator (including measurements and modifiers).
      * @return parameters supported by this estimator (including measurements and modifiers)
      */
-    public SortedSet<Parameter> getSupportedParameters() {
-        return Collections.unmodifiableSortedSet(parameters);
+    public List<Parameter> getSupportedParameters() {
+        return Collections.unmodifiableList(measurementsParameters);
     }
 
     /** Add a measurement.
@@ -101,22 +102,38 @@ public class BatchLSEstimator {
         // add the measurement
         measurements.add(measurement);
 
-        // add parameters
+        // add the measurement parameters
         for (final EvaluationModifier modifier : measurement.getModifiers()) {
             for (final Parameter parameter : modifier.getSupportedParameters()) {
-                if (parameters.contains(parameter)) {
-                    // a parameter with this name already exists in the set,
-                    // check if it is really the same parameter or a duplicated name
-                    if (parameters.tailSet(parameter).first() != parameter) {
-                        // we have two different parameters sharing the same name
-                        throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
-                                                  parameter.getName());
-                    }
+                addMeasurementParameter(parameter);
+            }
+        }
+
+    }
+
+    /** Add a measurement parameter.
+     * @param parameter measurement parameter
+     * @exception OrekitException if a parameter with the same name already exists
+     */
+    private void addMeasurementParameter(final Parameter parameter)
+        throws OrekitException {
+
+        // compare against existing parameters
+        for (final Parameter existing : measurementsParameters) {
+            if (existing.getName().equals(parameter.getName())) {
+                if (existing == parameter) {
+                    // the parameter was already known
+                    return;
                 } else {
-                    parameters.add(parameter);
+                    // we have two different parameters sharing the same name
+                    throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
+                                              parameter.getName());
                 }
             }
         }
+
+        // it is a new parameter
+        measurementsParameters.add(parameter);
 
     }
 
@@ -147,29 +164,37 @@ public class BatchLSEstimator {
      */
     public Orbit estimate(final Orbit initialGuess) throws OrekitException {
 
-        // compute problem dimension
-        int n = 6;
-        for (final Parameter parameter : parameters) {
+        // compute problem dimension:
+        // orbital parameters + propagator parameters + measurements parameters
+        final int          nbOrbitalPArameters      = 6;
+        final List<String> propagatorParameters     = propagatorBuilder.getFreeParameters();
+        final int          nbPropagatorParameters   = propagatorParameters.size();
+        int                nbMeasurementsParameters = 0;
+        for (final Parameter parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
-                n += parameter.getDimension();
+                nbMeasurementsParameters += parameter.getDimension();
             }
         }
+        final int dimension = nbOrbitalPArameters + nbPropagatorParameters + nbMeasurementsParameters;
 
         // create start point
-        final double[] start = new double[n];
+        final double[] start = new double[dimension];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialGuess,
                                                          propagatorBuilder.getPositionAngle(),
                                                          start);
-        n = 6;
-        for (final Parameter parameter : parameters) {
+        int index = nbOrbitalPArameters;
+        for (final String propagatorParameter : propagatorParameters) {
+            start[index++] = propagatorBuilder.getParameter(propagatorParameter);
+        }
+        for (final Parameter parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
-                System.arraycopy(parameter.getValue(), 0, start, n, parameter.getDimension());
-                n += parameter.getDimension();
+                System.arraycopy(parameter.getValue(), 0, start, index, parameter.getDimension());
+                index += parameter.getDimension();
             }
         }
         lsBuilder.start(start);
 
-        // create target
+        // create target (which is an array set to 0, as we compute weighted residuals ourselves)
         int p = 0;
         for (final Measurement measurement : measurements) {
             if (measurement.isEnabled()) {
@@ -187,7 +212,9 @@ public class BatchLSEstimator {
         lsBuilder.target(target);
 
         // set up the model
-        final Model model = new Model(propagatorBuilder, initialGuess.getDate(), parameters, measurements);
+        final Model model = new Model(propagatorBuilder, propagatorParameters,
+                                      measurements, measurementsParameters,
+                                      initialGuess.getDate());
         lsBuilder.model(model);
 
         // solve the problem
@@ -198,7 +225,7 @@ public class BatchLSEstimator {
         }
 
         // extract the orbit (the parameters are also set to optimum as a side effect)
-        return model.createPropagator(optimum.getPoint()).getInitialState().getOrbit();
+        return model.getEstimatedOrbit(optimum.getPoint());
 
     }
 

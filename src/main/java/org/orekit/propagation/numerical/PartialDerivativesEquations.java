@@ -138,6 +138,27 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @see org.apache.commons.math3.ode.Parameterizable
 
      */
+    public void selectParameters(final Iterable<String> parameters) {
+
+        selectedParameters.clear();
+        for (String param : parameters) {
+            selectedParameters.add(new ParameterConfiguration(param, Double.NaN));
+        }
+
+        dirty = true;
+
+    }
+
+    /** Select the parameters to consider for Jacobian processing.
+     * <p>Parameters names have to be consistent with some
+     * {@link ForceModel} added elsewhere.</p>
+     * @param parameters parameters to consider for Jacobian processing
+     * @see NumericalPropagator#addForceModel(ForceModel)
+     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
+     * @see ForceModel
+     * @see org.apache.commons.math3.ode.Parameterizable
+
+     */
     public void selectParameters(final String ... parameters) {
 
         selectedParameters.clear();

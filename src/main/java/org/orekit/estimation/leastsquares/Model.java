@@ -16,10 +16,14 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.SortedSet;
+import java.util.Map;
 
 import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.ArrayRealVector;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.util.Pair;
@@ -28,9 +32,14 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.numerical.JacobiansMapper;
+import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 
 /** Bridge between {@link Measurement measurements} and {@link
@@ -42,16 +51,22 @@ import org.orekit.time.AbsoluteDate;
 class Model implements MultivariateJacobianFunction {
 
     /** Builder for propagator. */
-    private final PropagatorBuilder propagatorBuilder;
+    private final NumericalPropagatorBuilder propagatorBuilder;
 
-    /** Orbit date. */
-    private final AbsoluteDate orbitDate;
+    /** Propagator parameters. */
+    private final List<String> propagatorParameters;
 
     /** Measurements. */
     private final List<Measurement> measurements;
 
-    /** Parameters. */
-    private final SortedSet<Parameter> parameters;
+    /** Measurements parameters. */
+    private final List<Parameter> measurementsParameters;
+
+    /** Map for measurements parameters columns. */
+    private final Map<String, Integer> parameterColumns;
+
+    /** Orbit date. */
+    private final AbsoluteDate orbitDate;
 
     /** Date of the first enabled measurement. */
     private AbsoluteDate firstDate;
@@ -59,18 +74,52 @@ class Model implements MultivariateJacobianFunction {
     /** Date of the last enabled measurement. */
     private AbsoluteDate lastDate;
 
+    /** Mapper for Jacobians. */
+    private JacobiansMapper mapper;
+
+    /** Model function value. */
+    private RealVector value;
+
+    /** Model function Jacobian. */
+    private RealMatrix jacobian;
+
     /** Simple constructor.
      * @param propagatorBuilder builder to user for propagation
-     * @param orbitDate orbit date
-     * @param parameters parameters
+     * @param propagatorParameters propagator parameters
      * @param measurements measurements
+     * @param measurementsParameters measurements parameters
+     * @param orbitDate orbit date
      */
-    public Model(final PropagatorBuilder propagatorBuilder, final AbsoluteDate orbitDate,
-                 final SortedSet<Parameter> parameters, final List<Measurement> measurements) {
-        this.propagatorBuilder = propagatorBuilder;
-        this.orbitDate         = orbitDate;
-        this.parameters        = parameters;
-        this.measurements      = measurements;
+    public Model(final NumericalPropagatorBuilder propagatorBuilder, final List<String> propagatorParameters,
+                 final List<Measurement> measurements, final List<Parameter> measurementsParameters,
+                 final AbsoluteDate orbitDate) {
+
+        this.propagatorBuilder      = propagatorBuilder;
+        this.propagatorParameters   = propagatorParameters;
+        this.orbitDate              = orbitDate;
+        this.measurements           = measurements;
+        this.measurementsParameters = measurementsParameters;
+        this.parameterColumns       = new HashMap<String, Integer>(measurementsParameters.size());
+
+        // allocate vector and matrix
+        int rows = 0;
+        for (final Measurement measurement : measurements) {
+            if (measurement.isEnabled()) {
+                rows += measurement.getDimension();
+            }
+        }
+
+        int columns = 6 + propagatorParameters.size();
+        for (final Parameter parameter : measurementsParameters) {
+            if (parameter.isEstimated()) {
+                parameterColumns.put(parameter.getName(), columns);
+                columns += parameter.getDimension();
+            }
+        }
+
+        value    = new ArrayRealVector(rows);
+        jacobian = MatrixUtils.createRealMatrix(rows, columns);
+
     }
 
     /** {@inheritDoc} */
@@ -79,39 +128,67 @@ class Model implements MultivariateJacobianFunction {
         throws OrekitExceptionWrapper {
         try {
 
-            final Propagator propagator = createPropagator(point);
-            configureMeasurementsEvents(propagator);
+            // set up the propagator
+            final NumericalPropagator propagator = createPropagator(point);
+            configureDerivatives(propagator);
+            configureMeasurements(propagator);
+
+            // reset value and Jacobian
+            value.set(0.0);
+            for (int i = 0; i < jacobian.getRowDimension(); ++i) {
+                for (int j = 0; j < jacobian.getColumnDimension(); ++j) {
+                    jacobian.setEntry(i, j, 0.0);
+                }
+            }
+
+            // run the propagation, gathering residuals on the fly
             propagator.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
 
-            // TODO
-            return null;
+            return new Pair<RealVector, RealMatrix>(value, jacobian);
 
         } catch (OrekitException oe) {
             throw new OrekitExceptionWrapper(oe);
         }
     }
 
-    /** Crate the propagator and parameters corresponding to an evaluation point.
+    /** Get the orbit corresponding to an evaluation point.
+     * <p>
+     * The parameters will also be set as a side effect
+     * </p>
+     * @param point evaluation point
+     * @return estimated orbit
+     * @exception OrekitException if orbit cannot be created with the current point
+     */
+    public Orbit getEstimatedOrbit(final RealVector point)
+        throws OrekitException {
+        return createPropagator(point).getInitialState().getOrbit();
+    }
+
+    /** Create the propagator and parameters corresponding to an evaluation point.
      * @param point evaluation point
      * @return a new propagator
      * @exception OrekitException if orbit cannot be created with the current point
      */
-    Propagator createPropagator(final RealVector point)
+    private NumericalPropagator createPropagator(final RealVector point)
         throws OrekitException {
 
         // set up the propagator
-        final Propagator propagator = propagatorBuilder.buildPropagator(orbitDate, point.toArray());
+        final double[] propagatorArray = new double[6 + propagatorParameters.size()];
+        for (int i = 0; i < propagatorArray.length; ++i) {
+            propagatorArray[i] = point.getEntry(i);
+        }
+        final NumericalPropagator propagator =
+                        propagatorBuilder.buildPropagator(orbitDate, propagatorArray);
 
-        // set up the measurement modifiers parameters
-        int n = 6;
-        for (final Parameter parameter : parameters) {
+        // set up the measurement parameters
+        int index = propagatorArray.length;
+        for (final Parameter parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
                 final double[] parameterValue = new double[parameter.getDimension()];
                 for (int i = 0; i < parameterValue.length; ++i) {
-                    parameterValue[i] = point.getEntry(n + i);
+                    parameterValue[i] = point.getEntry(index++);
                 }
                 parameter.setValue(parameterValue);
-                n += parameter.getDimension();
             }
         }
 
@@ -121,10 +198,8 @@ class Model implements MultivariateJacobianFunction {
 
     /** Configure the propagator to handle measurements.
      * @param propagator {@link Propagator} to configure
-     * @exception OrekitException if orbit cannot be created with the current point
      */
-    private void configureMeasurementsEvents(final Propagator propagator)
-        throws OrekitException {
+    private void configureMeasurements(final Propagator propagator) {
 
         firstDate = AbsoluteDate.FUTURE_INFINITY;
         lastDate  = AbsoluteDate.PAST_INFINITY;
@@ -148,12 +223,83 @@ class Model implements MultivariateJacobianFunction {
 
     }
 
+    /** Configure the propagator to compute derivatives.
+     * @param propagator {@link Propagator} to configure
+     * @exception OrekitException if orbit cannot be created with the current point
+     */
+    private void configureDerivatives(final NumericalPropagator propagator)
+        throws OrekitException {
+
+        final String equationName = Model.class.getName() + "-derivatives";
+        final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagator);
+        partials.selectParameters(propagatorParameters);
+
+        // add the derivatives to the initial state
+        final SpacecraftState rawState = propagator.getInitialState();
+        final SpacecraftState stateWithDerivatives =
+                        partials.setInitialJacobians(rawState, 6, propagatorParameters.size());
+        propagator.resetInitialState(stateWithDerivatives);
+
+        mapper = partials.getMapper();
+
+    }
+
     /** Fetch a measurement that was evaluated during propagation.
      * @param index index of the measurement first component
      * @param evaluation measurement evaluation
+     * @exception OrekitException if Jacobians cannot be computed
      */
-    void fetchEvaluatedMeasurement(final int index, final Evaluation evaluation) {
-        // TODO
+    void fetchEvaluatedMeasurement(final int index, final Evaluation evaluation)
+        throws OrekitException {
+
+        // compute weighted residuals
+        final double[] evaluated = evaluation.getValue();
+        final double[] observed  = evaluation.getMeasurement().getObservedValue();
+        final double[] weight    = evaluation.getMeasurement().getWeight();
+        for (int i = 0; i < evaluated.length; ++i) {
+            value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]));
+        }
+
+        // extract propagator Jacobians
+        final double[][] dYdY0 = new double[6][6];
+        mapper.getStateJacobian(evaluation.getState(), dYdY0);
+        final RealMatrix jYY0 = new Array2DRowRealMatrix(dYdY0, false);
+
+        final double[][] dYdP  = new double[6][propagatorParameters.size()];
+        mapper.getParametersJacobian(evaluation.getState(), dYdP);
+        final RealMatrix jYP = new Array2DRowRealMatrix(dYdP, false);
+
+        // Jacobian of the measurement with respect to current state
+        final RealMatrix jMY  = new Array2DRowRealMatrix(evaluation.getStateDerivatives(), false);
+
+        // Jacobian of the measurement with respect to initial state
+        final RealMatrix jMY0 = jMY.multiply(jYY0);
+        for (int i = 0; i < jMY0.getRowDimension(); ++i) {
+            for (int j = 0; j < jMY0.getColumnDimension(); ++j) {
+                jacobian.setEntry(index + i, j, jMY0.getEntry(i, j));
+            }
+        }
+
+        // Jacobian of the measurement with respect to propagator parameters
+        final RealMatrix jMP = jMY.multiply(jYP);
+        for (int i = 0; i < jMP.getRowDimension(); ++i) {
+            for (int j = 0; j < propagatorParameters.size(); ++j) {
+                jacobian.setEntry(index + i, 6 + j, jMP.getEntry(i, j));
+            }
+        }
+
+        // Jacobian of the measurement with respect to measurements parameters
+        for (final Parameter parameter : evaluation.getMeasurement().getSupportedParameters()) {
+            if (parameter.isEstimated()) {
+                final double[][] dMdP = evaluation.getParameterDerivatives(parameter.getName());
+                for (int i = 0; i < dMdP.length; ++i) {
+                    for (int j = 0; j < dMdP[i].length; ++j) {
+                        jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()), dMdP[i][j]);
+                    }
+                }
+            }
+        }
+
     }
 
 }
