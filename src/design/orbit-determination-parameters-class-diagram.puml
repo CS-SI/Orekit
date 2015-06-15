@@ -53,8 +53,8 @@
         }
         Range     ..|> Measurement
         RangeRate ..|> Measurement
-        GroundStation "1" <--* Range
-        GroundStation "1" <--* RangeRate
+        GroundStation "1" <--o Range
+        GroundStation "1" <--o RangeRate
         Parameter <|-- GroundStation : position offset
       }
 
