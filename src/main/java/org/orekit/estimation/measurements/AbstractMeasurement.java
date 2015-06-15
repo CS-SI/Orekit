@@ -124,6 +124,7 @@ public abstract class AbstractMeasurement implements Measurement {
     }
 
     /** {@inheritDoc} */
+    @Override
     public List<Parameter> getSupportedParameters() {
         return Collections.unmodifiableList(supportedParameters);
     }
