@@ -45,7 +45,7 @@
     class Evaluation {
       +getMeasurement()
       +getState()
-      +[get|set]TimeOffset()
+      +getTimeOffset()
       +[get|set]Value()
       +[get|set]StateDerivatives()
       +[get|set]ParameterDerivatives()
