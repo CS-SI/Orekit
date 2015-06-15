@@ -202,13 +202,6 @@ public class BatchLSEstimator {
             }
         }
         final double[] target = new double[p];
-        p = 0;
-        for (final Measurement measurement : measurements) {
-            if (measurement.isEnabled()) {
-                System.arraycopy(measurement.getObservedValue(), 0, target, p, measurement.getDimension());
-                p += measurement.getDimension();
-            }
-        }
         lsBuilder.target(target);
 
         // set up the model
