@@ -75,14 +75,7 @@ public class Evaluation {
      * @return time offset from state date to measurement date
      */
     public double getTimeOffset() {
-        return timeOffset;
-    }
-
-    /** Set the time offset from state date to measurement date.
-     * @param timeOffset time offset from state date to measurement date
-     */
-    public void setTimeOffset(final double timeOffset) {
-        this.timeOffset = timeOffset;
+        return measurement.getDate().durationFrom(state.getDate());
     }
 
     /** Get the simulated value.
