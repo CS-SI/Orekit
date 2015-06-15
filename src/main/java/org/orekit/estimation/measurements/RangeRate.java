@@ -52,8 +52,12 @@ public class RangeRate extends AbstractMeasurement {
     protected Evaluation theoreticalEvaluation(final SpacecraftState state)
         throws OrekitException {
 
+        // take propagation time into account
+        final SpacecraftState compensatedState =
+                station.compensatePropagationDelay(state, getDate());
+
         // prepare the evaluation
-        final Evaluation evaluation = new Evaluation(this, state);
+        final Evaluation evaluation = new Evaluation(this, compensatedState);
 
         // range rate value
         final PVCoordinates scInStationFrame = state.getPVCoordinates(station.getOffsetFrame());

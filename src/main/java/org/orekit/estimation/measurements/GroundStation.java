@@ -17,12 +17,16 @@
 package org.orekit.estimation.measurements;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 /** Class modeling a ground station that can perform some measurements.
  * <p>
@@ -94,6 +98,46 @@ public class GroundStation extends Parameter {
      */
     public TopocentricFrame getOffsetFrame() {
         return offsetFrame;
+    }
+
+    /** Compensate propagation delay.
+     * @param state of the spacecraft, close to reception date
+     * @param groundArrivalDate date at which the associated measurement
+     * is received on ground
+     * @return state of the spacecraft at signal departure date
+     * @exception OrekitException if some frame transforms fails
+     */
+    public SpacecraftState compensatePropagationDelay(final SpacecraftState state,
+                                                      final AbsoluteDate groundArrivalDate)
+        throws OrekitException {
+
+        // station position at signal arrival date, in inertial frame
+        // (the station is not there at signal departure date, but will
+        //  be there at the signal arrival)
+        final Transform t = offsetFrame.getTransformTo(state.getFrame(), groundArrivalDate);
+        final Vector3D arrival = t.transformPosition(Vector3D.ZERO);
+
+        // initialize emission date search loop assuming the state is already correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first one the loop will converge very fast
+        final double offset = groundArrivalDate.durationFrom(state.getDate());
+        double delay = offset;
+
+        // search signal departure date, computing the signal travel in inertial frame
+        double delta;
+        SpacecraftState compensatedState;
+        int count = 0;
+        do {
+            final double previousDelay = delay;
+            compensatedState           = state.shiftedBy(offset - delay);
+            final Vector3D departure   = compensatedState.getPVCoordinates().getPosition();
+            delay                      = Vector3D.distance(departure, arrival) /
+                                         Constants.SPEED_OF_LIGHT;
+            delta                      = FastMath.abs(delay - previousDelay);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
+
+        return compensatedState;
+
     }
 
 }

@@ -51,11 +51,15 @@ public class Range extends AbstractMeasurement {
     protected Evaluation theoreticalEvaluation(final SpacecraftState state)
         throws OrekitException {
 
+        // take propagation time into account
+        final SpacecraftState compensatedState =
+                station.compensatePropagationDelay(state, getDate());
+
         // prepare the evaluation
-        final Evaluation evaluation = new Evaluation(this, state);
+        final Evaluation evaluation = new Evaluation(this, compensatedState);
 
         // range value
-        final PVCoordinates scInStationFrame = state.getPVCoordinates(station.getOffsetFrame());
+        final PVCoordinates scInStationFrame = compensatedState.getPVCoordinates(station.getOffsetFrame());
         evaluation.setValue(scInStationFrame.getPosition().getNorm());
 
         // TODO compute partial derivatives
