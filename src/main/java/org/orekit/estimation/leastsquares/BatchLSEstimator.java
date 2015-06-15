@@ -102,7 +102,12 @@ public class BatchLSEstimator {
         // add the measurement
         measurements.add(measurement);
 
-        // add the measurement parameters
+        // add measurement parameters
+        for (final Parameter parameter : getSupportedParameters()) {
+            addMeasurementParameter(parameter);
+        }
+
+        // add the measurement modifiers parameters
         for (final EvaluationModifier modifier : measurement.getModifiers()) {
             for (final Parameter parameter : modifier.getSupportedParameters()) {
                 addMeasurementParameter(parameter);
