@@ -35,9 +35,6 @@ public class Evaluation {
     /** State of the spacecraft. */
     private final SpacecraftState state;
 
-    /** Time offset from state date to measurement date. */
-    private double timeOffset;
-
     /** Simulated value. */
     private double[] value;
 
