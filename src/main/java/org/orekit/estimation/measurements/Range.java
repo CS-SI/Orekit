@@ -16,10 +16,11 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 
 /** Class modeling a range measurement from a ground station.
  * @author Thierry Ceolin
@@ -58,11 +59,37 @@ public class Range extends AbstractMeasurement {
         // prepare the evaluation
         final Evaluation evaluation = new Evaluation(this, compensatedState);
 
-        // range value
-        final PVCoordinates scInStationFrame = compensatedState.getPVCoordinates(station.getOffsetFrame());
-        evaluation.setValue(scInStationFrame.getPosition().getNorm());
+        // station position at signal arrival
+        final Transform topoToInert =
+                station.getOffsetFrame().getTransformTo(compensatedState.getFrame(),
+                                                        getDate());
+        final Vector3D stationPosition = topoToInert.transformPosition(Vector3D.ZERO);
 
-        // TODO compute partial derivatives
+        // range value
+        final Vector3D spacecraftPosition = compensatedState.getPVCoordinates().getPosition();
+        final Vector3D delta = spacecraftPosition.subtract(stationPosition);
+        final double range = delta.getNorm();
+        evaluation.setValue(range);
+
+        // partial derivatives with respect to state
+        final Vector3D gradientInInertial = new Vector3D(delta.getX() / range,
+                                                         delta.getY() / range,
+                                                         delta.getZ() / range);
+        evaluation.setStateDerivatives(new double[] {
+            gradientInInertial.getX(), gradientInInertial.getY(), gradientInInertial.getZ(),
+            0, 0, 0
+        });
+
+        // partial derivatives with respect to parameter
+        // the parameter has 3 Cartesian coordinates for station offset position
+        final Vector3D gradientInTopo =
+                topoToInert.getRotation().applyInverseTo(gradientInInertial);
+        evaluation.setParameterDerivatives(station.getName(),
+                                           new double[] {
+                                               -gradientInTopo.getX(),
+                                               -gradientInTopo.getY(),
+                                               -gradientInTopo.getZ()
+                                           });
 
         return evaluation;
 
