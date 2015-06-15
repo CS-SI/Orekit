@@ -82,19 +82,10 @@ public class Evaluation {
         return value.clone();
     }
 
-    /** Set the simulated value, for a mono-dimensional measurement.
-     * @param value simulated value
-     */
-    public void setValue(final double value) {
-        this.value = new double[] {
-            value
-        };
-    }
-
     /** Set the simulated value.
      * @param value simulated value
      */
-    public void setValue(final double[] value) {
+    public void setValue(final double ... value) {
         this.value = value.clone();
     }
 
@@ -115,22 +106,11 @@ public class Evaluation {
      * simulated measurement} with respect to state Cartesian coordinates.
      * @param stateDerivatives partial derivatives with respect to state
      */
-    public void setStateDerivatives(final double[][] stateDerivatives) {
+    public void setStateDerivatives(final double[] ... stateDerivatives) {
         this.stateDerivatives = new double[measurement.getDimension()][];
         for (int i = 0; i < measurement.getDimension(); ++i) {
             this.stateDerivatives[i] = stateDerivatives[i].clone();
         }
-    }
-
-    /** Set the partial derivatives of the {@link #getValue()
-     * simulated measurement} with respect to state Cartesian coordinates,
-     * for a mono-dimensional measurement.
-     * @param stateDerivatives partial derivatives with respect to state
-     */
-    public void setStateDerivatives(final double[] stateDerivatives) {
-        this.stateDerivatives = new double[][] {
-            stateDerivatives.clone()
-        };
     }
 
     /** Get the partial derivatives of the {@link #getValue()
@@ -158,25 +138,12 @@ public class Evaluation {
      * @param name name of the parameter
      * @param parameterDerivatives partial derivatives with respect to parameter
      */
-    public void setParameterDerivatives(final String name, final double[][] parameterDerivatives) {
+    public void setParameterDerivatives(final String name, final double[] ... parameterDerivatives) {
         final double[][] p = new double[measurement.getDimension()][];
         for (int i = 0; i < measurement.getDimension(); ++i) {
             p[i] = parameterDerivatives[i].clone();
         }
         parametersDerivatives.put(name, p);
-    }
-
-    /** Set the partial derivatives of the {@link #getValue()
-     * simulated measurement} with respect to state Cartesian coordinates,
-     * for a mono-dimensional measurement.
-     * @param name name of the parameter
-     * @param parameterDerivatives partial derivatives with respect to parameter
-     */
-    public void setParameterDerivatives(final String name, final double[] parameterDerivatives) {
-        parametersDerivatives.put(name,
-                                  new double[][] {
-                                      parameterDerivatives.clone()
-                                  });
     }
 
 }
