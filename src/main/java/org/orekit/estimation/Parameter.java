@@ -72,7 +72,11 @@ public abstract class Parameter {
      * @exception OrekitException if value is invalid
      */
     public void setValue(final double ... value) throws OrekitException {
-        System.arraycopy(value, 0, this.value, 0, value.length);
+        if (this.value == null) {
+            this.value = value.clone();
+        } else {
+            System.arraycopy(value, 0, this.value, 0, value.length);
+        }
         valueChanged(this.value);
     }
 
