@@ -147,6 +147,7 @@ public class BatchLSEstimator {
      */
     public void setMaxIterations(final int maxIterations) {
         lsBuilder.maxIterations(maxIterations);
+        lsBuilder.maxEvaluations(maxIterations);
     }
 
     /**
