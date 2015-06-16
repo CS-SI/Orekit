@@ -276,7 +276,7 @@ class Model implements MultivariateJacobianFunction {
         final RealMatrix jMY0 = jMY.multiply(jYY0);
         for (int i = 0; i < jMY0.getRowDimension(); ++i) {
             for (int j = 0; j < jMY0.getColumnDimension(); ++j) {
-                jacobian.setEntry(index + i, j, jMY0.getEntry(i, j));
+                jacobian.setEntry(index + i, j, weight[i] * jMY0.getEntry(i, j));
             }
         }
 
@@ -284,7 +284,7 @@ class Model implements MultivariateJacobianFunction {
         final RealMatrix jMP = jMY.multiply(jYP);
         for (int i = 0; i < jMP.getRowDimension(); ++i) {
             for (int j = 0; j < propagatorParameters.size(); ++j) {
-                jacobian.setEntry(index + i, 6 + j, jMP.getEntry(i, j));
+                jacobian.setEntry(index + i, 6 + j, weight[i] * jMP.getEntry(i, j));
             }
         }
 
@@ -294,7 +294,8 @@ class Model implements MultivariateJacobianFunction {
                 final double[][] dMdP = evaluation.getParameterDerivatives(parameter.getName());
                 for (int i = 0; i < dMdP.length; ++i) {
                     for (int j = 0; j < dMdP[i].length; ++j) {
-                        jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()), dMdP[i][j]);
+                        jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()),
+                                          weight[i] * dMdP[i][j]);
                     }
                 }
             }
