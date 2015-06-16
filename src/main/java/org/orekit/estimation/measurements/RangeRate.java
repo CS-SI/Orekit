@@ -47,6 +47,13 @@ public class RangeRate extends AbstractMeasurement {
         addSupportedParameter(station);
     }
 
+    /** Get the ground station from which measurement is performed.
+     * @return ground station from which measurement is performed
+     */
+    public GroundStation getStation() {
+        return station;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected Evaluation theoreticalEvaluation(final SpacecraftState state)
