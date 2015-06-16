@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +67,9 @@ class Model implements MultivariateJacobianFunction {
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> parameterColumns;
 
+    /** Last evaluations. */
+    private final List<Evaluation> evaluations;
+
     /** Orbit date. */
     private final AbsoluteDate orbitDate;
 
@@ -100,6 +105,7 @@ class Model implements MultivariateJacobianFunction {
         this.measurements           = measurements;
         this.measurementsParameters = measurementsParameters;
         this.parameterColumns       = new HashMap<String, Integer>(measurementsParameters.size());
+        this.evaluations            = new ArrayList<Evaluation>();
 
         // allocate vector and matrix
         int rows = 0;
@@ -134,6 +140,7 @@ class Model implements MultivariateJacobianFunction {
             configureMeasurements(propagator);
 
             // reset value and Jacobian
+            evaluations.clear();
             value.set(0.0);
             for (int i = 0; i < jacobian.getRowDimension(); ++i) {
                 for (int j = 0; j < jacobian.getColumnDimension(); ++j) {
@@ -162,6 +169,13 @@ class Model implements MultivariateJacobianFunction {
     public Orbit getEstimatedOrbit(final RealVector point)
         throws OrekitException {
         return createPropagator(point).getInitialState().getOrbit();
+    }
+
+    /** Get the last evaluations performed.
+     * @return last evaluations performed
+     */
+    public List<Evaluation> getLastEvaluations() {
+        return Collections.unmodifiableList(evaluations);
     }
 
     /** Create the propagator and parameters corresponding to an evaluation point.
@@ -253,6 +267,7 @@ class Model implements MultivariateJacobianFunction {
         throws OrekitException {
 
         // compute weighted residuals
+        evaluations.add(evaluation);
         final double[] evaluated = evaluation.getValue();
         final double[] observed  = evaluation.getMeasurement().getObservedValue();
         final double[] weight    = evaluation.getMeasurement().getWeight();

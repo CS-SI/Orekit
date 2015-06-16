@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Parameter;
+import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.orbits.Orbit;
@@ -55,8 +56,8 @@ public class BatchLSEstimator {
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
 
-    /** Low level view of the optimum. */
-    private LeastSquaresProblem.Evaluation optimum;
+    /** Last evaluations. */
+    private final List<Evaluation> evaluations;
 
     /** Simple constructor.
      * @param propagatorBuilder builder to user for propagation
@@ -72,6 +73,7 @@ public class BatchLSEstimator {
         this.measurementsParameters = new ArrayList<Parameter>();
         this.optimizer              = optimizer;
         this.lsBuilder              = new LeastSquaresBuilder();
+        this.evaluations            = new ArrayList<Evaluation>();
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -216,16 +218,29 @@ public class BatchLSEstimator {
                                       initialGuess.getDate());
         lsBuilder.model(model);
 
-        // solve the problem
         try {
-            optimum = optimizer.optimize(lsBuilder.build());
+
+            // solve the problem
+            final LeastSquaresProblem.Evaluation optimum = optimizer.optimize(lsBuilder.build());
+
+            // save the last evaluations
+            evaluations.clear();
+            evaluations.addAll(model.getLastEvaluations());
+
+            // extract the orbit (the parameters are also set to optimum as a side effect)
+            return model.getEstimatedOrbit(optimum.getPoint());
+
         } catch (OrekitExceptionWrapper oew) {
             throw oew.getException();
         }
 
-        // extract the orbit (the parameters are also set to optimum as a side effect)
-        return model.getEstimatedOrbit(optimum.getPoint());
+    }
 
+    /** Get the last evaluations performed.
+     * @return last evaluations performed
+     */
+    public List<Evaluation> getLastEvaluations() {
+        return Collections.unmodifiableList(evaluations);
     }
 
 }
