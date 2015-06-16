@@ -260,19 +260,11 @@ class Model implements MultivariateJacobianFunction {
             value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]));
         }
 
-        // extract propagator Jacobians
+        // Jacobian of the measurement with respect to initial state
         final double[][] dYdY0 = new double[6][6];
         mapper.getStateJacobian(evaluation.getState(), dYdY0);
         final RealMatrix jYY0 = new Array2DRowRealMatrix(dYdY0, false);
-
-        final double[][] dYdP  = new double[6][propagatorParameters.size()];
-        mapper.getParametersJacobian(evaluation.getState(), dYdP);
-        final RealMatrix jYP = new Array2DRowRealMatrix(dYdP, false);
-
-        // Jacobian of the measurement with respect to current state
         final RealMatrix jMY  = new Array2DRowRealMatrix(evaluation.getStateDerivatives(), false);
-
-        // Jacobian of the measurement with respect to initial state
         final RealMatrix jMY0 = jMY.multiply(jYY0);
         for (int i = 0; i < jMY0.getRowDimension(); ++i) {
             for (int j = 0; j < jMY0.getColumnDimension(); ++j) {
@@ -280,11 +272,16 @@ class Model implements MultivariateJacobianFunction {
             }
         }
 
-        // Jacobian of the measurement with respect to propagator parameters
-        final RealMatrix jMP = jMY.multiply(jYP);
-        for (int i = 0; i < jMP.getRowDimension(); ++i) {
-            for (int j = 0; j < propagatorParameters.size(); ++j) {
-                jacobian.setEntry(index + i, 6 + j, weight[i] * jMP.getEntry(i, j));
+        if (!propagatorParameters.isEmpty()) {
+            // Jacobian of the measurement with respect to propagator parameters
+            final double[][] dYdP  = new double[6][propagatorParameters.size()];
+            mapper.getParametersJacobian(evaluation.getState(), dYdP);
+            final RealMatrix jYP = new Array2DRowRealMatrix(dYdP, false);
+            final RealMatrix jMP = jMY.multiply(jYP);
+            for (int i = 0; i < jMP.getRowDimension(); ++i) {
+                for (int j = 0; j < propagatorParameters.size(); ++j) {
+                    jacobian.setEntry(index + i, 6 + j, weight[i] * jMP.getEntry(i, j));
+                }
             }
         }
 
