@@ -40,6 +40,7 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
@@ -91,6 +92,59 @@ public class BatchLSEstimatorTest {
     private List<GroundStation>                  stations;
 
     @Test
+    public void testKeplerPV() throws OrekitException {
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE);
+
+        // create perfect range measurements
+        final double[] parameters = new double[6];
+        propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
+                                                         propagatorBuilder.getPositionAngle(),
+                                                         parameters);
+        final Propagator propagator = propagatorBuilder.buildPropagator(initialOrbit.getDate(), parameters);
+        final PVMeasurementCreator creator = new PVMeasurementCreator();
+        propagator.setMasterMode(300.0, creator);
+        final double       period = initialOrbit.getKeplerianPeriod();
+        final AbsoluteDate start  = initialOrbit.getDate().shiftedBy(1 * period);
+        final AbsoluteDate end    = initialOrbit.getDate().shiftedBy(3 * period);
+        propagator.propagate(start, end);
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
+                                                                new LevenbergMarquardtOptimizer());
+        for (final PV pv : creator.pv) {
+            estimator.addMeasurement(pv);
+        }
+        estimator.setConvergenceThreshold(1.0e-12, 1.0e-12);
+        estimator.setMaxIterations(20);
+
+        // estimate orbit, starting from a wrong point
+        Vector3D position = initialOrbit.getPVCoordinates().getPosition().add(new Vector3D(100.0, 0, 0));
+        Vector3D velocity = initialOrbit.getPVCoordinates().getVelocity().add(new Vector3D(0, 0, 0.01));
+        Orbit wrongOrbit  = new KeplerianOrbit(new PVCoordinates(position, velocity),
+                                               initialOrbit.getFrame(),
+                                               initialOrbit.getDate(),
+                                               initialOrbit.getMu());
+        Orbit estimated   = estimator.estimate(wrongOrbit);
+        for (final Evaluation evaluation : estimator.getLastEvaluations()) {
+            PV pv = (PV) evaluation.getMeasurement();
+            System.out.format(java.util.Locale.US, "%s %13.3f %13.3f %13.3f  %13.6f %13.6f %13.6f%n",
+                              pv.getDate(),
+                              pv.getObservedValue()[0] - evaluation.getValue()[0],
+                              pv.getObservedValue()[1] - evaluation.getValue()[1],
+                              pv.getObservedValue()[2] - evaluation.getValue()[2],
+                              pv.getObservedValue()[3] - evaluation.getValue()[3],
+                              pv.getObservedValue()[4] - evaluation.getValue()[4],
+                              pv.getObservedValue()[5] - evaluation.getValue()[5]);
+        }
+        System.out.println(initialOrbit);
+        System.out.println(wrongOrbit);
+        System.out.println(estimated);
+
+    }
+
+    @Test
     public void testKeplerDistances() throws OrekitException {
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -119,8 +173,8 @@ public class BatchLSEstimatorTest {
         estimator.setMaxIterations(20);
 
         // estimate orbit, starting from a wrong point
-        Vector3D position = initialOrbit.getPVCoordinates().getPosition().add(new Vector3D(1000.0, 0, 0));
-        Vector3D velocity = initialOrbit.getPVCoordinates().getVelocity().add(new Vector3D(0, 0, 1.0));
+        Vector3D position = initialOrbit.getPVCoordinates().getPosition().add(new Vector3D(100.0, 0, 0));
+        Vector3D velocity = initialOrbit.getPVCoordinates().getVelocity().add(new Vector3D(0, 0, 0.1));
         Orbit wrongOrbit  = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                                initialOrbit.getFrame(),
                                                initialOrbit.getDate(),
@@ -256,6 +310,24 @@ public class BatchLSEstimatorTest {
         };
 
         public abstract ForceModel getForceModel(BatchLSEstimatorTest test) throws OrekitException;
+
+    }
+
+    /** Local class for creating PV measurements. */
+    private class PVMeasurementCreator implements OrekitFixedStepHandler {
+
+        private final List<PV> pv = new ArrayList<PV>();
+
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            pv.clear();
+        }
+
+        public void handleStep(final SpacecraftState currentState, final boolean isLast) {
+            pv.add(new PV(currentState.getDate(),
+                          currentState.getPVCoordinates().getPosition(),
+                          currentState.getPVCoordinates().getVelocity(),
+                          3.0, 0.01, 10));
+        }
 
     }
 

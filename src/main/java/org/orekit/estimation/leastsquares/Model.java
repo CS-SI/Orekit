@@ -67,6 +67,9 @@ class Model implements MultivariateJacobianFunction {
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> parameterColumns;
 
+    /** Last orbit. */
+    private Orbit orbit;
+
     /** Last evaluations. */
     private final List<Evaluation> evaluations;
 
@@ -171,17 +174,11 @@ class Model implements MultivariateJacobianFunction {
         return iteration;
     }
 
-    /** Get the orbit corresponding to an evaluation point.
-     * <p>
-     * The parameters will also be set as a side effect
-     * </p>
-     * @param point evaluation point
-     * @return estimated orbit
-     * @exception OrekitException if orbit cannot be created with the current point
+    /** Get the last evaluated orbit.
+     * @return last evaluated orbit
      */
-    public Orbit getEstimatedOrbit(final RealVector point)
-        throws OrekitException {
-        return createPropagator(point).getInitialState().getOrbit();
+    public Orbit getLastOrbit() {
+        return orbit;
     }
 
     /** Get the last evaluations performed.
@@ -206,6 +203,7 @@ class Model implements MultivariateJacobianFunction {
         }
         final NumericalPropagator propagator =
                         propagatorBuilder.buildPropagator(orbitDate, propagatorArray);
+        orbit = propagator.getInitialState().getOrbit();
 
         // set up the measurement parameters
         int index = propagatorArray.length;

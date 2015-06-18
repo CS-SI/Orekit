@@ -223,12 +223,15 @@ public class BatchLSEstimator {
             // solve the problem
             final LeastSquaresProblem.Evaluation optimum = optimizer.optimize(lsBuilder.build());
 
+            // perform a last evaluation on the optimum parameters
+            model.value(optimum.getPoint());
+
             // save the last evaluations
             evaluations.clear();
             evaluations.addAll(model.getLastEvaluations());
 
-            // extract the orbit (the parameters are also set to optimum as a side effect)
-            return model.getEstimatedOrbit(optimum.getPoint());
+            // extract the orbit
+            return model.getLastOrbit();
 
         } catch (OrekitExceptionWrapper oew) {
             throw oew.getException();
