@@ -81,39 +81,23 @@ public interface Measurement extends TimeStamped {
      * this value, it becomes dimensionless).
      * </p>
      * @return expected standard deviation
-     * @see #getWeight()
+     * @see #getBaseWeight()
      */
     double[] getTheoreticalStandardDeviation();
 
-    /** Get the current weight associated with the measurement
+    /** Get the base weight associated with the measurement
      * <p>
-     * The weight is used on residuals already normalized thanks to
+     * The base weight is used on residuals already normalized thanks to
      * {@link #getTheoreticalStandardDeviation()} to increase or
      * decrease relative effect of some measurements with respect to
      * other measurements. It is a dimensionless value, typically between
      * 0 and 1 (but it can really have any non-negative value).
      * </p>
-     * @return current weight
-     * @see #getWeight()
+     * @return base weight
      * @see #getTheoreticalStandardDeviation()
+     * @see Evaluation#getCurrentWeight()
      */
-    double[] getWeight();
-
-    /** Set the current weight associated with the measurement
-     * <p>
-     * The weight is used on residuals already normalized thanks to
-     * {@link #getTheoreticalStandardDeviation()} to increase or
-     * decrease relative effect of some measurements with respect to
-     * other measurements. It is a dimensionless value, typically between
-     * 0 and 1 (but it can really have any non-negative value).
-     * </p>
-     * <p>
-     * The default value of the weight is 1.
-     * </p>
-     * @param weight weight to set (must be non-negative)
-     * @see #getWeight()
-     */
-    void setWeight(double ... weight);
+    double[] getBaseWeight();
 
     /** Get the observed value.
      * <p>
@@ -149,11 +133,12 @@ public interface Measurement extends TimeStamped {
      * The evaluated value is the <em>combination</em> of the raw theoretical
      * value and all the modifiers that apply to the measurement.
      * </p>
+     * @param iteration iteration number
      * @param state orbital state at measurement date
      * @return evaluated measurement
      * @exception OrekitException if value cannot be computed
      */
-    Evaluation evaluate(SpacecraftState state)
+    Evaluation evaluate(int iteration, SpacecraftState state)
         throws OrekitException;
 
 }

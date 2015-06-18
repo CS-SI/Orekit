@@ -32,11 +32,17 @@ public class Evaluation {
     /** Associated measurement. */
     private final Measurement measurement;
 
+    /** Iteration number. */
+    private final int iteration;
+
     /** State of the spacecraft. */
     private final SpacecraftState state;
 
     /** Simulated value. */
     private double[] value;
+
+    /** Current weight. */
+    private double[] currentWeight;
 
     /** Partial derivatives with respect to state. */
     private double[][] stateDerivatives;
@@ -46,10 +52,13 @@ public class Evaluation {
 
     /** Simple constructor.
      * @param measurement associated measurement
+     * @param iteration iteration number
      * @param state state of the spacecraft
      */
-    public Evaluation(final Measurement measurement, final SpacecraftState state) {
+    public Evaluation(final Measurement measurement, final int iteration,
+                      final SpacecraftState state) {
         this.measurement           = measurement;
+        this.iteration             = iteration;
         this.state                 = state;
         this.parametersDerivatives = new HashMap<String, double[][]>();
     }
@@ -59,6 +68,13 @@ public class Evaluation {
      */
     public Measurement getMeasurement() {
         return measurement;
+    }
+
+    /** Get the iteration number.
+     * @return iteration number
+     */
+    public int getIteration() {
+        return iteration;
     }
 
     /** Get the state of the spacecraft.
@@ -87,6 +103,24 @@ public class Evaluation {
      */
     public void setValue(final double ... value) {
         this.value = value.clone();
+    }
+
+    /** Get the current weight.
+     * <p>
+     * By default, the current weight is measurement {@link
+     * Measurement#getBaseWeight() base weight}.
+     * </p>
+     * @return current weight
+     */
+    public double[] getCurrentWeight() {
+        return currentWeight == null ? measurement.getBaseWeight() : currentWeight.clone();
+    }
+
+    /** Set the current weight.
+     * @param currentWeight current weight
+     */
+    public void setCurrentWeight(final double ... currentWeight) {
+        this.currentWeight = currentWeight.clone();
     }
 
     /** Get the partial derivatives of the {@link #getValue()

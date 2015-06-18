@@ -35,18 +35,19 @@
       +getObservedValue()
       +getSupportedParameters()
       +getTheoreticalStandardDeviation()
-      +getWeight()
-      +setWeight()
+      +getBaseWeight()
       +addModifier(modifier)
       +getModifiers()
-      +evaluate(state)
+      +evaluate(iteration, state)
     }
     
     class Evaluation {
       +getMeasurement()
+      +getIteration()
       +getState()
       +getTimeOffset()
       +[get|set]Value()
+      +[get|set]CurrentWeight()
       +[get|set]StateDerivatives()
       +[get|set]ParameterDerivatives()
     }
@@ -69,6 +70,7 @@
     PV                 ..|> Measurement
     EvaluationModifier <|.. Bias
     EvaluationModifier <|.. CardanAntennaMount
+    EvaluationModifier <|.. OutlierFilter
     EvaluationModifier <|.. OtherModifier
 
   }

@@ -301,7 +301,7 @@ public class BatchLSEstimatorTest {
                         ranges.add(new Range(station, date,
                                              Vector3D.distance(position,
                                                                t.transformPosition(Vector3D.ZERO)),
-                                             15.0));
+                                             15.0, 10));
                     }
 
                 }

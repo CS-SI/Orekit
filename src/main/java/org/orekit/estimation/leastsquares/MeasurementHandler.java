@@ -56,7 +56,7 @@ class MeasurementHandler implements EventHandler<DateDetector> {
         throws OrekitException {
 
         // fetch the evaluated measurement to the estimator
-        model.fetchEvaluatedMeasurement(index, measurement.evaluate(s));
+        model.fetchEvaluatedMeasurement(index, measurement.evaluate(model.getIteration(), s));
 
         return Action.CONTINUE;
 

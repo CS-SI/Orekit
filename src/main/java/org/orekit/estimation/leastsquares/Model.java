@@ -73,6 +73,9 @@ class Model implements MultivariateJacobianFunction {
     /** Orbit date. */
     private final AbsoluteDate orbitDate;
 
+    /** Iteration number. */
+    private int iteration;
+
     /** Date of the first enabled measurement. */
     private AbsoluteDate firstDate;
 
@@ -101,11 +104,12 @@ class Model implements MultivariateJacobianFunction {
 
         this.propagatorBuilder      = propagatorBuilder;
         this.propagatorParameters   = propagatorParameters;
-        this.orbitDate              = orbitDate;
         this.measurements           = measurements;
         this.measurementsParameters = measurementsParameters;
         this.parameterColumns       = new HashMap<String, Integer>(measurementsParameters.size());
         this.evaluations            = new ArrayList<Evaluation>();
+        this.orbitDate              = orbitDate;
+        this.iteration              = 0;
 
         // allocate vector and matrix
         int rows = 0;
@@ -134,6 +138,8 @@ class Model implements MultivariateJacobianFunction {
         throws OrekitExceptionWrapper {
         try {
 
+            ++iteration;
+
             // set up the propagator
             final NumericalPropagator propagator = createPropagator(point);
             configureDerivatives(propagator);
@@ -156,6 +162,13 @@ class Model implements MultivariateJacobianFunction {
         } catch (OrekitException oe) {
             throw new OrekitExceptionWrapper(oe);
         }
+    }
+
+    /** Get the iteration number.
+     * @return iteration number
+     */
+    public int getIteration() {
+        return iteration;
     }
 
     /** Get the orbit corresponding to an evaluation point.
@@ -270,9 +283,10 @@ class Model implements MultivariateJacobianFunction {
         evaluations.add(evaluation);
         final double[] evaluated = evaluation.getValue();
         final double[] observed  = evaluation.getMeasurement().getObservedValue();
-        final double[] weight    = evaluation.getMeasurement().getWeight();
+        final double[] sigma     = evaluation.getMeasurement().getTheoreticalStandardDeviation();
+        final double[] weight    = evaluation.getCurrentWeight();
         for (int i = 0; i < evaluated.length; ++i) {
-            value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]));
+            value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]) / sigma[i]);
         }
 
         // Jacobian of the measurement with respect to initial state
@@ -283,7 +297,7 @@ class Model implements MultivariateJacobianFunction {
         final RealMatrix jMY0 = jMY.multiply(jYY0);
         for (int i = 0; i < jMY0.getRowDimension(); ++i) {
             for (int j = 0; j < jMY0.getColumnDimension(); ++j) {
-                jacobian.setEntry(index + i, j, weight[i] * jMY0.getEntry(i, j));
+                jacobian.setEntry(index + i, j, weight[i] * jMY0.getEntry(i, j) / sigma[i]);
             }
         }
 
@@ -295,7 +309,7 @@ class Model implements MultivariateJacobianFunction {
             final RealMatrix jMP = jMY.multiply(jYP);
             for (int i = 0; i < jMP.getRowDimension(); ++i) {
                 for (int j = 0; j < propagatorParameters.size(); ++j) {
-                    jacobian.setEntry(index + i, 6 + j, weight[i] * jMP.getEntry(i, j));
+                    jacobian.setEntry(index + i, 6 + j, weight[i] * jMP.getEntry(i, j) / sigma[i]);
                 }
             }
         }
@@ -307,7 +321,7 @@ class Model implements MultivariateJacobianFunction {
                 for (int i = 0; i < dMdP.length; ++i) {
                     for (int j = 0; j < dMdP[i].length; ++j) {
                         jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()),
-                                          weight[i] * dMdP[i][j]);
+                                          weight[i] * dMdP[i][j] / sigma[i]);
                     }
                 }
             }

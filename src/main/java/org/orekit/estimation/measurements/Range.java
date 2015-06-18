@@ -36,13 +36,14 @@ public class Range extends AbstractMeasurement {
      * @param date date of the measurement
      * @param range observed value
      * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
      * @exception OrekitException if a {@link org.orekit.estimation.Parameter}
      * name conflict occurs
      */
     public Range(final GroundStation station, final AbsoluteDate date,
-                 final double range, final double sigma)
+                 final double range, final double sigma, final double baseWeight)
         throws OrekitException {
-        super(date, range, sigma);
+        super(date, range, sigma, baseWeight);
         this.station = station;
         addSupportedParameter(station);
     }
@@ -56,7 +57,7 @@ public class Range extends AbstractMeasurement {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation theoreticalEvaluation(final SpacecraftState state)
+    protected Evaluation theoreticalEvaluation(final int iteration, final SpacecraftState state)
         throws OrekitException {
 
         // take propagation time into account
@@ -64,7 +65,7 @@ public class Range extends AbstractMeasurement {
                 station.compensatePropagationDelay(state, getDate());
 
         // prepare the evaluation
-        final Evaluation evaluation = new Evaluation(this, compensatedState);
+        final Evaluation evaluation = new Evaluation(this, iteration, compensatedState);
 
         // station position at signal arrival
         final Transform topoToInert =

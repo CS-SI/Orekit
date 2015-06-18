@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
 public abstract class AbstractMeasurement implements Measurement {
 
     /** List of the supported parameters. */
-    private List<Parameter> supportedParameters;
+    private final List<Parameter> supportedParameters;
 
     /** Date of the measurement. */
     private final AbsoluteDate date;
@@ -45,8 +44,8 @@ public abstract class AbstractMeasurement implements Measurement {
     /** Theoretical standard deviation. */
     private final double[] sigma;
 
-    /** Weight. */
-    private final double[] weight;
+    /** Base weight. */
+    private final double[] baseWeight;
 
     /** Modifiers that apply to the measurement.*/
     private final List<EvaluationModifier> modifiers;
@@ -61,8 +60,10 @@ public abstract class AbstractMeasurement implements Measurement {
      * @param date date of the measurement
      * @param observed observed value
      * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
      */
-    public AbstractMeasurement(final AbsoluteDate date, final double observed, final double sigma) {
+    protected AbstractMeasurement(final AbsoluteDate date, final double observed,
+                                  final double sigma, final double baseWeight) {
         this.supportedParameters = new ArrayList<Parameter>();
         this.date       = date;
         this.observed   = new double[] {
@@ -71,8 +72,8 @@ public abstract class AbstractMeasurement implements Measurement {
         this.sigma      = new double[] {
             sigma
         };
-        this.weight     = new double[] {
-            1.0
+        this.baseWeight = new double[] {
+            baseWeight
         };
         this.modifiers = new ArrayList<EvaluationModifier>();
         setEnabled(true);
@@ -85,14 +86,15 @@ public abstract class AbstractMeasurement implements Measurement {
      * @param date date of the measurement
      * @param observed observed value
      * @param sigma theoretical standard deviation
+     * @param baseWeight base weight
      */
-    public AbstractMeasurement(final AbsoluteDate date, final double[] observed, final double[] sigma) {
+    protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
+                                  final double[] sigma, final double[] baseWeight) {
         this.supportedParameters = new ArrayList<Parameter>();
         this.date       = date;
         this.observed   = observed.clone();
         this.sigma      = sigma.clone();
-        this.weight     = new double[observed.length];
-        Arrays.fill(weight, 1.0);
+        this.baseWeight = baseWeight.clone();
         this.modifiers = new ArrayList<EvaluationModifier>();
         setEnabled(true);
     }
@@ -155,35 +157,31 @@ public abstract class AbstractMeasurement implements Measurement {
 
     /** {@inheritDoc} */
     @Override
-    public double[] getWeight() {
-        return weight.clone();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setWeight(final double ... weight) {
-        System.arraycopy(weight, 0, this.weight, 0, getDimension());
+    public double[] getBaseWeight() {
+        return baseWeight.clone();
     }
 
     /** Compute the theoretical value.
      * <p>
      * The theoretical value does not have <em>any</em> modifiers applied.
      * </p>
+     * @param iteration iteration number
      * @param state orbital state at measurement date
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
-    protected abstract Evaluation theoreticalEvaluation(final SpacecraftState state)
+    protected abstract Evaluation theoreticalEvaluation(final int iteration,
+                                                        final SpacecraftState state)
         throws OrekitException;
 
     /** {@inheritDoc} */
     @Override
-    public Evaluation evaluate(final SpacecraftState state)
+    public Evaluation evaluate(final int iteration, final SpacecraftState state)
         throws OrekitException {
 
         // compute the theoretical value
-        final Evaluation evaluation = theoreticalEvaluation(state);
+        final Evaluation evaluation = theoreticalEvaluation(iteration, state);
 
         // apply the modifiers
         for (final EvaluationModifier modifier : modifiers) {
