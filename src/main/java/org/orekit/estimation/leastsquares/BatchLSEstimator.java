@@ -174,7 +174,7 @@ public class BatchLSEstimator {
 
         // compute problem dimension:
         // orbital parameters + propagator parameters + measurements parameters
-        final int          nbOrbitalPArameters      = 6;
+        final int          nbOrbitalParameters      = 6;
         final List<String> propagatorParameters     = propagatorBuilder.getFreeParameters();
         final int          nbPropagatorParameters   = propagatorParameters.size();
         int                nbMeasurementsParameters = 0;
@@ -183,14 +183,14 @@ public class BatchLSEstimator {
                 nbMeasurementsParameters += parameter.getDimension();
             }
         }
-        final int dimension = nbOrbitalPArameters + nbPropagatorParameters + nbMeasurementsParameters;
+        final int dimension = nbOrbitalParameters + nbPropagatorParameters + nbMeasurementsParameters;
 
         // create start point
         final double[] start = new double[dimension];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialGuess,
                                                          propagatorBuilder.getPositionAngle(),
                                                          start);
-        int index = nbOrbitalPArameters;
+        int index = nbOrbitalParameters;
         for (final String propagatorParameter : propagatorParameters) {
             start[index++] = propagatorBuilder.getParameter(propagatorParameter);
         }
