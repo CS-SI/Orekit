@@ -29,6 +29,7 @@ import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.estimation.OrbitValidator;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
@@ -219,6 +220,9 @@ public class BatchLSEstimator {
                                       measurements, measurementsParameters,
                                       initialGuess.getDate());
         lsBuilder.model(model);
+
+        // add a validator for orbital parameters
+        lsBuilder.parameterValidator(OrbitValidator.getValidator(propagatorBuilder.getOrbitType()));
 
         try {
 
