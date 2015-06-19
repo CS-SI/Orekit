@@ -16,9 +16,9 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -71,7 +71,7 @@ class Model implements MultivariateJacobianFunction {
     private Orbit orbit;
 
     /** Last evaluations. */
-    private final List<Evaluation> evaluations;
+    private final Map<Measurement, Evaluation> evaluations;
 
     /** Orbit date. */
     private final AbsoluteDate orbitDate;
@@ -110,7 +110,7 @@ class Model implements MultivariateJacobianFunction {
         this.measurements           = measurements;
         this.measurementsParameters = measurementsParameters;
         this.parameterColumns       = new HashMap<String, Integer>(measurementsParameters.size());
-        this.evaluations            = new ArrayList<Evaluation>();
+        this.evaluations            = new IdentityHashMap<Measurement, Evaluation>(measurements.size());
         this.orbitDate              = orbitDate;
         this.iteration              = 0;
 
@@ -184,8 +184,8 @@ class Model implements MultivariateJacobianFunction {
     /** Get the last evaluations performed.
      * @return last evaluations performed
      */
-    public List<Evaluation> getLastEvaluations() {
-        return Collections.unmodifiableList(evaluations);
+    public Map<Measurement, Evaluation> getLastEvaluations() {
+        return Collections.unmodifiableMap(evaluations);
     }
 
     /** Create the propagator and parameters corresponding to an evaluation point.
@@ -233,7 +233,12 @@ class Model implements MultivariateJacobianFunction {
         int p = 0;
         for (final Measurement measurement : measurements) {
             if (measurement.isEnabled()) {
-                final AbsoluteDate       md = measurement.getDate();
+                AbsoluteDate md = measurement.getDate();
+                final Evaluation previousEvaluation = evaluations.get(measurement);
+                if (previousEvaluation != null) {
+                    // pre-compensate signal transit time
+                    md = md.shiftedBy(-previousEvaluation.getTimeOffset());
+                }
                 if (md.compareTo(firstDate) < 0) {
                     firstDate = md;
                 }
@@ -278,7 +283,7 @@ class Model implements MultivariateJacobianFunction {
         throws OrekitException {
 
         // compute weighted residuals
-        evaluations.add(evaluation);
+        evaluations.put(evaluation.getMeasurement(), evaluation);
         final double[] evaluated = evaluation.getValue();
         final double[] observed  = evaluation.getMeasurement().getObservedValue();
         final double[] sigma     = evaluation.getMeasurement().getTheoreticalStandardDeviation();

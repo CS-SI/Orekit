@@ -17,6 +17,7 @@
 package org.orekit.estimation.leastsquares;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -70,16 +71,17 @@ public class BatchLSEstimatorTest {
                                                context.initialOrbit.getDate(),
                                                context.initialOrbit.getMu());
         Orbit estimated   = estimator.estimate(wrongOrbit);
-        for (final Evaluation evaluation : estimator.getLastEvaluations()) {
-            PV pv = (PV) evaluation.getMeasurement();
+        for (final Map.Entry<Measurement, Evaluation> entry :
+             estimator.getLastEvaluations().entrySet()) {
+            PV pv = (PV) entry.getKey();
             System.out.format(java.util.Locale.US, "%s %13.3f %13.3f %13.3f  %13.6f %13.6f %13.6f%n",
                               pv.getDate(),
-                              pv.getObservedValue()[0] - evaluation.getValue()[0],
-                              pv.getObservedValue()[1] - evaluation.getValue()[1],
-                              pv.getObservedValue()[2] - evaluation.getValue()[2],
-                              pv.getObservedValue()[3] - evaluation.getValue()[3],
-                              pv.getObservedValue()[4] - evaluation.getValue()[4],
-                              pv.getObservedValue()[5] - evaluation.getValue()[5]);
+                              pv.getObservedValue()[0] - entry.getValue().getValue()[0],
+                              pv.getObservedValue()[1] - entry.getValue().getValue()[1],
+                              pv.getObservedValue()[2] - entry.getValue().getValue()[2],
+                              pv.getObservedValue()[3] - entry.getValue().getValue()[3],
+                              pv.getObservedValue()[4] - entry.getValue().getValue()[4],
+                              pv.getObservedValue()[5] - entry.getValue().getValue()[5]);
         }
         System.out.println(context.initialOrbit);
         System.out.println(wrongOrbit);
@@ -118,13 +120,14 @@ public class BatchLSEstimatorTest {
                                                context.initialOrbit.getDate(),
                                                context.initialOrbit.getMu());
         Orbit estimated   = estimator.estimate(wrongOrbit);
-        for (final Evaluation evaluation : estimator.getLastEvaluations()) {
-            Range range = (Range) evaluation.getMeasurement();
+        for (final Map.Entry<Measurement, Evaluation> entry :
+             estimator.getLastEvaluations().entrySet()) {
+            Range range = (Range) entry.getKey();
             System.out.println(range.getDate() +
                                " " + range.getStation().getBaseFrame().getName() +
                                " " + range.getObservedValue()[0] +
-                               " " + evaluation.getValue()[0] +
-                               " " + (range.getObservedValue()[0] - evaluation.getValue()[0]));
+                               " " + entry.getValue().getValue()[0] +
+                               " " + (range.getObservedValue()[0] - entry.getValue().getValue()[0]));
         }
         System.out.println(context.initialOrbit);
         System.out.println(wrongOrbit);

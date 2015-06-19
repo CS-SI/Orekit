@@ -18,7 +18,9 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
@@ -57,7 +59,7 @@ public class BatchLSEstimator {
     private final LeastSquaresBuilder lsBuilder;
 
     /** Last evaluations. */
-    private final List<Evaluation> evaluations;
+    private final Map<Measurement, Evaluation> evaluations;
 
     /** Simple constructor.
      * @param propagatorBuilder builder to user for propagation
@@ -73,7 +75,7 @@ public class BatchLSEstimator {
         this.measurementsParameters = new ArrayList<Parameter>();
         this.optimizer              = optimizer;
         this.lsBuilder              = new LeastSquaresBuilder();
-        this.evaluations            = new ArrayList<Evaluation>();
+        this.evaluations            = new IdentityHashMap<Measurement, Evaluation>();
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -228,7 +230,7 @@ public class BatchLSEstimator {
 
             // save the last evaluations
             evaluations.clear();
-            evaluations.addAll(model.getLastEvaluations());
+            evaluations.putAll(model.getLastEvaluations());
 
             // extract the orbit
             return model.getLastOrbit();
@@ -242,8 +244,8 @@ public class BatchLSEstimator {
     /** Get the last evaluations performed.
      * @return last evaluations performed
      */
-    public List<Evaluation> getLastEvaluations() {
-        return Collections.unmodifiableList(evaluations);
+    public Map<Measurement, Evaluation> getLastEvaluations() {
+        return Collections.unmodifiableMap(evaluations);
     }
 
 }
