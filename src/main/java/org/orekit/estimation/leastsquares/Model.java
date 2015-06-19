@@ -264,10 +264,20 @@ class Model implements MultivariateJacobianFunction {
         final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagator);
         partials.selectParameters(propagatorParameters);
 
+        // partial derivatives of the initial Cartesian coordinates with respect to orbit
+        final double[][] dY1dY0 = new double[6][6];
+        final Orbit initialOrbit =
+                propagator.getOrbitType().convertType(propagator.getInitialState().getOrbit());
+        initialOrbit.getJacobianWrtParameters(propagator.getPositionAngleType(), dY1dY0);
+
+        // partial derivatives of the initial Cartesian coordinates with respect to parameters
+        // (this is really a zero-valued matrix, so we don't need to initialize it)
+        final double[][] dY1dP = new double[6][propagatorParameters.size()];
+
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
         final SpacecraftState stateWithDerivatives =
-                        partials.setInitialJacobians(rawState, 6, propagatorParameters.size());
+                        partials.setInitialJacobians(rawState, dY1dY0, dY1dP);
         propagator.resetInitialState(stateWithDerivatives);
 
         mapper = partials.getMapper();
