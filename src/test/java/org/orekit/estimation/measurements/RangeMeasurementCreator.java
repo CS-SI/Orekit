@@ -70,7 +70,7 @@ public class RangeMeasurementCreator extends MeasurementCreator {
                                                                               date);
                     addMeasurement(new Range(station, date,
                                              Vector3D.distance(position, t.transformPosition(Vector3D.ZERO)),
-                                             15.0, 10));
+                                             1.0, 10));
                 }
 
             }

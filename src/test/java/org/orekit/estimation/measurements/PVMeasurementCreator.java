@@ -24,7 +24,7 @@ public class PVMeasurementCreator extends MeasurementCreator {
         addMeasurement(new PV(currentState.getDate(),
                               currentState.getPVCoordinates().getPosition(),
                               currentState.getPVCoordinates().getVelocity(),
-                              3.0, 0.01, 10));
+                              1.0, 0.001, 1.0));
     }
 
 }

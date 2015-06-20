@@ -50,11 +50,12 @@ public class Context {
 
     public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType,
                                                     final PositionAngle positionAngle,
+                                                    final double minStep, final double maxStep, final double dP,
                                                     final Force ... forces)
         throws OrekitException {
         final NumericalPropagatorBuilder propagatorBuilder =
                         new NumericalPropagatorBuilder(gravity.getMu(), initialOrbit.getFrame(),
-                                                       new DormandPrince853IntegratorBuilder(0.001, 3600.0, 1.0),
+                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                        orbitType, positionAngle);
         for (Force force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));

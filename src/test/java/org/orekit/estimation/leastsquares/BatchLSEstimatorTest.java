@@ -46,7 +46,8 @@ public class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE);
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
 
         // create perfect PV measurements
         final List<Measurement> measurements =
@@ -63,9 +64,7 @@ public class BatchLSEstimatorTest {
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(20);
 
-        // TODO: adjust threshold when estimator is improved
-        // this is much too high for perfect measurements
-        checkFit(context, estimator, 2.3, 21, 0.2, 5.0e-5);
+        checkFit(context, estimator, 1.1e-8, 6.7e-8, 3.0e-9, 3.1e-12);
 
     }
 
@@ -75,7 +74,8 @@ public class BatchLSEstimatorTest {
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE);
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
         final List<Measurement> measurements =
@@ -92,9 +92,7 @@ public class BatchLSEstimatorTest {
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(20);
 
-        // TODO: adjust threshold when estimator is improved,
-        // this is much too high for perfect measurements
-        checkFit(context, estimator, 1.6, 4.6, 23.0, 0.01);
+        checkFit(context, estimator, 4.8e-7, 9.0e-7, 6.1e-7, 2.4e-10);
 
     }
 
@@ -134,9 +132,9 @@ public class BatchLSEstimatorTest {
                 max = FastMath.max(max, FastMath.abs(weightedResidual));
             }
         }
+
         Assert.assertEquals(0.0, FastMath.sqrt(sum / k), rmsEps);
         Assert.assertEquals(0.0, max, maxEps);
-
         Assert.assertEquals(0.0, Vector3D.distance(initialPosition, estimatedPosition), posEps);
         Assert.assertEquals(0.0, Vector3D.distance(initialVelocity, estimatedVelocity), velEps);
 

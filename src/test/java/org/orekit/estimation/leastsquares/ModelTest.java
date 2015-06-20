@@ -45,7 +45,8 @@ public class ModelTest {
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE);
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
 
         // create perfect PV measurements
         final List<Measurement> measurements = EstimationTestUtils.createMeasurements(context, propagatorBuilder,
@@ -71,12 +72,11 @@ public class ModelTest {
         // evaluate model on perfect start point
         RealVector point = startPoint(context, propagatorBuilder, measurementsParameters);
         Pair<RealVector, RealMatrix> value = model.value(point);
-
         int index = 0;
         for (Measurement measurement : measurements) {
             for (int i = 0; i < measurement.getDimension(); ++i) {
                 // the value is already a weighted residual
-                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.0e-10);
+                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.2e-7);
             }
         }
         Assert.assertEquals(index, value.getFirst().getDimension());
