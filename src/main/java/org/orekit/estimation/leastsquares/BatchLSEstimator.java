@@ -62,6 +62,9 @@ public class BatchLSEstimator {
     /** Last evaluations. */
     private final Map<Measurement, Evaluation> evaluations;
 
+    /** Number of iterations used for last estimation. */
+    private int iterations;
+
     /** Simple constructor.
      * @param propagatorBuilder builder to user for propagation
      * @param optimizer solver for least squares problem
@@ -77,6 +80,7 @@ public class BatchLSEstimator {
         this.optimizer              = optimizer;
         this.lsBuilder              = new LeastSquaresBuilder();
         this.evaluations            = new IdentityHashMap<Measurement, Evaluation>();
+        this.iterations             = -1;
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -236,6 +240,9 @@ public class BatchLSEstimator {
             evaluations.clear();
             evaluations.putAll(model.getLastEvaluations());
 
+            // save the number of iterations
+            iterations = model.getIteration();
+
             // extract the orbit
             return model.getLastOrbit();
 
@@ -250,6 +257,13 @@ public class BatchLSEstimator {
      */
     public Map<Measurement, Evaluation> getLastEvaluations() {
         return Collections.unmodifiableMap(evaluations);
+    }
+
+    /** Get the number of iterations used for last estimation.
+     * @return number of iterations used for last estimation
+     */
+    public int getIterations() {
+        return iterations;
     }
 
 }
