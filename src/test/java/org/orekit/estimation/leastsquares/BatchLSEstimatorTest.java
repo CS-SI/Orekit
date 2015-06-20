@@ -21,17 +21,17 @@ import java.util.Map;
 
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
-import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
-import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -60,32 +60,12 @@ public class BatchLSEstimatorTest {
         for (final Measurement measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
-        estimator.setConvergenceThreshold(1.0e-12, 1.0e-12);
+        estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(20);
 
-        // estimate orbit, starting from a wrong point
-        Vector3D position = context.initialOrbit.getPVCoordinates().getPosition().add(new Vector3D(100.0, 0, 0));
-        Vector3D velocity = context.initialOrbit.getPVCoordinates().getVelocity().add(new Vector3D(0, 0, 0.01));
-        Orbit wrongOrbit  = new KeplerianOrbit(new PVCoordinates(position, velocity),
-                                               context.initialOrbit.getFrame(),
-                                               context.initialOrbit.getDate(),
-                                               context.initialOrbit.getMu());
-        Orbit estimated   = estimator.estimate(wrongOrbit);
-        for (final Map.Entry<Measurement, Evaluation> entry :
-             estimator.getLastEvaluations().entrySet()) {
-            PV pv = (PV) entry.getKey();
-            System.out.format(java.util.Locale.US, "%s %13.3f %13.3f %13.3f  %13.6f %13.6f %13.6f%n",
-                              pv.getDate(),
-                              pv.getObservedValue()[0] - entry.getValue().getValue()[0],
-                              pv.getObservedValue()[1] - entry.getValue().getValue()[1],
-                              pv.getObservedValue()[2] - entry.getValue().getValue()[2],
-                              pv.getObservedValue()[3] - entry.getValue().getValue()[3],
-                              pv.getObservedValue()[4] - entry.getValue().getValue()[4],
-                              pv.getObservedValue()[5] - entry.getValue().getValue()[5]);
-        }
-        System.out.println(context.initialOrbit);
-        System.out.println(wrongOrbit);
-        System.out.println(estimated);
+        // TODO: adjust threshold when estimator is improved
+        // this is much too high for perfect measurements
+        checkFit(context, estimator, 2.3, 21, 0.2, 5.0e-5);
 
     }
 
@@ -109,29 +89,56 @@ public class BatchLSEstimatorTest {
         for (final Measurement range : measurements) {
             estimator.addMeasurement(range);
         }
-        estimator.setConvergenceThreshold(1.0e-10, 1.0e-10);
+        estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(20);
 
+        // TODO: adjust threshold when estimator is improved,
+        // this is much too high for perfect measurements
+        checkFit(context, estimator, 1.6, 4.6, 23.0, 0.01);
+
+    }
+
+    private void checkFit(final Context context, final BatchLSEstimator estimator,
+                          final double rmsEps, final double maxEps,
+                          final double posEps, final double velEps)
+        throws OrekitException {
+
         // estimate orbit, starting from a wrong point
-        Vector3D position = context.initialOrbit.getPVCoordinates().getPosition().add(new Vector3D(100.0, 0, 0));
-        Vector3D velocity = context.initialOrbit.getPVCoordinates().getVelocity().add(new Vector3D(0, 0, 0.1));
-        Orbit wrongOrbit  = new KeplerianOrbit(new PVCoordinates(position, velocity),
-                                               context.initialOrbit.getFrame(),
-                                               context.initialOrbit.getDate(),
-                                               context.initialOrbit.getMu());
-        Orbit estimated   = estimator.estimate(wrongOrbit);
+        final Vector3D initialPosition = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D initialVelocity = context.initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D wrongPosition   = initialPosition.add(new Vector3D(1000.0, 0, 0));
+        final Vector3D wrongVelocity   = initialVelocity.add(new Vector3D(0, 0, 0.01));
+        final Orbit   wrongOrbit       = new CartesianOrbit(new PVCoordinates(wrongPosition, wrongVelocity),
+                                                            context.initialOrbit.getFrame(),
+                                                            context.initialOrbit.getDate(),
+                                                            context.initialOrbit.getMu());
+        final Orbit estimatedOrbit = estimator.estimate(wrongOrbit);
+        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
+
+        int    k   = 0;
+        double sum = 0;
+        double max = 0;
         for (final Map.Entry<Measurement, Evaluation> entry :
              estimator.getLastEvaluations().entrySet()) {
-            Range range = (Range) entry.getKey();
-            System.out.println(range.getDate() +
-                               " " + range.getStation().getBaseFrame().getName() +
-                               " " + range.getObservedValue()[0] +
-                               " " + entry.getValue().getValue()[0] +
-                               " " + (range.getObservedValue()[0] - entry.getValue().getValue()[0]));
+            final Measurement m           = entry.getKey();
+            final Evaluation  e           = entry.getValue();
+            final double[]    weight      = m.getBaseWeight();
+            final double[]    sigma       = m.getTheoreticalStandardDeviation();
+            final double[]    observed    = m.getObservedValue();
+            final double[]    theoretical = e.getValue();
+            for (int i = 0; i < m.getDimension(); ++i) {
+                final double weightedResidual = weight[i] * (theoretical[i] - observed[i]) / sigma[i];
+                ++k;
+                sum += weightedResidual * weightedResidual;
+                max = FastMath.max(max, FastMath.abs(weightedResidual));
+            }
         }
-        System.out.println(context.initialOrbit);
-        System.out.println(wrongOrbit);
-        System.out.println(estimated);
+        Assert.assertEquals(0.0, FastMath.sqrt(sum / k), rmsEps);
+        Assert.assertEquals(0.0, max, maxEps);
+
+        Assert.assertEquals(0.0, Vector3D.distance(initialPosition, estimatedPosition), posEps);
+        Assert.assertEquals(0.0, Vector3D.distance(initialVelocity, estimatedVelocity), velEps);
 
     }
 

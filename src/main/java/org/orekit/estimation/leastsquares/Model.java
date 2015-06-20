@@ -264,20 +264,10 @@ class Model implements MultivariateJacobianFunction {
         final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagator);
         partials.selectParameters(propagatorParameters);
 
-        // partial derivatives of the initial Cartesian coordinates with respect to orbit
-        final double[][] dY1dY0 = new double[6][6];
-        final Orbit initialOrbit =
-                propagator.getOrbitType().convertType(propagator.getInitialState().getOrbit());
-        initialOrbit.getJacobianWrtParameters(propagator.getPositionAngleType(), dY1dY0);
-
-        // partial derivatives of the initial Cartesian coordinates with respect to parameters
-        // (this is really a zero-valued matrix, so we don't need to initialize it)
-        final double[][] dY1dP = new double[6][propagatorParameters.size()];
-
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
         final SpacecraftState stateWithDerivatives =
-                        partials.setInitialJacobians(rawState, dY1dY0, dY1dP);
+                        partials.setInitialJacobians(rawState, 6, propagatorParameters.size());
         propagator.resetInitialState(stateWithDerivatives);
 
         mapper = partials.getMapper();
@@ -302,27 +292,36 @@ class Model implements MultivariateJacobianFunction {
             value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]) / sigma[i]);
         }
 
-        // Jacobian of the measurement with respect to initial state
-        final double[][] dYdY0 = new double[6][6];
-        mapper.getStateJacobian(evaluation.getState(), dYdY0);
-        final RealMatrix jYY0 = new Array2DRowRealMatrix(dYdY0, false);
-        final RealMatrix jMY  = new Array2DRowRealMatrix(evaluation.getStateDerivatives(), false);
-        final RealMatrix jMY0 = jMY.multiply(jYY0);
-        for (int i = 0; i < jMY0.getRowDimension(); ++i) {
-            for (int j = 0; j < jMY0.getColumnDimension(); ++j) {
-                jacobian.setEntry(index + i, j, weight[i] * jMY0.getEntry(i, j) / sigma[i]);
+        // partial derivatives of the current Cartesian coordinates with respect to current orbital state
+        final double[][] aCY = new double[6][6];
+        final Orbit currentOrbit = evaluation.getState().getOrbit();
+        currentOrbit.getJacobianWrtParameters(propagatorBuilder.getPositionAngle(), aCY);
+        final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
+
+        // Jacobian of the measurement with respect to current orbital state
+        final RealMatrix dMdC = new Array2DRowRealMatrix(evaluation.getStateDerivatives(), false);
+        final RealMatrix dMdY = dMdC.multiply(dCdY);
+
+        // Jacobian of the measurement with respect to initial orbital state
+        final double[][] aYY0 = new double[6][6];
+        mapper.getStateJacobian(evaluation.getState(), aYY0);
+        final RealMatrix dYdY0 = new Array2DRowRealMatrix(aYY0, false);
+        final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
+        for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
+            for (int j = 0; j < dMdY0.getColumnDimension(); ++j) {
+                jacobian.setEntry(index + i, j, weight[i] * dMdY0.getEntry(i, j) / sigma[i]);
             }
         }
 
         if (!propagatorParameters.isEmpty()) {
             // Jacobian of the measurement with respect to propagator parameters
-            final double[][] dYdP  = new double[6][propagatorParameters.size()];
-            mapper.getParametersJacobian(evaluation.getState(), dYdP);
-            final RealMatrix jYP = new Array2DRowRealMatrix(dYdP, false);
-            final RealMatrix jMP = jMY.multiply(jYP);
-            for (int i = 0; i < jMP.getRowDimension(); ++i) {
+            final double[][] aYPp  = new double[6][propagatorParameters.size()];
+            mapper.getParametersJacobian(evaluation.getState(), aYPp);
+            final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
+            final RealMatrix dMdPp = dMdY.multiply(dYdPp);
+            for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
                 for (int j = 0; j < propagatorParameters.size(); ++j) {
-                    jacobian.setEntry(index + i, 6 + j, weight[i] * jMP.getEntry(i, j) / sigma[i]);
+                    jacobian.setEntry(index + i, 6 + j, weight[i] * dMdPp.getEntry(i, j) / sigma[i]);
                 }
             }
         }
@@ -330,11 +329,11 @@ class Model implements MultivariateJacobianFunction {
         // Jacobian of the measurement with respect to measurements parameters
         for (final Parameter parameter : evaluation.getMeasurement().getSupportedParameters()) {
             if (parameter.isEstimated()) {
-                final double[][] dMdP = evaluation.getParameterDerivatives(parameter.getName());
-                for (int i = 0; i < dMdP.length; ++i) {
-                    for (int j = 0; j < dMdP[i].length; ++j) {
+                final double[][] aMPm = evaluation.getParameterDerivatives(parameter.getName());
+                for (int i = 0; i < aMPm.length; ++i) {
+                    for (int j = 0; j < aMPm[i].length; ++j) {
                         jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()),
-                                          weight[i] * dMdP[i][j] / sigma[i]);
+                                          weight[i] * aMPm[i][j] / sigma[i]);
                     }
                 }
             }
