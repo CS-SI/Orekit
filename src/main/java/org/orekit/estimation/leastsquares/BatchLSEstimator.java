@@ -25,7 +25,6 @@ import java.util.Map;
 import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -231,10 +230,7 @@ public class BatchLSEstimator {
         try {
 
             // solve the problem
-            final LeastSquaresProblem.Evaluation optimum = optimizer.optimize(lsBuilder.build());
-
-            // perform a last evaluation on the optimum parameters
-            model.value(optimum.getPoint());
+            optimizer.optimize(lsBuilder.build());
 
             // save the last evaluations
             evaluations.clear();

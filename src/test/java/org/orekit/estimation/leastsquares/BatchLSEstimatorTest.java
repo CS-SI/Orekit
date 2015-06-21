@@ -64,7 +64,7 @@ public class BatchLSEstimatorTest {
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(20);
 
-        checkFit(context, estimator, 5, 1.1e-8, 6.7e-8, 3.0e-9, 3.1e-12);
+        checkFit(context, estimator, 4, 1.1e-8, 6.7e-8, 3.0e-9, 3.1e-12);
 
     }
 
@@ -92,7 +92,7 @@ public class BatchLSEstimatorTest {
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(20);
 
-        checkFit(context, estimator, 5, 4.8e-7, 9.0e-7, 6.1e-7, 2.4e-10);
+        checkFit(context, estimator, 4, 4.8e-7, 9.0e-7, 6.1e-7, 2.4e-10);
 
     }
 
