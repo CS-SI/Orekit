@@ -128,7 +128,18 @@ public abstract class AbstractMeasurement implements Measurement {
     /** {@inheritDoc} */
     @Override
     public List<Parameter> getSupportedParameters() {
-        return Collections.unmodifiableList(supportedParameters);
+        if (modifiers.isEmpty()) {
+            // no modifiers, we already know all the parameters
+            return Collections.unmodifiableList(supportedParameters);
+        } else {
+            // we have to combine the measurement parameters and the modifiers parameters
+            final List<Parameter> parameters = new ArrayList<Parameter>();
+            parameters.addAll(supportedParameters);
+            for (final EvaluationModifier modifier : modifiers) {
+                parameters.addAll(modifier.getSupportedParameters());
+            }
+            return parameters;
+        }
     }
 
     /** {@inheritDoc} */

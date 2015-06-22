@@ -16,27 +16,26 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Evaluation;
+import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.utils.PVCoordinates;
 
 public class BatchLSEstimatorTest {
 
@@ -64,7 +63,11 @@ public class BatchLSEstimatorTest {
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(20);
 
-        checkFit(context, estimator, 4, 1.1e-8, 6.7e-8, 3.0e-9, 3.1e-12);
+        EstimationTestUtils.checkFit(context, estimator, 4,
+                                     0.0, 1.1e-8,
+                                     0.0, 6.7e-8,
+                                     0.0, 3.0e-9,
+                                     0.0, 3.1e-12);
 
     }
 
@@ -92,53 +95,52 @@ public class BatchLSEstimatorTest {
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(20);
 
-        checkFit(context, estimator, 4, 4.8e-7, 9.0e-7, 6.1e-7, 2.4e-10);
+        EstimationTestUtils.checkFit(context, estimator, 4,
+                                     0.0, 4.8e-7,
+                                     0.0, 9.0e-7,
+                                     0.0, 6.1e-7,
+                                     0.0, 2.4e-10);
 
     }
 
-    private void checkFit(final Context context, final BatchLSEstimator estimator,
-                          final int iterations, final double rmsEps, final double maxEps,
-                          final double posEps, final double velEps)
-        throws OrekitException {
+    @Test
+    public void testDuplicatedMeasurementParameter() throws OrekitException {
 
-        // estimate orbit, starting from a wrong point
-        final Vector3D initialPosition = context.initialOrbit.getPVCoordinates().getPosition();
-        final Vector3D initialVelocity = context.initialOrbit.getPVCoordinates().getVelocity();
-        final Vector3D wrongPosition   = initialPosition.add(new Vector3D(1000.0, 0, 0));
-        final Vector3D wrongVelocity   = initialVelocity.add(new Vector3D(0, 0, 0.01));
-        final Orbit   wrongOrbit       = new CartesianOrbit(new PVCoordinates(wrongPosition, wrongVelocity),
-                                                            context.initialOrbit.getFrame(),
-                                                            context.initialOrbit.getDate(),
-                                                            context.initialOrbit.getMu());
-        final Orbit estimatedOrbit = estimator.estimate(wrongOrbit);
-        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
-        final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
+        Context context = EstimationTestUtils.eccentricContext();
 
-        Assert.assertEquals(iterations, estimator.getIterations());
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
 
-        int    k   = 0;
-        double sum = 0;
-        double max = 0;
-        for (final Map.Entry<Measurement, Evaluation> entry :
-             estimator.getLastEvaluations().entrySet()) {
-            final Measurement m           = entry.getKey();
-            final Evaluation  e           = entry.getValue();
-            final double[]    weight      = m.getBaseWeight();
-            final double[]    sigma       = m.getTheoreticalStandardDeviation();
-            final double[]    observed    = m.getObservedValue();
-            final double[]    theoretical = e.getValue();
-            for (int i = 0; i < m.getDimension(); ++i) {
-                final double weightedResidual = weight[i] * (theoretical[i] - observed[i]) / sigma[i];
-                ++k;
-                sum += weightedResidual * weightedResidual;
-                max = FastMath.max(max, FastMath.abs(weightedResidual));
+        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
+                                                                new LevenbergMarquardtOptimizer());
+        final Measurement measurement = new Range(context.stations.get(0),
+                                                  context.initialOrbit.getDate(),
+                                                  1.0e6, 10.0, 1.0);
+        final String duplicatedName = "duplicated";
+        measurement.addModifier(new EvaluationModifier() {            
+            @Override
+            public void modify(Evaluation evaluation) {
             }
+            
+            @Override
+            public List<Parameter> getSupportedParameters() {
+                return Arrays.asList(new Parameter(duplicatedName) {
+                                         protected void valueChanged(double[] newValue) {
+                                         }
+                                     }, new Parameter(duplicatedName) {
+                                         protected void valueChanged(double[] newValue) {
+                                         }
+                                     });
+            }
+        });
+        try {
+            estimator.addMeasurement(measurement);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.DUPLICATED_PARAMETER_NAME, oe.getSpecifier());
+            Assert.assertEquals(duplicatedName, (String) oe.getParts()[0]);
         }
-
-        Assert.assertEquals(0.0, FastMath.sqrt(sum / k), rmsEps);
-        Assert.assertEquals(0.0, max, maxEps);
-        Assert.assertEquals(0.0, Vector3D.distance(initialPosition, estimatedPosition), posEps);
-        Assert.assertEquals(0.0, Vector3D.distance(initialVelocity, estimatedVelocity), velEps);
 
     }
 

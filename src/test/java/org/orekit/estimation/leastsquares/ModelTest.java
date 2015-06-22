@@ -29,7 +29,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Parameter;
-import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.OrbitType;
@@ -56,11 +55,6 @@ public class ModelTest {
         for (Measurement measurement : measurements) {
             for (final Parameter parameter : measurement.getSupportedParameters()) {
                 addMeasurementParameter(measurementsParameters, parameter);
-            }
-            for (final EvaluationModifier modifier : measurement.getModifiers()) {
-                for (final Parameter parameter : modifier.getSupportedParameters()) {
-                    addMeasurementParameter(measurementsParameters, parameter);
-                }
             }
         }
 

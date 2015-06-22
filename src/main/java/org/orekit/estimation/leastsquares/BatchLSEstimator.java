@@ -31,7 +31,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.OrbitValidator;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -110,16 +109,9 @@ public class BatchLSEstimator {
         // add the measurement
         measurements.add(measurement);
 
-        // add measurement parameters
-        for (final Parameter parameter : getSupportedParameters()) {
+        // add measurement parameters (including modifiers parameters)
+        for (final Parameter parameter : measurement.getSupportedParameters()) {
             addMeasurementParameter(parameter);
-        }
-
-        // add the measurement modifiers parameters
-        for (final EvaluationModifier modifier : measurement.getModifiers()) {
-            for (final Parameter parameter : modifier.getSupportedParameters()) {
-                addMeasurementParameter(parameter);
-            }
         }
 
     }

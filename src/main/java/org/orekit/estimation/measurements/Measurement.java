@@ -123,8 +123,8 @@ public interface Measurement extends TimeStamped {
      */
     List<EvaluationModifier> getModifiers();
 
-    /** Get the parameters supported by this measurement.
-     * @return parameters supported by this measurement
+    /** Get the parameters supported by this measurement, including its modifiers.
+     * @return parameters supported by this measurement, including its modifiers
      */
     List<Parameter> getSupportedParameters();
 

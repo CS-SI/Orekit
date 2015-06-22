@@ -88,16 +88,18 @@ public class Range extends AbstractMeasurement {
             0, 0, 0
         });
 
-        // partial derivatives with respect to parameter
-        // the parameter has 3 Cartesian coordinates for station offset position
-        final Vector3D gradientInTopo =
-                topoToInert.getRotation().applyInverseTo(gradientInInertial);
-        evaluation.setParameterDerivatives(station.getName(),
-                                           new double[] {
-                                               -gradientInTopo.getX(),
-                                               -gradientInTopo.getY(),
-                                               -gradientInTopo.getZ()
-                                           });
+        if (station.isEstimated()) {
+            // partial derivatives with respect to parameter
+            // the parameter has 3 Cartesian coordinates for station offset position
+            final Vector3D gradientInTopo =
+                    topoToInert.getRotation().applyInverseTo(gradientInInertial);
+            evaluation.setParameterDerivatives(station.getName(),
+                                               new double[] {
+                                                   -gradientInTopo.getX(),
+                                                   -gradientInTopo.getY(),
+                                                   -gradientInTopo.getZ()
+                                               });
+        }
 
         return evaluation;
 

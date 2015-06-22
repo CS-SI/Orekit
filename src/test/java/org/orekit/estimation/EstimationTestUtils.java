@@ -20,12 +20,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.junit.Assert;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.estimation.leastsquares.BatchLSEstimator;
+import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.forces.SphericalSpacecraft;
@@ -35,7 +39,9 @@ import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.OceanLoadDeformationCoefficients;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
@@ -43,6 +49,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
 /** Utility class for orbit determination tests. */
 public class EstimationTestUtils {
@@ -117,6 +124,66 @@ public class EstimationTestUtils {
         propagator.propagate(start, end);
 
         return creator.getMeasurements();
+
+    }
+
+    public static void checkFit(final Context context, final BatchLSEstimator estimator,
+                                final int iterations,
+                                final double expectedRMS,      final double rmsEps,
+                                final double expectedMax,      final double maxEps,
+                                final double expectedDeltaPos, final double posEps,
+                                final double expectedDeltaVel, final double velEps)
+        throws OrekitException {
+
+        // estimate orbit, starting from a wrong point
+        final Vector3D initialPosition = context.initialOrbit.getPVCoordinates().getPosition();
+        final Vector3D initialVelocity = context.initialOrbit.getPVCoordinates().getVelocity();
+        final Vector3D wrongPosition   = initialPosition.add(new Vector3D(1000.0, 0, 0));
+        final Vector3D wrongVelocity   = initialVelocity.add(new Vector3D(0, 0, 0.01));
+        final Orbit   wrongOrbit       = new CartesianOrbit(new PVCoordinates(wrongPosition, wrongVelocity),
+                                                            context.initialOrbit.getFrame(),
+                                                            context.initialOrbit.getDate(),
+                                                            context.initialOrbit.getMu());
+        final Orbit estimatedOrbit = estimator.estimate(wrongOrbit);
+        final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
+        final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
+
+        Assert.assertEquals(iterations, estimator.getIterations());
+
+        int    k   = 0;
+        double sum = 0;
+        double max = 0;
+        for (final Map.Entry<Measurement, Evaluation> entry :
+             estimator.getLastEvaluations().entrySet()) {
+            final Measurement m           = entry.getKey();
+            final Evaluation  e           = entry.getValue();
+            final double[]    weight      = m.getBaseWeight();
+            final double[]    sigma       = m.getTheoreticalStandardDeviation();
+            final double[]    observed    = m.getObservedValue();
+            final double[]    theoretical = e.getValue();
+            for (int i = 0; i < m.getDimension(); ++i) {
+                final double weightedResidual = weight[i] * (theoretical[i] - observed[i]) / sigma[i];
+                ++k;
+                sum += weightedResidual * weightedResidual;
+                max = FastMath.max(max, FastMath.abs(weightedResidual));
+            }
+        }
+
+        System.out.println(FastMath.sqrt(sum / k) + " " + max + " " +
+                Vector3D.distance(initialPosition, estimatedPosition) + " " +
+                Vector3D.distance(initialVelocity, estimatedVelocity));
+        Assert.assertEquals(expectedRMS,
+                            FastMath.sqrt(sum / k),
+                            rmsEps);
+        Assert.assertEquals(expectedMax,
+                            max,
+                            maxEps);
+        Assert.assertEquals(expectedDeltaPos,
+                            Vector3D.distance(initialPosition, estimatedPosition),
+                            posEps);
+        Assert.assertEquals(expectedDeltaVel,
+                            Vector3D.distance(initialVelocity, estimatedVelocity),
+                            velEps);
 
     }
 

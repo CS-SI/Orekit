@@ -332,7 +332,7 @@ class Model implements MultivariateJacobianFunction {
                 final double[][] aMPm = evaluation.getParameterDerivatives(parameter.getName());
                 for (int i = 0; i < aMPm.length; ++i) {
                     for (int j = 0; j < aMPm[i].length; ++j) {
-                        jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()),
+                        jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()) + j,
                                           weight[i] * aMPm[i][j] / sigma[i]);
                     }
                 }
