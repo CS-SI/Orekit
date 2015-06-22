@@ -27,8 +27,12 @@ import org.orekit.orbits.OrbitType;
 /** Enumerate for validating orbital parameters.
  * <p>
  * This class prevents the orbit determination engine to use
- * inconsistent orbital parameters by clampling them back
- * to domain boundary.
+ * inconsistent orbital parameters by trimming them back
+ * to fit domain boundary. As an example, if an optimizer
+ * attempts to evaluate a point containing an orbit with
+ * negative inclination, the inclination will be reset to
+ * 0.0 by the validator before it is really used in the
+ * space flight dynamics code.
  * </p>
  * @author Luc Maisonobe
  * @since 7.1
@@ -66,6 +70,11 @@ public enum OrbitValidator implements ParameterValidator {
                 params.setEntry(2, params.getEntry(2) / FastMath.nextUp(e));
             }
 
+            // ensure inclination is non-negative
+            if (params.getEntry(3) < 0.0) {
+                params.setEntry(3, 0.0);
+            }
+
             return params;
 
         }
@@ -78,6 +87,12 @@ public enum OrbitValidator implements ParameterValidator {
         /** {@inheritDoc} */
         @Override
         public RealVector validate(final RealVector params) {
+
+            // ensure inclination is non-negative
+            if (params.getEntry(2) < 0.0) {
+                params.setEntry(2, 0.0);
+            }
+
             final double a = params.getEntry(0);
             final double e = params.getEntry(1);
             if (a > 0 && e > 0 && e < 1) {
