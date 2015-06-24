@@ -20,16 +20,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import javax.print.attribute.standard.MediaSize.Other;
-
-import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.UnivariateVectorFunction;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
 import org.junit.Assert;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -206,9 +202,9 @@ public class EstimationTestUtils {
 
     }
 
-    public StateJacobian differentiate(final StateFunction function, final int dimension,
-                                       final OrbitType orbitType, final PositionAngle positionAngle,
-                                       final double dP, final int nbPoints) {
+    public static StateJacobian differentiate(final StateFunction function, final int dimension,
+                                              final OrbitType orbitType, final PositionAngle positionAngle,
+                                              final double dP, final int nbPoints) {
         return new StateJacobian() {
             
             @Override
@@ -216,43 +212,74 @@ public class EstimationTestUtils {
                 try {
                     final double[] tolerances =
                             NumericalPropagator.tolerances(dP, state.getOrbit(), orbitType)[0];
-                    final double[] array = new double[6];
-                    orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array);
                     final double[][] jacobian = new double[dimension][6];
-                    for (int i = 0; i < 6; ++i) {
-                        final int index = i;
-                        FiniteDifferencesDifferentiator differentiator =
-                                new FiniteDifferencesDifferentiator(nbPoints, tolerances[i]);
-                        UnivariateDifferentiableVectorFunction dif =
-                                differentiator.differentiate(new UnivariateVectorFunction() {
-                                    public double[] value(final double x)
-                                            throws OrekitExceptionWrapper {
-                                        try {
-                                            final double[] a = MathArrays.copyOf(array);
-                                            a[index] += x;
-                                            SpacecraftState s =
-                                                    new SpacecraftState(orbitType.mapArrayToOrbit(a,
-                                                                                                  positionAngle,
-                                                                                                  state.getDate(),
-                                                                                                  state.getMu(),
-                                                                                                  state.getFrame()),
-                                                                                                  state.getAttitude(),
-                                                                                                  state.getMass());
-                                            return function.value(s);
-                                        } catch (OrekitException oe) {
-                                            throw new OrekitExceptionWrapper(oe);
-                                        }
-                                    }
-                                });
-                        // TODO : use dif to build Jacobian
+                    for (int j = 0; j < 6; ++j) {
+
+                        // compute partial derivatives with respect to state component j
+                        final UnivariateVectorFunction componentJ =
+                                new StateComponentFunction(j, function, state, orbitType, positionAngle);
+                        final FiniteDifferencesDifferentiator differentiator =
+                                new FiniteDifferencesDifferentiator(nbPoints, tolerances[j]);
+                        final UnivariateDifferentiableVectorFunction differentiatedJ =
+                                differentiator.differentiate(componentJ);
+
+                        DerivativeStructure[] c =
+                                differentiatedJ.value(new DerivativeStructure(1, 1, 0, 0.0));
+
+                        // populate the j-th column of the Jacobian
+                        for (int i = 0; i < dimension; ++i) {
+                            jacobian[i][j] = c[i].getPartialDerivative(1);
+                        }
+
                     }
-                return null;
+
+                    return jacobian;
+
                 } catch (OrekitExceptionWrapper oew) {
                     throw oew.getException();
                 }
             }
 
         };
+    }
+
+    private static class StateComponentFunction implements UnivariateVectorFunction {
+
+        private final int             index;
+        private final StateFunction   f;
+        private final OrbitType       orbitType;
+        private final PositionAngle   positionAngle;
+        private final SpacecraftState baseState;
+
+        public StateComponentFunction(final int index, final StateFunction f,
+                                      final SpacecraftState baseState,
+                                      final OrbitType orbitType, final PositionAngle positionAngle) {
+            this.index         = index;
+            this.f             = f;
+            this.orbitType     = orbitType;
+            this.positionAngle = positionAngle;
+            this.baseState     = baseState;
+        }
+
+        public double[] value(final double x) throws OrekitExceptionWrapper {
+            try {
+                final double[] array = new double[6];
+                orbitType.mapOrbitToArray(baseState.getOrbit(), positionAngle, array);
+                array[index] += x;
+                final SpacecraftState state =
+                        new SpacecraftState(orbitType.mapArrayToOrbit(array,
+                                                                      positionAngle,
+                                                                      baseState.getDate(),
+                                                                      baseState.getMu(),
+                                                                      baseState.getFrame()),
+                                                                      baseState.getAttitude(),
+                                                                      baseState.getMass());
+                return f.value(state);
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
+        }
+
     }
 
 }

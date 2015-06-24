@@ -101,8 +101,8 @@ public class BatchLSEstimatorTest {
         estimator.setMaxIterations(20);
 
         EstimationTestUtils.checkFit(context, estimator, 4,
-                                     0.0, 4.8e-7,
-                                     0.0, 9.0e-7,
+                                     0.0, 4.6e-7,
+                                     0.0, 8.8e-7,
                                      0.0, 6.1e-7,
                                      0.0, 2.4e-10);
 

@@ -33,34 +33,9 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 
 public class GroundStationTest {
-
-    @Test
-    public void testPartialDerivatives() throws OrekitException {
-
-        Context context = EstimationTestUtils.eccentricContext();
-
-        final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
-                                              1.0e-6, 60.0, 0.001);
-
-        // create perfect range measurements
-        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-        final List<Measurement> measurements =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
-
-        for (final Measurement measurement : measurements) {
-            final SpacecraftState state = propagator.propagate(measurement.getDate());
-            // TODO compute Jacobian using finite differences
-        }
-
-    }
 
     @Test
     public void testEstimateStationPosition() throws OrekitException {
@@ -126,7 +101,7 @@ public class GroundStationTest {
         EstimationTestUtils.checkFit(context, estimator, 37,
                                      5.2e-4, 1.0e-5,
                                      1.0e-3, 1.0e-4,
-                                     44100,  2.0,
+                                     44091,  2.0,
                                      8.7,    3.0e-2);
         for (int i = 0; i < moved.length; ++i) {
             System.out.println(deltaTopo[i].getX() + " " + moved[i].getValue()[0] +

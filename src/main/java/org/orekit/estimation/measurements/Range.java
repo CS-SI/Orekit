@@ -21,9 +21,21 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 /** Class modeling a range measurement from a ground station.
+ * <p>
+ * The measurement is considered to be a signal emitted from
+ * a ground station, reflected on spacecraft, and received
+ * on the same ground station. Its value is the elapsed time
+ * between emission and reception divided by 2c were c is the
+ * speed of light. The motion of both the station and the
+ * spacecraft during the signal flight time are taken into
+ * account. The date of the measurement corresponds to the
+ * reception on ground of the reflected signal.
+ * </p>
  * @author Thierry Ceolin
+ * @author Luc Maisonobe
  * @since 7.1
  */
 public class Range extends AbstractMeasurement {
@@ -60,44 +72,62 @@ public class Range extends AbstractMeasurement {
     protected Evaluation theoreticalEvaluation(final int iteration, final SpacecraftState state)
         throws OrekitException {
 
+        // station position at signal arrival
+        final Transform topoToInertArrival =
+                station.getOffsetFrame().getTransformTo(state.getFrame(), getDate());
+        final Vector3D stationArrival = topoToInertArrival.transformPosition(Vector3D.ZERO);
+
         // take propagation time into account
-        final SpacecraftState compensatedState =
-                station.compensatePropagationDelay(state, getDate());
+        // (if state has already been set up to pre-compensate propagation delay,
+        //  we will have offset == downlinkDelay and transitState will be
+        //  the same as state)
+        final double          downlinkDelay = station.downlinkDelay(state, getDate());
+        final double          offset        = getDate().durationFrom(state.getDate());
+        final SpacecraftState transitState  = state.shiftedBy(offset - downlinkDelay);
+        final Vector3D        position      = transitState.getPVCoordinates().getPosition();
+        final Vector3D        velocity      = transitState.getPVCoordinates().getVelocity();
+
+        // station position at signal departure
+        final double          uplinkDelay    = station.uplinkDelay(transitState);
+        final Transform topoToInertDeparture =
+                station.getOffsetFrame().getTransformTo(state.getFrame(),
+                                                        getDate().shiftedBy(-(downlinkDelay + uplinkDelay)));
+        final Vector3D stationDeparture = topoToInertDeparture.transformPosition(Vector3D.ZERO);
 
         // prepare the evaluation
-        final Evaluation evaluation = new Evaluation(this, iteration, compensatedState);
-
-        // station position at signal arrival
-        final Transform topoToInert =
-                station.getOffsetFrame().getTransformTo(compensatedState.getFrame(),
-                                                        getDate());
-        final Vector3D stationPosition = topoToInert.transformPosition(Vector3D.ZERO);
+        final Evaluation evaluation = new Evaluation(this, iteration, transitState);
 
         // range value
-        final Vector3D spacecraftPosition = compensatedState.getPVCoordinates().getPosition();
-        final Vector3D delta = spacecraftPosition.subtract(stationPosition);
-        final double range = delta.getNorm();
-        evaluation.setValue(range);
+        final Vector3D downInert  = position.subtract(stationArrival);
+        final double   dDownInert = downInert.getNorm();
+        final Vector3D upInert    = position.subtract(stationDeparture);
+        final double   dUpInert   = upInert.getNorm();
+        evaluation.setValue(0.5 * (dDownInert + dUpInert));
 
         // partial derivatives with respect to state
-        final Vector3D gradientInInertial = new Vector3D(delta.getX() / range,
-                                                         delta.getY() / range,
-                                                         delta.getZ() / range);
+        final double radialVelD = Vector3D.dotProduct(downInert, velocity) / dDownInert;
+        final double fD         = 0.5 / dDownInert * (1 - radialVelD / Constants.SPEED_OF_LIGHT);
+        final double radialVelU = Vector3D.dotProduct(upInert, velocity) / dUpInert;
+        final double fU         = 0.5 / dUpInert * (1 - radialVelU / Constants.SPEED_OF_LIGHT);
         evaluation.setStateDerivatives(new double[] {
-            gradientInInertial.getX(), gradientInInertial.getY(), gradientInInertial.getZ(),
-            0, 0, 0
+            fD * downInert.getX() + fU * upInert.getX(),
+            fD * downInert.getY() + fU * upInert.getY(),
+            fD * downInert.getZ() + fU * upInert.getZ(),
+            0,
+            0,
+            0
         });
 
         if (station.isEstimated()) {
             // partial derivatives with respect to parameter
             // the parameter has 3 Cartesian coordinates for station offset position
-            final Vector3D gradientInTopo =
-                    topoToInert.getRotation().applyInverseTo(gradientInInertial);
+            final Vector3D downTopo = topoToInertArrival.getRotation().applyInverseTo(downInert);
+            final Vector3D upTopo   = topoToInertDeparture.getRotation().applyInverseTo(upInert);
             evaluation.setParameterDerivatives(station.getName(),
                                                new double[] {
-                                                   -gradientInTopo.getX(),
-                                                   -gradientInTopo.getY(),
-                                                   -gradientInTopo.getZ()
+                                                   -fD * downTopo.getX() - fU * upTopo.getX(),
+                                                   -fD * downTopo.getY() - fU * upTopo.getY(),
+                                                   -fD * downTopo.getZ() - fU * upTopo.getZ(),
                                                });
         }
 
