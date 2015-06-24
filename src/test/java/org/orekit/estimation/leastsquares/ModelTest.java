@@ -33,6 +33,7 @@ import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 
@@ -48,9 +49,12 @@ public class ModelTest {
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect PV measurements
-        final List<Measurement> measurements = EstimationTestUtils.createMeasurements(context, propagatorBuilder,
-                                                                                      new PVMeasurementCreator(),
-                                                                                      0.0, 1.0, 300.0);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new PVMeasurementCreator(),
+                                                               0.0, 1.0, 300.0);
         final List<Parameter> measurementsParameters = new ArrayList<Parameter>();
         for (Measurement measurement : measurements) {
             for (final Parameter parameter : measurement.getSupportedParameters()) {

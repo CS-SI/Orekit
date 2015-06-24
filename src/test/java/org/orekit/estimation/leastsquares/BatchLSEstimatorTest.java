@@ -35,6 +35,7 @@ import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 
 public class BatchLSEstimatorTest {
@@ -49,8 +50,10 @@ public class BatchLSEstimatorTest {
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
         final List<Measurement> measurements =
-                        EstimationTestUtils.createMeasurements(context, propagatorBuilder,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
 
@@ -81,8 +84,10 @@ public class BatchLSEstimatorTest {
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
         final List<Measurement> measurements =
-                        EstimationTestUtils.createMeasurements(context, propagatorBuilder,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 

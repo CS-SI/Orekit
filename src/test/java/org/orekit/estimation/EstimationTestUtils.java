@@ -20,14 +20,23 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import javax.print.attribute.standard.MediaSize.Other;
+
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.UnivariateVectorFunction;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
 import org.junit.Assert;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
@@ -42,9 +51,12 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -93,10 +105,8 @@ public class EstimationTestUtils {
 
     }
 
-    public static List<Measurement> createMeasurements(final Context context, final PropagatorBuilder propagatorBuilder,
-                                                       final MeasurementCreator creator,
-                                                       final double startPeriod, final double endPeriod,
-                                                       final double step)
+    public static Propagator createPropagator(final Orbit initialOrbit,
+                                              final PropagatorBuilder propagatorBuilder)
         throws OrekitException {
 
         final int          nbOrbitalParameters      = 6;
@@ -105,22 +115,31 @@ public class EstimationTestUtils {
         final int dimension = nbOrbitalParameters + nbPropagatorParameters;
 
         final double[] parameters = new double[dimension];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(context.initialOrbit,
+        propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),
                                                          parameters);
         int index = nbOrbitalParameters;
         for (final String propagatorParameter : propagatorParameters) {
             parameters[index++] = propagatorBuilder.getParameter(propagatorParameter);
         }
-        propagatorBuilder.getOrbitType().mapOrbitToArray(context.initialOrbit,
+        propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),
                                                          parameters);
 
-        final Propagator propagator = propagatorBuilder.buildPropagator(context.initialOrbit.getDate(), parameters);
+        return propagatorBuilder.buildPropagator(initialOrbit.getDate(), parameters);
+
+    }
+
+    public static List<Measurement> createMeasurements(final Propagator propagator,
+                                                       final MeasurementCreator creator,
+                                                       final double startPeriod, final double endPeriod,
+                                                       final double step)
+        throws OrekitException {
+
         propagator.setMasterMode(step, creator);
-        final double       period = context.initialOrbit.getKeplerianPeriod();
-        final AbsoluteDate start  = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
-        final AbsoluteDate end    = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
+        final double       period = propagator.getInitialState().getKeplerianPeriod();
+        final AbsoluteDate start  = propagator.getInitialState().getDate().shiftedBy(startPeriod * period);
+        final AbsoluteDate end    = propagator.getInitialState().getDate().shiftedBy(endPeriod   * period);
         propagator.propagate(start, end);
 
         return creator.getMeasurements();
@@ -185,6 +204,55 @@ public class EstimationTestUtils {
                             Vector3D.distance(initialVelocity, estimatedVelocity),
                             velEps);
 
+    }
+
+    public StateJacobian differentiate(final StateFunction function, final int dimension,
+                                       final OrbitType orbitType, final PositionAngle positionAngle,
+                                       final double dP, final int nbPoints) {
+        return new StateJacobian() {
+            
+            @Override
+            public double[][] value(final SpacecraftState state) throws OrekitException {
+                try {
+                    final double[] tolerances =
+                            NumericalPropagator.tolerances(dP, state.getOrbit(), orbitType)[0];
+                    final double[] array = new double[6];
+                    orbitType.mapOrbitToArray(state.getOrbit(), positionAngle, array);
+                    final double[][] jacobian = new double[dimension][6];
+                    for (int i = 0; i < 6; ++i) {
+                        final int index = i;
+                        FiniteDifferencesDifferentiator differentiator =
+                                new FiniteDifferencesDifferentiator(nbPoints, tolerances[i]);
+                        UnivariateDifferentiableVectorFunction dif =
+                                differentiator.differentiate(new UnivariateVectorFunction() {
+                                    public double[] value(final double x)
+                                            throws OrekitExceptionWrapper {
+                                        try {
+                                            final double[] a = MathArrays.copyOf(array);
+                                            a[index] += x;
+                                            SpacecraftState s =
+                                                    new SpacecraftState(orbitType.mapArrayToOrbit(a,
+                                                                                                  positionAngle,
+                                                                                                  state.getDate(),
+                                                                                                  state.getMu(),
+                                                                                                  state.getFrame()),
+                                                                                                  state.getAttitude(),
+                                                                                                  state.getMass());
+                                            return function.value(s);
+                                        } catch (OrekitException oe) {
+                                            throw new OrekitExceptionWrapper(oe);
+                                        }
+                                    }
+                                });
+                        // TODO : use dif to build Jacobian
+                    }
+                return null;
+                } catch (OrekitExceptionWrapper oew) {
+                    throw oew.getException();
+                }
+            }
+
+        };
     }
 
 }

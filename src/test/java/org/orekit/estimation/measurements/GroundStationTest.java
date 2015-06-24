@@ -32,12 +32,14 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 
 public class GroundStationTest {
 
     @Test
-    public void testEstimateStationPosition() throws OrekitException {
+    public void testPartialDerivatives() throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
 
@@ -46,10 +48,36 @@ public class GroundStationTest {
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
         final List<Measurement> measurements =
-                        EstimationTestUtils.createMeasurements(context, propagatorBuilder,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
+
+        for (final Measurement measurement : measurements) {
+            final SpacecraftState state = propagator.propagate(measurement.getDate());
+            // TODO compute Jacobian using finite differences
+        }
+
+    }
+
+    @Test
+    public void testEstimateStationPosition() throws OrekitException {
+
+            Context context = EstimationTestUtils.eccentricContext();
+
+            final NumericalPropagatorBuilder propagatorBuilder =
+                            context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                                  1.0e-6, 60.0, 0.001);
+
+            // create perfect range measurements
+            final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                               propagatorBuilder);
+            final List<Measurement> measurements =
+                            EstimationTestUtils.createMeasurements(propagator,
+                                                                   new RangeMeasurementCreator(context),
+                                                                   1.0, 3.0, 300.0);
 
         // move the stations
         final RandomGenerator random = new Well19937a(0x4adbecfc743bda60l);

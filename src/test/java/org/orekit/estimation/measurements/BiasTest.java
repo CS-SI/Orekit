@@ -30,6 +30,7 @@ import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 
 public class BiasTest {
@@ -44,8 +45,10 @@ public class BiasTest {
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
         final List<Measurement> measurements =
-                        EstimationTestUtils.createMeasurements(context, propagatorBuilder,
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
