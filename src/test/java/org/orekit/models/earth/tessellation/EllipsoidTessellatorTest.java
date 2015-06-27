@@ -19,6 +19,7 @@ package org.orekit.models.earth.tessellation;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.apache.commons.math3.geometry.partitioning.RegionFactory;
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
@@ -45,14 +46,29 @@ import org.orekit.utils.IERSConventions;
 public class EllipsoidTessellatorTest {
 
     @Test
-    public void testTilesAlongDescendingTrack() throws OrekitException {
+    public void testTilesAlongDescendingTrackWithoutTruncation() throws OrekitException {
         final EllipsoidTessellator tessellator =
-                new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 4);
+                new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 16);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
-                                                              50000.0, 150000.0, 5000.0, 5000.0);
+                                                              50000.0, 150000.0, 5000.0, 5000.0,
+                                                              false, false);
         Assert.assertEquals(2,   tiles.size());
         Assert.assertEquals(116, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
-        Assert.assertEquals(5,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(4,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
+
+    }
+
+    @Test
+    public void testTilesAlongDescendingTrackWithTruncation() throws OrekitException {
+        final EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, false), 16);
+        final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
+                                                              50000.0, 150000.0, 5000.0, 5000.0,
+                                                              true, true);
+        Assert.assertEquals(2,   tiles.size());
+        Assert.assertEquals(115, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(4,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
+
     }
 
     @Test
@@ -70,7 +86,8 @@ public class EllipsoidTessellatorTest {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new AlongTrackAiming(ellipsoid, orbit, true), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
-                                                              50000.0, 150000.0, 5000.0, 5000.0);
+                                                              50000.0, 150000.0, 5000.0, 5000.0,
+                                                              false, false);
         Assert.assertEquals(2,   tiles.size());
         Assert.assertEquals(113, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
         Assert.assertEquals(6,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
@@ -92,7 +109,8 @@ public class EllipsoidTessellatorTest {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120)), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
-                                                              50000.0, 150000.0, -5000.0, -5000.0);
+                                                              50000.0, 150000.0, -5000.0, -5000.0,
+                                                              false, false);
         Assert.assertEquals(2,  tiles.size());
         Assert.assertEquals(90, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
         Assert.assertEquals(4,  FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
@@ -114,28 +132,87 @@ public class EllipsoidTessellatorTest {
         final EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(120.0)), 4);
         final List<List<Tile>> tiles = tessellator.tessellate(buildFrance(),
-                                                              150000.0, 250000.0, -5000.0, -5000.0);
+                                                              150000.0, 250000.0, -5000.0, -5000.0,
+                                                              false, false);
         Assert.assertEquals(1,  tiles.size());
         Assert.assertEquals(27, tiles.get(0).size());
         checkTilesDontOverlap(tiles);
     }
 
     @Test
-    public void testTilesSmallzone() throws OrekitException, IOException {
+    public void testTilesSmallZoneWithoutTruncation() throws OrekitException, IOException {
 
         TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
         EllipsoidTessellator tessellator =
-                new EllipsoidTessellator(ellipsoid, aiming, 4);
+                new EllipsoidTessellator(ellipsoid, aiming, 16);
 
         SphericalPolygonsSet small = buildSimpleZone(new double[][] {
             { 43.6543, 1.4268 }, { 43.6120, 1.4179 }, { 43.6016, 1.3994 }, { 43.5682, 1.4159 },
             { 43.5707, 1.4358 }, { 43.5573, 1.4941 }, { 43.6041, 1.4866 }
         });
 
-        final List<List<Tile>> tiles = tessellator.tessellate(small, 50000.0, 150000.0, 0, 0);
+        final List<List<Tile>> tiles = tessellator.tessellate(small, 50000.0, 150000.0, 0, 0,
+                                                              false, false);
         Assert.assertEquals(1, tiles.size());
         Assert.assertEquals(1, tiles.get(0).size());
+        Tile t = tiles.get(0).get(0);
 
+        // without truncation, the tile must match width and length specification
+        // (the remaining error is due to Cartesian distance and non-developable ellipsoid)
+        Assert.assertEquals(150000.0,
+                            Vector3D.distance(ellipsoid.transform(t.getVertices()[0]),
+                                              ellipsoid.transform(t.getVertices()[1])),
+                            140.0);
+        Assert.assertEquals( 50000.0,
+                            Vector3D.distance(ellipsoid.transform(t.getVertices()[1]),
+                                             ellipsoid.transform(t.getVertices()[2])),
+                            0.4);
+        Assert.assertEquals(150000.0,
+                            Vector3D.distance(ellipsoid.transform(t.getVertices()[2]),
+                                             ellipsoid.transform(t.getVertices()[3])),
+                            140.0);
+        Assert.assertEquals( 50000.0,
+                            Vector3D.distance(ellipsoid.transform(t.getVertices()[3]),
+                                             ellipsoid.transform(t.getVertices()[0])),
+                            0.4);
+
+    }
+
+    @Test
+    public void testTilesSmallZoneWithTruncation() throws OrekitException, IOException {
+
+        TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(193.7));
+        EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, aiming, 16);
+
+        SphericalPolygonsSet small = buildSimpleZone(new double[][] {
+            { 43.6543, 1.4268 }, { 43.6120, 1.4179 }, { 43.6016, 1.3994 }, { 43.5682, 1.4159 },
+            { 43.5707, 1.4358 }, { 43.5573, 1.4941 }, { 43.6041, 1.4866 }
+        });
+
+        final List<List<Tile>> tiles = tessellator.tessellate(small, 50000.0, 150000.0, 0, 0,
+                                                              true, true);
+        Assert.assertEquals(1, tiles.size());
+        Assert.assertEquals(1, tiles.get(0).size());
+        Tile t = tiles.get(0).get(0);
+
+        // with truncation, the tile is a fraction of the width and length specification
+        Assert.assertEquals(3.0 / 16.0 * 150000.0,
+                            Vector3D.distance(ellipsoid.transform(t.getVertices()[0]),
+                                              ellipsoid.transform(t.getVertices()[1])),
+                            10.0);
+        Assert.assertEquals(4.0 / 16.0 * 50000.0,
+                            Vector3D.distance(ellipsoid.transform(t.getVertices()[1]),
+                                             ellipsoid.transform(t.getVertices()[2])),
+                            0.01);
+        Assert.assertEquals(3.0 / 16.0 * 150000.0,
+                           Vector3D.distance(ellipsoid.transform(t.getVertices()[2]),
+                                             ellipsoid.transform(t.getVertices()[3])),
+                           10.0);
+        Assert.assertEquals(4.0 / 16.0 * 50000.0,
+                            Vector3D.distance(ellipsoid.transform(t.getVertices()[3]),
+                                             ellipsoid.transform(t.getVertices()[0])),
+                            0.01);
     }
 
     private void checkTilesDontOverlap(final List<List<Tile>> tiles) {

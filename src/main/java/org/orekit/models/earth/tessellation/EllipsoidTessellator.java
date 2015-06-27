@@ -19,9 +19,11 @@ package org.orekit.models.earth.tessellation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -46,14 +48,18 @@ import org.orekit.errors.OrekitInternalError;
  * {@link Tile tiles} or grids of {@link GeodeticPoint geodetic points}.
  * <p>
  * This class is typically used for Earth Observation missions, in order to
- * create tiles that may be used as the basis of visibility event detectors.
+ * create tiles or grids that may be used as the basis of visibility event
+ * detectors. Tiles are used when surface-related elements are needed, the
+ * tiles created completely cover the zone of interest. Grids are used when
+ * point-related elements are needed, the points created lie entirely within
+ * the zone of interest.
  * </p>
  * <p>
  * One should note that as tessellation essentially creates a 2 dimensional
  * almost Cartesian map, it can never perfectly fulfill geometrical dimensions
  * because neither sphere nor ellipsoid are developable surfaces. This implies
- * that the tesselation will always be distorted, and distorsion increases as
- * the size of the zone to be tessallated increases.
+ * that the tesselation will always be distorted, and distortion increases as
+ * the size of the zone to be tessellated increases.
  * </p>
  * @author Luc Maisonobe
  */
@@ -111,20 +117,20 @@ public class EllipsoidTessellator {
      * as follows:
      * </p>
      * <ul>
-     *   <li>tile 1 covering from   0km to  55km</li>
-     *   <li>tile 2 covering from  50km to 105km</li>
-     *   <li>tile 3 covering from 100km to 155km</li>
+     *   <li>tile 1 covering from   0 km to  55 km</li>
+     *   <li>tile 2 covering from  50 km to 105 km</li>
+     *   <li>tile 3 covering from 100 km to 155 km</li>
      *   <li>...</li>
      * </ul>
      * <p>
-     * In order to achieve the same 50 km step but using a 5km gap instead of an overlap, one would
+     * In order to achieve the same 50 km step but using a 5 km gap instead of an overlap, one would
      * need to specify the full width to be 45 km and the overlap to be -5 km. With these settings,
      * successive tiles would span as follows:
      * </p>
      * <ul>
-     *   <li>tile 1 covering from   0km to  45km</li>
-     *   <li>tile 2 covering from  50km to  95km</li>
-     *   <li>tile 3 covering from 100km to 155km</li>
+     *   <li>tile 1 covering from   0 km to  45 km</li>
+     *   <li>tile 2 covering from  50 km to  95 km</li>
+     *   <li>tile 3 covering from 100 km to 155 km</li>
      *   <li>...</li>
      * </ul>
      * @param zone zone of interest to tessellate
@@ -134,6 +140,14 @@ public class EllipsoidTessellator {
      * will have a gap between each other instead of an overlap
      * @param lengthOverlap overlap between adjacent tiles (in meters), if negative the tiles
      * will have a gap between each other instead of an overlap
+     * @param truncateLastWidth if true, the first tiles strip will be started as close as
+     * possible to the zone of interest, and the last tiles strip will have its width reduced
+     * to also remain close to the zone of interest; if false all tiles strip will have the
+     * same {@code fullWidth} and they will be balanced around zone of interest
+     * @param truncateLastLength if true, the first tile in each strip will be started as close as
+     * possible to the zone of interest, and the last tile in each strip will have its length reduced
+     * to also remain close to the zone of interest; if false all tiles in each strip will have the
+     * same {@code fullLength} and they will be balanced around zone of interest
      * @return a list of lists of tiles covering the zone of interest,
      * each sub-list corresponding to a part not connected to the other
      * parts (for example for islands)
@@ -141,7 +155,8 @@ public class EllipsoidTessellator {
      */
     public List<List<Tile>> tessellate(final SphericalPolygonsSet zone,
                                        final double fullWidth, final double fullLength,
-                                       final double widthOverlap, final double lengthOverlap)
+                                       final double widthOverlap, final double lengthOverlap,
+                                       final boolean truncateLastWidth, final boolean truncateLastLength)
         throws OrekitException {
 
         final double                  splitWidth  = (fullWidth  - widthOverlap)  / quantization;
@@ -165,7 +180,7 @@ public class EllipsoidTessellator {
                 // extract the tiles from the mesh
                 // this further expands the mesh so tiles dimensions are multiples of quantization,
                 // hence it must be performed here before checking meshes independence
-                tiles = extractTiles(mesh, zone, lengthOverlap, widthOverlap);
+                tiles = extractTiles(mesh, zone, lengthOverlap, widthOverlap, truncateLastWidth, truncateLastLength);
 
                 // check the mesh is independent from existing meshes
                 mergingSeeds.clear();
@@ -356,33 +371,36 @@ public class EllipsoidTessellator {
      * @param zone zone covered by the mesh
      * @param lengthOverlap overlap between adjacent tiles
      * @param widthOverlap overlap between adjacent tiles
+     * @param truncateLastWidth true if we can reduce last tile width
+     * @param truncateLastLength true if we can reduce last tile length
      * @return extracted tiles
      * @exception OrekitException if tile direction cannot be computed
      */
     private List<Tile> extractTiles(final Mesh mesh, final SphericalPolygonsSet zone,
-                                    final double lengthOverlap, final double widthOverlap)
+                                    final double lengthOverlap, final double widthOverlap,
+                                    final boolean truncateLastWidth, final boolean truncateLastLength)
         throws OrekitException {
 
         final List<Tile> tiles = new ArrayList<Tile>();
 
         final int minAcross = mesh.getMinAcrossIndex();
         final int maxAcross = mesh.getMaxAcrossIndex();
-        for (int acrossIndex = firstIndex(minAcross, maxAcross); acrossIndex < maxAcross; acrossIndex += quantization) {
+        for (IndicesPair acrossPair : nodesIndices(minAcross, maxAcross, truncateLastWidth)) {
 
             int minAlong = mesh.getMaxAlongIndex() + 1;
             int maxAlong = mesh.getMinAlongIndex() - 1;
-            for (int c = acrossIndex; c <= acrossIndex + quantization; ++c) {
+            for (int c = acrossPair.getLower(); c <= acrossPair.getUpper(); ++c) {
                 minAlong = FastMath.min(minAlong, mesh.getMinAlongIndex(c));
                 maxAlong = FastMath.max(maxAlong, mesh.getMaxAlongIndex(c));
             }
 
-            for (int alongIndex = firstIndex(minAlong, maxAlong); alongIndex < maxAlong; alongIndex += quantization) {
+            for (IndicesPair alongPair : nodesIndices(minAlong, maxAlong, truncateLastLength)) {
 
                 // get the base vertex nodes
-                final Mesh.Node node0 = mesh.addNode(alongIndex,                acrossIndex);
-                final Mesh.Node node1 = mesh.addNode(alongIndex + quantization, acrossIndex);
-                final Mesh.Node node2 = mesh.addNode(alongIndex + quantization, acrossIndex + quantization);
-                final Mesh.Node node3 = mesh.addNode(alongIndex,                acrossIndex + quantization);
+                final Mesh.Node node0 = mesh.addNode(alongPair.getLower(), acrossPair.getLower());
+                final Mesh.Node node1 = mesh.addNode(alongPair.getUpper(), acrossPair.getLower());
+                final Mesh.Node node2 = mesh.addNode(alongPair.getUpper(), acrossPair.getUpper());
+                final Mesh.Node node3 = mesh.addNode(alongPair.getLower(), acrossPair.getUpper());
 
                 // apply tile overlap
                 final S2Point s2p0 = node0.move(new Vector3D(-0.5 * lengthOverlap, node0.getAlong(),
@@ -404,11 +422,13 @@ public class EllipsoidTessellator {
                     tiles.add(new Tile(toGeodetic(s2p0), toGeodetic(s2p1), toGeodetic(s2p2), toGeodetic(s2p3)));
 
                     // ensure the taxicab boundary follows the built tile sides
-                    for (int k = 0; k < quantization; ++k) {
-                        mesh.addNode(alongIndex + k,            acrossIndex).setEnabled(true);
-                        mesh.addNode(alongIndex + k + 1,        acrossIndex + quantization).setEnabled(true);
-                        mesh.addNode(alongIndex,                acrossIndex + k + 1).setEnabled(true);
-                        mesh.addNode(alongIndex + quantization, acrossIndex + k).setEnabled(true);
+                    for (int c = acrossPair.getLower(); c < acrossPair.getUpper(); ++c) {
+                        mesh.addNode(alongPair.getLower(), c + 1).setEnabled(true);
+                        mesh.addNode(alongPair.getUpper(), c).setEnabled(true);
+                    }
+                    for (int l = alongPair.getLower(); l < alongPair.getUpper(); ++l) {
+                        mesh.addNode(l,     acrossPair.getLower()).setEnabled(true);
+                        mesh.addNode(l + 1, acrossPair.getUpper()).setEnabled(true);
                     }
 
                 }
@@ -677,25 +697,116 @@ public class EllipsoidTessellator {
         }
     }
 
-    /** Compute the index of the first vertex of the first tile.
+    /** Get an iterator over mesh nodes indices.
      * @param minIndex minimum node index
      * @param maxIndex maximum node index
-     * @return index of the first vertex of the first tile
+     * @param truncateLast true if we can reduce last tile
+     * @return iterator over mesh nodes indices
      */
-    private int firstIndex(final int minIndex, final int maxIndex) {
+    private Iterable<IndicesPair> nodesIndices(final int minIndex, final int maxIndex, final boolean truncateLast) {
 
-        // number of tiles needed to cover the full indices range
-        final int range      = maxIndex - minIndex;
-        final int nbTiles    = (range + quantization - 1) / quantization;
+        final int first;
+        if (truncateLast) {
 
-        // extra nodes that must be added to complete the tiles
-        final int extraNodes = nbTiles * quantization  - range;
+            // truncate last tile rather than balance tiles around the zone of interest
+            first = minIndex;
 
-        // balance the extra nodes before min index and after maxIndex
-        final int extraBefore = (extraNodes + 1) / 2;
+        } else {
 
-        // node index of the first vertex of the first tile
-        return minIndex - extraBefore;
+            // balance tiles around the zone of interest rather than truncate last tile
+
+            // number of tiles needed to cover the full indices range
+            final int range      = maxIndex - minIndex;
+            final int nbTiles    = (range + quantization - 1) / quantization;
+
+            // extra nodes that must be added to complete the tiles
+            final int extraNodes = nbTiles * quantization  - range;
+
+            // balance the extra nodes before min index and after maxIndex
+            final int extraBefore = (extraNodes + 1) / 2;
+
+            first = minIndex - extraBefore;
+
+        }
+
+        return new Iterable<IndicesPair>() {
+
+            /** {@inheritDoc} */
+            @Override
+            public Iterator<IndicesPair> iterator() {
+                return new Iterator<IndicesPair>() {
+
+                    private int nextLower = first;
+
+                    /** {@inheritDoc} */
+                    @Override
+                    public boolean hasNext() {
+                        return nextLower < maxIndex;
+                    }
+
+                    /** {@inheritDoc} */
+                    @Override
+                    public IndicesPair next() {
+
+                        if (nextLower >= maxIndex) {
+                            throw new NoSuchElementException();
+                        }
+                        final int lower = nextLower;
+
+                        nextLower += quantization;
+                        if (truncateLast && nextLower > maxIndex && lower < maxIndex) {
+                            // truncate last tile
+                            nextLower = maxIndex;
+                        }
+
+                        return new IndicesPair(lower, nextLower);
+
+                    }
+
+                    /** {@inheritDoc} */
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+
+                };
+            }
+        };
+
+    }
+
+    /** Local class for a pair of nodes indices to be used for building a tile. */
+    private static class IndicesPair {
+
+        /** Lower index. */
+        private final int lower;
+
+        /** Upper index. */
+        private final int upper;
+
+        /** Simple constructor.
+         * @param lower lower index
+         * @param upper upper index
+         */
+        public IndicesPair(final int lower, final int upper) {
+            this.lower = lower;
+            this.upper = upper;
+        }
+
+        /** Get the lower index.
+         * @return lower index
+         */
+        public int getLower() {
+            return lower;
+        }
+
+
+        /** Get the upper index.
+         * @return upper index
+         */
+        public int getUpper() {
+            return upper;
+        }
 
     }
 
