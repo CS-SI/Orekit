@@ -75,7 +75,7 @@ public class BatchLSEstimatorTest {
     }
 
     @Test
-    public void testKeplerDistances() throws OrekitException {
+    public void testKeplerRange() throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
 
@@ -101,10 +101,10 @@ public class BatchLSEstimatorTest {
         estimator.setMaxIterations(20);
 
         EstimationTestUtils.checkFit(context, estimator, 4,
-                                     0.0, 4.6e-7,
-                                     0.0, 8.8e-7,
                                      0.0, 6.1e-7,
-                                     0.0, 2.4e-10);
+                                     0.0, 1.2e-6,
+                                     0.0, 5.3e-7,
+                                     0.0, 2.1e-10);
 
     }
 

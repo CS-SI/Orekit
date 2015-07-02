@@ -25,6 +25,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;
 import org.orekit.estimation.Context;
+import org.orekit.frames.Frame;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -42,38 +44,52 @@ public class RangeMeasurementCreator extends MeasurementCreator {
         throws PropagationException {
         try {
             for (final GroundStation station : context.stations) {
-                final Vector3D position = currentState.getPVCoordinates().getPosition();
-                final double elevation =
-                                station.getBaseFrame().getElevation(position,
-                                                                    currentState.getFrame(),
-                                                                    currentState.getDate());
+                final AbsoluteDate     date      = currentState.getDate();
+                final Frame            inertial  = currentState.getFrame();
+                final Vector3D         position  = currentState.getPVCoordinates().getPosition();
+                final TopocentricFrame topo      = station.getBaseFrame();
 
-                if (elevation > FastMath.toRadians(30.0)) {
-                    final UnivariateFunction f = new UnivariateFunction() {
-                       public double value(final double x) throws OrekitExceptionWrapper {
-                           try {
-                               final AbsoluteDate date = currentState.getDate().shiftedBy(x);
-                               final Transform t = station.getBaseFrame().getTransformTo(currentState.getFrame(),
-                                                                                         date);
-                               final double d = Vector3D.distance(position,
-                                                                  t.transformPosition(Vector3D.ZERO));
-                               return d - x * Constants.SPEED_OF_LIGHT;
-                           } catch (OrekitException oe) {
-                               throw new OrekitExceptionWrapper(oe);
-                           }
+                if (topo.getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
+                    final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
+
+                    final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
+                        public double value(final double x) throws OrekitExceptionWrapper {
+                            try {
+                                final Transform t = topo.getTransformTo(inertial, date.shiftedBy(x));
+                                final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                                return d - x * Constants.SPEED_OF_LIGHT;
+                            } catch (OrekitException oe) {
+                                throw new OrekitExceptionWrapper(oe);
+                            }
                         }
-                    };
-                    final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-10, 5);
-                    final double dt = solver.solve(1000, f, -1.0, 1.0);
-                    final AbsoluteDate date = currentState.getDate().shiftedBy(dt);
-                    final Transform t = station.getBaseFrame().getTransformTo(currentState.getFrame(),
-                                                                              date);
-                    addMeasurement(new Range(station, date,
-                                             Vector3D.distance(position, t.transformPosition(Vector3D.ZERO)),
-                                             1.0, 10));
+                    }, -1.0, 1.0);
+                    final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
+                    final Vector3D stationAtReception =
+                                    topo.getTransformTo(inertial, receptionDate).transformPosition(Vector3D.ZERO);
+                    final double downLinkDistance = Vector3D.distance(position, stationAtReception);
+
+                    final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
+                        public double value(final double x) throws OrekitExceptionWrapper {
+                            try {
+                                final Transform t = topo.getTransformTo(inertial, date.shiftedBy(-x));
+                                final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                                return d - x * Constants.SPEED_OF_LIGHT;
+                            } catch (OrekitException oe) {
+                                throw new OrekitExceptionWrapper(oe);
+                            }
+                        }
+                    }, -1.0, 1.0);
+                    final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
+                    final Vector3D stationAtEmission  =
+                                    topo.getTransformTo(inertial, emissionDate).transformPosition(Vector3D.ZERO);
+                    final double upLinkDistance = Vector3D.distance(position, stationAtEmission);
+                    addMeasurement(new Range(station, receptionDate,
+                                             0.5 * (downLinkDistance + upLinkDistance), 1.0, 10));
                 }
 
             }
+        } catch (OrekitExceptionWrapper oew) {
+            throw new PropagationException(oew.getException());
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }

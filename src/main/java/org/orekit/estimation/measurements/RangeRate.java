@@ -64,7 +64,7 @@ public class RangeRate extends AbstractMeasurement {
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have offset == downlinkDelay and compensatedState will be
         //  the same as state)
-        final double          downlinkDelay    = station.downlinkDelay(state, getDate());
+        final double          downlinkDelay    = station.downlinkTimeOfFlight(state, getDate());
         final double          offset           = getDate().durationFrom(state.getDate());
         final SpacecraftState compensatedState = state.shiftedBy(offset - downlinkDelay);
 

@@ -108,7 +108,7 @@ public class GroundStation extends Parameter {
      * signal reception date on ground
      * @exception OrekitException if some frame transforms fails
      */
-    public double downlinkDelay(final SpacecraftState state, final AbsoluteDate groundArrivalDate)
+    public double downlinkTimeOfFlight(final SpacecraftState state, final AbsoluteDate groundArrivalDate)
         throws OrekitException {
 
         // station position at signal arrival date, in inertial frame
@@ -143,7 +143,7 @@ public class GroundStation extends Parameter {
      * signal reception date on board
      * @exception OrekitException if some frame transforms fails
      */
-    public double uplinkDelay(final SpacecraftState state)
+    public double uplinkTimeOfFlight(final SpacecraftState state)
         throws OrekitException {
 
         // spacecraft position at signal transit date, in inertial frame

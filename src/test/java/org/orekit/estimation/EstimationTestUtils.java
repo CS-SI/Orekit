@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
+import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.analysis.UnivariateVectorFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
@@ -184,9 +186,6 @@ public class EstimationTestUtils {
             }
         }
 
-        System.out.println(FastMath.sqrt(sum / k) + " " + max + " " +
-                Vector3D.distance(initialPosition, estimatedPosition) + " " +
-                Vector3D.distance(initialVelocity, estimatedVelocity));
         Assert.assertEquals(expectedRMS,
                             FastMath.sqrt(sum / k),
                             rmsEps);
@@ -200,6 +199,48 @@ public class EstimationTestUtils {
                             Vector3D.distance(initialVelocity, estimatedVelocity),
                             velEps);
 
+    }
+
+    public static MultivariateMatrixFunction differentiate(final MultivariateVectorFunction function,
+                                                           final int dimension,
+                                                           final int nbPoints, final double ... steps) {
+        return new MultivariateMatrixFunction() {
+            
+            @Override
+            public double[][] value(final double[] parameter) {
+                final double[][] jacobian = new double[dimension][steps.length];
+                for (int j = 0; j < steps.length; ++j) {
+
+                    // compute partial derivatives with respect to parameter component j
+                    final int theJ = j;
+                    final FiniteDifferencesDifferentiator differentiator =
+                                    new FiniteDifferencesDifferentiator(nbPoints, steps[j]);
+                    final UnivariateDifferentiableVectorFunction differentiatedJ =
+                                    differentiator.differentiate(new UnivariateVectorFunction() {
+                                        public double[] value(final double x) {
+                                            final double savedComponent = parameter[theJ];
+                                            parameter[theJ] += x;
+                                            final double[] result = function.value(parameter);
+                                            parameter[theJ] = savedComponent;
+                                            return result;
+                                        }
+                                    });
+
+                    DerivativeStructure[] c =
+                                    differentiatedJ.value(new DerivativeStructure(1, 1, 0, 0.0));
+
+                    // populate the j-th column of the Jacobian
+                    for (int i = 0; i < dimension; ++i) {
+                        jacobian[i][j] = c[i].getPartialDerivative(1);
+                    }
+
+                }
+
+                return jacobian;
+
+            }
+
+        };
     }
 
     public static StateJacobian differentiate(final StateFunction function, final int dimension,
