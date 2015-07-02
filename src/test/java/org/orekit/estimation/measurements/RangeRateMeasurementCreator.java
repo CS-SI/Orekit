@@ -46,7 +46,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
         try {
             for (final GroundStation station : context.stations) {
             	
-                final double          downlinkDelay    = station.downlinkDelay(currentState, currentState.getDate());
+                final double          downlinkDelay    = station.downlinkTimeOfFlight(currentState, currentState.getDate());
                 final double          offset           = currentState.getDate().durationFrom(currentState.getDate());
 
                 final SpacecraftState compensatedState = currentState.shiftedBy(offset - downlinkDelay);
