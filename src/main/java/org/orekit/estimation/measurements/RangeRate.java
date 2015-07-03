@@ -20,18 +20,17 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** Class modeling one-way or two-way range rate measurement between two vehicles.
  * One-way range rate (or Doppler) measurements generally apply to specific satellites
- * (e.g. GNSS, DORIS), where a signal is transmitted from a satellite to a 
+ * (e.g. GNSS, DORIS), where a signal is transmitted from a satellite to a
  * measuring station.
- * Two-way range rate measurements are applicable to any system. The signal is 
- * transmitted to the (non-spinning) satellite and returned by a transponder 
+ * Two-way range rate measurements are applicable to any system. The signal is
+ * transmitted to the (non-spinning) satellite and returned by a transponder
  * (or reflected back)to the same measuring station.
- * 
+ *
  * @author Thierry Ceolin
  * @author Joris Olympio
  * @since 7.1
@@ -40,22 +39,23 @@ public class RangeRate extends AbstractMeasurement {
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
-    
-    /** Flag indicating a ionospheric correction is performed */
+
+    /** Flag indicating a ionospheric correction is performed. */
     private final boolean withIonoCorrection;
-    
-    /** Flag indicating a tropospheric correction is performed */
+
+    /** Flag indicating a tropospheric correction is performed. */
     private final boolean withTropoCorrection;
-    
-    /** Flag indicating whether it is a two-way measurement */
-    final boolean twoway;
-    
+
+    /** Flag indicating whether it is a two-way measurement. */
+    private final boolean twoway;
+
     /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
      * @param rangeRate observed value, m/s
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param twoway if true, this is a two-way measurement
      * @param withIonoCorrection use ionospheric correction
      * @param withTropoCorrection use tropospheric correction
      * @exception OrekitException if a {@link org.orekit.estimation.Parameter}
@@ -63,7 +63,7 @@ public class RangeRate extends AbstractMeasurement {
      */
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
-                     final boolean twoway, 
+                     final boolean twoway,
                      final boolean withIonoCorrection, final boolean withTropoCorrection)
         throws OrekitException {
         super(date, rangeRate, sigma, baseWeight);
@@ -94,85 +94,88 @@ public class RangeRate extends AbstractMeasurement {
         final double          offset           = getDate().durationFrom(state.getDate());
         final SpacecraftState compensatedState = state.shiftedBy(offset - downlinkDelay);
 
-        Evaluation evaluation = oneWayTheoreticalEvaluation(iteration, state.getDate(), state.getFrame(), compensatedState);        
+        final Evaluation evaluation = oneWayTheoreticalEvaluation(iteration, state.getDate(), compensatedState);
         if (twoway) {
-        	// one-way (uplink) light time correction
-        	final double uplinkDelay = downlinkDelay;
+            // one-way (uplink) light time correction
+            final double uplinkDelay = downlinkDelay;
             final AbsoluteDate date = compensatedState.getDate().shiftedBy(offset - uplinkDelay);
-        	Evaluation evalOneWay2 = oneWayTheoreticalEvaluation(iteration, date, state.getFrame(), compensatedState);
+            final Evaluation evalOneWay2 = oneWayTheoreticalEvaluation(iteration, date, compensatedState);
 
-        	//evaluation
-        	evaluation.setValue(0.5 * (evaluation.getValue()[0] + evalOneWay2.getValue()[0]));
-        	final double[][] sd1 = evaluation.getStateDerivatives();
-        	final double[][] sd2 = evalOneWay2.getStateDerivatives();
-        	final double[][] sd = sd1.clone();
-        	for (int i=0; i < sd.length; ++i) {
-        		for (int j=0; j < sd[0].length; ++j) {
-        			sd[i][j] += 0.5 * (sd1[i][j] + sd2[i][j]); 
-        		}
-        	}
-        	evaluation.setStateDerivatives(sd);
+            //evaluation
+            evaluation.setValue(0.5 * (evaluation.getValue()[0] + evalOneWay2.getValue()[0]));
+            final double[][] sd1 = evaluation.getStateDerivatives();
+            final double[][] sd2 = evalOneWay2.getStateDerivatives();
+            final double[][] sd = sd1.clone();
+            for (int i = 0; i < sd.length; ++i) {
+                for (int j = 0; j < sd[0].length; ++j) {
+                    sd[i][j] += 0.5 * (sd1[i][j] + sd2[i][j]);
+                }
+            }
+            evaluation.setStateDerivatives(sd);
 
-        	if (station.isEstimated()) {
-        		final double[][] pd1 = evaluation.getParameterDerivatives(station.getName());
-        		final double[][] pd2 = evalOneWay2.getParameterDerivatives(station.getName());
-        		final double[][] pd = pd1.clone();
-            	for (int i=0; i < pd.length; ++i) {
-            		for (int j=0; j < pd[0].length; ++j) {
-            			sd[i][j] += 0.5 * (pd1[i][j] + pd2[i][j]); 
-            		}
-            	}        		
-        		evaluation.setParameterDerivatives(station.getName(), pd);				
-        	}    	
+            if (station.isEstimated()) {
+                final double[][] pd1 = evaluation.getParameterDerivatives(station.getName());
+                final double[][] pd2 = evalOneWay2.getParameterDerivatives(station.getName());
+                final double[][] pd = pd1.clone();
+                for (int i = 0; i < pd.length; ++i) {
+                    for (int j = 0; j < pd[0].length; ++j) {
+                        sd[i][j] += 0.5 * (pd1[i][j] + pd2[i][j]);
+                    }
+                }
+                evaluation.setParameterDerivatives(station.getName(), pd);
+            }
         }
 
         return evaluation;
     }
 
-    /**
-     *     
-     * @param iteration
-     * @param state
-     * @return
-     * @throws OrekitException
+    /** Evaluate measurement in one-way.
+     * @param iteration iteration number
+     * @param date date at which signal is on ground station
+     * @param compensatedState orbital state used for measurement
+     * @return theoretical value
+     * @exception OrekitException if value cannot be computed
+     * @see #evaluate(SpacecraftStatet)
      */
-    private Evaluation oneWayTheoreticalEvaluation(final int iteration, final AbsoluteDate date, final Frame frame, final SpacecraftState compensatedState)
+    private Evaluation oneWayTheoreticalEvaluation(final int iteration, final AbsoluteDate date,
+                                                   final SpacecraftState compensatedState)
         throws OrekitException {
         // prepare the evaluation
         final Evaluation evaluation = new Evaluation(this, iteration, compensatedState);
 
         // range rate value
-        final Vector3D stationPosition = station.getBaseFrame().getPVCoordinates(date, frame).getPosition(); // in EME2000 ...
+        final Frame frame = compensatedState.getFrame(); // inertial frame
+        final Vector3D stationPosition = station.getBaseFrame().getPVCoordinates(date, frame).getPosition();
         final Vector3D relativePosition = compensatedState.getPVCoordinates().getPosition().subtract(stationPosition);
-        
+
         final Vector3D stationVelocity = station.getBaseFrame().getPVCoordinates(date, frame).getVelocity();
         final Vector3D relativeVelocity = compensatedState.getPVCoordinates().getVelocity()
-        								.subtract(stationVelocity);
+                                        .subtract(stationVelocity);
         final Vector3D      lineOfSight      = relativePosition.normalize();
-        // 
-        double rr = Vector3D.dotProduct(relativeVelocity, lineOfSight);
-        
-        // FIXME There are modifier apparently to handle those corrections. 
+        //
+        final double rr = Vector3D.dotProduct(relativeVelocity, lineOfSight);
+
+        // FIXME There are modifier apparently to handle those corrections.
         // However, which state do they use? compensatedState?
         evaluation.setValue(rr);
-        
+
         // compute partial derivatives with respect to spacecraft state Cartesian coordinates.
         final double norm = relativePosition.getNorm();
         final double den1 = norm; //relativePosition.getNorm();
-        final double den2 = FastMath.pow(relativePosition.getNorm(), 2);        
-        final double fRx = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_I.scalarMultiply(norm).subtract( relativePosition.scalarMultiply(relativePosition.getX() / den1))));
-        final double fRy = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_J.scalarMultiply(norm).subtract( relativePosition.scalarMultiply(relativePosition.getY() / den1))));
-        final double fRz = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_K.scalarMultiply(norm).subtract( relativePosition.scalarMultiply(relativePosition.getZ() / den1))));
+        final double den2 = FastMath.pow(relativePosition.getNorm(), 2);
+        final double fRx = 1. / den2 * relativeVelocity.dotProduct(Vector3D.PLUS_I.scalarMultiply(norm).subtract( relativePosition.scalarMultiply(relativePosition.getX() / den1)));
+        final double fRy = 1. / den2 * relativeVelocity.dotProduct(Vector3D.PLUS_J.scalarMultiply(norm).subtract( relativePosition.scalarMultiply(relativePosition.getY() / den1)));
+        final double fRz = 1. / den2 * relativeVelocity.dotProduct(Vector3D.PLUS_K.scalarMultiply(norm).subtract( relativePosition.scalarMultiply(relativePosition.getZ() / den1)));
         final double fVx = lineOfSight.getX();
         final double fVy = lineOfSight.getY();
         final double fVz = lineOfSight.getZ();
         evaluation.setStateDerivatives(new double[] {
-        	fRx,
-        	fRy,
-        	fRz,
-        	fVx,
-        	fVy,
-        	fVz
+            fRx,
+            fRy,
+            fRz,
+            fVx,
+            fVy,
+            fVz
         });
 
         if (station.isEstimated()) {
@@ -183,9 +186,9 @@ public class RangeRate extends AbstractMeasurement {
                         -fRx,
                         -fRy,
                         -fRz,
-                    });        	
+                    });
         }
-        return evaluation;    	
+        return evaluation;
     }
-   
+
 }
