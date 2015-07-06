@@ -88,7 +88,7 @@ public class RangeRate extends AbstractMeasurement {
         final double          offset           = getDate().durationFrom(state.getDate());
         final SpacecraftState compensatedState = state.shiftedBy(offset - downlinkDelay);
 
-        Evaluation evaluation = oneWayTheoreticalEvaluation(iteration, state.getDate(), state.getFrame(), compensatedState);        
+        final Evaluation evaluation = oneWayTheoreticalEvaluation(iteration, state.getDate(), state.getFrame(), compensatedState);        
         if (twoway) {
         	// one-way (uplink) light time correction
         	final double uplinkDelay = station.uplinkTimeOfFlight(compensatedState);
@@ -100,8 +100,8 @@ public class RangeRate extends AbstractMeasurement {
         	final double[][] sd1 = evaluation.getStateDerivatives();
         	final double[][] sd2 = evalOneWay2.getStateDerivatives();
         	final double[][] sd = sd1.clone();
-        	for (int i=0; i < sd.length; ++i) {
-        		for (int j=0; j < sd[0].length; ++j) {
+        	for (int i = 0; i < sd.length; ++i) {
+        		for (int j = 0; j < sd[0].length; ++j) {
         			sd[i][j] += 0.5 * (sd1[i][j] + sd2[i][j]); 
         		}
         	}
@@ -111,32 +111,34 @@ public class RangeRate extends AbstractMeasurement {
         		final double[][] pd1 = evaluation.getParameterDerivatives(station.getName());
         		final double[][] pd2 = evalOneWay2.getParameterDerivatives(station.getName());
         		final double[][] pd = pd1.clone();
-            	for (int i=0; i < pd.length; ++i) {
-            		for (int j=0; j < pd[0].length; ++j) {
+            	for (int i = 0; i < pd.length; ++i) {
+            		for (int j = 0; j < pd[0].length; ++j) {
             			sd[i][j] += 0.5 * (pd1[i][j] + pd2[i][j]); 
             		}
-            	}        		
+            	}
         		evaluation.setParameterDerivatives(station.getName(), pd);				
-        	}    	
+        	}
         }
 
         return evaluation;
     }
 
-    /**
-     *     
-     * @param iteration
-     * @param state
-     * @return
-     * @throws OrekitException
+    /** Evaluate measurement in one-way.
+     * @param iteration iteration number
+     * @param date date at which signal is on ground station
+     * @param compensatedState orbital state used for measurement
+     * @return theoretical value
+     * @exception OrekitException if value cannot be computed
+     * @see #evaluate(SpacecraftStatet)
      */
-    private Evaluation oneWayTheoreticalEvaluation(final int iteration, final AbsoluteDate date, final Frame frame, final SpacecraftState compensatedState)
+    private Evaluation oneWayTheoreticalEvaluation(final int iteration, final AbsoluteDate date,
+                                                   final Frame frame, final SpacecraftState compensatedState)
         throws OrekitException {
         // prepare the evaluation
         final Evaluation evaluation = new Evaluation(this, iteration, compensatedState);
         
         // station coordinates at date
-        PVCoordinates pvStation = station.getOffsetFrame().getPVCoordinates(date, frame);
+        final PVCoordinates pvStation = station.getOffsetFrame().getPVCoordinates(date, frame);
         
         // range rate value
         final Vector3D stationPosition = pvStation.getPosition(); // in EME2000 ...
@@ -149,7 +151,7 @@ public class RangeRate extends AbstractMeasurement {
         final Vector3D      lineOfSight      = relativePosition.normalize();
         // 
         double rr = Vector3D.dotProduct(relativeVelocity, lineOfSight);
-        
+
         evaluation.setValue(rr);
         
         // compute partial derivatives with respect to spacecraft state Cartesian coordinates.
