@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,6 +34,7 @@ import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
+import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -75,7 +77,7 @@ public class BatchLSEstimatorTest {
     }
 
     @Test
-    public void testKeplerDistances() throws OrekitException {
+    public void testKeplerRange() throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
 
@@ -101,13 +103,56 @@ public class BatchLSEstimatorTest {
         estimator.setMaxIterations(20);
 
         EstimationTestUtils.checkFit(context, estimator, 4,
+                                     0.0, 6.1e-7,
+                                     0.0, 1.2e-6,
+                                     0.0, 5.3e-7,
+                                     0.0, 2.1e-10);
+
+    }
+
+    @Test
+    public void testKeplerRangeRate() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement> measurements1 =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeRateMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+
+        //final List<Measurement> measurements2 =
+        //        EstimationTestUtils.createMeasurements(propagator,
+        //                                               new RangeMeasurementCreator(context),
+        //                                               1.0, 3.0, 300.0);
+        
+        final List<Measurement> measurements = new ArrayList<Measurement>();
+        measurements.addAll(measurements1);
+        //measurements.addAll(measurements2);
+        
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
+                                                                new LevenbergMarquardtOptimizer());
+        for (final Measurement rangerate : measurements) {
+            estimator.addMeasurement(rangerate);
+        }
+        estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
+        estimator.setMaxIterations(20);
+
+        EstimationTestUtils.checkFit(context, estimator, 5,
                                      0.0, 4.6e-7,
                                      0.0, 8.8e-7,
                                      0.0, 6.1e-7,
                                      0.0, 2.4e-10);
 
     }
-
+    
     @Test
     public void testDuplicatedMeasurementParameter() throws OrekitException {
 

@@ -34,6 +34,8 @@ import org.orekit.utils.PVCoordinates;
  * Two-way range rate measurements are applicable to any system. The signal is 
  * transmitted to the (non-spinning) satellite and returned by a transponder 
  * (or reflected back)to the same measuring station.
+ * The Doppler measurement can be obtained by multiplying the velocity by (fe/c), where
+ * fe is the emission frequency.
  * 
  * @author Thierry Ceolin
  * @author Joris Olympio
@@ -43,7 +45,7 @@ public class RangeRate extends AbstractMeasurement {
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
-       
+
     /** Flag indicating whether it is a two-way measurement */
     final boolean twoway;
     
@@ -59,7 +61,9 @@ public class RangeRate extends AbstractMeasurement {
      * name conflict occurs
      */
     public RangeRate(final GroundStation station, final AbsoluteDate date,
-                     final double rangeRate, final double sigma, final double baseWeight,
+                     final double rangeRate, 
+                     final double sigma, 
+                     final double baseWeight,
                      final boolean twoway)
         throws OrekitException {
         super(date, rangeRate, sigma, baseWeight);
@@ -93,7 +97,7 @@ public class RangeRate extends AbstractMeasurement {
         	// one-way (uplink) light time correction
         	final double uplinkDelay = station.uplinkTimeOfFlight(compensatedState);
             final AbsoluteDate date = compensatedState.getDate().shiftedBy(uplinkDelay);
-        	Evaluation evalOneWay2 = oneWayTheoreticalEvaluation(iteration, date, state.getFrame(), compensatedState);
+        	final Evaluation evalOneWay2 = oneWayTheoreticalEvaluation(iteration, date, state.getFrame(), compensatedState);
 
         	//evaluation
         	evaluation.setValue(0.5 * (evaluation.getValue()[0] + evalOneWay2.getValue()[0]));
@@ -150,12 +154,12 @@ public class RangeRate extends AbstractMeasurement {
         // line of sight direction
         final Vector3D      lineOfSight      = relativePosition.normalize();
         // 
-        double rr = Vector3D.dotProduct(relativeVelocity, lineOfSight);
+        final double rr = Vector3D.dotProduct(relativeVelocity, lineOfSight);
 
         evaluation.setValue(rr);
         
         // compute partial derivatives with respect to spacecraft state Cartesian coordinates.
-        double relnorm = relativePosition.getNorm();
+        final double relnorm = relativePosition.getNorm();
         final double den1 = relnorm; //relativePosition.getNorm();
         final double den2 = FastMath.pow(relativePosition.getNorm(), 2);        
         final double fRx = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_I.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getX() / den1))));
@@ -165,12 +169,12 @@ public class RangeRate extends AbstractMeasurement {
         final double fVy = lineOfSight.getY();
         final double fVz = lineOfSight.getZ();
         evaluation.setStateDerivatives(new double[] {
-        	fRx,
-        	fRy,
-        	fRz,
-        	fVx,
-        	fVy,
-        	fVz
+                                                     fRx,
+                                                     fRy,
+                                                     fRz,
+                                                     fVx,
+                                                     fVy,
+                                                     fVz
         });
 
         // compute sensitivity wrt station position when station bias needs
@@ -204,28 +208,29 @@ public class RangeRate extends AbstractMeasurement {
                                                      relativePosition.getY() * relativePosition.getZ() / relnorm2,
                                                      relativePosition.getZ() * relativePosition.getZ() / relnorm2 - 1.0
                                                  }
-                                             };           
+            };
 
             // derivatives of the dot product: relVelocity * lineOfSight
             final Vector3D v = relativeVelocity;
             final double dVUdPsx = (-omega.getZ() * lineOfSight.getY() + omega.getY() * lineOfSight.getZ())
-                            + (v.getX() * (m[0][0] ) +
-                                            v.getY() * (m[1][0] ) +
-                                            v.getZ() * (m[2][0] )) / relnorm;
+                            + (v.getX() * (m[0][0] ) 
+                                            + v.getY() * (m[1][0] )
+                                            + v.getZ() * (m[2][0] )) / relnorm;
             final double dVUdPsy = (omega.getZ() * lineOfSight.getX() - omega.getX() * lineOfSight.getZ())
-                            + (v.getX() * (m[0][1]) +
-                                            v.getY() * (m[1][1] ) +
-                                            v.getZ() * (m[2][1] )) / relnorm;
+                            + (v.getX() * (m[0][1])
+                                            + v.getY() * (m[1][1] )
+                                            + v.getZ() * (m[2][1] )) / relnorm;
             final double dVUdPsz = (-omega.getY() * lineOfSight.getX() + omega.getX() * lineOfSight.getY())
-                            + (v.getX() * (m[0][2] ) +
-                                            v.getY() * (m[1][2] ) +
-                                            v.getZ() * (m[2][2] )) / relnorm;
+                            + (v.getX() * (m[0][2] )
+                                            + v.getY() * (m[1][2] )
+                                            + v.getZ() * (m[2][2] )) / relnorm;
             
             // range rate partial derivatives
             // with respect to station position in inertial frame
-            final Vector3D dRdQI1 = new Vector3D(dVUdPsx,
-                                                dVUdPsy,
-                                                dVUdPsz);
+            final Vector3D dRdQI1 = new Vector3D(
+                                                 dVUdPsx,
+                                                 dVUdPsy,
+                                                 dVUdPsz);
             
             
             // convert to topocentric frame, as the station position
@@ -237,7 +242,7 @@ public class RangeRate extends AbstractMeasurement {
             // at measure time
             evaluation.setParameterDerivatives(station.getName(), dRdQT.toArray());  	
         }
-        return evaluation;    	
+        return evaluation;
     }
    
 }

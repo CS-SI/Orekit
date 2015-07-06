@@ -157,8 +157,16 @@ public class Evaluation {
         throws OrekitIllegalArgumentException {
         final double[][] p = parametersDerivatives.get(name);
         if (p == null) {
+            final StringBuilder builder = new StringBuilder();
+            for (final Map.Entry<String, double[][]> entry : parametersDerivatives.entrySet()) {
+                if (builder.length() > 0) {
+                    builder.append(", ");
+                }
+                builder.append(entry.getKey());
+            }
             throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                                     name);
+                                                     name,
+                                                     builder.length() > 0 ? builder.toString() : "<none>");
         }
         final double[][] sd = new double[measurement.getDimension()][];
         for (int i = 0; i < measurement.getDimension(); ++i) {
