@@ -20,9 +20,12 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.models.earth.SaastamoinenModel;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 /** Class modeling one-way or two-way range rate measurement between two vehicles.
  * One-way range rate (or Doppler) measurements generally apply to specific satellites
@@ -40,13 +43,7 @@ public class RangeRate extends AbstractMeasurement {
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
-    
-    /** Flag indicating a ionospheric correction is performed */
-    private final boolean withIonoCorrection;
-    
-    /** Flag indicating a tropospheric correction is performed */
-    private final boolean withTropoCorrection;
-    
+       
     /** Flag indicating whether it is a two-way measurement */
     final boolean twoway;
     
@@ -63,13 +60,10 @@ public class RangeRate extends AbstractMeasurement {
      */
     public RangeRate(final GroundStation station, final AbsoluteDate date,
                      final double rangeRate, final double sigma, final double baseWeight,
-                     final boolean twoway, 
-                     final boolean withIonoCorrection, final boolean withTropoCorrection)
+                     final boolean twoway)
         throws OrekitException {
         super(date, rangeRate, sigma, baseWeight);
         this.station = station;
-        this.withIonoCorrection = withIonoCorrection;
-        this.withTropoCorrection = withTropoCorrection;
         this.twoway = twoway;
         addSupportedParameter(station);
     }
@@ -90,15 +84,15 @@ public class RangeRate extends AbstractMeasurement {
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have offset == downlinkDelay and compensatedState will be
         //  the same as state)
-        final double          downlinkDelay    = station.downlinkDelay(state, getDate());
+        final double          downlinkDelay    = station.downlinkTimeOfFlight(state, getDate());
         final double          offset           = getDate().durationFrom(state.getDate());
         final SpacecraftState compensatedState = state.shiftedBy(offset - downlinkDelay);
 
         Evaluation evaluation = oneWayTheoreticalEvaluation(iteration, state.getDate(), state.getFrame(), compensatedState);        
         if (twoway) {
         	// one-way (uplink) light time correction
-        	final double uplinkDelay = downlinkDelay;
-            final AbsoluteDate date = compensatedState.getDate().shiftedBy(offset - uplinkDelay);
+        	final double uplinkDelay = station.uplinkTimeOfFlight(compensatedState);
+            final AbsoluteDate date = compensatedState.getDate().shiftedBy(uplinkDelay);
         	Evaluation evalOneWay2 = oneWayTheoreticalEvaluation(iteration, date, state.getFrame(), compensatedState);
 
         	//evaluation
@@ -140,29 +134,31 @@ public class RangeRate extends AbstractMeasurement {
         throws OrekitException {
         // prepare the evaluation
         final Evaluation evaluation = new Evaluation(this, iteration, compensatedState);
-
+        
+        // station coordinates at date
+        PVCoordinates pvStation = station.getOffsetFrame().getPVCoordinates(date, frame);
+        
         // range rate value
-        final Vector3D stationPosition = station.getBaseFrame().getPVCoordinates(date, frame).getPosition(); // in EME2000 ...
+        final Vector3D stationPosition = pvStation.getPosition(); // in EME2000 ...
         final Vector3D relativePosition = compensatedState.getPVCoordinates().getPosition().subtract(stationPosition);
         
-        final Vector3D stationVelocity = station.getBaseFrame().getPVCoordinates(date, frame).getVelocity();
+        final Vector3D stationVelocity = pvStation.getVelocity();
         final Vector3D relativeVelocity = compensatedState.getPVCoordinates().getVelocity()
         								.subtract(stationVelocity);
+        // line of sight direction
         final Vector3D      lineOfSight      = relativePosition.normalize();
         // 
         double rr = Vector3D.dotProduct(relativeVelocity, lineOfSight);
         
-        // FIXME There are modifier apparently to handle those corrections. 
-        // However, which state do they use? compensatedState?
         evaluation.setValue(rr);
         
         // compute partial derivatives with respect to spacecraft state Cartesian coordinates.
-        final double norm = relativePosition.getNorm();
-        final double den1 = norm; //relativePosition.getNorm();
+        double relnorm = relativePosition.getNorm();
+        final double den1 = relnorm; //relativePosition.getNorm();
         final double den2 = FastMath.pow(relativePosition.getNorm(), 2);        
-        final double fRx = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_I.scalarMultiply(norm).subtract( relativePosition.scalarMultiply(relativePosition.getX() / den1))));
-        final double fRy = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_J.scalarMultiply(norm).subtract( relativePosition.scalarMultiply(relativePosition.getY() / den1))));
-        final double fRz = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_K.scalarMultiply(norm).subtract( relativePosition.scalarMultiply(relativePosition.getZ() / den1))));
+        final double fRx = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_I.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getX() / den1))));
+        final double fRy = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_J.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getY() / den1))));
+        final double fRz = 1. / den2 * relativeVelocity.dotProduct( (Vector3D.PLUS_K.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getZ() / den1))));
         final double fVx = lineOfSight.getX();
         final double fVy = lineOfSight.getY();
         final double fVz = lineOfSight.getZ();
@@ -175,15 +171,69 @@ public class RangeRate extends AbstractMeasurement {
         	fVz
         });
 
+        // compute sensitivity wrt station position when station bias needs
+        // to be estimated
         if (station.isEstimated()) {
+            // station position at signal arrival
+            final Transform topoToInert =
+                            station.getOffsetFrame().getTransformTo(compensatedState.getFrame(), getDate());
+            
+            final AngularCoordinates ac = topoToInert.getAngular().revert();
+
+            // FIXME ugly...
+            //final Vector3D omega        = ac.getRotationRate();            
+            final Vector3D omega        = new Vector3D(new double[]{0,0, Constants.GRIM5C1_EARTH_ANGULAR_VELOCITY});
+            
+            // derivative of lineOfSight wrt rSta,
+            //    d (relPos / ||relPos||) / d rSta
+            //
+            final double relnorm2 = relnorm * relnorm;
+            final double[][] m = new double[][] {
+                                                 {
+                                                     relativePosition.getX() * relativePosition.getX() / relnorm2 - 1.0,
+                                                     relativePosition.getY() * relativePosition.getX() / relnorm2,
+                                                     relativePosition.getZ() * relativePosition.getX() / relnorm2
+                                                 }, {
+                                                     relativePosition.getX() * relativePosition.getY() / relnorm2,
+                                                     relativePosition.getY() * relativePosition.getY() / relnorm2 - 1.0,
+                                                     relativePosition.getZ() * relativePosition.getY() / relnorm2
+                                                 }, {
+                                                     relativePosition.getX() * relativePosition.getZ() / relnorm2,
+                                                     relativePosition.getY() * relativePosition.getZ() / relnorm2,
+                                                     relativePosition.getZ() * relativePosition.getZ() / relnorm2 - 1.0
+                                                 }
+                                             };           
+
+            // derivatives of the dot product: relVelocity * lineOfSight
+            final Vector3D v = relativeVelocity;
+            final double dVUdPsx = (-omega.getZ() * lineOfSight.getY() + omega.getY() * lineOfSight.getZ())
+                            + (v.getX() * (m[0][0] ) +
+                                            v.getY() * (m[1][0] ) +
+                                            v.getZ() * (m[2][0] )) / relnorm;
+            final double dVUdPsy = (omega.getZ() * lineOfSight.getX() - omega.getX() * lineOfSight.getZ())
+                            + (v.getX() * (m[0][1]) +
+                                            v.getY() * (m[1][1] ) +
+                                            v.getZ() * (m[2][1] )) / relnorm;
+            final double dVUdPsz = (-omega.getY() * lineOfSight.getX() + omega.getX() * lineOfSight.getY())
+                            + (v.getX() * (m[0][2] ) +
+                                            v.getY() * (m[1][2] ) +
+                                            v.getZ() * (m[2][2] )) / relnorm;
+            
+            // range rate partial derivatives
+            // with respect to station position in inertial frame
+            final Vector3D dRdQI1 = new Vector3D(dVUdPsx,
+                                                dVUdPsy,
+                                                dVUdPsz);
+            
+            
+            // convert to topocentric frame, as the station position
+            // offset parameter is expressed in this frame
+            final Vector3D dRdQT = ac.getRotation().applyTo(dRdQI1);
+                        
             // partial derivatives with respect to parameter
             // the parameter has 3 Cartesian coordinates for station offset position
-            evaluation.setParameterDerivatives(station.getName(),
-                    new double[] {
-                        -fRx,
-                        -fRy,
-                        -fRz,
-                    });        	
+            // at measure time
+            evaluation.setParameterDerivatives(station.getName(), dRdQT.toArray());  	
         }
         return evaluation;    	
     }
