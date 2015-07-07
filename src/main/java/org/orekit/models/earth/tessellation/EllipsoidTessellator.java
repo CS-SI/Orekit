@@ -164,12 +164,13 @@ public class EllipsoidTessellator {
         final Map<Mesh, List<Tile>>   map         = new IdentityHashMap<Mesh, List<Tile>>();
         final RegionFactory<Sphere2D> factory     = new RegionFactory<Sphere2D>();
         SphericalPolygonsSet          remaining   = (SphericalPolygonsSet) zone.copySelf();
+        S2Point                       inside      = getInsidePoint(remaining);
 
-        while (!remaining.isEmpty()) {
+        while (inside != null) {
 
             // find a mesh covering at least one connected part of the zone
             final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
-            Mesh mesh = createMesh(remaining, splitLength, splitWidth);
+            Mesh mesh = new Mesh(ellipsoid, zone, aiming, splitLength, splitWidth, inside);
             mergingSeeds.add(mesh.getNode(0, 0));
             List<Tile> tiles = null;
             while (!mergingSeeds.isEmpty()) {
@@ -200,6 +201,7 @@ public class EllipsoidTessellator {
 
             // remove the part of the zone covered by the mesh
             remaining = (SphericalPolygonsSet) factory.difference(remaining, mesh.getCoverage());
+            inside    = getInsidePoint(remaining);
 
             map.put(mesh, tiles);
 
@@ -236,12 +238,13 @@ public class EllipsoidTessellator {
         final Map<Mesh, List<GeodeticPoint>> map         = new IdentityHashMap<Mesh, List<GeodeticPoint>>();
         final RegionFactory<Sphere2D>        factory     = new RegionFactory<Sphere2D>();
         SphericalPolygonsSet                 remaining   = (SphericalPolygonsSet) zone.copySelf();
+        S2Point                              inside      = getInsidePoint(remaining);
 
-        while (!remaining.isEmpty()) {
+        while (inside != null) {
 
             // find a mesh covering at least one connected part of the zone
             final List<Mesh.Node> mergingSeeds = new ArrayList<Mesh.Node>();
-            Mesh mesh = createMesh(remaining, splitLength, splitWidth);
+            Mesh mesh = new Mesh(ellipsoid, zone, aiming, splitLength, splitWidth, inside);
             mergingSeeds.add(mesh.getNode(0, 0));
             List<GeodeticPoint> sample = null;
             while (!mergingSeeds.isEmpty()) {
@@ -272,6 +275,7 @@ public class EllipsoidTessellator {
 
             // remove the part of the zone covered by the mesh
             remaining = (SphericalPolygonsSet) factory.difference(remaining, mesh.getCoverage());
+            inside    = getInsidePoint(remaining);
 
             map.put(mesh, sample);
 
@@ -287,22 +291,17 @@ public class EllipsoidTessellator {
 
     }
 
-    /** Compute a mesh completely surrounding at least one connected part of a zone.
+    /** Get an inside point from a zone of interest.
      * @param zone zone to mesh
-     * @param alongGap distance between nodes in the along direction
-     * @param acrossGap distance between nodes in the across direction
-     * @return a mesh covering at least one connected part of the zone
+     * @return a point inside the zone or null if zone is empty or too thin
      * @exception OrekitException if tile direction cannot be computed
      */
-    private Mesh createMesh(final SphericalPolygonsSet zone,
-                            final double alongGap, final double acrossGap)
+    private S2Point getInsidePoint(final SphericalPolygonsSet zone)
         throws OrekitException {
 
-        // start mesh inside the zone
-        final InsideFinder finder = new InsideFinder(zone.getTolerance());
+        final InsideFinder finder = new InsideFinder(zone);
         zone.getTree(false).visit(finder);
-        final S2Point start = finder.getInsidePoint();
-        return new Mesh(ellipsoid, zone, aiming, alongGap, acrossGap, start);
+        return finder.getInsidePoint();
 
     }
 

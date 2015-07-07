@@ -247,6 +247,39 @@ public class EllipsoidTessellatorTest {
 
     }
 
+    @Test
+    public void testTooThinRemainingRegion() throws OrekitException {
+        TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, -0.2185);
+        EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, aiming, 16);
+
+        SphericalPolygonsSet small = buildSimpleZone(new double[][]{
+            { 32.7342, -16.9407 }, { 32.7415, -16.9422 }, { 32.7481, -16.9463 }, { 32.7531, -16.9528 },
+            { 32.7561, -16.9608 }, { 32.7567, -16.9696 }, { 32.7549, -16.9781 }, { 32.7508, -16.9855 },
+            { 32.7450, -16.9909 }, { 32.7379, -16.9937 }, { 32.7305, -16.9937 }, { 32.7235, -16.9909 },
+            { 32.7177, -16.9855 }, { 32.7136, -16.9781 }, { 32.7118, -16.9696 }, { 32.7124, -16.9608 },
+            { 32.7154, -16.9528 }, { 32.7204, -16.9463 }, { 32.7269, -16.9422 }
+        });
+
+        final double maxWidth  = 40000.0;
+        final double maxLength = 40000.0;
+        final List<List<Tile>> tiles = tessellator.tessellate(small, maxWidth, maxLength, 0, 0,
+                                                              false, true);
+        Assert.assertEquals(1, tiles.size());
+        Assert.assertEquals(1, tiles.get(0).size());
+        for (final Tile tile : tiles.get(0)) {
+            Vector3D v0 = ellipsoid.transform(tile.getVertices()[0]);
+            Vector3D v1 = ellipsoid.transform(tile.getVertices()[1]);
+            Vector3D v2 = ellipsoid.transform(tile.getVertices()[2]);
+            Vector3D v3 = ellipsoid.transform(tile.getVertices()[3]);
+            Assert.assertTrue(Vector3D.distance(v0, v1) < (3.002 / 16.0) * maxLength);
+            Assert.assertTrue(Vector3D.distance(v2, v3) < (3.002 / 16.0) * maxLength);
+            Assert.assertEquals(maxWidth, Vector3D.distance(v1, v2), 0.1);
+            Assert.assertEquals(maxWidth, Vector3D.distance(v3, v0), 0.1);
+        }
+
+    }
+
     private void checkTilesDontOverlap(final List<List<Tile>> tiles) {
         for (final List<Tile> list : tiles) {
             for (final Tile tile : list) {

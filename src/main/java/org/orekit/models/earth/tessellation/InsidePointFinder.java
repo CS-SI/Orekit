@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.partitioning.BSPTree;
 import org.apache.commons.math3.geometry.partitioning.BSPTreeVisitor;
+import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.apache.commons.math3.geometry.spherical.twod.Edge;
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
 import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
@@ -37,17 +38,17 @@ import org.apache.commons.math3.geometry.spherical.twod.Vertex;
  */
 class InsideFinder implements BSPTreeVisitor<Sphere2D> {
 
-    /** Tolerance below which points are consider to be identical. */
-    private final double tolerance;
+    /** Zone of interest. */
+    private final SphericalPolygonsSet zone;
 
     /** Inside point. */
     private S2Point insidePoint;
 
     /** Simple constructor.
-     * @param tolerance below which points are consider to be identical
+     * @param zone zone of interest
      */
-    public InsideFinder(final double tolerance) {
-        this.tolerance   = tolerance;
+    public InsideFinder(final SphericalPolygonsSet zone) {
+        this.zone        = zone;
         this.insidePoint = null;
     }
 
@@ -78,7 +79,7 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
                     new SphericalPolygonsSet(node.pruneAroundConvexCell(Boolean.TRUE,
                                                                         Boolean.FALSE,
                                                                         null),
-                                                                        tolerance);
+                                                                        zone.getTolerance());
 
             // extract the start of the single loop boundary of the convex cell
             final List<Vertex> boundary = convex.getBoundaryLoops();
@@ -90,7 +91,13 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
                 n++;
             }
 
-            insidePoint = new S2Point(sumB);
+            final S2Point candidate = new S2Point(sumB);
+
+            // check the candidate point is really considered inside
+            // (it may appear outside if the current leaf cell is very thin)
+            if (zone.checkPoint(candidate) != Location.OUTSIDE) {
+                insidePoint = candidate;
+            }
 
         }
 
