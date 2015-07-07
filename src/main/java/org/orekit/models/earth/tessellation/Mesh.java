@@ -98,49 +98,51 @@ class Mesh {
 
         // create an enabled first node at origin
         final Node origin = new Node(start, 0, 0);
-        origin.setEnabled(true);
+        origin.setEnabled();
         store(origin);
 
     }
 
-    /** Get the minimum along tile index.
-     * @return minimum along tile index
+    /** Get the minimum along tile index for enabled nodes.
+     * @return minimum along tile index for enabled nodes
      */
     public int getMinAlongIndex() {
         return minAlongIndex;
     }
 
-    /** Get the maximum along tile index.
-     * @return maximum along tile index
+    /** Get the maximum along tile index for enabled nodes.
+     * @return maximum along tile index for enabled nodes
      */
     public int getMaxAlongIndex() {
         return maxAlongIndex;
     }
 
-    /** Get the minimum along tile index for a specific across index.
+    /** Get the minimum along tile index for enabled nodes for a specific across index.
      * @param acrossIndex across index to use
-     * @return minimum along tile index for a specific across index
+     * @return minimum along tile index for enabled nodes for a specific across index
      * or {@link #getMaxAlongIndex() getMaxAlongIndex() + 1} if there
      * are no nodes with the specified acrossIndex.
      */
     public int getMinAlongIndex(final int acrossIndex) {
         for (int alongIndex = minAlongIndex; alongIndex <= maxAlongIndex; ++alongIndex) {
-            if (getNode(alongIndex, acrossIndex) != null) {
+            final Node node = getNode(alongIndex, acrossIndex);
+            if (node != null && node.isEnabled()) {
                 return alongIndex;
             }
         }
         return maxAlongIndex + 1;
     }
 
-    /** Get the maximum along tile index for a specific across index.
+    /** Get the maximum along tile index for enabled nodes for a specific across index.
      * @param acrossIndex across index to use
-     * @return maximum along tile index for a specific across index
+     * @return maximum along tile index for enabled nodes for a specific across index
      * or {@link #getMinAlongIndex() getMinAlongIndex() - 1} if there
      * are no nodes with the specified acrossIndex.
      */
     public int getMaxAlongIndex(final int acrossIndex) {
         for (int alongIndex = maxAlongIndex; alongIndex >= minAlongIndex; --alongIndex) {
-            if (getNode(alongIndex, acrossIndex) != null) {
+            final Node node = getNode(alongIndex, acrossIndex);
+            if (node != null && node.isEnabled()) {
                 return alongIndex;
             }
         }
@@ -447,12 +449,6 @@ class Mesh {
         // the new node invalidates current estimation of the coverage
         coverage = null;
 
-        // update min/max indices
-        minAlongIndex  = FastMath.min(minAlongIndex,  node.alongIndex);
-        maxAlongIndex  = FastMath.max(maxAlongIndex,  node.alongIndex);
-        minAcrossIndex = FastMath.min(minAcrossIndex, node.acrossIndex);
-        maxAcrossIndex = FastMath.max(maxAcrossIndex, node.acrossIndex);
-
         nodes.put(key(node.alongIndex, node.acrossIndex), node);
 
     }
@@ -513,10 +509,18 @@ class Mesh {
         }
 
         /** Set the enabled property.
-         * @param enabled if true, the node will be considered a real enabled node
          */
-        public void setEnabled(final boolean enabled) {
-            this.enabled = enabled;
+        public void setEnabled() {
+
+            // store status
+            this.enabled = true;
+
+            // update min/max indices
+            minAlongIndex  = FastMath.min(minAlongIndex,  alongIndex);
+            maxAlongIndex  = FastMath.max(maxAlongIndex,  alongIndex);
+            minAcrossIndex = FastMath.min(minAcrossIndex, acrossIndex);
+            maxAcrossIndex = FastMath.max(maxAcrossIndex, acrossIndex);
+
         }
 
         /** Check if a node is enabled.

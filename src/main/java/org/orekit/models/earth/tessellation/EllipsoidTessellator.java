@@ -381,26 +381,27 @@ public class EllipsoidTessellator {
                                     final boolean truncateLastWidth, final boolean truncateLastLength)
         throws OrekitException {
 
-        final List<Tile> tiles = new ArrayList<Tile>();
+        final List<Tile>      tiles = new ArrayList<Tile>();
+        final List<RangePair> rangePairs = new ArrayList<RangePair>();
 
         final int minAcross = mesh.getMinAcrossIndex();
         final int maxAcross = mesh.getMaxAcrossIndex();
-        for (IndicesPair acrossPair : nodesIndices(minAcross, maxAcross, truncateLastWidth)) {
+        for (Range acrossPair : nodesIndices(minAcross, maxAcross, truncateLastWidth)) {
 
             int minAlong = mesh.getMaxAlongIndex() + 1;
             int maxAlong = mesh.getMinAlongIndex() - 1;
-            for (int c = acrossPair.getLower(); c <= acrossPair.getUpper(); ++c) {
+            for (int c = acrossPair.lower; c <= acrossPair.upper; ++c) {
                 minAlong = FastMath.min(minAlong, mesh.getMinAlongIndex(c));
                 maxAlong = FastMath.max(maxAlong, mesh.getMaxAlongIndex(c));
             }
 
-            for (IndicesPair alongPair : nodesIndices(minAlong, maxAlong, truncateLastLength)) {
+            for (Range alongPair : nodesIndices(minAlong, maxAlong, truncateLastLength)) {
 
                 // get the base vertex nodes
-                final Mesh.Node node0 = mesh.addNode(alongPair.getLower(), acrossPair.getLower());
-                final Mesh.Node node1 = mesh.addNode(alongPair.getUpper(), acrossPair.getLower());
-                final Mesh.Node node2 = mesh.addNode(alongPair.getUpper(), acrossPair.getUpper());
-                final Mesh.Node node3 = mesh.addNode(alongPair.getLower(), acrossPair.getUpper());
+                final Mesh.Node node0 = mesh.addNode(alongPair.lower, acrossPair.lower);
+                final Mesh.Node node1 = mesh.addNode(alongPair.upper, acrossPair.lower);
+                final Mesh.Node node2 = mesh.addNode(alongPair.upper, acrossPair.upper);
+                final Mesh.Node node3 = mesh.addNode(alongPair.lower, acrossPair.upper);
 
                 // apply tile overlap
                 final S2Point s2p0 = node0.move(new Vector3D(-0.5 * lengthOverlap, node0.getAlong(),
@@ -420,19 +421,25 @@ public class EllipsoidTessellator {
 
                     // the tile does cover part of the zone, it contributes to the tessellation
                     tiles.add(new Tile(toGeodetic(s2p0), toGeodetic(s2p1), toGeodetic(s2p2), toGeodetic(s2p3)));
-
-                    // ensure the taxicab boundary follows the built tile sides
-                    for (int c = acrossPair.getLower(); c < acrossPair.getUpper(); ++c) {
-                        mesh.addNode(alongPair.getLower(), c + 1).setEnabled(true);
-                        mesh.addNode(alongPair.getUpper(), c).setEnabled(true);
-                    }
-                    for (int l = alongPair.getLower(); l < alongPair.getUpper(); ++l) {
-                        mesh.addNode(l,     acrossPair.getLower()).setEnabled(true);
-                        mesh.addNode(l + 1, acrossPair.getUpper()).setEnabled(true);
-                    }
+                    rangePairs.add(new RangePair(acrossPair, alongPair));
 
                 }
 
+            }
+        }
+
+        // ensure the taxicab boundary follows the built tile sides
+        // this is done outside of the previous loop because in order
+        // to avoid one tile changing the min/max indices of the
+        // neighboring tile as they share some nodes that will be enabled here
+        for (final RangePair rangePair : rangePairs) {
+            for (int c = rangePair.across.lower; c < rangePair.across.upper; ++c) {
+                mesh.addNode(rangePair.along.lower, c + 1).setEnabled();
+                mesh.addNode(rangePair.along.upper, c).setEnabled();
+            }
+            for (int l = rangePair.along.lower; l < rangePair.along.upper; ++l) {
+                mesh.addNode(l,     rangePair.across.lower).setEnabled();
+                mesh.addNode(l + 1, rangePair.across.upper).setEnabled();
             }
         }
 
@@ -607,7 +614,7 @@ public class EllipsoidTessellator {
 
         if (!node.isEnabled()) {
             // enable the node
-            node.setEnabled(true);
+            node.setEnabled();
             newNodes.add(node);
         }
 
@@ -703,7 +710,7 @@ public class EllipsoidTessellator {
      * @param truncateLast true if we can reduce last tile
      * @return iterator over mesh nodes indices
      */
-    private Iterable<IndicesPair> nodesIndices(final int minIndex, final int maxIndex, final boolean truncateLast) {
+    private Iterable<Range> nodesIndices(final int minIndex, final int maxIndex, final boolean truncateLast) {
 
         final int first;
         if (truncateLast) {
@@ -729,12 +736,12 @@ public class EllipsoidTessellator {
 
         }
 
-        return new Iterable<IndicesPair>() {
+        return new Iterable<Range>() {
 
             /** {@inheritDoc} */
             @Override
-            public Iterator<IndicesPair> iterator() {
-                return new Iterator<IndicesPair>() {
+            public Iterator<Range> iterator() {
+                return new Iterator<Range>() {
 
                     private int nextLower = first;
 
@@ -746,7 +753,7 @@ public class EllipsoidTessellator {
 
                     /** {@inheritDoc} */
                     @Override
-                    public IndicesPair next() {
+                    public Range next() {
 
                         if (nextLower >= maxIndex) {
                             throw new NoSuchElementException();
@@ -759,7 +766,7 @@ public class EllipsoidTessellator {
                             nextLower = maxIndex;
                         }
 
-                        return new IndicesPair(lower, nextLower);
+                        return new Range(lower, nextLower);
 
                     }
 
@@ -775,8 +782,8 @@ public class EllipsoidTessellator {
 
     }
 
-    /** Local class for a pair of nodes indices to be used for building a tile. */
-    private static class IndicesPair {
+    /** Local class for a range of indices to be used for building a tile. */
+    private static class Range {
 
         /** Lower index. */
         private final int lower;
@@ -788,24 +795,29 @@ public class EllipsoidTessellator {
          * @param lower lower index
          * @param upper upper index
          */
-        public IndicesPair(final int lower, final int upper) {
+        public Range(final int lower, final int upper) {
             this.lower = lower;
             this.upper = upper;
         }
 
-        /** Get the lower index.
-         * @return lower index
-         */
-        public int getLower() {
-            return lower;
-        }
+    }
 
+    /** Local class for a pair of ranges of indices to be used for building a tile. */
+    private static class RangePair {
 
-        /** Get the upper index.
-         * @return upper index
+        /** Across range. */
+        private final Range across;
+
+        /** Along range. */
+        private final Range along;
+
+        /** Simple constructor.
+         * @param across across range
+         * @param along along range
          */
-        public int getUpper() {
-            return upper;
+        public RangePair(final Range across, final Range along) {
+            this.across = across;
+            this.along  = along;
         }
 
     }

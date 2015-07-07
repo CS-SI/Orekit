@@ -53,7 +53,7 @@ public class EllipsoidTessellatorTest {
                                                               50000.0, 150000.0, 5000.0, 5000.0,
                                                               false, false);
         Assert.assertEquals(2,   tiles.size());
-        Assert.assertEquals(116, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(109, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
         Assert.assertEquals(4,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
 
     }
@@ -66,7 +66,7 @@ public class EllipsoidTessellatorTest {
                                                               50000.0, 150000.0, 5000.0, 5000.0,
                                                               true, true);
         Assert.assertEquals(2,   tiles.size());
-        Assert.assertEquals(115, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(108, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
         Assert.assertEquals(4,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
 
     }
@@ -89,7 +89,7 @@ public class EllipsoidTessellatorTest {
                                                               50000.0, 150000.0, 5000.0, 5000.0,
                                                               false, false);
         Assert.assertEquals(2,   tiles.size());
-        Assert.assertEquals(113, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(112, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
         Assert.assertEquals(6,   FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
     }
 
@@ -112,7 +112,7 @@ public class EllipsoidTessellatorTest {
                                                               50000.0, 150000.0, -5000.0, -5000.0,
                                                               false, false);
         Assert.assertEquals(2,  tiles.size());
-        Assert.assertEquals(90, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
+        Assert.assertEquals(86, FastMath.max(tiles.get(0).size(), tiles.get(1).size()));
         Assert.assertEquals(4,  FastMath.min(tiles.get(0).size(), tiles.get(1).size()));
         checkTilesDontOverlap(tiles);
     }
@@ -135,7 +135,7 @@ public class EllipsoidTessellatorTest {
                                                               150000.0, 250000.0, -5000.0, -5000.0,
                                                               false, false);
         Assert.assertEquals(1,  tiles.size());
-        Assert.assertEquals(27, tiles.get(0).size());
+        Assert.assertEquals(28, tiles.get(0).size());
         checkTilesDontOverlap(tiles);
     }
 
@@ -213,6 +213,38 @@ public class EllipsoidTessellatorTest {
                             Vector3D.distance(ellipsoid.transform(t.getVertices()[3]),
                                              ellipsoid.transform(t.getVertices()[0])),
                             0.01);
+    }
+
+    @Test
+    public void testStairedTruncatedTiles() throws OrekitException {
+
+        TileAiming aiming = new ConstantAzimuthAiming(ellipsoid, FastMath.toRadians(170.0));
+        EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, aiming, 16);
+
+        SphericalPolygonsSet small = buildSimpleZone(new double[][] {
+            { 45.335,  0.457 },
+            { 45.342,  0.469 },
+            { 45.371,  0.424 }
+        });
+
+        final double maxWidth  = 800.0;
+        final double maxLength = 10000.0;
+        final List<List<Tile>> tiles = tessellator.tessellate(small, maxWidth, maxLength, 0, 0,
+                                                              false, true);
+        Assert.assertEquals(1, tiles.size());
+        Assert.assertEquals(4, tiles.get(0).size());
+        for (final Tile tile : tiles.get(0)) {
+            Vector3D v0 = ellipsoid.transform(tile.getVertices()[0]);
+            Vector3D v1 = ellipsoid.transform(tile.getVertices()[1]);
+            Vector3D v2 = ellipsoid.transform(tile.getVertices()[2]);
+            Vector3D v3 = ellipsoid.transform(tile.getVertices()[3]);
+            Assert.assertTrue(Vector3D.distance(v0, v1) < (6.0002 / 16.0) * maxLength);
+            Assert.assertTrue(Vector3D.distance(v2, v3) < (6.0002 / 16.0) * maxLength);
+            Assert.assertEquals(maxWidth, Vector3D.distance(v1, v2), 1.0e-3);
+            Assert.assertEquals(maxWidth, Vector3D.distance(v3, v0), 1.0e-3);
+        }
+
     }
 
     private void checkTilesDontOverlap(final List<List<Tile>> tiles) {
