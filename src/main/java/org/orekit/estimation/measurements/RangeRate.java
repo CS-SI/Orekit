@@ -29,10 +29,10 @@ import org.orekit.utils.PVCoordinates;
 
 /** Class modeling one-way or two-way range rate measurement between two vehicles.
  * One-way range rate (or Doppler) measurements generally apply to specific satellites
- * (e.g. GNSS, DORIS), where a signal is transmitted from a satellite to a 
+ * (e.g. GNSS, DORIS), where a signal is transmitted from a satellite to a
  * measuring station.
- * Two-way range rate measurements are applicable to any system. The signal is 
- * transmitted to the (non-spinning) satellite and returned by a transponder 
+ * Two-way range rate measurements are applicable to any system. The signal is
+ * transmitted to the (non-spinning) satellite and returned by a transponder
  * (or reflected back)to the same measuring station.
  * The Doppler measurement can be obtained by multiplying the velocity by (fe/c), where
  * fe is the emission frequency.
@@ -55,6 +55,7 @@ public class RangeRate extends AbstractMeasurement {
      * @param rangeRate observed value, m/s
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param twoway if true, this is a two-way measurement
      * @param withIonoCorrection use ionospheric correction
      * @param withTropoCorrection use tropospheric correction
      * @exception OrekitException if a {@link org.orekit.estimation.Parameter}
@@ -157,7 +158,7 @@ public class RangeRate extends AbstractMeasurement {
         final double rr = Vector3D.dotProduct(relativeVelocity, lineOfSight);
 
         evaluation.setValue(rr);
-        
+
         // compute partial derivatives with respect to spacecraft state Cartesian coordinates.
         final double relnorm = relativePosition.getNorm();
         final double den1 = relnorm; //relativePosition.getNorm();
@@ -244,5 +245,5 @@ public class RangeRate extends AbstractMeasurement {
         }
         return evaluation;
     }
-   
+
 }
