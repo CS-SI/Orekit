@@ -99,6 +99,15 @@ class Mesh {
         // create an enabled first node at origin
         final Node origin = new Node(start, 0, 0);
         origin.setEnabled();
+
+        // force the first node to be considered inside
+        // It may appear outside if the zone is very thin and
+        // BSPTree.checkPoint select a very close but wrong
+        // tree leaf tree for the point. Even in this case,
+        // we want the mesh to be properly defined and surround
+        // the area
+        origin.forceInside();
+
         store(origin);
 
     }
@@ -478,7 +487,7 @@ class Mesh {
         private final Vector3D across;
 
         /** Indicator for node location with respect to interest zone. */
-        private final boolean insideZone;
+        private boolean insideZone;
 
         /** Index in the along direction. */
         private final int alongIndex;
@@ -556,6 +565,12 @@ class Mesh {
          */
         public Vector3D getAcross() {
             return across;
+        }
+
+        /** Force the node location to be considered inside interest zone.
+         */
+        private void forceInside() {
+            insideZone = true;
         }
 
         /** Check if the node location is inside interest zone.

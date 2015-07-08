@@ -272,10 +272,10 @@ public class EllipsoidTessellatorTest {
             Vector3D v1 = ellipsoid.transform(tile.getVertices()[1]);
             Vector3D v2 = ellipsoid.transform(tile.getVertices()[2]);
             Vector3D v3 = ellipsoid.transform(tile.getVertices()[3]);
-            Assert.assertTrue(Vector3D.distance(v0, v1) < (3.002 / 16.0) * maxLength);
-            Assert.assertTrue(Vector3D.distance(v2, v3) < (3.002 / 16.0) * maxLength);
-            Assert.assertEquals(maxWidth, Vector3D.distance(v1, v2), 0.1);
-            Assert.assertEquals(maxWidth, Vector3D.distance(v3, v0), 0.1);
+            Assert.assertEquals((3.0 / 16.0) * maxLength, Vector3D.distance(v0, v1), 4.0);
+            Assert.assertEquals(maxWidth,                 Vector3D.distance(v1, v2), 0.1);
+            Assert.assertEquals((3.0 / 16.0) * maxLength, Vector3D.distance(v2, v3), 4.0);
+            Assert.assertEquals(maxWidth,                 Vector3D.distance(v3, v0), 0.1);
         }
 
     }

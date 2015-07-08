@@ -42,14 +42,18 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
     private final SphericalPolygonsSet zone;
 
     /** Inside point. */
-    private S2Point insidePoint;
+    private S2Point insidePointSecondChoice;
+
+    /** Inside point. */
+    private S2Point insidePointFirstChoice;
 
     /** Simple constructor.
      * @param zone zone of interest
      */
     public InsideFinder(final SphericalPolygonsSet zone) {
-        this.zone        = zone;
-        this.insidePoint = null;
+        this.zone                    = zone;
+        this.insidePointFirstChoice  = null;
+        this.insidePointSecondChoice = null;
     }
 
     /** {@inheritDoc} */
@@ -67,8 +71,8 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
     @Override
     public void visitLeafNode(final BSPTree<Sphere2D> node) {
 
-        // we have already found a point
-        if (insidePoint != null) {
+        // we have already found a good point
+        if (insidePointFirstChoice != null) {
             return;
         }
 
@@ -94,9 +98,12 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
             final S2Point candidate = new S2Point(sumB);
 
             // check the candidate point is really considered inside
-            // (it may appear outside if the current leaf cell is very thin)
-            if (zone.checkPoint(candidate) != Location.OUTSIDE) {
-                insidePoint = candidate;
+            // it may appear outside if the current leaf cell is very thin
+            // and checkPoint selects another (very close) tree leaf node
+            if (zone.checkPoint(candidate) == Location.INSIDE) {
+                insidePointFirstChoice = candidate;
+            } else {
+                insidePointSecondChoice = candidate;
             }
 
         }
@@ -104,10 +111,10 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
     }
 
     /** Get the inside point.
-     * @return inside point
+     * @return inside point, or null if the region is empty
      */
     public S2Point getInsidePoint() {
-        return insidePoint;
+        return insidePointFirstChoice != null ? insidePointFirstChoice : insidePointSecondChoice;
     }
 
 }
