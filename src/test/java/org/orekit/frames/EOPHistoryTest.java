@@ -122,6 +122,29 @@ public class EOPHistoryTest {
 
     }
 
+    @Test
+    public void testTidalInterpolationEffects() throws IOException, OrekitException {
+
+        final EOPHistory h1 = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        final EOPHistory h2 = h1.getNonInterpolatingEOPHistory();
+        final AbsoluteDate date0 = new AbsoluteDate(2004, 8, 16, 20, 0, 0, TimeScalesFactory.getUTC());
+
+        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 10) {
+            final AbsoluteDate date = date0.shiftedBy(dt);
+            final double interpolationErrorUT1 = h1.getUT1MinusUTC(date) - h2.getUT1MinusUTC(date);
+            final double interpolationErrorLOD = h1.getLOD(date)         - h2.getLOD(date);
+            final PoleCorrection p1 = h1.getPoleCorrection(date);
+            final PoleCorrection p2 = h2.getPoleCorrection(date);
+            final double interpolationErrorXp  = (p1.getXp() - p2.getXp()) / Constants.ARC_SECONDS_TO_RADIANS;
+            final double interpolationErrorYp  = (p1.getYp() - p2.getYp()) / Constants.ARC_SECONDS_TO_RADIANS;
+            Assert.assertEquals(0.0, interpolationErrorUT1, 1.2e-10); // seconds
+            Assert.assertEquals(0.0, interpolationErrorLOD, 1.5e-9);  // seconds
+            Assert.assertEquals(0.0, interpolationErrorXp,  2.3e-9);  // arcseconds
+            Assert.assertEquals(0.0, interpolationErrorYp,  1.5e-9);  // arcseconds
+        }
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

@@ -696,13 +696,13 @@ public class IERSConventionsTest {
             { 86400.0, -0.29874248853173840, -0.12308592577174847,  0.22161565557764881 }
         }) {
             AbsoluteDate date = t0.shiftedBy(row[0]);
-            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 1.2e-9);
+            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 8.8e-11);
             Assert.assertEquals(row[2] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getXp(),
-                                1.2e-13);
+                                3.2e-14);
             Assert.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getYp(),
-                                5.2e-14);
+                                8.2e-15);
         }
 
     }
@@ -775,8 +775,8 @@ public class IERSConventionsTest {
             { 86400.0, -0.29874235341010519,  0.00035460263868306, -0.12312252389660779,  0.22161364352515728 }
         }) {
             AbsoluteDate date = t0.shiftedBy(row[0]);
-            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 5.0e-8);
-            Assert.assertEquals(row[2], eopHistory.getLOD(date), 2.0e-7);
+            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 4.3e-8);
+            Assert.assertEquals(row[2], eopHistory.getLOD(date), 1.4e-7);
             Assert.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getXp(),
                                 1.6e-10);
@@ -855,18 +855,12 @@ public class IERSConventionsTest {
             { 86400.0, -0.29874235341010519,  0.00035460263868306, -0.12312252389660779,  0.22161364352515728 }
         }) {
             AbsoluteDate date = t0.shiftedBy(row[0]);
-            Assert.assertEquals("u " + row[1] + " " + eopHistory.getUT1MinusUTC(date) + " " + (row[1] - eopHistory.getUT1MinusUTC(date)),
-                                row[1], eopHistory.getUT1MinusUTC(date), 1.4e-9);
-            Assert.assertEquals("l " + row[2] + " " + eopHistory.getLOD(date) + " " + (row[2] - eopHistory.getLOD(date)),
-                                row[2], eopHistory.getLOD(date), 1.3e-8);
-            Assert.assertEquals("x " + row[3] + " " + (eopHistory.getPoleCorrection(date).getXp() / Constants.ARC_SECONDS_TO_RADIANS)
-                                + " " + (row[3] * Constants.ARC_SECONDS_TO_RADIANS - eopHistory.getPoleCorrection(date).getXp()),
-                                row[3] * Constants.ARC_SECONDS_TO_RADIANS,
+            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 2.5e-12);
+            Assert.assertEquals(row[2], eopHistory.getLOD(date), 4.3e-11);
+            Assert.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getXp(),
                                 1.6e-10);
-            Assert.assertEquals("y " + row[4] + " " + (eopHistory.getPoleCorrection(date).getYp() / Constants.ARC_SECONDS_TO_RADIANS)
-                                + " " + (row[4] * Constants.ARC_SECONDS_TO_RADIANS - eopHistory.getPoleCorrection(date).getYp()),
-                                row[4] * Constants.ARC_SECONDS_TO_RADIANS,
+            Assert.assertEquals(row[4] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getYp(),
                                 0.7e-10);
         }

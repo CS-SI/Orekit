@@ -460,7 +460,7 @@ public class EOPHistory implements Serializable {
          * @param tidalCorrection function computing the tidal correction
          */
         public CachedCorrection(final TimeFunction<double[]> tidalCorrection) {
-            this.step            = 90 * 60;
+            this.step            = 60 * 60;
             this.tidalCorrection = tidalCorrection;
             this.cache           =
                 new GenericTimeStampedCache<TidalCorrectionEntry>(8,
