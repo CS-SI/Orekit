@@ -34,7 +34,7 @@ import org.orekit.utils.Constants;
  * <p> The pole motion is not considered : Pseudo Earth Fixed Frame. It handles
  * the earth rotation angle, its parent frame is the {@link CIRFProvider}</p>
  */
-class TIRFProvider implements TransformProvider {
+class TIRFProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130919L;
@@ -61,11 +61,17 @@ class TIRFProvider implements TransformProvider {
 
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TIRFProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new TIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from CIRF 2000 at specified date.

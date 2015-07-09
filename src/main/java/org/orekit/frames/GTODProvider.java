@@ -38,7 +38,7 @@ import org.orekit.utils.IERSConventions;
  * @author Pascal Parraud
  * @author Thierry Ceolin
  */
-public class GTODProvider implements TransformProvider {
+public class GTODProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20141228L;
@@ -68,11 +68,17 @@ public class GTODProvider implements TransformProvider {
         this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory);
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GTODProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from TOD at specified date.
