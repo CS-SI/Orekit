@@ -348,22 +348,37 @@ public class EllipsoidTessellatorTest {
             { 49.20195,  6.65822 }, { 49.44266,  5.89775 }, { 49.98537,  4.79922 }
           });
 
-        final SphericalPolygonsSet corsica = buildSimpleZone(new double[][] {
-            { 42.15249,  9.56001 }, { 43.00998,  9.39000 }, { 42.62812,  8.74600 }, { 42.25651,  8.54421 },
-            { 41.58361,  8.77572 }, { 41.38000,  9.22975 }
-          });
+        final SphericalPolygonsSet corsica =
+                EllipsoidTessellator.buildSimpleZone(1.0e-10,
+                                                     new GeodeticPoint(FastMath.toRadians(42.15249),
+                                                                       FastMath.toRadians(9.56001),
+                                                                       0.0),
+                                                     new GeodeticPoint(FastMath.toRadians(43.00998),
+                                                                       FastMath.toRadians(9.39000),
+                                                                       0.0),
+                                                     new GeodeticPoint(FastMath.toRadians(42.62812),
+                                                                       FastMath.toRadians(8.74600),
+                                                                       0.0),
+                                                     new GeodeticPoint(FastMath.toRadians(42.25651),
+                                                                       FastMath.toRadians(8.54421),
+                                                                       0.0),
+                                                     new GeodeticPoint(FastMath.toRadians(41.58361),
+                                                                       FastMath.toRadians(8.77572),
+                                                                       0.0),
+                                                     new GeodeticPoint(FastMath.toRadians(41.38000),
+                                                                       FastMath.toRadians(9.22975),
+                                                                       0.0));
 
           return (SphericalPolygonsSet) new RegionFactory<Sphere2D>().union(continental, corsica);
 
     }
 
     private SphericalPolygonsSet buildSimpleZone(double[][] points) {
-        final S2Point[] vertices = new S2Point[points.length];
         for (int i = 0; i < points.length; ++i) {
-            vertices[i] = new S2Point(FastMath.toRadians(points[i][1]),         // points[i][1] is longitude
-                                      FastMath.toRadians(90.0 - points[i][0])); // points[i][0] is latitude
+            points[i][0] = FastMath.toRadians(points[i][0]);
+            points[i][1] = FastMath.toRadians(points[i][1]);
         }
-        return new SphericalPolygonsSet(1.0e-10, vertices);
+        return EllipsoidTessellator.buildSimpleZone(1.0e-10, points);
     }
 
     private Orbit orbit;

@@ -621,10 +621,70 @@ public class EllipsoidTessellator {
 
     /** Convert a point on the unit 2-sphere to geodetic coordinates.
      * @param point point on the unit 2-sphere
-     * @return geodetic point
+     * @return geodetic point (arbitrarily set at altitude 0)
      */
     protected GeodeticPoint toGeodetic(final S2Point point) {
         return new GeodeticPoint(0.5 * FastMath.PI - point.getPhi(), point.getTheta(), 0.0);
+    }
+
+    /** Build a simple zone (connected zone without holes).
+     * <p>
+     * In order to build more complex zones (not connected or with
+     * holes), the user should directly call Apache Commons
+     * Math {@link SphericalPolygonsSet} constructors and
+     * {@link RegionFactory region factory} if set operations
+     * are needed (union, intersection, difference ...).
+     * </p>
+     * <p>
+     * Take care that the vertices boundary points must be given <em>counterclockwise</em>.
+     * Using the wrong order defines the complementary of the real zone,
+     * and will often result in tessellation failure as the zone is too
+     * wide.
+     * </p>
+     * @param tolerance angular separation below which points are considered
+     * equal (typically 1.0e-10)
+     * @param points vertices of the boundary, in <em>counterclockwise</em>
+     * order, each point being a two-elements arrays with latitude at index 0
+     * and longitude at index 1
+     * @return a zone defined on the unit 2-sphere
+     */
+    public static SphericalPolygonsSet buildSimpleZone(final double tolerance,
+                                                       final double[] ... points) {
+        final S2Point[] vertices = new S2Point[points.length];
+        for (int i = 0; i < points.length; ++i) {
+            vertices[i] = new S2Point(points[i][1], 0.5 * FastMath.PI - points[i][0]);
+        }
+        return new SphericalPolygonsSet(tolerance, vertices);
+    }
+
+    /** Build a simple zone (connected zone without holes).
+     * <p>
+     * In order to build more complex zones (not connected or with
+     * holes), the user should directly call Apache Commons
+     * Math {@link SphericalPolygonsSet} constructors and
+     * {@link RegionFactory region factory} if set operations
+     * are needed (union, intersection, difference ...).
+     * </p>
+     * <p>
+     * Take care that the vertices boundary points must be given <em>counterclockwise</em>.
+     * Using the wrong order defines the complementary of the real zone,
+     * and will often result in tessellation failure as the zone is too
+     * wide.
+     * </p>
+     * @param tolerance angular separation below which points are considered
+     * equal (typically 1.0e-10)
+     * @param points vertices of the boundary, in <em>counterclockwise</em>
+     * order
+     * @return a zone defined on the unit 2-sphere
+     */
+    public static SphericalPolygonsSet buildSimpleZone(final double tolerance,
+                                                       final GeodeticPoint ... points) {
+        final S2Point[] vertices = new S2Point[points.length];
+        for (int i = 0; i < points.length; ++i) {
+            vertices[i] = new S2Point(points[i].getLongitude(),
+                                      0.5 * FastMath.PI - points[i].getLatitude());
+        }
+        return new SphericalPolygonsSet(tolerance, vertices);
     }
 
     /** Estimate an approximate motion in the along direction.
