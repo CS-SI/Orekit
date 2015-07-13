@@ -28,7 +28,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -97,7 +97,8 @@ public class AttitudesSequence implements AttitudeProvider {
      * This method must be called once before propagation, after the
      * switching conditions have been set up by calls to {@link
      * #addSwitchingCondition(AttitudeProvider, AttitudeProvider, EventDetector,
-     * boolean, boolean, double, int, SwitchHandler) addSwitchingCondition}.
+     * boolean, boolean, double, AngularDerivativesFilter, SwitchHandler)
+     * addSwitchingCondition}.
      * </p>
      * @param propagator propagator that will handle the events
      */
@@ -110,7 +111,7 @@ public class AttitudesSequence implements AttitudeProvider {
     /** Add a switching condition between two attitude providers.
      * <p>
      * This method simply calls {@link #addSwitchingCondition(AttitudeProvider, AttitudeProvider,
-     * EventDetector, boolean, boolean, double, int, SwitchHandler) addSwitchingCondition} with
+     * EventDetector, boolean, boolean, double, AngularDerivativesFilter, SwitchHandler) addSwitchingCondition} with
      * the transition time set to twice the event threshold, transition filter set to match
      * rotation only and the switch handler set to null.
      * </p>
@@ -123,7 +124,8 @@ public class AttitudesSequence implements AttitudeProvider {
      * @exception OrekitException if transition time is shorter than event convergence threshold
      * or if transition order is out of the [0; 2] range (never really thrown here)
      * @deprecated as of 7.1, replaced with {@link #addSwitchingCondition(AttitudeProvider,
-     * AttitudeProvider, EventDetector, boolean, boolean, double, int, SwitchHandler)}
+     * AttitudeProvider, EventDetector, boolean, boolean, double, AngularDerivativesFilter,
+     * SwitchHandler)}
      */
     @Deprecated
     public <T extends EventDetector> void addSwitchingCondition(final AttitudeProvider past,
@@ -164,7 +166,7 @@ public class AttitudesSequence implements AttitudeProvider {
      * </p>
      * <p>
      * If the underlying detector has an event handler associated to it, this handler
-     * will be triggered (i.e. its {@link EventHandler#eventOccurred(SpacecraftState,
+     * will be triggered (i.e. its {@link org.orekit.propagation.events.handlers.EventHandler#eventOccurred(SpacecraftState,
      * EventDetector, boolean) eventOccurred} method will be called), <em>regardless</em>
      * of the event really triggering an attitude switch or not. As an example, if an
      * eclipse detector is used to switch from day to night attitude mode when entering
@@ -175,11 +177,11 @@ public class AttitudesSequence implements AttitudeProvider {
      * transition start and end dates should match for both forward and backward propagation.
      * This implies that for backward propagation, we have to compensate for the {@code
      * transitionTime} when looking for the event. An unfortunate consequence is that the
-     * {@link EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
+     * {@link org.orekit.propagation.events.handlers.EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)
      * eventOccurred} method may appear to be called out of sync with respect to the
      * propagation (it will be called when propagator reaches transition end, despite it
      * refers to transition start, as per {@code transitionTime} compensation), and if the
-     * method returns {@link EventHandler.Action#STOP}, it will stop at the end of the
+     * method returns {@link Action#STOP}, it will stop at the end of the
      * transition instead of at the start. For these reasons, it is not recommended to
      * set up an event handler for events that are used to switch attitude. If an event
      * handler is needed for other purposes, a second handler should be registered to
@@ -369,7 +371,7 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public EventHandler.Action eventOccurred(final SpacecraftState s, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
 
             if (active == (forward ? past : future) &&
