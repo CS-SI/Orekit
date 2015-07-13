@@ -37,8 +37,7 @@ public class ConstantAzimuthAiming implements TileAiming {
      * @param ellipsoid ellipsoid body on which the zone is defined
      * @param azimuth geographic azimuth of the tiles
      */
-    public ConstantAzimuthAiming(final OneAxisEllipsoid ellipsoid,
-                                      final double azimuth) {
+    public ConstantAzimuthAiming(final OneAxisEllipsoid ellipsoid, final double azimuth) {
         this.cos = FastMath.cos(azimuth);
         this.sin = FastMath.sin(azimuth);
     }
