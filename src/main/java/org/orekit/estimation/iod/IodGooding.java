@@ -42,14 +42,21 @@ public class IodGooding {
     /** Gravitationnal constant. */
     private final double mu;
 
+    /** Normalizing constant for distances. */
+    private double R;
+    /** Normalizing constant for velocities. */
+    private double V;
+    /** Normalizing constant for duration. */
+    private double T;
+
     /** observer position 1. */
-    private final Vector3D O1;
+    private Vector3D vObserverPosition1;
 
     /** observer position 2. */
-    private final Vector3D O2;
+    private Vector3D vObserverPosition2;
 
     /** observer position 3. */
-    private final Vector3D O3;
+    private Vector3D vObserverPosition3;
 
     /** Date of the first observation. * */
     private AbsoluteDate date1;
@@ -78,24 +85,17 @@ public class IodGooding {
     private double facFiniteDiff;
 
     /** Simple Lambert's problem solver. */
-    private final IodLambert lambert;
+    private IodLambert lambert;
 
     /** Creator.
      *
      * @param frame Frame for the observations
      * @param mu  gravitational constant
-     * @param O1 Observer position 1
-     * @param O2 Observer position 2
-     * @param O3 Observer position 3
      */
-    public IodGooding(final Frame frame, final double mu, final Vector3D O1, final Vector3D O2, final Vector3D O3) {
+    public IodGooding(final Frame frame, final double mu) {
         this.mu = mu;
         this.frame = frame;
-        lambert = new IodLambert(mu);
 
-        this.O1 = O1;
-        this.O2 = O2;
-        this.O3 = O3;
         this.rho1 = 0;
         this.rho2 = 0;
         this.rho3 = 0;
@@ -106,7 +106,7 @@ public class IodGooding {
      * @return the range for observation (1).
      */
     public double getRange1() {
-        return rho1;
+        return rho1 * R;
     }
 
     /** Get the range for observation (2).
@@ -114,7 +114,7 @@ public class IodGooding {
      * @return the range for observation (2).
      */
     public double getRange2() {
-        return rho2;
+        return rho2 * R;
     }
 
     /** Get the range for observation (3).
@@ -122,93 +122,104 @@ public class IodGooding {
      * @return the range for observation (3).
      */
     public double getRange3() {
-        return rho3;
+        return rho3 * R;
     }
 
     /** Orbit got from Observed Three Lines of Sight (angles only).
      *
+     * @param O1 Observer position 1
+     * @param O2 Observer position 2
+     * @param O3 Observer position 3
      * @param lineOfSight1 line of sight 1
-     * @param T1 date of observation 1
+     * @param dateObs1 date of observation 1
      * @param lineOfSight2 line of sight 2
-     * @param T2 date of observation 1
+     * @param dateObs2 date of observation 1
      * @param lineOfSight3 line of sight 3
-     * @param T3 date of observation 1
+     * @param dateObs3 date of observation 1
      * @param rho1init initial guess of the range problem. range 1, in meters
      * @param rho3init initial guess of the range problem. range 3, in meters
      * @return an estimate of the Keplerian orbit
      */
-    public KeplerianOrbit estimate(final Vector3D lineOfSight1, final AbsoluteDate T1,
-                                   final Vector3D lineOfSight2, final AbsoluteDate T2,
-                                   final Vector3D lineOfSight3, final AbsoluteDate T3,
+    public KeplerianOrbit estimate(final Vector3D O1, final Vector3D O2, final Vector3D O3,
+                                   final Vector3D lineOfSight1, final AbsoluteDate dateObs1,
+                                   final Vector3D lineOfSight2, final AbsoluteDate dateObs2,
+                                   final Vector3D lineOfSight3, final AbsoluteDate dateObs3,
                                    final double rho1init, final double rho3init)
     {
-        this.date1 = T1;
 
-        final int maxiter = 50; // maximum iter
+        this.date1 = dateObs1;
 
         // normalizeing coefficients
-        final double R = FastMath.max(rho1init, rho3init);
-        final double V = FastMath.sqrt(mu / R);
-        final double T = R / V;
+        R = FastMath.max(rho1init, rho3init);
+        V = FastMath.sqrt(mu / R);
+        T = R / V;
+
+        // Initialize Lambert's problem solver for nondimensional units.
+        lambert = new IodLambert(1.);
+
+        this.vObserverPosition1 = O1.scalarMultiply(1. / R);
+        this.vObserverPosition2 = O2.scalarMultiply(1. / R);
+        this.vObserverPosition3 = O3.scalarMultiply(1. / R);
+
+        final int maxiter = 100; // maximum iter
 
         // solve the range problem
-        SolveRangeProblem(0,
-               rho1init / R, rho3init / R,
-               T3.durationFrom(T1) / T, T2.durationFrom(T1) / T,
-               lineOfSight1, lineOfSight2, lineOfSight3,
-               maxiter);
+        SolveRangeProblem(rho1init / R, rho3init / R,
+                          dateObs3.durationFrom(dateObs1) / T, dateObs2.durationFrom(dateObs1) / T,
+                          0,
+                          true,
+                          lineOfSight1, lineOfSight2, lineOfSight3,
+                          maxiter);
 
         // use the Gibbs problem to get the orbit now that we have three
         // position vectors.
         final IodGibbs gibbs = new IodGibbs(mu);
         return gibbs.estimate(frame,
-                       O1.add(lineOfSight1.scalarMultiply(rho1 * R)), T1,
-                       O2.add(lineOfSight2.scalarMultiply(rho2 * R)), T2,
-                       O3.add(lineOfSight3.scalarMultiply(rho3 * R)), T3);
+                              (vObserverPosition1.add(lineOfSight1.scalarMultiply(rho1))).scalarMultiply(R), dateObs1,
+                              (vObserverPosition2.add(lineOfSight2.scalarMultiply(rho2))).scalarMultiply(R), dateObs2,
+                              (vObserverPosition3.add(lineOfSight3.scalarMultiply(rho3))).scalarMultiply(R), dateObs3);
     }
 
     /** Solve the range problem when three line of sight are given.
      *
-     * @param nrev number of revolutions
      * @param rho1init   initial value for range R1, in meters
      * @param rho3init   initial value for range R3, in meters
      * @param T13   time of flight 1->3, in seconds
      * @param T12   time of flight 1->2, in seconds
+     * @param nrev number of revolutions
+     * @param direction  posigrade (true) or retrograde
      * @param lineOfSight1  line of sight 1
      * @param lineOfSight2  line of sight 2
      * @param lineOfSight3  line of sight 3
      * @param maxIterations         max iter
      * @return nothing
      */
-    private boolean SolveRangeProblem(final int nrev,
+    private boolean SolveRangeProblem(
                       final double rho1init, final double rho3init,
                       final double T13, final double T12,
+                      final int nrev,
+                      final boolean direction,
                       final Vector3D lineOfSight1,
                       final Vector3D lineOfSight2,
                       final Vector3D lineOfSight3,
                       final int maxIterations) {
-        //int NPDF = 0;
-        final double ARBF = 1e-6;
-        double HN = 0.;
-        final double CRIVAL = 1e-24;
-        final boolean direction = true;   // posigrade or retrograde
+        final double ARBF = 1e-6;   // finite differences step
+        boolean withHalley = true;  // use Halley's method
+        final double cvtol = 1e-14; // convergence tolerance
 
         rho1 = rho1init;
         rho3 = rho3init;
-        double rho1old = rho1;
-        double rho3old = rho3;
 
-        double Fc;
-        double FCold = 0;
 
         int iter = 0;
-        while (iter < maxIterations) {
+        double stoppingCriterion = 10 * cvtol;
+        while ((iter < maxIterations) && (Math.abs(stoppingCriterion) > cvtol))  {
             facFiniteDiff = ARBF;
 
             // proposed in the original algorithm by Gooding.
             // We change the threshold to maxIterations / 2.
             if (iter >= (maxIterations / 2)) {
-                HN = 0.5;
+                withHalley = true;
             }
 
             // tentative position for R2
@@ -223,7 +234,7 @@ public class IodGooding {
                 R2 = P2.getNorm();
 
                 // compute current line of sight for (2) and the associated range
-                final Vector3D C = P2.subtract(O2);
+                final Vector3D C = P2.subtract(vObserverPosition2);
                 rho2 = C.getNorm();
 
                 final double R10 = R1;
@@ -247,7 +258,7 @@ public class IodGooding {
                 }
 
                 // Coordinate along 'F function'
-                Fc = P.dotProduct(C);
+                final double Fc = P.dotProduct(C);
                 //Gc = EN.dotProduct(C);
 
                 // Now get partials, by finite differences
@@ -259,44 +270,30 @@ public class IodGooding {
                                    P, EN,
                                    Fc,
                                    T13, T12,
-                                   HN,
+                                   withHalley,
                                    nrev,
                                    direction,
                                    FD, GD);
 
                 // terms of the Jacobian
-                final double FD1H = FD[0];
-                final double FD3H = FD[1];
-                final double GD1H = GD[0];
-                final double GD3H = GD[1];
+                final double fr1 = FD[0];
+                final double fr3 = FD[1];
+                final double gr1 = GD[0];
+                final double gr3 = GD[1];
                 // determinant of the Jacobian matrix
-                final double DELH = FD1H * GD3H - FD3H * GD1H;
+                final double detj = fr1 * gr3 - fr3 * gr1;
 
                 // compute the Newton step
-                D3 = -GD3H * Fc / DELH;
-                D1 = GD1H * Fc / DELH;
-                /*DELNM = DEL / (Math.abs(FD1 * GD3) + Math.abs(FD3 * GD1));
-                if (Math.abs(DELNM) < 1e-3) {
-                    D3 = Math.sqrt(Math.abs(D3NR * D3)) * Math.signum(D3NR);
-                    D1 = Math.sqrt(Math.abs(D1NR * D1)) * Math.signum(D1NR);
-                }*/
-
-                // save current value of ranges
-                rho1old = rho1;
-                rho3old = rho3;
+                D3 = -gr3 * Fc / detj;
+                D1 = gr1 * Fc / detj;
 
                 // update current values of ranges
                 rho1 = rho1 + D3;
                 rho3 = rho3 + D1;
 
                 // convergence tests
-                final double DEN = Math.max(CR, R2);
-                final double CRIT = Fc / DEN;
-                if (CRIT * CRIT < CRIVAL) {
-                    return true;
-                }
-
-                FCold = Fc;
+                final double den = Math.max(CR, R2);
+                stoppingCriterion = Fc / den;
             }
 
             ++iter;
@@ -316,7 +313,7 @@ public class IodGooding {
                                final Vector3D lineOfSight3) {
         // This is a modifier proposed in the initial paper of Gooding.
         // Try to avoid Lambert-fail, by common-perpendicular starters
-        final Vector3D R13 = O3.subtract(O1);
+        final Vector3D R13 = vObserverPosition3.subtract(vObserverPosition1);
         D1 = R13.dotProduct(lineOfSight1);
         D3 = R13.dotProduct(lineOfSight3);
         final double D2 = lineOfSight1.dotProduct(lineOfSight3);
@@ -337,31 +334,31 @@ public class IodGooding {
      * where D is the determinant of the Jacobian matrix.
      *
      *
-     * @param rho1_ .
-     * @param rho3_ .
-     * @param R10 .
-     * @param R30 .
+     * @param x    current range 1
+     * @param y    current range 3
+     * @param R10   current radius 1
+     * @param R30   current radius 3
      * @param lineOfSight1  line of sight
      * @param lineOfSight3  line of sight
-     * @param Pin basis vector
-     * @param Ein basis vector
-     * @param F .
-     * @param T13 .
-     * @param T12 .
-     * @param HN .
-     * @param nrev .
-     * @param direction .
-     * @param FD  fd of f
-     * @param GD  fd of g
+     * @param Pin   basis vector
+     * @param Ein   basis vector
+     * @param F     value of the f-function
+     * @param T13   time of flight 1->3, in seconds
+     * @param T12   time of flight 1->2, in seconds
+     * @param withHailley    use Halley iterative method
+     * @param nrev  number of revolutions
+     * @param direction direction of motion
+     * @param FD    derivatives of f wrt (rho1, rho3) by finite differences
+     * @param GD    derivatives of g wrt (rho1, rho3) by finite differences
      */
-    private void computeDerivatives(final double rho1_, final double rho3_,
+    private void computeDerivatives(final double x, final double y,
                                     final double R10, final double R30,
                                     final Vector3D lineOfSight1, final Vector3D lineOfSight3,
                                     final Vector3D Pin,
                                     final Vector3D Ein,
                                     final double F,
                                     final double T13, final double T12,
-                                    final double HN,
+                                    final boolean withHailley,
                                     final int nrev,
                                     final boolean direction,
                                     final double[] FD, final double[] GD) {
@@ -371,93 +368,111 @@ public class IodGooding {
 
         // Now get partials, by finite differences
         // steps for the differentiation
-        final double hrho1 = facFiniteDiff * R10;
-        final double hrho3 = facFiniteDiff * R30;
+        final double dx = facFiniteDiff * x;
+        final double dy = facFiniteDiff * y;
 
-        Vector3D C = getPositionOnLoS2 (lineOfSight1, rho1 - hrho1,
-                              lineOfSight3, rho3,
-                              T13, T12, nrev, direction).subtract(O2);
+        final Vector3D Cm1 = getPositionOnLoS2 (lineOfSight1, x - dx,
+                              lineOfSight3, y,
+                              T13, T12, nrev, direction).subtract(vObserverPosition2);
 
-        final double FM1 = P.dotProduct(C) - F;
-        final double GM1 = EN.dotProduct(C);
+        final double Fm1 = P.dotProduct(Cm1);
+        final double Gm1 = EN.dotProduct(Cm1);
 
-        C = getPositionOnLoS2 (lineOfSight1, rho1 + hrho1,
-                              lineOfSight3, rho3,
-                              T13, T12, nrev, direction).subtract(O2);
+        final Vector3D Cp1 = getPositionOnLoS2 (lineOfSight1, x + dx,
+                              lineOfSight3, y,
+                              T13, T12, nrev, direction).subtract(vObserverPosition2);
 
-        final double FP1  = P.dotProduct(C) - F;
-        final double GP1 = EN.dotProduct(C);
+        final double Fp1  = P.dotProduct(Cp1);
+        final double Gp1 = EN.dotProduct(Cp1);
 
         // derivatives df/drho1 and dg/drho1
-        final double FD1 = (FP1 - FM1) / (2 * hrho1);
-        final double GD1 = (GP1 - GM1) / (2 * hrho1);
+        final double Fx = (Fp1 - Fm1) / (2 * dx);
+        final double Gx = (Gp1 - Gm1) / (2 * dx);
 
-        C = getPositionOnLoS2 (lineOfSight1, rho1,
-                              lineOfSight3, rho3 - hrho3,
-                              T13, T12, nrev, direction).subtract(O2);
+        final Vector3D Cm3 = getPositionOnLoS2 (lineOfSight1, x,
+                              lineOfSight3, y - dy,
+                              T13, T12, nrev, direction).subtract(vObserverPosition2);
 
-        final double FM3 = P.dotProduct(C) - F;
-        final double GM3 = EN.dotProduct(C);
+        final double Fm3 = P.dotProduct(Cm3);
+        final double Gm3 = EN.dotProduct(Cm3);
 
-        C = getPositionOnLoS2 (lineOfSight1, rho1,
-                              lineOfSight3, rho3 + hrho3,
-                              T13, T12, nrev, direction).subtract(O2);
+        final Vector3D Cp3 = getPositionOnLoS2 (lineOfSight1, x,
+                              lineOfSight3, y + dy,
+                              T13, T12, nrev, direction).subtract(vObserverPosition2);
 
-        final double FP3 = P.dotProduct(C) - F;
-        final double GP3 = EN.dotProduct(C);
+        final double Fp3 = P.dotProduct(Cp3);
+        final double Gp3 = EN.dotProduct(Cp3);
 
         // derivatives df/drho3 and dg/drho3
-        final double FD3 = (FP3 - FM3) / (2. * hrho3);
-        final double GD3 = (GP3 - GM3) / (2. * hrho3);
+        final double Fy = (Fp3 - Fm3) / (2. * dy);
+        final double Gy = (Gp3 - Gm3) / (2. * dy);
+        final double detJac = Fx * Gy - Fy * Gx;
 
-        // Jacobian
-        FD[0] = FD1;
-        FD[1] = FD3;
-        GD[0] = GD1;
-        GD[1] = GD3;
+        // Coefficients for the classical Newton-Raphson iterative method
+        FD[0] = Fx / detJac;
+        FD[1] = Fy / detJac;
+        GD[0] = Gx / detJac;
+        GD[1] = Gy / detJac;
 
-        // compute a shift of Jacobian. This is useful to get out of a trap
-        // in the Newton-Raphson process.
-        if (HN > 0.) {
+        // Modified Newton-Raphson process, with Halley's method to have cubic convergence.
+        // This requires computing second order derivatives.
+        if (withHailley) {
             //
-            final double hrho1Sq = hrho1 * hrho1;
-            final double hrho3Sq = hrho3 * hrho3;
+            final double hrho1Sq = dx * dx;
+            final double hrho3Sq = dy * dy;
 
-            final double FDD1 = (FP1 + FM1) / hrho1Sq;
-            final double GDD1 = (GP1 + GM1) / hrho1Sq;
-            final double FDD3 = (FP3 + FM3) / hrho3Sq;
-            final double GDD3 = (GP3 + GM3) / hrho3Sq;
+            // Second order derivatives: d^2f / drho1^2 and d^2g / drho3^2
+            final double Fxx = (Fp1 + Fm1 - 2 * F) / hrho1Sq;
+            final double Gxx = (Gp1 + Gm1 - 2 * F) / hrho1Sq;
+            final double Fyy = (Fp3 + Fp3 - 2 * F) / hrho3Sq;
+            final double Gyy = (Gm3 + Gm3 - 2 * F) / hrho3Sq;
 
-            C = getPositionOnLoS2 (lineOfSight1, rho1 + hrho1,
-                                  lineOfSight3, rho3 + hrho3,
-                                  T13, T12, nrev, direction).subtract(O2);
+            final Vector3D Cp13 = getPositionOnLoS2 (lineOfSight1, x + dx,
+                                  lineOfSight3, y + dy,
+                                  T13, T12, nrev, direction).subtract(vObserverPosition2);
 
-            final double F13 = P.dotProduct(C) - F;
-            final double G13 = EN.dotProduct(C);
+            // f function value at (x1+dx1, x3+dx3)
+            final double Fp13 = P.dotProduct(Cp13) - F;
+            // g function value at (x1+dx1, x3+dx3)
+            final double Gp13 = EN.dotProduct(Cp13);
 
-            final double ROFAC = hrho1 / hrho3;
-            final double FD13 = F13 / (hrho1 * hrho3) - (FD1 / hrho3 + FD3 / hrho1) -
-                            0.5 * (FDD1 * ROFAC + FDD3 / ROFAC);
-            final double GD13 = G13 / (hrho1 * hrho3) - (GD1 / hrho3 + GD3 / hrho1) -
-                            0.5 * (GDD1 * ROFAC + GDD3 / ROFAC);
+            final Vector3D Cm13 = getPositionOnLoS2 (lineOfSight1, x + dx,
+                                                     lineOfSight3, y + dy,
+                                                     T13, T12, nrev, direction).subtract(vObserverPosition2);
 
-            //
-            final double DEL = FD1 * GD3 - FD3 * GD1;
-            final double D3NR = -GD3 * F / DEL;
-            final double D1NR = GD1 * F / DEL;
-            // terms of the Jacobian
-            final double FD1H = FD1 + HN * (FDD1 * D3NR + FD13 * D1NR);
-            final double FD3H = FD3 + HN * (FD13 * D3NR + FDD3 * D1NR);
-            final double GD1H = GD1 + HN * (GDD1 * D3NR + GD13 * D1NR);
-            final double GD3H = GD3 + HN * (GD13 * D3NR + GDD3 * D1NR);
+            // f function value at (x1+dx1, x3+dx3)
+            final double Fm13 = P.dotProduct(Cm13) - F;
+            // g function value at (x1+dx1, x3+dx3)
+            final double Gm13 = EN.dotProduct(Cm13);
 
-            // Jacobian
-            FD[0] = FD1H;
-            FD[1] = FD3H;
-            GD[0] = GD1H;
-            GD[1] = GD3H;
+            // Second order derivatives: d^2f / drho1drho3 and d^2g / drho1drho3
+            //double Fxy = Fp13 / (dx * dy) - (Fx / dy + Fy / dx) -
+            //                0.5 * (Fxx * dx / dy + Fyy * dy / dx);
+            //double Gxy = Gp13 / (dx * dy) - (Gx / dy + Gy / dx) -
+            //                0.5 * (Gxx * dx / dy + Gyy * dy / dx);
+            final double Fxy = (Fp13 + Fm13) / (2 * dx * dy) - 1.0 * (Fxx / 2 + Fyy / 2) - F / (dx * dy);
+            final double Gxy = (Gp13 + Gm13) / (2 * dx * dy) - 1.0 * (Gxx / 2 + Gyy / 2) - F / (dx * dy);
+
+            // delta Newton Raphson, 1st order step
+            final double dx3NR = -Gy * F / detJac;
+            final double dx1NR = Gx * F / detJac;
+
+            // terms of the Jacobian, considering the development, after linearization
+            // of the second order Taylor expansion around the Newton Raphson iterate:
+            // (fx + 1/2 * fxx * dx* + 1/2 * fxy * dy*) * dx
+            //      + (fy + 1/2 * fyy * dy* + 1/2 * fxy * dx*) * dy
+            // where: dx* and dy* would be the step of the Newton raphson process.
+            final double FxH = Fx + 0.5 * (Fxx * dx3NR + Fxy * dx1NR);
+            final double FyH = Fy + 0.5 * (Fxy * dx3NR + Fxx * dx1NR);
+            final double GxH = Gx + 0.5 * (Gxx * dx3NR + Gxy * dx1NR);
+            final double GyH = Gy + 0.5 * (Gxy * dx3NR + Fxy * dx1NR);
+
+            // New Halley's method "Jacobian"
+            FD[0] = FxH;
+            FD[1] = FyH;
+            GD[0] = GxH;
+            GD[1] = GyH;
         }
-
     }
 
     /** Calculate the position along sight-line.
@@ -477,10 +492,10 @@ public class IodGooding {
                                       final double T13, final double T12,
                                       final double nRev, final boolean posigrade)
     {
-        final Vector3D P1 = O1.add(E1.scalarMultiply(RO1));
+        final Vector3D P1 = vObserverPosition1.add(E1.scalarMultiply(RO1));
         R1 = P1.getNorm();
 
-        final Vector3D P3 = O3.add(E3.scalarMultiply(RO3));
+        final Vector3D P3 = vObserverPosition3.add(E3.scalarMultiply(RO3));
         R3 = P3.getNorm();
 
         final Vector3D P13 = P1.crossProduct(P3);
@@ -497,14 +512,10 @@ public class IodGooding {
 
         // Solve the Lambert's problem to get the velocities at endpoints
         final double[] V1 = new double[2];
-        final double[] V3 = new double[2];
-        // work with non-dimensional units
-        final double MU = 1; // this assume we have normalized before
-        final double V = Math.sqrt(MU / R1);
-        final double T = R1 / V;
-        final boolean exitflag = lambert.SolveLambertPb(1., R3 / R1, TH,
-                                       T13 / T, 0,
-                                       V1, V3);
+        // work with non-dimensional units (MU=1)
+        final boolean exitflag = lambert.SolveLambertPb(R1, R3, TH,
+                                       T13, 0,
+                                       V1);
 
         if (exitflag) {
             // basis vectors
@@ -518,8 +529,8 @@ public class IodGooding {
             }
 
             // velocity vector at P1
-            final Vector3D Vel1 = P1.scalarMultiply(V * V1[0] / R1)
-                            .add(Pt.scalarMultiply(V * V1[1] / RT));
+            final Vector3D Vel1 = P1.scalarMultiply(V1[0] / R1)
+                            .add(Pt.scalarMultiply(V1[1] / RT));
 
             // estimate the position at the second observation time
             // propagate (P1, V1) during TAU + T12 to get (P2, V2)

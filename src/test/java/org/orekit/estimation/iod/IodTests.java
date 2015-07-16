@@ -75,9 +75,9 @@ public class IodTests {
 		System.out.println(orbit.getA() + " " + orbit.getE() + " " + orbit.getI());
 		System.out.println(context.initialOrbit.getA() + " " + context.initialOrbit.getE() + " " + context.initialOrbit.getI());
 		
-		Assert.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-6 * context.initialOrbit.getA());
-		Assert.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-6 * context.initialOrbit.getE());
-		Assert.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-6 * context.initialOrbit.getI());
+		Assert.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-9 * context.initialOrbit.getA());
+		Assert.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-9 * context.initialOrbit.getE());
+		Assert.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-9 * context.initialOrbit.getI());
 	}
 	
     @Test
@@ -140,9 +140,9 @@ public class IodTests {
         System.out.println("Estimated Orbit parameters: " + orbit.getA() + " " + orbit.getE() + " " + orbit.getI());
         System.out.println("Expected Orbit parameters : " + context.initialOrbit.getA() + " " + context.initialOrbit.getE() + " " + context.initialOrbit.getI());
         
-        Assert.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-6 * context.initialOrbit.getA());
-        Assert.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-6 * context.initialOrbit.getE());
-        Assert.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-6 * context.initialOrbit.getI());        
+        Assert.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-9 * context.initialOrbit.getA());
+        Assert.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-9 * context.initialOrbit.getE());
+        Assert.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-9 * context.initialOrbit.getI());        
     }
     
     @Test
@@ -209,12 +209,13 @@ public class IodTests {
         final Vector3D lineOfSight3 = position3.normalize();   
 
         // instantiate the IOD method
-        final IodGooding iod = new IodGooding(frame, mu, stapos1, stapos2, stapos3);
+        final IodGooding iod = new IodGooding(frame, mu);
 
-        final KeplerianOrbit orbit = iod.estimate(lineOfSight1, date1,
+        final KeplerianOrbit orbit = iod.estimate(stapos1, stapos2, stapos3,
+                                                  lineOfSight1, date1,
                                                   lineOfSight2, date2,
                                                   lineOfSight3, date3,
-                                                  r1, r3);
+                                                  r1 * 1.0, r3 * 1.0);
         final double estR1 = iod.getRange1();        
         final double estR2 = iod.getRange2();
         final double estR3 = iod.getRange3();
@@ -224,8 +225,8 @@ public class IodTests {
         System.out.println("Estimated Orbit parameters: " + orbit.getA() + " " + orbit.getE() + " " + orbit.getI());
         System.out.println("Expected Orbit parameters : " + context.initialOrbit.getA() + " " + context.initialOrbit.getE() + " " + context.initialOrbit.getI());
         
-        Assert.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-3 * context.initialOrbit.getA());
-        Assert.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-3 * context.initialOrbit.getE());
+        Assert.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-6 * context.initialOrbit.getA());
+        Assert.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-6 * context.initialOrbit.getE());
         Assert.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-6 * context.initialOrbit.getI());        
     }
 }
