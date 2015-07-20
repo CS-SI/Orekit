@@ -35,7 +35,7 @@ import org.orekit.utils.IERSConventions;
  * blue book.</p>
  * @author Luc Maisonobe
  */
-class TEMEProvider implements TransformProvider {
+class TEMEProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131209L;
@@ -66,12 +66,17 @@ class TEMEProvider implements TransformProvider {
         this.nutationFunction  = conventions.getNutationFunction();
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     * @since 6.1
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TEMEProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new TEMEProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from True Of Date date.

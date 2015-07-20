@@ -1254,6 +1254,9 @@ public class FramesFactory {
                     provider = ((InterpolatingTransformProvider) provider).getRawProvider();
                 } else if (provider instanceof ShiftingTransformProvider) {
                     provider = ((ShiftingTransformProvider) provider).getRawProvider();
+                } else if (provider instanceof EOPBasedTransformProvider &&
+                           ((EOPBasedTransformProvider) provider).getEOPHistory().usesInterpolation()) {
+                    provider = ((EOPBasedTransformProvider) provider).getNonInterpolatingProvider();
                 } else {
                     peeling = false;
                 }

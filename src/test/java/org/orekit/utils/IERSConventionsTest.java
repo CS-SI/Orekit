@@ -696,7 +696,7 @@ public class IERSConventionsTest {
             { 86400.0, -0.29874248853173840, -0.12308592577174847,  0.22161565557764881 }
         }) {
             AbsoluteDate date = t0.shiftedBy(row[0]);
-            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 9.0e-11);
+            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 8.8e-11);
             Assert.assertEquals(row[2] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getXp(),
                                 3.2e-14);
@@ -775,8 +775,8 @@ public class IERSConventionsTest {
             { 86400.0, -0.29874235341010519,  0.00035460263868306, -0.12312252389660779,  0.22161364352515728 }
         }) {
             AbsoluteDate date = t0.shiftedBy(row[0]);
-            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 5.0e-8);
-            Assert.assertEquals(row[2], eopHistory.getLOD(date), 2.0e-7);
+            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 4.3e-8);
+            Assert.assertEquals(row[2], eopHistory.getLOD(date), 1.4e-7);
             Assert.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getXp(),
                                 1.6e-10);
@@ -855,8 +855,8 @@ public class IERSConventionsTest {
             { 86400.0, -0.29874235341010519,  0.00035460263868306, -0.12312252389660779,  0.22161364352515728 }
         }) {
             AbsoluteDate date = t0.shiftedBy(row[0]);
-            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 3.0e-12);
-            Assert.assertEquals(row[2], eopHistory.getLOD(date), 5.0e-11);
+            Assert.assertEquals(row[1], eopHistory.getUT1MinusUTC(date), 2.5e-12);
+            Assert.assertEquals(row[2], eopHistory.getLOD(date), 4.3e-11);
             Assert.assertEquals(row[3] * Constants.ARC_SECONDS_TO_RADIANS,
                                 eopHistory.getPoleCorrection(date).getXp(),
                                 1.6e-10);

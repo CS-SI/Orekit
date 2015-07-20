@@ -37,7 +37,7 @@ import org.orekit.time.TimeFunction;
  * time which is consistent with the older models only.</p>
  * <p>Its parent frame is the GCRF frame.<p>
  */
-class CIRFProvider implements TransformProvider {
+class CIRFProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130806L;
@@ -65,11 +65,17 @@ class CIRFProvider implements TransformProvider {
 
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CIRFProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new CIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from GCRF to CIRF2000 at the specified date.

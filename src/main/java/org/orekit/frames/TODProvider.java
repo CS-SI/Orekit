@@ -31,7 +31,7 @@ import org.orekit.utils.IERSConventions;
  * <p>Transform is computed with reference to the {@link MODProvider Mean of Date} frame.</p>
  * @author Pascal Parraud
  */
-class TODProvider implements TransformProvider {
+class TODProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131209L;
@@ -61,11 +61,17 @@ class TODProvider implements TransformProvider {
         this.nutationFunction  = conventions.getNutationFunction();
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TODProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from Mean Of Date at specified date.

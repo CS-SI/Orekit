@@ -78,9 +78,7 @@ public class CIRFProviderTest {
         //        12                         86400s / 24 = 1h00    2.56e-12 rad
         //        12                         86400s / 48 = 0h30    1.22e-12 rad
         // as Runge phenomenon is the dimensioning part, the best settings are a small number
-        // of points and a small interval. Four points separated by one hour each
-        // implies an interpolation error of 1.89e-12 at peak of Runge oscillations,
-        // and about 2e-15 away from the singularity points
+        // of points and a small interval.
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
         TransformProvider nonInterpolating = new CIRFProvider(eopHistory);
         final TransformProvider interpolating =

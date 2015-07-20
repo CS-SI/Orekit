@@ -70,7 +70,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
 
     /** Creates a new instance.
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
-     * @deprecated as of 7.1, replaced with  {@likn #YawCompensation(Frame, GroundPointing)}
+     * @deprecated as of 7.1, replaced with  {@link #YawCompensation(Frame, GroundPointing)}
      */
     @Deprecated
     public YawCompensation(final GroundPointing groundPointingLaw) {
