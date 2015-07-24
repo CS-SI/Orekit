@@ -44,7 +44,7 @@ public enum AngularDerivativesFilter {
     /** Simple constructor.
      * @param maxOrder maximum derivation order
      */
-    private AngularDerivativesFilter(final int maxOrder) {
+    AngularDerivativesFilter(final int maxOrder) {
         this.maxOrder = maxOrder;
     }
 

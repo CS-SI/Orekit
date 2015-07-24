@@ -44,7 +44,7 @@ public enum CartesianDerivativesFilter {
     /** Simple constructor.
      * @param maxOrder maximum derivation order
      */
-    private CartesianDerivativesFilter(final int maxOrder) {
+    CartesianDerivativesFilter(final int maxOrder) {
         this.maxOrder = maxOrder;
     }
 
