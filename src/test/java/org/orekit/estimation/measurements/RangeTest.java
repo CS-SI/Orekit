@@ -166,6 +166,140 @@ public class RangeTest {
 
     }
 
+    @Test
+    public void testStateDerivativesWithModifier() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+        for (final Measurement measurement : measurements) {
+
+            final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier();
+            measurement.addModifier(modifier);
+                        
+            // We intentionally propagate to a date which is close to the
+            // real spacecraft state but is *not* the accurate date, by
+            // compensating only part of the downlink delay. This is done
+            // in order to validate the partial derivatives with respect
+            // to velocity. If we had chosen the proper state date, the
+            // range would have depended only on the current position but
+            // not on the current velocity.
+            final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+            final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+            final SpacecraftState state     = propagator.propagate(date);
+            final double[][]      jacobian  = measurement.evaluate(0, state).getStateDerivatives();
+
+            // compute a reference value using finite differences
+            final double[][] finiteDifferencesJacobian =
+                EstimationTestUtils.differentiate(new StateFunction() {
+                    public double[] value(final SpacecraftState state) throws OrekitException {
+                        return measurement.evaluate(0, state).getValue();
+                    }
+                                                  }, measurement.getDimension(), OrbitType.CARTESIAN,
+                                                  PositionAngle.TRUE, 15.0, 3).value(state);
+
+            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            for (int i = 0; i < jacobian.length; ++i) {
+                for (int j = 0; j < jacobian[i].length; ++j) {
+                    double tolerance = (j < 3) ? 1.0e-1 : 1.0e-1;
+                    // check the values returned by getStateDerivatives() are correct
+                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
+                                        jacobian[i][j],
+                                        tolerance * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                }
+            }
+
+        }
+
+    }
+
+    @Test
+    public void testParameterDerivativesWithModifier() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        for (final GroundStation station : context.stations) {
+            station.setEstimated(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+        for (final Measurement measurement : measurements) {
+
+            final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier();
+            measurement.addModifier(modifier);
+            
+            // parameter corresponding to station position offset
+            final GroundStation stationParameter = ((Range) measurement).getStation();
+
+            // We intentionally propagate to a date which is close to the
+            // real spacecraft state but is *not* the accurate date, by
+            // compensating only part of the downlink delay. This is done
+            // in order to validate the partial derivatives with respect
+            // to velocity. If we had chosen the proper state date, the
+            // range would have depended only on the current position but
+            // not on the current velocity.
+            final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+            final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+            final SpacecraftState state     = propagator.propagate(date);
+            final double[][]      jacobian  = measurement.evaluate(0, state).getParameterDerivatives(stationParameter.getName());
+
+            final double[][] finiteDifferencesJacobian =
+                EstimationTestUtils.differentiate(new MultivariateVectorFunction() {
+                        public double[] value(double[] point) throws OrekitExceptionWrapper {
+                            try {
+
+                                final double[] savedParameter = stationParameter.getValue();
+
+                                // evaluate range with a changed station position
+                                stationParameter.setValue(point);
+                                final double[] result = measurement.evaluate(0, state).getValue();
+
+                                stationParameter.setValue(savedParameter);
+                                return result;
+
+                            } catch (OrekitException oe) {
+                                throw new OrekitExceptionWrapper(oe);
+                            }
+                        }
+                    }, measurement.getDimension(), 3, 20.0, 20.0, 20.0).value(stationParameter.getValue());
+
+            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            for (int i = 0; i < jacobian.length; ++i) {
+                for (int j = 0; j < jacobian[i].length; ++j) {
+                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
+                                        jacobian[i][j],
+                                        6.1e-5 * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                }
+            }
+
+        }
+
+    }
 }
 
 

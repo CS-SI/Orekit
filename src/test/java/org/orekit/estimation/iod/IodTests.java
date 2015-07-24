@@ -181,7 +181,7 @@ public class IodTests {
         final Vector3D lineOfSight1 = position1.normalize();
         
         // measurement data 2
-        final int idMeasure2 = 10;
+        final int idMeasure2 = 20;
         final AbsoluteDate date2 = measurements.get(idMeasure2).getDate();
         final Vector3D stapos2 = new Vector3D(0,0,0);/*context.stations.get(0)  // FIXME we need to access the station of the measurement
                         .getBaseFrame()
@@ -195,7 +195,7 @@ public class IodTests {
         final Vector3D lineOfSight2 = position2.normalize();
 
         // measurement data 3
-        final int idMeasure3 = 20;
+        final int idMeasure3 = 40;
         final AbsoluteDate date3 = measurements.get(idMeasure3).getDate();
         final Vector3D stapos3 = new Vector3D(0,0,0);/*context.stations.get(0)  // FIXME we need to access the station of the measurement
                         .getBaseFrame()
@@ -211,6 +211,8 @@ public class IodTests {
         // instantiate the IOD method
         final IodGooding iod = new IodGooding(frame, mu);
 
+        // the problem is very sensitive, and unless one can provide the exact
+        // initial range estimate, the estimate may be far off the truth...
         final KeplerianOrbit orbit = iod.estimate(stapos1, stapos2, stapos3,
                                                   lineOfSight1, date1,
                                                   lineOfSight2, date2,

@@ -70,7 +70,7 @@ public class Context {
         throws OrekitException {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),
-                                                   0.0);
+                                                   altitude);
         return new GroundStation(new TopocentricFrame(earth, gp, name));
     }
 
