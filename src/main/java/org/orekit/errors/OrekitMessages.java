@@ -188,7 +188,7 @@ public enum OrekitMessages implements Localizable {
      * @param sourceFormat source English format to use when no
      * localized version is available
      */
-    private OrekitMessages(final String sourceFormat) {
+    OrekitMessages(final String sourceFormat) {
         this.sourceFormat = sourceFormat;
     }
 

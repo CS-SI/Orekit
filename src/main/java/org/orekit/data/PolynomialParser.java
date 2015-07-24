@@ -73,7 +73,7 @@ public class PolynomialParser {
         /** Simple constructor.
          * @param factor multiplication factor to convert to corresponding SI unit.
          */
-        private Unit(final double factor) {
+        Unit(final double factor) {
             this.factor = factor;
         }
 

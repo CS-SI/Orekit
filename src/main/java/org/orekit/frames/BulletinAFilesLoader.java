@@ -314,7 +314,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
          * @param headerRegExp regular expression for header
          * @param dataRegExp regular expression for data
          */
-        private Section(final String headerRegExp, final String dataRegExp) {
+        Section(final String headerRegExp, final String dataRegExp) {
             this.header = Pattern.compile(headerRegExp);
             this.data   = Pattern.compile(dataRegExp);
         }
