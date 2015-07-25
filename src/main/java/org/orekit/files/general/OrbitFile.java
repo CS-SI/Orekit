@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
 public interface OrbitFile {
 
     /** Time system used throughout this orbit file. */
-    public enum TimeSystem {
+    enum TimeSystem {
         /** Greenwich Mean Sidereal Time. */
         GMST,
         /** Global Positioning System. */
