@@ -36,7 +36,7 @@ import org.orekit.propagation.events.EventDetector;
 public interface EventHandler<T extends EventDetector> {
 
     /** Enumerate for actions to be performed when an event occurs. */
-    public enum Action {
+    enum Action {
 
         /** Stop indicator.
          * <p>This value should be used as the return value of the {@link
