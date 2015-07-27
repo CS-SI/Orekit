@@ -1084,7 +1084,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             // the factorial ratio coefficient or 1. if |s| <= |j|
             double factCoef;
             if (absS > absJ) {
-                factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact [n - j]);
+                factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact[n - j]);
                 l = n - absS;
             } else {
                 factCoef = 1.;
