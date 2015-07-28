@@ -214,7 +214,7 @@ public class RangeTest {
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
-                    double tolerance = (j < 3) ? 1.0e-1 : 1.0e-1;
+                    double tolerance = 6.0e-2; //(j < 3) ? 1.0e-1 : 1.0e-1;
                     // check the values returned by getStateDerivatives() are correct
                     Assert.assertEquals(finiteDifferencesJacobian[i][j],
                                         jacobian[i][j],

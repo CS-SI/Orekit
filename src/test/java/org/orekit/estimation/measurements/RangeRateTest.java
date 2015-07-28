@@ -212,13 +212,7 @@ public class RangeRateTest {
             final double          meanDelay = 1; // measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);            
             final SpacecraftState state = propagator.propagate(date);
-            
-            // print simulated and observed measures
-            System.out.println("#Measure " + measurement.getObservedValue()[0] 
-                        + " " + measurement.evaluate(0, state).getValue()[0]
-                        + " " + FastMath.abs(measurement.getObservedValue()[0] - measurement.evaluate(0, state).getValue()[0]));
-            
-                        
+                           
             final double[][] jacobian = measurement.evaluate(0, state).getStateDerivatives();
 
             final double[][] finiteDifferencesJacobian =
