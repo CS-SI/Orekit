@@ -66,16 +66,16 @@ public abstract class Orbit
     private static final long serialVersionUID = 438733454597999578L;
 
     /** Frame in which are defined the orbital parameters. */
-    private final Frame frame;
+    protected final Frame frame;
 
     /** Date of the orbital parameters. */
-    private final AbsoluteDate date;
+    protected final AbsoluteDate date;
 
     /** Value of mu used to compute position and velocity (m³/s²). */
-    private final double mu;
+    protected final double mu;
 
     /** Computed PVCoordinates. */
-    private transient TimeStampedPVCoordinates pvCoordinates;
+    protected transient TimeStampedPVCoordinates pvCoordinates;
 
     /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
     private transient double[][] jacobianMeanWrtCartesian;
@@ -106,7 +106,7 @@ public abstract class Orbit
      */
     protected Orbit(final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        ensurePseudoInertialFrame(frame);
+//        ensurePseudoInertialFrame(frame);
         this.date                      = date;
         this.mu                        = mu;
         this.pvCoordinates             = null;
@@ -135,7 +135,7 @@ public abstract class Orbit
      */
     protected Orbit(final TimeStampedPVCoordinates pvCoordinates, final Frame frame, final double mu)
         throws IllegalArgumentException {
-        ensurePseudoInertialFrame(frame);
+//        ensurePseudoInertialFrame(frame);
         this.date = pvCoordinates.getDate();
         this.mu = mu;
         if (pvCoordinates.getAcceleration().getNormSq() == 0) {
@@ -163,7 +163,7 @@ public abstract class Orbit
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    private static void ensurePseudoInertialFrame(final Frame frame)
+    protected static void ensurePseudoInertialFrame(final Frame frame)
         throws IllegalArgumentException {
         if (!frame.isPseudoInertial()) {
             throw OrekitException.createIllegalArgumentException(
