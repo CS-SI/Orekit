@@ -174,7 +174,8 @@ public enum OrekitMessages implements Localizable {
     OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range"),
     OUT_OF_RANGE_LATITUDE("out of range latitude: {0}, [{1}, {2}]"),
 	NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES("non pseudo-inertial frame \"{0}\" is not suitable as reference for inertial forces"),
-	METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY("method not available in the absence of a central body");
+	METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY("method not available in the absence of a central body"),
+	INCOMPATIBLE_FRAMES("operation not available between frames {0} and {1}");
 
     // CHECKSTYLE: resume JavadocVariable check
 
