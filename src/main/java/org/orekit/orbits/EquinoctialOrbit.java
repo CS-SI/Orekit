@@ -113,6 +113,7 @@ public class EquinoctialOrbit extends Orbit {
                             final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
+        ensurePseudoInertialFrame(frame);
         if (ex * ex + ey * ey >= 1.0) {
             throw OrekitException.createIllegalArgumentException(
                   OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
@@ -157,6 +158,7 @@ public class EquinoctialOrbit extends Orbit {
                             final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
+        ensurePseudoInertialFrame(frame);
 
         //  compute semi-major axis
         final Vector3D pvP = pvCoordinates.getPosition();
@@ -222,6 +224,7 @@ public class EquinoctialOrbit extends Orbit {
      */
     public EquinoctialOrbit(final Orbit op) {
         super(op.getFrame(), op.getDate(), op.getMu());
+        ensurePseudoInertialFrame(op.getFrame());
         a  = op.getA();
         ex = op.getEquinoctialEx();
         ey = op.getEquinoctialEy();

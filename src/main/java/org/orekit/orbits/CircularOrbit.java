@@ -118,6 +118,7 @@ public class CircularOrbit
                          final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
+        ensurePseudoInertialFrame(frame);
         if (ex * ex + ey * ey >= 1.0) {
             throw OrekitException.createIllegalArgumentException(
                   OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
@@ -168,6 +169,7 @@ public class CircularOrbit
                          final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
+        ensurePseudoInertialFrame(frame);
         if (ex * ex + ey * ey >= 1.0) {
             throw OrekitException.createIllegalArgumentException(
                   OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
@@ -213,6 +215,7 @@ public class CircularOrbit
     public CircularOrbit(final TimeStampedPVCoordinates pvCoordinates, final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
+        ensurePseudoInertialFrame(frame);
 
         // compute semi-major axis
         final Vector3D pvP = pvCoordinates.getPosition();
@@ -292,6 +295,7 @@ public class CircularOrbit
      */
     public CircularOrbit(final Orbit op) {
         super(op.getFrame(), op.getDate(), op.getMu());
+        ensurePseudoInertialFrame(op.getFrame());
         a    = op.getA();
         i    = op.getI();
         raan = FastMath.atan2(op.getHy(), op.getHx());

@@ -66,16 +66,16 @@ public abstract class Orbit
     private static final long serialVersionUID = 438733454597999578L;
 
     /** Frame in which are defined the orbital parameters. */
-    protected final Frame frame;
+    private final Frame frame;
 
     /** Date of the orbital parameters. */
-    protected final AbsoluteDate date;
+    private final AbsoluteDate date;
 
     /** Value of mu used to compute position and velocity (m³/s²). */
-    protected final double mu;
+    private final double mu;
 
     /** Computed PVCoordinates. */
-    protected transient TimeStampedPVCoordinates pvCoordinates;
+    private transient TimeStampedPVCoordinates pvCoordinates;
 
     /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
     private transient double[][] jacobianMeanWrtCartesian;

@@ -130,6 +130,7 @@ public class KeplerianOrbit extends Orbit {
                           final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
+        ensurePseudoInertialFrame(frame);
 
         if (a * (1 - e) < 0) {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
@@ -186,6 +187,7 @@ public class KeplerianOrbit extends Orbit {
                           final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
+        ensurePseudoInertialFrame(frame);
 
         // compute inclination
         final Vector3D momentum = pvCoordinates.getMomentum();
