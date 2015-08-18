@@ -322,9 +322,15 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public void mapStateToArray(final SpacecraftState state, final double[] y) {
-            getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y);
-            y[6] = state.getMass();
+        public void mapStateToArray(final SpacecraftState state, final double[] y) throws OrekitException {
+        	if (!state.isOrbitDefined()) {
+        		state.mapAbsolutePVCoordinatesToArray(y);
+        		y[6] = state.getMass();
+        	}
+        	else {
+        		getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y);
+        		y[6] = state.getMass();
+        	}
         }
 
         /** Replace the instance with a data transfer object for serialization.

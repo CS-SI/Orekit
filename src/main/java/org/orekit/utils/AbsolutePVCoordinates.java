@@ -1,5 +1,10 @@
 package org.orekit.utils;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -8,9 +13,11 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeStamped;
 
-public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements TimeStamped, PVCoordinatesProvider {
+public class AbsolutePVCoordinates extends TimeStampedPVCoordinates 
+implements TimeStamped, TimeInterpolable<AbsolutePVCoordinates>,Serializable, PVCoordinatesProvider {
 	
 	/** Frame in which are defined the coordinates. */
 	private final Frame frame;
@@ -293,14 +300,35 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements T
         return t.transformPVCoordinates(getPVCoordinates());
     }
 
-    /** {@inheritDoc} */
 	@Override
-	public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate otherDate, Frame otherFrame)
+	public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame) 
 			throws OrekitException {
-		return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
+        return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
 	}
+
+	@Override
+	public AbsolutePVCoordinates interpolate(final AbsoluteDate date, final Collection<AbsolutePVCoordinates> sample)
+			throws OrekitException {
+		
+		final List<TimeStampedPVCoordinates> datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
+		for (final AbsolutePVCoordinates absPV : sample) {
+			datedPV.add(new TimeStampedPVCoordinates(	absPV.getDate(),
+														absPV.getPVCoordinates().getPosition(),
+														absPV.getPVCoordinates().getVelocity(),
+														absPV.getPVCoordinates().getAcceleration()));
+		}
+		final TimeStampedPVCoordinates interpolated =
+				TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA, datedPV);
+		return new AbsolutePVCoordinates(getFrame(), interpolated);
+	}
+
 	
 	// TODO: parameters and methods related to Jacobian?
 
 
 }
+
+
+
+
+
