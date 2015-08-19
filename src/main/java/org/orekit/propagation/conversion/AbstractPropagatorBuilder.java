@@ -98,7 +98,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         throws OrekitIllegalArgumentException {
         for (String name : parameters) {
             if (!supportedParameters.contains(name)) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, name);
+                throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                                         name, supportedAsString());
             }
         }
         freeParameters = new ArrayList<String>(parameters);
@@ -121,7 +122,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
             return mu;
         }
-        throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, name);
+        throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                                 name, supportedAsString());
     }
 
     /** {@inheritDoc}
@@ -136,7 +138,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
             this.mu = value;
         } else {
-            throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, name);
+            throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                                     name, supportedAsString());
         }
     }
 
@@ -173,6 +176,20 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             throw new OrekitIllegalArgumentException(OrekitMessages.DUPLICATED_PARAMETER_NAME, name);
         }
         supportedParameters.add(name);
+    }
+
+    /** Create a string with the list of supported parameters.
+     * @return string with the list of supported parameters
+     */
+    private String supportedAsString() {
+        final StringBuilder supported = new StringBuilder();
+        for (final String name : supportedParameters) {
+            if (supported.length() > 0) {
+                supported.append(", ");
+            }
+            supported.append(name);
+        }
+        return supported.toString();
     }
 
 }
