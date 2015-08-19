@@ -423,10 +423,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
 
             // set propagation orbit type
-            final Orbit initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
-            if (Double.isNaN(getMu())) {
-                setMu(initialOrbit.getMu());
-            }
+//            final Orbit initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
+//            if (Double.isNaN(getMu())) {
+//                setMu(initialOrbit.getMu());
+//            }
+            setMu(getInitialState().getMu()); //TODO
 
             if (getInitialState().getMass() <= 0.0) {
                 throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
