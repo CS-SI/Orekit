@@ -404,7 +404,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * header must be parsed before the dates can be checked.</p>
      * <p>
      * There are alternate names for constants since for example JPL names are
-     * different from INPOP names (Sun gravity: GMS or GM_Sun, Mercury gravity:
+     * different from INPOP names (Sun gravity: GMS or GM_Sun, Mars gravity:
      * GM4 or GM_Mar...).
      * </p>
      * @param names alternate names of the constant
