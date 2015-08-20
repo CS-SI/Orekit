@@ -139,11 +139,11 @@ public class RangeRate extends AbstractMeasurement {
         // prepare the evaluation
         final Evaluation evaluation = new Evaluation(this, iteration, compensatedState);
 
-        // station coordinates at date
+        // station coordinates at date in EME2000
         final PVCoordinates pvStation = station.getOffsetFrame().getPVCoordinates(date, compensatedState.getFrame());
 
         // range rate value
-        final Vector3D stationPosition = pvStation.getPosition(); // in EME2000 ...
+        final Vector3D stationPosition = pvStation.getPosition();
         final Vector3D relativePosition = compensatedState.getPVCoordinates().getPosition().subtract(stationPosition);
 
         final Vector3D stationVelocity = pvStation.getVelocity();
@@ -151,12 +151,12 @@ public class RangeRate extends AbstractMeasurement {
                                                 .subtract(stationVelocity);
         // line of sight direction
         final Vector3D      lineOfSight      = relativePosition.normalize();
-        //
+        // range rate
         final double rr = Vector3D.dotProduct(relativeVelocity, lineOfSight);
 
         evaluation.setValue(rr);
 
-        // compute partial derivatives with respect to spacecraft state Cartesian coordinates.
+        // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates.
         final double relnorm = relativePosition.getNorm();
         final double den1 = relnorm; //relativePosition.getNorm();
         final double den2 = FastMath.pow(relativePosition.getNorm(), 2);
@@ -185,7 +185,7 @@ public class RangeRate extends AbstractMeasurement {
             final Vector3D omega = new Vector3D(0, 0, Constants.GRIM5C1_EARTH_ANGULAR_VELOCITY);
 
             // derivative of lineOfSight wrt rSta,
-            //    d (relPos / ||relPos||) / d rSta
+            //    d (relPos / ||relPos||) / d rStation
             //
             final double relnorm2 = relnorm * relnorm;
             final double[][] m = new double[][] {
@@ -204,18 +204,19 @@ public class RangeRate extends AbstractMeasurement {
                 }
             };
 
-            // derivatives of the dot product: relVelocity * lineOfSight
+            // derivatives of the dot product (relVelocity * lineOfSight) wrt rStation
+            // Note: relVelocity = rstation x omega
             final Vector3D v = relativeVelocity;
-            final double dVUdPsx = (-omega.getZ() * lineOfSight.getY() + omega.getY() * lineOfSight.getZ()) +
+            final double dVUdPstax = (-omega.getZ() * lineOfSight.getY() + omega.getY() * lineOfSight.getZ()) +
                                    (v.getX() * m[0][0] + v.getY() * m[1][0] + v.getZ() * m[2][0]) / relnorm;
-            final double dVUdPsy = ( omega.getZ() * lineOfSight.getX() - omega.getX() * lineOfSight.getZ()) +
+            final double dVUdPstay = ( omega.getZ() * lineOfSight.getX() - omega.getX() * lineOfSight.getZ()) +
                                    (v.getX() * m[0][1] + v.getY() * m[1][1] + v.getZ() * m[2][1]) / relnorm;
-            final double dVUdPsz = (-omega.getY() * lineOfSight.getX() + omega.getX() * lineOfSight.getY()) +
+            final double dVUdPstaz = (-omega.getY() * lineOfSight.getX() + omega.getX() * lineOfSight.getY()) +
                                    (v.getX() * m[0][2] + v.getY() * m[1][2] + v.getZ() * m[2][2]) / relnorm;
 
             // range rate partial derivatives
             // with respect to station position in inertial frame
-            final Vector3D dRdQI1 = new Vector3D(dVUdPsx, dVUdPsy, dVUdPsz);
+            final Vector3D dRdQI1 = new Vector3D(dVUdPstax, dVUdPstay, dVUdPstaz);
 
 
             // convert to topocentric frame, as the station position

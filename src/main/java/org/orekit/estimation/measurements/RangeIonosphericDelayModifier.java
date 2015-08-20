@@ -25,8 +25,7 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.StateFunction;
-import org.orekit.models.earth.SaastamoinenModel;
-import org.orekit.models.earth.TroposphericDelayModel;
+import org.orekit.models.earth.IonosphericDelayModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -39,35 +38,17 @@ import org.orekit.propagation.SpacecraftState;
  * @author Joris Olympio
  * @since 7.1
  */
-public class RangeTroposphericDelayModifier implements EvaluationModifier {
+public class RangeIonosphericDelayModifier implements EvaluationModifier {
 
     /** Tropospheric delay model. */
-    private final TroposphericDelayModel tropoModel;
+    private final IonosphericDelayModel ionoModel;
 
     /**
      * Constructor.
      * @param model  Tropospheric delay model
      */
-    public RangeTroposphericDelayModifier(final TroposphericDelayModel model) {
-        tropoModel = model;
-    }
-
-    /**
-     * Simple Constructor.
-     */
-    public RangeTroposphericDelayModifier() {
-        tropoModel = SaastamoinenModel.getStandardModel();
-    }
-
-    /** Get the station height above mean sea level.
-     *
-     * @param station  ground station (or measuring station)
-     * @return the measuring station height above sea level, m
-     */
-    private double getStationHeightAMSL(final GroundStation station) {
-        // FIXME Il faut la hauteur par rapport au geoide WGS84+GUND = EGM2008 par exemple
-        final double height = station.getBaseFrame().getPoint().getAltitude();
-        return height;
+    public RangeIonosphericDelayModifier(final IonosphericDelayModel model) {
+        ionoModel = model;
     }
 
     /** Compute the measurement error due to Troposphere.
@@ -90,11 +71,17 @@ public class RangeTroposphericDelayModifier implements EvaluationModifier {
 
         // only consider measures above the horizon
         if (elevation > 0) {
-            // altitude AMSL in meters
-            final double height = getStationHeightAMSL(station);
+
+            // compute azimuth
+            final double azimuth = station.getBaseFrame().getAzimuth(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
 
             // delay in meters
-            final double delay = tropoModel.calculatePathDelay(elevation, height);
+            final double delay = ionoModel.calculatePathDelay(state.getDate(),
+                                                              station.getBaseFrame().getPoint(),
+                                                              elevation,
+                                                              azimuth);
 
             return delay;
         }

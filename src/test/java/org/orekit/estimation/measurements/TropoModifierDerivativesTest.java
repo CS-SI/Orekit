@@ -29,6 +29,7 @@ import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.StateFunction;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -144,10 +145,17 @@ public class TropoModifierDerivativesTest {
                                 // evaluate target's elevation with a changed station position
                                 stationParameter.setValue(point);
                                 
-                                final double[] result = new double[]{
-                                    stationParameter.getOffsetFrame().getElevation(extPoint, frameSat, date)
-                                };
+                                //final double[] result = new double[]{
+                                //    stationParameter.getOffsetFrame().getElevation(extPoint, frameSat, date)
+                                //};
 
+                                final Frame frameSta = stationParameter.getOffsetFrame();
+                                final Transform tSat2Sta = frameSat.getTransformTo(frameSta, date);
+                                final Vector3D extPointTopo = tSat2Sta.transformPosition(extPoint);
+                                final double[] result = new double[]{
+                                    extPointTopo.getX()
+                                };
+                                
                                 stationParameter.setValue(savedParameter);
                                 
                                 return result;
@@ -156,7 +164,7 @@ public class TropoModifierDerivativesTest {
                                 throw new OrekitExceptionWrapper(oe);
                             }
                         }
-                    }, measurement.getDimension(), 3, 20.0, 20.0, 20.0).value(stationParameter.getValue());
+                    }, measurement.getDimension(), 3, 10.0, 10.0, 10.0).value(stationParameter.getValue());
 
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian.length);
 

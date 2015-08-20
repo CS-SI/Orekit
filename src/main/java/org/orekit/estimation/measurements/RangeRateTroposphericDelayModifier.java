@@ -18,13 +18,18 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
+import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Parameter;
-import org.orekit.estimation.measurements.RangeTroposphericDelayModifier.Derivatives;
+import org.orekit.estimation.StateFunction;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.models.earth.TroposphericDelayModel;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class modifying theoretical range-rate measurements with tropospheric delay.
@@ -174,35 +179,32 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier {
     /** Compute the Jacobian of the delay term wrt state.
      *
      * @param station station
-     * @param state spacecraft state
+     * @param refstate spacecraft state
      * @param delay current tropospheric delay
      * @return jacobian of the delay wrt state
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeRateErrorJacobianState(final GroundStation station,
-                                               final SpacecraftState state,
+                                               final SpacecraftState refstate,
                                                final double delay) throws OrekitException
     {
-        // compute the derivatives of the tropospheric delay model wrt height and elevation.
-        final double[] dDelayDot = new double[2];
-        rangeRateTropoErrorDerivatives(station, state, dDelayDot);
-        final double dDelayDotdElevation = dDelayDot[0];
-        final double dDelayDotdHeight = dDelayDot[1];
+        final double[][] finiteDifferencesJacobian =
+                        EstimationTestUtils.differentiate(new StateFunction() {
+                            public double[] value(final SpacecraftState state) throws OrekitException {
+                                try {
+                                    // evaluate target's elevation with a changed target position
+                                    final double value = rangeRateErrorTroposphericModel(station, state);
 
-        // derivatives of station's height and target elevation with respect to target's state
-        final double[] dEdX = Derivatives.derivElevationWrtState(state.getDate(), station, state);
-        final double[] dHdX = new double[] {0, 0, 0, 0, 0, 0};
+                                    return new double[] {value };
 
-        return new double[][]{
-            {
-                dDelayDotdHeight * dHdX[0] + dDelayDotdElevation * dEdX[0],
-                dDelayDotdHeight * dHdX[1] + dDelayDotdElevation * dEdX[1],
-                dDelayDotdHeight * dHdX[2] + dDelayDotdElevation * dEdX[2],
-                dDelayDotdHeight * dHdX[3] + dDelayDotdElevation * dEdX[3],
-                dDelayDotdHeight * dHdX[4] + dDelayDotdElevation * dEdX[4],
-                dDelayDotdHeight * dHdX[5] + dDelayDotdElevation * dEdX[5]
-            }
-        };
+                                } catch (OrekitException oe) {
+                                    throw new OrekitExceptionWrapper(oe);
+                                }
+                            }
+                        }, 1, OrbitType.CARTESIAN,
+                        PositionAngle.TRUE, 15.0, 3).value(refstate);
+
+        return finiteDifferencesJacobian;
     }
 
     /** Compute the Jacobian of the delay term wrt parameters.
@@ -217,21 +219,29 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier {
                                                    final SpacecraftState state,
                                                    final double delay) throws OrekitException
     {
-        // compute the derivatives of the tropospheric delay model wrt height and elevation.
-        final double[] dDelayDot = new double[2];
-        rangeRateTropoErrorDerivatives(station, state, dDelayDot);
-        final double dDelayDotdElevation = dDelayDot[0];
-        final double dDelayDotdHeight = dDelayDot[1];
+        final GroundStation stationParameter = station;
 
-        // derivatives of station's height and target elevation with respect to station's position vector
-        final double[] dHdP = Derivatives.derivHeightWrtGroundstation(state.getDate(), station, state);
-        final double[] dEdP = Derivatives.derivElevationWrtGroundstation(state.getDate(), station, state);
+        final double[][] finiteDifferencesJacobian =
+                        EstimationTestUtils.differentiate(new MultivariateVectorFunction() {
+                                public double[] value(final double[] point) throws OrekitExceptionWrapper {
+                                    try {
+                                        final double[] savedParameter = stationParameter.getValue();
 
-        return new double[][]{
-            {dDelayDotdHeight * dHdP[0] + dDelayDotdElevation * dEdP[0],
-             dDelayDotdHeight * dHdP[1] + dDelayDotdElevation * dEdP[1],
-             dDelayDotdHeight * dHdP[2] + dDelayDotdElevation * dEdP[2]}
-        };
+                                        stationParameter.setValue(point);
+
+                                        final double value = rangeRateErrorTroposphericModel(stationParameter, state);
+
+                                        stationParameter.setValue(savedParameter);
+
+                                        return new double[]{value };
+
+                                    } catch (OrekitException oe) {
+                                        throw new OrekitExceptionWrapper(oe);
+                                    }
+                                }
+                            }, 1, 3, 10.0, 10.0, 10.0).value(stationParameter.getValue());
+
+        return finiteDifferencesJacobian;
     }
 
     @Override
