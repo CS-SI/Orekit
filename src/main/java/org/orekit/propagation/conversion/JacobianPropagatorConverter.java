@@ -150,7 +150,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
         /** Simple constructor.
          * @param mapper Jacobians mapper
          */
-        public JacobianHandler(final JacobiansMapper mapper) {
+        JacobianHandler(final JacobiansMapper mapper) {
             this.mapper = mapper;
             this.dYdY0  = new double[mapper.getStateDimension()][mapper.getStateDimension()];
             this.dYdP   = new double[mapper.getStateDimension()][mapper.getParameters()];

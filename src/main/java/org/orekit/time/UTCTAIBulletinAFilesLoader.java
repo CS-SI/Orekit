@@ -358,7 +358,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
 
         /** Simple constructor.
          */
-        public Parser() {
+        Parser() {
             this.taiUtc     = new TreeMap<Integer, Integer>();
             this.ut1Utc     = new TreeMap<Integer, Double>();
             this.lineNumber = 0;

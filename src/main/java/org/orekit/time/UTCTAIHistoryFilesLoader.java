@@ -73,7 +73,7 @@ public class UTCTAIHistoryFilesLoader implements UTCTAIOffsetsLoader {
 
         /** Simple constructor.
          */
-        public Parser() {
+        Parser() {
 
             // the data lines in the UTC time steps data files have the following form:
             // 1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s

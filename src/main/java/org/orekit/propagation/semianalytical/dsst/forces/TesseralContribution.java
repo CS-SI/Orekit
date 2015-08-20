@@ -253,7 +253,7 @@ class TesseralContribution implements DSSTForceModel {
      *  @param provider provider for spherical harmonics
      *  @param mDailiesOnly if true only M-dailies tesseral harmonics are taken into account for short periodics
      */
-    public TesseralContribution(final Frame centralBodyFrame,
+    TesseralContribution(final Frame centralBodyFrame,
                                 final double centralBodyRotationRate,
                                 final UnnormalizedSphericalHarmonicsProvider provider,
                                 final boolean mDailiesOnly) {
@@ -984,7 +984,7 @@ class TesseralContribution implements DSSTForceModel {
          *  @param jMax absolute limit for j ( -jMax <= j <= jMax )
          *  @param mMax maximum value for m
          */
-        public FourierCjSjCoefficients(final int jMax, final int mMax) {
+        FourierCjSjCoefficients(final int jMax, final int mMax) {
             // initialise fields
             final int rows    = mMax + 1;
             final int columns = 2 * jMax + 1;
@@ -1235,7 +1235,7 @@ class TesseralContribution implements DSSTForceModel {
          * @param mMax maximum value for m
          * @param interpolationPoints number of points used in the interpolation process
          */
-        public TesseralShortPeriodicCoefficients(final int jMax, final int mMax, final int interpolationPoints) {
+        TesseralShortPeriodicCoefficients(final int jMax, final int mMax, final int interpolationPoints) {
 
             // Initialize fields
             final int rows    = mMax + 1;

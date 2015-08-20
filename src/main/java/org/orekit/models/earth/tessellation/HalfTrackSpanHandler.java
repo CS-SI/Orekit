@@ -40,7 +40,7 @@ class HalfTrackSpanHandler implements EventHandler<HalfTrackSpanDetector> {
      * @param isAscending indicator for zone tiling with respect to ascending
      * or descending orbits
      */
-    public HalfTrackSpanHandler(final boolean isAscending) {
+    HalfTrackSpanHandler(final boolean isAscending) {
         this.isAscending = isAscending;
         this.start       = null;
         this.end         = null;

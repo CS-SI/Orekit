@@ -77,7 +77,7 @@ class OceanTidesField implements NormalizedSphericalHarmonicsProvider {
      * @exception OrekitException if the Love numbers embedded in the
      * library cannot be read
      */
-    public OceanTidesField(final double ae, final double mu,
+    OceanTidesField(final double ae, final double mu,
                            final List<OceanTidesWave> waves,
                            final FundamentalNutationArguments arguments,
                            final TimeFunction<double[]> poleTideFunction)

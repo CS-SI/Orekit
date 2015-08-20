@@ -308,7 +308,7 @@ public class DataProvidersManager {
         /** Simple constructor.
          * @param loader loader to monitor
          */
-        public MonitoringWrapper(final DataLoader loader) {
+        MonitoringWrapper(final DataLoader loader) {
             this.loader = loader;
         }
 

@@ -50,7 +50,7 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
     /** Simple constructor.
      * @param zone zone of interest
      */
-    public InsideFinder(final SphericalPolygonsSet zone) {
+    InsideFinder(final SphericalPolygonsSet zone) {
         this.zone                    = zone;
         this.insidePointFirstChoice  = null;
         this.insidePointSecondChoice = null;

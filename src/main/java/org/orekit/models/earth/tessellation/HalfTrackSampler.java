@@ -45,7 +45,7 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
     /** Simple constructor.
      * @param ellipsoid ellipsoid over which track is sampled
      */
-    public HalfTrackSampler(final OneAxisEllipsoid ellipsoid) {
+    HalfTrackSampler(final OneAxisEllipsoid ellipsoid) {
         this.ellipsoid = ellipsoid;
         this.halfTrack = new ArrayList<Pair<GeodeticPoint, TimeStampedPVCoordinates>>();
     }

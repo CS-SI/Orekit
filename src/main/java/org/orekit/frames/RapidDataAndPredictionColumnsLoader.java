@@ -140,7 +140,7 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
      * corrections
      * @param supportedNames regular expression for supported files names
      */
-    public RapidDataAndPredictionColumnsLoader(final boolean isNonRotatingOrigin,
+    RapidDataAndPredictionColumnsLoader(final boolean isNonRotatingOrigin,
                                                final String supportedNames) {
         this.isNonRotatingOrigin = isNonRotatingOrigin;
         this.supportedNames      = supportedNames;
@@ -177,7 +177,7 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
          * @param converter converter to use
          * @param isNonRotatingOrigin type of nutation correction
          */
-        public Parser(final IERSConventions.NutationCorrectionConverter converter,
+        Parser(final IERSConventions.NutationCorrectionConverter converter,
                       final boolean isNonRotatingOrigin) {
             this.converter           = converter;
             this.isNonRotatingOrigin = isNonRotatingOrigin;

@@ -606,7 +606,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Simple constructor.
          * @param main main state equations
          */
-        public ConvertedMainStateEquations(final MainStateEquations main) {
+        ConvertedMainStateEquations(final MainStateEquations main) {
             this.main = main;
             calls = 0;
         }
@@ -656,7 +656,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @param equations additional equations
          * @param dimension dimension of the additional state
          */
-        public ConvertedSecondaryStateEquations(final AdditionalEquations equations,
+        ConvertedSecondaryStateEquations(final AdditionalEquations equations,
                                                 final int dimension) {
             this.equations = equations;
             this.dimension = dimension;
@@ -719,7 +719,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Build a wrapped event detector.
          * @param detector event detector to wrap
         */
-        public AdaptedEventDetector(final EventDetector detector) {
+        AdaptedEventDetector(final EventDetector detector) {
             this.detector = detector;
             this.lastT    = Double.NaN;
             this.lastG    = Double.NaN;
@@ -811,7 +811,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Build an instance.
          * @param handler underlying handler to wrap
          */
-        public AdaptedStepHandler(final OrekitStepHandler handler) {
+        AdaptedStepHandler(final OrekitStepHandler handler) {
             this.handler = handler;
         }
 
@@ -927,7 +927,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Creates a new instance of EphemerisModeHandler which must be
          *  filled by the propagator.
          */
-        public EphemerisModeHandler() {
+        EphemerisModeHandler() {
         }
 
         /** {@inheritDoc} */

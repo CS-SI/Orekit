@@ -75,7 +75,7 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * @param leap value of the leap at offset validity start (in seconds)
      * @param offset offset in seconds (TAI minus UTC)
      */
-    public UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
+    UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
                         final double leap, final double offset) {
         this(leapDate, leapDateMJD, leap, offset, 0, 0);
     }
@@ -88,7 +88,7 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * @param mjdRef reference date for the slope multiplication as Modified Julian Day
      * @param slope offset slope in seconds per UTC second (TAI minus UTC / dUTC)
      */
-    public UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
+    UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
                         final double leap, final double offset,
                         final int mjdRef, final double slope) {
         this.leapDate      = leapDate;

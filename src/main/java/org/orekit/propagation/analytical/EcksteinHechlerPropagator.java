@@ -472,7 +472,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
          * @param mean mean orbit
          * @exception PropagationException if mean orbit is not within model supported domain
          */
-        public EHModel(final CircularOrbit mean) throws PropagationException {
+        EHModel(final CircularOrbit mean) throws PropagationException {
 
             this.mean = mean;
 

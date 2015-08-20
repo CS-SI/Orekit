@@ -459,7 +459,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
          */
-        public MeanPlusShortPeriodicMapper(final AbsoluteDate referenceDate, final double mu,
+        MeanPlusShortPeriodicMapper(final AbsoluteDate referenceDate, final double mu,
                                            final AttitudeProvider attitudeProvider, final Frame frame) {
 
             super(referenceDate, mu, OrbitType.EQUINOCTIAL, PositionAngle.MEAN, attitudeProvider, frame);
@@ -760,7 +760,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
              * @param forceModels force models to use for short periodic terms computation
              * @param satelliteRevolution number of satellite revolutions in the averaging interval
              */
-            public DataTransferObject(final AbsoluteDate referenceDate, final double mu,
+            DataTransferObject(final AbsoluteDate referenceDate, final double mu,
                                       final AttitudeProvider attitudeProvider, final Frame frame,
                                       final boolean initialIsOsculating,
                                       final DSSTForceModel[] forceModels, final int satelliteRevolution) {
@@ -806,7 +806,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
-        public Main(final AbstractIntegrator integrator) {
+        Main(final AbstractIntegrator integrator) {
             yDot = new double[7];
 
             for (final DSSTForceModel forceModel : mapper.getForceModels()) {
@@ -896,7 +896,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Constructor.
          * @param grid for interpolation of the short periodics coefficients
          */
-        public ShortPeriodicsHandler(final InterpolationGrid grid) {
+        ShortPeriodicsHandler(final InterpolationGrid grid) {
             this.grid = grid;
         }
 

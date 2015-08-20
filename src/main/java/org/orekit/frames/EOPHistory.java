@@ -395,7 +395,7 @@ public class EOPHistory implements Serializable {
          * @param entries the EOP data to use
          * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
          */
-        public DataTransferObject(final IERSConventions conventions,
+        DataTransferObject(final IERSConventions conventions,
                                   final List<EOPEntry> entries,
                                   final boolean simpleEOP) {
             this.conventions = conventions;
@@ -430,7 +430,7 @@ public class EOPHistory implements Serializable {
          * @param date entry date
          * @param correction correction on the EOP parameters (xp, yp, ut1, lod)
          */
-        public TidalCorrectionEntry(final AbsoluteDate date, final double[] correction) {
+        TidalCorrectionEntry(final AbsoluteDate date, final double[] correction) {
             this.date       = date;
             this.correction = correction;
         }
@@ -459,7 +459,7 @@ public class EOPHistory implements Serializable {
         /** Simple constructor.
          * @param tidalCorrection function computing the tidal correction
          */
-        public CachedCorrection(final TimeFunction<double[]> tidalCorrection) {
+        CachedCorrection(final TimeFunction<double[]> tidalCorrection) {
             this.step            = 60 * 60;
             this.tidalCorrection = tidalCorrection;
             this.cache           =

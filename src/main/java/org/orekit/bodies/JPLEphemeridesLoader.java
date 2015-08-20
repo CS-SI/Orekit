@@ -828,7 +828,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         /** Simple constructor.
          */
-        public EphemerisParser() {
+        EphemerisParser() {
             entries = new TreeSet<PosVelChebyshev>(new Comparator<PosVelChebyshev>() {
                 public int compare(final PosVelChebyshev o1, final PosVelChebyshev o2) {
                     return o1.getDate().compareTo(o2.getDate());

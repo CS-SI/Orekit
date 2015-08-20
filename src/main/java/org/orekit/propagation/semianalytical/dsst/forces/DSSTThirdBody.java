@@ -656,7 +656,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * @param sMax maximum value for s index
          * @param jMax maximum value for j index
          */
-        public FourierCjSjCoefficients(final int nMax, final int sMax, final int jMax) {
+        FourierCjSjCoefficients(final int nMax, final int sMax, final int jMax) {
             //Save parameters
             this.nMax = nMax;
             this.sMax = sMax;
@@ -1021,7 +1021,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /**
          * Standard constructor.
          */
-        public WnsjEtomjmsCoefficient() {
+        WnsjEtomjmsCoefficient() {
             //initialise fields
             c = ecc * b;
             c2 = c * c;
@@ -1164,7 +1164,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * @param nMax maximum value for n indes
          * @param sMax maximum value for s index
          */
-        public GnsCoefficients(final int nMax, final int sMax) {
+        GnsCoefficients(final int nMax, final int sMax) {
             this.nMax = nMax;
             this.sMax = sMax;
 
@@ -1284,7 +1284,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /**
          * Standard constructor.
          */
-        public CjSjAlphaBetaKH() {
+        CjSjAlphaBetaKH() {
             cjsjkh = new CjSjCoefficient(k, h);
             cjsjalbe = new CjSjCoefficient(alpha, beta);
 
@@ -1559,7 +1559,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * @param jMax maximum value of j index
          * @throws OrekitException in case of an exception
          */
-        public GeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax) throws OrekitException {
+        GeneratingFunctionCoefficients(final int nMax, final int sMax, final int jMax) throws OrekitException {
             this.jMax = jMax;
             this.cjsjFourier = new FourierCjSjCoefficients(nMax, sMax, jMax);
             this.cjCoefs = new double[8][jMax + 1];
@@ -1847,7 +1847,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * @param sMax maximum possible value for s
          * @param interpolationPoints number of points used in the interpolation process
          */
-        public ThirdBodyShortPeriodicCoefficients(final int jMax, final int nMax, final int sMax, final int interpolationPoints) {
+        ThirdBodyShortPeriodicCoefficients(final int jMax, final int nMax, final int sMax, final int interpolationPoints) {
             //initialise fields
             this.nMax = nMax;
             this.sMax = sMax;

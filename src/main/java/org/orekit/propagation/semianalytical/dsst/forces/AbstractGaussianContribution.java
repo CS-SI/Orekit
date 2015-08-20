@@ -394,7 +394,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Simple constructor.
          *  @param state input state
          */
-        public AccelerationRetriever(final SpacecraftState state) {
+        AccelerationRetriever(final SpacecraftState state) {
             this.acceleration = Vector3D.ZERO;
             this.state = state;
         }
@@ -456,7 +456,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *                  if false return the values associated to the short periodic elements variation
          * @param j the j index. used only for short periodic variation. Ignored for mean elements variation.
          */
-        public IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j) {
+        IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j) {
             this.state = state;
             this.meanMode = meanMode;
             this.j = j;
@@ -1113,7 +1113,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *
          *  @param numberOfPoints Order of the integration rule.
          */
-        public GaussQuadrature(final int numberOfPoints) {
+        GaussQuadrature(final int numberOfPoints) {
 
             switch(numberOfPoints) {
                 case 12 :
@@ -1268,7 +1268,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param jMax maximum value for j
          * @throws OrekitException in case of an error
          */
-        public FourierCjSjCoefficients(final SpacecraftState state, final int jMax) throws OrekitException {
+        FourierCjSjCoefficients(final SpacecraftState state, final int jMax) throws OrekitException {
             //Initialise the fields
             this.jMax = jMax;
 
@@ -1399,7 +1399,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *  @param jMax maximum value for j index
          *  @param interpolationPoints number of points used in the interpolation process
          */
-        public GaussianShortPeriodicCoefficients(final int jMax, final int interpolationPoints) {
+        GaussianShortPeriodicCoefficients(final int jMax, final int interpolationPoints) {
             //Initialise fields
             this.jMax = jMax;
 
@@ -1667,7 +1667,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param fourierCjSj the fourier coefficients C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup>
          * @param jMax maximum value for j index
          */
-        public UijVijCoefficients(final double[][] currentRhoSigmaj, final FourierCjSjCoefficients fourierCjSj, final int jMax) {
+        UijVijCoefficients(final double[][] currentRhoSigmaj, final FourierCjSjCoefficients fourierCjSj, final int jMax) {
             this.currentRhoSigmaj = currentRhoSigmaj;
             this.fourierCjSj = fourierCjSj;
             this.jMax = jMax;

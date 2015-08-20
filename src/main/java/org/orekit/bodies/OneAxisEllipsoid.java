@@ -326,7 +326,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
          * @param bodyFrame body frame related to body shape
          * @param angularThreshold convergence limit
          */
-        public DataTransferObject(final double ae, final double f,
+        DataTransferObject(final double ae, final double f,
                                   final Frame bodyFrame, final double angularThreshold) {
             this.ae               = ae;
             this.f                = f;

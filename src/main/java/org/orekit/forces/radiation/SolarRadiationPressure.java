@@ -280,7 +280,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         private static final long serialVersionUID = 20141228L;
 
         /** Build a new instance. */
-        public UmbraDetector() {
+        UmbraDetector() {
             super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<UmbraDetector>() {
 
                 /** {@inheritDoc} */
@@ -343,7 +343,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         private static final long serialVersionUID = 20141228L;
 
         /** Build a new instance. */
-        public PenumbraDetector() {
+        PenumbraDetector() {
             super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<PenumbraDetector>() {
 
                 /** {@inheritDoc} */

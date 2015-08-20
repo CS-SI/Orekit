@@ -141,7 +141,7 @@ class EOP08C04FilesLoader implements EOPHistoryLoader {
     /** Build a loader for IERS EOP 08 C04 files.
      * @param supportedNames regular expression for supported files names
      */
-    public EOP08C04FilesLoader(final String supportedNames) {
+    EOP08C04FilesLoader(final String supportedNames) {
         this.supportedNames = supportedNames;
     }
 
@@ -178,7 +178,7 @@ class EOP08C04FilesLoader implements EOPHistoryLoader {
         /** Simple constructor.
          * @param converter converter to use
          */
-        public Parser(final IERSConventions.NutationCorrectionConverter converter) {
+        Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter           = converter;
             this.history             = new ArrayList<EOPEntry>();
             this.lineNumber          = 0;

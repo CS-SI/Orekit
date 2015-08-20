@@ -62,7 +62,7 @@ class PlanetaryTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cNe coefficient for mean Neptune longitude
      * @param cPa coefficient for general accumulated precession in longitude
       */
-    public PlanetaryTerm(final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
+    PlanetaryTerm(final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
                          final int cSa, final int cUr, final int cNe, final int cPa) {
         this.cMe = cMe;
         this.cVe = cVe;

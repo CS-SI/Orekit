@@ -92,7 +92,7 @@ public class EclipticProvider implements TransformProvider {
         /** Simple constructor.
          * @param conventions IERS conventions
          */
-        public DataTransferObject(final IERSConventions conventions) {
+        DataTransferObject(final IERSConventions conventions) {
             this.conventions = conventions;
         }
 

@@ -854,7 +854,7 @@ public class EllipsoidTessellator {
          * @param lower lower index
          * @param upper upper index
          */
-        public Range(final int lower, final int upper) {
+        Range(final int lower, final int upper) {
             this.lower = lower;
             this.upper = upper;
         }
@@ -874,7 +874,7 @@ public class EllipsoidTessellator {
          * @param across across range
          * @param along along range
          */
-        public RangePair(final Range across, final Range along) {
+        RangePair(final Range across, final Range along) {
             this.across = across;
             this.along  = along;
         }

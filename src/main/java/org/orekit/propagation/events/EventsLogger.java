@@ -171,7 +171,7 @@ public class EventsLogger implements Serializable {
         /** Simple constructor.
          * @param detector events detector to wrap
          */
-        public LoggingWrapper(final T detector) {
+        LoggingWrapper(final T detector) {
             this(detector.getMaxCheckInterval(), detector.getThreshold(),
                  detector.getMaxIterationCount(), new LocalHandler<T>(),
                  detector);

@@ -61,7 +61,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
      * @param zCoeffs Chebyshev polynomials coefficients for the Z component
      * (a reference to the array will be stored in the instance)
      */
-    public PosVelChebyshev(final AbsoluteDate start, final double duration,
+    PosVelChebyshev(final AbsoluteDate start, final double duration,
                            final double[] xCoeffs, final double[] yCoeffs,
                            final double[] zCoeffs) {
         this.start    = start;

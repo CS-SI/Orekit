@@ -265,7 +265,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
              * @throws NonMonotonicSequenceException if {@code x} or {@code y}
              *         are not strictly increasing.
              */
-            public BilinearInterpolatingFunction(final double[] x, final double[] y, final double[][] f)
+            BilinearInterpolatingFunction(final double[] x, final double[] y, final double[][] f)
                 throws DimensionMismatchException, IllegalArgumentException, NoDataException,
                 NonMonotonicSequenceException {
 
