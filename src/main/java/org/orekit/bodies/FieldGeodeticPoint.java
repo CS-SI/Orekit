@@ -19,48 +19,50 @@ package org.orekit.bodies;
 import java.io.Serializable;
 import java.text.NumberFormat;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.RealFieldElement;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.util.CompositeFormat;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 
-/** Point location relative to a 2D body surface.
+/** Point location relative to a 2D body surface, using {@link RealFieldElement}.
  * <p>Instance of this class are guaranteed to be immutable.</p>
+ * @param <T> the type of the field elements
+ * @since 7.1
  * @see BodyShape
- * @see FieldGeodeticPoint
  * @author Luc Maisonobe
  */
-public class GeodeticPoint implements Serializable {
+public class FieldGeodeticPoint<T extends RealFieldElement<T>> implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7862466825590075399L;
+    private static final long serialVersionUID = 20150821L;
 
     /** Latitude of the point (rad). */
-    private final double latitude;
+    private final T latitude;
 
     /** Longitude of the point (rad). */
-    private final double longitude;
+    private final T longitude;
 
     /** Altitude of the point (m). */
-    private final double altitude;
+    private final T altitude;
 
     /** Zenith direction. */
-    private transient Vector3D zenith;
+    private transient FieldVector3D<T> zenith;
 
     /** Nadir direction. */
-    private transient Vector3D nadir;
+    private transient FieldVector3D<T> nadir;
 
     /** North direction. */
-    private transient Vector3D north;
+    private transient FieldVector3D<T> north;
 
     /** South direction. */
-    private transient Vector3D south;
+    private transient FieldVector3D<T> south;
 
     /** East direction. */
-    private transient Vector3D east;
+    private transient FieldVector3D<T> east;
 
     /** West direction. */
-    private transient Vector3D west;
+    private transient FieldVector3D<T> west;
 
     /**
      * Build a new instance. The angular coordinates will be normalized so that
@@ -70,38 +72,40 @@ public class GeodeticPoint implements Serializable {
      * @param longitude longitude of the point
      * @param altitude altitude of the point
      */
-    public GeodeticPoint(final double latitude, final double longitude,
-                         final double altitude) {
-        double lat = MathUtils.normalizeAngle(latitude, FastMath.PI / 2);
-        double lon = MathUtils.normalizeAngle(longitude, 0);
+    public FieldGeodeticPoint(final T latitude, final T longitude,
+                              final T altitude) {
+        double lat = MathUtils.normalizeAngle(latitude.getReal(), FastMath.PI / 2);
+        double lon = MathUtils.normalizeAngle(longitude.getReal(), 0);
         if (lat > FastMath.PI / 2.0) {
             // latitude is beyond the pole -> add 180 to longitude
-            lat = FastMath.PI - lat;
-            lon = MathUtils.normalizeAngle(longitude + FastMath.PI, 0);
+            lat = FastMath.PI - latitude.getReal();
+            lon = MathUtils.normalizeAngle(longitude.getReal() + FastMath.PI, 0);
         }
-        this.latitude  = lat;
-        this.longitude = lon;
+        final double deltaLat = lat - latitude.getReal();
+        final double deltaLon = lon - longitude.getReal();
+        this.latitude  = latitude.add(deltaLat);
+        this.longitude = longitude.add(deltaLon);
         this.altitude  = altitude;
     }
 
     /** Get the latitude.
      * @return latitude, an angular value in the range [-π/2, π/2]
      */
-    public double getLatitude() {
+    public T getLatitude() {
         return latitude;
     }
 
     /** Get the longitude.
      * @return longitude, an angular value in the range [-π, π]
      */
-    public double getLongitude() {
+    public T getLongitude() {
         return longitude;
     }
 
     /** Get the altitude.
      * @return altitude
      */
-    public double getAltitude() {
+    public T getAltitude() {
         return altitude;
     }
 
@@ -110,13 +114,15 @@ public class GeodeticPoint implements Serializable {
      * @return unit vector in the zenith direction
      * @see #getNadir()
      */
-    public Vector3D getZenith() {
+    public FieldVector3D<T> getZenith() {
         if (zenith == null) {
-            final double cosLat = FastMath.cos(latitude);
-            final double sinLat = FastMath.sin(latitude);
-            final double cosLon = FastMath.cos(longitude);
-            final double sinLon = FastMath.sin(longitude);
-            zenith = new Vector3D(cosLon * cosLat, sinLon * cosLat, sinLat);
+            final T cosLat = latitude.cos();
+            final T sinLat = latitude.sin();
+            final T cosLon = longitude.cos();
+            final T sinLon = longitude.sin();
+            zenith = new FieldVector3D<T>(cosLon.multiply(cosLat),
+                                          sinLon.multiply(cosLat),
+                                          sinLat);
         }
         return zenith;
     }
@@ -126,7 +132,7 @@ public class GeodeticPoint implements Serializable {
      * @return unit vector in the nadir direction
      * @see #getZenith()
      */
-    public Vector3D getNadir() {
+    public FieldVector3D<T> getNadir() {
         if (nadir == null) {
             nadir = getZenith().negate();
         }
@@ -139,13 +145,15 @@ public class GeodeticPoint implements Serializable {
      * @return unit vector in the north direction
      * @see #getSouth()
      */
-    public Vector3D getNorth() {
+    public FieldVector3D<T> getNorth() {
         if (north == null) {
-            final double cosLat = FastMath.cos(latitude);
-            final double sinLat = FastMath.sin(latitude);
-            final double cosLon = FastMath.cos(longitude);
-            final double sinLon = FastMath.sin(longitude);
-            north = new Vector3D(-cosLon * sinLat, -sinLon * sinLat, cosLat);
+            final T cosLat = latitude.cos();
+            final T sinLat = latitude.sin();
+            final T cosLon = longitude.cos();
+            final T sinLon = longitude.sin();
+            north = new FieldVector3D<T>(cosLon.multiply(sinLat).negate(),
+                                         sinLon.multiply(sinLat).negate(),
+                                         cosLat);
         }
         return north;
     }
@@ -155,7 +163,7 @@ public class GeodeticPoint implements Serializable {
      * @return unit vector in the south direction
      * @see #getNorth()
      */
-    public Vector3D getSouth() {
+    public FieldVector3D<T> getSouth() {
         if (south == null) {
             south = getNorth().negate();
         }
@@ -168,9 +176,11 @@ public class GeodeticPoint implements Serializable {
      * @return unit vector in the east direction
      * @see #getWest()
      */
-    public Vector3D getEast() {
+    public FieldVector3D<T> getEast() {
         if (east == null) {
-            east = new Vector3D(-FastMath.sin(longitude), FastMath.cos(longitude), 0);
+            east = new FieldVector3D<T>(longitude.sin().negate(),
+                                        longitude.cos(),
+                                        longitude.getField().getZero());
         }
         return east;
     }
@@ -180,7 +190,7 @@ public class GeodeticPoint implements Serializable {
      * @return unit vector in the west direction
      * @see #getEast()
      */
-    public Vector3D getWest() {
+    public FieldVector3D<T> getWest() {
         if (west == null) {
             west = getEast().negate();
         }
@@ -191,29 +201,30 @@ public class GeodeticPoint implements Serializable {
     public boolean equals(final Object object) {
         if (object instanceof GeodeticPoint) {
             final GeodeticPoint other = (GeodeticPoint) object;
-            return this.getLatitude() == other.getLatitude() &&
-                   this.getLongitude() == other.getLongitude() &&
-                   this.getAltitude() == other.getAltitude();
+            return getLatitude().equals(other.getLatitude()) &&
+                   getLongitude().equals(other.getLongitude()) &&
+                   getAltitude().equals(other.getAltitude());
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return new Double(this.getLatitude()).hashCode() ^
-               new Double(this.getLongitude()).hashCode() ^
-               new Double(this.getAltitude()).hashCode();
+        return getLatitude().hashCode() ^
+               getLongitude().hashCode() ^
+               getAltitude().hashCode();
     }
 
     @Override
     public String toString() {
         final NumberFormat format = CompositeFormat.getDefaultNumberFormat();
         return "{lat: " +
-               format.format(FastMath.toDegrees(this.getLatitude())) +
+               format.format(FastMath.toDegrees(getLatitude().getReal())) +
                " deg, lon: " +
-               format.format(FastMath.toDegrees(this.getLongitude())) +
+               format.format(FastMath.toDegrees(getLongitude().getReal())) +
                " deg, alt: " +
-               format.format(this.getAltitude()) +
+               format.format(getAltitude().getReal()) +
                "}";
     }
+
 }

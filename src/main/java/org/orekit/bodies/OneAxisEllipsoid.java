@@ -197,37 +197,22 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     }
 
     /** Transform a surface-relative point to a Cartesian point.
-     * @param point surface-relative point
-     * @param gpFirstDerivatives first time derivatives of the geodetic point
-     * (in latitude, longitude, altitude order)
-     * @param gpSecondDerivatives second time derivatives of the geodetic point
-     * (in latitude, longitude, altitude order)
+     * @param point surface-relative point, using time as the single derivation parameter
      * @return point at the same location but as a Cartesian point including derivatives
      */
-    public PVCoordinates transform(final GeodeticPoint point,
-                                   final double[] gpFirstDerivatives,
-                                   final double[] gpSecondDerivatives) {
-        final DerivativeStructure latitude =
-                new DerivativeStructure(1, 2,
-                                        point.getLatitude(),
-                                        gpFirstDerivatives[0],
-                                        gpSecondDerivatives[0]);
-        final DerivativeStructure longitude =
-                new DerivativeStructure(1, 2,
-                                        point.getLongitude(),
-                                        gpFirstDerivatives[1],
-                                        gpSecondDerivatives[1]);
-        final DerivativeStructure altitude =
-                new DerivativeStructure(1, 2,
-                                        point.getAltitude(),
-                                        gpFirstDerivatives[2],
-                                        gpSecondDerivatives[2]);
+    public PVCoordinates transform(final FieldGeodeticPoint<DerivativeStructure> point) {
+
+        final DerivativeStructure latitude  = point.getLatitude();
+        final DerivativeStructure longitude = point.getLongitude();
+        final DerivativeStructure altitude  = point.getAltitude();
+
         final DerivativeStructure cLambda = longitude.cos();
         final DerivativeStructure sLambda = longitude.sin();
         final DerivativeStructure cPhi    = latitude.cos();
         final DerivativeStructure sPhi    = latitude.sin();
         final DerivativeStructure n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
         final DerivativeStructure r       = n.add(altitude).multiply(cPhi);
+
         return new PVCoordinates(new FieldVector3D<DerivativeStructure>(r.multiply(cLambda),
                                                                         r.multiply(sLambda),
                                                                         sPhi.multiply(altitude.add(n.multiply(g2)))));
@@ -329,6 +314,44 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                  FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX()),
                                  FastMath.copySign(FastMath.hypot(dr, dz), insideIfNegative));
 
+    }
+
+    /** Transform a Cartesian point to a surface-relative point.
+     * @param point Cartesian point
+     * @param frame frame in which Cartesian point is expressed
+     * @param date date of the computation (used for frames conversions)
+     * @return point at the same location but as a surface-relative point,
+     * using time as the single derivation parameter
+     * @exception OrekitException if point cannot be converted to body frame
+     */
+    FieldGeodeticPoint<DerivativeStructure> transform(final PVCoordinates point,
+                                                      final Frame frame, final AbsoluteDate date)
+        throws OrekitException {
+
+        // transform point to body frame
+        final Transform toBody = frame.getTransformTo(bodyFrame, date);
+        final PVCoordinates pointInBodyFrame = toBody.transformPVCoordinates(point);
+        final FieldVector3D<DerivativeStructure> p = pointInBodyFrame.toDerivativeStructureVector(2);
+        final DerivativeStructure   pr2 = p.getX().multiply(p.getX()).add(p.getY().multiply(p.getY()));
+        final DerivativeStructure   pr  = pr2.sqrt();
+        final DerivativeStructure   pz  = p.getZ();
+
+        // project point on the ellipsoid surface
+        final TimeStampedPVCoordinates groundPoint = projectToGround(new TimeStampedPVCoordinates(date, pointInBodyFrame),
+                                                                     bodyFrame);
+        final FieldVector3D<DerivativeStructure> gp = groundPoint.toDerivativeStructureVector(2);
+        final DerivativeStructure   gpr2 = gp.getX().multiply(gp.getX()).add(gp.getY().multiply(gp.getY()));
+        final DerivativeStructure   gpr  = gpr2.sqrt();
+        final DerivativeStructure   gpz  = gp.getZ();
+
+        // relative position of test point with respect to its ellipse sub-point
+        final DerivativeStructure dr  = pr.subtract(gpr);
+        final DerivativeStructure dz  = pz.subtract(gpz);
+        final double insideIfNegative = g2 * (pr2.getReal() - ae2) + pz.getReal() * pz.getReal();
+
+        return new FieldGeodeticPoint<DerivativeStructure>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
+                                                           DerivativeStructure.atan2(p.getY(), p.getX()),
+                                                           DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
     }
 
     /** Replace the instance with a data transfer object for serialization.

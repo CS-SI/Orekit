@@ -570,6 +570,40 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
+    public void testMovingGeodeticPointSymmetry() throws OrekitException {
+
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        double lat0 = FastMath.toRadians(60.0);
+        double lon0 = FastMath.toRadians(25.0);
+        double alt0 = 100.0;
+        double lat1 =   1.0e-3;
+        double lon1 =  -2.0e-3;
+        double alt1 =   1.2;
+        double lat2 =  -1.0e-5;
+        double lon2 =  -3.0e-5;
+        double alt2 =  -0.01;
+        final DerivativeStructure latDS = new DerivativeStructure(1, 2, lat0, lat1, lat2);
+        final DerivativeStructure lonDS = new DerivativeStructure(1, 2, lon0, lon1, lon2);
+        final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
+
+        // direct computation of position, velocity and acceleration
+        PVCoordinates pv = earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS));
+        FieldGeodeticPoint<DerivativeStructure> rebuilt = earth.transform(pv, earth.getBodyFrame(),null);
+        Assert.assertEquals(lat0, rebuilt.getLatitude().getReal(),                1.0e-16);
+        Assert.assertEquals(lat1, rebuilt.getLatitude().getPartialDerivative(1),  5.0e-19);
+        Assert.assertEquals(lat2, rebuilt.getLatitude().getPartialDerivative(2),  5.0e-14);
+        Assert.assertEquals(lon0, rebuilt.getLongitude().getReal(),               1.0e-16);
+        Assert.assertEquals(lon1, rebuilt.getLongitude().getPartialDerivative(1), 5.0e-19);
+        Assert.assertEquals(lon2, rebuilt.getLongitude().getPartialDerivative(2), 1.0e-20);
+        Assert.assertEquals(alt0, rebuilt.getAltitude().getReal(),                2.0e-11);
+        Assert.assertEquals(alt1, rebuilt.getAltitude().getPartialDerivative(1),  6.0e-13);
+        Assert.assertEquals(alt2, rebuilt.getAltitude().getPartialDerivative(2),  2.0e-14);
+
+    }
+
+    @Test
     public void testMovingGeodeticPoint() throws OrekitException {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -584,16 +618,14 @@ public class OneAxisEllipsoidTest {
         double lat2 =  -1.0e-5;
         double lon2 =  -3.0e-5;
         double alt2 =  -0.01;
-
-        // direct computation of position, velocity and acceleration
-        PVCoordinates pv = earth.transform(new GeodeticPoint(lat0, lon0, alt0),
-                                           new double[] { lat1, lon1, alt1 },
-                                           new double[] { lat2, lon2, alt2 });
-
-        // finite differences computation
         final DerivativeStructure latDS = new DerivativeStructure(1, 2, lat0, lat1, lat2);
         final DerivativeStructure lonDS = new DerivativeStructure(1, 2, lon0, lon1, lon2);
         final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
+
+        // direct computation of position, velocity and acceleration
+        PVCoordinates pv = earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS));
+
+        // finite differences computation
         FiniteDifferencesDifferentiator differentiator =
                 new FiniteDifferencesDifferentiator(5, 0.1);
         UnivariateDifferentiableFunction fx =
