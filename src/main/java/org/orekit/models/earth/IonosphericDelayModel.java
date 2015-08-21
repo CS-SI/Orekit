@@ -21,7 +21,6 @@ import java.io.Serializable;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 
-
 /** Defines a ionospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
  *
@@ -38,7 +37,7 @@ public interface IonosphericDelayModel extends Serializable {
      * @param elevation   the elevation of the satellite, in degrees
      * @param azimuth     the azimuth of the satellite, in degrees
      *
-     * @return the path delay due to the ionosphere in m
+     * @return the path delay due to the troposphere in m
      */
     double calculatePathDelay(final AbsoluteDate date, final GeodeticPoint geo, final double elevation, final double azimuth);
 }

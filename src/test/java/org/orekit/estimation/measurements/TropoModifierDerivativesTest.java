@@ -18,18 +18,13 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.StateFunction;
-import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
+import org.orekit.models.earth.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -38,7 +33,9 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 
 public class TropoModifierDerivativesTest {
-
+    /** utility constant to convert from radians to degrees. */
+    private static double RADIANS_TO_DEGREES = 180. / Math.PI;
+    
     @Test
     public void testModifierElevationStateDerivatives() throws OrekitException {
 
@@ -67,45 +64,12 @@ public class TropoModifierDerivativesTest {
             final AbsoluteDate date = ((Range) measurement).getDate();
             final SpacecraftState refstate     = propagator.propagate(date);
 
-            final double[]      jacobian  = RangeTroposphericDelayModifier.Derivatives.derivElevationWrtState(date, stationParameter, refstate);
-
-            final double[][] finiteDifferencesJacobian =
-                            EstimationTestUtils.differentiate(new StateFunction() {
-                                public double[] value(final SpacecraftState state) throws OrekitException {
-                                    try {
-                                        // evaluate target's elevation with a changed target position                                                                                       
-                                        
-                                        final Vector3D extPoint = state.getPVCoordinates().getPosition();
-                                        final Frame frameSat = state.getFrame();
-                                        
-                                        final double[] result = new double[]{
-                                                            stationParameter.getOffsetFrame().getElevation(extPoint, frameSat, date)
-                                        };
-                                        
-                                        return result;
-
-                                    } catch (OrekitException oe) {
-                                        throw new OrekitExceptionWrapper(oe);
-                                    }
-                                }
-                                                              }, measurement.getDimension(), OrbitType.CARTESIAN,
-                                                              PositionAngle.TRUE, 15.0, 3).value(refstate);                            
-
-
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian.length);
-
-            final double tolerance = 1e-10;
-            for (int i = 0; i < jacobian.length; ++i) {
-                    Assert.assertEquals(finiteDifferencesJacobian[0][i],
-                                        jacobian[i],
-                                        tolerance * FastMath.max(FastMath.abs(finiteDifferencesJacobian[0][i]), 1.0));
-            }
+            // 
         }
     }
-
+    
     @Test
-    public void testModifierElevationParameterDerivatives() throws OrekitException {
-
+    public void testKlobucharIonoModel() throws OrekitException {
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -123,130 +87,42 @@ public class TropoModifierDerivativesTest {
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
-
+        
+        // Navigation message data
+        // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA           
+        // .1430D+06   .0000D+00  -.3280D+06   .1130D+06          ION BETA              
+        KlobucharIonoModel model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06,0},
+                                                          new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+        
         for (final Measurement measurement : measurements) {
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((Range) measurement).getStation();
+            final GroundStation station = ((Range) measurement).getStation();
             final AbsoluteDate date = ((Range) measurement).getDate();
             final SpacecraftState state     = propagator.propagate(date);
-            final Vector3D extPoint = state.getPVCoordinates().getPosition();
-            final Frame frameSat = state.getFrame();
+
+            final Vector3D position = state.getPVCoordinates().getPosition();
             
-            final double[]      jacobian  = RangeTroposphericDelayModifier.Derivatives.derivElevationWrtGroundstation(date, stationParameter, state);
-
-            final double[][] finiteDifferencesJacobian =
-                EstimationTestUtils.differentiate(new MultivariateVectorFunction() {
-                        public double[] value(double[] point) throws OrekitExceptionWrapper {
-                            try {
-
-                                final double[] savedParameter = stationParameter.getValue();
-
-                                // evaluate target's elevation with a changed station position
-                                stationParameter.setValue(point);
-                                
-                                //final double[] result = new double[]{
-                                //    stationParameter.getOffsetFrame().getElevation(extPoint, frameSat, date)
-                                //};
-
-                                final Frame frameSta = stationParameter.getOffsetFrame();
-                                final Transform tSat2Sta = frameSat.getTransformTo(frameSta, date);
-                                final Vector3D extPointTopo = tSat2Sta.transformPosition(extPoint);
-                                final double[] result = new double[]{
-                                    extPointTopo.getX()
-                                };
-                                
-                                stationParameter.setValue(savedParameter);
-                                
-                                return result;
-
-                            } catch (OrekitException oe) {
-                                throw new OrekitExceptionWrapper(oe);
-                            }
-                        }
-                    }, measurement.getDimension(), 3, 10.0, 10.0, 10.0).value(stationParameter.getValue());
-
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian.length);
-
-            final double tolerance = 1e-10;
-            for (int i = 0; i < jacobian.length; ++i) {
-                    Assert.assertEquals(finiteDifferencesJacobian[0][i],
-                                        jacobian[i],
-                                        tolerance * FastMath.max(FastMath.abs(finiteDifferencesJacobian[0][i]), 1.));
-            }
-
-        }
-
+            //
+            final GeodeticPoint geo = station.getBaseFrame().getPoint();
+            
+            // elevation in radians
+            final double elevation =
+                    station.getBaseFrame().getElevation(position,
+                                                        state.getFrame(),
+                                                        state.getDate()) * RADIANS_TO_DEGREES;
+            
+            // elevation in radians
+            final double azimuth =
+                    station.getBaseFrame().getAzimuth(position,
+                                                        state.getFrame(),
+                                                        state.getDate()) * RADIANS_TO_DEGREES;
+            
+            double delay = model.calculatePathDelay(date, geo, elevation, azimuth);
+            System.out.println("Azimuth: " + azimuth + "; Elevation: " + elevation + "; Delay: " + delay);
+        }        
+        
     }
-    
-    @Test
-    public void testModifierHeightParameterDerivatives() throws OrekitException {
-
-        Context context = EstimationTestUtils.eccentricContext();
-
-        final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
-                                              1.0e-6, 60.0, 0.001);
-
-        // create perfect range measurements
-        for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
-        }
-        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
-                                                                           propagatorBuilder);
-        final List<Measurement> measurements =
-                        EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
-        propagator.setSlaveMode();
-
-        for (final Measurement measurement : measurements) {
-
-            // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((Range) measurement).getStation();
-            final AbsoluteDate date = ((Range) measurement).getDate();
-            final SpacecraftState state     = propagator.propagate(date);
-           
-            final double[]      jacobian  = RangeTroposphericDelayModifier.Derivatives.derivHeightWrtGroundstation(date, stationParameter, state);
-
-            // compute dAltitude / dPosition
-            final double[][] finiteDifferencesJacobian =
-                EstimationTestUtils.differentiate(new MultivariateVectorFunction() {
-                        public double[] value(double[] point) throws OrekitExceptionWrapper {
-                            try {
-
-                                final double[] savedParameter = stationParameter.getValue();
-
-                                // evaluate target's altitude with a changed station position
-                                stationParameter.setValue(point);
-
-                                final double[] result = new double[]{
-                                                    stationParameter.getOffsetFrame().getPoint().getAltitude()
-                                };
-
-                                stationParameter.setValue(savedParameter);
-                                
-                                return result;
-
-                            } catch (OrekitException oe) {
-                                throw new OrekitExceptionWrapper(oe);
-                            }
-                        }
-                    }, measurement.getDimension(), 3, 20.0, 20.0, 20.0).value(stationParameter.getValue());
-
-            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian.length);
-
-            final double tolerance = 1e-10;
-            for (int i = 0; i < jacobian.length; ++i) {
-                    Assert.assertEquals(finiteDifferencesJacobian[0][i],
-                                        jacobian[i],
-                                        tolerance * FastMath.max(FastMath.abs(finiteDifferencesJacobian[0][i]), 1.));
-            }
-
-        }
-
-    }
-    
 }
 
 
