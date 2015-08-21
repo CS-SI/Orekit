@@ -217,7 +217,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
          * @param date date
          * @param increase if true, g function increases around event date
          */
-        public EventDate(final AbsoluteDate date, final boolean increase) {
+        EventDate(final AbsoluteDate date, final boolean increase) {
             this.eventDate = date;
             this.gIncrease = increase;
         }

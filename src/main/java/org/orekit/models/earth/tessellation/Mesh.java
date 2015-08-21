@@ -80,7 +80,7 @@ class Mesh {
      * @param start location of the first node.
      * @exception OrekitException if along direction of first tile cannot be computed
      */
-    public Mesh(final OneAxisEllipsoid ellipsoid, final SphericalPolygonsSet zone,
+    Mesh(final OneAxisEllipsoid ellipsoid, final SphericalPolygonsSet zone,
                 final TileAiming aiming, final double alongGap, final double acrossGap,
                 final S2Point start)
         throws OrekitException {

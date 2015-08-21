@@ -64,7 +64,7 @@ public class LocalOrbitalFrame extends Frame {
          * @param provider provider used to compute frame motion
          * @param reference reference frame
          */
-        public LocalProvider(final LOFType type, final PVCoordinatesProvider provider,
+        LocalProvider(final LOFType type, final PVCoordinatesProvider provider,
                              final Frame reference) {
             this.type      = type;
             this.provider  = provider;

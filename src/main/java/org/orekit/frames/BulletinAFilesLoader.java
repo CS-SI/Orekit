@@ -352,7 +352,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
     /** Build a loader for IERS bulletins A files.
     * @param supportedNames regular expression for supported files names
     */
-    public BulletinAFilesLoader(final String supportedNames) {
+    BulletinAFilesLoader(final String supportedNames) {
         this.supportedNames = supportedNames;
     }
 
@@ -391,7 +391,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
 
         /** Simple constructor.
          */
-        public Parser() {
+        Parser() {
             this.eopFieldsMap         = new HashMap<Integer, double[]>();
             this.poleOffsetsFieldsMap = new HashMap<Integer, double[]>();
             this.lineNumber           = 0;

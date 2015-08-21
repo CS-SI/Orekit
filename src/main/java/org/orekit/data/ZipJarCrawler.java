@@ -258,7 +258,7 @@ public class ZipJarCrawler implements DataProvider {
          * @param rawStream raw stream
          * @exception IOException if first entry cannot be retrieved
          */
-        public Archive(final InputStream rawStream) throws IOException {
+        Archive(final InputStream rawStream) throws IOException {
             zip = new ZipInputStream(rawStream);
             goToNext();
         }

@@ -2088,7 +2088,7 @@ public enum IERSConventions {
         /** Simple constructor.
          * @param ut1 UT1 time scale
          */
-        public StellarAngleCapitaine(final TimeScale ut1) {
+        StellarAngleCapitaine(final TimeScale ut1) {
             this.ut1 = ut1;
         }
 
@@ -2131,7 +2131,7 @@ public enum IERSConventions {
          * @param x x coordinate
          * @param y y coordinate
          */
-        public MeanPole(final AbsoluteDate date, final double x, final double y) {
+        MeanPole(final AbsoluteDate date, final double x, final double y) {
             this.date = date;
             this.x    = x;
             this.y    = y;

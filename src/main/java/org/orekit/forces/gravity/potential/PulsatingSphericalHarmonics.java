@@ -53,7 +53,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
      * @param cosS cosine component of the sine coefficients
      * @param sinS sine component of the sine coefficients
      */
-    public PulsatingSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
+    PulsatingSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
                                      final double period,
                                      final double[][] cosC, final double[][] sinC,
                                      final double[][] cosS, final double[][] sinS) {

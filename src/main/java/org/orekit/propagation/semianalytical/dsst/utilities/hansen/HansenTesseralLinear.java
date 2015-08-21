@@ -463,7 +463,7 @@ public class HansenTesseralLinear {
          * @param j j value
          * @param maxHansen max power of e² in series expansion
          */
-        public HansenCoefficientsBySeries(final int mnm1, final int s,
+        HansenCoefficientsBySeries(final int mnm1, final int s,
                                           final int j, final int maxHansen) {
             this.mnm1 = mnm1;
             this.s = s;

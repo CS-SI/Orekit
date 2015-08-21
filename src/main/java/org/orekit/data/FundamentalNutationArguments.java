@@ -363,7 +363,7 @@ public class FundamentalNutationArguments implements Serializable {
          * @param timeScale time scale for GMST computation
          * @param coefficients all coefficients
          */
-        public DataTransferObject(final IERSConventions conventions, final TimeScale timeScale,
+        DataTransferObject(final IERSConventions conventions, final TimeScale timeScale,
                                   final List<double[]> coefficients) {
             this.conventions  = conventions;
             this.timeScale    = timeScale;
@@ -522,7 +522,7 @@ public class FundamentalNutationArguments implements Serializable {
         private double[] parsedPolynomial;
 
         /** Simple constructor. */
-        public DefinitionParser() {
+        DefinitionParser() {
 
             // the luni-solar Delaunay arguments polynomial parts should read something like:
             // F5 ≡ Ω = 125.04455501° − 6962890.5431″t + 7.4722″t² + 0.007702″t³ − 0.00005939″t⁴

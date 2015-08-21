@@ -317,7 +317,7 @@ public class AttitudesSequence implements AttitudeProvider {
          * should match past and future attitude laws
          * @param switchHandler handler to call for notifying when switch occurs (may be null)
          */
-        public Switch(final T event,
+        Switch(final T event,
                       final boolean switchOnIncrease, final boolean switchOnDecrease,
                       final AttitudeProvider past, final AttitudeProvider future,
                       final double transitionTime, final AngularDerivativesFilter transitionFilter,

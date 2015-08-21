@@ -72,7 +72,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
     /** Build a loader for IERS XML EOP files.
      * @param supportedNames regular expression for supported files names
      */
-    public RapidDataAndPredictionXMLLoader(final String supportedNames) {
+    RapidDataAndPredictionXMLLoader(final String supportedNames) {
         this.supportedNames = supportedNames;
     }
 
@@ -97,7 +97,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
         /** Simple constructor.
          * @param converter converter to use
          */
-        public Parser(final IERSConventions.NutationCorrectionConverter converter) {
+        Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter = converter;
             this.history   = new ArrayList<EOPEntry>();
         }
@@ -192,7 +192,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
             /** Simple constructor.
              * @param name file name
              */
-            public EOPContentHandler(final String name) {
+            EOPContentHandler(final String name) {
                 this.name = name;
                 buffer  = new StringBuffer();
             }

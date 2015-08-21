@@ -103,7 +103,7 @@ public class TAIUTCDatFilesLoader implements UTCTAIOffsetsLoader {
 
         /** Simple constructor.
          */
-        public Parser() {
+        Parser() {
 
             // data lines read:
             // 1965 SEP  1 =JD 2439004.5  TAI-UTC=   3.8401300 S + (MJD - 38761.) X 0.001296 S

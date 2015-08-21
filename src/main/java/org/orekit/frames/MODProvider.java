@@ -50,7 +50,7 @@ class MODProvider implements TransformProvider {
      * @param conventions IERS conventions to apply
      * @exception OrekitException if IERS conventions tables cannot be read
      */
-    public MODProvider(final IERSConventions conventions) throws OrekitException {
+    MODProvider(final IERSConventions conventions) throws OrekitException {
         this.conventions        = conventions;
         this.precessionFunction = conventions.getPrecessionFunction();
         final TimeFunction<Double> epsilonAFunction = conventions.getMeanObliquityFunction();
@@ -104,7 +104,7 @@ class MODProvider implements TransformProvider {
         /** Simple constructor.
          * @param conventions IERSConventions conventions
          */
-        public DataTransferObject(final IERSConventions conventions) {
+        DataTransferObject(final IERSConventions conventions) {
             this.conventions = conventions;
         }
 
