@@ -95,7 +95,9 @@ public abstract class Orbit
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with true angle. */
     private transient double[][] jacobianWrtParametersTrue;
 
-    /** Default constructor.
+    /** TODO: case of nonInertial frame???
+     * 
+     * Default constructor.
      * Build a new instance with arbitrary default elements.
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
@@ -119,7 +121,9 @@ public abstract class Orbit
         jacobianWrtParametersTrue      = null;
     }
 
-    /** Set the orbit from Cartesian parameters.
+    /** TODO: case of nonInertial frame???
+     * 
+     * Set the orbit from Cartesian parameters.
      *
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
@@ -138,7 +142,7 @@ public abstract class Orbit
 //        ensurePseudoInertialFrame(frame);
         this.date = pvCoordinates.getDate();
         this.mu = mu;
-        if (pvCoordinates.getAcceleration().getNormSq() == 0) {
+        if (pvCoordinates.getAcceleration().getNormSq() == 0 && frame.isPseudoInertial()) {
             // the acceleration was not provided,
             // compute it from Newtonian attraction
             final double r2 = pvCoordinates.getPosition().getNormSq();
