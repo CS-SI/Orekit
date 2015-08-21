@@ -22,6 +22,9 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add" >
+        Added a way to retrieve PVA from moving geodetic points.
+      </action>
+      <action dev="luc" type="add" >
         Allow truncation of tiles in ellipsoid tessellation.
       </action>
       <action dev="luc" type="add" >

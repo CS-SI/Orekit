@@ -18,7 +18,9 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -28,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -191,6 +194,43 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double n         = getA() / FastMath.sqrt(1.0 - e2 * sPhi * sPhi);
         final double r         = (n + h) * cPhi;
         return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
+    }
+
+    /** Transform a surface-relative point to a Cartesian point.
+     * @param point surface-relative point
+     * @param gpFirstDerivatives first time derivatives of the geodetic point
+     * (in latitude, longitude, altitude order)
+     * @param gpSecondDerivatives second time derivatives of the geodetic point
+     * (in latitude, longitude, altitude order)
+     * @return point at the same location but as a Cartesian point including derivatives
+     */
+    public PVCoordinates transform(final GeodeticPoint point,
+                                   final double[] gpFirstDerivatives,
+                                   final double[] gpSecondDerivatives) {
+        final DerivativeStructure latitude =
+                new DerivativeStructure(1, 2,
+                                        point.getLatitude(),
+                                        gpFirstDerivatives[0],
+                                        gpSecondDerivatives[0]);
+        final DerivativeStructure longitude =
+                new DerivativeStructure(1, 2,
+                                        point.getLongitude(),
+                                        gpFirstDerivatives[1],
+                                        gpSecondDerivatives[1]);
+        final DerivativeStructure altitude =
+                new DerivativeStructure(1, 2,
+                                        point.getAltitude(),
+                                        gpFirstDerivatives[2],
+                                        gpSecondDerivatives[2]);
+        final DerivativeStructure cLambda = longitude.cos();
+        final DerivativeStructure sLambda = longitude.sin();
+        final DerivativeStructure cPhi    = latitude.cos();
+        final DerivativeStructure sPhi    = latitude.sin();
+        final DerivativeStructure n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
+        final DerivativeStructure r       = n.add(altitude).multiply(cPhi);
+        return new PVCoordinates(new FieldVector3D<DerivativeStructure>(r.multiply(cLambda),
+                                                                        r.multiply(sLambda),
+                                                                        sPhi.multiply(altitude.add(n.multiply(g2)))));
     }
 
     /** {@inheritDoc} */
