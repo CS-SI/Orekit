@@ -37,7 +37,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
@@ -46,9 +45,6 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import com.sun.org.apache.bcel.internal.generic.ISTORE;
-
 
 /** This class is the representation of a complete state holding orbit, attitude
  * and mass information at a given date.
@@ -92,8 +88,8 @@ public class SpacecraftState
 
     /** Orbital state. */
     private final Orbit orbit;
-    
-    // TODO: doc
+
+    /** Trajectory state, when it is not an orbit. */
     private final AbsolutePVCoordinates absPva;
 
     /** Attitude. */
@@ -207,7 +203,7 @@ public class SpacecraftState
         throws IllegalArgumentException {
         checkConsistency(orbit, attitude);
         this.orbit      = orbit;
-        this.absPva		= null;
+        this.absPva        = null;
         this.attitude   = attitude;
         this.mass       = mass;
         if (additional == null) {
@@ -220,12 +216,11 @@ public class SpacecraftState
         }
     }
 
-    
-    
-    /** TODO: check Javadoc
-     * Build a spacecraft state from orbit only.
+
+
+    /** Build a spacecraft state from orbit only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param orbit the orbit
+     * @param absPva position-velocity-acceleration
      * @exception OrekitException if default attitude cannot be computed
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva)
@@ -235,10 +230,9 @@ public class SpacecraftState
              DEFAULT_MASS, null);
     }
 
-    /** TODO: check Javadoc
-     * Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from orbit and attitude provider.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param orbit the orbit
+     * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @exception IllegalArgumentException if orbit and attitude dates
      * or frames are not equal
@@ -248,10 +242,9 @@ public class SpacecraftState
         this(absPva, attitude, DEFAULT_MASS, null);
     }
 
-    /** TODO: check Javadoc
-     * Create a new instance from orbit and mass.
+    /** Create a new instance from orbit and mass.
      * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param orbit the orbit
+     * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
      * @exception OrekitException if default attitude cannot be computed
      */
@@ -262,9 +255,8 @@ public class SpacecraftState
              mass, null);
     }
 
-    /** TODO: check Javadoc
-     * Build a spacecraft state from orbit, attitude provider and mass.
-     * @param orbit the orbit
+    /** Build a spacecraft state from orbit, attitude provider and mass.
+     * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
      * @exception IllegalArgumentException if orbit and attitude dates
@@ -275,10 +267,9 @@ public class SpacecraftState
         this(absPva, attitude, mass, null);
     }
 
-    /** TODO: check Javadoc
-     * Build a spacecraft state from orbit only.
+    /** Build a spacecraft state from orbit only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
-     * @param orbit the orbit
+     * @param absPva position-velocity-acceleration
      * @param additional additional states
      * @exception OrekitException if default attitude cannot be computed
      */
@@ -289,10 +280,9 @@ public class SpacecraftState
              DEFAULT_MASS, additional);
     }
 
-    /** TODO: check Javadoc
-     * Build a spacecraft state from orbit and attitude provider.
+    /** Build a spacecraft state from orbit and attitude provider.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     * @param orbit the orbit
+     * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param additional additional states
      * @exception IllegalArgumentException if orbit and attitude dates
@@ -303,10 +293,9 @@ public class SpacecraftState
         this(absPva, attitude, DEFAULT_MASS, additional);
     }
 
-    /** TODO: check Javadoc
-     * Create a new instance from orbit and mass.
+    /** Create a new instance from orbit and mass.
      * <p>Attitude law is set to an unspecified default attitude.</p>
-     * @param orbit the orbit
+     * @param absPva position-velocity-acceleration
      * @param mass the mass (kg)
      * @param additional additional states
      * @exception OrekitException if default attitude cannot be computed
@@ -318,9 +307,8 @@ public class SpacecraftState
              mass, additional);
     }
 
-    /** TODO: check Javadoc
-     * Build a spacecraft state from orbit, attitude provider and mass.
-     * @param orbit the orbit
+    /** Build a spacecraft state from orbit, attitude provider and mass.
+     * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @param mass the mass (kg)
      * @param additional additional states (may be null if no additional states are available)
@@ -328,12 +316,12 @@ public class SpacecraftState
      * or frames are not equal
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude,
-            final double mass, final Map<String, double[]> additional) 
-    		throws IllegalArgumentException {
-    	// TODO Auto-generated constructor stub
-    	checkConsistency(absPva, attitude);
-    	this.orbit      = null;
-        this.absPva		= absPva;
+            final double mass, final Map<String, double[]> additional)
+            throws IllegalArgumentException {
+        // TODO Auto-generated constructor stub
+        checkConsistency(absPva, attitude);
+        this.orbit      = null;
+        this.absPva        = absPva;
         this.attitude   = attitude;
         this.mass       = mass;
         if (additional == null) {
@@ -344,9 +332,9 @@ public class SpacecraftState
                 this.additional.put(entry.getKey(), entry.getValue().clone());
             }
         }
-	}
+    }
 
-	/** Add an additional state.
+    /** Add an additional state.
      * <p>
      * {@link SpacecraftState SpacecraftState} instances are immutable,
      * so this method does <em>not</em> change the instance, but rather
@@ -369,9 +357,9 @@ public class SpacecraftState
         newMap.putAll(additional);
         newMap.put(name, value.clone());
         if (absPva == null)
-        	return new SpacecraftState(orbit, attitude, mass, newMap);
+            return new SpacecraftState(orbit, attitude, mass, newMap);
         else
-        	return new SpacecraftState(absPva, attitude, mass, newMap);
+            return new SpacecraftState(absPva, attitude, mass, newMap);
     }
 
     /** Check orbit and attitude dates are equal.
@@ -394,14 +382,14 @@ public class SpacecraftState
                   orbit.getFrame().getName(), attitude.getReferenceFrame().getName());
         }
     }
-    
+
     // TODO: add doc
     public boolean isOrbitDefined() {
-    	return (orbit == null) ? false : true;
+        return (orbit == null) ? false : true;
     }
-    
+
     /** Check AbsolutePVCoordinates and attitude dates are equal.
-     * @param orbit the orbit
+     * @param absPva position-velocity-acceleration
      * @param attitude attitude
      * @exception IllegalArgumentException if orbit and attitude dates
      * are not equal
@@ -454,12 +442,12 @@ public class SpacecraftState
      * except for the mass which stay unchanged
      */
     public SpacecraftState shiftedBy(final double dt) {
-    	if (absPva == null)
-    		return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
-    				mass, additional);
-    	else
-    		return new SpacecraftState(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
-    				mass, additional);
+        if (absPva == null)
+            return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
+                    mass, additional);
+        else
+            return new SpacecraftState(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
+                    mass, additional);
     }
 
     /** {@inheritDoc}
@@ -531,11 +519,11 @@ public class SpacecraftState
      * @throws OrekitException if orbit is not defined
      */
     public Orbit getOrbit() {
-    	return orbit;
+        return orbit;
     }
 //    public Orbit getOrbit() throws OrekitException {
-//    	if (orbit == null)
-//    		throw new OrekitException(OrekitMessages.UNDEFINED_ORBIT);
+//        if (orbit == null)
+//            throw new OrekitException(OrekitMessages.UNDEFINED_ORBIT);
 //        return orbit;
 //    }
 
@@ -544,7 +532,7 @@ public class SpacecraftState
      * @return date
      */
     public AbsoluteDate getDate() {
-    	return (absPva == null) ? orbit.getDate() : absPva.getDate();
+        return (absPva == null) ? orbit.getDate() : absPva.getDate();
     }
 
     /** TODO: check doc ("inertial" ?)
@@ -552,7 +540,7 @@ public class SpacecraftState
      * @return the frame
      */
     public Frame getFrame() {
-    	return (absPva == null) ? orbit.getFrame() : absPva.getFrame();
+        return (absPva == null) ? orbit.getFrame() : absPva.getFrame();
     }
 
     /** Check if an additional state is available.
@@ -637,8 +625,8 @@ public class SpacecraftState
      * @return transform from specified frame to current spacecraft frame
      */
     public Transform toTransform() {
-    	final TimeStampedPVCoordinates pv = (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
-    	final AbsoluteDate date = (absPva == null) ? orbit.getDate() : absPva.getDate();
+        final TimeStampedPVCoordinates pv = (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
+        final AbsoluteDate date = (absPva == null) ? orbit.getDate() : absPva.getDate();
         return new Transform(date,
                              new Transform(date, pv.negate()),
                              new Transform(date, attitude.getOrientation()));
@@ -659,7 +647,7 @@ public class SpacecraftState
      * @return keplerian period in seconds
      */
     public double getKeplerianPeriod() {
-    	return (absPva == null) ? orbit.getKeplerianPeriod() : null;
+        return (absPva == null) ? orbit.getKeplerianPeriod() : null;
     }
 
     /** TODO: check changes and doc
@@ -669,7 +657,7 @@ public class SpacecraftState
      * @return keplerian mean motion in radians per second
      */
     public double getKeplerianMeanMotion() {
-    	return (absPva == null) ? orbit.getKeplerianMeanMotion() : null;
+        return (absPva == null) ? orbit.getKeplerianMeanMotion() : null;
     }
 
     /** TODO: check changes and doc
@@ -677,7 +665,7 @@ public class SpacecraftState
      * @return semi-major axis (m)
      */
     public double getA() {
-    	return (absPva == null) ? orbit.getA() : null;
+        return (absPva == null) ? orbit.getA() : null;
     }
 
     /** TODO: check changes and doc
@@ -686,7 +674,7 @@ public class SpacecraftState
      * @see #getE()
      */
     public double getEquinoctialEx() {
-    	return (absPva == null) ? orbit.getEquinoctialEx() : null;
+        return (absPva == null) ? orbit.getEquinoctialEx() : null;
     }
 
     /** TODO: check changes and doc
@@ -695,7 +683,7 @@ public class SpacecraftState
      * @see #getE()
      */
     public double getEquinoctialEy() {
-    	return (absPva == null) ? orbit.getEquinoctialEy() : null;
+        return (absPva == null) ? orbit.getEquinoctialEy() : null;
     }
 
     /** TODO: check changes and doc
@@ -704,7 +692,7 @@ public class SpacecraftState
      * @see #getI()
      */
     public double getHx() {
-    	return (absPva == null) ? orbit.getHx() : null;
+        return (absPva == null) ? orbit.getHx() : null;
     }
 
     /** TODO: check changes and doc
@@ -713,7 +701,7 @@ public class SpacecraftState
      * @see #getI()
      */
     public double getHy() {
-    	return (absPva == null) ? orbit.getHy() : null;
+        return (absPva == null) ? orbit.getHy() : null;
     }
 
     /** TODO: check changes and doc
@@ -723,7 +711,7 @@ public class SpacecraftState
      * @see #getLM()
      */
     public double getLv() {
-    	return (absPva == null) ? orbit.getLv() : null;
+        return (absPva == null) ? orbit.getLv() : null;
     }
 
     /** TODO: check changes and doc
@@ -733,7 +721,7 @@ public class SpacecraftState
      * @see #getLM()
      */
     public double getLE() {
-    	return (absPva == null) ? orbit.getLE() : null;
+        return (absPva == null) ? orbit.getLE() : null;
     }
 
     /** TODO: check changes and doc
@@ -743,7 +731,7 @@ public class SpacecraftState
      * @see #getLE()
      */
     public double getLM() {
-    	return (absPva == null) ? orbit.getLM() : null;
+        return (absPva == null) ? orbit.getLM() : null;
     }
 
     // Additional orbital elements
@@ -755,7 +743,7 @@ public class SpacecraftState
      * @see #getEquinoctialEy()
      */
     public double getE() {
-    	return (absPva == null) ? orbit.getE() : null;
+        return (absPva == null) ? orbit.getE() : null;
     }
 
     /** TODO: check changes and doc
@@ -765,7 +753,7 @@ public class SpacecraftState
      * @see #getHy()
      */
     public double getI() {
-    	return (absPva == null) ? orbit.getI() : null;
+        return (absPva == null) ? orbit.getI() : null;
     }
 
     /** TODO: check doc
@@ -794,7 +782,7 @@ public class SpacecraftState
      */
     public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
-    	return (absPva == null) ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
+        return (absPva == null) ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
     }
 
     /** Get the attitude.
@@ -810,32 +798,32 @@ public class SpacecraftState
     public double getMass() {
         return mass;
     }
-    
+
     /** Convert an AbsolutePVCoordinates to raw double components.
-     * 
-     * Note that if a proper orbit is defined, the method 
+     *
+     * Note that if a proper orbit is defined, the method
      * OrbitType.mapOrbitToArray() should be used instead.
-     * 
+     *
      * @param stateVector placeholder where to put the components
      * @throws OrekitException if an orbit is defined
      */
-    public void mapAbsolutePVCoordinatesToArray(final double[] stateVector) 
-    		throws OrekitException {
+    public void mapAbsolutePVCoordinatesToArray(final double[] stateVector)
+            throws OrekitException {
 
-    	if (isOrbitDefined()) {
-    		throw OrekitException.createIllegalArgumentException(OrekitMessages.UNDEFINED_ABSOLUTE_PVCOORDINATES);
-    	}
-    		
-    	final PVCoordinates pv = absPva.getPVCoordinates();
-    	final Vector3D      p  = pv.getPosition();
-    	final Vector3D      v  = pv.getVelocity();
+        if (isOrbitDefined()) {
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNDEFINED_ABSOLUTE_PVCOORDINATES);
+        }
 
-    	stateVector[0] = p.getX();
-    	stateVector[1] = p.getY();
-    	stateVector[2] = p.getZ();
-    	stateVector[3] = v.getX();
-    	stateVector[4] = v.getY();
-    	stateVector[5] = v.getZ();
+        final PVCoordinates pv = absPva.getPVCoordinates();
+        final Vector3D      p  = pv.getPosition();
+        final Vector3D      v  = pv.getVelocity();
+
+        stateVector[0] = p.getX();
+        stateVector[1] = p.getY();
+        stateVector[2] = p.getZ();
+        stateVector[3] = v.getX();
+        stateVector[4] = v.getY();
+        stateVector[5] = v.getZ();
     }
 
     /** Replace the instance with a data transfer object for serialization.
@@ -853,7 +841,7 @@ public class SpacecraftState
 
         /** Orbit. */
         private final Orbit orbit;
-        
+
         // TODO: adapt for absPva!!!
 
         /** Attitude and mass double values. */
