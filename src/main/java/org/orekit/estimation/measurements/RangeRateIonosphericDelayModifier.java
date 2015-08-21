@@ -194,7 +194,7 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier {
     @Override
     public void modify(final Evaluation evaluation)
         throws OrekitException {
-        final Range measure = (Range) evaluation.getMeasurement();
+        final RangeRate measure = (RangeRate) evaluation.getMeasurement();
         final GroundStation station = measure.getStation();
         final SpacecraftState state = evaluation.getState();
 

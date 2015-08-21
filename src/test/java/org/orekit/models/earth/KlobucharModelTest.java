@@ -17,11 +17,17 @@
 package org.orekit.models.earth;
 
 import org.apache.commons.math3.util.Precision;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UTCScale;
 
 public class KlobucharModelTest {
     /** utility constant to convert from radians to degrees. */
@@ -32,7 +38,9 @@ public class KlobucharModelTest {
     private static double epsilon = 1e-6;
     
     /** ionospheric model. */
-    KlobucharIonoModel model;
+    private KlobucharIonoModel model;
+    
+    private UTCScale utc;
     
     @Before
     public void setUp() throws Exception {
@@ -40,18 +48,24 @@ public class KlobucharModelTest {
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA           
         // .1430D+06   .0000D+00  -.3280D+06   .1130D+06          ION BETA              
         model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06,0},
-                                                          new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
+                                       new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
 
+        Utils.setDataRoot("regular-data");
+        utc = TimeScalesFactory.getUTC();        
     }
 
-
+    @After
+    public void tearDown() {
+        utc = null;
+    }
+    
     @Test
     public void testDelay() {
         final double latitude = 45 * DEGREES_TO_RADIANS; 
         final double longitude = 2 * DEGREES_TO_RADIANS;
         final double altitude = 500;
-        final double elevation = 70d;
-        final double azimuth = 10d;
+        final double elevation = 70.;
+        final double azimuth = 10.;
 
         final AbsoluteDate date = new AbsoluteDate();
 
@@ -59,9 +73,28 @@ public class KlobucharModelTest {
                 
         double delayMeters = model.calculatePathDelay(date, geo, elevation, azimuth);
 
-        Assert.assertTrue(Precision.compareTo(delayMeters, 10d, epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(delayMeters, 0d, epsilon) > 0);
+        Assert.assertTrue(Precision.compareTo(delayMeters, 12., epsilon) < 0);
+        Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
     }    
+    
+    @Test
+    public void compareExpectedValue() throws IllegalArgumentException, OrekitException {
+        final double latitude = 40 * DEGREES_TO_RADIANS; 
+        final double longitude = -100 * DEGREES_TO_RADIANS;
+        final double altitude = 0.;
+        final double elevation = 20.;
+        final double azimuth = 210.;
+        
+        final AbsoluteDate date = new AbsoluteDate(new DateTimeComponents(2000, 1, 1,
+                                                                          20, 45, 0), 
+                                                                          utc);
+
+        final GeodeticPoint geo = new GeodeticPoint(latitude, longitude, altitude);
+                
+        final double delayMeters = model.calculatePathDelay(date, geo, elevation, azimuth);
+
+        Assert.assertEquals(23.784, delayMeters, 0.001);
+    }
 }
 
 

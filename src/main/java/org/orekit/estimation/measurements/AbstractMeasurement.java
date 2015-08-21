@@ -195,6 +195,7 @@ public abstract class AbstractMeasurement implements Measurement {
         final Evaluation evaluation = theoreticalEvaluation(iteration, state);
 
         // apply the modifiers
+        // FIXME we should check the modifier is consistent with the current measure. E.g do not mix a range-rate modifier with a range measurement.
         for (final EvaluationModifier modifier : modifiers) {
             modifier.modify(evaluation);
         }

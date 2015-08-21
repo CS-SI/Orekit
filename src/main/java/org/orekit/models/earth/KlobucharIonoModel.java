@@ -31,6 +31,8 @@ import org.orekit.utils.Constants;
  * This model is based on the assumption the electron content is concentrated
  * in 350 km layer.
  *
+ * The delay refers to L1. If the delay is sought for L2, multiply the result by 1.65 (Klobuchar, 1996).
+ *
  * References:
  *     ICD-GPS-200, Rev. C, (1997), pp. 125-128
  *     Klobuchar, J.A., Ionospheric time-delay algorithm for single-frequency GPS users,
@@ -68,9 +70,9 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
     public double calculatePathDelay(final AbsoluteDate date, final GeodeticPoint geo,
                                      final double elevation, final double azimuth) {
         // degees to semisircles
-        final double deg2semi =  1. / 180.;
-        final double rad2semi =  1. / Math.PI;
-        final double semi2rad =  Math.PI;
+        final double deg2semi = 1. / 180.;
+        final double rad2semi = 1. / Math.PI;
+        final double semi2rad = Math.PI;
         final double deg2rad = Math.PI / 180.;
 
         // Earth Centered angle
@@ -90,8 +92,9 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
         final double latGeom = latIono + 0.064 * FastMath.cos((lonIono - 1.617) * semi2rad);
 
         // day of week and tow (sec)
+        // Note: Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getGPS());
-        final int dofweek = dtc.getDate().getDayOfWeek() - 1;
+        final int dofweek = dtc.getDate().getDayOfWeek();
         final double secday = dtc.getTime().getSecondsInDay();
         final double tow = dofweek * 86400. + secday;
 
@@ -102,7 +105,7 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
         final double slantFactor = 1.0 + 16.0 * FastMath.pow(0.53 - elevation * deg2semi, 3);
 
         // Period of model, seconds
-        final double period = FastMath.min(72000., beta[0] + (beta[1]  + (beta[2] + beta[3] * latGeom) * latGeom) * latGeom);
+        final double period = FastMath.max(72000., beta[0] + (beta[1]  + (beta[2] + beta[3] * latGeom) * latGeom) * latGeom);
 
         // Phase of the model, radians
         // (Max at 14.00 = 50400 sec local time)
