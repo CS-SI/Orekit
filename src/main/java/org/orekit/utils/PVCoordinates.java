@@ -204,7 +204,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
      * to the user-specified order.
      * </p>
-     * @param order derivation order for the vector components
+     * @param order derivation order for the vector components (must be either 0, 1 or 2)
      * @return vector with time-derivatives embedded within the coordinates
      * @exception OrekitException if the user specified order is too large
      */
