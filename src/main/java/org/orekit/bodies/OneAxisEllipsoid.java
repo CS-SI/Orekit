@@ -324,8 +324,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
      * using time as the single derivation parameter
      * @exception OrekitException if point cannot be converted to body frame
      */
-    FieldGeodeticPoint<DerivativeStructure> transform(final PVCoordinates point,
-                                                      final Frame frame, final AbsoluteDate date)
+    public FieldGeodeticPoint<DerivativeStructure> transform(final PVCoordinates point,
+                                                             final Frame frame, final AbsoluteDate date)
         throws OrekitException {
 
         // transform point to body frame
