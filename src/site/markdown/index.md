@@ -116,7 +116,8 @@ Features
       * raising/setting with respect to a ground location
         (with customizable triggering elevation)
       * date
-      * altitude crossing
+      * latitude, longitude, altitude crossing
+      * latitude, longitude extremum
       * target detection in sensor field of view (circular or dihedral)
       * complex geographic zones traversal
       * impulse maneuvers occurrence

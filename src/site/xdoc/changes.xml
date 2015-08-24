@@ -22,6 +22,12 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add" >
+        Added latitude and longitude extremum detector.
+      </action>
+      <action dev="luc" type="add" >
+        Added latitude and longitude crossing detector.
+      </action>
+      <action dev="luc" type="add" >
         Added a way to convert between PVA and geodetic points with time derivatives.
       </action>
       <action dev="luc" type="add" >
