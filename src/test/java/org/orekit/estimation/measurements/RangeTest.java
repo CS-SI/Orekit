@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.StateFunction;
+import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -186,7 +187,7 @@ public class RangeTest {
 
         for (final Measurement measurement : measurements) {
 
-            final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier();
+            final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
             measurement.addModifier(modifier);
                         
             // We intentionally propagate to a date which is close to the
@@ -249,7 +250,7 @@ public class RangeTest {
 
         for (final Measurement measurement : measurements) {
 
-            final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier();
+            final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
             measurement.addModifier(modifier);
             
             // parameter corresponding to station position offset

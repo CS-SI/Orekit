@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.StateFunction;
+import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -204,7 +205,7 @@ public class RangeRateTest {
 
         for (final Measurement measurement : measurements) {
 
-            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier();
+            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
             measurement.addModifier(modifier);
             
             // 
@@ -263,7 +264,7 @@ public class RangeRateTest {
 
         for (final Measurement measurement : measurements) {
 
-            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier();
+            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
             measurement.addModifier(modifier);
             
             // parameter corresponding to station position offset

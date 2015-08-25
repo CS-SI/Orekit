@@ -34,6 +34,8 @@ import org.orekit.propagation.SpacecraftState;
  * The effect of ionospheric correction on the range is directly computed
  * through the computation of the ionospheric delay.
  *
+ * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
+ * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  *
  * @author Joris Olympio
  * @since 7.1
@@ -45,9 +47,9 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier {
     /** Ionospheric delay model. */
     private final IonosphericDelayModel ionoModel;
 
-    /**
-     * Constructor.
-     * @param model  Ionospheric delay model
+    /** Constructor.
+     *
+     * @param model  Ionospheric delay model appropriate for the current range measurement method.
      */
     public RangeIonosphericDelayModifier(final IonosphericDelayModel model) {
         ionoModel = model;

@@ -25,7 +25,6 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.StateFunction;
-import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.models.earth.TroposphericDelayModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -35,6 +34,8 @@ import org.orekit.propagation.SpacecraftState;
  * The effect of tropospheric correction on the range is directly computed
  * through the computation of the tropospheric delay.
  *
+ * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
+ * For SLR techniques however, the frequency dependence is sensitive.
  *
  * @author Joris Olympio
  * @since 7.1
@@ -46,19 +47,12 @@ public class RangeTroposphericDelayModifier implements EvaluationModifier {
     /** Tropospheric delay model. */
     private final TroposphericDelayModel tropoModel;
 
-    /**
-     * Constructor.
-     * @param model  Tropospheric delay model
+    /** Constructor.
+     *
+     * @param model  Tropospheric delay model appropriate for the current range measurement method.
      */
     public RangeTroposphericDelayModifier(final TroposphericDelayModel model) {
         tropoModel = model;
-    }
-
-    /**
-     * Simple Constructor.
-     */
-    public RangeTroposphericDelayModifier() {
-        tropoModel = SaastamoinenModel.getStandardModel();
     }
 
     /** Get the station height above mean sea level.

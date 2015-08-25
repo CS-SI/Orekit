@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.models.earth.KlobucharIonoModel;
+import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -69,7 +70,7 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier();
+        final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
         
         for (final Measurement measurement : measurements) {
             
@@ -106,7 +107,7 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier();
+        final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
         
         for (final Measurement measurement : measurements) {
             
