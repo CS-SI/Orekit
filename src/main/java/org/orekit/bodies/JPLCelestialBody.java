@@ -360,7 +360,7 @@ class JPLCelestialBody implements CelestialBody {
          * @param generateType ephemeris type to generate
          * @param name name of the body
          */
-        public DTOBodyFrame(final String supportedNames, final EphemerisType generateType, final String name) {
+        DTOBodyFrame(final String supportedNames, final EphemerisType generateType, final String name) {
             super(supportedNames, generateType, name);
         }
 
