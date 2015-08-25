@@ -71,7 +71,7 @@ public class MariniMurrayModel implements TroposphericDelayModel {
     /** Create a new Marini-Murray model using a standard atmosphere model.
      * <p>
      * <ul>
-     * <li>temperature: 18 degree Celsius
+     * <li>temperature: 20 degree Celsius
      * <li>pressure: 1013.25 mbar
      * <li>humidity: 50%
      * </ul>
@@ -82,7 +82,7 @@ public class MariniMurrayModel implements TroposphericDelayModel {
      * @return a Saastamoinen model with standard environmental values
      */
     public static MariniMurrayModel getStandardModel(final double latitude, final double frequency) {
-        return new MariniMurrayModel(273.16 + 18, 1013.25, 0.5, latitude, frequency);
+        return new MariniMurrayModel(273.15 + 20, 1013.25, 0.5, latitude, frequency);
     }
 
     @Override
@@ -124,19 +124,24 @@ public class MariniMurrayModel implements TroposphericDelayModel {
     }
 
     /** Get the water vapor.
-    * @param rh relative humidity
-    * @return the laser frequency parameter f(lambda).
-    */
+     *
+     *
+     * See: Giacomo, P., Equation for the dertermination of the density of moist air, Metrologia, V. 18, 1982
+     *
+     * @param rh relative humidity, in percent.
+     * @return the water vapor, in mbar (1 mbar = 100 Pa).
+     */
     private double getWaterVapor(final double rh) {
 
-        // saturation water vapor
-        final double es = 0.01 * FastMath.exp(1.2378847 * 1e-5 * T0 * T0 -
-                                              1.9121316 * 1e-2 * T0 +
+        // saturation water vapor, equation (3) of reference paper, in mbar
+        // with amended 1991 values (see reference paper)
+        final double es = 0.01 * FastMath.exp((1.2378847 * 1e-5) * T0 * T0 -
+                                              (1.9121316 * 1e-2) * T0 +
                                               33.93711047 -
-                                              6.3431645 * 1e3 * 1. / T0);
+                                              (6.3431645 * 1e3) * 1. / T0);
 
-        // enhancement factor
-        final double fw = 1.00062 + 3.14 * 1e-6 * P0 + 5.6 * 1e-7 * FastMath.pow(T0 - 273.15, 2);
+        // enhancement factor, equation (4) of reference paper
+        final double fw = 1.00062 + (3.14 * 1e-6) * P0 + (5.6 * 1e-7) * FastMath.pow(T0 - 273.15, 2);
 
         final double e = rh * fw * es;
         return e;

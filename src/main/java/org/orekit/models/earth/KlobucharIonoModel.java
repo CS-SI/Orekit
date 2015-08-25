@@ -31,7 +31,10 @@ import org.orekit.utils.Constants;
  * This model is based on the assumption the electron content is concentrated
  * in 350 km layer.
  *
- * The delay refers to L1. If the delay is sought for L2, multiply the result by 1.65 (Klobuchar, 1996).
+ * The delay refers to L1 (1575.42 MHz).
+ * If the delay is sought for L2 (1227.60 MHz), multiply the result by 1.65 (Klobuchar, 1996).
+ * More generally, since ionospheric delay is inversely proportional to the square of the signal
+ * frequency f, to adapt this model to other GNSS frequencies f, multiply by (L1 / f)^2.
  *
  * References:
  *     ICD-GPS-200, Rev. C, (1997), pp. 125-128
@@ -54,7 +57,10 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
     /** The 4 coefficients of a cubic equation representing the period of the model. Units are sec/semi-circle^(i-1) for the i-th coefficient, i=1,2,3,4. */
     private final double[] beta;
 
-    /** Create a new Klobuchar ionospheric delay model, when a single frequency system is used.
+    /** ratio of signal frequency with L1 frequency. */
+    private final double ratio;
+
+    /** Create a new Klobuchar ionospheric delay model, when single L1 frequency system is used.
      * This model accounts for at least 50 percent of RMS error due to ionospheric propagation effect (ICD-GPS-200)
      *
      * @param alpha coefficients of a cubic equation representing the amplitude of the vertical delay.
@@ -63,6 +69,20 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
     public KlobucharIonoModel(final double[] alpha, final double[] beta) {
         this.alpha = alpha;
         this.beta = beta;
+        this.ratio = 1.;
+    }
+
+    /** Create a new Klobuchar ionospheric delay model, when a single frequency system is used.
+     * This model accounts for at least 50 percent of RMS error due to ionospheric propagation effect (ICD-GPS-200)
+     *
+     * @param alpha coefficients of a cubic equation representing the amplitude of the vertical delay.
+     * @param beta coefficients of a cubic equation representing the period of the model.
+     * @param frequency frequency of the radiowave signal in MHz
+     */
+    public KlobucharIonoModel(final double[] alpha, final double[] beta, final double frequency) {
+        this.alpha = alpha;
+        this.beta = beta;
+        this.ratio = FastMath.pow(1575.42 / frequency, 2);
     }
 
     /** {@inheritDoc} */
@@ -121,6 +141,6 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
         }
 
         // Ionospheric delay for the L1 frequency, in meters, with slant correction.
-        return Constants.SPEED_OF_LIGHT * ionoTimeDelayL1;
+        return ratio * Constants.SPEED_OF_LIGHT * ionoTimeDelayL1;
     }
 }
