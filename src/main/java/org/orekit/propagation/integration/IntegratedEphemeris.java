@@ -178,9 +178,10 @@ public class IntegratedEphemeris
         throws PropagationException {
         try {
             setInterpolationDate(date);
-            SpacecraftState state = mapper.mapArrayToState(model.getInterpolatedTime(),
-                                                           model.getInterpolatedState(),
-                                                           meanOrbit);
+            SpacecraftState state = mapper.mapArrayToState(
+                    mapper.mapDoubleToDate(model.getInterpolatedTime(), date),
+                    model.getInterpolatedState(),
+                    meanOrbit);
             for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
                 state = state.addAdditionalState(initial.getKey(), initial.getValue());
             }

@@ -475,10 +475,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState mapArrayToState(final double t, final double[] y, final boolean meanOnly)
+        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
             throws OrekitException {
-
-            final AbsoluteDate date = mapDoubleToDate(t);
 
             // add short periodic variations to mean elements to get osculating elements
             // (the loop may not be performed if there are no force models and in the

@@ -27,10 +27,12 @@ import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
@@ -46,11 +48,13 @@ import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -65,13 +69,54 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class DSSTPropagatorTest {
 
     private DSSTPropagator dsstProp;
+
+    @Test
+    public void testEphemerisDates() throws OrekitException {
+        //setup
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate initialDate = new AbsoluteDate("2015-07-01", tai);
+        AbsoluteDate startDate = new AbsoluteDate("2015-07-03", tai).shiftedBy(-0.1);
+        AbsoluteDate endDate = new AbsoluteDate("2015-07-04", tai);
+        Frame eci = FramesFactory.getGCRF();
+        KeplerianOrbit orbit = new KeplerianOrbit(
+                600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
+                PositionAngle.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
+        double[][] tol = DSSTPropagator
+                .tolerances(1, orbit);
+        Propagator prop = new DSSTPropagator(
+                new DormandPrince853Integrator(0.1, 500, tol[0], tol[1]));
+        prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
+
+        //action
+        prop.setEphemerisMode();
+        prop.propagate(startDate, endDate);
+        BoundedPropagator ephemeris = prop.getGeneratedEphemeris();
+
+        //verify
+        TimeStampedPVCoordinates actualPV = ephemeris.getPVCoordinates(startDate, eci);
+        TimeStampedPVCoordinates expectedPV = orbit.getPVCoordinates(startDate, eci);
+        MatcherAssert.assertThat(actualPV.getPosition(),
+                OrekitMatchers.vectorCloseTo(expectedPV.getPosition(), 1.0));
+        MatcherAssert.assertThat(actualPV.getVelocity(),
+                OrekitMatchers.vectorCloseTo(expectedPV.getVelocity(), 1.0));
+        MatcherAssert.assertThat(ephemeris.getMinDate().durationFrom(startDate),
+                OrekitMatchers.closeTo(0, 0));
+        MatcherAssert.assertThat(ephemeris.getMaxDate().durationFrom(endDate),
+                OrekitMatchers.closeTo(0, 0));
+        //test date
+        AbsoluteDate date = endDate.shiftedBy(-0.11);
+        Assert.assertEquals(
+                ephemeris.propagate(date).getDate().durationFrom(date), 0, 0);
+    }
 
     @Test
     public void testNoExtrapolation() throws OrekitException {

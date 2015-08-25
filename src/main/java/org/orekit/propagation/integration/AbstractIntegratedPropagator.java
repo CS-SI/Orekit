@@ -445,7 +445,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // initialize mode handler
             if (modeHandler != null) {
-                modeHandler.initialize(activateHandlers);
+                modeHandler.initialize(activateHandlers, tEnd);
             }
 
             // mathematical integration
@@ -458,8 +458,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // get final state
-            SpacecraftState finalState =
-                    stateMapper.mapArrayToState(mathODE.getTime(), mathODE.getPrimaryState(), meanOrbit);
+            SpacecraftState finalState = stateMapper.mapArrayToState(
+                    stateMapper.mapDoubleToDate(mathODE.getTime(), tEnd),
+                    mathODE.getPrimaryState(),
+                    meanOrbit);
             finalState = updateAdditionalStates(finalState);
             for (int i = 0; i < additionalEquations.size(); ++i) {
                 final double[] secondary = mathODE.getSecondaryState(i);
@@ -816,7 +818,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void initialize(final boolean activateHandlers) {
+        public void initialize(final boolean activateHandlers,
+                               final AbsoluteDate targetDate) {
             this.activate = activateHandlers;
         }
 
@@ -924,6 +927,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Flag for handler . */
         private boolean activate;
 
+        /** the user supplied end date. Propagation may not end on this date. */
+        private AbsoluteDate endDate;
+
         /** Creates a new instance of EphemerisModeHandler which must be
          *  filled by the propagator.
          */
@@ -931,9 +937,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void initialize(final boolean activateHandlers) {
+        public void initialize(final boolean activateHandlers,
+                               final AbsoluteDate targetDate) {
             this.activate = activateHandlers;
             this.model    = new ContinuousOutputModel();
+            this.endDate  = targetDate;
 
             // ephemeris will be generated when last step is processed
             this.ephemeris = null;
@@ -958,15 +966,19 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                         // set up the boundary dates
                         final double tI = model.getInitialTime();
                         final double tF = model.getFinalTime();
-                        final AbsoluteDate startDate = stateMapper.mapDoubleToDate(tI);
+                        // tI is almost? always zero
+                        final AbsoluteDate startDate =
+                                stateMapper.mapDoubleToDate(tI);
+                        final AbsoluteDate finalDate =
+                                stateMapper.mapDoubleToDate(tF, this.endDate);
                         final AbsoluteDate minDate;
                         final AbsoluteDate maxDate;
                         if (tF < tI) {
-                            minDate = stateMapper.mapDoubleToDate(tF);
+                            minDate = finalDate;
                             maxDate = startDate;
                         } else {
                             minDate = startDate;
-                            maxDate = stateMapper.mapDoubleToDate(tF);
+                            maxDate = finalDate;
                         }
 
                         // get the initial additional states that are not managed
