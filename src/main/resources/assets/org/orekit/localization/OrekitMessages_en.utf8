@@ -381,3 +381,6 @@ OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>
 
 # out of range latitude: {0}, [{1}, {2}]
 OUT_OF_RANGE_LATITUDE = out of range latitude: {0}, [{1}, {2}]
+
+# orbit type {0} not allowed here, allowed types: {1}
+ORBIT_TYPE_NOT_ALLOWED = orbit type {0} not allowed here, allowed types: {1}

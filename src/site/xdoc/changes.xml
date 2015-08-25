@@ -22,6 +22,11 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add" >
+        Added anomaly, latitude argument, or longitude argument crossings detector,
+        either true, mean or eccentric.
+        Fixes issue #213.
+      </action>
+      <action dev="luc" type="add" >
         Added latitude and longitude extremum detector.
       </action>
       <action dev="luc" type="add" >
