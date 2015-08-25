@@ -36,7 +36,7 @@ class WrappingUnnormalizedProvider implements UnnormalizedSphericalHarmonicsProv
     /** Simple constructor.
      * @param rawProvider raw provider to which everything is delegated
      */
-    public WrappingUnnormalizedProvider(final RawSphericalHarmonicsProvider rawProvider) {
+    WrappingUnnormalizedProvider(final RawSphericalHarmonicsProvider rawProvider) {
         this.rawProvider = rawProvider;
     }
 

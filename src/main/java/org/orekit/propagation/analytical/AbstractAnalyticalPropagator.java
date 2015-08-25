@@ -456,7 +456,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         /** Build a new instance from a basic propagator.
          */
-        public BasicStepInterpolator() {
+        BasicStepInterpolator() {
             globalPreviousDate = AbsoluteDate.PAST_INFINITY;
             globalCurrentDate  = AbsoluteDate.PAST_INFINITY;
             softPreviousDate   = AbsoluteDate.PAST_INFINITY;
