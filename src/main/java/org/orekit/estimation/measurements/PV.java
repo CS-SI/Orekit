@@ -26,7 +26,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class PV extends AbstractMeasurement {
+public class PV extends AbstractMeasurement<PV> {
 
     /** Identity matrix, for states derivatives. */
     private static final double[][] IDENTITY = new double[][] {
@@ -89,11 +89,11 @@ public class PV extends AbstractMeasurement {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation theoreticalEvaluation(final int iteration, final SpacecraftState state)
+    protected Evaluation<PV> theoreticalEvaluation(final int iteration, final SpacecraftState state)
         throws OrekitException {
 
         // prepare the evaluation
-        final Evaluation evaluation = new Evaluation(this, iteration, state);
+        final Evaluation<PV> evaluation = new Evaluation<PV>(this, iteration, state);
 
         // PV value
         final PVCoordinates pv = state.getPVCoordinates();

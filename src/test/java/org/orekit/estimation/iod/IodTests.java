@@ -45,7 +45,7 @@ public class IodTests {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                 EstimationTestUtils.createMeasurements(propagator,
                                                        new PVMeasurementCreator(),
                                                        0.0, 1.0, 60.0);
@@ -96,7 +96,7 @@ public class IodTests {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                 EstimationTestUtils.createMeasurements(propagator,
                                                        new PVMeasurementCreator(),
                                                        0.0, 1.0, 60.0);        
@@ -161,7 +161,7 @@ public class IodTests {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                 EstimationTestUtils.createMeasurements(propagator,
                                                        new PVMeasurementCreator(),
                                                        0.0, 1.0, 60.0);        

@@ -40,7 +40,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class Range extends AbstractMeasurement {
+public class Range extends AbstractMeasurement<Range> {
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
@@ -71,7 +71,7 @@ public class Range extends AbstractMeasurement {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation theoreticalEvaluation(final int iteration, final SpacecraftState state)
+    protected Evaluation<Range> theoreticalEvaluation(final int iteration, final SpacecraftState state)
         throws OrekitException {
 
         // station position at signal arrival
@@ -95,7 +95,7 @@ public class Range extends AbstractMeasurement {
                         topoToInert.shiftedBy(-tau).transformPVCoordinates(PVCoordinates.ZERO);
 
         // prepare the evaluation
-        final Evaluation evaluation = new Evaluation(this, iteration, transitState);
+        final Evaluation<Range> evaluation = new Evaluation<Range>(this, iteration, transitState);
 
         // range value
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;

@@ -51,12 +51,12 @@ public class ModelTest {
         // create perfect PV measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
         final List<Parameter> measurementsParameters = new ArrayList<Parameter>();
-        for (Measurement measurement : measurements) {
+        for (Measurement<?> measurement : measurements) {
             for (final Parameter parameter : measurement.getSupportedParameters()) {
                 addMeasurementParameter(measurementsParameters, parameter);
             }
@@ -71,7 +71,7 @@ public class ModelTest {
         RealVector point = startPoint(context, propagatorBuilder, measurementsParameters);
         Pair<RealVector, RealMatrix> value = model.value(point);
         int index = 0;
-        for (Measurement measurement : measurements) {
+        for (Measurement<?> measurement : measurements) {
             for (int i = 0; i < measurement.getDimension(); ++i) {
                 // the value is already a weighted residual
                 Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.2e-7);

@@ -128,10 +128,10 @@ public class EstimationTestUtils {
 
     }
 
-    public static List<Measurement> createMeasurements(final Propagator propagator,
-                                                       final MeasurementCreator creator,
-                                                       final double startPeriod, final double endPeriod,
-                                                       final double step)
+    public static List<Measurement<?>> createMeasurements(final Propagator propagator,
+                                                          final MeasurementCreator creator,
+                                                          final double startPeriod, final double endPeriod,
+                                                          final double step)
         throws OrekitException {
 
         propagator.setMasterMode(step, creator);
@@ -170,10 +170,10 @@ public class EstimationTestUtils {
         int    k   = 0;
         double sum = 0;
         double max = 0;
-        for (final Map.Entry<Measurement, Evaluation> entry :
+        for (final Map.Entry<Measurement<?>, Evaluation<?>> entry :
              estimator.getLastEvaluations().entrySet()) {
-            final Measurement m           = entry.getKey();
-            final Evaluation  e           = entry.getValue();
+            final Measurement<?> m        = entry.getKey();
+            final Evaluation<?>  e        = entry.getValue();
             final double[]    weight      = m.getBaseWeight();
             final double[]    sigma       = m.getTheoreticalStandardDeviation();
             final double[]    observed    = m.getObservedValue();

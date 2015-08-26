@@ -40,7 +40,7 @@ import org.orekit.propagation.SpacecraftState;
  * @author Joris Olympio
  * @since 7.1
  */
-public class RangeRateIonosphericDelayModifier implements EvaluationModifier {
+public class RangeRateIonosphericDelayModifier implements EvaluationModifier<RangeRate> {
     /** utility constant to convert from radians to degrees. */
     private static double RADIANS_TO_DEGREES = 180. / Math.PI;
 
@@ -194,9 +194,9 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier {
     }
 
     @Override
-    public void modify(final Evaluation evaluation)
+    public void modify(final Evaluation<RangeRate> evaluation)
         throws OrekitException {
-        final RangeRate measure = (RangeRate) evaluation.getMeasurement();
+        final RangeRate measure = evaluation.getMeasurement();
         final GroundStation station = measure.getStation();
         final SpacecraftState state = evaluation.getState();
 
