@@ -64,7 +64,7 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -72,17 +72,17 @@ public class TropoModifierTest {
 
         final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
         
-        for (final Measurement measurement : measurements) {
-            
-            measurement.addModifier(modifier);
+        for (final Measurement<?> measurement : measurements) {
+            Range range = (Range) measurement;
+            range.addModifier(modifier);
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((Range) measurement).getStation();
-            final AbsoluteDate date = ((Range) measurement).getDate();
+            final GroundStation stationParameter = range.getStation();
+            final AbsoluteDate date = range.getDate();
             final SpacecraftState refstate     = propagator.propagate(date);
 
             // 
-            Evaluation eval = measurement.evaluate(0,  refstate);
+            Evaluation<Range> eval = range.evaluate(0,  refstate);
         }
     }
     
@@ -101,7 +101,7 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -109,17 +109,17 @@ public class TropoModifierTest {
 
         final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
         
-        for (final Measurement measurement : measurements) {
-            
-            measurement.addModifier(modifier);
+        for (final Measurement<?> measurement : measurements) {
+            RangeRate rangeRate = (RangeRate) measurement;
+            rangeRate.addModifier(modifier);
 
             // parameter corresponding to station position offset
-            final GroundStation stationParameter = ((RangeRate) measurement).getStation();
-            final AbsoluteDate date = ((RangeRate) measurement).getDate();
+            final GroundStation stationParameter = rangeRate.getStation();
+            final AbsoluteDate date = rangeRate.getDate();
             final SpacecraftState refstate     = propagator.propagate(date);
 
             // 
-            Evaluation eval = measurement.evaluate(0,  refstate);
+            Evaluation<RangeRate> eval = rangeRate.evaluate(0,  refstate);
         }
     }   
 }

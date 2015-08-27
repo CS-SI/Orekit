@@ -27,10 +27,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** Abstract class handling measurements boilerplate.
+ * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 7.1
  */
-public abstract class AbstractMeasurement implements Measurement {
+public abstract class AbstractMeasurement<T extends Measurement<T>> implements Measurement<T> {
 
     /** List of the supported parameters. */
     private final List<Parameter> supportedParameters;
@@ -48,7 +49,7 @@ public abstract class AbstractMeasurement implements Measurement {
     private final double[] baseWeight;
 
     /** Modifiers that apply to the measurement.*/
-    private final List<EvaluationModifier> modifiers;
+    private final List<EvaluationModifier<T>> modifiers;
 
     /** Enabling status. */
     private boolean enabled;
@@ -75,7 +76,7 @@ public abstract class AbstractMeasurement implements Measurement {
         this.baseWeight = new double[] {
             baseWeight
         };
-        this.modifiers = new ArrayList<EvaluationModifier>();
+        this.modifiers = new ArrayList<EvaluationModifier<T>>();
         setEnabled(true);
     }
 
@@ -95,7 +96,7 @@ public abstract class AbstractMeasurement implements Measurement {
         this.observed   = observed.clone();
         this.sigma      = sigma.clone();
         this.baseWeight = baseWeight.clone();
-        this.modifiers = new ArrayList<EvaluationModifier>();
+        this.modifiers = new ArrayList<EvaluationModifier<T>>();
         setEnabled(true);
     }
 
@@ -135,7 +136,7 @@ public abstract class AbstractMeasurement implements Measurement {
             // we have to combine the measurement parameters and the modifiers parameters
             final List<Parameter> parameters = new ArrayList<Parameter>();
             parameters.addAll(supportedParameters);
-            for (final EvaluationModifier modifier : modifiers) {
+            for (final EvaluationModifier<T> modifier : modifiers) {
                 parameters.addAll(modifier.getSupportedParameters());
             }
             return parameters;
@@ -182,21 +183,20 @@ public abstract class AbstractMeasurement implements Measurement {
      * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
-    protected abstract Evaluation theoreticalEvaluation(final int iteration,
-                                                        final SpacecraftState state)
+    protected abstract Evaluation<T> theoreticalEvaluation(final int iteration,
+                                                           final SpacecraftState state)
         throws OrekitException;
 
     /** {@inheritDoc} */
     @Override
-    public Evaluation evaluate(final int iteration, final SpacecraftState state)
+    public Evaluation<T> evaluate(final int iteration, final SpacecraftState state)
         throws OrekitException {
 
         // compute the theoretical value
-        final Evaluation evaluation = theoreticalEvaluation(iteration, state);
+        final Evaluation<T> evaluation = theoreticalEvaluation(iteration, state);
 
         // apply the modifiers
-        // FIXME we should check the modifier is consistent with the current measure. E.g do not mix a range-rate modifier with a range measurement.
-        for (final EvaluationModifier modifier : modifiers) {
+        for (final EvaluationModifier<T> modifier : modifiers) {
             modifier.modify(evaluation);
         }
 
@@ -218,13 +218,13 @@ public abstract class AbstractMeasurement implements Measurement {
 
     /** {@inheritDoc} */
     @Override
-    public void addModifier(final EvaluationModifier modifier) {
+    public void addModifier(final EvaluationModifier<T> modifier) {
         modifiers.add(modifier);
     }
 
     /** {@inheritDoc} */
     @Override
-    public List<EvaluationModifier> getModifiers() {
+    public List<EvaluationModifier<T>> getModifiers() {
         return Collections.unmodifiableList(modifiers);
     }
 

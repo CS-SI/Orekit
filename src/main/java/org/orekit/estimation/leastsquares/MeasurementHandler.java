@@ -33,7 +33,7 @@ class MeasurementHandler implements EventHandler<DateDetector> {
     private final Model model;
 
     /** Underlying measurement. */
-    private final Measurement measurement;
+    private final Measurement<?> measurement;
 
     /** Index of the first measurement component in the model. */
     private final int index;
@@ -43,7 +43,7 @@ class MeasurementHandler implements EventHandler<DateDetector> {
      * @param measurement underlying measurement
      * @param index index of the first measurement component in the model
      */
-    public MeasurementHandler(final Model model, final Measurement measurement, final int index) {
+    public MeasurementHandler(final Model model, final Measurement<?> measurement, final int index) {
         this.model       = model;
         this.measurement = measurement;
         this.index       = index;

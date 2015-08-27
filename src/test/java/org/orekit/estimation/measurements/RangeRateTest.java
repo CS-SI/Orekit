@@ -50,13 +50,13 @@ public class RangeRateTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
 
             // 
             //final AbsoluteDate date = measurement.getDate();
@@ -118,13 +118,13 @@ public class RangeRateTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
             final GroundStation stationParameter = ((RangeRate) measurement).getStation();
@@ -197,16 +197,16 @@ public class RangeRateTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
-            measurement.addModifier(modifier);
+            ((RangeRate) measurement).addModifier(modifier);
             
             // 
             //final AbsoluteDate date = measurement.getDate();
@@ -256,16 +256,16 @@ public class RangeRateTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
 
             final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
-            measurement.addModifier(modifier);
+            ((RangeRate) measurement).addModifier(modifier);
             
             // parameter corresponding to station position offset
             final GroundStation stationParameter = ((RangeRate) measurement).getStation();

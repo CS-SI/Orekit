@@ -50,13 +50,13 @@ public class RangeTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
 
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -110,13 +110,13 @@ public class RangeTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
             final GroundStation stationParameter = ((Range) measurement).getStation();
@@ -179,16 +179,16 @@ public class RangeTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
 
             final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
-            measurement.addModifier(modifier);
+            ((Range) measurement).addModifier(modifier);
                         
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -242,16 +242,16 @@ public class RangeTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
 
             final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
-            measurement.addModifier(modifier);
+            ((Range) measurement).addModifier(modifier);
             
             // parameter corresponding to station position offset
             final GroundStation stationParameter = ((Range) measurement).getStation();

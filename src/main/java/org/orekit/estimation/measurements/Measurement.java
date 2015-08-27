@@ -38,10 +38,11 @@ import org.orekit.time.TimeStamped;
  * EvaluationModifier MeasurementModifier} objects. These objects will manage notions
  * like tropospheric delays, biases, ...
  * </p>
+ * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 7.1
  */
-public interface Measurement extends TimeStamped {
+public interface Measurement<T extends Measurement<T>> extends TimeStamped {
 
     /** Enable or disable a measurement.
      * <p>
@@ -115,13 +116,13 @@ public interface Measurement extends TimeStamped {
      * @param modifier modifier to add
      * @see #getModifiers()
      */
-    void addModifier(EvaluationModifier modifier);
+    void addModifier(EvaluationModifier<T> modifier);
 
     /** Get the modifiers that apply to a measurement.
      * @return modifiers that apply to a measurement
      * @see #addModifier(EvaluationModifier)
      */
-    List<EvaluationModifier> getModifiers();
+    List<EvaluationModifier<T>> getModifiers();
 
     /** Get the parameters supported by this measurement, including its modifiers.
      * @return parameters supported by this measurement, including its modifiers
@@ -138,7 +139,7 @@ public interface Measurement extends TimeStamped {
      * @return evaluated measurement
      * @exception OrekitException if value cannot be computed
      */
-    Evaluation evaluate(int iteration, SpacecraftState state)
+    Evaluation<T> evaluate(int iteration, SpacecraftState state)
         throws OrekitException;
 
 }

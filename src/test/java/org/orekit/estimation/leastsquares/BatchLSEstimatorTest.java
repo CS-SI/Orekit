@@ -54,7 +54,7 @@ public class BatchLSEstimatorTest {
         // create perfect PV measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
@@ -62,7 +62,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
@@ -88,7 +88,7 @@ public class BatchLSEstimatorTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements =
+        final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -96,7 +96,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        for (final Measurement range : measurements) {
+        for (final Measurement<?> range : measurements) {
             estimator.addMeasurement(range);
         }
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
@@ -122,7 +122,7 @@ public class BatchLSEstimatorTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement> measurements1 =
+        final List<Measurement<?>> measurements1 =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -132,14 +132,14 @@ public class BatchLSEstimatorTest {
         //                                               new RangeMeasurementCreator(context),
         //                                               1.0, 3.0, 300.0);
         
-        final List<Measurement> measurements = new ArrayList<Measurement>();
+        final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
         measurements.addAll(measurements1);
         //measurements.addAll(measurements2);
         
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        for (final Measurement rangerate : measurements) {
+        for (final Measurement<?> rangerate : measurements) {
             estimator.addMeasurement(rangerate);
         }
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
@@ -163,13 +163,13 @@ public class BatchLSEstimatorTest {
 
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        final Measurement measurement = new Range(context.stations.get(0),
-                                                  context.initialOrbit.getDate(),
-                                                  1.0e6, 10.0, 1.0);
+        final Range measurement = new Range(context.stations.get(0),
+                                            context.initialOrbit.getDate(),
+                                            1.0e6, 10.0, 1.0);
         final String duplicatedName = "duplicated";
-        measurement.addModifier(new EvaluationModifier() {            
+        measurement.addModifier(new EvaluationModifier<Range>() {            
             @Override
-            public void modify(Evaluation evaluation) {
+            public void modify(Evaluation<Range> evaluation) {
             }
             
             @Override

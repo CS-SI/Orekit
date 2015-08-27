@@ -40,7 +40,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Joris Olympio
  * @since 7.1
  */
-public class RangeRate extends AbstractMeasurement {
+public class RangeRate extends AbstractMeasurement<RangeRate> {
 
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
@@ -79,7 +79,7 @@ public class RangeRate extends AbstractMeasurement {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation theoreticalEvaluation(final int iteration, final SpacecraftState state)
+    protected Evaluation<RangeRate> theoreticalEvaluation(final int iteration, final SpacecraftState state)
         throws OrekitException {
 
         // one-way (downlink) light time correction
@@ -90,12 +90,12 @@ public class RangeRate extends AbstractMeasurement {
         final double          offset           = getDate().durationFrom(state.getDate());
         final SpacecraftState compensatedState = state.shiftedBy(offset - downlinkDelay);
 
-        final Evaluation evaluation = oneWayTheoreticalEvaluation(iteration, state.getDate(), compensatedState);
+        final Evaluation<RangeRate> evaluation = oneWayTheoreticalEvaluation(iteration, state.getDate(), compensatedState);
         if (twoway) {
             // one-way (uplink) light time correction
             final double uplinkDelay = station.uplinkTimeOfFlight(compensatedState);
             final AbsoluteDate date = compensatedState.getDate().shiftedBy(uplinkDelay);
-            final Evaluation evalOneWay2 = oneWayTheoreticalEvaluation(iteration, date, compensatedState);
+            final Evaluation<RangeRate> evalOneWay2 = oneWayTheoreticalEvaluation(iteration, date, compensatedState);
 
             //evaluation
             evaluation.setValue(0.5 * (evaluation.getValue()[0] + evalOneWay2.getValue()[0]));
@@ -133,11 +133,11 @@ public class RangeRate extends AbstractMeasurement {
      * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
-    private Evaluation oneWayTheoreticalEvaluation(final int iteration, final AbsoluteDate date,
-                                                   final SpacecraftState compensatedState)
+    private Evaluation<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final AbsoluteDate date,
+                                                              final SpacecraftState compensatedState)
         throws OrekitException {
         // prepare the evaluation
-        final Evaluation evaluation = new Evaluation(this, iteration, compensatedState);
+        final Evaluation<RangeRate> evaluation = new Evaluation<RangeRate>(this, iteration, compensatedState);
 
         // station coordinates at date in EME2000
         final PVCoordinates pvStation = station.getOffsetFrame().getPVCoordinates(date, compensatedState.getFrame());

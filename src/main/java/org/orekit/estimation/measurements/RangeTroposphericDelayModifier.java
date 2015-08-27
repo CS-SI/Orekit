@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationTestUtils;
@@ -40,10 +41,7 @@ import org.orekit.propagation.SpacecraftState;
  * @author Joris Olympio
  * @since 7.1
  */
-public class RangeTroposphericDelayModifier implements EvaluationModifier {
-    /** utility constant to convert from radians to degrees. */
-    private static double RADIANS_TO_DEGREES = 180. / Math.PI;
-
+public class RangeTroposphericDelayModifier implements EvaluationModifier<Range> {
     /** Tropospheric delay model. */
     private final TroposphericDelayModel tropoModel;
 
@@ -79,10 +77,10 @@ public class RangeTroposphericDelayModifier implements EvaluationModifier {
         final Vector3D position = state.getPVCoordinates().getPosition();
 
         // elevation in degrees
-        final double elevation =
-                station.getBaseFrame().getElevation(position,
-                                                    state.getFrame(),
-                                                    state.getDate()) * RADIANS_TO_DEGREES;
+        final double elevation = FastMath.toDegrees(
+                                                    station.getBaseFrame().getElevation(position,
+                                                                                        state.getFrame(),
+                                                                                        state.getDate()));
 
         // only consider measures above the horizon
         if (elevation > 0) {
@@ -172,9 +170,9 @@ public class RangeTroposphericDelayModifier implements EvaluationModifier {
     }
 
     @Override
-    public void modify(final Evaluation evaluation)
+    public void modify(final Evaluation<Range> evaluation)
         throws OrekitException {
-        final Range measure = (Range) evaluation.getMeasurement();
+        final Range measure = evaluation.getMeasurement();
         final GroundStation station = measure.getStation();
         final SpacecraftState state = evaluation.getState();
 

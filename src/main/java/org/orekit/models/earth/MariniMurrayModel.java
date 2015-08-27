@@ -31,9 +31,6 @@ public class MariniMurrayModel implements TroposphericDelayModel {
     /** Serializable UID. */
     private static final long serialVersionUID = 8442906721207317886L;
 
-    /** utility constant to convert from radians to degrees. */
-    private static double DEGREES_TO_RADIANS = Math.PI / 180.;
-
     /** The temperature at the station, K. */
     private double T0;
 
@@ -63,7 +60,7 @@ public class MariniMurrayModel implements TroposphericDelayModel {
 
         this.e0 = getWaterVapor(rh);
 
-        this.latitude = latitude * DEGREES_TO_RADIANS;
+        this.latitude = FastMath.toRadians(latitude);
 
         this.lambda = lambda * 1e-3;
     }
@@ -89,12 +86,12 @@ public class MariniMurrayModel implements TroposphericDelayModel {
     public double calculatePathDelay(final double elevation, final double height) {
         final double A = 0.002357 * P0 + 0.000141 * e0;
         final double K = 1.163 * 0.00968 * FastMath.cos(2 * latitude) - 0.00104 * T0 + 0.00001435 * P0;
-        final double B = 1.084 * 1e-8 * P0 * T0 * K + 4.734 * 1e-8 * P0 * (P0 / T0) * (2 * K) / (3 * K - 1);
+        final double B = (1.084 * 1e-8) * P0 * T0 * K + (4.734 * 1e-8) * P0 * (P0 / T0) * (2 * K) / (3 * K - 1);
         final double flambda = getLaserFrequencyParameter();
 
         final double fsite = getSiteFunctionValue(height / 1000.);
 
-        final double sinE = FastMath.sin(elevation * DEGREES_TO_RADIANS);
+        final double sinE = FastMath.sin( FastMath.toRadians(elevation) );
         final double dR = (flambda / fsite) * (A + B) / (sinE + B / ((A + B) * (sinE + 0.01)) );
         return dR;
     }
@@ -124,7 +121,7 @@ public class MariniMurrayModel implements TroposphericDelayModel {
     }
 
     /** Get the water vapor.
-     *
+     * The water vapor model is the one of Giacomo and Davis as indicated in IERS TN 32, chap. 9.
      *
      * See: Giacomo, P., Equation for the dertermination of the density of moist air, Metrologia, V. 18, 1982
      *
