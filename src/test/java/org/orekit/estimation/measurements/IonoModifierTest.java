@@ -88,6 +88,7 @@ public class IonoModifierTest {
         
         for (final Measurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
+
             final SpacecraftState refstate     = propagator.propagate(date);
             
             Range range = (Range) measurement;
@@ -131,6 +132,7 @@ public class IonoModifierTest {
         
         for (final Measurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
+
             final SpacecraftState refstate     = propagator.propagate(date);
             
             RangeRate rangeRate = (RangeRate) measurement;
@@ -141,7 +143,7 @@ public class IonoModifierTest {
 
             // 
             Evaluation<RangeRate> eval = rangeRate.evaluate(0,  refstate);
-            
+
             final double diffMetersSec = eval.getValue()[0] - evalNoMod.getValue()[0];
             
             final double epsilon = 1e-6;

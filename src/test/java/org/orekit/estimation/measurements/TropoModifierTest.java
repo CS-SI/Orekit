@@ -78,6 +78,7 @@ public class TropoModifierTest {
         
         for (final Measurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
+
             final SpacecraftState refstate     = propagator.propagate(date);
             
             Range range = (Range) measurement;
@@ -121,6 +122,7 @@ public class TropoModifierTest {
         
         for (final Measurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
+
             final SpacecraftState refstate     = propagator.propagate(date);
             
             RangeRate rangeRate = (RangeRate) measurement;
