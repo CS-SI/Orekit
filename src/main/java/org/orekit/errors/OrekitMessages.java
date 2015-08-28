@@ -177,7 +177,9 @@ public enum OrekitMessages implements Localizable {
     METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY("method not available in the absence of a central body"),
     INCOMPATIBLE_FRAMES("operation not available between frames {0} and {1}"),
     UNDEFINED_ORBIT("orbit not defined"), //TODO ref to spacecraftState?
-    UNDEFINED_ABSOLUTE_PVCOORDINATES("absolutePVCoordinates not defined"); //TODO ref to spacecraftState?
+    UNDEFINED_ABSOLUTE_PVCOORDINATES("absolutePVCoordinates not defined"), //TODO ref to spacecraftState?
+    NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_PROPAGATION("non pseudo-inertial frame \"{0}\" is not suitable for this kind of propagation"),
+	INERTIAL_FORCE_MODEL_MISSING("an inertial force model has to be used when propagating in a non-inertial frame");
 
     // CHECKSTYLE: resume JavadocVariable check
 

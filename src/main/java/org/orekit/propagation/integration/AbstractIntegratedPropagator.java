@@ -426,12 +426,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 //            if (Double.isNaN(getMu())) {
 //                setMu(initialOrbit.getMu());
 //            }
-            setMu(getInitialState().getMu()); //TODO
+            // TODO: check regressions
+            
+            if (Double.isNaN(getMu()))
+            	setMu(getInitialState().getMu()); 
 
             if (getInitialState().getMass() <= 0.0) {
                 throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
                                                getInitialState().getMass());
             }
+            
+            // Check that the propagation is possible
+            ensureIsReadyForPropagation();
 
             integrator.clearEventHandlers();
 
@@ -584,6 +590,17 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     }
 
+    /** Ensure that the propagator is ready for propagation.
+     * By default, check that the frame is pseudo-inertial.
+     * @throws PropagationException if frame is not inertial
+     */
+    protected void ensureIsReadyForPropagation()
+    	throws PropagationException {
+    	if (!stateMapper.getFrame().isPseudoInertial())
+    		throw new PropagationException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_PROPAGATION,
+    									   stateMapper.getFrame());
+    }
+    
     /** Differential equations for the main state (orbit, attitude and mass). */
     public interface MainStateEquations {
 
@@ -1003,4 +1020,5 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     }
 
+    
 }

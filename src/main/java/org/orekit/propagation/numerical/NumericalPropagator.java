@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
+import org.orekit.forces.inertia.InertialForces;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
@@ -560,6 +561,28 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         };
 
     }
-
+    
+    @Override
+    /** Ensure that the propagator is ready for propagation.
+     * For NumericalPropagator, ensure that the frame is pseudo-inertial, or that 
+     * an InertialForces model has been defined if the frame is not inertial.
+     * @throws PropagationException if frame is not inertial and no inertial force model
+     */
+    protected void ensureIsReadyForPropagation()
+    		throws PropagationException {
+    	
+    	if (!getFrame().isPseudoInertial()) {
+    		boolean inertialForceModelFound = false;
+    		
+    		// inspect all force models to find InertialForces
+    		for (ForceModel force : getForceModels())
+    			if (force instanceof InertialForces)
+    				inertialForceModelFound = true;
+    		
+    		// throw exception if no inertial forces found
+    		if (!inertialForceModelFound)
+    			throw new PropagationException(OrekitMessages.INERTIAL_FORCE_MODEL_MISSING);
+    	}
+    }
 }
 
