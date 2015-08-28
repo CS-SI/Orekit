@@ -50,12 +50,21 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
     /** Tropospheric delay model. */
     private final TroposphericDelayModel tropoModel;
 
+    /** */
+    private final double fTwoWay;
+
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
+     * @param tw     Flag indicating whether the measurement is two-way.
      */
-    public RangeRateTroposphericDelayModifier(final TroposphericDelayModel model) {
+    public RangeRateTroposphericDelayModifier(final TroposphericDelayModel model, final boolean tw) {
         tropoModel = model;
+        if (tw) {
+            fTwoWay = 2.;
+        } else {
+            fTwoWay = 1.;
+        }
     }
 
     /** Get the station height above mean sea level.
@@ -115,7 +124,7 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
             // tropospheric delay dt after
             final double d2 = tropoModel.calculatePathDelay(elevation2, height);
 
-            return (d2 - d1) / dt;
+            return fTwoWay * (d2 - d1) / dt;
         }
 
         return 0;

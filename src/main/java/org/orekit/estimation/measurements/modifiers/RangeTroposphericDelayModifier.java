@@ -94,7 +94,8 @@ public class RangeTroposphericDelayModifier implements EvaluationModifier<Range>
             // delay in meters
             final double delay = tropoModel.calculatePathDelay(elevation, height);
 
-            return delay;
+            // Multiply by two because it is a two-way measurment.
+            return 2 * delay;
         }
 
         return 0;

@@ -49,12 +49,22 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
     /** Ionospheric delay model. */
     private final IonosphericDelayModel ionoModel;
 
+    /** Coefficient for measurment configuration (one-way, two-way). */
+    private final double fTwoWay;
+
     /** Constructor.
      *
      * @param model  Ionospheric delay model appropriate for the current range-rate measurement method.
+     * @param tw     Flag indicating whether the measurement is two-way.
      */
-    public RangeRateIonosphericDelayModifier(final IonosphericDelayModel model) {
+    public RangeRateIonosphericDelayModifier(final IonosphericDelayModel model, final boolean tw) {
         ionoModel = model;
+
+        if (tw) {
+            fTwoWay = 2.;
+        } else {
+            fTwoWay = 1.;
+        }
     }
 
     /** Compute the measurement error due to Ionosphere.
@@ -118,7 +128,7 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
                                                                azimuth2);
 
             // delay in meters
-            return (delay2 - delay1) / dt;
+            return fTwoWay * (delay2 - delay1) / dt;
         }
 
         return 0;

@@ -200,7 +200,7 @@ public class RangeRateTest {
 
         for (final Measurement<?> measurement : measurements) {
 
-            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), true);
             ((RangeRate) measurement).addModifier(modifier);
             
             // 
@@ -259,7 +259,7 @@ public class RangeRateTest {
 
         for (final Measurement<?> measurement : measurements) {
 
-            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+            final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), true);
             ((RangeRate) measurement).addModifier(modifier);
             
             // parameter corresponding to station position offset

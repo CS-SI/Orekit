@@ -90,7 +90,8 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
                                                               elevation,
                                                               azimuth);
 
-            return delay;
+            // Multiply by two because it is a two-way measurment.
+            return 2 * delay;
         }
 
         return 0;

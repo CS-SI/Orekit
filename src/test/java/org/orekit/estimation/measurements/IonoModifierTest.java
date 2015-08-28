@@ -128,7 +128,7 @@ public class IonoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
         
-        final RangeRateIonosphericDelayModifier modifier = new RangeRateIonosphericDelayModifier(model);
+        final RangeRateIonosphericDelayModifier modifier = new RangeRateIonosphericDelayModifier(model, true);
         
         for (final Measurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();

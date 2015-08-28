@@ -151,7 +151,51 @@ public class BatchLSEstimatorTest {
                                      0.0, 100,  // we only have range rate...
                                      0.0, 7e-3);
     }
-    
+
+    @Test
+    public void testKeplerRangeAndRangeRate() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+
+        final List<Measurement<?>> measurementsRange =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        final List<Measurement<?>> measurementsRangeRate =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeRateMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+
+        // concat measurements
+        final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
+        measurements.addAll(measurementsRange);
+        measurements.addAll(measurementsRangeRate);
+        
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
+                                                                new LevenbergMarquardtOptimizer());
+        for (final Measurement<?> meas : measurements) {
+            estimator.addMeasurement(meas);
+        }
+        estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
+        estimator.setMaxIterations(20);
+
+        // we have low correlation between the two types of measurement. We can expect a good estimate.
+        EstimationTestUtils.checkFit(context, estimator, 4,
+                                     0.0, 1,
+                                     0.0, 1,
+                                     0.0, 2e-4,
+                                     0.0, 7e-8);
+    }
+
     @Test
     public void testDuplicatedMeasurementParameter() throws OrekitException {
 

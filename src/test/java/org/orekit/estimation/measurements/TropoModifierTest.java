@@ -118,7 +118,7 @@ public class TropoModifierTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
-        final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+        final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), false);
         
         for (final Measurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
