@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.StateFunction;
+import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -63,12 +64,6 @@ public class RangeRateTest {
             final double          meanDelay = 1; // measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);            
             final SpacecraftState state = propagator.propagate(date);
-            
-            // print simulated and observed measures
-            System.out.println("#Measure " + measurement.getObservedValue()[0] 
-            			+ " " + measurement.evaluate(0, state).getValue()[0]
-            			+ " " + FastMath.abs(measurement.getObservedValue()[0] - measurement.evaluate(0, state).getValue()[0]));
-            
                         
             final double[][] jacobian = measurement.evaluate(0, state).getStateDerivatives();
 
@@ -85,12 +80,12 @@ public class RangeRateTest {
             double tolerance = 5e-1;
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
-                    System.out.println(i + " " + j + " " +
-                            finiteDifferencesJacobian[i][j] + " " +
-                            jacobian[i][j] + " " +
-                            (finiteDifferencesJacobian[i][j] - jacobian[i][j]) + " " +
-                            ((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
-                                    FastMath.abs(finiteDifferencesJacobian[i][j])));
+                    //System.out.println(i + " " + j + " " +
+                    //        finiteDifferencesJacobian[i][j] + " " +
+                    //        jacobian[i][j] + " " +
+                    //        (finiteDifferencesJacobian[i][j] - jacobian[i][j]) + " " +
+                    //        ((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                    //                FastMath.abs(finiteDifferencesJacobian[i][j])));
                     // check the values returned by getStateDerivatives() are correct
                     Assert.assertEquals(finiteDifferencesJacobian[i][j],
                                         jacobian[i][j],
@@ -167,12 +162,12 @@ public class RangeRateTest {
             double tolerance = 5e-3;
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
-                    System.out.println(i + " " + j + " " +
-                                    finiteDifferencesJacobian[i][j] + " " +
-                                    jacobian[i][j] + " " +
-                                    (finiteDifferencesJacobian[i][j] - jacobian[i][j]) + " " +
-                                    ((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
-                                            FastMath.abs(finiteDifferencesJacobian[i][j])));
+                    //System.out.println(i + " " + j + " " +
+                    //                finiteDifferencesJacobian[i][j] + " " +
+                    //                jacobian[i][j] + " " +
+                    //                (finiteDifferencesJacobian[i][j] - jacobian[i][j]) + " " +
+                    //                ((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                    //                        FastMath.abs(finiteDifferencesJacobian[i][j])));
                     // check the values returned by getStateDerivatives() are correct                    
                     Assert.assertEquals(finiteDifferencesJacobian[i][j],
                                         jacobian[i][j],

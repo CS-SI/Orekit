@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.modifiers;
 
 import java.util.List;
 
@@ -26,6 +26,10 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.StateFunction;
+import org.orekit.estimation.measurements.Evaluation;
+import org.orekit.estimation.measurements.EvaluationModifier;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.IonosphericDelayModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;

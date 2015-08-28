@@ -23,7 +23,6 @@ import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 /** Class modeling one-way or two-way range rate measurement between two vehicles.
@@ -180,9 +179,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
             final AngularCoordinates ac = topoToInert.getAngular().revert();
 
-            // FIXME ugly...
-            //final Vector3D omega        = ac.getRotationRate();
-            final Vector3D omega = new Vector3D(0, 0, Constants.GRIM5C1_EARTH_ANGULAR_VELOCITY);
+            //
+            final Transform tt = compensatedState.getFrame().getTransformTo(station.getBaseFrame().getParent(), date);
+            final Vector3D omega        = tt.getRotationRate(); // earth angular velocity
 
             // derivative of lineOfSight wrt rSta,
             //    d (relPos / ||relPos||) / d rStation

@@ -94,7 +94,7 @@ public class EstimationTestUtils {
                                                   context.gravity.getMu());
 
         context.stations = Arrays.asList(//context.createStation(-18.59146, -173.98363,   76.0, "Leimatu`a"),
-                                         //context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
+                                         context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
                                          context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
                                          //context.createStation( -4.01583,  103.12833, 3173.0, "Gunung Dempo")
                         );

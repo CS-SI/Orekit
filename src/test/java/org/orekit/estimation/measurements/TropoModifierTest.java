@@ -19,13 +19,17 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Precision;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.KlobucharIonoModel;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
@@ -73,16 +77,22 @@ public class TropoModifierTest {
         final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
         
         for (final Measurement<?> measurement : measurements) {
-            Range range = (Range) measurement;
-            range.addModifier(modifier);
-
-            // parameter corresponding to station position offset
-            final GroundStation stationParameter = range.getStation();
-            final AbsoluteDate date = range.getDate();
+            final AbsoluteDate date = measurement.getDate();
             final SpacecraftState refstate     = propagator.propagate(date);
-
+            
+            Range range = (Range) measurement;
+            Evaluation<Range> evalNoMod = range.evaluate(0,  refstate);
+            
+            // add mofifier
+            range.addModifier(modifier);
             // 
             Evaluation<Range> eval = range.evaluate(0,  refstate);
+            
+            final double diffMeters = eval.getValue()[0] - evalNoMod.getValue()[0];
+            
+            final double epsilon = 1e-6;
+            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);       
         }
     }
     
@@ -110,16 +120,23 @@ public class TropoModifierTest {
         final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
         
         for (final Measurement<?> measurement : measurements) {
-            RangeRate rangeRate = (RangeRate) measurement;
-            rangeRate.addModifier(modifier);
-
-            // parameter corresponding to station position offset
-            final GroundStation stationParameter = rangeRate.getStation();
-            final AbsoluteDate date = rangeRate.getDate();
+            final AbsoluteDate date = measurement.getDate();
             final SpacecraftState refstate     = propagator.propagate(date);
+            
+            RangeRate rangeRate = (RangeRate) measurement;
+            Evaluation<RangeRate> evalNoMod = rangeRate.evaluate(0,  refstate);
+            
+            // add mofifier
+            rangeRate.addModifier(modifier);
 
             // 
             Evaluation<RangeRate> eval = rangeRate.evaluate(0,  refstate);
+            
+            final double diffMetersSec = eval.getValue()[0] - evalNoMod.getValue()[0];
+            
+            final double epsilon = 1e-6;
+            Assert.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
         }
     }   
 }

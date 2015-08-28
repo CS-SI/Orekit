@@ -19,7 +19,9 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Precision;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -27,6 +29,8 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.models.earth.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -83,16 +87,22 @@ public class IonoModifierTest {
         final RangeIonosphericDelayModifier modifier = new RangeIonosphericDelayModifier(model);
         
         for (final Measurement<?> measurement : measurements) {
-            Range range = (Range) measurement;
-            range.addModifier(modifier);
-
-            // parameter corresponding to station position offset
-            final GroundStation stationParameter = range.getStation();
-            final AbsoluteDate date = range.getDate();
+            final AbsoluteDate date = measurement.getDate();
             final SpacecraftState refstate     = propagator.propagate(date);
-
+            
+            Range range = (Range) measurement;
+            Evaluation<Range> evalNoMod = range.evaluate(0,  refstate);
+            
+            // add mofifier
+            range.addModifier(modifier);
             // 
             Evaluation<Range> eval = range.evaluate(0,  refstate);
+            
+            final double diffMeters = eval.getValue()[0] - evalNoMod.getValue()[0];
+            
+            final double epsilon = 1e-6;
+            Assert.assertTrue(Precision.compareTo(diffMeters, 15., epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
     
@@ -120,16 +130,23 @@ public class IonoModifierTest {
         final RangeRateIonosphericDelayModifier modifier = new RangeRateIonosphericDelayModifier(model);
         
         for (final Measurement<?> measurement : measurements) {
-            RangeRate rangeRate = (RangeRate) measurement;
-            rangeRate.addModifier(modifier);
-
-            // parameter corresponding to station position offset
-            final GroundStation stationParameter = rangeRate.getStation();
-            final AbsoluteDate date = rangeRate.getDate();
+            final AbsoluteDate date = measurement.getDate();
             final SpacecraftState refstate     = propagator.propagate(date);
+            
+            RangeRate rangeRate = (RangeRate) measurement;
+            Evaluation<RangeRate> evalNoMod = rangeRate.evaluate(0,  refstate);
+            
+            // add mofifier
+            rangeRate.addModifier(modifier);
 
             // 
             Evaluation<RangeRate> eval = rangeRate.evaluate(0,  refstate);
+            
+            final double diffMetersSec = eval.getValue()[0] - evalNoMod.getValue()[0];
+            
+            final double epsilon = 1e-6;
+            Assert.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);            
         }
     }
     
@@ -177,8 +194,11 @@ public class IonoModifierTest {
                                                         state.getFrame(),
                                                         state.getDate()) * RADIANS_TO_DEGREES;
             
-            double delay = model.calculatePathDelay(date, geo, elevation, azimuth);
-            System.out.println("Azimuth: " + azimuth + "; Elevation: " + elevation + "; Delay: " + delay);
+            double delayMeters = model.calculatePathDelay(date, geo, elevation, azimuth);
+            
+            final double epsilon = 1e-6;
+            Assert.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);            
         }        
         
     }

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.measurements;
+package org.orekit.estimation.measurements.modifiers;
 
 import java.util.List;
 
@@ -26,116 +26,93 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.StateFunction;
-import org.orekit.models.earth.TroposphericDelayModel;
+import org.orekit.estimation.measurements.Evaluation;
+import org.orekit.estimation.measurements.EvaluationModifier;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.estimation.measurements.Range;
+import org.orekit.models.earth.IonosphericDelayModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 
-/** Class modifying theoretical range-rate measurements with tropospheric delay.
- * The effect of tropospheric correction on the range-rate is directly computed
- * through the computation of the tropospheric delay difference with respect to
- * time.
+/** Class modifying theoretical range measurement with ionospheric delay.
+ * The effect of ionospheric correction on the range is directly computed
+ * through the computation of the ionospheric delay.
  *
- * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
- * For SLR techniques however, the frequency dependence is sensitive.
+ * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
+ * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  *
  * @author Joris Olympio
  * @since 7.1
  */
-public class RangeRateTroposphericDelayModifier implements EvaluationModifier<RangeRate> {
-    /** Tropospheric delay model. */
-    private final TroposphericDelayModel tropoModel;
+public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> {
+    /** Ionospheric delay model. */
+    private final IonosphericDelayModel ionoModel;
 
     /** Constructor.
      *
-     * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
+     * @param model  Ionospheric delay model appropriate for the current range measurement method.
      */
-    public RangeRateTroposphericDelayModifier(final TroposphericDelayModel model) {
-        tropoModel = model;
+    public RangeIonosphericDelayModifier(final IonosphericDelayModel model) {
+        ionoModel = model;
     }
 
-    /** Get the station height above mean sea level.
-     *
-     * @param station  ground station (or measuring station)
-     * @return the measuring station height above sea level, m
-     */
-    private double getStationHeightAMSL(final GroundStation station) {
-        // FIXME Il faut la hauteur par rapport au geoide WGS84+GUND = EGM2008 par exemple
-        final double height = station.getBaseFrame().getPoint().getAltitude();
-        return height;
-    }
-
-    /** Compute the measurement error due to Troposphere.
+    /** Compute the measurement error due to ionosphere.
      * @param station station
      * @param state spacecraft state
-     * @return the measurement error due to Troposphere
+     * @return the measurement error due to ionosphere
      * @throws OrekitException  if frames transformations cannot be computed
      */
-    public double rangeRateErrorTroposphericModel(final GroundStation station,
-                                                  final SpacecraftState state) throws OrekitException
+    private double rangeErrorIonosphericModel(final GroundStation station,
+                                              final SpacecraftState state) throws OrekitException
     {
-        // The effect of tropospheric correction on the range rate is
-        // computed using finite differences.
-
-        final double dt = 10; // s
-
-        // station altitude AMSL in meters
-        final double height = getStationHeightAMSL(station);
-
-        // spacecraft position and elevation as seen from the ground station
+        //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
         // elevation in degrees
-        final double elevation1 = FastMath.toDegrees(
-                                                     station.getBaseFrame().getElevation(position,
-                                                                                         state.getFrame(),
-                                                                                         state.getDate()));
+        final double elevation = FastMath.toDegrees(
+                                                    station.getBaseFrame().getElevation(position,
+                                                                                        state.getFrame(),
+                                                                                        state.getDate()));
 
         // only consider measures above the horizon
-        if (elevation1 > 0) {
-            // tropospheric delay in meters
-            final double d1 = tropoModel.calculatePathDelay(elevation1, height);
+        if (elevation > 0) {
 
-            // propagate spacecraft state forward by dt
-            final SpacecraftState state2 = state.shiftedBy(dt);
+            // compute azimuth in degrees
+            final double azimuth = FastMath.toDegrees(
+                                                      station.getBaseFrame().getAzimuth(position,
+                                                                                        state.getFrame(),
+                                                                                        state.getDate()) );
 
-            // spacecraft position and elevation as seen from the ground station
-            final Vector3D position2 = state2.getPVCoordinates().getPosition();
+            // delay in meters
+            final double delay = ionoModel.calculatePathDelay(state.getDate(),
+                                                              station.getBaseFrame().getPoint(),
+                                                              elevation,
+                                                              azimuth);
 
-            // elevation in degrees
-            final double elevation2 = FastMath.toDegrees(
-                                                         station.getBaseFrame().getElevation(position2,
-                                                                                             state2.getFrame(),
-                                                                                             state2.getDate()));
-
-            // tropospheric delay dt after
-            final double d2 = tropoModel.calculatePathDelay(elevation2, height);
-
-            return (d2 - d1) / dt;
+            return delay;
         }
 
         return 0;
     }
 
-
     /** Compute the Jacobian of the delay term wrt state.
      *
      * @param station station
-     * @param refstate spacecraft state
-     * @param delay current tropospheric delay
+     * @param refstate reference spacecraft state
+     *
      * @return jacobian of the delay wrt state
      * @throws OrekitException  if frames transformations cannot be computed
      */
-    private double[][] rangeRateErrorJacobianState(final GroundStation station,
-                                               final SpacecraftState refstate,
-                                               final double delay) throws OrekitException
+    private double[][] rangeErrorJacobianState(final GroundStation station,
+                                          final SpacecraftState refstate) throws OrekitException
     {
         final double[][] finiteDifferencesJacobian =
                         EstimationTestUtils.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
                                 try {
                                     // evaluate target's elevation with a changed target position
-                                    final double value = rangeRateErrorTroposphericModel(station, state);
+                                    final double value = rangeErrorIonosphericModel(station, state);
 
                                     return new double[] {value };
 
@@ -149,15 +126,16 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
         return finiteDifferencesJacobian;
     }
 
+
     /** Compute the Jacobian of the delay term wrt parameters.
      *
      * @param station station
      * @param state spacecraft state
-     * @param delay current tropospheric delay
-     * @return jacobian of the delay wrt state
+     * @param delay current ionospheric delay
+     * @return jacobian of the delay wrt station position
      * @throws OrekitException  if frames transformations cannot be computed
      */
-    private double[][] rangeRateErrorJacobianParameter(final GroundStation station,
+    private double[][] rangeErrorJacobianParameter(final GroundStation station,
                                                    final SpacecraftState state,
                                                    final double delay) throws OrekitException
     {
@@ -171,7 +149,7 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
 
                                         stationParameter.setValue(point);
 
-                                        final double value = rangeRateErrorTroposphericModel(stationParameter, state);
+                                        final double value = rangeErrorIonosphericModel(stationParameter, state);
 
                                         stationParameter.setValue(savedParameter);
 
@@ -192,26 +170,25 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
     }
 
     @Override
-    public void modify(final Evaluation<RangeRate> evaluation)
+    public void modify(final Evaluation<Range> evaluation)
         throws OrekitException {
-        final RangeRate measure = evaluation.getMeasurement();
+        final Range measure = evaluation.getMeasurement();
         final GroundStation station = measure.getStation();
         final SpacecraftState state = evaluation.getState();
 
         final double[] oldValue = evaluation.getValue();
 
-        final double delay = rangeRateErrorTroposphericModel(station, state);
+        final double delay = rangeErrorIonosphericModel(station, state);
 
-        // update measurement value taking into account the tropospheric delay.
-        // The tropospheric delay is directly added to the range.
+        // update measurement value taking into account the ionospheric delay.
+        // The ionospheric delay is directly added to the range.
         final double[] newValue = oldValue.clone();
         newValue[0] = newValue[0] + delay;
         evaluation.setValue(newValue);
 
         // update measurement derivatives with jacobian of the measure wrt state
-        final double[][] djac = rangeRateErrorJacobianState(station,
-                                      state,
-                                      delay);
+        final double[][] djac = rangeErrorJacobianState(station,
+                                      state);
         final double[][] stateDerivatives = evaluation.getStateDerivatives();
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
@@ -223,8 +200,7 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
 
         if (station.isEstimated()) {
             // update measurement derivatives with jacobian of the measure wrt station parameters
-            // by simply adding the jacobian the delay term.
-            final double[][] djacdp = rangeRateErrorJacobianParameter(station,
+            final double[][] djacdp = rangeErrorJacobianParameter(station,
                                                                   state,
                                                                   delay);
             final double[][] parameterDerivatives = evaluation.getParameterDerivatives(station.getName());
@@ -233,7 +209,6 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
                     parameterDerivatives[irow][jcol] += djacdp[irow][jcol];
                 }
             }
-
             evaluation.setParameterDerivatives(station.getName(), parameterDerivatives);
         }
     }
