@@ -298,9 +298,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
          */
-        public OsculatingMapper(final AbsoluteDate referenceDate, final double mu,
-                                final OrbitType orbitType, final PositionAngle positionAngleType,
-                                final AttitudeProvider attitudeProvider, final Frame frame) {
+        OsculatingMapper(final AbsoluteDate referenceDate, final double mu,
+                         final OrbitType orbitType, final PositionAngle positionAngleType,
+                         final AttitudeProvider attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
         }
 
