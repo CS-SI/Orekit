@@ -16,6 +16,7 @@
  */
 package org.orekit.models.earth;
 
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
@@ -30,11 +31,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UTCScale;
 
 public class KlobucharModelTest {
-    /** utility constant to convert from radians to degrees. */
-    private static double RADIANS_TO_DEGREES = 180. / Math.PI;
-    /** utility constant to convert from degrees to radians. */
-    private static double DEGREES_TO_RADIANS = Math.PI / 180.;
-    
+
     private static double epsilon = 1e-6;
     
     /** ionospheric model. */
@@ -61,8 +58,8 @@ public class KlobucharModelTest {
     
     @Test
     public void testDelay() {
-        final double latitude = 45 * DEGREES_TO_RADIANS; 
-        final double longitude = 2 * DEGREES_TO_RADIANS;
+        final double latitude = FastMath.toRadians(45); 
+        final double longitude = FastMath.toRadians(2);
         final double altitude = 500;
         final double elevation = 70.;
         final double azimuth = 10.;
@@ -79,8 +76,8 @@ public class KlobucharModelTest {
     
     @Test
     public void compareExpectedValue() throws IllegalArgumentException, OrekitException {
-        final double latitude = 40 * DEGREES_TO_RADIANS; 
-        final double longitude = -100 * DEGREES_TO_RADIANS;
+        final double latitude = FastMath.toRadians(40); 
+        final double longitude = FastMath.toRadians(-100);
         final double altitude = 0.;
         final double elevation = 20.;
         final double azimuth = 210.;

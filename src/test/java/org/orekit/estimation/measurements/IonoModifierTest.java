@@ -19,12 +19,12 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
@@ -38,12 +38,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UTCScale;
 
 public class IonoModifierTest {
-    /** utility constant to convert from radians to degrees. */
-    private static double RADIANS_TO_DEGREES = 180. / Math.PI;
     
     /** ionospheric model. */
     private KlobucharIonoModel model;
@@ -184,17 +180,17 @@ public class IonoModifierTest {
             //
             final GeodeticPoint geo = station.getBaseFrame().getPoint();
             
-            // elevation in radians
+            // elevation in degrees
             final double elevation =
-                    station.getBaseFrame().getElevation(position,
-                                                        state.getFrame(),
-                                                        state.getDate()) * RADIANS_TO_DEGREES;
+                    FastMath.toDegrees(station.getBaseFrame().getElevation(position,
+                                                                           state.getFrame(),
+                                                                           state.getDate()));
             
-            // elevation in radians
+            // elevation in degrees
             final double azimuth =
-                    station.getBaseFrame().getAzimuth(position,
-                                                        state.getFrame(),
-                                                        state.getDate()) * RADIANS_TO_DEGREES;
+                    FastMath.toDegrees(station.getBaseFrame().getAzimuth(position,
+                                                                         state.getFrame(),
+                                                                         state.getDate()));
             
             double delayMeters = model.calculatePathDelay(date, geo, elevation, azimuth);
             

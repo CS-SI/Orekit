@@ -18,19 +18,16 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
-import org.orekit.models.earth.KlobucharIonoModel;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -40,8 +37,6 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 
 public class TropoModifierTest {
-    /** utility constant to convert from radians to degrees. */
-    private static double RADIANS_TO_DEGREES = 180. / Math.PI;   
     
     @Before
     public void setUp() throws Exception {
