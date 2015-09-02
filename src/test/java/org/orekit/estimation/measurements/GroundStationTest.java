@@ -98,9 +98,9 @@ public class GroundStationTest {
                                      0.0, 2.3e-6,
                                      0.0, 8.8e-7,
                                      0.0, 4.3e-10);
-        Assert.assertEquals(deltaTopo.getX(), moved.getValue()[0], 0.7e-7);
-        Assert.assertEquals(deltaTopo.getY(), moved.getValue()[1], 1.3e-7);
-        Assert.assertEquals(deltaTopo.getZ(), moved.getValue()[2], 0.7e-7);
+        Assert.assertEquals(deltaTopo.getX(), moved.getValue()[0], 2.5e-7);
+        Assert.assertEquals(deltaTopo.getY(), moved.getValue()[1], 2.8e-7);
+        Assert.assertEquals(deltaTopo.getZ(), moved.getValue()[2], 1.1e-7);
 
     }
 

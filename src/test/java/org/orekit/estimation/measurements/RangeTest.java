@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,6 +59,10 @@ public class RangeTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
 
+        double[] errorsP = new double[3 * measurements.size()];
+        double[] errorsV = new double[3 * measurements.size()];
+        int indexP = 0;
+        int indexV = 0;
         for (final Measurement<?> measurement : measurements) {
 
             // We intentionally propagate to a date which is close to the
@@ -79,22 +84,27 @@ public class RangeTest {
                         return measurement.evaluate(0, state).getValue();
                     }
                                                   }, measurement.getDimension(), OrbitType.CARTESIAN,
-                                                  PositionAngle.TRUE, 15.0, 3).value(state);
+                                                  PositionAngle.TRUE, 1.0, 3).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
-                    double tolerance = (j < 3) ? 2.4e-7 : 2.4e-3;
-                    // check the values returned by getStateDerivatives() are correct
-                    System.out.println(j + " " + ((finiteDifferencesJacobian[i][j] - jacobian[i][j]) / FastMath.abs(finiteDifferencesJacobian[i][j])));
-                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
-                                        jacobian[i][j],
-                                        tolerance * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                    final double relativeError = FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                                                              finiteDifferencesJacobian[i][j]);
+                    if (j < 3) {
+                        errorsP[indexP++] = relativeError;
+                    } else {
+                        errorsV[indexV++] = relativeError;
+                    }
                 }
             }
 
         }
+
+        // median errors
+        Assert.assertEquals(0.0, new Median().evaluate(errorsP), 2.2e-8);
+        Assert.assertEquals(0.0, new Median().evaluate(errorsV), 6.8e-4);
 
     }
 
