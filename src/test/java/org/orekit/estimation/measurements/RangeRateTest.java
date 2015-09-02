@@ -26,6 +26,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.EstimationUtils;
 import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
@@ -68,7 +69,7 @@ public class RangeRateTest {
             final double[][] jacobian = measurement.evaluate(0, state).getStateDerivatives();
 
             final double[][] finiteDifferencesJacobian =
-                    EstimationTestUtils.differentiate(new StateFunction() {
+                    EstimationUtils.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.evaluate(0, state).getValue();
                 }
@@ -137,7 +138,7 @@ public class RangeRateTest {
             final double[][]      jacobian  = measurement.evaluate(0, state).getParameterDerivatives(stationParameter.getName());
 
             final double[][] finiteDifferencesJacobian =
-                EstimationTestUtils.differentiate(new MultivariateVectorFunction() {
+                EstimationUtils.differentiate(new MultivariateVectorFunction() {
                         public double[] value(double[] point) throws OrekitExceptionWrapper {
                             try {
 
@@ -212,7 +213,7 @@ public class RangeRateTest {
             final double[][] jacobian = measurement.evaluate(0, state).getStateDerivatives();
 
             final double[][] finiteDifferencesJacobian =
-                    EstimationTestUtils.differentiate(new StateFunction() {
+                    EstimationUtils.differentiate(new StateFunction() {
                 public double[] value(final SpacecraftState state) throws OrekitException {
                     return measurement.evaluate(0, state).getValue();
                 }
@@ -278,7 +279,7 @@ public class RangeRateTest {
             final double[][]      jacobian  = measurement.evaluate(0, state).getParameterDerivatives(stationParameter.getName());
 
             final double[][] finiteDifferencesJacobian =
-                EstimationTestUtils.differentiate(new MultivariateVectorFunction() {
+                EstimationUtils.differentiate(new MultivariateVectorFunction() {
                         public double[] value(double[] point) throws OrekitExceptionWrapper {
                             try {
 

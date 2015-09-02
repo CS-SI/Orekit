@@ -23,7 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.EstimationUtils;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.Evaluation;
@@ -146,7 +146,7 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
                                           final SpacecraftState refstate) throws OrekitException
     {
         final double[][] finiteDifferencesJacobian =
-                        EstimationTestUtils.differentiate(new StateFunction() {
+                        EstimationUtils.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
                                 try {
                                     // evaluate target's elevation with a changed target position
@@ -180,7 +180,7 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
         final GroundStation stationParameter = station;
 
         final double[][] finiteDifferencesJacobian =
-                        EstimationTestUtils.differentiate(new MultivariateVectorFunction() {
+                        EstimationUtils.differentiate(new MultivariateVectorFunction() {
                                 public double[] value(final double[] point) throws OrekitExceptionWrapper {
                                     try {
                                         final double[] savedParameter = stationParameter.getValue();

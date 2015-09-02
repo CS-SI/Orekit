@@ -19,8 +19,19 @@ package org.orekit.estimation;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
+/** Interface representing a vector function depending on {@link SpacecraftState}.
+ * @see EstimationUtils#differentiate(StateFunction, int, org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
+ * @see StateJacobian
+ * @author Luc Maisonobe
+ * @since 7.1
+ */
 public interface StateFunction {
 
+    /** Evaluate the function.
+     * @param state spacecraft state as the sole free parameter of the function.
+     * @return vector value of the function
+     * @throws OrekitException if evaluation cannot be performed
+     */
     double[] value(SpacecraftState state) throws OrekitException;
 
 }

@@ -23,7 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.EstimationUtils;
 import org.orekit.estimation.Parameter;
 import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.Evaluation;
@@ -109,7 +109,7 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
                                           final SpacecraftState refstate) throws OrekitException
     {
         final double[][] finiteDifferencesJacobian =
-                        EstimationTestUtils.differentiate(new StateFunction() {
+                        EstimationUtils.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
                                 try {
                                     // evaluate target's elevation with a changed target position
@@ -143,7 +143,7 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
         final GroundStation stationParameter = station;
 
         final double[][] finiteDifferencesJacobian =
-                        EstimationTestUtils.differentiate(new MultivariateVectorFunction() {
+                        EstimationUtils.differentiate(new MultivariateVectorFunction() {
                                 public double[] value(final double[] point) throws OrekitExceptionWrapper {
                                     try {
                                         final double[] savedParameter = stationParameter.getValue();
@@ -188,8 +188,7 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
         evaluation.setValue(newValue);
 
         // update measurement derivatives with jacobian of the measure wrt state
-        final double[][] djac = rangeErrorJacobianState(station,
-                                      state);
+        final double[][] djac = rangeErrorJacobianState(station, state);
         final double[][] stateDerivatives = evaluation.getStateDerivatives();
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
@@ -201,9 +200,7 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
 
         if (station.isEstimated()) {
             // update measurement derivatives with jacobian of the measure wrt station parameters
-            final double[][] djacdp = rangeErrorJacobianParameter(station,
-                                                                  state,
-                                                                  delay);
+            final double[][] djacdp = rangeErrorJacobianParameter(station, state, delay);
             final double[][] parameterDerivatives = evaluation.getParameterDerivatives(station.getName());
             for (int irow = 0; irow < parameterDerivatives.length; ++irow) {
                 for (int jcol = 0; jcol < parameterDerivatives[0].length; ++jcol) {
