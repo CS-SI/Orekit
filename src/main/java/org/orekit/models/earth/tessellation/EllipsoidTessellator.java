@@ -744,13 +744,13 @@ public class EllipsoidTessellator {
             }
         } else {
             final Hyperplane<Sphere2D> hyperplane = node.getCut().getHyperplane();
-            switch (sub.side(hyperplane)) {
+            final SubHyperplane.SplitSubHyperplane<Sphere2D> split = sub.split(hyperplane);
+            switch (split.getSide()) {
                 case PLUS:
                     return recurseMeetInside(node.getPlus(),  sub);
                 case MINUS:
                     return recurseMeetInside(node.getMinus(), sub);
                 case BOTH:
-                    final SubHyperplane.SplitSubHyperplane<Sphere2D> split = sub.split(hyperplane);
                     if (recurseMeetInside(node.getPlus(), split.getPlus())) {
                         return true;
                     } else {

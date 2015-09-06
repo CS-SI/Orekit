@@ -102,7 +102,7 @@ class Mesh {
 
         // force the first node to be considered inside
         // It may appear outside if the zone is very thin and
-        // BSPTree.checkPoint select a very close but wrong
+        // BSPTree.checkPoint selects a very close but wrong
         // tree leaf tree for the point. Even in this case,
         // we want the mesh to be properly defined and surround
         // the area

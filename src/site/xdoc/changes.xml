@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Fixed ellipsoid tessellation with large tolerances.
+        Fixes issue #215.
+      </action>
       <action dev="evan" type="fix" >
         Fixed numerical precision issues for start/end dates of generated
         ephemerides.
