@@ -320,19 +320,6 @@ public class EllipsoidTessellatorTest {
                 tessellator.tessellate(small, maxWidth, maxLength, 0, 0, false, true);
         Assert.assertEquals(1, tiles.size());
         Assert.assertEquals(1, tiles.get(0).size());
-        GeodeticPoint[] v = tiles.get(0).get(0).getVertices();
-        System.out.format(java.util.Locale.US,
-                          "%9.4f %9.4f%n%9.4f %9.4f%n%9.4f %9.4f%n%9.4f %9.4f%n%9.4f %9.4f%n",
-                          FastMath.toDegrees(v[0].getLatitude()),
-                          FastMath.toDegrees(v[0].getLongitude()),
-                          FastMath.toDegrees(v[1].getLatitude()),
-                          FastMath.toDegrees(v[1].getLongitude()),
-                          FastMath.toDegrees(v[2].getLatitude()),
-                          FastMath.toDegrees(v[2].getLongitude()),
-                          FastMath.toDegrees(v[3].getLatitude()),
-                          FastMath.toDegrees(v[3].getLongitude()),
-                          FastMath.toDegrees(v[0].getLatitude()),
-                          FastMath.toDegrees(v[0].getLongitude()));
 
     }
 
