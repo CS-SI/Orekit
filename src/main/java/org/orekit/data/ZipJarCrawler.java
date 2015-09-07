@@ -327,7 +327,7 @@ public class ZipJarCrawler implements DataProvider {
              * @param name name of the entry
              * @param isDirectory if true, the entry is a directory
              */
-            public EntryStream(final String name, final boolean isDirectory) {
+            EntryStream(final String name, final boolean isDirectory) {
                 this.name        = name;
                 this.isDirectory = isDirectory;
                 this.closed      = false;
