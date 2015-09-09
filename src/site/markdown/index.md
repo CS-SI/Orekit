@@ -118,6 +118,7 @@ Features
       * date
       * latitude, longitude, altitude crossing
       * latitude, longitude extremum
+      * elevation extremum
       * anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric
       * target detection in sensor field of view (circular or dihedral)
       * complex geographic zones traversal
