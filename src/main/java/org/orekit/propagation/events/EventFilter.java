@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
  *
- * <p>General {@link EventDetector events} are defined implicitely
+ * <p>General {@link EventDetector events} are defined implicitly
  * by a {@link EventDetector#g(SpacecraftState) g function} crossing
  * zero. This function needs to be continuous in the event neighborhood,
  * and its sign must remain consistent between events. This implies that
