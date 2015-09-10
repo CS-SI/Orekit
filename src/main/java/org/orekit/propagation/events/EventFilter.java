@@ -124,7 +124,7 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
     /** {@inheritDoc} */
     @Override
     protected EventFilter<T> create(final double newMaxCheck, final double newThreshold,
-                                 final int newMaxIter, final EventHandler<EventFilter<T>> newHandler) {
+                                    final int newMaxIter, final EventHandler<EventFilter<T>> newHandler) {
         return new EventFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }
 
