@@ -18,8 +18,6 @@ package org.orekit.propagation.events;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
@@ -49,9 +47,6 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     /** Serializable UID. */
     private static final long serialVersionUID = 20150909L;
 
-    /** Body on which the latitude is defined. */
-    private OneAxisEllipsoid body;
-
     /** Topocentric frame in which elevation should be evaluated. */
     private final TopocentricFrame topo;
 
@@ -59,23 +54,21 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * <p>The new instance uses default values for maximal checking interval
      * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
-     * @param body body on which the ground point is defined
      * @param topo topocentric frame centered on ground point
      */
-    public ElevationExtremumDetector(final OneAxisEllipsoid body, final TopocentricFrame topo) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body, topo);
+    public ElevationExtremumDetector(final TopocentricFrame topo) {
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, topo);
     }
 
     /** Build a detector.
      * @param maxCheck maximal checking interval (s)
      * @param threshold convergence threshold (s)
-     * @param body body on which the latitude is defined
      * @param topo topocentric frame centered on ground point
      */
     public ElevationExtremumDetector(final double maxCheck, final double threshold,
-                                    final OneAxisEllipsoid body, final TopocentricFrame topo) {
+                                     final TopocentricFrame topo) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<ElevationExtremumDetector>(),
-             body, topo);
+             topo);
     }
 
     /** Private constructor with full parameters.
@@ -88,14 +81,12 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
-     * @param body body on which the latitude is defined
      * @param topo topocentric frame centered on ground point
      */
     private ElevationExtremumDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<ElevationExtremumDetector> handler,
-                                     final OneAxisEllipsoid body, final TopocentricFrame topo) {
+                                      final int maxIter, final EventHandler<ElevationExtremumDetector> handler,
+                                      final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
-        this.body = body;
         this.topo = topo;
     }
 
@@ -104,14 +95,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     protected ElevationExtremumDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
                                               final EventHandler<ElevationExtremumDetector> newHandler) {
-        return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, body, topo);
-    }
-
-    /** Get the body on which the geographic zone is defined.
-     * @return body on which the geographic zone is defined
-     */
-    public BodyShape getBody() {
-        return body;
+        return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);
     }
 
     /**

@@ -51,10 +51,10 @@ public class ElevationExtremumDetectorTest {
 
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), FastMath.toRadians(66.6), 300.0);
         final ElevationExtremumDetector raw =
-                new ElevationExtremumDetector(60.0, 1.e-6, earth, new TopocentricFrame(earth, gp, "test")).
+                new ElevationExtremumDetector(60.0, 1.e-6, new TopocentricFrame(earth, gp, "test")).
                 withHandler(new ContinueOnEvent<ElevationExtremumDetector>());
-        final EventFilter<ElevationExtremumDetector> maxElevationDetector =
-                new EventFilter<ElevationExtremumDetector>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
+        final EventSlopeFilter<ElevationExtremumDetector> maxElevationDetector =
+                new EventSlopeFilter<ElevationExtremumDetector>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
 
         Assert.assertEquals(60.0, raw.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(1.0e-6, raw.getThreshold(), 1.0e-15);
