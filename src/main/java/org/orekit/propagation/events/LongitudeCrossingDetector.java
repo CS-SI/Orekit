@@ -127,7 +127,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      * will cross the zero value once per orbit, in increasing and decreasing
      * directions on alternate orbits. If eastwards and westwards crossing have to
      * be distinguished, the velocity direction has to be checked instead of looking
-     * at the {@increasing} flag.
+     * at the {@code increasing} flag.
      * </p>
      * @param s the current state information: date, kinematics, attitude
      * @return longitude difference between the spacecraft and the fixed
