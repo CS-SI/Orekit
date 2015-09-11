@@ -22,6 +22,16 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add" >
+        Added EventEnablingPredicateFilter to filter event based on an user-provided
+        enabling predicate function. This allow for example to dynamically turn some
+        events on and off during propagation or to set up some elaborate logic like
+        triggering on elevation first time derivative (i.e. one elevation maximum)
+        but only when elevation itself is above some threshold.
+      </action>
+      <action dev="luc" type="update" >
+        Renamed EventFilter into EventSlopeFilter.
+      </action>
+      <action dev="luc" type="add" >
         Added elevation extremum event detector.
       </action>
       <action dev="luc" type="fix" >

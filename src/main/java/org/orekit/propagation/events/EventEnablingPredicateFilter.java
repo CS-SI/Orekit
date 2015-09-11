@@ -1,12 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+/* Copyright 2002-2015 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * CS licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.orekit.propagation.events;
 
 import java.util.Arrays;
@@ -24,27 +23,20 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
-/** Wrapper used to detect only increasing or decreasing events.
- *
- * <p>This class is heavily based on the class with the same name from the
- * Apache Commons Math library. The changes performed consist in replacing
- * raw types (double and double arrays) with space dynamics types
- * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
+/** Wrapper used to detect events only when enabled by an external predicated function.
  *
  * <p>General {@link EventDetector events} are defined implicitly
  * by a {@link EventDetector#g(SpacecraftState) g function} crossing
- * zero. This function needs to be continuous in the event neighborhood,
- * and its sign must remain consistent between events. This implies that
- * during an ODE integration, events triggered are alternately events
- * for which the function increases from negative to positive values,
- * and events for which the function decreases from positive to
- * negative values.
+ * zero. This implies that during an orbit propagation, events are
+ * triggered at all zero crossings.
  * </p>
  *
- * <p>Sometimes, users are only interested in one type of event (say
- * increasing events for example) and not in the other type. In these
- * cases, looking precisely for all events location and triggering
- * events that will later be ignored is a waste of computing time.</p>
+ * <p>Sometimes, users would like to enable or disable events by themselves,
+ * for example to trigger them only for certain orbits, or to check elevation
+ * maximums only when elevation itself is positive (i.e. they want to
+ * discard elevation maximums below ground). In these cases, looking precisely
+ * for all events location and triggering events that will later be ignored
+ * is a waste of computing time.</p>
  *
  * <p>Users can wrap a regular {@link EventDetector event detector} in
  * an instance of this class and provide this wrapping instance to
@@ -55,16 +47,20 @@ import org.orekit.time.AbsoluteDate;
  * EventDetector#eventOccurred(SpacecraftState, boolean)
  * eventOccurred} method in order to ignore uninteresting events. The
  * wrapped regular {@link EventDetector event detector} will the see only
- * the interesting events, i.e. either only {@code increasing} events or
- * {@code decreasing} events. the number of calls to the {@link
- * EventDetector#g(SpacecraftState) g function} will also be reduced.</p>
- * @deprecated as of 7.1, replaced with {@link EventSlopeFilter}
+ * the interesting events, i.e. either only events that occur when a
+ * user-provided event enabling predicate function is true, ignoring all events
+ * that occur when the event enabling predicate function is false. The number of
+ * calls to the {@link EventDetector#g(SpacecraftState) g function} will also be
+ * reduced.</p>
+ * @see EventSlopeFilter
+ * @since 7.1
  */
-@Deprecated
-public class EventFilter<T extends EventDetector> extends AbstractDetector<EventFilter<T>> {
+
+public class EventEnablingPredicateFilter<T extends EventDetector>
+    extends AbstractDetector<EventEnablingPredicateFilter<T>> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130409L;
+    private static final long serialVersionUID = 20150910L;
 
     /** Number of past transformers updates stored. */
     private static final int HISTORY_SIZE = 100;
@@ -72,8 +68,8 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
     /** Wrapped event detector. */
     private final T rawDetector;
 
-    /** Filter to use. */
-    private final FilterType filter;
+    /** Enabling predicate function. */
+    private final EnablingPredicate<T> enabler;
 
     /** Transformers of the g function. */
     private final Transformer[] transformers;
@@ -87,14 +83,17 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
     /** Extreme time encountered so far. */
     private AbsoluteDate extremeT;
 
+    /** Detector function value at extremeT. */
+    private double extremeG;
+
     /** Wrap an {@link EventDetector event detector}.
      * @param rawDetector event detector to wrap
-     * @param filter filter to use
+     * @param enabler event enabling predicate function to use
      */
-    public EventFilter(final T rawDetector, final FilterType filter) {
+    public EventEnablingPredicateFilter(final T rawDetector, final EnablingPredicate<T> enabler) {
         this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
              rawDetector.getMaxIterationCount(), new LocalHandler<T>(),
-             rawDetector, filter);
+             rawDetector, enabler);
     }
 
     /** Private constructor with full parameters.
@@ -108,24 +107,24 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
-     * @param filter filter to use
-     * @since 6.1
+     * @param enabler event enabling function to use
      */
-    private EventFilter(final double maxCheck, final double threshold,
-                        final int maxIter, final EventHandler<EventFilter<T>> handler,
-                        final T rawDetector, final FilterType filter) {
+    private EventEnablingPredicateFilter(final double maxCheck, final double threshold,
+                                         final int maxIter, final EventHandler<EventEnablingPredicateFilter<T>> handler,
+                                         final T rawDetector, final EnablingPredicate<T> enabler) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
-        this.filter       = filter;
+        this.enabler      = enabler;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
     }
 
     /** {@inheritDoc} */
     @Override
-    protected EventFilter<T> create(final double newMaxCheck, final double newThreshold,
-                                    final int newMaxIter, final EventHandler<EventFilter<T>> newHandler) {
-        return new EventFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
+    protected EventEnablingPredicateFilter<T> create(final double newMaxCheck, final double newThreshold,
+                                                     final int newMaxIter,
+                                                     final EventHandler<EventEnablingPredicateFilter<T>> newHandler) {
+        return new EventEnablingPredicateFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);
     }
 
     /**  {@inheritDoc} */
@@ -137,6 +136,7 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
         // initialize events triggering logic
         forward  = t.compareTo(s0.getDate()) >= 0;
         extremeT = forward ? AbsoluteDate.PAST_INFINITY : AbsoluteDate.FUTURE_INFINITY;
+        extremeG = Double.NaN;
         Arrays.fill(transformers, Transformer.UNINITIALIZED);
         Arrays.fill(updates, extremeT);
 
@@ -145,7 +145,11 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
     /**  {@inheritDoc} */
     public double g(final SpacecraftState s) throws OrekitException {
 
-        final double rawG = rawDetector.g(s);
+        final double  rawG      = rawDetector.g(s);
+        final boolean isEnabled = enabler.eventIsEnabled(s, rawDetector, rawG);
+        if (Double.isNaN(extremeG)) {
+            extremeG = rawG;
+        }
 
         // search which transformer should be applied to g
         if (forward) {
@@ -153,13 +157,13 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
             if (extremeT.compareTo(s.getDate()) < 0) {
                 // we are at the forward end of the history
 
-                // check if a new rough root has been crossed
+                // check if enabled status has changed
                 final Transformer previous = transformers[last];
-                final Transformer next     = filter.selectTransformer(previous, rawG, forward);
+                final Transformer next     = selectTransformer(previous, extremeG, isEnabled);
                 if (next != previous) {
-                    // there is a root somewhere between extremeT and t.
+                    // there is a status change somewhere between extremeT and t.
                     // the new transformer is valid for t (this is how we have just computed
-                    // it above), but it is in fact valid on both sides of the root, so
+                    // it above), but it is in fact valid on both sides of the change, so
                     // it was already valid before t and even up to previous time. We store
                     // the switch at extremeT for safety, to ensure the previous transformer
                     // is not applied too close of the root
@@ -170,6 +174,7 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
                 }
 
                 extremeT = s.getDate();
+                extremeG = rawG;
 
                 // apply the transform
                 return next.transformed(rawG);
@@ -194,11 +199,11 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
 
                 // check if a new rough root has been crossed
                 final Transformer previous = transformers[0];
-                final Transformer next     = filter.selectTransformer(previous, rawG, forward);
+                final Transformer next     = selectTransformer(previous, extremeG, isEnabled);
                 if (next != previous) {
-                    // there is a root somewhere between extremeT and t.
+                    // there is a status change somewhere between extremeT and t.
                     // the new transformer is valid for t (this is how we have just computed
-                    // it above), but it is in fact valid on both sides of the root, so
+                    // it above), but it is in fact valid on both sides of the change, so
                     // it was already valid before t and even up to previous time. We store
                     // the switch at extremeT for safety, to ensure the previous transformer
                     // is not applied too close of the root
@@ -209,6 +214,7 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
                 }
 
                 extremeT = s.getDate();
+                extremeG = rawG;
 
                 // apply the transform
                 return next.transformed(rawG);
@@ -231,18 +237,56 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
 
     }
 
+    /** Get next function transformer in the specified direction.
+     * @param previous transformer active on the previous point with respect
+     * to integration direction (may be null if no previous point is known)
+     * @param previousG value of the g function at the previous point
+     * @param isEnabled if true the event should be enabled now
+     * @return next transformer transformer
+     */
+    private Transformer selectTransformer(final Transformer previous, final double previousG, final boolean isEnabled) {
+        if (isEnabled) {
+            // we need to select a transformer that can produce zero crossings,
+            // so it is either Transformer.PLUS or Transformer.MINUS
+            switch (previous) {
+                case UNINITIALIZED :
+                    return Transformer.PLUS; // this initial choice is arbitrary, it could have been Transformer.MINUS
+                case MIN :
+                    return previousG >= 0 ? Transformer.MINUS : Transformer.PLUS;
+                case MAX :
+                    return previousG >= 0 ? Transformer.PLUS : Transformer.MINUS;
+                default :
+                    return previous;
+            }
+        } else {
+            // we need to select a transformer that cannot produce any zero crossings,
+            // so it is either Transformer.MAX or Transformer.MIN
+            switch (previous) {
+                case UNINITIALIZED :
+                    return Transformer.MAX; // this initial choice is arbitrary, it could have been Transformer.MIN
+                case PLUS :
+                    return previousG >= 0 ? Transformer.MAX : Transformer.MIN;
+                case MINUS :
+                    return previousG >= 0 ? Transformer.MIN : Transformer.MAX;
+                default :
+                    return previous;
+            }
+        }
+    }
+
     /** Local handler. */
-    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventFilter<T>> {
+    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventEnablingPredicateFilter<T>> {
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final EventFilter<T> ef, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final EventEnablingPredicateFilter<T> ef, final boolean increasing)
             throws OrekitException {
-            return ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
+            final Transformer transformer = ef.forward ? ef.transformers[ef.transformers.length - 1] : ef.transformers[0];
+            return ef.rawDetector.eventOccurred(s, transformer == Transformer.PLUS ? increasing : !increasing);
         }
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final EventFilter<T> ef, final SpacecraftState oldState)
+        public SpacecraftState resetState(final EventEnablingPredicateFilter<T> ef, final SpacecraftState oldState)
             throws OrekitException {
             return ef.rawDetector.resetState(oldState);
         }

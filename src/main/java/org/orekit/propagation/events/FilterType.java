@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 
 import org.orekit.errors.OrekitInternalError;
 
-/** Enumerate for {@link EventFilter filtering events}.
+/** Enumerate for {@link EventSlopeFilter filtering events}.
  * <p>This class is heavily based on the class with the same name from the
  * Apache Commons Math library. The changes performed consist in package
  * name and error handling.</p>

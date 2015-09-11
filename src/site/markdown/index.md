@@ -126,6 +126,10 @@ Features
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
+    * possibility of filtering events based on their direction (for example to detect
+      only eclipse entries and not eclipse exits)
+    * possibility of filtering events based on an external enabling function (for
+      example to detect events only during selected orbits and not others)
 
   * Attitude
 
