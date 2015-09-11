@@ -128,7 +128,7 @@ There are also several predefined events detectors already available, amongst wh
 * an `ElevationDetector`, which is triggered at raising or setting time of a
   satellite with respect to a ground point, taking atmospheric refraction into account
   and either constant elevation or ground mask when threshold elevation is azimuth-dependent,
-* an `ElevationExtremumDetector`, which is triggered at maximum (or minumum) satellite
+* an `ElevationExtremumDetector`, which is triggered at maximum (or minimum) satellite
   elevation with respect to a ground point,
 * an `AltitudeDetector` which is triggered when satellite crosses a predefined altitude limit
   and can be used to compute easily operational forecasts, 
