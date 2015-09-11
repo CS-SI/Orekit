@@ -44,6 +44,10 @@
  *  <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
  *  detects apside crossing (and by default stop at perigee)
  *  </li>
+ *  <li>{@link org.orekit.propagation.events.PositionAngleDetector PositionAngleDetector}
+ *  detects anomaly, latitude argument or longitude argument crossings, with either true
+ *  eccentric or mean angles (the increasing/decreasing flag is irrelevant for this detector)
+ *  </li>
  *  <li>{@link org.orekit.propagation.events.CircularFieldOfViewDetector CircularFieldOfViewDetector}
  *  detects target entry/exit a satellite sensor field of view with a circular boundary
  *  (and by default continue on entry and stop on exit)

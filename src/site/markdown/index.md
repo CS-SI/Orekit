@@ -110,6 +110,8 @@ Features
     * predefined discrete events
       * eclipse (both umbra and penumbra)
       * ascending and descending node crossing
+      * anomaly, latitude argument or longitude argument crossings,
+        with either true, eccentric or mean angles
       * apogee and perigee crossing
       * alignment with some body in the orbital plane
         (with customizable threshold angle)
