@@ -37,10 +37,11 @@ import org.orekit.estimation.Parameter;
  *   <li>...</li>
  * </ul>
  * </p>
+ * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 7.1
  */
-public interface EvaluationModifier {
+public interface EvaluationModifier<T extends Measurement<T>> {
 
     /** Get the parameters supported by this modifier.
      * @return parameters supported by this modifier
@@ -51,7 +52,7 @@ public interface EvaluationModifier {
      * @param evaluation measurement evaluation to modify
      * @exception OrekitException if modifier cannot be applied
      */
-    void modify(final Evaluation evaluation)
+    void modify(final Evaluation<T> evaluation)
         throws OrekitException;
 
 }

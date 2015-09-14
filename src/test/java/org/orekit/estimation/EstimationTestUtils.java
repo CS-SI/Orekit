@@ -161,10 +161,8 @@ public class EstimationTestUtils {
 
     }
     
-    public static List<Measurement> createMeasurements(final Context context, final PropagatorBuilder propagatorBuilder,
-                                                       final MeasurementCreator creator,
-                                                       final double startPeriod, final double endPeriod,
-                                                       final double step)
+    public static Propagator createPropagator(final Orbit initialOrbit,
+                                              final PropagatorBuilder propagatorBuilder)
         throws OrekitException {
 
         final int          nbOrbitalParameters      = 6;
@@ -173,22 +171,31 @@ public class EstimationTestUtils {
         final int dimension = nbOrbitalParameters + nbPropagatorParameters;
 
         final double[] parameters = new double[dimension];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(context.initialOrbit,
+        propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),
                                                          parameters);
         int index = nbOrbitalParameters;
         for (final String propagatorParameter : propagatorParameters) {
             parameters[index++] = propagatorBuilder.getParameter(propagatorParameter);
         }
-        propagatorBuilder.getOrbitType().mapOrbitToArray(context.initialOrbit,
+        propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),
                                                          parameters);
 
-        final Propagator propagator = propagatorBuilder.buildPropagator(context.initialOrbit.getDate(), parameters);
+        return propagatorBuilder.buildPropagator(initialOrbit.getDate(), parameters);
+
+    }
+
+    public static List<Measurement<?>> createMeasurements(final Propagator propagator,
+                                                          final MeasurementCreator creator,
+                                                          final double startPeriod, final double endPeriod,
+                                                          final double step)
+        throws OrekitException {
+
         propagator.setMasterMode(step, creator);
-        final double       period = context.initialOrbit.getKeplerianPeriod();
-        final AbsoluteDate start  = context.initialOrbit.getDate().shiftedBy(startPeriod * period);
-        final AbsoluteDate end    = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
+        final double       period = propagator.getInitialState().getKeplerianPeriod();
+        final AbsoluteDate start  = propagator.getInitialState().getDate().shiftedBy(startPeriod * period);
+        final AbsoluteDate end    = propagator.getInitialState().getDate().shiftedBy(endPeriod   * period);
         propagator.propagate(start, end);
 
         return creator.getMeasurements();
@@ -221,10 +228,10 @@ public class EstimationTestUtils {
         int    k   = 0;
         double sum = 0;
         double max = 0;
-        for (final Map.Entry<Measurement, Evaluation> entry :
+        for (final Map.Entry<Measurement<?>, Evaluation<?>> entry :
              estimator.getLastEvaluations().entrySet()) {
-            final Measurement m           = entry.getKey();
-            final Evaluation  e           = entry.getValue();
+            final Measurement<?> m        = entry.getKey();
+            final Evaluation<?>  e        = entry.getValue();
             final double[]    weight      = m.getBaseWeight();
             final double[]    sigma       = m.getTheoreticalStandardDeviation();
             final double[]    observed    = m.getObservedValue();
@@ -237,9 +244,6 @@ public class EstimationTestUtils {
             }
         }
 
-        System.out.println(FastMath.sqrt(sum / k) + " " + max + " " +
-                Vector3D.distance(initialPosition, estimatedPosition) + " " +
-                Vector3D.distance(initialVelocity, estimatedVelocity));
         Assert.assertEquals(expectedRMS,
                             FastMath.sqrt(sum / k),
                             rmsEps);
@@ -256,5 +260,4 @@ public class EstimationTestUtils {
     }
 
 }
-
 

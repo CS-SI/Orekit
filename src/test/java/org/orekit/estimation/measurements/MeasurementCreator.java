@@ -25,13 +25,13 @@ import org.orekit.time.AbsoluteDate;
 
 public abstract class MeasurementCreator implements OrekitFixedStepHandler {
 
-    private final List<Measurement> measurements;
+    private final List<Measurement<?>> measurements;
 
     protected MeasurementCreator() {
-        measurements = new ArrayList<Measurement>();
+        measurements = new ArrayList<Measurement<?>>();
     }
 
-    public List<Measurement> getMeasurements() {
+    public List<Measurement<?>> getMeasurements() {
         return measurements;
     }
 
@@ -39,7 +39,7 @@ public abstract class MeasurementCreator implements OrekitFixedStepHandler {
         measurements.clear();
     }
 
-    protected void addMeasurement(final Measurement measurement) {
+    protected void addMeasurement(final Measurement<?> measurement) {
         measurements.add(measurement);
     }
 

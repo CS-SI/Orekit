@@ -30,10 +30,12 @@ import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 
 public class BiasTest {
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testEstimateBias() throws OrekitException {
 
@@ -44,18 +46,20 @@ public class BiasTest {
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
-        final List<Measurement> measurements =
-                        EstimationTestUtils.createMeasurements(context, propagatorBuilder,
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
 
         // create range biases: one bias for each station
         final RandomGenerator random = new Well19937a(0x0c4b69da5d64b35al);
-        final Bias[]   stationsRangeBiases = new Bias[context.stations.size()];
+        final Bias<?>[] stationsRangeBiases = new Bias<?>[context.stations.size()];
         final double[] realStationsBiases  = new double[context.stations.size()];
         for (int i = 0; i < context.stations.size(); ++i) {
             final TopocentricFrame base = context.stations.get(i).getBaseFrame();
-            stationsRangeBiases[i] = new Bias(base.getName() + " range bias", 0.0);
+            stationsRangeBiases[i] = new Bias<Range>(base.getName() + " range bias", 0.0);
             realStationsBiases[i]  = 2 * random.nextDouble() - 1;
         }
 
@@ -64,17 +68,17 @@ public class BiasTest {
                                                                 new LevenbergMarquardtOptimizer());
 
         // add the measurements, with both spacecraft and stations biases
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
             final Range range = (Range) measurement;
             for (int i = 0; i < context.stations.size(); ++i) {
                 if (range.getStation() == context.stations.get(i)) {
                     double biasedRange = range.getObservedValue()[0] + realStationsBiases[i];
-                    final Measurement m = new Range(range.getStation(),
-                                                    range.getDate(),
-                                                    biasedRange,
-                                                    range.getTheoreticalStandardDeviation()[0],
-                                                    range.getBaseWeight()[0]);
-                    m.addModifier(stationsRangeBiases[i]);
+                    final Range m = new Range(range.getStation(),
+                                              range.getDate(),
+                                              biasedRange,
+                                              range.getTheoreticalStandardDeviation()[0],
+                                              range.getBaseWeight()[0]);
+                    m.addModifier((Bias<Range>) stationsRangeBiases[i]);
                     estimator.addMeasurement(m);
                 }
             }
@@ -89,14 +93,14 @@ public class BiasTest {
         }
 
         EstimationTestUtils.checkFit(context, estimator, 4,
-                                     0.0,  4.0e-7,
-                                     0.0,  8.4e-7,
-                                     0.0,  1.8e-7,
-                                     0.0,  8.0e-11);
+                                     0.0,  8.5e-7,
+                                     0.0,  2.2e-6,
+                                     0.0,  2.2e-7,
+                                     0.0,  6.4e-11);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assert.assertEquals(realStationsBiases[i],
                                 stationsRangeBiases[i].getBias()[0],
-                                5.0e-8);
+                                5.9e-8);
         }
 
     }

@@ -46,7 +46,7 @@ public class BatchLSEstimator {
     private final NumericalPropagatorBuilder propagatorBuilder;
 
     /** Measurements. */
-    private final List<Measurement> measurements;
+    private final List<Measurement<?>> measurements;
 
     /** Measurements parameters. */
     private final List<Parameter> measurementsParameters;
@@ -58,7 +58,7 @@ public class BatchLSEstimator {
     private final LeastSquaresBuilder lsBuilder;
 
     /** Last evaluations. */
-    private final Map<Measurement, Evaluation> evaluations;
+    private final Map<Measurement<?>, Evaluation<?>> evaluations;
 
     /** Number of iterations used for last estimation. */
     private int iterations;
@@ -73,11 +73,11 @@ public class BatchLSEstimator {
         throws OrekitException {
 
         this.propagatorBuilder      = propagatorBuilder;
-        this.measurements           = new ArrayList<Measurement>();
+        this.measurements           = new ArrayList<Measurement<?>>();
         this.measurementsParameters = new ArrayList<Parameter>();
         this.optimizer              = optimizer;
         this.lsBuilder              = new LeastSquaresBuilder();
-        this.evaluations            = new IdentityHashMap<Measurement, Evaluation>();
+        this.evaluations            = new IdentityHashMap<Measurement<?>, Evaluation<?>>();
         this.iterations             = -1;
 
         // our model computes value and Jacobian in one call,
@@ -103,7 +103,7 @@ public class BatchLSEstimator {
      * @exception OrekitException if the measurement has a parameter
      * that is already used
      */
-    public void addMeasurement(final Measurement measurement)
+    public void addMeasurement(final Measurement<?> measurement)
       throws OrekitException {
 
         // add the measurement
@@ -202,7 +202,7 @@ public class BatchLSEstimator {
 
         // create target (which is an array set to 0, as we compute weighted residuals ourselves)
         int p = 0;
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
             if (measurement.isEnabled()) {
                 p += measurement.getDimension();
             }
@@ -243,7 +243,7 @@ public class BatchLSEstimator {
     /** Get the last evaluations performed.
      * @return last evaluations performed
      */
-    public Map<Measurement, Evaluation> getLastEvaluations() {
+    public Map<Measurement<?>, Evaluation<?>> getLastEvaluations() {
         return Collections.unmodifiableMap(evaluations);
     }
 

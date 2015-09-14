@@ -23,10 +23,11 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.estimation.Parameter;
 
 /** Modifier that sets evaluation weight to 0 if residual is too far from expected domain.
+ * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class OutlierFilter implements EvaluationModifier {
+public class OutlierFilter<T extends Measurement<T>> implements EvaluationModifier<T> {
 
     /** Warmup iterations. */
     private final int warmup;
@@ -51,7 +52,7 @@ public class OutlierFilter implements EvaluationModifier {
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final Evaluation evaluation) {
+    public void modify(final Evaluation<T> evaluation) {
 
         if (evaluation.getIteration() > warmup) {
 

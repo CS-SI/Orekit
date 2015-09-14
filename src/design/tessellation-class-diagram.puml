@@ -1,0 +1,74 @@
+' Copyright 2002-2015 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+
+  package "Apache Commons Math" #F3EDF7 {
+    class SphericalPolygonsSet #EAE6F7/B9B3D2
+  }
+
+  package org.orekit #ECEBD8 {
+
+    package model.earth.tessellation #DDEBD8 {
+
+      class EllipsoidTesselator {
+        +List<List<Tile>> tessellate(zone, width, length, overlap, ...)
+        +List<List<GeodeticPoint>> sample(zone, width, length)
+      }
+
+      interface TileAiming {
+        +Vector3D alongTileDirection(Vector3D point, GeodeticPoint gp)
+      }
+
+      class AlongTrackAiming
+      class ConstantAzimuthAiming
+
+      class Tile
+
+      SphericalPolygonsSet <-- EllipsoidTesselator : zone
+      EllipsoidTesselator *--> "1" TileAiming
+      EllipsoidTesselator  -->     Tile : create
+      TileAiming          <|--     AlongTrackAiming
+      TileAiming          <|--     ConstantAzimuthAiming
+
+   }
+
+    package bodies #DDEBD8 {
+      class Ellipsoid
+      class GeodeticPoint
+      AlongTrackAiming       -->     Ellipsoid
+      ConstantAzimuthAiming  -->     Ellipsoid
+      Tile                  *--> "4" GeodeticPoint
+    }
+
+    package orbits #DDEBD8 {
+      class Orbit
+      AlongTrackAiming o--> Orbit
+    }
+
+  }
+
+@enduml

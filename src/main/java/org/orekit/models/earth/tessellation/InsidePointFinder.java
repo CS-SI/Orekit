@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.partitioning.BSPTree;
 import org.apache.commons.math3.geometry.partitioning.BSPTreeVisitor;
+import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.apache.commons.math3.geometry.spherical.twod.Edge;
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
 import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
@@ -37,18 +38,22 @@ import org.apache.commons.math3.geometry.spherical.twod.Vertex;
  */
 class InsideFinder implements BSPTreeVisitor<Sphere2D> {
 
-    /** Tolerance below which points are consider to be identical. */
-    private final double tolerance;
+    /** Zone of interest. */
+    private final SphericalPolygonsSet zone;
 
     /** Inside point. */
-    private S2Point insidePoint;
+    private S2Point insidePointSecondChoice;
+
+    /** Inside point. */
+    private S2Point insidePointFirstChoice;
 
     /** Simple constructor.
-     * @param tolerance below which points are consider to be identical
+     * @param zone zone of interest
      */
-    public InsideFinder(final double tolerance) {
-        this.tolerance   = tolerance;
-        this.insidePoint = null;
+    public InsideFinder(final SphericalPolygonsSet zone) {
+        this.zone                    = zone;
+        this.insidePointFirstChoice  = null;
+        this.insidePointSecondChoice = null;
     }
 
     /** {@inheritDoc} */
@@ -66,8 +71,8 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
     @Override
     public void visitLeafNode(final BSPTree<Sphere2D> node) {
 
-        // we have already found a point
-        if (insidePoint != null) {
+        // we have already found a good point
+        if (insidePointFirstChoice != null) {
             return;
         }
 
@@ -78,7 +83,7 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
                     new SphericalPolygonsSet(node.pruneAroundConvexCell(Boolean.TRUE,
                                                                         Boolean.FALSE,
                                                                         null),
-                                                                        tolerance);
+                                                                        zone.getTolerance());
 
             // extract the start of the single loop boundary of the convex cell
             final List<Vertex> boundary = convex.getBoundaryLoops();
@@ -90,17 +95,26 @@ class InsideFinder implements BSPTreeVisitor<Sphere2D> {
                 n++;
             }
 
-            insidePoint = new S2Point(sumB);
+            final S2Point candidate = new S2Point(sumB);
+
+            // check the candidate point is really considered inside
+            // it may appear outside if the current leaf cell is very thin
+            // and checkPoint selects another (very close) tree leaf node
+            if (zone.checkPoint(candidate) == Location.INSIDE) {
+                insidePointFirstChoice = candidate;
+            } else {
+                insidePointSecondChoice = candidate;
+            }
 
         }
 
     }
 
     /** Get the inside point.
-     * @return inside point
+     * @return inside point, or null if the region is empty
      */
     public S2Point getInsidePoint() {
-        return insidePoint;
+        return insidePointFirstChoice != null ? insidePointFirstChoice : insidePointSecondChoice;
     }
 
 }

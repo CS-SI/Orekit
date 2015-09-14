@@ -59,7 +59,7 @@ class Model implements MultivariateJacobianFunction {
     private final List<String> propagatorParameters;
 
     /** Measurements. */
-    private final List<Measurement> measurements;
+    private final List<Measurement<?>> measurements;
 
     /** Measurements parameters. */
     private final List<Parameter> measurementsParameters;
@@ -71,7 +71,7 @@ class Model implements MultivariateJacobianFunction {
     private Orbit orbit;
 
     /** Last evaluations. */
-    private final Map<Measurement, Evaluation> evaluations;
+    private final Map<Measurement<?>, Evaluation<?>> evaluations;
 
     /** Orbit date. */
     private final AbsoluteDate orbitDate;
@@ -102,7 +102,7 @@ class Model implements MultivariateJacobianFunction {
      * @param orbitDate orbit date
      */
     public Model(final NumericalPropagatorBuilder propagatorBuilder, final List<String> propagatorParameters,
-                 final List<Measurement> measurements, final List<Parameter> measurementsParameters,
+                 final List<Measurement<?>> measurements, final List<Parameter> measurementsParameters,
                  final AbsoluteDate orbitDate) {
 
         this.propagatorBuilder      = propagatorBuilder;
@@ -110,13 +110,13 @@ class Model implements MultivariateJacobianFunction {
         this.measurements           = measurements;
         this.measurementsParameters = measurementsParameters;
         this.parameterColumns       = new HashMap<String, Integer>(measurementsParameters.size());
-        this.evaluations            = new IdentityHashMap<Measurement, Evaluation>(measurements.size());
+        this.evaluations            = new IdentityHashMap<Measurement<?>, Evaluation<?>>(measurements.size());
         this.orbitDate              = orbitDate;
         this.iteration              = 0;
 
         // allocate vector and matrix
         int rows = 0;
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
             if (measurement.isEnabled()) {
                 rows += measurement.getDimension();
             }
@@ -184,7 +184,7 @@ class Model implements MultivariateJacobianFunction {
     /** Get the last evaluations performed.
      * @return last evaluations performed
      */
-    public Map<Measurement, Evaluation> getLastEvaluations() {
+    public Map<Measurement<?>, Evaluation<?>> getLastEvaluations() {
         return Collections.unmodifiableMap(evaluations);
     }
 
@@ -231,10 +231,10 @@ class Model implements MultivariateJacobianFunction {
 
         // set up events to handle measurements
         int p = 0;
-        for (final Measurement measurement : measurements) {
+        for (final Measurement<?> measurement : measurements) {
             if (measurement.isEnabled()) {
                 AbsoluteDate md = measurement.getDate();
-                final Evaluation previousEvaluation = evaluations.get(measurement);
+                final Evaluation<?> previousEvaluation = evaluations.get(measurement);
                 if (previousEvaluation != null) {
                     // pre-compensate signal transit time
                     md = md.shiftedBy(-previousEvaluation.getTimeOffset());
@@ -279,7 +279,7 @@ class Model implements MultivariateJacobianFunction {
      * @param evaluation measurement evaluation
      * @exception OrekitException if Jacobians cannot be computed
      */
-    void fetchEvaluatedMeasurement(final int index, final Evaluation evaluation)
+    void fetchEvaluatedMeasurement(final int index, final Evaluation<?> evaluation)
         throws OrekitException {
 
         // compute weighted residuals
@@ -327,7 +327,8 @@ class Model implements MultivariateJacobianFunction {
         }
 
         // Jacobian of the measurement with respect to measurements parameters
-        for (final Parameter parameter : evaluation.getMeasurement().getSupportedParameters()) {
+        final Measurement<?> measurement = evaluation.getMeasurement();
+        for (final Parameter parameter : measurement.getSupportedParameters()) {
             if (parameter.isEstimated()) {
                 final double[][] aMPm = evaluation.getParameterDerivatives(parameter.getName());
                 for (int i = 0; i < aMPm.length; ++i) {

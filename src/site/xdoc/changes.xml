@@ -22,6 +22,9 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add" >
+        Allow truncation of tiles in ellipsoid tessellation.
+      </action>
+      <action dev="luc" type="add" >
         Propagator builders can now be configured to accept any orbit types
         and any position angle types in the input flat array.
         Fixes issue #208.

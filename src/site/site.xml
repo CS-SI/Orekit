@@ -47,6 +47,7 @@
       <item name="Orbits"        href="/architecture/orbits.html"        />
       <item name="Propagation"   href="/architecture/propagation.html"   />
       <item name="Time"          href="/architecture/time.html"          />
+      <item name="Tessellation"  href="/architecture/tessellation.html"  />
       <item name="Tle"           href="/architecture/tle.html"           />
       <item name="Utils"         href="/architecture/utils.html"         />
     </menu>

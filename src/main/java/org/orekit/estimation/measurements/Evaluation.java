@@ -24,13 +24,14 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 
 /** Class holding a theoretical evaluation of one {@link Measurement measurement}.
+ * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class Evaluation {
+public class Evaluation<T extends Measurement<T>> {
 
     /** Associated measurement. */
-    private final Measurement measurement;
+    private final T measurement;
 
     /** Iteration number. */
     private final int iteration;
@@ -55,7 +56,7 @@ public class Evaluation {
      * @param iteration iteration number
      * @param state state of the spacecraft
      */
-    public Evaluation(final Measurement measurement, final int iteration,
+    public Evaluation(final T measurement, final int iteration,
                       final SpacecraftState state) {
         this.measurement           = measurement;
         this.iteration             = iteration;
@@ -66,7 +67,7 @@ public class Evaluation {
     /** Get the associated measurement.
      * @return associated measurement
      */
-    public Measurement getMeasurement() {
+    public T getMeasurement() {
         return measurement;
     }
 
@@ -157,8 +158,16 @@ public class Evaluation {
         throws OrekitIllegalArgumentException {
         final double[][] p = parametersDerivatives.get(name);
         if (p == null) {
+            final StringBuilder builder = new StringBuilder();
+            for (final Map.Entry<String, double[][]> entry : parametersDerivatives.entrySet()) {
+                if (builder.length() > 0) {
+                    builder.append(", ");
+                }
+                builder.append(entry.getKey());
+            }
             throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                                     name);
+                                                     name,
+                                                     builder.length() > 0 ? builder.toString() : "<none>");
         }
         final double[][] sd = new double[measurement.getDimension()][];
         for (int i = 0; i < measurement.getDimension(); ++i) {

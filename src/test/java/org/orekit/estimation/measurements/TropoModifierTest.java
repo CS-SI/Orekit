@@ -1,0 +1,141 @@
+/* Copyright 2002-2015 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.estimation.measurements;
+
+import java.util.List;
+
+import org.apache.commons.math3.util.Precision;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.estimation.Context;
+import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.models.earth.SaastamoinenModel;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.time.AbsoluteDate;
+
+public class TropoModifierTest {
+    
+    @Before
+    public void setUp() throws Exception {
+
+    }
+
+    @After
+    public void tearDown() {
+
+    }
+    
+    @Test
+    public void testRangeTropoModifier() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        for (final GroundStation station : context.stations) {
+            station.setEstimated(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+        final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
+        
+        for (final Measurement<?> measurement : measurements) {
+            final AbsoluteDate date = measurement.getDate();
+
+            final SpacecraftState refstate     = propagator.propagate(date);
+            
+            Range range = (Range) measurement;
+            Evaluation<Range> evalNoMod = range.evaluate(0,  refstate);
+            
+            // add mofifier
+            range.addModifier(modifier);
+            // 
+            Evaluation<Range> eval = range.evaluate(0,  refstate);
+            
+            final double diffMeters = eval.getValue()[0] - evalNoMod.getValue()[0];
+            
+            final double epsilon = 1e-6;
+            Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);       
+        }
+    }
+    
+    @Test
+    public void testRangeRateTropoModifier() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        for (final GroundStation station : context.stations) {
+            station.setEstimated(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeRateMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+        final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), false);
+        
+        for (final Measurement<?> measurement : measurements) {
+            final AbsoluteDate date = measurement.getDate();
+
+            final SpacecraftState refstate     = propagator.propagate(date);
+            
+            RangeRate rangeRate = (RangeRate) measurement;
+            Evaluation<RangeRate> evalNoMod = rangeRate.evaluate(0,  refstate);
+            
+            // add mofifier
+            rangeRate.addModifier(modifier);
+
+            // 
+            Evaluation<RangeRate> eval = rangeRate.evaluate(0,  refstate);
+            
+            final double diffMetersSec = eval.getValue()[0] - evalNoMod.getValue()[0];
+            
+            final double epsilon = 1e-6;
+            Assert.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
+            Assert.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
+        }
+    }   
+}
+
+

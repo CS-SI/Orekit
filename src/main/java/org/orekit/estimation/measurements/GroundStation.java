@@ -100,15 +100,15 @@ public class GroundStation extends Parameter {
         return offsetFrame;
     }
 
-    /** Compensate propagation delay.
+    /** Compute propagation delay on the downlink leg.
      * @param state of the spacecraft, close to reception date
      * @param groundArrivalDate date at which the associated measurement
      * is received on ground
-     * @return state of the spacecraft at signal departure date
+     * @return positive delay between emission date on spacecraft and
+     * signal reception date on ground
      * @exception OrekitException if some frame transforms fails
      */
-    public SpacecraftState compensatePropagationDelay(final SpacecraftState state,
-                                                      final AbsoluteDate groundArrivalDate)
+    public double downlinkTimeOfFlight(final SpacecraftState state, final AbsoluteDate groundArrivalDate)
         throws OrekitException {
 
         // station position at signal arrival date, in inertial frame
@@ -119,24 +119,52 @@ public class GroundStation extends Parameter {
 
         // initialize emission date search loop assuming the state is already correct
         // this will be true for all but the first orbit determination iteration,
-        // and even for the first one the loop will converge very fast
+        // and even for the first iteration the loop will converge very fast
         final double offset = groundArrivalDate.durationFrom(state.getDate());
         double delay = offset;
 
-        // search signal departure date, computing the signal travel in inertial frame
+        // search signal transit date, computing the signal travel in inertial frame
         double delta;
-        SpacecraftState compensatedState;
         int count = 0;
         do {
-            final double previousDelay = delay;
-            compensatedState           = state.shiftedBy(offset - delay);
-            final Vector3D departure   = compensatedState.getPVCoordinates().getPosition();
-            delay                      = Vector3D.distance(departure, arrival) /
-                                         Constants.SPEED_OF_LIGHT;
-            delta                      = FastMath.abs(delay - previousDelay);
+            final double previous  = delay;
+            final Vector3D transit = state.shiftedBy(offset - delay).getPVCoordinates().getPosition();
+            delay                  = Vector3D.distance(transit, arrival) / Constants.SPEED_OF_LIGHT;
+            delta                  = FastMath.abs(delay - previous);
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
 
-        return compensatedState;
+        return delay;
+
+    }
+
+    /** Compute propagation delay on the uplink leg.
+     * @param state of the spacecraft at signal transit date on board
+     * @return positive delay between emission date on ground and
+     * signal reception date on board
+     * @exception OrekitException if some frame transforms fails
+     */
+    public double uplinkTimeOfFlight(final SpacecraftState state)
+        throws OrekitException {
+
+        // spacecraft position at signal transit date, in inertial frame
+        // (the spacecraft is not there at signal departure date, but will
+        //  be there at the signal transit)
+        final Vector3D transit = state.getPVCoordinates().getPosition();
+
+        // search signal departure date, computing the signal travel in inertial frame
+        double delta;
+        double delay = 0;
+        int count = 0;
+        do {
+            final double       previous      = delay;
+            final AbsoluteDate departureDate = state.getDate().shiftedBy(-delay);
+            final Transform    t             = offsetFrame.getTransformTo(state.getFrame(), departureDate);
+            final Vector3D     departure     = t.transformPosition(Vector3D.ZERO);
+            delay = Vector3D.distance(departure, transit) / Constants.SPEED_OF_LIGHT;
+            delta = FastMath.abs(delay - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
+
+        return delay;
 
     }
 

@@ -23,10 +23,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Parameter;
 
 /** Class modeling a measurement bias.
+ * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class Bias implements EvaluationModifier {
+public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
     /** Parameter holding the bias value. */
     private final Parameter parameter;
@@ -83,7 +84,7 @@ public class Bias implements EvaluationModifier {
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final Evaluation evaluation) {
+    public void modify(final Evaluation<T> evaluation) {
 
         // apply the bias to the measurement value
         final double[] measurementValue = evaluation.getValue();
