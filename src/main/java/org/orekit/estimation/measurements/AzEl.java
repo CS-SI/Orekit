@@ -44,11 +44,12 @@ public class AzEl extends AbstractMeasurement {
     public AzEl(final GroundStation station, final AbsoluteDate date,
                 final double[] azel, final double[] sigma, final double[] baseWeight)
         throws OrekitException {
-        super(date, azel[2], sigma[2], baseWeight[2]);
+        super(date, azel, sigma, baseWeight);
         this.station = station;
         addSupportedParameter(station);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Evaluation theoreticalEvaluation(final int iteration, final SpacecraftState state)
         throws OrekitException {
@@ -124,7 +125,7 @@ public class AzEl extends AbstractMeasurement {
         // partial derivatives
         evaluation.setStateDerivatives(gradientState);
         evaluation.setParameterDerivatives(station.getName(), gradientParam);
-        return null;
+        return evaluation;
     }
 
 }

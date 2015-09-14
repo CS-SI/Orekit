@@ -38,22 +38,26 @@ public class AzElTest {
 
     @Test
     public void testComputeAzEl() throws OrekitException {
-
+        
         Context context = EstimationTestUtils.geoStationnaryContext();
-
+        System.out.println("Geostationnary Context Created");
+        
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
                                               1.0e-6, 60.0, 0.001);
-
-        // create perfect Azimuth-Elevation measurements
+        System.out.println("Geostationnary Orbit Created");
+        
+        // create Azimuth-Elevation measurements
         final List<Measurement> measurements =
                         EstimationTestUtils.createMeasurements(context, propagatorBuilder,
                                                                new AzElMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
-
-        // Compute theoritical measurement
+                                                               0.0, 1.0, 300.0);
+        System.out.println("Azimuth and Elevation Measurement Created \n");
+        System.out.println("The number of measurements is : " + measurements.size() + "\n");
+        
+        // Compute measurement to develop...
         for (int i = 0; i < measurements.size(); ++i) {
-       
+            System.out.println(i);
         }
 
     }

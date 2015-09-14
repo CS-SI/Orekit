@@ -47,6 +47,7 @@ public class AzElMeasurementCreator extends MeasurementCreator {
                                 station.getBaseFrame().getElevation(position,
                                                                     currentState.getFrame(),
                                                                     currentState.getDate());
+
                 if (elevation > FastMath.toRadians(30.0)) {
                     final UnivariateFunction f = new UnivariateFunction() {
                        public double value(final double x) throws OrekitExceptionWrapper {
@@ -62,24 +63,39 @@ public class AzElMeasurementCreator extends MeasurementCreator {
                            }
                         }
                     };
+                    
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-10, 5);
                     final double dt = solver.solve(1000, f, -1.0, 1.0);
                     final AbsoluteDate date = currentState.getDate().shiftedBy(dt);
                     final Transform t = station.getBaseFrame().getTransformTo(currentState.getFrame(),
                                                                               date);
-                    // Compute Azimuth and Elevation at dt
+                    
+                    // Initialize measurement
                     final double[] azel = new double[2];
                     final double[] sigma = {1.0, 1.0};
                     final double[] baseweight = {10.0, 10.0};
+
+                    // Compute Azimuth&Elevation at dt
+                    //azel[0] = station.getOffsetFrame().getAzimuth(t.transformPosition(Vector3D.ZERO),
+                    //                                            currentState.getFrame(),
+                    //                                            currentState.getDate());
+                    //
+                    //azel[1] = station.getOffsetFrame().getElevation(t.transformPosition(Vector3D.ZERO),
+                    //                                              currentState.getFrame(),
+                    //                                              currentState.getDate());
+                    azel[0] = station.getOffsetFrame().getAzimuth(t.transformPosition(currentState.getPVCoordinates().getPosition()),
+                                                                                      currentState.getFrame(),
+                                                                                      currentState.getDate());
+                                                                                            
+                    azel[1] = station.getOffsetFrame().getElevation(t.transformPosition(currentState.getPVCoordinates().getPosition()),
+                                                                                        currentState.getFrame(),
+                                                                                        currentState.getDate());
                     
-                    azel[1] = station.getBaseFrame().getElevation(t.transformPosition(Vector3D.ZERO),
-                                                                  currentState.getFrame(),
-                                                                  currentState.getDate());
-                    azel[0] = station.getBaseFrame().getAzimuth(t.transformPosition(Vector3D.ZERO),
-                                                                                  currentState.getFrame(),
-                                                                                  currentState.getDate());
-                    
+                    System.out.println("Azimuth Elevation measurement created : " + date + "   " + elevation);
                     addMeasurement(new AzEl(station, date, azel, sigma, baseweight));
+                }
+                else {
+                    System.out.println("Azimuth Elevation measurement rejected : " + currentState.getDate() + "   " + elevation);
                 }
 
             }
