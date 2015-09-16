@@ -25,6 +25,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
@@ -296,7 +297,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
                 break;
             default :
                 // this should never happen
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
 
         // interpolate

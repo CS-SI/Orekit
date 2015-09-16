@@ -137,7 +137,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         /** Simple constructor.
          * @param step time step between generated sets
          */
-        public Generator(final double step) {
+        Generator(final double step) {
             this.step = step;
         }
 

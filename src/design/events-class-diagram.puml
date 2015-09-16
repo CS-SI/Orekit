@@ -77,23 +77,29 @@
         +EventHandler<T> getHandler()
       }
 
-      class EventFilter
       enum FilterType {
 	    TRIGGER_ONLY_DECREASING_EVENTS
 	    TRIGGER_ONLY_INCREASING_EVENTS
       }
 
+      interface EnablingPredicate {
+        +eventIsEnabled(SpacecraftState state, S eventDetector, double g)
+      }
+
       EventsLogger "*" *--> EventDetector : monitors
 
-      EventDetector <--* "1" EventFilter 
-      EventFilter "1" *--> FilterType
+      EventDetector <--* "1" EventSlopeFilter 
+      EventSlopeFilter "1" *--> FilterType
+
+      EventDetector <--* "1" EventEnablingPredicateFilter 
+      EventEnablingPredicateFilter "1" *--> EnablingPredicate
 
       AbstractDetector_T_ <|-- EventShifter  
-      AbstractDetector_T_ <|-- EventFilter  
+      AbstractDetector_T_ <|-- EventSlopeFilter  
+      AbstractDetector_T_ <|-- EventEnablingPredicateFilter  
 
       Action <-left- EventHandler_T_
       EventDetector       <|.. AbstractDetector_T_
-      AbstractDetector_T_ <|-- AltitudeDetector
       AbstractDetector_T_ <|-- EclipseDetector
       AbstractDetector_T_ <|-- ElevationDetector
       class "...Detector" as DummyDetector

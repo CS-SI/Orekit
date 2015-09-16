@@ -22,6 +22,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScalesFactory;
@@ -37,7 +38,7 @@ import org.orekit.utils.IERSConventions;
  * @author Pascal Parraud
  * @author Thierry Ceolin
  */
-public class GTODProvider implements TransformProvider {
+public class GTODProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20141228L;
@@ -67,11 +68,17 @@ public class GTODProvider implements TransformProvider {
         this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory);
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GTODProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new GTODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from TOD at specified date.
@@ -122,7 +129,7 @@ public class GTODProvider implements TransformProvider {
          * @param conventions IERS conventions to apply
          * @param eopHistory EOP history
          */
-        public DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
+        DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
             this.conventions = conventions;
             this.eopHistory  = eopHistory;
         }
@@ -135,7 +142,7 @@ public class GTODProvider implements TransformProvider {
                 // retrieve a managed frame
                 return new GTODProvider(conventions, eopHistory);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

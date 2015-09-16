@@ -20,6 +20,8 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -47,7 +49,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     /** Build a propagator from orbit and central attraction coefficient μ.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
-     * @param mu central attraction coefficient (m^3/s^2)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception PropagationException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit, final double mu)
@@ -74,7 +76,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
-     * @param mu central attraction coefficient (m^3/s^2)
+     * @param mu central attraction coefficient (m³/s²)
      * @exception PropagationException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit,
@@ -88,7 +90,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
      * coefficient μ and mass.
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
-     * @param mu central attraction coefficient (m^3/s^2)
+     * @param mu central attraction coefficient (m³/s²)
      * @param mass spacecraft mass (kg)
      * @exception PropagationException if initial attitude cannot be computed
      */
@@ -99,11 +101,20 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         super(attitudeProv);
 
         try {
-            resetInitialState(new SpacecraftState(initialOrbit,
-                                                   getAttitudeProvider().getAttitude(initialOrbit,
-                                                                                     initialOrbit.getDate(),
-                                                                                     initialOrbit.getFrame()),
+
+            // ensure the orbit use the specified mu
+            final OrbitType type = initialOrbit.getType();
+            final double[] stateVector = new double[6];
+            type.mapOrbitToArray(initialOrbit, PositionAngle.TRUE, stateVector);
+            final Orbit orbit = type.mapArrayToOrbit(stateVector, PositionAngle.TRUE,
+                                                     initialOrbit.getDate(), mu, initialOrbit.getFrame());
+
+            resetInitialState(new SpacecraftState(orbit,
+                                                   getAttitudeProvider().getAttitude(orbit,
+                                                                                     orbit.getDate(),
+                                                                                     orbit.getFrame()),
                                                    mass));
+
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }

@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = το πλαίσιο {0} έχει βάθος {1}, δεν 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = μη υποστηριζόμενο τοπικό τροχιακό πλαίσιο,υποστηριζόμενοι τύποι {0} και {1}  
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = το μη ψευδο-αδρανειακό σύστημα "{0}" δεν είναι κατάλληλο για τον καθορισμό των τροχιών
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = το μη ψευδο-αδρανειακό σύστημα "{0}"
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = Ο ριζικός κατάλογος δεδομένων {0} δεν υπάρχει
@@ -199,6 +199,9 @@ SATELLITE_COLLIDED_WITH_TARGET = Ο δορυφόρος συγκρούστηκε 
 # attitude pointing law misses ground
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = Ο προσανατολισμός του δορυφόρου δεν δείχνει στο έδαφος 
 
+# {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = <MISSING TRANSLATION>
+
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = η ημερομηνία τροχιάς ({0}) δεν συμβαδίζει με την ημερομηνία του προσανατολισμού θέσης ({1})
 
@@ -246,6 +249,9 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = απροσδόκητες υψ�
 
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = μη έγκυρο όνομα παραμέτρου {0}, έγκυρα ονόματα: {1}
+
+# duplicated parameter name {0}
+DUPLICATED_PARAMETER_NAME = <MISSING TRANSLATION>
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = άγνωστη πρόσθετη κατάσταση "{0}"
@@ -375,3 +381,24 @@ OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>
 
 # out of range latitude: {0}, [{1}, {2}]
 OUT_OF_RANGE_LATITUDE = <MISSING TRANSLATION>
+
+# orbit type {0} not allowed here, allowed types: {1}
+ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
+
+# non pseudo-inertial frame {0} is not suitable as reference for inertial forces
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = <MISSING TRANSLATION>
+
+# method not available in the absence of a central body
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = <MISSING TRANSLATION>
+
+# operation not available between frames {0} and {1}
+INCOMPATIBLE_FRAMES = <MISSING TRANSLATION>
+
+# absolutePVCoordinates not defined
+UNDEFINED_ABSOLUTE_PVCOORDINATES = <MISSING TRANSLATION>
+
+# non pseudo-inertial frame {0} is not suitable for this kind of propagation
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_PROPAGATION = <MISSING TRANSLATION>
+
+# an inertial force model has to be used when propagating in a non-inertial frame
+INERTIAL_FORCE_MODEL_MISSING = <MISSING TRANSLATION>

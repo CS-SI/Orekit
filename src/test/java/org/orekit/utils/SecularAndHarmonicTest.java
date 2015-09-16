@@ -25,6 +25,8 @@ import org.apache.commons.math3.exception.NoBracketingException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937a;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.junit.Assert;
@@ -113,6 +115,45 @@ public class SecularAndHarmonicTest {
         // the final orbit is much closer to the desired phasing parameters
         Assert.assertTrue(FastMath.abs(mst - finalMSTModel[0]) * 3600.0 < 0.0012);
         Assert.assertTrue(FastMath.abs(finalMSTModel[1]) * 3600 < 0.0004 / Constants.JULIAN_DAY);
+
+    }
+
+    @Test
+    public void testReset() throws OrekitException {
+        final double SUN_PULSATION = 4.0 * FastMath.PI / Constants.JULIAN_YEAR; // Period = 6 months
+
+        // Generate two random datasets
+        final RandomGenerator random = new Well19937a(0x8de2c5d0e210588dl);
+        final AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
+        final double[][] data = new double[2][200];
+        for (int iD = 0; iD < data[0].length; ++iD) {
+            data[0][iD] = random.nextDouble();
+            data[1][iD] = random.nextDouble();
+        }
+
+        // Generate three SAH models: the first two will fit each dataset
+        // independently, while the third parses one dataset and then the other
+        // after being reset. Fitted parameters should match in both cases.
+        final double[] initialGuess = { 0.0, 0.0, 0.0, 0.0 };
+        final SecularAndHarmonic[] indepModel = new SecularAndHarmonic[2];
+        final SecularAndHarmonic resettingModel = new SecularAndHarmonic(1, SUN_PULSATION);
+        for (int iM = 0; iM < indepModel.length; ++iM) {
+            indepModel[iM] = new SecularAndHarmonic(1, SUN_PULSATION);
+            indepModel[iM].resetFitting(t0, initialGuess);
+            resettingModel.resetFitting(t0, initialGuess);
+
+            for (int iD = 0; iD < data[0].length; ++iD) {
+                final AbsoluteDate t = t0.shiftedBy(iD);
+                indepModel[iM].addPoint(t, data[iM][iD]);
+                resettingModel.addPoint(t, data[iM][iD]);
+            }
+            indepModel[iM].fit();
+            resettingModel.fit();
+
+            Assert.assertArrayEquals(indepModel[iM].getFittedParameters(),
+                                     resettingModel.getFittedParameters(),
+                                     1e-14);
+        }
 
     }
 

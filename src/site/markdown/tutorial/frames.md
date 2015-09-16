@@ -266,10 +266,10 @@ to the solar arrays, which rotation axis is Y in spacecraft frame:
     BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            Constants.WGS84_EARTH_FLATTENING,
                                            earthFrame);
-    NadirPointing nadirLaw = new NadirPointing(earth);
+    NadirPointing nadirLaw = new NadirPointing(eme2000, earth);
 
     final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-    YawSteering yawSteeringLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
+    YawSteering yawSteeringLaw = new YawSteering(eme2000, nadirLaw, sun, Vector3D.MINUS_I);
     
 More details on the attitude representation can be found in the
 [attitudes section](../architecture/attitudes.html) of the library architecture

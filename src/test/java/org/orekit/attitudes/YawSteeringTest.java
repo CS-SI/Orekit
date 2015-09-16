@@ -73,11 +73,11 @@ public class YawSteeringTest {
         //  Attitude laws
         // **************
         // Target pointing attitude provider without yaw compensation
-        NadirPointing nadirLaw = new NadirPointing(earthShape);
+        NadirPointing nadirLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 
         // Target pointing attitude provider with yaw compensation
         YawSteering yawCompensLaw =
-            new YawSteering(nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
+            new YawSteering(circOrbit.getFrame(), nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
 
         //  Check observed ground point
         // *****************************
@@ -101,11 +101,11 @@ public class YawSteeringTest {
         //  Attitude laws
         // **************
         // Target pointing attitude provider over satellite nadir at date, without yaw compensation
-        NadirPointing nadirLaw = new NadirPointing(earthShape);
+        NadirPointing nadirLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 
         // Target pointing attitude provider with yaw compensation
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        YawSteering yawCompensLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
+        YawSteering yawCompensLaw = new YawSteering(circOrbit.getFrame(), nadirLaw, sun, Vector3D.MINUS_I);
 
         // Get sun direction in satellite frame
         Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
@@ -123,11 +123,11 @@ public class YawSteeringTest {
         //  Attitude laws
         // **************
         // Target pointing attitude provider over satellite nadir at date, without yaw compensation
-        NadirPointing nadirLaw = new NadirPointing(earthShape);
+        NadirPointing nadirLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 
         // Target pointing attitude provider with yaw compensation
         YawSteering yawCompensLaw =
-            new YawSteering(nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
+            new YawSteering(circOrbit.getFrame(), nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
 
         // Get attitude rotations from non yaw compensated / yaw compensated laws
         Rotation rotNoYaw = nadirLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
@@ -149,7 +149,8 @@ public class YawSteeringTest {
     @Test
     public void testSlidingDerivatives() throws OrekitException {
 
-        GroundPointing law = new YawSteering(new NadirPointing(earthShape),
+        GroundPointing law = new YawSteering(circOrbit.getFrame(),
+                                             new NadirPointing(circOrbit.getFrame(), earthShape),
                                              CelestialBodyFactory.getSun(),
                                              Vector3D.MINUS_I);
 
@@ -180,10 +181,10 @@ public class YawSteeringTest {
     @Test
     public void testSpin() throws OrekitException {
 
-        NadirPointing nadirLaw = new NadirPointing(earthShape);
+        NadirPointing nadirLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 
         // Target pointing attitude provider with yaw compensation
-        AttitudeProvider law = new YawSteering(nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
+        AttitudeProvider law = new YawSteering(circOrbit.getFrame(), nadirLaw, CelestialBodyFactory.getSun(), Vector3D.MINUS_I);
 
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
@@ -217,7 +218,7 @@ public class YawSteeringTest {
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-13);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 4.0e-13);
 
     }
 

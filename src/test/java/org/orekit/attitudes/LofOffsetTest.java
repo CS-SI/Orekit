@@ -103,7 +103,7 @@ public class LofOffsetTest {
         final GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
 
         // Attitude law definition from geodetic point target
-        final TargetPointing targetLaw = new TargetPointing(geoTargetITRF2005, earthShape);
+        final TargetPointing targetLaw = new TargetPointing(circ.getFrame(), geoTargetITRF2005, earthShape);
         final Rotation targetRot = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Create lof aligned attitude provider
@@ -137,7 +137,7 @@ public class LofOffsetTest {
 
         // Create target point and target pointing law towards that point
         final GeodeticPoint targetDef  = new GeodeticPoint(FastMath.toRadians(5.), FastMath.toRadians(-40.), 0.);
-        final TargetPointing targetLaw = new TargetPointing(targetDef, earthSpheric);
+        final TargetPointing targetLaw = new TargetPointing(orbit.getFrame(), targetDef, earthSpheric);
 
         // Get roll, pitch, yaw angles corresponding to this pointing law
         final LofOffset lofAlignedLaw = new LofOffset(orbit.getFrame(), LOFType.VVLH);
@@ -151,7 +151,7 @@ public class LofOffsetTest {
 
         // Create a lof offset law from those values
         final LofOffset lofOffsetLaw = new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.ZYX, yaw, pitch, roll);
-        final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(earthSpheric, lofOffsetLaw, Vector3D.PLUS_K);
+        final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(orbit.getFrame(), earthSpheric, lofOffsetLaw, Vector3D.PLUS_K);
 
         // Check target pointed by this law : shall be the same as defined
         final Vector3D pTargetRes =

@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -524,7 +525,7 @@ public class FramesFactory {
             case TEME :
                 return getTEME();
             default :
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
     }
 
@@ -573,7 +574,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             final Frame parent = getMOD(conventions);
 
@@ -646,7 +647,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
@@ -708,15 +709,15 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final Frame cirf = getCIRF(conventions, simpleEOP);
-                final InterpolatingTransformProvider cirfInterpolating =
-                        (InterpolatingTransformProvider) cirf.getTransformProvider();
+                final ShiftingTransformProvider cirfInterpolating =
+                        (ShiftingTransformProvider) cirf.getTransformProvider();
                 final CIRFProvider cirfRaw = (CIRFProvider) cirfInterpolating.getRawProvider();
                 final EOPHistory eopHistory = cirfRaw.getEOPHistory();
                 frame = new FactoryManagedFrame(cirf, new TIRFProvider(eopHistory), false, factoryKey);
@@ -760,22 +761,22 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final EOPHistory eopHistory = FramesFactory.getEOPHistory(conventions, simpleEOP);
-                final TransformProvider interpolating =
-                        new InterpolatingTransformProvider(new CIRFProvider(eopHistory),
-                                                           CartesianDerivativesFilter.USE_PVA,
-                                                           AngularDerivativesFilter.USE_R,
-                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                           6, Constants.JULIAN_DAY / 24,
-                                                           OrekitConfiguration.getCacheSlotsNumber(),
-                                                           Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-                frame = new FactoryManagedFrame(getGCRF(), interpolating, true, factoryKey);
+                final TransformProvider shifting =
+                        new ShiftingTransformProvider(new CIRFProvider(eopHistory),
+                                                      CartesianDerivativesFilter.USE_PVA,
+                                                      AngularDerivativesFilter.USE_R,
+                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                      6, Constants.JULIAN_DAY / 24,
+                                                      OrekitConfiguration.getCacheSlotsNumber(),
+                                                      Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+                frame = new FactoryManagedFrame(getGCRF(), shifting, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -840,16 +841,16 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final Frame gtod = getGTOD(conventions, true, simpleEOP);
-                final InterpolatingTransformProvider gtodInterpolating =
-                        (InterpolatingTransformProvider) gtod.getTransformProvider();
-                final GTODProvider gtodRaw    = (GTODProvider) gtodInterpolating.getRawProvider();
+                final ShiftingTransformProvider gtodShifting =
+                        (ShiftingTransformProvider) gtod.getTransformProvider();
+                final GTODProvider gtodRaw    = (GTODProvider) gtodShifting.getRawProvider();
                 final EOPHistory   eopHistory = gtodRaw.getEOPHistory();
                 frame = new FactoryManagedFrame(gtod, new ITRFProvider(eopHistory), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
@@ -913,7 +914,7 @@ public class FramesFactory {
         if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
             // this should never happen as this method is private and called
             // only above with controlled input
-            throw OrekitException.createInternalError(null);
+            throw new OrekitInternalError(null);
         }
 
         synchronized (FramesFactory.class) {
@@ -937,27 +938,27 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final Frame tod = getTOD(conventions, applyEOPCorr, simpleEOP);
-                final InterpolatingTransformProvider todInterpolating =
-                        (InterpolatingTransformProvider) tod.getTransformProvider();
+                final ShiftingTransformProvider todInterpolating =
+                        (ShiftingTransformProvider) tod.getTransformProvider();
                 final TODProvider       todRaw     = (TODProvider) todInterpolating.getRawProvider();
                 final EOPHistory        eopHistory = todRaw.getEOPHistory();
                 final GTODProvider      gtodRaw    = new GTODProvider(conventions, eopHistory);
-                final TransformProvider gtodInterpolating =
-                        new InterpolatingTransformProvider(gtodRaw,
-                                                           CartesianDerivativesFilter.USE_PVA,
-                                                           AngularDerivativesFilter.USE_R,
-                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                           todInterpolating.getGridPoints(), todInterpolating.getStep(),
-                                                           OrekitConfiguration.getCacheSlotsNumber(),
-                                                           Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-                frame = new FactoryManagedFrame(tod, gtodInterpolating, false, factoryKey);
+                final TransformProvider gtodShifting =
+                        new ShiftingTransformProvider(gtodRaw,
+                                                      CartesianDerivativesFilter.USE_PVA,
+                                                      AngularDerivativesFilter.USE_R,
+                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                      todInterpolating.getGridPoints(), todInterpolating.getStep(),
+                                                      OrekitConfiguration.getCacheSlotsNumber(),
+                                                      Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+                frame = new FactoryManagedFrame(tod, gtodShifting, false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -1020,7 +1021,7 @@ public class FramesFactory {
         if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
             // this should never happen as this method is private and called
             // only above with controlled input
-            throw OrekitException.createInternalError(null);
+            throw new OrekitInternalError(null);
         }
 
         synchronized (FramesFactory.class) {
@@ -1045,7 +1046,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
             final int interpolationPoints;
             final int pointsPerDay;
@@ -1061,15 +1062,15 @@ public class FramesFactory {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final EOPHistory eopHistory = applyEOPCorr ? getEOPHistory(conventions, simpleEOP) : null;
-                final TransformProvider interpolating =
-                        new InterpolatingTransformProvider(new TODProvider(conventions, eopHistory),
-                                                           CartesianDerivativesFilter.USE_PVA,
-                                                           AngularDerivativesFilter.USE_R,
-                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                           interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
-                                                           OrekitConfiguration.getCacheSlotsNumber(),
-                                                           Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-                frame = new FactoryManagedFrame(getMOD(conventions, applyEOPCorr), interpolating, true, factoryKey);
+                final TransformProvider shifting =
+                        new ShiftingTransformProvider(new TODProvider(conventions, eopHistory),
+                                                      CartesianDerivativesFilter.USE_PVA,
+                                                      AngularDerivativesFilter.USE_R,
+                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                      interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
+                                                      OrekitConfiguration.getCacheSlotsNumber(),
+                                                      Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+                frame = new FactoryManagedFrame(getMOD(conventions, applyEOPCorr), shifting, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -1127,7 +1128,7 @@ public class FramesFactory {
         if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
             // this should never happen as this method is private and called
             // only above with controlled input
-            throw OrekitException.createInternalError(null);
+            throw new OrekitInternalError(null);
         }
 
         synchronized (FramesFactory.class) {
@@ -1153,7 +1154,7 @@ public class FramesFactory {
                     break;
                 default :
                     // this should never happen
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
 
             // try to find an already built frame
@@ -1191,19 +1192,19 @@ public class FramesFactory {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final Frame tod = getTOD(IERSConventions.IERS_1996, false, true);
-                final InterpolatingTransformProvider todInterpolating =
-                        (InterpolatingTransformProvider) tod.getTransformProvider();
+                final ShiftingTransformProvider todShifting =
+                        (ShiftingTransformProvider) tod.getTransformProvider();
                 final TEMEProvider temeRaw = new TEMEProvider(IERSConventions.IERS_1996, null);
-                final TransformProvider temeInterpolating =
-                        new InterpolatingTransformProvider(temeRaw,
-                                                           CartesianDerivativesFilter.USE_PVA,
-                                                           AngularDerivativesFilter.USE_R,
-                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                           todInterpolating.getGridPoints(), todInterpolating.getStep(),
-                                                           OrekitConfiguration.getCacheSlotsNumber(),
-                                                           Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+                final TransformProvider temeShifting =
+                        new ShiftingTransformProvider(temeRaw,
+                                                      CartesianDerivativesFilter.USE_PVA,
+                                                      AngularDerivativesFilter.USE_R,
+                                                      AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                      todShifting.getGridPoints(), todShifting.getStep(),
+                                                      OrekitConfiguration.getCacheSlotsNumber(),
+                                                      Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
 
-                frame = new FactoryManagedFrame(tod, temeInterpolating, true, factoryKey);
+                frame = new FactoryManagedFrame(tod, temeShifting, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -1247,8 +1248,18 @@ public class FramesFactory {
         Transform commonToInstance = Transform.IDENTITY;
         for (Frame frame = from; frame != common; frame = frame.getParent()) {
             TransformProvider provider = frame.getTransformProvider();
-            while (provider instanceof InterpolatingTransformProvider) {
-                provider = ((InterpolatingTransformProvider) provider).getRawProvider();
+            boolean peeling = true;
+            while (peeling) {
+                if (provider instanceof InterpolatingTransformProvider) {
+                    provider = ((InterpolatingTransformProvider) provider).getRawProvider();
+                } else if (provider instanceof ShiftingTransformProvider) {
+                    provider = ((ShiftingTransformProvider) provider).getRawProvider();
+                } else if (provider instanceof EOPBasedTransformProvider &&
+                           ((EOPBasedTransformProvider) provider).getEOPHistory().usesInterpolation()) {
+                    provider = ((EOPBasedTransformProvider) provider).getNonInterpolatingProvider();
+                } else {
+                    peeling = false;
+                }
             }
             commonToInstance =
                     new Transform(date, provider.getTransform(date), commonToInstance);

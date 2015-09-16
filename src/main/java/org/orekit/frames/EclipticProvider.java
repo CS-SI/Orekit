@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.utils.IERSConventions;
@@ -91,7 +92,7 @@ public class EclipticProvider implements TransformProvider {
         /** Simple constructor.
          * @param conventions IERS conventions
          */
-        public DataTransferObject(final IERSConventions conventions) {
+        DataTransferObject(final IERSConventions conventions) {
             this.conventions = conventions;
         }
 
@@ -103,7 +104,7 @@ public class EclipticProvider implements TransformProvider {
                 // retrieve a transform
                 return new EclipticProvider(conventions);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

@@ -365,7 +365,7 @@ public class EventState<T extends EventDetector> implements Serializable {
         /** Simple constructor.
          * @param wrapped wrapped exception
          */
-        public LocalWrapperException(final OrekitException wrapped) {
+        LocalWrapperException(final OrekitException wrapped) {
             this.wrappedException = wrapped;
         }
 

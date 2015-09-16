@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.utils.IERSConventions;
@@ -30,7 +31,7 @@ import org.orekit.utils.IERSConventions;
  * <p>Transform is computed with reference to the {@link MODProvider Mean of Date} frame.</p>
  * @author Pascal Parraud
  */
-class TODProvider implements TransformProvider {
+class TODProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131209L;
@@ -52,7 +53,7 @@ class TODProvider implements TransformProvider {
      * @param eopHistory EOP history
      * @exception OrekitException if IERS conventions tables cannot be read
      */
-    public TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
+    TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
@@ -60,11 +61,17 @@ class TODProvider implements TransformProvider {
         this.nutationFunction  = conventions.getNutationFunction();
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TODProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from Mean Of Date at specified date.
@@ -133,7 +140,7 @@ class TODProvider implements TransformProvider {
          * @param conventions IERS conventions to apply
          * @param eopHistory EOP history
          */
-        public DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
+        DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
             this.conventions = conventions;
             this.eopHistory  = eopHistory;
         }
@@ -146,7 +153,7 @@ class TODProvider implements TransformProvider {
                 // retrieve a managed frame
                 return new TODProvider(conventions, eopHistory);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

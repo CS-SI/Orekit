@@ -105,7 +105,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
      * @param centralTideSystem tide system used in the central attraction model
      * @param bodies tide generating bodies (typically Sun and Moon)
      */
-    public SolidTidesField(final LoveNumbers love, final TimeFunction<double[]> deltaCSFunction,
+    SolidTidesField(final LoveNumbers love, final TimeFunction<double[]> deltaCSFunction,
                            final double deltaC20PermanentTide, final TimeFunction<double[]> poleTideFunction,
                            final Frame centralBodyFrame, final double ae, final double mu,
                            final TideSystem centralTideSystem, final CelestialBody ... bodies) {

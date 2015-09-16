@@ -141,7 +141,7 @@ public class TabulatedProvider implements AttitudeProvider {
          * @param n number of attitude to use for interpolation
          * @param filter filter for derivatives from the sample to use in interpolation
          */
-        public DataTransferObject(final Frame referenceFrame, final List<TimeStampedAngularCoordinates> list,
+        DataTransferObject(final Frame referenceFrame, final List<TimeStampedAngularCoordinates> list,
                                   final int n, final AngularDerivativesFilter filter) {
             this.referenceFrame  = referenceFrame;
             this.list            = list;

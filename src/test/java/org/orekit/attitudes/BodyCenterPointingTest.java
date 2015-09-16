@@ -253,7 +253,7 @@ public class BodyCenterPointingTest {
             eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earth.getBodyFrame(), date);
 
             // Create earth center pointing attitude provider */
-            earthCenterAttitudeLaw = new BodyCenterPointing(earth);
+            earthCenterAttitudeLaw = new BodyCenterPointing(circ.getFrame(), earth);
 
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());

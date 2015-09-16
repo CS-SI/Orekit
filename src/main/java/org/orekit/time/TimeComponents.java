@@ -24,7 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
 
@@ -82,8 +82,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if ((hour   < 0) || (hour   >  23) ||
             (minute < 0) || (minute >  59) ||
             (second < 0) || (second >= 61.0)) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_HMS_TIME,
-                                                                 hour, minute, second);
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_HMS_TIME,
+                                                     hour, minute, second);
         }
 
         this.hour = hour;
@@ -123,8 +123,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // range check
         if (wholeSeconds < 0 || wholeSeconds > 86400) {
             // beware, 86400 must be allowed to cope with leap seconds introduction days
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER,
-                                                                 wholeSeconds);
+            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER,
+                                                     wholeSeconds);
         }
 
         // extract the time components
@@ -170,7 +170,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                                       Double.parseDouble(timeMatcher.group(3).replace(',', '.')));
         }
 
-        throw OrekitException.createIllegalArgumentException(OrekitMessages.NON_EXISTENT_TIME, string);
+        throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_TIME, string);
 
     }
 

@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 
 /** Encoder/decoder for Delaunay and planetary multipliers keys.
  * <p>
@@ -79,7 +79,7 @@ class NutationCodec {
             key = key | flag;
             if (shift > 57 || multiplier < -64 || multiplier > 63) {
                 // this should never happen, we exceed the encoding capacity
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
             }
             key    = key | (((multiplier + 64l) & 0x7Fl) << shift);
             shift += 7;

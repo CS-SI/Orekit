@@ -17,7 +17,6 @@
 package org.orekit.errors;
 
 import java.text.MessageFormat;
-import java.text.ParseException;
 import java.util.Locale;
 
 import org.apache.commons.math3.exception.util.ExceptionContext;
@@ -41,10 +40,10 @@ import org.apache.commons.math3.exception.util.Localizable;
 
  */
 
-public class OrekitException extends Exception {
+public class OrekitException extends Exception implements LocalizedException {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3366757982695469677L;
+    private static final long serialVersionUID = 20150611L;
 
     /** Exception context (may be null). */
     private final ExceptionContext context;
@@ -115,11 +114,8 @@ public class OrekitException extends Exception {
         this.parts     = new Object[0];
     }
 
-    /** Gets the message in a specified locale.
-     * @param locale Locale in which the message should be translated
-     * @return localized message
-     * @since 5.0
-     */
+    /** {@inheritDoc} */
+    @Override
     public String getMessage(final Locale locale) {
         return (context != null) ?
                 context.getMessage(locale) :
@@ -138,18 +134,14 @@ public class OrekitException extends Exception {
         return getMessage(Locale.getDefault());
     }
 
-    /** Get the localizable specifier of the error message.
-     * @return localizable specifier of the error message
-     * @since 5.1
-     */
+    /** {@inheritDoc} */
+    @Override
     public Localizable getSpecifier() {
         return specifier;
     }
 
-    /** Get the variable parts of the error message.
-     * @return a copy of the variable parts of the error message
-     * @since 5.1
-     */
+    /** {@inheritDoc} */
+    @Override
     public Object[] getParts() {
         return parts.clone();
     }
@@ -161,128 +153,59 @@ public class OrekitException extends Exception {
      * @param parts parts to insert in the format (no translation)
      * @return a message string
      */
-    private static String buildMessage(final Locale locale, final Localizable specifier,
-                                       final Object ... parts) {
+    private static String buildMessage(final Locale locale, final Localizable specifier, final Object ... parts) {
         return (specifier == null) ? "" : new MessageFormat(specifier.getLocalizedString(locale), locale).format(parts);
     }
 
     /** Create an {@link java.lang.IllegalArgumentException} with localized message.
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
-     * @return an {@link java.lang.IllegalArgumentException} with localized message
+     * @return an {@link java.lang.IllegalArgumentException} that also implements
+     * @deprecated as of 7.1, replaced with {@link
+     * OrekitIllegalArgumentException#OrekitIllegalArgumentException(Localizable, Object...)}
      */
-    public static IllegalArgumentException createIllegalArgumentException(final Localizable specifier,
-                                                                          final Object ... parts) {
-        return new IllegalArgumentException() {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 2601215225271704045L;
-
-            /** {@inheritDoc} */
-            @Override
-            public String getMessage() {
-                return buildMessage(Locale.US, specifier, parts);
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public String getLocalizedMessage() {
-                return buildMessage(Locale.getDefault(), specifier, parts);
-            }
-
-        };
-
+    @Deprecated
+    public static OrekitIllegalArgumentException createIllegalArgumentException(final Localizable specifier,
+                                                                                final Object ... parts) {
+        return new OrekitIllegalArgumentException(specifier, parts);
     }
 
     /** Create an {@link java.lang.IllegalStateException} with localized message.
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      * @return an {@link java.lang.IllegalStateException} with localized message
+     * @deprecated as of 7.1, replaced with {@link
+     * OrekitIllegalStateException#OrekitIllegalStateException(Localizable, Object...)}
      */
-    public static IllegalStateException createIllegalStateException(final Localizable specifier,
-                                                                    final Object ... parts) {
+    @Deprecated
+    public static OrekitIllegalStateException createIllegalStateException(final Localizable specifier,
+                                                                          final Object ... parts) {
 
-        return new IllegalStateException() {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = -5527779242879685212L;
-
-            /** {@inheritDoc} */
-            @Override
-            public String getMessage() {
-                return buildMessage(Locale.US, specifier, parts);
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public String getLocalizedMessage() {
-                return buildMessage(Locale.getDefault(), specifier, parts);
-            }
-
-        };
-
+        return new OrekitIllegalStateException(specifier, parts);
     }
 
     /** Create an {@link java.text.ParseException} with localized message.
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      * @return an {@link java.text.ParseException} with localized message
+     * @deprecated as of 7.1, replaced with {@link
+     * OrekitParseException#OrekitParseException(Localizable, Object...)}
      */
-    public static ParseException createParseException(final Localizable specifier,
-                                                      final Object ... parts) {
-
-        return new ParseException("", 0) {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 4771367217940584391L;
-
-            /** {@inheritDoc} */
-            @Override
-            public String getMessage() {
-                return buildMessage(Locale.US, specifier, parts);
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public String getLocalizedMessage() {
-                return buildMessage(Locale.getDefault(), specifier, parts);
-            }
-
-        };
-
+    @Deprecated
+    public static OrekitParseException createParseException(final Localizable specifier,
+                                                            final Object ... parts) {
+        return new OrekitParseException(specifier, parts);
     }
 
     /** Create an {@link java.lang.RuntimeException} for an internal error.
      * @param cause underlying cause
      * @return an {@link java.lang.RuntimeException} for an internal error
+     * @deprecated as of 7.1, replaced with {@link
+     * OrekitInternalError#OrekitInternalError(Throwable)}
      */
+    @Deprecated
     public static RuntimeException createInternalError(final Throwable cause) {
-
-        /** Format specifier (to be translated). */
-        final Localizable specifier = OrekitMessages.INTERNAL_ERROR;
-
-        /** Parts to insert in the format (no translation). */
-        final String parts     = "orekit@c-s.fr";
-
-        return new RuntimeException() {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = -6493358459835909138L;
-
-            /** {@inheritDoc} */
-            @Override
-            public String getMessage() {
-                return buildMessage(Locale.US, specifier, parts);
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public String getLocalizedMessage() {
-                return buildMessage(Locale.getDefault(), specifier, parts);
-            }
-
-        };
-
+        return new OrekitInternalError(cause);
     }
 
 }

@@ -23,6 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
@@ -76,7 +77,7 @@ class JPLCelestialBody implements CelestialBody {
      * @param definingFrameAlignedWithICRF frame in which celestial body coordinates are defined,
      * this frame <strong>must</strong> be aligned with ICRF
      */
-    public JPLCelestialBody(final String name, final String supportedNames,
+    JPLCelestialBody(final String name, final String supportedNames,
                             final JPLEphemeridesLoader.EphemerisType generateType,
                             final JPLEphemeridesLoader.RawPVProvider rawPVProvider,
                             final double gm, final double scale,
@@ -151,7 +152,7 @@ class JPLCelestialBody implements CelestialBody {
         /** Simple constructor.
          * @param definingFrame frame in which celestial body coordinates are defined
          */
-        public InertiallyOriented(final Frame definingFrame) {
+        InertiallyOriented(final Frame definingFrame) {
             super(definingFrame, new TransformProvider() {
 
                 /** Serializable UID. */
@@ -213,7 +214,7 @@ class JPLCelestialBody implements CelestialBody {
 
         /** Simple constructor.
          */
-        public BodyOriented() {
+        BodyOriented() {
             super(inertialFrame, new TransformProvider() {
 
                 /** Serializable UID. */
@@ -265,7 +266,7 @@ class JPLCelestialBody implements CelestialBody {
          * @param generateType ephemeris type to generate
          * @param name name of the body
          */
-        public DataTransferObject(final String supportedNames, final EphemerisType generateType, final String name) {
+        DataTransferObject(final String supportedNames, final EphemerisType generateType, final String name) {
             this.supportedNames = supportedNames;
             this.generateType   = generateType;
             this.name           = name;
@@ -293,7 +294,7 @@ class JPLCelestialBody implements CelestialBody {
                 return (JPLCelestialBody) new JPLEphemeridesLoader(supportedNames, generateType).loadCelestialBody(name);
 
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
 
         }
@@ -311,7 +312,7 @@ class JPLCelestialBody implements CelestialBody {
          * @param generateType ephemeris type to generate
          * @param name name of the body
          */
-        public DTOCelestialBody(final String supportedNames, final EphemerisType generateType, final String name) {
+        DTOCelestialBody(final String supportedNames, final EphemerisType generateType, final String name) {
             super(supportedNames, generateType, name);
         }
 
@@ -335,7 +336,7 @@ class JPLCelestialBody implements CelestialBody {
          * @param generateType ephemeris type to generate
          * @param name name of the body
          */
-        public DTOInertialFrame(final String supportedNames, final EphemerisType generateType, final String name) {
+        DTOInertialFrame(final String supportedNames, final EphemerisType generateType, final String name) {
             super(supportedNames, generateType, name);
         }
 
@@ -359,7 +360,7 @@ class JPLCelestialBody implements CelestialBody {
          * @param generateType ephemeris type to generate
          * @param name name of the body
          */
-        public DTOBodyFrame(final String supportedNames, final EphemerisType generateType, final String name) {
+        DTOBodyFrame(final String supportedNames, final EphemerisType generateType, final String name) {
             super(supportedNames, generateType, name);
         }
 

@@ -23,6 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScalesFactory;
@@ -33,7 +34,7 @@ import org.orekit.utils.Constants;
  * <p> The pole motion is not considered : Pseudo Earth Fixed Frame. It handles
  * the earth rotation angle, its parent frame is the {@link CIRFProvider}</p>
  */
-class TIRFProvider implements TransformProvider {
+class TIRFProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130919L;
@@ -60,11 +61,17 @@ class TIRFProvider implements TransformProvider {
 
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TIRFProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new TIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from CIRF 2000 at specified date.
@@ -121,7 +128,7 @@ class TIRFProvider implements TransformProvider {
         /** Simple constructor.
          * @param eopHistory EOP history
          */
-        public DataTransferObject(final EOPHistory eopHistory) {
+        DataTransferObject(final EOPHistory eopHistory) {
             this.eopHistory = eopHistory;
         }
 
@@ -133,7 +140,7 @@ class TIRFProvider implements TransformProvider {
                 // retrieve a managed frame
                 return new TIRFProvider(eopHistory);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

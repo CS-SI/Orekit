@@ -47,9 +47,9 @@ of the library architecture documentation.
 
 Let's define a couple of `AttitudeLaw`, built upon `LofOffset` laws for instance.
 
-    AttitudeLaw dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
-                                                  RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
-    AttitudeLaw nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
+    final AttitudeLaw dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+                                                        RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
+    final AttitudeLaw nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
 
 Let's also define some `EventDetector`. For this tutorial's requirements,
 two `EclipseDetector`, each one using a customized implementation of `EventHandler`
@@ -59,29 +59,9 @@ transition, `nightDayEvent`, to detect the night to day transition:
     PVCoordinatesProvider sun   = CelestialBodyFactory.getSun();
     PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
     EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
-                                  withHandler(new EventHandler<EclipseDetector>() {
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-            if (!increasing) {
-                output.add(s.getDate() + " : event occurred, entering eclipse => switching to night law");
-            }
-            return Action.CONTINUE;
-        }
-        public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-    });
+                                  withHandler(new ContinueOnEvent<EclipseDetector>());
     EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
-                                  withHandler(new EventHandler<EclipseDetector>() {
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-            if (!increasing) {
-                output.add(s.getDate() + " : event occurred, exiting eclipse => switching to day law");
-            }
-            return CONTINUE;
-        }
-        public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-    };
+                                  withHandler(new ContinueOnEvent<EclipseDetector>());
 
 More details on event detectors and event handlers can be found in the
 [propagation section](../architecture/propagation.html)
@@ -96,11 +76,26 @@ by adding two switching conditions acting as a simple loop:
   when an increasing `nightDayEvent` occurs.
 
 As the two conditions reverse each other effect, the combined `AttitudesSequence`
-acts as a loop:
+acts as a loop. We also define a handler to monitor attitude switches:
 
     AttitudesSequence attitudesSequence = new AttitudesSequence();
-    attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);
-    attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
+    AttitudesSequence.SwitchHandler switchHandler =
+              new AttitudesSequence.SwitchHandler() {
+                  public void switchOccurred(AttitudeProvider preceding, AttitudeProvider following,
+                                             SpacecraftState s) {
+                      if (preceding == dayObservationLaw) {
+                          output.add(s.getDate() + ": switching to night law");
+                      } else {
+                          output.add(s.getDate() + ": switching to day law");
+                      }
+                  }
+              };
+    attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent,
+                                            false, true, 10.0,
+                                            AngularDerivativesFilter.USE_R, nightRestingLaw,   switchHandler);
+    attitudesSequence.addSwitchingCondition(nightRestingLaw,   nightDayEvent,
+                                            true, false, 10.0,
+                                            AngularDerivativesFilter.USE_R, dayObservationLaw, switchHandler);
 
 An `AttitudesSequence` needs at least one switching condition to be meaningful,
 but there is no upper limit.
@@ -108,14 +103,14 @@ but there is no upper limit.
 An active `AttitudeLaw` may have several switch events and next law settings,
 leading to different activation patterns depending on which event is triggered first.
 
-So, don't forget to set the current active law according to the current state:
+Don't forget to set the current active law according to the current state:
 
     if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {
         // initial position is in daytime
-        attitudesSequence.resetActiveLaw(dayObservationLaw);
+        attitudesSequence.resetActiveProvider(dayObservationLaw);
     } else {
         // initial position is in nighttime
-        attitudesSequence.resetActiveLaw(nightRestingLaw);
+        attitudesSequence.resetActiveProvider(nightRestingLaw);
     }
 
 Now, let's choose some propagator to compute the spacecraft motion. We will use
@@ -188,7 +183,7 @@ The printed results are shown below:
     2004-01-01T23:48:00.000 -18°207  00°000
     2004-01-01T23:51:00.000 -12°146  00°000
     2004-01-01T23:54:00.000 -05°042  00°000
-    2004-01-01T23:55:57.968 : event occurred, exiting eclipse => switching to day law
+    2004-01-01T23:55:57.968: switching to day law
     2004-01-01T23:57:00.000  02°741  43°958
     2004-01-02T00:00:00.000  10°946  43°958
     2004-01-02T00:03:00.000  19°390  43°958
@@ -212,7 +207,7 @@ The printed results are shown below:
     2004-01-02T00:57:00.000  18°596  43°958
     2004-01-02T01:00:00.000  10°184  43°958
     2004-01-02T01:03:00.000  02°022  43°958
-    2004-01-02T01:03:45.919 : event occurred, entering eclipse => switching to night law
+    2004-01-02T01:03:45.919: switching to night law
     2004-01-02T01:06:00.000 -05°706  00°000
     2004-01-02T01:09:00.000 -12°733  00°000
     2004-01-02T01:12:00.000 -18°680  00°000
@@ -223,7 +218,7 @@ The printed results are shown below:
     2004-01-02T01:27:00.000 -17°313  00°000
     2004-01-02T01:30:00.000 -11°051  00°000
     2004-01-02T01:33:00.000 -03°814  00°000
-    2004-01-02T01:34:28.690 : event occurred, exiting eclipse => switching to day law
+    2004-01-02T01:34:28.690: switching to day law
     2004-01-02T01:36:00.000  04°052  43°958
     2004-01-02T01:39:00.000  12°308  43°958
     2004-01-02T01:42:00.000  20°777  43°958
@@ -247,7 +242,7 @@ The printed results are shown below:
     2004-01-02T02:36:00.000  17°215  43°958
     2004-01-02T02:39:00.000  08°834  43°958
     2004-01-02T02:42:00.000  00°727  43°958
-    2004-01-02T02:42:16.591 : event occurred, entering eclipse => switching to night law
+    2004-01-02T02:42:16.591: switching to night law
     2004-01-02T02:45:00.000 -06°907  00°000
     2004-01-02T02:48:00.000 -13°788  00°000
     2004-01-02T02:51:00.000 -19°515  00°000

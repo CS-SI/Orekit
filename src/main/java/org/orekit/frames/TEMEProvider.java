@@ -22,6 +22,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.utils.IERSConventions;
@@ -34,7 +35,7 @@ import org.orekit.utils.IERSConventions;
  * blue book.</p>
  * @author Luc Maisonobe
  */
-class TEMEProvider implements TransformProvider {
+class TEMEProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131209L;
@@ -57,7 +58,7 @@ class TEMEProvider implements TransformProvider {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    public TEMEProvider(final IERSConventions conventions, final EOPHistory eopHistory)
+    TEMEProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
@@ -65,12 +66,17 @@ class TEMEProvider implements TransformProvider {
         this.nutationFunction  = conventions.getNutationFunction();
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     * @since 6.1
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public TEMEProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new TEMEProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from True Of Date date.
@@ -141,7 +147,7 @@ class TEMEProvider implements TransformProvider {
          * @param conventions IERS conventions to apply
          * @param eopHistory EOP history
          */
-        public DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
+        DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
             this.conventions = conventions;
             this.eopHistory  = eopHistory;
         }
@@ -154,7 +160,7 @@ class TEMEProvider implements TransformProvider {
                 // retrieve a managed frame
                 return new TEMEProvider(conventions, eopHistory);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

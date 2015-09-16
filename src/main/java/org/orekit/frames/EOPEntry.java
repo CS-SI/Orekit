@@ -20,7 +20,6 @@ import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 
@@ -63,7 +62,7 @@ public class EOPEntry implements TimeStamped, Serializable {
     private final double dy;
 
    /** Simple constructor.
-    * @param mjd entry date (modified julian day, 00h00 UTC scale)
+    * @param mjd entry date (modified Julian day, 00h00 UTC scale)
     * @param dt UT1-UTC in seconds
     * @param lod length of day
     * @param x X component of pole motion
@@ -81,8 +80,7 @@ public class EOPEntry implements TimeStamped, Serializable {
         throws OrekitException {
 
         this.mjd   = mjd;
-        this.date  = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                      TimeScalesFactory.getUTC());
+        this.date  = AbsoluteDate.createMJDDate(mjd, 0.0, TimeScalesFactory.getUTC());
         this.dt    = dt;
         this.lod   = lod;
         this.x     = x;

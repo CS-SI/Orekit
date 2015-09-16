@@ -129,12 +129,17 @@ discrete events. Here is a short list of the features offered by the library:</p
         <ul>
           <li>eclipse (both umbra and penumbra)</li>
           <li>ascending and descending node crossing</li>
+          <li>anomaly, latitude argument or longitude argument crossings,
+              with either true, eccentric or mean angles</li>
           <li>apogee and perigee crossing</li>
           <li>alignment with some body in the orbital plane (with customizable threshold angle)</li>
           <li>raising/setting with respect to a ground location
               (with customizable triggering elevation and ground mask)</li>
           <li>date</li>
-          <li>altitude crossing</li>
+          <li>latitude, longitude, altitude crossing</li>
+          <li>latitude, longitude extremum</li>
+          <li>elevation extremum</li>
+          <li>anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric</li>
           <li>target detection in sensor field of view (circular or dihedral)</li>
           <li>complex geographic zone traversal</li>
           <li>impulse maneuvers occurrence</li>
@@ -143,8 +148,10 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>possibility of slightly shifting events in time (for example to switch from
           solar pointing mode to something else a few minutes before eclipse entry and
           reverting to solar pointing mode a few minutes after eclipse exit)</li>
-      <li>possibility of filtering events (for example to detect only eclipse entries
-          and not eclipse exits)</li>
+      <li>possibility of filtering events based on their direction (for example to detect
+          only eclipse entries and not eclipse exits)</li>
+      <li>possibility of filtering events based on an external enabling function (for
+          example to detect events only during selected orbits and not others)</li>
     </ul>
   </li>
   <li>Attitude

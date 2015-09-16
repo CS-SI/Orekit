@@ -33,6 +33,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
 import org.orekit.utils.Constants;
@@ -313,7 +314,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
          * @param headerRegExp regular expression for header
          * @param dataRegExp regular expression for data
          */
-        private Section(final String headerRegExp, final String dataRegExp) {
+        Section(final String headerRegExp, final String dataRegExp) {
             this.header = Pattern.compile(headerRegExp);
             this.data   = Pattern.compile(dataRegExp);
         }
@@ -351,7 +352,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
     /** Build a loader for IERS bulletins A files.
     * @param supportedNames regular expression for supported files names
     */
-    public BulletinAFilesLoader(final String supportedNames) {
+    BulletinAFilesLoader(final String supportedNames) {
         this.supportedNames = supportedNames;
     }
 
@@ -390,7 +391,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
 
         /** Simple constructor.
          */
-        public Parser() {
+        Parser() {
             this.eopFieldsMap         = new HashMap<Integer, double[]>();
             this.poleOffsetsFieldsMap = new HashMap<Integer, double[]>();
             this.lineNumber           = 0;
@@ -436,7 +437,7 @@ class BulletinAFilesLoader implements EOPHistoryLoader {
                         break;
                     default :
                         // this should never happen
-                        throw OrekitException.createInternalError(null);
+                        throw new OrekitInternalError(null);
                 }
 
                 // remove the already parsed section from the list

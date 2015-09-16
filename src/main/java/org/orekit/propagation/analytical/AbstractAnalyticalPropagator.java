@@ -383,7 +383,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
          * @param startDate start date of the propagation
          * @param endDate end date of the propagation
          */
-        public BoundedPropagatorView(final AbsoluteDate startDate, final AbsoluteDate endDate) {
+        BoundedPropagatorView(final AbsoluteDate startDate, final AbsoluteDate endDate) {
             super(AbstractAnalyticalPropagator.this.getAttitudeProvider());
             if (startDate.compareTo(endDate) <= 0) {
                 minDate = startDate;
@@ -456,7 +456,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         /** Build a new instance from a basic propagator.
          */
-        public BasicStepInterpolator() {
+        BasicStepInterpolator() {
             globalPreviousDate = AbsoluteDate.PAST_INFINITY;
             globalCurrentDate  = AbsoluteDate.PAST_INFINITY;
             softPreviousDate   = AbsoluteDate.PAST_INFINITY;

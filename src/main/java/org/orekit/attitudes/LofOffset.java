@@ -102,7 +102,7 @@ public class LofOffset implements AttitudeProvider {
         this.type = type;
         this.offset = new Rotation(order, alpha1, alpha2, alpha3).revert();
         if (!inertialFrame.isPseudoInertial()) {
-            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS,
+            throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                                       inertialFrame.getName());
         }
         this.inertialFrame = inertialFrame;

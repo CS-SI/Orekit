@@ -18,7 +18,11 @@ package org.orekit.propagation.conversion;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.util.FastMath;
@@ -26,8 +30,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
@@ -41,6 +48,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -51,15 +59,131 @@ import org.orekit.utils.PVCoordinates;
 
 public class NumericalConverterTest {
 
-    private final static double mu = 3.9860047e14;
-    private final static double minStep = 0.001;
-    private final static double maxStep = 200.0;
-    private final static double dP = 0.01;
+    private double mu;
+    private double minStep;
+    private double maxStep;
+    private double dP;
 
     private Orbit orbit;
     private NumericalPropagator propagator;
     private ForceModel gravity;
     private ForceModel drag;
+
+    @Test
+    public void testWrongParametersSize() throws OrekitException {
+        try {
+            NumericalPropagatorBuilder builder =
+                            new NumericalPropagatorBuilder(mu, orbit.getFrame(),
+                                                           new LutherIntegratorBuilder(100.0),
+                                                           OrbitType.CIRCULAR, PositionAngle.TRUE);
+            builder.addForceModel(drag);
+            builder.addForceModel(gravity);
+            final List<String> empty = Collections.emptyList();
+            builder.setFreeParameters(empty);
+            builder.buildPropagator(orbit.getDate(), new double[3]);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(LocalizedFormats.DIMENSIONS_MISMATCH_SIMPLE, oiae.getSpecifier());
+            Assert.assertEquals(3, ((Integer) oiae.getParts()[0]).intValue());
+            Assert.assertEquals(6, ((Integer) oiae.getParts()[1]).intValue());
+        }
+    }
+
+    @Test
+    public void testNotSupportedParameterFree() throws OrekitException {
+        final String name = "not-supported-parameter";
+        try {
+            NumericalPropagatorBuilder builder =
+                            new NumericalPropagatorBuilder(mu, orbit.getFrame(),
+                                                           new LutherIntegratorBuilder(100.0),
+                                                           OrbitType.CIRCULAR, PositionAngle.TRUE);
+            builder.addForceModel(drag);
+            builder.addForceModel(gravity);
+            builder.setFreeParameters(Arrays.asList(name));
+            builder.buildPropagator(orbit.getDate(), new double[3]);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            Assert.assertEquals(name, oiae.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testNotSupportedParameterGet() throws OrekitException {
+        final String name = "not-supported-parameter";
+        try {
+            NumericalPropagatorBuilder builder =
+                            new NumericalPropagatorBuilder(mu, orbit.getFrame(),
+                                                           new LutherIntegratorBuilder(100.0),
+                                                           OrbitType.CIRCULAR, PositionAngle.TRUE);
+            builder.addForceModel(drag);
+            builder.addForceModel(gravity);
+            builder.getParameter(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            Assert.assertEquals(name, oiae.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testNotSupportedParameterSet() throws OrekitException {
+        final String name = "not-supported-parameter";
+        try {
+            NumericalPropagatorBuilder builder =
+                            new NumericalPropagatorBuilder(mu, orbit.getFrame(),
+                                                           new LutherIntegratorBuilder(100.0),
+                                                           OrbitType.CIRCULAR, PositionAngle.TRUE);
+            builder.addForceModel(drag);
+            builder.addForceModel(gravity);
+            builder.setParameter(name, 0.0);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            Assert.assertEquals(name, oiae.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testMuWithoutGravityForceModel() throws OrekitException {
+        NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(Constants.JPL_SSD_JUPITER_SYSTEM_GM, orbit.getFrame(),
+                                                       new LutherIntegratorBuilder(100.0),
+                                                       OrbitType.CIRCULAR, PositionAngle.TRUE);
+        builder.addForceModel(drag);
+        Assert.assertEquals(Constants.JPL_SSD_JUPITER_SYSTEM_GM,
+                            builder.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
+                            1.0e-5);
+        builder.setParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                             Constants.JPL_SSD_SATURN_SYSTEM_GM);
+        Assert.assertEquals(Constants.JPL_SSD_SATURN_SYSTEM_GM,
+                            builder.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
+                            1.0e-5);
+    }
+
+    @Test
+    public void testSupportedParameters() {
+        NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(mu, orbit.getFrame(),
+                                                       new LutherIntegratorBuilder(100.0),
+                                                       OrbitType.CIRCULAR, PositionAngle.TRUE);
+        builder.addForceModel(drag);
+        builder.addForceModel(gravity);
+        List<String> supported = builder.getSupportedParameters();
+        Assert.assertEquals(2, supported.size());
+        Assert.assertEquals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                            supported.get(0));
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT,
+                            supported.get(1));
+        Assert.assertEquals(gravity.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
+                            builder.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
+                            1.0e-5);
+        builder.setParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                             Constants.JPL_SSD_MARS_SYSTEM_GM);
+        Assert.assertEquals(Constants.JPL_SSD_MARS_SYSTEM_GM,
+                            builder.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
+                            1.0e-5);
+    }
 
     @Test
     public void testConversionWithoutParameters() throws OrekitException, IOException, ParseException {
@@ -85,6 +209,9 @@ public class NumericalConverterTest {
 
         FirstOrderIntegratorBuilder crkBuilder = new ClassicalRungeKuttaIntegratorBuilder(stepSize);
         checkFit(crkBuilder);
+
+        FirstOrderIntegratorBuilder lBuilder = new LutherIntegratorBuilder(stepSize);
+        checkFit(lBuilder);
 
         FirstOrderIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         checkFit(dp54Builder);
@@ -114,9 +241,11 @@ public class NumericalConverterTest {
                             final String... freeParameters)
         throws OrekitException, IOException, ParseException {
 
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(mu,
-                                                                            propagator.getFrame(),
-                                                                            new DormandPrince853IntegratorBuilder(minStep, maxStep, dP));
+        NumericalPropagatorBuilder builder =
+                        new NumericalPropagatorBuilder(mu,
+                                                       propagator.getFrame(),
+                                                       new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
+                                                       OrbitType.CARTESIAN, PositionAngle.TRUE);
 
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
@@ -170,10 +299,14 @@ public class NumericalConverterTest {
 
         NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(mu,
                                                                             propagator.getFrame(),
-                                                                            foiBuilder);
+                                                                            foiBuilder,
+                                                                            OrbitType.CARTESIAN,
+                                                                            PositionAngle.TRUE);
 
         builder.addForceModel(drag);
         builder.addForceModel(gravity);
+        builder.setAttitudeProvider(InertialProvider.EME2000_ALIGNED);
+        builder.setMass(1000.0);
 
         JacobianPropagatorConverter fitter = new JacobianPropagatorConverter(builder, 1.0, 500);
 
@@ -207,7 +340,15 @@ public class NumericalConverterTest {
 
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
+
         Utils.setDataRoot("regular-data:potential/shm-format");
+        gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
+                                                        GravityFieldFactory.getNormalizedProvider(2, 0));
+        mu = gravity.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+        minStep = 0.001;
+        maxStep = 200.0;
+        dP = 0.01;
+
         //use a orbit that comes close to Earth so the drag coefficient has an effect
         final Vector3D position     = new Vector3D(7.0e6, 1.0e6, 4.0e6).normalize()
                 .scalarMultiply(Constants.WGS84_EARTH_EQUATORIAL_RADIUS + 300e3);
@@ -221,8 +362,6 @@ public class NumericalConverterTest {
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
-        gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                                        GravityFieldFactory.getNormalizedProvider(2, 0));
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,

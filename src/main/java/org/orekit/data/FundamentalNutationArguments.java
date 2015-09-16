@@ -33,6 +33,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
@@ -362,7 +363,7 @@ public class FundamentalNutationArguments implements Serializable {
          * @param timeScale time scale for GMST computation
          * @param coefficients all coefficients
          */
-        public DataTransferObject(final IERSConventions conventions, final TimeScale timeScale,
+        DataTransferObject(final IERSConventions conventions, final TimeScale timeScale,
                                   final List<double[]> coefficients) {
             this.conventions  = conventions;
             this.timeScale    = timeScale;
@@ -377,7 +378,7 @@ public class FundamentalNutationArguments implements Serializable {
                 // retrieve a managed frame
                 return new FundamentalNutationArguments(conventions, timeScale, coefficients);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 
@@ -521,7 +522,7 @@ public class FundamentalNutationArguments implements Serializable {
         private double[] parsedPolynomial;
 
         /** Simple constructor. */
-        public DefinitionParser() {
+        DefinitionParser() {
 
             // the luni-solar Delaunay arguments polynomial parts should read something like:
             // F5 ≡ Ω = 125.04455501° − 6962890.5431″t + 7.4722″t² + 0.007702″t³ − 0.00005939″t⁴

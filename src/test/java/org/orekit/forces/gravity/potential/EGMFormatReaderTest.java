@@ -26,6 +26,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 public class EGMFormatReaderTest {
 
@@ -135,6 +136,27 @@ public class EGMFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("dummy_zerotide", true));
         Assert.assertEquals(TideSystem.ZERO_TIDE,
                             GravityFieldFactory.getUnnormalizedProvider(5, 5).getTideSystem());
+    }
+
+    @Test
+    public void testWgs84CoefficientOverride()
+        throws OrekitException {
+        final double epsilon = Precision.EPSILON;
+
+        Utils.setDataRoot("potential");
+        EGMFormatReader egm96Reader = new EGMFormatReader("egm96_to5.ascii", true);
+        GravityFieldFactory.addPotentialCoefficientsReader(egm96Reader);
+        GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assert.assertEquals(Constants.EGM96_EARTH_EQUATORIAL_RADIUS, egm96Reader.getAe(), epsilon);
+        Assert.assertEquals(Constants.EGM96_EARTH_MU, egm96Reader.getMu(), epsilon);
+
+        Utils.setDataRoot("potential");
+        EGMFormatReader wgs84Egm96Reader = new EGMFormatReader("egm96_to5.ascii", true, true);
+        GravityFieldFactory.addPotentialCoefficientsReader(wgs84Egm96Reader);
+        GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assert.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, wgs84Egm96Reader.getAe(), epsilon);
+        Assert.assertEquals(Constants.WGS84_EARTH_MU, wgs84Egm96Reader.getMu(), epsilon);
+
     }
 
     private void checkValue(final double value, final int n, final int m,

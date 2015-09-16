@@ -227,6 +227,23 @@ public class AbsoluteDateTest {
     }
 
     @Test
+    public void testMJDDate() throws OrekitException {
+        AbsoluteDate dateA = AbsoluteDate.createMJDDate(51544, 0.5 * Constants.JULIAN_DAY,
+                                                             TimeScalesFactory.getTT());
+        Assert.assertEquals(0.0, AbsoluteDate.J2000_EPOCH.durationFrom(dateA), 1.0e-15);
+        AbsoluteDate dateB = AbsoluteDate.createMJDDate(53774, 0.0, TimeScalesFactory.getUTC());
+        AbsoluteDate dateC = new AbsoluteDate("2006-02-08T00:00:00", TimeScalesFactory.getUTC());
+        Assert.assertEquals(0.0, dateC.durationFrom(dateB), 1.0e-15);        
+    }
+
+    @Test
+    public void testJDDate() {
+        final AbsoluteDate date = AbsoluteDate.createJDDate(2400000, 0.5 * Constants.JULIAN_DAY,
+                                                            TimeScalesFactory.getTT());
+        Assert.assertEquals(0.0, AbsoluteDate.MODIFIED_JULIAN_EPOCH.durationFrom(date), 1.0e-15);
+    }
+
+    @Test
     public void testOffsets() {
         final TimeScale tai = TimeScalesFactory.getTAI();
         AbsoluteDate leapStartUTC = new AbsoluteDate(1976, 12, 31, 23, 59, 59, utc);

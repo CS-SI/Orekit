@@ -24,7 +24,8 @@ import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -130,10 +131,9 @@ public class KeplerianOrbit extends Orbit {
                           final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
-        ensurePseudoInertialFrame(frame);
 
         if (a * (1 - e) < 0) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
+            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
         }
 
         this.a    =    a;
@@ -156,13 +156,13 @@ public class KeplerianOrbit extends Orbit {
                 tmpV = anomaly;
                 break;
             default : // this should never happen
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
 
         // check true anomaly range
         if (1 + e * FastMath.cos(tmpV) <= 0) {
             final double vMax = FastMath.acos(-1 / e);
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE,
+            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE,
                                                                  tmpV, e, -vMax, vMax);
         }
         this.v = tmpV;
@@ -187,7 +187,6 @@ public class KeplerianOrbit extends Orbit {
                           final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
-        ensurePseudoInertialFrame(frame);
 
         // compute inclination
         final Vector3D momentum = pvCoordinates.getMomentum();
@@ -1152,7 +1151,7 @@ public class KeplerianOrbit extends Orbit {
                 pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
                 break;
             default :
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
     }
 

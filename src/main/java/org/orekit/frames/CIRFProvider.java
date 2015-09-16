@@ -22,6 +22,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 
@@ -36,7 +37,7 @@ import org.orekit.time.TimeFunction;
  * time which is consistent with the older models only.</p>
  * <p>Its parent frame is the GCRF frame.<p>
  */
-class CIRFProvider implements TransformProvider {
+class CIRFProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130806L;
@@ -53,7 +54,7 @@ class CIRFProvider implements TransformProvider {
      * library cannot be read.
      * @see Frame
      */
-    public CIRFProvider(final EOPHistory eopHistory)
+    CIRFProvider(final EOPHistory eopHistory)
         throws OrekitException {
 
         // load the nutation model
@@ -64,11 +65,17 @@ class CIRFProvider implements TransformProvider {
 
     }
 
-    /** Get the EOP history.
-     * @return EOP history
-     */
-    EOPHistory getEOPHistory() {
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
         return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CIRFProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new CIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from GCRF to CIRF2000 at the specified date.
@@ -132,7 +139,7 @@ class CIRFProvider implements TransformProvider {
         /** Simple constructor.
          * @param eopHistory EOP history
          */
-        public DataTransferObject(final EOPHistory eopHistory) {
+        DataTransferObject(final EOPHistory eopHistory) {
             this.eopHistory = eopHistory;
         }
 
@@ -144,7 +151,7 @@ class CIRFProvider implements TransformProvider {
                 // retrieve a managed frame
                 return new CIRFProvider(eopHistory);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

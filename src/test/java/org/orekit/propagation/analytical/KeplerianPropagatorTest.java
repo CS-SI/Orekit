@@ -59,6 +59,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
@@ -582,6 +583,24 @@ public class KeplerianPropagatorTest {
         SpacecraftState finalState = propagator.propagate(date.shiftedBy(3600.0));
         Assert.assertEquals(3600.0, finalState.getDate().durationFrom(date), 1.0e-15);
 
+    }
+
+    @Test
+    public void testMu() throws OrekitException {
+        final KeplerianOrbit orbit1 =
+                new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                   Constants.WGS84_EARTH_MU);
+        final KeplerianOrbit orbit2 =
+                new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                   Constants.EIGEN5C_EARTH_MU);
+        final AbsoluteDate target = orbit1.getDate().shiftedBy(10000.0);
+        PVCoordinates pv1       = new KeplerianPropagator(orbit1).propagate(target).getPVCoordinates();
+        PVCoordinates pv2       = new KeplerianPropagator(orbit2).propagate(target).getPVCoordinates();
+        PVCoordinates pvWithMu1 = new KeplerianPropagator(orbit2, orbit1.getMu()).propagate(target).getPVCoordinates();
+        Assert.assertEquals(0.026054, Vector3D.distance(pv1.getPosition(), pv2.getPosition()),       1.0e-6);
+        Assert.assertEquals(0.0,      Vector3D.distance(pv1.getPosition(), pvWithMu1.getPosition()), 1.0e-15);
     }
 
     private static double tangLEmLv(double Lv,double ex,double ey){

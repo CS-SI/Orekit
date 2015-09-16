@@ -367,7 +367,7 @@ public class SpacecraftStateTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        attitudeLaw = new BodyCenterPointing(earth);
+        attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
         propagator =
             new EcksteinHechlerPropagator(orbit, attitudeLaw, mass,
                                           ae, mu, c20, c30, c40, c50, c60);

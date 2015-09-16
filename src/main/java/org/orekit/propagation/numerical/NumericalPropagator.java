@@ -27,6 +27,7 @@ import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
@@ -298,14 +299,14 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
          */
-        public OsculatingMapper(final AbsoluteDate referenceDate, final double mu,
-                                final OrbitType orbitType, final PositionAngle positionAngleType,
-                                final AttitudeProvider attitudeProvider, final Frame frame) {
+        OsculatingMapper(final AbsoluteDate referenceDate, final double mu,
+                         final OrbitType orbitType, final PositionAngle positionAngleType,
+                         final AttitudeProvider attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState mapArrayToState(final double t, final double[] y, final boolean meanOnly)
+        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
             throws OrekitException {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
@@ -314,7 +315,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
-            final AbsoluteDate date = mapDoubleToDate(t);
             final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, getPositionAngleType(), date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
@@ -375,7 +375,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
              * @param attitudeProvider attitude provider
              * @param frame inertial frame
              */
-            public DataTransferObject(final AbsoluteDate referenceDate, final double mu,
+            DataTransferObject(final AbsoluteDate referenceDate, final double mu,
                                       final OrbitType orbitType, final PositionAngle positionAngleType,
                                       final AttitudeProvider attitudeProvider, final Frame frame) {
                 this.referenceDate     = referenceDate;
@@ -416,7 +416,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
-        public Main(final AbstractIntegrator integrator) {
+        Main(final AbstractIntegrator integrator) {
 
             this.yDot     = new double[7];
             this.jacobian = new double[6][6];
@@ -475,7 +475,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** {@inheritDoc} */
         public void addMassDerivative(final double q) {
             if (q > 0) {
-                throw OrekitException.createIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
+                throw new OrekitIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
             }
             yDot[6] += q;
         }

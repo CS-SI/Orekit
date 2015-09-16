@@ -38,6 +38,7 @@ import org.orekit.data.PolynomialParser;
 import org.orekit.data.PolynomialParser.Unit;
 import org.orekit.data.SimpleTimeStampedTableParser;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.EOPHistory;
@@ -1056,7 +1057,7 @@ public enum IERSConventions {
                             meanPoleY = interpolated[1];
                         } catch (TimeStampedCacheException tsce) {
                             // this should never happen
-                            throw OrekitException.createInternalError(tsce);
+                            throw new OrekitInternalError(tsce);
                         }
                     } else {
 
@@ -2087,7 +2088,7 @@ public enum IERSConventions {
         /** Simple constructor.
          * @param ut1 UT1 time scale
          */
-        public StellarAngleCapitaine(final TimeScale ut1) {
+        StellarAngleCapitaine(final TimeScale ut1) {
             this.ut1 = ut1;
         }
 
@@ -2130,7 +2131,7 @@ public enum IERSConventions {
          * @param x x coordinate
          * @param y y coordinate
          */
-        public MeanPole(final AbsoluteDate date, final double x, final double y) {
+        MeanPole(final AbsoluteDate date, final double x, final double y) {
             this.date = date;
             this.x    = x;
             this.y    = y;

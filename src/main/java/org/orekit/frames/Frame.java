@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -150,8 +151,7 @@ public class Frame implements Serializable {
         throws IllegalArgumentException {
 
         if (parent == null) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.NULL_PARENT_FOR_FRAME,
-                                                                 name);
+            throw new OrekitIllegalArgumentException(OrekitMessages.NULL_PARENT_FOR_FRAME, name);
         }
         this.parent            = parent;
         this.depth             = parent.depth + 1;
@@ -219,8 +219,8 @@ public class Frame implements Serializable {
 
         // safety check
         if (n > depth) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.FRAME_NO_NTH_ANCESTOR,
-                                                                 name, depth, n);
+            throw new OrekitIllegalArgumentException(OrekitMessages.FRAME_NO_NTH_ANCESTOR,
+                                                     name, depth, n);
         }
 
         // go upward to find ancestor

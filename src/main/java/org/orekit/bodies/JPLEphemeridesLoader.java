@@ -33,6 +33,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
@@ -388,7 +389,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 rawGM = getLoadedConstant("GM9", "GM_Plu");
                 break;
             default :
-                throw OrekitException.createInternalError(null);
+                throw new OrekitInternalError(null);
         }
 
         final double au    = getLoadedAstronomicalUnit();
@@ -403,7 +404,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * header must be parsed before the dates can be checked.</p>
      * <p>
      * There are alternate names for constants since for example JPL names are
-     * different from INPOP names (Sun gravity: GMS or GM_Sun, Mercury gravity:
+     * different from INPOP names (Sun gravity: GMS or GM_Sun, Mars gravity:
      * GM4 or GM_Mar...).
      * </p>
      * @param names alternate names of the constant
@@ -772,7 +773,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         try {
             return new String(record, offset, length, "US-ASCII").trim();
         } catch (UnsupportedEncodingException uee) {
-            throw OrekitException.createInternalError(uee);
+            throw new OrekitInternalError(uee);
         }
     }
 
@@ -827,7 +828,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         /** Simple constructor.
          */
-        public EphemerisParser() {
+        EphemerisParser() {
             entries = new TreeSet<PosVelChebyshev>(new Comparator<PosVelChebyshev>() {
                 public int compare(final PosVelChebyshev o1, final PosVelChebyshev o2) {
                     return o1.getDate().compareTo(o2.getDate());

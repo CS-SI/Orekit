@@ -72,6 +72,7 @@ public class SecularAndHarmonic {
     public void resetFitting(final AbsoluteDate date, final double ... initialGuess) {
         reference = date;
         fitted    = initialGuess.clone();
+        observedPoints.clear();
     }
 
     /** Add a fitting point.

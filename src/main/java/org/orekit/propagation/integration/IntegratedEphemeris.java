@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -177,9 +178,10 @@ public class IntegratedEphemeris
         throws PropagationException {
         try {
             setInterpolationDate(date);
-            SpacecraftState state = mapper.mapArrayToState(model.getInterpolatedTime(),
-                                                           model.getInterpolatedState(),
-                                                           meanOrbit);
+            SpacecraftState state = mapper.mapArrayToState(
+                    mapper.mapDoubleToDate(model.getInterpolatedTime(), date),
+                    model.getInterpolatedState(),
+                    meanOrbit);
             for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
                 state = state.addAdditionalState(initial.getKey(), initial.getValue());
             }
@@ -293,7 +295,7 @@ public class IntegratedEphemeris
          * @param name name of the additional state
          * @param index index of the additional state
          */
-        public LocalProvider(final String name, final int index) {
+        LocalProvider(final String name, final int index) {
             this.name  = name;
             this.index = index;
         }
@@ -365,7 +367,7 @@ public class IntegratedEphemeris
          * @param providers providers for pre-integrated states
          * @param equations names of additional equations
          */
-        public DataTransferObject(final AbsoluteDate startDate,
+        DataTransferObject(final AbsoluteDate startDate,
                                   final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                   final StateMapper mapper, final boolean meanOrbit,
                                   final ContinuousOutputModel model,
@@ -396,7 +398,7 @@ public class IntegratedEphemeris
                 return new IntegratedEphemeris(startDate, minDate, maxDate, mapper, meanOrbit, model,
                                                unmanaged, Arrays.asList(providers), equations);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 

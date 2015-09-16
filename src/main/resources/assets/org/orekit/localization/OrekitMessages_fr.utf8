@@ -37,8 +37,8 @@ FRAME_NO_NTH_ANCESTOR = le repère {0} est à une profondeur de {1}, il ne peut 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local non supporté, repères supportés : {0} et {1}
 
-# non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = le repère non pseudo-inertiel "{0}" n''est pas adapté à la définition d''orbites
+# non pseudo-inertial frame "{0}"
+NON_PSEUDO_INERTIAL_FRAME = le repère "{0}" n''est pas psuedo-inertiel
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = répertoire de données racine {0} inexistant
@@ -199,6 +199,9 @@ SATELLITE_COLLIDED_WITH_TARGET = le satellite s''est écrasé sur sa cible
 # attitude pointing law misses ground
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = la loi de pointage en attitude ne pointe pas vers le sol
 
+# {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = {0} secondes alloués pour une transition entre attitudes est trop court, il faudrait au moins {1} secondes
+
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = la date de l''orbite ({0}) ne correspond pas à celle de l''attitude ({1})
 
@@ -246,6 +249,9 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = données inattendues, deux val
 
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = paramètre {0} inconnu, paramètres connus : {1}
+
+# duplicated parameter name {0}
+DUPLICATED_PARAMETER_NAME = paramètre {0} dupliqué
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = état additionel "{0}" inconnu
@@ -384,3 +390,24 @@ OUT_OF_RANGE_DERIVATION_ORDER = ordre de différentiation {0} hors domaine
 
 # out of range latitude: {0}, [{1}, {2}]
 OUT_OF_RANGE_LATITUDE = latitude {0} hors domaine [{1}, {2}]
+
+# orbit type {0} not allowed here, allowed types: {1}
+ORBIT_TYPE_NOT_ALLOWED = type d''orbite {0} non autorisé ici, types autorisés : {1}
+
+# non pseudo-inertial frame {0} is not suitable as reference for inertial forces
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES = le repère non pseudo-inertiel {0} n''est pas une référence adaptée pour les forces d''inertie
+
+# method not available in the absence of a central body
+METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY = méthode non disponible en l''absence de corps central
+
+# operation not available between frames {0} and {1}
+INCOMPATIBLE_FRAMES = opération non disponible entre les repères {0} et {1}
+
+# absolutePVCoordinates not defined
+UNDEFINED_ABSOLUTE_PVCOORDINATES = absolutePVCoordinates non défini
+
+# non pseudo-inertial frame {0} is not suitable for this kind of propagation
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_PROPAGATION = le repère non pseudo-inertiel {0} n''est pas adapté à ce type de propagation
+
+# an inertial force model has to be used when propagating in a non-inertial frame
+INERTIAL_FORCE_MODEL_MISSING = un modèle de forces d''inertie est nécessaire pour propager dans un repère non pseudo-inertiel

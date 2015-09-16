@@ -18,7 +18,9 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -28,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -193,6 +196,28 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
     }
 
+    /** Transform a surface-relative point to a Cartesian point.
+     * @param point surface-relative point, using time as the single derivation parameter
+     * @return point at the same location but as a Cartesian point including derivatives
+     */
+    public PVCoordinates transform(final FieldGeodeticPoint<DerivativeStructure> point) {
+
+        final DerivativeStructure latitude  = point.getLatitude();
+        final DerivativeStructure longitude = point.getLongitude();
+        final DerivativeStructure altitude  = point.getAltitude();
+
+        final DerivativeStructure cLambda = longitude.cos();
+        final DerivativeStructure sLambda = longitude.sin();
+        final DerivativeStructure cPhi    = latitude.cos();
+        final DerivativeStructure sPhi    = latitude.sin();
+        final DerivativeStructure n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
+        final DerivativeStructure r       = n.add(altitude).multiply(cPhi);
+
+        return new PVCoordinates(new FieldVector3D<DerivativeStructure>(r.multiply(cLambda),
+                                                                        r.multiply(sLambda),
+                                                                        sPhi.multiply(altitude.add(n.multiply(g2)))));
+    }
+
     /** {@inheritDoc} */
     public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame)
         throws OrekitException {
@@ -291,6 +316,44 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
     }
 
+    /** Transform a Cartesian point to a surface-relative point.
+     * @param point Cartesian point
+     * @param frame frame in which Cartesian point is expressed
+     * @param date date of the computation (used for frames conversions)
+     * @return point at the same location but as a surface-relative point,
+     * using time as the single derivation parameter
+     * @exception OrekitException if point cannot be converted to body frame
+     */
+    public FieldGeodeticPoint<DerivativeStructure> transform(final PVCoordinates point,
+                                                             final Frame frame, final AbsoluteDate date)
+        throws OrekitException {
+
+        // transform point to body frame
+        final Transform toBody = frame.getTransformTo(bodyFrame, date);
+        final PVCoordinates pointInBodyFrame = toBody.transformPVCoordinates(point);
+        final FieldVector3D<DerivativeStructure> p = pointInBodyFrame.toDerivativeStructureVector(2);
+        final DerivativeStructure   pr2 = p.getX().multiply(p.getX()).add(p.getY().multiply(p.getY()));
+        final DerivativeStructure   pr  = pr2.sqrt();
+        final DerivativeStructure   pz  = p.getZ();
+
+        // project point on the ellipsoid surface
+        final TimeStampedPVCoordinates groundPoint = projectToGround(new TimeStampedPVCoordinates(date, pointInBodyFrame),
+                                                                     bodyFrame);
+        final FieldVector3D<DerivativeStructure> gp = groundPoint.toDerivativeStructureVector(2);
+        final DerivativeStructure   gpr2 = gp.getX().multiply(gp.getX()).add(gp.getY().multiply(gp.getY()));
+        final DerivativeStructure   gpr  = gpr2.sqrt();
+        final DerivativeStructure   gpz  = gp.getZ();
+
+        // relative position of test point with respect to its ellipse sub-point
+        final DerivativeStructure dr  = pr.subtract(gpr);
+        final DerivativeStructure dz  = pz.subtract(gpz);
+        final double insideIfNegative = g2 * (pr2.getReal() - ae2) + pz.getReal() * pz.getReal();
+
+        return new FieldGeodeticPoint<DerivativeStructure>(DerivativeStructure.atan2(gpz, gpr.multiply(g2)),
+                                                           DerivativeStructure.atan2(p.getY(), p.getX()),
+                                                           DerivativeStructure.hypot(dr, dz).copySign(insideIfNegative));
+    }
+
     /** Replace the instance with a data transfer object for serialization.
      * <p>
      * This intermediate class serializes the files supported names, the
@@ -326,7 +389,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
          * @param bodyFrame body frame related to body shape
          * @param angularThreshold convergence limit
          */
-        public DataTransferObject(final double ae, final double f,
+        DataTransferObject(final double ae, final double f,
                                   final Frame bodyFrame, final double angularThreshold) {
             this.ae               = ae;
             this.f                = f;

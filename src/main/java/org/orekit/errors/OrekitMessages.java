@@ -60,7 +60,7 @@ public enum OrekitMessages implements Localizable {
     FRAME_ANCESTOR_OF_NEITHER_FRAME("frame {0} is an ancestor of neither frame {1} nor {2}"),
     FRAME_NO_NTH_ANCESTOR("frame {0} has depth {1}, it cannot have an ancestor {2} levels above"),
     UNSUPPORTED_LOCAL_ORBITAL_FRAME("unsupported local orbital frame, supported types: {0} and {1}"),
-    NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS("non pseudo-inertial frame \"{0}\" is not suitable for defining orbits"),
+    NON_PSEUDO_INERTIAL_FRAME("non pseudo-inertial frame \"{0}\""),
     DATA_ROOT_DIRECTORY_DOES_NOT_EXIST("data root directory {0} does not exist"),
     NOT_A_DIRECTORY("{0} is not a directory"),
     NEITHER_DIRECTORY_NOR_ZIP_OR_JAR("{0} is neither a directory nor a zip/jar archive file"),
@@ -114,6 +114,7 @@ public enum OrekitMessages implements Localizable {
     ANGLE_TYPE_NOT_SUPPORTED("angle type not supported, supported angles: {0}, {1} and {2}"),
     SATELLITE_COLLIDED_WITH_TARGET("satellite collided with target"),
     ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND("attitude pointing law misses ground"),
+    TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH("{0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds"),
     ORBIT_AND_ATTITUDE_DATES_MISMATCH("orbit date ({0}) does not match attitude date ({1})"),
     FRAMES_MISMATCH("frame {0} does not match frame {1}"),
     INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION("initial state not specified for orbit propagation"),
@@ -130,6 +131,7 @@ public enum OrekitMessages implements Localizable {
     OUT_OF_RANGE_EPHEMERIDES_DATE("out of range date for ephemerides: {0}, [{1}, {2}]"),
     UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH("unexpected two elevation values: {0} and {1}, for one azimuth: {2}"),
     UNSUPPORTED_PARAMETER_NAME("unsupported parameter name {0}, supported names: {1}"),
+    DUPLICATED_PARAMETER_NAME("duplicated parameter name {0}"),
     UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""),
     UNKNOWN_MONTH("unknown month \"{0}\""),
     SINGULAR_JACOBIAN_FOR_ORBIT_TYPE("Jacobian matrix for type {0} is singular with current orbit"),
@@ -173,12 +175,12 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
     OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range"),
     OUT_OF_RANGE_LATITUDE("out of range latitude: {0}, [{1}, {2}]"),
-    NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES("non pseudo-inertial frame \"{0}\" is not suitable as reference for inertial forces"),
+    ORBIT_TYPE_NOT_ALLOWED("orbit type {0} not allowed here, allowed types: {1}"),
+    NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES("non pseudo-inertial frame {0} is not suitable as reference for inertial forces"),
     METHOD_NOT_AVAILABLE_WITHOUT_CENTRAL_BODY("method not available in the absence of a central body"),
     INCOMPATIBLE_FRAMES("operation not available between frames {0} and {1}"),
-    UNDEFINED_ORBIT("orbit not defined"), //TODO ref to spacecraftState?
     UNDEFINED_ABSOLUTE_PVCOORDINATES("absolutePVCoordinates not defined"), //TODO ref to spacecraftState?
-    NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_PROPAGATION("non pseudo-inertial frame \"{0}\" is not suitable for this kind of propagation"),
+    NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_PROPAGATION("non pseudo-inertial frame {0} is not suitable for this kind of propagation"),
     INERTIAL_FORCE_MODEL_MISSING("an inertial force model has to be used when propagating in a non-inertial frame");
 
     // CHECKSTYLE: resume JavadocVariable check
@@ -193,7 +195,7 @@ public enum OrekitMessages implements Localizable {
      * @param sourceFormat source English format to use when no
      * localized version is available
      */
-    private OrekitMessages(final String sourceFormat) {
+    OrekitMessages(final String sourceFormat) {
         this.sourceFormat = sourceFormat;
     }
 

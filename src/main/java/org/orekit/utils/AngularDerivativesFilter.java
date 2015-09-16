@@ -16,7 +16,7 @@
  */
 package org.orekit.utils;
 
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
 /** Enumerate for selecting which derivatives to use in {@link TimeStampedAngularCoordinates}
@@ -44,7 +44,7 @@ public enum AngularDerivativesFilter {
     /** Simple constructor.
      * @param maxOrder maximum derivation order
      */
-    private AngularDerivativesFilter(final int maxOrder) {
+    AngularDerivativesFilter(final int maxOrder) {
         this.maxOrder = maxOrder;
     }
 
@@ -57,7 +57,7 @@ public enum AngularDerivativesFilter {
 
     /** Get the filter corresponding to a maximum derivation order.
      * @param order maximum derivation order
-     * @return the month corresponding to the string
+     * @return the filter corresponding to derivation order
      * @exception IllegalArgumentException if the order is out of range
      */
     public static AngularDerivativesFilter getFilter(final int order)
@@ -67,7 +67,7 @@ public enum AngularDerivativesFilter {
                 return filter;
             }
         }
-        throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
     }
 
 }

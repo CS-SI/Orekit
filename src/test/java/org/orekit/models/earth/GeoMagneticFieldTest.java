@@ -461,7 +461,8 @@ public class GeoMagneticFieldTest {
 
     private InputStream getResource(final String name) throws FileNotFoundException {
         // the data path has multiple components, the resources are in the first one
-        final String dataPath = System.getProperty(DataProvidersManager.OREKIT_DATA_PATH).split(":")[0];
+        final String separator = System.getProperty("path.separator");
+        final String dataPath = System.getProperty(DataProvidersManager.OREKIT_DATA_PATH).split(separator)[0];
         return new FileInputStream(new File(dataPath, name));
     }
 

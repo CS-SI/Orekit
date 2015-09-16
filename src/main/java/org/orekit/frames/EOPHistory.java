@@ -17,18 +17,25 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
+import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ImmutableTimeStampedCache;
+import org.orekit.utils.OrekitConfiguration;
+import org.orekit.utils.TimeStampedCache;
+import org.orekit.utils.TimeStampedGenerator;
 
 /** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
  * @author Pascal Parraud
@@ -67,8 +74,21 @@ public class EOPHistory implements Serializable {
                          final Collection<EOPEntry> data,
                          final boolean simpleEOP)
         throws OrekitException {
-        this.conventions = conventions;
-        tidalCorrection = simpleEOP ? null : conventions.getEOPTidalCorrection();
+        this(conventions, data, simpleEOP ? null : new CachedCorrection(conventions.getEOPTidalCorrection()));
+    }
+
+    /** Simple constructor.
+     * @param conventions IERS conventions to which EOP refers
+     * @param data the EOP data to use
+     * @param tidalCorrection correction to apply to EOP
+     * @exception OrekitException if tidal correction model cannot be loaded
+     */
+    private EOPHistory(final IERSConventions conventions,
+                         final Collection<EOPEntry> data,
+                         final TimeFunction<double[]> tidalCorrection)
+        throws OrekitException {
+        this.conventions      = conventions;
+        this.tidalCorrection  = tidalCorrection;
         if (data.size() >= INTERPOLATION_POINTS) {
             // enough data to interpolate
             cache = new ImmutableTimeStampedCache<EOPEntry>(INTERPOLATION_POINTS, data);
@@ -78,6 +98,22 @@ public class EOPHistory implements Serializable {
             cache = ImmutableTimeStampedCache.emptyCache();
             hasData = false;
         }
+    }
+
+    /** Get non-interpolating version of the instance.
+     * @return non-interpolatig version of the instance
+     * @exception OrekitException if tidal correction model cannot be loaded
+     */
+    public EOPHistory getNonInterpolatingEOPHistory()
+        throws OrekitException {
+        return new EOPHistory(conventions, getEntries(), conventions.getEOPTidalCorrection());
+    }
+
+    /** Check if the instance uses interpolation on tidal corrections.
+     * @return true if the instance uses interpolation on tidal corrections
+     */
+    public boolean usesInterpolation() {
+        return tidalCorrection != null && tidalCorrection instanceof CachedCorrection;
     }
 
     /** Get the IERS conventions to which these EOP apply.
@@ -141,7 +177,7 @@ public class EOPHistory implements Serializable {
             return beforeLeap ? interpolated : interpolated + 1.0;
         } catch (TimeStampedCacheException tce) {
             //this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -186,7 +222,7 @@ public class EOPHistory implements Serializable {
             return interpolated;
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -225,7 +261,7 @@ public class EOPHistory implements Serializable {
             return new PoleCorrection(interpolated[0], interpolated[1]);
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -253,7 +289,7 @@ public class EOPHistory implements Serializable {
             return interpolator.value(0);
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -281,7 +317,7 @@ public class EOPHistory implements Serializable {
             return interpolator.value(0);
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
+            throw new OrekitInternalError(tce);
         }
     }
 
@@ -359,7 +395,7 @@ public class EOPHistory implements Serializable {
          * @param entries the EOP data to use
          * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
          */
-        public DataTransferObject(final IERSConventions conventions,
+        DataTransferObject(final IERSConventions conventions,
                                   final List<EOPEntry> entries,
                                   final boolean simpleEOP) {
             this.conventions = conventions;
@@ -375,10 +411,123 @@ public class EOPHistory implements Serializable {
                 // retrieve a managed frame
                 return new EOPHistory(conventions, entries, simpleEOP);
             } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
+                throw new OrekitInternalError(oe);
             }
         }
 
+    }
+
+    /** Internal class for caching tidal correction. */
+    private static class TidalCorrectionEntry implements TimeStamped {
+
+        /** Entry date. */
+        private final AbsoluteDate date;
+
+        /** Correction. */
+        private final double[] correction;
+
+        /** Simple constructor.
+         * @param date entry date
+         * @param correction correction on the EOP parameters (xp, yp, ut1, lod)
+         */
+        TidalCorrectionEntry(final AbsoluteDate date, final double[] correction) {
+            this.date       = date;
+            this.correction = correction;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
+
+    }
+
+    /** Local generator for thread-safe cache. */
+    private static class CachedCorrection
+        implements TimeFunction<double[]>, TimeStampedGenerator<TidalCorrectionEntry> {
+
+        /** Correction to apply to EOP (may be null). */
+        private final TimeFunction<double[]> tidalCorrection;
+
+        /** Step between generated entries. */
+        private final double step;
+
+        /** Tidal corrections entries cache. */
+        private final TimeStampedCache<TidalCorrectionEntry> cache;
+
+        /** Simple constructor.
+         * @param tidalCorrection function computing the tidal correction
+         */
+        CachedCorrection(final TimeFunction<double[]> tidalCorrection) {
+            this.step            = 60 * 60;
+            this.tidalCorrection = tidalCorrection;
+            this.cache           =
+                new GenericTimeStampedCache<TidalCorrectionEntry>(8,
+                                                                  OrekitConfiguration.getCacheSlotsNumber(),
+                                                                  Constants.JULIAN_DAY * 30,
+                                                                  Constants.JULIAN_DAY,
+                                                                  this,
+                                                                  TidalCorrectionEntry.class);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] value(final AbsoluteDate date) {
+            try {
+                // set up an interpolator
+                final HermiteInterpolator interpolator = new HermiteInterpolator();
+                for (final TidalCorrectionEntry entry : cache.getNeighbors(date)) {
+                    interpolator.addSamplePoint(entry.date.durationFrom(date), entry.correction);
+                }
+
+                // interpolate to specified date
+                return interpolator.value(0.0);
+            } catch (TimeStampedCacheException tsce) {
+                // this should never happen
+                throw new OrekitInternalError(tsce);
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public List<TidalCorrectionEntry> generate(final TidalCorrectionEntry existing, final AbsoluteDate date) {
+
+            final List<TidalCorrectionEntry> generated = new ArrayList<TidalCorrectionEntry>();
+
+            if (existing == null) {
+
+                // no prior existing entries, just generate a first set
+                for (int i = -cache.getNeighborsSize() / 2; generated.size() < cache.getNeighborsSize(); ++i) {
+                    final AbsoluteDate t = date.shiftedBy(i * step);
+                    generated.add(new TidalCorrectionEntry(t, tidalCorrection.value(t)));
+                }
+
+            } else {
+
+                // some entries have already been generated
+                // add the missing ones up to specified date
+
+                AbsoluteDate t = existing.getDate();
+                if (date.compareTo(t) > 0) {
+                    // forward generation
+                    do {
+                        t = t.shiftedBy(step);
+                        generated.add(new TidalCorrectionEntry(t, tidalCorrection.value(t)));
+                    } while (t.compareTo(date) <= 0);
+                } else {
+                    // backward generation
+                    do {
+                        t = t.shiftedBy(-step);
+                        generated.add(0, new TidalCorrectionEntry(t, tidalCorrection.value(t)));
+                    } while (t.compareTo(date) >= 0);
+                }
+            }
+
+            // return the generated transforms
+            return generated;
+
+        }
     }
 
 }

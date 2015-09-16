@@ -48,7 +48,7 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
      * @param rawC raw tesseral-sectorial coefficients
      * @param rawS raw tesseral-sectorial coefficients
      */
-    public ConstantSphericalHarmonics(final double ae, final double mu,
+    ConstantSphericalHarmonics(final double ae, final double mu,
                                       final TideSystem tideSystem,
                                       final double[][] rawC, final double[][] rawS) {
         this.ae         = ae;

@@ -24,7 +24,9 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -95,9 +97,7 @@ public abstract class Orbit
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with true angle. */
     private transient double[][] jacobianWrtParametersTrue;
 
-    /** TODO: case of nonInertial frame???
-     *
-     * Default constructor.
+    /** Default constructor.
      * Build a new instance with arbitrary default elements.
      * @param frame the frame in which the parameters are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
@@ -108,7 +108,7 @@ public abstract class Orbit
      */
     protected Orbit(final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-//        ensurePseudoInertialFrame(frame);
+        ensurePseudoInertialFrame(frame);
         this.date                      = date;
         this.mu                        = mu;
         this.pvCoordinates             = null;
@@ -121,9 +121,7 @@ public abstract class Orbit
         jacobianWrtParametersTrue      = null;
     }
 
-    /** TODO: case of nonInertial frame???
-     *
-     * Set the orbit from Cartesian parameters.
+    /** Set the orbit from Cartesian parameters.
      *
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
@@ -139,10 +137,10 @@ public abstract class Orbit
      */
     protected Orbit(final TimeStampedPVCoordinates pvCoordinates, final Frame frame, final double mu)
         throws IllegalArgumentException {
-//        ensurePseudoInertialFrame(frame);
+        ensurePseudoInertialFrame(frame);
         this.date = pvCoordinates.getDate();
         this.mu = mu;
-        if (pvCoordinates.getAcceleration().getNormSq() == 0 && frame.isPseudoInertial()) {
+        if (pvCoordinates.getAcceleration().getNormSq() == 0) {
             // the acceleration was not provided,
             // compute it from Newtonian attraction
             final double r2 = pvCoordinates.getPosition().getNormSq();
@@ -167,12 +165,11 @@ public abstract class Orbit
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    protected static void ensurePseudoInertialFrame(final Frame frame)
+    private static void ensurePseudoInertialFrame(final Frame frame)
         throws IllegalArgumentException {
         if (!frame.isPseudoInertial()) {
-            throw OrekitException.createIllegalArgumentException(
-                OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS,
-                frame.getName());
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
+                                                     frame.getName());
         }
     }
 
@@ -365,7 +362,7 @@ public abstract class Orbit
                     cachedJacobian = jacobianTrueWrtCartesian;
                     break;
                 default :
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
         }
 
@@ -413,7 +410,7 @@ public abstract class Orbit
                     cachedJacobian = jacobianWrtParametersTrue;
                     break;
                 default :
-                    throw OrekitException.createInternalError(null);
+                    throw new OrekitInternalError(null);
             }
         }
 

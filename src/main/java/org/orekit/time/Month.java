@@ -19,7 +19,7 @@ package org.orekit.time;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
 /** Enumerate representing a calendar month.
@@ -105,7 +105,7 @@ public enum Month {
     /** Simple constructor.
      * @param number month number
      */
-    private Month(final int number) {
+    Month(final int number) {
         this.number             = number;
         lowerCaseName           = toString().toLowerCase();
         capitalizedName         = toString().charAt(0) + lowerCaseName.substring(1);
@@ -180,7 +180,7 @@ public enum Month {
             try {
                 return getMonth(Integer.parseInt(normalizedString));
             } catch (NumberFormatException nfe) {
-                throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_MONTH, s);
+                throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_MONTH, s);
             }
         }
         return month;
@@ -194,7 +194,7 @@ public enum Month {
     public static Month getMonth(final int number) {
         final Month month = NUMBERS_MAP.get(number);
         if (month == null) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_MONTH, number);
+            throw new OrekitIllegalArgumentException(OrekitMessages.UNKNOWN_MONTH, number);
         }
         return month;
     }

@@ -64,7 +64,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class YawSteering extends GroundPointing implements AttitudeProviderModifier {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140808L;
+    private static final long serialVersionUID = 20150529L;
 
     /** Pointing axis. */
     private static final PVCoordinates PLUS_Z =
@@ -84,11 +84,35 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
      * @param sun sun motion model
      * @param phasingAxis satellite axis that must be roughly in Sun direction
      * (if solar arrays rotation axis is Y, then this axis should be either +X or -X)
+     * @deprecated as of 7.1, replaced with {@link #YawSteering(Frame, GroundPointing, PVCoordinatesProvider, Vector3D)}
      */
+    @Deprecated
     public YawSteering(final GroundPointing groundPointingLaw,
                        final PVCoordinatesProvider sun,
                        final Vector3D phasingAxis) {
         super(groundPointingLaw.getBodyFrame());
+        this.groundPointingLaw = groundPointingLaw;
+        this.sun = sun;
+        this.phasingNormal = new PVCoordinates(Vector3D.crossProduct(Vector3D.PLUS_K, phasingAxis).normalize(),
+                                               Vector3D.ZERO,
+                                               Vector3D.ZERO);
+    }
+
+    /** Creates a new instance.
+     * @param inertialFrame frame in which orbital velocities are computed
+     * @param groundPointingLaw ground pointing attitude provider without yaw compensation
+     * @param sun sun motion model
+     * @param phasingAxis satellite axis that must be roughly in Sun direction
+     * (if solar arrays rotation axis is Y, then this axis should be either +X or -X)
+     * @exception OrekitException if the frame specified is not a pseudo-inertial frame
+     * @since 7.1
+     */
+    public YawSteering(final Frame inertialFrame,
+                       final GroundPointing groundPointingLaw,
+                       final PVCoordinatesProvider sun,
+                       final Vector3D phasingAxis)
+        throws OrekitException {
+        super(inertialFrame, groundPointingLaw.getBodyFrame());
         this.groundPointingLaw = groundPointingLaw;
         this.sun = sun;
         this.phasingNormal = new PVCoordinates(Vector3D.crossProduct(Vector3D.PLUS_K, phasingAxis).normalize(),

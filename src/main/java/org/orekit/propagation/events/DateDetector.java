@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
@@ -162,11 +163,11 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
                 increasing = !eventDateList.get(lastIndex).isgIncrease();
                 eventDateList.add(new EventDate(target, increasing));
             } else {
-                throw OrekitException.createIllegalArgumentException(OrekitMessages.EVENT_DATE_TOO_CLOSE,
-                                                                     target,
-                                                                     eventDateList.get(0).getDate(),
-                                                                     eventDateList.get(lastIndex).getDate(),
-                                                                     getMaxCheckInterval());
+                throw new OrekitIllegalArgumentException(OrekitMessages.EVENT_DATE_TOO_CLOSE,
+                                                         target,
+                                                         eventDateList.get(0).getDate(),
+                                                         eventDateList.get(lastIndex).getDate(),
+                                                         getMaxCheckInterval());
             }
         }
     }
@@ -216,7 +217,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
          * @param date date
          * @param increase if true, g function increases around event date
          */
-        public EventDate(final AbsoluteDate date, final boolean increase) {
+        EventDate(final AbsoluteDate date, final boolean increase) {
             this.eventDate = date;
             this.gIncrease = increase;
         }

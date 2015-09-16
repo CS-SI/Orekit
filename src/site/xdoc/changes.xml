@@ -21,6 +21,93 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added EventEnablingPredicateFilter to filter event based on an user-provided
+        enabling predicate function. This allow for example to dynamically turn some
+        events on and off during propagation or to set up some elaborate logic like
+        triggering on elevation first time derivative (i.e. one elevation maximum)
+        but only when elevation itself is above some threshold.
+      </action>
+      <action dev="luc" type="update" >
+        Renamed EventFilter into EventSlopeFilter.
+      </action>
+      <action dev="luc" type="add" >
+        Added elevation extremum event detector.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed ellipsoid tessellation with large tolerances.
+        Fixes issue #215.
+      </action>
+      <action dev="evan" type="fix" >
+        Fixed numerical precision issues for start/end dates of generated
+        ephemerides.
+        Fixes issues #210
+      </action>
+      <action dev="luc" type="add" >
+        Added anomaly, latitude argument, or longitude argument crossings detector,
+        either true, mean or eccentric.
+        Fixes issue #213.
+      </action>
+      <action dev="luc" type="add" >
+        Added latitude and longitude extremum detector.
+      </action>
+      <action dev="luc" type="add" >
+        Added latitude and longitude crossing detector.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to convert between PVA and geodetic points with time derivatives.
+      </action>
+      <action dev="luc" type="add" >
+        Allow truncation of tiles in ellipsoid tessellation.
+      </action>
+      <action dev="luc" type="add" >
+        Propagator builders can now be configured to accept any orbit types
+        and any position angle types in the input flat array.
+        Fixes issue #208.
+      </action>
+      <action dev="luc" type="add" >
+        Added smooth attitude transitions in attitudes sequences, with derivatives
+        continuity at both endpoints of the transition that can be forced to match
+        rotation, rotation rate and rotation acceleration.
+        Fixes issue #6.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed attitudes sequence behavior in backward propagation.
+        Fixes issue #206.
+      </action>
+      <action dev="luc" type="add" >
+        Added factory methods to create AbsoluteDate instances from MJD or JD.
+        Fixes issue #193.
+      </action>
+      <action dev="luc" type="fix" due-to="Joris Olympio">
+        Fixed wrong attitude switches when an event occurs but the active attitude mode
+        is not the one it relates to.
+        Fixes issue #190.
+      </action>
+      <action dev="luc" type="add"  due-to="Joris Olympio">
+        Added a way to be notified when attitude switches occur.
+        Fixes issue #190.
+      </action>
+      <action dev="luc" type="fix" >
+        Ensure Keplerian propagator uses the specified mu and not only the one from the initial orbit.
+        Fixes issue #184.
+      </action>
+      <action dev="luc" type="update" >
+        Improved frames transforms efficiency for various Earth frames.
+      </action>
+      <action dev="luc" type="fix" >
+        Specify inertial frame to compute orbital velocity for ground pointing laws.
+        Fixes issue #115.
+      </action>
+      <action dev="luc" type="fix" >
+        Activated two commented-out tests for DTM2000, after ensuring we
+        get the same results as the original fortran implementation.
+        Fixes issue #204.
+      </action>
+      <action dev="luc" type="fix" due-to="Javier Martin Avila">
+        Fixed resetting of SecularAndHarmonic fitting.
+        Fixes issue #205.
+      </action>
       <action dev="luc" type="add">
         Added a way to sample a zone on an ellipsoid as grids of inside points.
         Fixes issue #201.

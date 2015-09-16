@@ -157,7 +157,7 @@ class ZonalContribution implements DSSTForceModel {
     /** Simple constructor.
      * @param provider provider for spherical harmonics
      */
-    public ZonalContribution(final UnnormalizedSphericalHarmonicsProvider provider) {
+    ZonalContribution(final UnnormalizedSphericalHarmonicsProvider provider) {
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
@@ -719,7 +719,7 @@ class ZonalContribution implements DSSTForceModel {
          *  @param maxEccPow maximum eccentricity power
          *  @param interpolationPoints number of points used in the interpolation process
          */
-        public ZonalShortPeriodicCoefficients(final int nMax, final int maxEccPow, final int interpolationPoints) {
+        ZonalShortPeriodicCoefficients(final int nMax, final int maxEccPow, final int interpolationPoints) {
 
             // Save parameters
             this.nMax = nMax;
@@ -1191,7 +1191,7 @@ class ZonalContribution implements DSSTForceModel {
          *  @param sMax maximum possible value for s
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        public FourierCjSjCoefficients(final AbsoluteDate date, final int nMax, final int sMax)
+        FourierCjSjCoefficients(final AbsoluteDate date, final int nMax, final int sMax)
             throws OrekitException {
             this.ghijCoef = new GHIJjsPolynomials(k, h, alpha, beta);
             // Qns coefficients

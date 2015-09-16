@@ -46,7 +46,7 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
      * @param cTrend secular trend of the cosine coefficients (s<sup>-1</sup>)
      * @param sTrend secular trend of the sine coefficients (s<sup>-1</sup>)
      */
-    public SecularTrendSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
+    SecularTrendSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
                                           final DateComponents referenceDate,
                                           final double[][] cTrend, final double[][] sTrend) {
         this.provider      = provider;

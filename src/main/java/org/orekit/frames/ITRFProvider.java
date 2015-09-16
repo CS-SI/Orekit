@@ -28,7 +28,7 @@ import org.orekit.utils.Constants;
  * parent frame.</p>
  * @author Luc Maisonobe
  */
-class ITRFProvider implements TransformProvider {
+class ITRFProvider implements EOPBasedTransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130922L;
@@ -44,8 +44,21 @@ class ITRFProvider implements TransformProvider {
     /** Simple constructor.
      * @param eopHistory EOP history
      */
-    public ITRFProvider(final EOPHistory eopHistory) {
+    ITRFProvider(final EOPHistory eopHistory) {
         this.eopHistory = eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EOPHistory getEOPHistory() {
+        return eopHistory;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ITRFProvider getNonInterpolatingProvider()
+        throws OrekitException {
+        return new ITRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
     /** Get the transform from TIRF 2000 at specified date.

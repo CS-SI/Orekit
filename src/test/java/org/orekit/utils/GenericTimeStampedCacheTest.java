@@ -509,7 +509,7 @@ public class GenericTimeStampedCacheTest {
     }
 
     private interface Mode {
-        public List<AbsoluteDate> generateDates(AbsoluteDate[] base, double duration, double step);
+        List<AbsoluteDate> generateDates(AbsoluteDate[] base, double duration, double step);
     }
 
     private class SequentialMode implements Mode {

@@ -22,7 +22,7 @@ import java.util.Comparator;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
-import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
 /**
@@ -99,7 +99,8 @@ public class ElevationMask implements Serializable {
         for (int i = 1; i < mask.length; i++) {
             if (Double.compare(mask[i - 1][0], mask[i][0]) == 0) {
                 if (Double.compare(mask[i - 1][1], mask[i][1]) != 0) {
-                    throw OrekitException.createIllegalArgumentException(OrekitMessages.UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH, mask[i - 1][1], mask[i][1], mask[i][0]);
+                    throw new OrekitIllegalArgumentException(OrekitMessages.UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH,
+                                                             mask[i - 1][1], mask[i][1], mask[i][0]);
                 }
             }
         }

@@ -25,6 +25,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -210,9 +211,8 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     protected static void ensurePseudoInertialFrame(final Frame frame)
             throws IllegalArgumentException {
         if (!frame.isPseudoInertial()) {
-            throw OrekitException.createIllegalArgumentException(
-                    OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS,
-                    frame.getName());
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_PROPAGATION,
+                                                     frame.getName());
         }
     }
 
@@ -226,8 +226,8 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
             throws IllegalArgumentException {
         if (!frame1.isPseudoInertial() || !frame2.isPseudoInertial())
             if (!frame1.equals(frame2)) {
-                throw OrekitException.createIllegalArgumentException(
-                        OrekitMessages.INCOMPATIBLE_FRAMES, frame1.getName(), frame2.getName());
+                throw new OrekitIllegalArgumentException(OrekitMessages.INCOMPATIBLE_FRAMES,
+                                                         frame1.getName(), frame2.getName());
             }
     }
 

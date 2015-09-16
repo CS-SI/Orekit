@@ -128,6 +128,8 @@ There are also several predefined events detectors already available, amongst wh
 * an `ElevationDetector`, which is triggered at raising or setting time of a
   satellite with respect to a ground point, taking atmospheric refraction into account
   and either constant elevation or ground mask when threshold elevation is azimuth-dependent,
+* an `ElevationExtremumDetector`, which is triggered at maximum (or minimum) satellite
+  elevation with respect to a ground point,
 * an `AltitudeDetector` which is triggered when satellite crosses a predefined altitude limit
   and can be used to compute easily operational forecasts, 
 * a `CircularFieldOfViewDetector` and a `DihedralFieldOfViewDetector`, which are triggered
@@ -138,6 +140,12 @@ There are also several predefined events detectors already available, amongst wh
   penumbra of another occulting body,
 * an `ApsideDetector`, which is triggered at apogee and perigee,
 * a `NodeDetector`, which is triggered at ascending and descending nodes,
+* a `PositionAngleDetector`, which is triggered when satellite angle on orbit crosses some
+  value (works with either anomaly, latitude argument or longitude argument and with either
+  true, eccentric or mean angles),
+* `LatitudeCrossingDetector`, `LatitudeExtremumDetector`, `LongitudeCrossingDetector`,
+  `LongitudeExtremumDetector`, which are triggered when satellite position with respect
+  to central body reaches some predefined values, 
 * an `AlignmentDetector`, which is triggered when satellite and some body are aligned
   in the orbital plane...
 
@@ -145,12 +153,21 @@ An `EventShifter` is also provided in order to slightly shift the events occurre
 A typical use case is for handling operational delays before or after some physical event
 really occurs.
 
-An `EventFilter` is provided when user is only interested in one kind of events that
+An `EventSlopeFilter` is provided when user is only interested in one kind of events that
 occurs in pairs like raising in the raising/setting pair for elevation detector, or
 eclipse entry in the entry/exit pair for eclipse detector. The filter does not simply
 ignore events after they have been detected, it filters them before they are located
 and hence save some computation time by not doing an accurate search for events that
 will ultimately be ignored.
+
+An `EventEnablingPredicateFilter` is provided when user wants to filter out some
+events based on an external condition set up by a user-provided enabling predicate
+function. This allow for example to dynamically turn some events on and off during
+propagation or to set up some elaborate logic like triggering on elevation first
+time derivative (i.e. one elevation maximum) but only when elevation itself is above
+some threshold. The filter does not simply ignore events after they have been detected,
+it filters them before they are located and hence save some computation time by not doing
+an accurate search for events that will ultimately be ignored.
 
 Event occurring can be automatically logged using the `EventsLogger` class.
 
