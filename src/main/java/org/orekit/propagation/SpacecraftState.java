@@ -32,6 +32,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -43,7 +44,6 @@ import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AbsolutePVCoordinates;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -204,7 +204,7 @@ public class SpacecraftState
         throws IllegalArgumentException {
         checkConsistency(orbit, attitude);
         this.orbit      = orbit;
-        this.absPva        = null;
+        this.absPva     = null;
         this.attitude   = attitude;
         this.mass       = mass;
         if (additional == null) {
@@ -317,12 +317,11 @@ public class SpacecraftState
      * or frames are not equal
      */
     public SpacecraftState(final AbsolutePVCoordinates absPva, final Attitude attitude,
-            final double mass, final Map<String, double[]> additional)
-            throws IllegalArgumentException {
-        // TODO Auto-generated constructor stub
+                           final double mass, final Map<String, double[]> additional)
+        throws IllegalArgumentException {
         checkConsistency(absPva, attitude);
         this.orbit      = null;
-        this.absPva        = absPva;
+        this.absPva     = absPva;
         this.attitude   = attitude;
         this.mass       = mass;
         if (additional == null) {
@@ -383,9 +382,18 @@ public class SpacecraftState
         }
     }
 
-    // TODO: add doc
+    /** Check if the state contains an orbit part.
+     * <p>
+     * A state contains either an {@link AbsolutePVCoordinates absolute
+     * position-velocity-acceleration} or an {@link Orbit orbit}.
+     * </p>
+     * @return true if state contains an orbit (in which case {@link #getOrbit()}
+     * will not throw an exception), or false if the state contains an
+     * absolut position-velocity-acceleration (in which case {@link #getAbsPVA()}
+     * will not throw an exception)
+     */
     public boolean isOrbitDefined() {
-        return (orbit == null) ? false : true;
+        return orbit != null;
     }
 
     /** Check AbsolutePVCoordinates and attitude dates are equal.
@@ -398,22 +406,21 @@ public class SpacecraftState
         throws IllegalArgumentException {
         if (FastMath.abs(absPva.getDate().durationFrom(attitude.getDate())) >
             DATE_INCONSISTENCY_THRESHOLD) {
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
-                  absPva.getDate(), attitude.getDate());
+            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
+                                                     absPva.getDate(), attitude.getDate());
         }
         if (absPva.getFrame() != attitude.getReferenceFrame()) {
-            throw OrekitException.createIllegalArgumentException(
-                  OrekitMessages.FRAMES_MISMATCH,
-                  absPva.getFrame().getName(), attitude.getReferenceFrame().getName());
+            throw new OrekitIllegalArgumentException(OrekitMessages.FRAMES_MISMATCH,
+                                                     absPva.getFrame().getName(),
+                                                     attitude.getReferenceFrame().getName());
         }
     }
 
-    /** TODO: check doc
-     * Get a time-shifted state.
+    /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple keplerian model for orbit, a linear extrapolation for attitude
+     * a simple keplerian model for orbit, a Taylor expansion for absolute
+     * position-velocity-acceleration, a linear extrapolation for attitude
      * taking the spin rate into account and neither mass nor additional states
      * changes. It is <em>not</em> intended as a replacement for proper orbit
      * and attitude propagation but should be sufficient for small time shifts
@@ -451,7 +458,6 @@ public class SpacecraftState
     }
 
     /** {@inheritDoc}
-     * TODO: adapt!
      * <p>
      * The additional states that are interpolated are the ones already present
      * in the instance. The sample instances must therefore have at least the same
@@ -459,18 +465,34 @@ public class SpacecraftState
      * but the extra ones will be ignored.
      * </p>
      * <p>
+     * The instance and all the sample instances <em>must</em> be based on similar
+     * trajectory data, i.e. they must either all be based on orbits or all be based
+     * on absolute position-velocity-acceleration. Any inconsistency will trigger
+     * an {@link OrekitIllegalStateException}.
+     * </p>
+     * <p>
      * As this implementation of interpolation is polynomial, it should be used only
      * with small samples (about 10-20 points) in order to avoid <a
      * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
      * and numerical problems (including NaN appearing).
      * </p>
+     * @exception OrekitIllegalStateException if some instances are not based on
+     * similar trajectory data
      */
     public SpacecraftState interpolate(final AbsoluteDate date,
                                        final Collection<SpacecraftState> sample)
-        throws OrekitException {
+        throws OrekitException, OrekitIllegalStateException {
 
         // prepare interpolators
-        final List<Orbit> orbits = new ArrayList<Orbit>(sample.size());
+        final List<Orbit> orbits;
+        final List<AbsolutePVCoordinates> absPvas;
+        if (isOrbitDefined()) {
+            orbits  = new ArrayList<Orbit>(sample.size());
+            absPvas = null;
+        } else {
+            orbits  = null;
+            absPvas = new ArrayList<AbsolutePVCoordinates>(sample.size());
+        }
         final List<Attitude> attitudes = new ArrayList<Attitude>(sample.size());
         final HermiteInterpolator massInterpolator = new HermiteInterpolator();
         final Map<String, HermiteInterpolator> additionalInterpolators =
@@ -482,7 +504,11 @@ public class SpacecraftState
         // extract sample data
         for (final SpacecraftState state : sample) {
             final double deltaT = state.getDate().durationFrom(date);
-            orbits.add(state.getOrbit());
+            if (isOrbitDefined()) {
+                orbits.add(state.getOrbit());
+            } else {
+                absPvas.add(state.getAbsPVA());
+            }
             attitudes.add(state.getAttitude());
             massInterpolator.addSamplePoint(deltaT,
                                             new double[] {
@@ -494,7 +520,15 @@ public class SpacecraftState
         }
 
         // perform interpolations
-        final Orbit interpolatedOrbit       = orbit.interpolate(date, orbits);
+        final Orbit interpolatedOrbit;
+        final AbsolutePVCoordinates interpolatedAbsPva;
+        if (isOrbitDefined()) {
+            interpolatedOrbit  = orbit.interpolate(date, orbits);
+            interpolatedAbsPva = null;
+        } else {
+            interpolatedOrbit  = null;
+            interpolatedAbsPva = absPva.interpolate(date, absPvas);
+        }
         final Attitude interpolatedAttitude = attitude.interpolate(date, attitudes);
         final double interpolatedMass       = massInterpolator.value(0)[0];
         final Map<String, double[]> interpolatedAdditional;
@@ -508,36 +542,64 @@ public class SpacecraftState
         }
 
         // create the complete interpolated state
-        return new SpacecraftState(interpolatedOrbit, interpolatedAttitude,
-                                   interpolatedMass, interpolatedAdditional);
+        if (isOrbitDefined()) {
+            return new SpacecraftState(interpolatedOrbit, interpolatedAttitude,
+                                       interpolatedMass, interpolatedAdditional);
+        } else {
+            return new SpacecraftState(interpolatedAbsPva, interpolatedAttitude,
+                                       interpolatedMass, interpolatedAdditional);
+        }
 
     }
 
-    /** TODO: adapt: add throw exception
-     * Gets the current orbit.
-     * @return the orbit
-     * @throws OrekitException if orbit is not defined
+    /** Get the absolute position-velocity-acceleration.
+     * <p>
+     * A state contains either an {@link AbsolutePVCoordinates absolute
+     * position-velocity-acceleration} or an {@link Orbit orbit}. Which
+     * one is present can be checked using {@link #isOrbitDefined()}.
+     * </p>
+     * @return absolute position-velocity-acceleration
+     * @exception OrekitIllegalStateException if position-velocity-acceleration is null,
+     * which mean the state rather contains an {@link Orbit}
+     * @see #isOrbitDefined()
+     * @seet {@link #getOrbit()}
      */
-    public Orbit getOrbit() {
+    public AbsolutePVCoordinates getAbsPVA() throws OrekitIllegalStateException {
+        if (absPva == null) {
+            throw new OrekitIllegalStateException(OrekitMessages.UNDEFINED_ABSOLUTE_PVCOORDINATES);
+        }
+        return absPva;
+    }
+
+    /** Get the current orbit.
+     * <p>
+     * A state contains either an {@link AbsolutePVCoordinates absolute
+     * position-velocity-acceleration} or an {@link Orbit orbit}. Which
+     * one is present can be checked using {@link #isOrbitDefined()}.
+     * </p>
+     * @return the orbit
+     * @exception OrekitIllegalStateException if orbit is null,
+     * which means the state rather contains an {@link AbsolutePVCoordinates absolute
+     * position-velocity-acceleration}
+     * @see #isOrbitDefined()
+     * @see #getAbsPVA()
+     */
+    public Orbit getOrbit() throws OrekitIllegalStateException {
+        if (orbit == null) {
+            throw new OrekitIllegalStateException(OrekitMessages.UNDEFINED_ORBIT);
+        }
         return orbit;
     }
-//    public Orbit getOrbit() throws OrekitException {
-//        if (orbit == null)
-//            throw new OrekitException(OrekitMessages.UNDEFINED_ORBIT);
-//        return orbit;
-//    }
 
-    /** TODO: check doc
-     * Get the date.
+    /** Get the date.
      * @return date
      */
     public AbsoluteDate getDate() {
         return (absPva == null) ? orbit.getDate() : absPva.getDate();
     }
 
-    /** TODO: check doc ("inertial" ?)
-     * Get the inertial frame.
-     * @return the frame
+    /** Get the defining frame.
+     * @return the frame in which state is defined
      */
     public Frame getFrame() {
         return (absPva == null) ? orbit.getFrame() : absPva.getFrame();
@@ -554,8 +616,7 @@ public class SpacecraftState
         return additional.containsKey(name);
     }
 
-    /** TODO: adapt!
-     * Check if two instances have the same set of additional states available.
+    /** Check if two instances have the same set of additional states available.
      * <p>
      * Only the names and dimensions of the additional states are compared,
      * not their values.
@@ -618,164 +679,161 @@ public class SpacecraftState
         return Collections.unmodifiableMap(additional);
     }
 
-    /** TODO: check changes and doc
-     * Compute the transform from orbite/attitude reference frame to spacecraft frame.
-     * <p>The spacecraft frame origin is at the point defined by the orbit,
-     * and its orientation is defined by the attitude.</p>
+    /** Compute the transform from state defining frame to spacecraft frame.
+     * <p>The spacecraft frame origin is at the point defined by the orbit
+     * (or absolute position-velocity-acceleration), and its orientation is
+     * defined by the attitude.</p>
      * @return transform from specified frame to current spacecraft frame
      */
     public Transform toTransform() {
-        final TimeStampedPVCoordinates pv = (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
-        final AbsoluteDate date = (absPva == null) ? orbit.getDate() : absPva.getDate();
-        return new Transform(date,
-                             new Transform(date, pv.negate()),
-                             new Transform(date, attitude.getOrientation()));
+        final TimeStampedPVCoordinates pv = getPVCoordinates();
+        return new Transform(pv.getDate(),
+                             new Transform(pv.getDate(), pv.negate()),
+                             new Transform(pv.getDate(), attitude.getOrientation()));
     }
 
-    /** TODO: check changes and doc
-     * Get the central attraction coefficient.
-     * @return mu central attraction coefficient (m^3/s^2)
+    /** Get the central attraction coefficient.
+     * @return mu central attraction coefficient (m^3/s^2), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather than an orbit
      */
     public double getMu() {
-        return (absPva == null) ? orbit.getMu() : 0;
+        return (absPva == null) ? orbit.getMu() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the keplerian period.
+    /** Get the keplerian period.
      * <p>The keplerian period is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian period in seconds
+     * @return keplerian period in seconds, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      */
     public double getKeplerianPeriod() {
-        return (absPva == null) ? orbit.getKeplerianPeriod() : null;
+        return (absPva == null) ? orbit.getKeplerianPeriod() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the keplerian mean motion.
+    /** Get the keplerian mean motion.
      * <p>The keplerian mean motion is computed directly from semi major axis
      * and central acceleration constant.</p>
-     * @return keplerian mean motion in radians per second
+     * @return keplerian mean motion in radians per second, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      */
     public double getKeplerianMeanMotion() {
-        return (absPva == null) ? orbit.getKeplerianMeanMotion() : null;
+        return (absPva == null) ? orbit.getKeplerianMeanMotion() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the semi-major axis.
-     * @return semi-major axis (m)
+    /** Get the semi-major axis.
+     * @return semi-major axis (m), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      */
     public double getA() {
-        return (absPva == null) ? orbit.getA() : null;
+        return (absPva == null) ? orbit.getA() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the first component of the eccentricity vector (as per equinoctial parameters).
-     * @return e cos(ω + Ω), first component of eccentricity vector
+    /** Get the first component of the eccentricity vector (as per equinoctial parameters).
+     * @return e cos(ω + Ω), first component of eccentricity vector, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getE()
      */
     public double getEquinoctialEx() {
-        return (absPva == null) ? orbit.getEquinoctialEx() : null;
+        return (absPva == null) ? orbit.getEquinoctialEx() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the second component of the eccentricity vector (as per equinoctial parameters).
-     * @return e sin(ω + Ω), second component of the eccentricity vector
+    /** Get the second component of the eccentricity vector (as per equinoctial parameters).
+     * @return e sin(ω + Ω), second component of the eccentricity vector, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getE()
      */
     public double getEquinoctialEy() {
-        return (absPva == null) ? orbit.getEquinoctialEy() : null;
+        return (absPva == null) ? orbit.getEquinoctialEy() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the first component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) cos(Ω), first component of the inclination vector
+    /** Get the first component of the inclination vector (as per equinoctial parameters).
+     * @return tan(i/2) cos(Ω), first component of the inclination vector, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getI()
      */
     public double getHx() {
-        return (absPva == null) ? orbit.getHx() : null;
+        return (absPva == null) ? orbit.getHx() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the second component of the inclination vector (as per equinoctial parameters).
-     * @return tan(i/2) sin(Ω), second component of the inclination vector
+    /** Get the second component of the inclination vector (as per equinoctial parameters).
+     * @return tan(i/2) sin(Ω), second component of the inclination vector, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getI()
      */
     public double getHy() {
-        return (absPva == null) ? orbit.getHy() : null;
+        return (absPva == null) ? orbit.getHy() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the true latitude argument (as per equinoctial parameters).
-     * @return v + ω + Ω true latitude argument (rad)
+    /** Get the true latitude argument (as per equinoctial parameters).
+     * @return v + ω + Ω true latitude argument (rad), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getLE()
      * @see #getLM()
      */
     public double getLv() {
-        return (absPva == null) ? orbit.getLv() : null;
+        return (absPva == null) ? orbit.getLv() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the eccentric latitude argument (as per equinoctial parameters).
-     * @return E + ω + Ω eccentric latitude argument (rad)
+    /** Get the eccentric latitude argument (as per equinoctial parameters).
+     * @return E + ω + Ω eccentric latitude argument (rad), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getLv()
      * @see #getLM()
      */
     public double getLE() {
-        return (absPva == null) ? orbit.getLE() : null;
+        return (absPva == null) ? orbit.getLE() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the mean latitude argument (as per equinoctial parameters).
-     * @return M + ω + Ω mean latitude argument (rad)
+    /** Get the mean latitude argument (as per equinoctial parameters).
+     * @return M + ω + Ω mean latitude argument (rad), or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getLv()
      * @see #getLE()
      */
     public double getLM() {
-        return (absPva == null) ? orbit.getLM() : null;
+        return (absPva == null) ? orbit.getLM() : Double.NaN;
     }
 
     // Additional orbital elements
 
-    /** TODO: check changes and doc
-     * Get the eccentricity.
-     * @return eccentricity
+    /** Get the eccentricity.
+     * @return eccentricity, or {code Double.NaN} if the
+     * state is contains an absolute position-velocity-acceleration rather
+     * than an orbit
      * @see #getEquinoctialEx()
      * @see #getEquinoctialEy()
      */
     public double getE() {
-        return (absPva == null) ? orbit.getE() : null;
+        return (absPva == null) ? orbit.getE() : Double.NaN;
     }
 
-    /** TODO: check changes and doc
-     * Get the inclination.
+    /** Get the inclination.
      * @return inclination (rad)
      * @see #getHx()
      * @see #getHy()
      */
     public double getI() {
-        return (absPva == null) ? orbit.getI() : null;
+        return (absPva == null) ? orbit.getI() : Double.NaN;
     }
 
-    /** TODO: check doc
-     * Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
-     * Compute the position and velocity of the satellite. This method caches its
-     * results, and recompute them only when the method is called with a new value
-     * for mu. The result is provided as a reference to the internally cached
-     * {@link TimeStampedPVCoordinates}, so the caller is responsible to copy it in a separate
-     * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
+    /** Get the {@link TimeStampedPVCoordinates} in state definition frame.
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
         return (absPva == null) ? orbit.getPVCoordinates() : absPva.getPVCoordinates();
     }
 
-    /** TODO: check doc
-     * Get the {@link TimeStampedPVCoordinates} in given output frame.
-     * Compute the position and velocity of the satellite. This method caches its
-     * results, and recompute them only when the method is called with a new value
-     * for mu. The result is provided as a reference to the internally cached
-     * {@link TimeStampedPVCoordinates}, so the caller is responsible to copy it in a separate
-     * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
+    /** Get the {@link TimeStampedPVCoordinates} in given output frame.
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
      * @exception OrekitException if the transformation between frames cannot be computed
@@ -799,50 +857,21 @@ public class SpacecraftState
         return mass;
     }
 
-    /** Convert an AbsolutePVCoordinates to raw double components.
-     *
-     * Note that if a proper orbit is defined, the method
-     * OrbitType.mapOrbitToArray() should be used instead.
-     *
-     * @param stateVector placeholder where to put the components
-     * @throws OrekitException if an orbit is defined
-     */
-    public void mapAbsolutePVCoordinatesToArray(final double[] stateVector)
-            throws OrekitException {
-
-        if (isOrbitDefined()) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNDEFINED_ABSOLUTE_PVCOORDINATES);
-        }
-
-        final PVCoordinates pv = absPva.getPVCoordinates();
-        final Vector3D      p  = pv.getPosition();
-        final Vector3D      v  = pv.getVelocity();
-
-        stateVector[0] = p.getX();
-        stateVector[1] = p.getY();
-        stateVector[2] = p.getZ();
-        stateVector[3] = v.getX();
-        stateVector[4] = v.getY();
-        stateVector[5] = v.getZ();
-    }
-
     /** Replace the instance with a data transfer object for serialization.
      * @return data transfer object that will be serialized
      */
     private Object writeReplace() {
-        return new DTO(this);
+        return isOrbitDefined() ? new DTOO(this) : new DTOA(this);
     }
 
     /** Internal class used only for serialization. */
-    private static class DTO implements Serializable {
+    private static class DTOO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20140617L;
+        private static final long serialVersionUID = 20150916L;
 
         /** Orbit. */
         private final Orbit orbit;
-
-        // TODO: adapt for absPva!!!
 
         /** Attitude and mass double values. */
         private double[] d;
@@ -853,7 +882,7 @@ public class SpacecraftState
         /** Simple constructor.
          * @param state instance to serialize
          */
-        private DTO(final SpacecraftState state) {
+        private DTOO(final SpacecraftState state) {
 
             this.orbit      = state.orbit;
             this.additional = state.additional.isEmpty() ? null : state.additional;
@@ -877,6 +906,56 @@ public class SpacecraftState
             return new SpacecraftState(orbit,
                                        new Attitude(orbit.getFrame(),
                                                     new TimeStampedAngularCoordinates(orbit.getDate(),
+                                                                                      new Rotation(d[0], d[1], d[2], d[3], false),
+                                                                                      new Vector3D(d[4], d[5], d[6]),
+                                                                                      new Vector3D(d[7], d[8], d[9]))),
+                                       d[10], additional);
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTOA implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20150916L;
+
+        /** Absolute position-velocity-acceleration. */
+        private final AbsolutePVCoordinates absPva;
+
+        /** Attitude and mass double values. */
+        private double[] d;
+
+        /** Additional states. */
+        private final Map<String, double[]> additional;
+
+        /** Simple constructor.
+         * @param state instance to serialize
+         */
+        private DTOA(final SpacecraftState state) {
+
+            this.absPva     = state.absPva;
+            this.additional = state.additional.isEmpty() ? null : state.additional;
+
+            final Rotation rotation             = state.attitude.getRotation();
+            final Vector3D spin                 = state.attitude.getSpin();
+            final Vector3D rotationAcceleration = state.attitude.getRotationAcceleration();
+            this.d = new double[] {
+                rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3(),
+                spin.getX(), spin.getY(), spin.getZ(),
+                rotationAcceleration.getX(), rotationAcceleration.getY(), rotationAcceleration.getZ(),
+                state.mass
+            };
+
+        }
+
+        /** Replace the deserialized data transfer object with a {@link SpacecraftState}.
+         * @return replacement {@link SpacecraftState}
+         */
+        private Object readResolve() {
+            return new SpacecraftState(absPva,
+                                       new Attitude(absPva.getFrame(),
+                                                    new TimeStampedAngularCoordinates(absPva.getDate(),
                                                                                       new Rotation(d[0], d[1], d[2], d[3], false),
                                                                                       new Vector3D(d[4], d[5], d[6]),
                                                                                       new Vector3D(d[7], d[8], d[9]))),

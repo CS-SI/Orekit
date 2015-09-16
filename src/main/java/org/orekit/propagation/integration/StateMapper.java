@@ -57,7 +57,8 @@ public abstract class StateMapper {
      * </p>
      * @param referenceDate reference date
      * @param mu central attraction coefficient (m³/s²)
-     * @param orbitType orbit type to use for mapping
+     * @param orbitType orbit type to use for mapping, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      * @param positionAngleType angle type to use for propagation
      * @param attitudeProvider attitude provider
      * @param frame inertial frame
@@ -157,23 +158,27 @@ public abstract class StateMapper {
     /** Map the raw double components to a spacecraft state.
      * @param t date offset
      * @param y state components
+     * @param yDot derivatives of the state components
      * @param meanOnly use only the mean elements to build the state
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public SpacecraftState mapArrayToState(final double t, final double[] y, final boolean meanOnly)
+    public SpacecraftState mapArrayToState(final double t, final double[] y, final double[] yDot,
+                                           final boolean meanOnly)
             throws OrekitException {
-        return mapArrayToState(mapDoubleToDate(t), y, meanOnly);
+        return mapArrayToState(mapDoubleToDate(t), y, yDot, meanOnly);
     }
 
     /** Map the raw double components to a spacecraft state.
      * @param date of the state components
      * @param y state components
+     * @param yDot derivatives of the state components
      * @param meanOnly use only the mean elements to build the state
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public abstract SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
+    public abstract SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
+                                                    final boolean meanOnly)
         throws OrekitException;
 
     /** Map a spacecraft state to raw double components.

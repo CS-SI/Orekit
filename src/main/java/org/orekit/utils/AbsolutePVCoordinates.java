@@ -22,10 +22,13 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -51,7 +54,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param acceleration the acceleration vector (m/sÂý)
      */
     public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
-                                    final Vector3D position, final Vector3D velocity, final Vector3D acceleration) {
+                                 final Vector3D position, final Vector3D velocity, final Vector3D acceleration) {
         super(date, position, velocity, acceleration);
         this.frame = frame;
     }
@@ -62,9 +65,9 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
      */
-    public AbsolutePVCoordinates( final Frame frame, final AbsoluteDate date,
-                                    final Vector3D position,
-                                    final Vector3D velocity) {
+    public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
+                                 final Vector3D position,
+                                 final Vector3D velocity) {
         this(frame, date, position, velocity, Vector3D.ZERO);
     }
 
@@ -95,7 +98,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param AbsPva base (unscaled) AbsolutePVCoordinates
      */
     public AbsolutePVCoordinates(final AbsoluteDate date,
-                                    final double a, final AbsolutePVCoordinates AbsPva) {
+                                 final double a, final AbsolutePVCoordinates AbsPva) {
         super(date, a, AbsPva);
         this.frame = AbsPva.frame;
     }
@@ -110,7 +113,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param end ending AbsolutePVCoordinates
      */
     public AbsolutePVCoordinates(final AbsoluteDate date,
-                                    final AbsolutePVCoordinates start, final AbsolutePVCoordinates end) {
+                                 final AbsolutePVCoordinates start, final AbsolutePVCoordinates end) {
         super(date, start, end);
         ensureIdenticalFrames(start, end);
         this.frame = start.frame;
@@ -128,8 +131,8 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param absPv2 second base (unscaled) AbsolutePVCoordinates
      */
     public AbsolutePVCoordinates(final AbsoluteDate date,
-                                    final double a1, final AbsolutePVCoordinates absPv1,
-                                    final double a2, final AbsolutePVCoordinates absPv2) {
+                                 final double a1, final AbsolutePVCoordinates absPv1,
+                                 final double a2, final AbsolutePVCoordinates absPv2) {
         super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates());
         ensureIdenticalFrames(absPv1, absPv2);
         this.frame = absPv1.getFrame();
@@ -149,9 +152,9 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param absPv3 third base (unscaled) AbsolutePVCoordinates
      */
     public AbsolutePVCoordinates(final AbsoluteDate date,
-                                    final double a1, final AbsolutePVCoordinates absPv1,
-                                    final double a2, final AbsolutePVCoordinates absPv2,
-                                    final double a3, final AbsolutePVCoordinates absPv3) {
+                                 final double a1, final AbsolutePVCoordinates absPv1,
+                                 final double a2, final AbsolutePVCoordinates absPv2,
+                                 final double a3, final AbsolutePVCoordinates absPv3) {
         super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates(),
                 a3, absPv3.getPVCoordinates());
         ensureIdenticalFrames(absPv1, absPv2);
@@ -175,10 +178,10 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param absPv4 fourth base (unscaled) AbsolutePVCoordinates
      */
     public AbsolutePVCoordinates(final AbsoluteDate date,
-                                    final double a1, final AbsolutePVCoordinates absPv1,
-                                    final double a2, final AbsolutePVCoordinates absPv2,
-                                    final double a3, final AbsolutePVCoordinates absPv3,
-                                    final double a4, final AbsolutePVCoordinates absPv4) {
+                                 final double a1, final AbsolutePVCoordinates absPv1,
+                                 final double a2, final AbsolutePVCoordinates absPv2,
+                                 final double a3, final AbsolutePVCoordinates absPv3,
+                                 final double a4, final AbsolutePVCoordinates absPv4) {
         super(date, a1, absPv1.getPVCoordinates(), a2, absPv2.getPVCoordinates(),
                 a3, absPv3.getPVCoordinates(), a4, absPv4.getPVCoordinates());
         ensureIdenticalFrames(absPv1, absPv2);
@@ -202,48 +205,20 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         this.frame = frame;
     }
 
-    /** TODO: necessary?
-     * Ensure the defining frame is a pseudo-inertial frame.
-     * @param frame frame to check
-     * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame}
+    /** Ensure that the frames from two AbsolutePVCoordinates are identical.
+     * @param absPv1 first AbsolutePVCoordinates
+     * @param absPv2 first AbsolutePVCoordinates
+     * @throws OrekitIllegalArgumentException if frames are different
      */
-    protected static void ensurePseudoInertialFrame(final Frame frame)
-            throws IllegalArgumentException {
-        if (!frame.isPseudoInertial()) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_PROPAGATION,
-                                                     frame.getName());
+    private static void ensureIdenticalFrames(final AbsolutePVCoordinates absPv1, final AbsolutePVCoordinates absPv2)
+        throws OrekitIllegalArgumentException {
+        if (!absPv1.frame.equals(absPv2.frame.isPseudoInertial())) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.INCOMPATIBLE_FRAMES,
+                                                     absPv1.frame.getName(), absPv2.frame.getName());
         }
     }
 
-    /** Ensure that two frames are identical. Two pseudo-inertial frames are
-     * considered identical.
-     * @param frame1 to check
-     * @param frame2 to check
-     * @throws IllegalArgumentException if frames are different
-     */
-    protected static void ensureIdenticalFrames(final Frame frame1, final Frame frame2)
-            throws IllegalArgumentException {
-        if (!frame1.isPseudoInertial() || !frame2.isPseudoInertial())
-            if (!frame1.equals(frame2)) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.INCOMPATIBLE_FRAMES,
-                                                         frame1.getName(), frame2.getName());
-            }
-    }
-
-    /** Ensure that the frames from two AbsolutePVCoordinates are identical.
-     * Two pseudo-inertial frames are considered identical.
-     * @param absPv1 first AbsolutePVCoordinates
-     * @param absPv2 first AbsolutePVCoordinates
-     * @throws IllegalArgumentException if frames are different
-     */
-    protected static void ensureIdenticalFrames(final AbsolutePVCoordinates absPv1, final AbsolutePVCoordinates absPv2)
-            throws IllegalArgumentException {
-        ensureIdenticalFrames(absPv1.getFrame(), absPv2.getFrame());
-    }
-
-    /** TODO: ensurePseudoInertialFrame() necessary?
-     * Get a time-shifted state.
+    /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
      * a simple Taylor expansion. It is <em>not</em> intended as a replacement for
@@ -254,13 +229,11 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public AbsolutePVCoordinates shiftedBy(final double dt) {
-//        ensurePseudoInertialFrame(frame);
         final TimeStampedPVCoordinates spv = super.shiftedBy(dt);
         return new AbsolutePVCoordinates(frame, spv);
     }
 
-    /** TODO: ensurePseudoInertialFrame() necessary?
-     * Create a local provider using simply Taylor expansion through {@link #shiftedBy(double)}.
+    /** Create a local provider using simply Taylor expansion through {@link #shiftedBy(double)}.
      * <p>
      * The time evolution is based on a simple Taylor expansion. It is <em>not</em> intended as a
      * replacement for proper orbit propagation (it is not even Keplerian!) but should be sufficient
@@ -280,14 +253,8 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         };
     }
 
-    // TODO: interpolate?
-
-    // TODO: toString?
-
-    // TODO: writeReplace?
-
-    /** Get the frame in which the parameters are defined.
-     * @return frame in which the parameters are defined
+    /** Get the frame in which the coordinates are defined.
+     * @return frame in which the coordinates are defined
      */
     public Frame getFrame() {
         return frame;
@@ -297,7 +264,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @return TimeStampedPVCoordinates
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
-        return new TimeStampedPVCoordinates(getDate(), getPosition(), getVelocity(), getAcceleration());
+        return this;
     }
 
     /** Get the TimeStampedPVCoordinates in a specified frame.
@@ -307,7 +274,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @see #getPVCoordinates()
      */
     public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
-            throws OrekitException {
+        throws OrekitException {
         // If output frame requested is the same as definition frame,
         // PV coordinates are returned directly
         if (outputFrame == frame) {
@@ -321,33 +288,176 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
 
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame)
-            throws OrekitException {
+        throws OrekitException {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
     }
 
     @Override
     public AbsolutePVCoordinates interpolate(final AbsoluteDate date, final Collection<AbsolutePVCoordinates> sample)
-            throws OrekitException {
+        throws OrekitException {
 
         final List<TimeStampedPVCoordinates> datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
         for (final AbsolutePVCoordinates absPV : sample) {
-            datedPV.add(new TimeStampedPVCoordinates(    absPV.getDate(),
-                                                        absPV.getPVCoordinates().getPosition(),
-                                                        absPV.getPVCoordinates().getVelocity(),
-                                                        absPV.getPVCoordinates().getAcceleration()));
+            datedPV.add(new TimeStampedPVCoordinates(absPV.getDate(),
+                                                     absPV.getPVCoordinates().getPosition(),
+                                                     absPV.getPVCoordinates().getVelocity(),
+                                                     absPV.getPVCoordinates().getAcceleration()));
         }
         final TimeStampedPVCoordinates interpolated =
                 TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA, datedPV);
         return new AbsolutePVCoordinates(getFrame(), interpolated);
     }
 
+    /** Interpolate position-velocity.
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * ensuring velocity remains the exact derivative of position.
+     * </p>
+     * <p>
+     * Note that even if first time derivatives (velocities)
+     * from sample can be ignored, the interpolated instance always includes
+     * interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the positions.
+     * </p>
+     * @param date interpolation date
+     * @param filter filter for derivatives from the sample to use in interpolation
+     * @param sample sample points on which interpolation should be done
+     * @return a new position-velocity, interpolated at specified date
+     * @exception OrekitIllegalArgumentException if some elements in the sample do not
+     * have the same defining frame as other
+     */
+    public static AbsolutePVCoordinates interpolate(final AbsoluteDate date,
+                                                    final CartesianDerivativesFilter filter,
+                                                    final Collection<AbsolutePVCoordinates> sample)
+        throws OrekitIllegalArgumentException {
 
-    // TODO: parameters and methods related to Jacobian?
+        final AbsolutePVCoordinates reference = sample.iterator().next();
 
+        // set up an interpolator taking derivatives into account
+        final HermiteInterpolator interpolator = new HermiteInterpolator();
+
+        // add sample points
+        switch (filter) {
+            case USE_P :
+                // populate sample with position data, ignoring velocity
+                for (final AbsolutePVCoordinates pv : sample) {
+                    ensureIdenticalFrames(reference, pv);
+                    final Vector3D position = pv.getPosition();
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
+                                                new double[] {
+                                                              position.getX(), position.getY(), position.getZ()
+                                                });
+                }
+                break;
+            case USE_PV :
+                // populate sample with position and velocity data
+                for (final AbsolutePVCoordinates pv : sample) {
+                    ensureIdenticalFrames(reference, pv);
+                    final Vector3D position = pv.getPosition();
+                    final Vector3D velocity = pv.getVelocity();
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
+                                                new double[] {
+                                                    position.getX(), position.getY(), position.getZ()
+                                                }, new double[] {
+                                                    velocity.getX(), velocity.getY(), velocity.getZ()
+                                                });
+                }
+                break;
+            case USE_PVA :
+                // populate sample with position, velocity and acceleration data
+                for (final AbsolutePVCoordinates pv : sample) {
+                    ensureIdenticalFrames(reference, pv);
+                    final Vector3D position     = pv.getPosition();
+                    final Vector3D velocity     = pv.getVelocity();
+                    final Vector3D acceleration = pv.getAcceleration();
+                    interpolator.addSamplePoint(pv.getDate().durationFrom(date),
+                                                new double[] {
+                                                    position.getX(),     position.getY(),     position.getZ()
+                                                }, new double[] {
+                                                    velocity.getX(),     velocity.getY(),     velocity.getZ()
+                                                }, new double[] {
+                                                    acceleration.getX(), acceleration.getY(), acceleration.getZ()
+                                                });
+                }
+                break;
+            default :
+                // this should never happen
+                throw new OrekitInternalError(null);
+        }
+
+        // interpolate
+        final DerivativeStructure zero = new DerivativeStructure(1, 2, 0, 0.0);
+        final DerivativeStructure[] p  = interpolator.value(zero);
+
+        // build a new interpolated instance
+        return new AbsolutePVCoordinates(reference.frame, date,
+                                         new Vector3D(p[0].getValue(),
+                                                      p[1].getValue(),
+                                                      p[2].getValue()),
+                                         new Vector3D(p[0].getPartialDerivative(1),
+                                                      p[1].getPartialDerivative(1),
+                                                      p[2].getPartialDerivative(1)),
+                                         new Vector3D(p[0].getPartialDerivative(2),
+                                                      p[1].getPartialDerivative(2),
+                                                      p[2].getPartialDerivative(2)));
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20150916L;
+
+        /** Double values. */
+        private double[] d;
+
+        /** Frame in which acoordinates are defined. */
+        private final Frame frame;
+
+        /** Simple constructor.
+         * @param absPva instance to serialize
+         */
+        private DTO(final AbsolutePVCoordinates absPva) {
+
+            // decompose date
+            final double epoch  = FastMath.floor(absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
+            final double offset = absPva.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+
+            this.d = new double[] {
+                epoch, offset,
+                absPva.getPosition().getX(),     absPva.getPosition().getY(),     absPva.getPosition().getZ(),
+                absPva.getVelocity().getX(),     absPva.getVelocity().getY(),     absPva.getVelocity().getZ(),
+                absPva.getAcceleration().getX(), absPva.getAcceleration().getY(), absPva.getAcceleration().getZ()
+            };
+            this.frame = absPva.frame;
+
+        }
+
+        /** Replace the deserialized data transfer object with a {@link AbsolutePVCoordinates}.
+         * @return replacement {@link AbsolutePVCoordinates}
+         */
+        private Object readResolve() {
+            return new AbsolutePVCoordinates(frame,
+                                             AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                             new Vector3D(d[2], d[3], d[ 4]),
+                                             new Vector3D(d[5], d[6], d[ 7]),
+                                             new Vector3D(d[8], d[9], d[10]));
+        }
+
+    }
 
 }
-
-
 
 
 

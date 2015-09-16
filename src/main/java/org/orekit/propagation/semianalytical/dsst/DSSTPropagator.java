@@ -475,7 +475,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
+        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
+                                               final boolean meanOnly)
             throws OrekitException {
 
             // add short periodic variations to mean elements to get osculating elements
@@ -923,7 +924,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 SpacecraftState state;
                 try {
                     state = mapper.mapArrayToState(time,
-                            interpolator.getInterpolatedState(), true);
+                                                   interpolator.getInterpolatedState(),
+                                                   interpolator.getInterpolatedDerivatives(),
+                                                   true);
                     // Launch the computation of short periodic coefficients for this date
                     mapper.computeShortPeriodicsCoefficients(state);
 

@@ -44,6 +44,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -216,14 +217,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** Set propagation orbit type.
-     * @param orbitType orbit type to use for propagation
+     * @param orbitType orbit type to use for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     public void setOrbitType(final OrbitType orbitType) {
         super.setOrbitType(orbitType);
     }
 
     /** Get propagation parameter type.
-     * @return orbit type used for propagation
+     * @return orbit type used for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     public OrbitType getOrbitType() {
         return super.getOrbitType();
@@ -294,7 +297,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
          * </p>
          * @param referenceDate reference date
          * @param mu central attraction coefficient (m³/s²)
-         * @param orbitType orbit type to use for mapping
+         * @param orbitType orbit type to use for mapping (can be null for {@link AbsolutePVCoordinates})
          * @param positionAngleType angle type to use for propagation
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
@@ -306,7 +309,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
+        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
+                                               final boolean meanOnly)
             throws OrekitException {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
@@ -315,20 +319,40 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
-            final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, getPositionAngleType(), date, getMu(), getFrame());
-            final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
-
-            return new SpacecraftState(orbit, attitude, mass);
+            if (getOrbitType() == null) {
+                // propagation uses absolute position-velocity-acceleration
+                final Vector3D p = new Vector3D(y[0],    y[1],    y[2]);
+                final Vector3D v = new Vector3D(y[3],    y[4],    y[5]);
+                final Vector3D a = new Vector3D(yDot[3], yDot[4], yDot[5]);
+                final AbsolutePVCoordinates absPva =
+                                new AbsolutePVCoordinates(getFrame(), new TimeStampedPVCoordinates(date, p, v, a));
+                final Attitude attitude = getAttitudeProvider().getAttitude(absPva, date, getFrame());
+                return new SpacecraftState(absPva, attitude, mass);
+            } else {
+                // propagation uses regular orbits
+                final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, getPositionAngleType(), date, getMu(), getFrame());
+                final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
+                return new SpacecraftState(orbit, attitude, mass);
+            }
 
         }
 
         /** {@inheritDoc} */
         public void mapStateToArray(final SpacecraftState state, final double[] y) throws OrekitException {
-            if (!state.isOrbitDefined()) {
-                state.mapAbsolutePVCoordinatesToArray(y);
+            if (getOrbitType() == null) {
+                // propagation uses absolute position-velocity-acceleration
+                final Vector3D p = state.getAbsPVA().getPosition();
+                final Vector3D v = state.getAbsPVA().getVelocity();
+                y[0] = p.getX();
+                y[1] = p.getY();
+                y[2] = p.getZ();
+                y[3] = v.getX();
+                y[4] = v.getY();
+                y[5] = v.getZ();
                 y[6] = state.getMass();
             }
             else {
+                // propagation uses regular orbits
                 getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y);
                 y[6] = state.getMass();
             }
@@ -407,8 +431,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Derivatives array. */
         private final double[] yDot;
 
-        /** Current orbit. */
-        private Orbit orbit;
+        /** Current state. */
+        private SpacecraftState currentState;
 
         /** Jacobian of the orbital parameters with respect to the cartesian parameters. */
         private double[][] jacobian;
@@ -430,14 +454,26 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 }
             }
 
+            if (getOrbitType() == null) {
+                // propagation uses absolute position-velocity-acceleration
+                // we can set Jacobian once and for all
+                for (int i = 0; i < jacobian.length; ++i) {
+                    Arrays.fill(jacobian[i], 0.0);
+                    jacobian[i][i] = 1.0;
+                }
+            }
+
         }
 
         /** {@inheritDoc} */
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
 
-            orbit = state.getOrbit();
+            currentState = state;
             Arrays.fill(yDot, 0.0);
-            orbit.getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+            if (getOrbitType() != null) {
+                // propagation uses regular orbits
+                currentState.getOrbit().getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+            }
 
             // compute the contributions of all perturbing forces
             for (final ForceModel forceModel : forceModels) {
@@ -453,7 +489,32 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public void addKeplerContribution(final double mu) {
-            orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
+            if (getOrbitType() == null) {
+
+                // propagation uses absolute position-velocity-acceleration
+                final PVCoordinates pv = currentState.getPVCoordinates();
+
+                // position derivative is velocity
+                final Vector3D velocity = pv.getVelocity();
+                yDot[0] += velocity.getX();
+                yDot[1] += velocity.getY();
+                yDot[2] += velocity.getZ();
+
+                // if mu is neither 0 nor NaN, we want to include Newtonian acceleration
+                if (mu > 0) {
+                    // velocity derivative is Newtonian acceleration
+                    final Vector3D position = pv.getPosition();
+                    final double r2         = position.getNormSq();
+                    final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
+                    yDot[3] += coeff * position.getX();
+                    yDot[4] += coeff * position.getY();
+                    yDot[5] += coeff * position.getZ();
+                }
+
+            } else {
+                // propagation uses regular orbits
+                currentState.getOrbit().addKeplerContribution(getPositionAngleType(), mu, yDot);
+            }
         }
 
         /** {@inheritDoc} */
@@ -467,7 +528,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** {@inheritDoc} */
         public void addAcceleration(final Vector3D gamma, final Frame frame)
             throws OrekitException {
-            final Transform t = frame.getTransformTo(orbit.getFrame(), orbit.getDate());
+            final Transform t = frame.getTransformTo(currentState.getFrame(), currentState.getDate());
             final Vector3D gammInRefFrame = t.transformVector(gamma);
             addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
         }
@@ -482,7 +543,41 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     }
 
-    /** Estimate tolerance vectors for integrators.
+    /** Estimate tolerance vectors for integrators when propagating in absolute position-velocity-acceleration.
+     * @param dP user specified position error
+     * @param absPva reference absolute position-velocity-acceleration
+     * @return a two rows array, row 0 being the absolute tolerance error and row 1
+     * being the relative tolerance error
+     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
+     */
+    public static double[][] tolerances(final double dP, final AbsolutePVCoordinates absPva) {
+
+        final double relative = dP / absPva.getPosition().getNorm();
+        final double dV = relative * absPva.getVelocity().getNorm();
+
+        final double[] absTol = new double[7];
+        final double[] relTol = new double[7];
+
+        absTol[0] = dP;
+        absTol[1] = dP;
+        absTol[2] = dP;
+        absTol[3] = dV;
+        absTol[4] = dV;
+        absTol[5] = dV;
+
+        // we set the mass tolerance arbitrarily to 1.0e-6 kg, as mass evolves linearly
+        // with trust, this often has no influence at all on propagation
+        absTol[6] = 1.0e-6;
+
+        Arrays.fill(relTol, relative);
+
+        return new double[][] {
+            absTol, relTol
+        };
+
+    }
+
+    /** Estimate tolerance vectors for integrators when propagating in orbits.
      * <p>
      * The errors are estimated from partial derivatives properties of orbits,
      * starting from a scalar position error specified by the user.
@@ -508,6 +603,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      * @exception PropagationException if Jacobian is singular
+     * @see NumericalPropagator#tolerances(double, AbsolutePVCoordinates)
      */
     public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type)
         throws PropagationException {
@@ -562,27 +658,26 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     }
 
+    /** {@inheritDoc} */
     @Override
-    /** Ensure that the propagator is ready for propagation.
-     * For NumericalPropagator, ensure that the frame is pseudo-inertial, or that
-     * an InertialForces model has been defined if the frame is not inertial.
-     * @throws PropagationException if frame is not inertial and no inertial force model
-     */
-    protected void ensureIsReadyForPropagation()
-            throws PropagationException {
+    protected void beforeIntegration(final SpacecraftState initialState, final AbsoluteDate tEnd)
+        throws OrekitException {
 
         if (!getFrame().isPseudoInertial()) {
-            boolean inertialForceModelFound = false;
 
             // inspect all force models to find InertialForces
-            for (ForceModel force : getForceModels())
-                if (force instanceof InertialForces)
-                    inertialForceModelFound = true;
+            for (ForceModel force : getForceModels()) {
+                if (force instanceof InertialForces) {
+                    return;
+                }
+            }
 
             // throw exception if no inertial forces found
-            if (!inertialForceModelFound)
-                throw new PropagationException(OrekitMessages.INERTIAL_FORCE_MODEL_MISSING);
+            throw new OrekitException(OrekitMessages.INERTIAL_FORCE_MODEL_MISSING, getFrame().getName());
+
         }
+
     }
+
 }
 

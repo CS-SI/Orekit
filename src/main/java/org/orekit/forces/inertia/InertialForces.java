@@ -23,6 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.ode.UnknownParameterException;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -44,27 +45,16 @@ public class InertialForces extends AbstractParameterizable implements ForceMode
 
     /** Simple constructor.
      * @param referenceInertialFrame the pseudo-inertial frame to use as reference for the inertial forces
-     * @exception IllegalArgumentException if frame is not a {@link
+     * @exception OrekitIllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public InertialForces(final Frame referenceInertialFrame)
-        throws IllegalArgumentException {
-        ensurePseudoInertialFrame(referenceInertialFrame);
-        this.referenceInertialFrame = referenceInertialFrame;
-    }
-
-    /** Ensure the reference frame is a pseudo-inertial frame.
-     * @param frame frame to check
-     * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame}
-     */
-    private static void ensurePseudoInertialFrame(final Frame frame)
-            throws IllegalArgumentException {
-        if (!frame.isPseudoInertial()) {
-            throw OrekitException.createIllegalArgumentException(
-                    OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES,
-                    frame.getName());
+        throws OrekitIllegalArgumentException {
+        if (!referenceInertialFrame.isPseudoInertial()) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES,
+                                                     referenceInertialFrame.getName());
         }
+        this.referenceInertialFrame = referenceInertialFrame;
     }
 
     /** {@inheritDoc} */

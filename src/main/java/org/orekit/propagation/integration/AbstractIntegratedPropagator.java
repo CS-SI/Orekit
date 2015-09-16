@@ -116,7 +116,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Set propagation orbit type.
-     * @param orbitType orbit type to use for propagation
+     * @param orbitType orbit type to use for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     protected void setOrbitType(final OrbitType orbitType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
@@ -125,7 +126,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Get propagation parameter type.
-     * @return orbit type used for propagation
+     * @return orbit type used for propagation, null for
+     * propagating using {@link org.orekit.utils.AbsolutePVCoordinates} rather than {@link Orbit}
      */
     protected OrbitType getOrbitType() {
         return stateMapper.getOrbitType();
@@ -422,23 +424,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
 
 
-            // set propagation orbit type
-//            final Orbit initialOrbit = stateMapper.getOrbitType().convertType(getInitialState().getOrbit());
-//            if (Double.isNaN(getMu())) {
-//                setMu(initialOrbit.getMu());
-//            }
-            // TODO: check regressions
-
-            if (Double.isNaN(getMu()))
+            if (Double.isNaN(getMu())) {
                 setMu(getInitialState().getMu());
+            }
 
             if (getInitialState().getMass() <= 0.0) {
                 throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
                                                getInitialState().getMass());
             }
-
-            // Check that the propagation is possible
-            ensureIsReadyForPropagation();
 
             integrator.clearEventHandlers();
 
@@ -466,7 +459,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // get final state
             SpacecraftState finalState = stateMapper.mapArrayToState(
                     stateMapper.mapDoubleToDate(mathODE.getTime(), tEnd),
-                    mathODE.getPrimaryState(),
+                    mathODE.getPrimaryState(), mathODE.getPrimaryStateDot(),
                     meanOrbit);
             finalState = updateAdditionalStates(finalState);
             for (int i = 0; i < additionalEquations.size(); ++i) {
@@ -571,8 +564,23 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     private SpacecraftState getCompleteState(final double t, final double[] y)
         throws OrekitException {
 
+        // WARNING: the yDot recovery below is a dirty hack! It circumvents a design issue
+        // in Apache Commons Math (https://issues.apache.org/jira/browse/MATH-1275)
+        // this design issue should be fixed for Apache Commons Math 4.0, but
+        // it cannot be fixed in the 3.X series for compatibility reasons, so we have
+        // to do this here :-(
+        // try to recover state derivative (it becomes possible once first step is accepted)
+        final double[] yDot;
+        if (mathInterpolator != null && Precision.equals(t, mathInterpolator.getCurrentTime(), 1)) {
+            // recover derivatives from the step interpolator we have picked up
+            yDot = mathInterpolator.getInterpolatedDerivatives();
+        } else {
+            // no derivatives available
+            yDot = new double[y.length];
+        }
+
         // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y, true);  //not sure of the mean orbit, should be true
+        SpacecraftState state = stateMapper.mapArrayToState(t, y, yDot, true);
 
         // pre-integrated additional states
         state = updateAdditionalStates(state);
@@ -591,17 +599,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         return state;
 
-    }
-
-    /** Ensure that the propagator is ready for propagation.
-     * By default, check that the frame is pseudo-inertial.
-     * @throws PropagationException if frame is not inertial
-     */
-    protected void ensureIsReadyForPropagation()
-        throws PropagationException {
-        if (!stateMapper.getFrame().isPseudoInertial())
-            throw new PropagationException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_PROPAGATION,
-                                           stateMapper.getFrame());
     }
 
     /** Differential equations for the main state (orbit, attitude and mass). */
@@ -643,7 +640,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                 // update space dynamics view
                 // use only ODE elements
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, y, true);
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, y, yDot, true);
                 currentState = updateAdditionalStates(currentState);
 
                 // compute main state differentials
@@ -696,7 +693,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                 // update space dynamics view
                 // the state contains only the ODE elements
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, true);
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, primaryDot, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
@@ -910,6 +907,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 SpacecraftState s =
                         stateMapper.mapArrayToState(mathInterpolator.getInterpolatedTime(),
                                                     mathInterpolator.getInterpolatedState(),
+                                                    mathInterpolator.getInterpolatedDerivatives(),
                                                     meanOrbit);
                 s = updateAdditionalStates(s);
                 for (int i = 0; i < additionalEquations.size(); ++i) {

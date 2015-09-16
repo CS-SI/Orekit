@@ -180,7 +180,7 @@ public class IntegratedEphemeris
             setInterpolationDate(date);
             SpacecraftState state = mapper.mapArrayToState(
                     mapper.mapDoubleToDate(model.getInterpolatedTime(), date),
-                    model.getInterpolatedState(),
+                    model.getInterpolatedState(), model.getInterpolatedDerivatives(),
                     meanOrbit);
             for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
                 state = state.addAdditionalState(initial.getKey(), initial.getValue());
