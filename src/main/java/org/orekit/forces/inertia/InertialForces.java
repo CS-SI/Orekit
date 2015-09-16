@@ -71,47 +71,47 @@ public class InertialForces extends AbstractParameterizable implements ForceMode
     public void addContribution(final SpacecraftState s,
                                 final TimeDerivativesEquations adder)
         throws OrekitException {
-    	
-    	if (s.getFrame() != referenceInertialFrame) {
-    		// TODO check and clean
 
-//    		// Method 1: use (private) method compositeAcceleration() from Transform)
-//    		final Transform noninertToInert = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
-//    		final Transform noninertToSat = s.toTransform();
-//    		Vector3D inertialAccelerations = Transform.compositeAcceleration(noninertToInert, noninertToSat);
-//    		inertialAccelerations = noninertToInert.transformVector(inertialAccelerations);
+        if (s.getFrame() != referenceInertialFrame) {
+            // TODO check and clean
 
-//    		// Method 2: extract acceleration from Transform
-//    		final Transform noninertToInert = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
-//    		final Transform noninertToSat = s.toTransform();
-//    		final Transform combined = new Transform(s.getDate(), noninertToInert, noninertToSat);
-//    		Vector3D inertialAccelerations = combined.getAcceleration();
-//    		inertialAccelerations = noninertToInert.transformVector(combined.getAcceleration());
+//            // Method 1: use (private) method compositeAcceleration() from Transform)
+//            final Transform noninertToInert = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
+//            final Transform noninertToSat = s.toTransform();
+//            Vector3D inertialAccelerations = Transform.compositeAcceleration(noninertToInert, noninertToSat);
+//            inertialAccelerations = noninertToInert.transformVector(inertialAccelerations);
 
-    		// Method 3: Formulas for inertial accelerations
-    		Transform noninertToInert = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
-    		final Vector3D rotationRate = noninertToInert.getRotationRate();
-    		final Vector3D rotationAcceleration = noninertToInert.getRotationAcceleration();
-    		final Vector3D satPosition = s.getPVCoordinates().getPosition();
-    		final Vector3D satVelocity = s.getPVCoordinates().getVelocity();
+//            // Method 2: extract acceleration from Transform
+//            final Transform noninertToInert = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
+//            final Transform noninertToSat = s.toTransform();
+//            final Transform combined = new Transform(s.getDate(), noninertToInert, noninertToSat);
+//            Vector3D inertialAccelerations = combined.getAcceleration();
+//            inertialAccelerations = noninertToInert.transformVector(combined.getAcceleration());
 
-    		// Relative acceleration
-    		final Vector3D aRelative = noninertToInert.getAcceleration();
+            // Method 3: Formulas for inertial accelerations
+            final Transform noninertToInert = referenceInertialFrame.getTransformTo(s.getFrame(), s.getDate());
+            final Vector3D rotationRate = noninertToInert.getRotationRate();
+            final Vector3D rotationAcceleration = noninertToInert.getRotationAcceleration();
+            final Vector3D satPosition = s.getPVCoordinates().getPosition();
+            final Vector3D satVelocity = s.getPVCoordinates().getVelocity();
 
-    		// Centrifugal acceleration
-    		final Vector3D aCentrifug = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, satPosition));
+            // Relative acceleration
+            final Vector3D aRelative = noninertToInert.getAcceleration();
 
-    		// Euler acceleration
-    		final Vector3D aEuler = Vector3D.crossProduct(rotationAcceleration, satPosition);
+            // Centrifugal acceleration
+            final Vector3D aCentrifug = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, satPosition));
 
-    		// Coriolis acceleration
-    		final Vector3D aCoriolis = Vector3D.crossProduct(rotationRate, satVelocity);
+            // Euler acceleration
+            final Vector3D aEuler = Vector3D.crossProduct(rotationAcceleration, satPosition);
 
-    		// Total of inertial accelerations
-    		final Vector3D inertialAccelerations = new Vector3D(1,aRelative,-1,aCentrifug,-1,aEuler,-2,aCoriolis);
+            // Coriolis acceleration
+            final Vector3D aCoriolis = Vector3D.crossProduct(rotationRate, satVelocity);
 
-    		adder.addXYZAcceleration(inertialAccelerations.getX(), inertialAccelerations.getY(), inertialAccelerations.getZ());
-    	}
+            // Total of inertial accelerations
+            final Vector3D inertialAccelerations = new Vector3D(1, aRelative, -1, aCentrifug, -1, aEuler, -2, aCoriolis);
+
+            adder.addXYZAcceleration(inertialAccelerations.getX(), inertialAccelerations.getY(), inertialAccelerations.getZ());
+        }
     }
 
     /** {@inheritDoc} */

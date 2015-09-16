@@ -96,7 +96,7 @@ public abstract class Orbit
     private transient double[][] jacobianWrtParametersTrue;
 
     /** TODO: case of nonInertial frame???
-     * 
+     *
      * Default constructor.
      * Build a new instance with arbitrary default elements.
      * @param frame the frame in which the parameters are defined
@@ -122,7 +122,7 @@ public abstract class Orbit
     }
 
     /** TODO: case of nonInertial frame???
-     * 
+     *
      * Set the orbit from Cartesian parameters.
      *
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using

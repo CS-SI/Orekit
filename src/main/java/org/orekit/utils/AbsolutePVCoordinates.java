@@ -36,9 +36,9 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     implements TimeStamped, TimeInterpolable<AbsolutePVCoordinates>,
                Serializable, PVCoordinatesProvider {
 
-	/** Serializable UID. */
-	private static final long serialVersionUID = 20150824L;
-	
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20150824L;
+
     /** Frame in which are defined the coordinates. */
     private final Frame frame;
 
