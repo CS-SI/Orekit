@@ -1,5 +1,5 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
- * Licensed to CS Systèmes d'Information (CS) under one or more
+/* Copyright 2002-2015 CS SystÃ¿mes d'Information
+ * Licensed to CS SystÃ¿mes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -48,7 +48,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @param date coordinates date
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
-     * @param acceleration the acceleration vector (m/s²)
+     * @param acceleration the acceleration vector (m/sÂý)
      */
     public AbsolutePVCoordinates(final Frame frame, final AbsoluteDate date,
                                     final Vector3D position, final Vector3D velocity, final Vector3D acceleration) {
