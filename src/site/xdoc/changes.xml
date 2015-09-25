@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Enforce Lexicographical order in DirectoryCrawler, to ensure reproducible
+        loading. Before this changes, some tests could fail in one computer while
+        succeeding in another computer as we use a mix of DE-4xx files, some having
+        a different EMRAT (81.30056907419062 for DE-431, 81.30056 for DE-405 and DE-406).
+      </action>
       <action dev="luc" type="add" >
         Added EventEnablingPredicateFilter to filter event based on an user-provided
         enabling predicate function. This allow for example to dynamically turn some
