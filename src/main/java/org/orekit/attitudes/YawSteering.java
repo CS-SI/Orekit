@@ -32,7 +32,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * Yaw steering is mainly used for low Earth orbiting satellites with no
  * missions-related constraints on yaw angle. It sets the yaw angle in
- * such a way the solar arrays have maximal lightning without changing the
+ * such a way the solar arrays have maximal lighting without changing the
  * roll and pitch.
  * </p>
  * <p>

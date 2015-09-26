@@ -259,7 +259,7 @@ Then the attitude law for the spacecraft is constructed:
 * we first define a nadir pointing law towards the Earth under the spacecraft,
 * then a yaw steering law is added
 
-The yaw steering law wraos the nadir point law in order to give maximal lightning
+The yaw steering law wraps the nadir point law in order to give maximal lighting
 to the solar arrays, which rotation axis is Y in spacecraft frame:
 
     Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
