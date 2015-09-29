@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
@@ -39,8 +40,10 @@ import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.OceanLoadDeformationCoefficients;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.frames.TransformProvider;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -100,14 +103,27 @@ public class EstimationTestUtils {
         Utils.setDataRoot("regular-data:potential:tides");
         Context context = new Context();
         context.conventions = IERSConventions.IERS_2010;
-        context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                     Constants.WGS84_EARTH_FLATTENING,
-                                     FramesFactory.getITRF(context.conventions, true));
+        context.utc = TimeScalesFactory.getUTC();
+        context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
+        String Myframename = "MyEarthFrame";
+        AbsoluteDate datedef = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc);
+        Vector3D rotationRate = new Vector3D(0.0, 0.0, 2.0*FastMath.PI/86400.);
+
+        TransformProvider MyEarthFrame = new TransformProvider() {
+            public Transform getTransform(final AbsoluteDate date) {
+                final double rotationduration = date.durationFrom(datedef);
+                final Vector3D alpharot = new Vector3D(rotationduration, rotationRate);
+
+                return new Transform(date, new Rotation(Vector3D.PLUS_K, -alpharot.getZ()), rotationRate);
+            }
+        };
+        Frame FrameTest = new Frame(FramesFactory.getEME2000(), MyEarthFrame, Myframename, true);
+        
+        // Earth is spherical, rotating in 86400 seconds
+        context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0.0, FrameTest);
         context.sun = CelestialBodyFactory.getSun();
         context.moon = CelestialBodyFactory.getMoon();
         context.spacecraft = new SphericalSpacecraft(2.0, 1.2, 0.2, 0.8);
-        context.utc = TimeScalesFactory.getUTC();
-        context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         AstronomicalAmplitudeReader aaReader =
                         new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
@@ -120,39 +136,35 @@ public class EstimationTestUtils {
         context.gravity = GravityFieldFactory.getNormalizedProvider(20, 20);
 
         // semimajor axis for a geostationnary satellite
-        double da = FastMath.pow( (0.25 * context.gravity.getMu() * FastMath.pow(86164.0, 2) / FastMath.pow(FastMath.PI, 2)), 1./3. );
-        //double velocity = FastMath.sqrt(context.gravity.getMu() / da);
+        double da = FastMath.cbrt( (0.25 * context.gravity.getMu() * 86400.0 * 86400.0 / FastMath.PI / FastMath.PI));
                                                               
-        context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
-                                         context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
-                        );
+        //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
+        //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
+        //                );
+        context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
         
         // Station position & velocity in EME2000
-        final Vector3D velo = new Vector3D (0., 0., 0.);
-        final Vector3D acceleration = new Vector3D (0., 0., 0.);
+        final Vector3D geovelocity = new Vector3D (0., 0., 0.);
         
         // Compute the frames transformation from station frame to EME2000
-        final Transform topoToInert =
-                context.stations.get(0).getOffsetFrame().getTransformTo(FramesFactory.getEME2000(),
-                                                        new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
+        Transform topoToEME =
+        context.stations.get(0).getOffsetFrame().getTransformTo(FramesFactory.getEME2000(),new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
 
-        // Station position in ITRF
-        //final Vector3D station_cart = new Vector3D(6378137.0, 0.0, 0.0);
-        //final GeodeticPoint origin_station = context.stations.get(0).getBaseFrame().getParentShape().transform(station_cart, FramesFactory.getITRF(context.conventions, true), new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
-
-        // Station position in EME2000
-        final Vector3D stationPosition = topoToInert.transformPosition(Vector3D.ZERO);
-        
-        //final PVCoordinates pv_sta_topo = new PVCoordinates(Vector3D.ZERO, velo, acceleration);
-        //final PVCoordinates pv_sta_iner = topoToInert.transformPVCoordinates(pv_sta_topo);
+        // Station position in EME2000 at reference date
+        Vector3D stationPositionEME = topoToEME.transformPosition(Vector3D.ZERO);
+        //System.out.println("EME Station[0] position: " + stationPositionEME);
         
         // Satellite position and velocity in Station Frame
-        final Vector3D sat_pos = new Vector3D(0., 0., da-stationPosition.getNorm());
-        final PVCoordinates pv_sat_topo = new PVCoordinates(sat_pos, velo, acceleration);
-        
-        // satellite position in EME2000
-        final PVCoordinates pv_sat_iner = topoToInert.transformPVCoordinates(pv_sat_topo);
+        final Vector3D sat_pos = new Vector3D(0., 0., da-stationPositionEME.getNorm());
+        final Vector3D acceleration = new Vector3D(-context.gravity.getMu(), sat_pos);
+        final PVCoordinates pv_sat_topo = new PVCoordinates(sat_pos, geovelocity, acceleration);
+        System.out.println("Satellite position in TopoStation[0]: " + pv_sat_topo);
 
+        // satellite position in EME2000
+        final PVCoordinates pv_sat_iner = topoToEME.transformPVCoordinates(pv_sat_topo);
+        System.out.println("EME2000 Satellite position: " + pv_sat_iner);
+
+        // Geo-stationary Satellite Orbit, tightly above the station (l0-L0)
         context.initialOrbit = new KeplerianOrbit(pv_sat_iner,
                                                   FramesFactory.getEME2000(),
                                                   new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc),

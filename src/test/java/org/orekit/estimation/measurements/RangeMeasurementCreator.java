@@ -42,13 +42,13 @@ public class RangeMeasurementCreator extends MeasurementCreator {
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
         throws PropagationException {
-        try {
+        try {  
             for (final GroundStation station : context.stations) {
                 final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();
                 final Vector3D         position  = currentState.getPVCoordinates().getPosition();
                 final TopocentricFrame topo      = station.getBaseFrame();
-
+                
                 if (topo.getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 

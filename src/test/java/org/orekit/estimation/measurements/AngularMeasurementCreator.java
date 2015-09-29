@@ -45,95 +45,12 @@ public class AngularMeasurementCreator extends MeasurementCreator {
         try {
             System.out.println("Welcome in AngularMeasurementCreator...");  
             for (final GroundStation station : context.stations) {
-//                final Vector3D position = currentState.getPVCoordinates().getPosition();
-//                
-//                // To understand
-//                final AbsoluteDate     datei      = currentState.getDate();
-//                System.out.println("Date of measurement : " + datei); 
-//                final Frame            inertial  = currentState.getFrame();
-//                final TopocentricFrame topo      = station.getBaseFrame();
-//                
-//                final Vector3D stationAtDate =
-//                                topo.getTransformTo(inertial, datei).transformPosition(Vector3D.ZERO);
-//                System.out.println("Satellite position: " + position);
-//                System.out.println("Station position: " + stationAtDate);
-//
-//                // True elevation
-//                final double elevation =
-//                                station.getBaseFrame().getElevation(position,
-//                                                                    currentState.getFrame(),
-//                                                                    currentState.getDate());
-//
-//                if (elevation > FastMath.toRadians(30.0)) {
-//                    final UnivariateFunction f = new UnivariateFunction() {
-//                       public double value(final double x) throws OrekitExceptionWrapper {
-//                           try {
-//                               System.out.println("Shift apply to date: " + x);
-//                               final AbsoluteDate date = currentState.getDate().shiftedBy(x);
-//                               
-//                               final Transform t = station.getBaseFrame().getTransformTo(currentState.getFrame(),
-//                                                                                         date);
-//                               final double d = Vector3D.distance(position,
-//                                                                  t.transformPosition(Vector3D.ZERO));
-//                               return d - x * Constants.SPEED_OF_LIGHT;
-//                           } catch (OrekitException oe) {
-//                               throw new OrekitExceptionWrapper(oe);
-//                           }
-//                        }
-//                    };
-//                    
-//                   
-//                    final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-10, 5);
-//                    final double dt = solver.solve(1000, f, -1.0, 1.0);
-//                    final AbsoluteDate date = currentState.getDate().shiftedBy(dt);
-//                    final Transform t = station.getBaseFrame().getTransformTo(currentState.getFrame(),
-//                                                                              date);
-//                    
-//                    // Initialize measurement
-//                    final double[] angular = new double[2];
-//                    final double[] sigma = {1.0, 1.0};
-//                    final double[] baseweight = {10.0, 10.0};
-//
-//                    // Compute Azimuth&Elevation at dt
-//                    //angular[0] = station.getOffsetFrame().getAzimuth(t.transformPosition(Vector3D.ZERO),
-//                    //                                            currentState.getFrame(),
-//                    //                                            currentState.getDate());
-//                    //
-//                    //angular[1] = station.getOffsetFrame().getElevation(t.transformPosition(Vector3D.ZERO),
-//                    //                                              currentState.getFrame(),
-//                    //                                              currentState.getDate());
-//                    angular[0] = station.getOffsetFrame().getAzimuth(t.transformPosition(t.transformPosition(currentState.getPVCoordinates().getPosition())),
-//                                                                                      currentState.getFrame(),
-//                                                                                      currentState.getDate());
-//                                                                                            
-//                    angular[1] = station.getOffsetFrame().getElevation(t.transformPosition(t.transformPosition(currentState.getPVCoordinates().getPosition())),
-//                                                                                        currentState.getFrame(),
-//                                                                                        currentState.getDate());
-//                    
-//                    //System.out.println("Azimuth Elevation measurement created : " + date + "   " + elevation);
-//                    addMeasurement(new Angular(station, date, angular, sigma, baseweight));
-//                }
-//                else {
-//                    //System.out.println("Azimuth Elevation measurement rejected : " + currentState.getDate() + "   " + elevation);
-//                }
+
                 final AbsoluteDate     date      = currentState.getDate();
                 final Frame            inertial  = currentState.getFrame();
                 final Vector3D         position  = currentState.getPVCoordinates().getPosition();
                 final TopocentricFrame topo      = station.getBaseFrame();
-
-                // To understand
-                final Vector3D stationAtDate =
-                                topo.getTransformTo(inertial, date).transformPosition(Vector3D.ZERO);
-                System.out.println("Satellite position: " + position);
-                System.out.println("Station position: " + stationAtDate);
-
-                // True elevation
-                final double elevation = station.getBaseFrame().getElevation(position,
-                                                                             currentState.getFrame(),
-                                                                             currentState.getDate());
-                System.out.println("True elevation: " + elevation);
-                // End understand
-                                
+                
                 if (topo.getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
                     final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
@@ -148,13 +65,9 @@ public class AngularMeasurementCreator extends MeasurementCreator {
                             }
                         }
                     }, -1.0, 1.0);
-                    //final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
-                    //final Vector3D stationAtReception =
-                    //                topo.getTransformTo(inertial, receptionDate).transformPosition(Vector3D.ZERO);
-                    final AbsoluteDate DepartureDate  = currentState.getDate().shiftedBy(-downLinkDelay);
-                    System.out.println("Departure Date: " + DepartureDate);
-                    final SpacecraftState DepartureState = currentState.shiftedBy(-downLinkDelay);
-                    final Vector3D satelliteAtDeparture = DepartureState.getPVCoordinates().getPosition();
+
+                    // Satellite position at signal departure
+                    final Vector3D satelliteAtDeparture = currentState.shiftedBy(-downLinkDelay).getPVCoordinates().getPosition();
 
                     // Initialize measurement
                     final double[] angular = new double[2];
@@ -162,15 +75,14 @@ public class AngularMeasurementCreator extends MeasurementCreator {
                     final double[] baseweight = {10.0, 10.0};
                     
                     // Compute measurement
+                    // Elevation
                     angular[1] = station.getBaseFrame().getElevation(satelliteAtDeparture,
                                                                      currentState.getFrame(),
                                                                      currentState.getDate());
-                    System.out.println("elevation: " + angular[1]);
-                    
+                    // Azimuth
                     angular[0] = station.getBaseFrame().getAzimuth(satelliteAtDeparture,
                                                                    currentState.getFrame(),
                                                                    currentState.getDate());
-                    System.out.println("azimuth: " + angular[0]);
 
                     addMeasurement(new Angular(station, date, angular, sigma, baseweight));
                 }
