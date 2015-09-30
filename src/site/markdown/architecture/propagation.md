@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Propagation
-===========
+# Propagation
 
 This package provides tools to propagate orbital states with different methods.
 	
-Overview
---------
+## Overview
 
 Propagation is the prediction of the evolution of a system from an initial state.
 In Orekit, this initial state is represented by a `SpacecraftState`, which is a 
@@ -32,8 +30,7 @@ the `PVCoordinatesProvider` interface) and several implementations.
 ![propagation class diagram](../images/design/propagation-class-diagram.png)
 
 
-Propagation modes
------------------
+## Propagation modes
 
 Depending on the needs of the calling application, all propagators can be used in
 different modes:
@@ -88,8 +85,7 @@ phase using the generated ephemeris.
 
 ![ephemeris generation mode class diagram](../images/design/ephemeris-generation-mode-sequence-diagram.png)
 
-Events management
------------------
+## Events management
 
 All propagators, including analytical ones, support discrete events handling during
 propagation. This feature is activated by registering events detectors as defined by
@@ -171,8 +167,7 @@ an accurate search for events that will ultimately be ignored.
 
 Event occurring can be automatically logged using the `EventsLogger` class.
 
-Additional states
------------------
+## Additional states
 
 All propagators can be used to propagate user additional states on top of regular
 orbit attitude and mass state. These additional states will be available throughout
@@ -196,16 +191,14 @@ The first two cases correspond to additional states managed by the propagator, t
 last case not being considered as managed. The list of states managed by the propagator
 is available using the `getManagedAdditionalStates` and `isAdditionalStateManaged`. 
 
-Available propagators
----------------------
+## Available propagators
 
 The following class diagram shows the available propagators
 
 ![available propagators class diagram](../images/design/available-propagators-class-diagram.png)
 
 
-Analytical propagation
-----------------------
+## Analytical propagation
 
 ### Keplerian propagation
 
@@ -254,8 +247,7 @@ into account. The additive maneuvers can take both the direct effect (Keplerian 
 and the induced effect due for example to J2 which changes ascending node rate when
 a maneuver changed inclination or semi-major axis of a Sun-Synchronous satellite.
 	
-Numerical propagation
----------------------
+## Numerical propagation
 
 Numerical propagation is one of the most important parts of the Orekit project.
 Based on Apache Commons Math ordinary differential equations integrators, the
@@ -344,8 +336,7 @@ radiation pressure implement this interface by themselves. Some more complex for
 implement the interface and will be automatically wrapped inside a Jacobianizer class which will
 use finite differences to compute the local Jacobians.
 
-Semianalytical propagation
---------------------------
+## Semianalytical propagation
 
 Semianalytical propagation is an intermediate between analytical and numerical propagation.
 It retains the best of both worlds, speed from analytical models and accuracy from numerical models.

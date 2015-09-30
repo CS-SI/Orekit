@@ -12,11 +12,9 @@
   limitations under the License.
 -->
 
-Training
-========
+# Training
 
-Overview
---------
+## Overview
 
 You can get the most from Orekit by attending the training sessions
 organized by CS Systèmes d'Information. The instructors are
@@ -30,8 +28,7 @@ to this strong orientation towards numerical computation and its focus on
 practical problems encountered in this field, such as reliability, numerical
 robustness and performance.
 
-Training programs
------------------
+## Training programs
 
 The complete set is split in three sessions
 
@@ -107,8 +104,7 @@ They will know the available concepts and algorithms in the Apache Commons Math 
 libraries. They have their first development experience of space flight dynamics applications
 in an integrated development environment with these libraries.
 
-Training sessions organization
-------------------------------
+## Training sessions organization
 
 The training sessions can be organized both at your premises anywhere in the world or at CS
 premises in Toulouse (France). All sessions are limited to 8 students. Prices for the training

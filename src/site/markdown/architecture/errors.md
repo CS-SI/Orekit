@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Errors
-======
+# Errors
 
 The `org.orekit.errors` package provides classes to generate and handle errors, based on
 the classical mechanism of exceptions.

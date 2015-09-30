@@ -12,15 +12,13 @@
   limitations under the License.
 -->
 
-Propagation
-===========
+# Propagation
 
 The next 4 tutorials detail some elementary usages of the propagation package
 described in the [propagation section](../architecture/propagation.html) of
 the library architecture documentation.
 
-Propagation modes
------------------
+## Propagation modes
 
 Three different operational modes are available for all propagators.
 They are mutually exclusive.
@@ -355,8 +353,7 @@ before ephemeris start:
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/propagation/EphemerisMode.java`.
 
-Events management
------------------
+## Events management
 
 This tutorial aims to demonstrate the power and simplicity of the event-handling mechanism.
   

@@ -12,8 +12,9 @@
   limitations under the License.
 -->
 
-References
-----------
+# Frequently Asked Questions (FAQ)
+
+## References
 
 ### Has Orekit already been used?
 
@@ -92,8 +93,7 @@ As thread-safety was an important need for many people, this problem has been ad
 starting with version 6.0 many Orekit classes are thread-safe. Note however that some parts
 for which sequential access is natural (like numerical propagators) are <em>not</em> thread-safe.
 
-Installation
-------------
+## Installation
 
 ### What are Orekit dependencies?
 
@@ -154,8 +154,7 @@ the IERS publish them.
 
 Concerning UTC leap seconds, as of end 2013, the last one was introduced at the end of June 2012.
 
-Runtime errors
---------------
+## Runtime errors
 
 ### I get an error "no IERS UTC-TAI history data loaded" (or something similar in another language). What does it mean?
 

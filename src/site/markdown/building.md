@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Building Orekit
-===============
+# Building Orekit
 
 Orekit can be built from source using several different tools.
   
@@ -21,8 +20,7 @@ All these tools are Java based and can run on many different operating
 systems, including Unix, GNU/Linux, Windows and Mac OS X. Some GNU/Linux
 distributions provide these tools in their packages repositories.
 
-Building with Maven 3
----------------------
+## Building with Maven 3
 
 [Maven](http://maven.apache.org/) is a build tool that goes far beyond
 simply compiling and packaging a product. It is also able to resolve
@@ -87,8 +85,7 @@ For other commands like generating the site, or generating the
 [jacoco](http://www.eclemma.org/jacoco/) reports, see the maven
 plugins documentation at [maven site](http://maven.apache.org/plugins/index.html).
 
-Building with Eclipse
----------------------
+## Building with Eclipse
 
 [Eclipse](http://www.eclipse.org/) is a very rich Integrated Development
 Environment (IDE). It is a huge product and not a simple build tool.

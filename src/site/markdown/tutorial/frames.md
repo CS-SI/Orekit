@@ -12,11 +12,9 @@
   limitations under the License.
 -->
 
-Frames
-======
+# Frames
 
-Basic use
----------
+## Basic use
 
 ### The problem to be solved
 
@@ -116,8 +114,7 @@ Here are the results displayed by this program:
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/frames/Frames1.java`.
 
-Advanced use
-------------
+## Advanced use
 
 ### The problem to be solved
 
@@ -225,8 +222,7 @@ As a result, we can compare the GPS measurements to the computed values:
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/frames/Frames2.java`.
 
-Direct use of transforms : coordinates with respect to spacecraft frame
------------------------------------------------------------------------
+## Direct use of transforms : coordinates with respect to spacecraft frame
 
 ### The problem to be solved
 
