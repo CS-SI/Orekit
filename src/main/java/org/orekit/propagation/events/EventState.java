@@ -214,7 +214,7 @@ public class EventState<T extends EventDetector> implements Serializable {
             for (int i = 0; i < n; ++i) {
 
                 // evaluate detector value at the end of the substep
-                final AbsoluteDate tb = t0.shiftedBy((i + 1) * h);
+                final AbsoluteDate tb = (i == n - 1) ? t1 : t0.shiftedBy((i + 1) * h);
                 interpolator.setInterpolatedDate(tb);
                 final double gb = g(interpolator.getInterpolatedState());
 

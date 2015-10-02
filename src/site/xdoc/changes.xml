@@ -22,6 +22,10 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Prevent small overshoots of step limits in event detection.
+        Fixes issue #218.
+      </action>
+      <action dev="luc" type="fix" >
         Handle string conversion of dates properly for dates less than 1 millisecond
         before midnight (they should not appear as second 60.0 of previous minute but
         should rather wrap around to next minute).
