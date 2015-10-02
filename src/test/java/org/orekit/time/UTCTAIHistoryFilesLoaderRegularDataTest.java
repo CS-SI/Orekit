@@ -43,7 +43,7 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
     @Test
     public void testLaststLeap() throws OrekitException {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
-        AbsoluteDate afterLeap = new AbsoluteDate(2012, 7, 1, 0, 0, 0.0, utc);
+        AbsoluteDate afterLeap = new AbsoluteDate(2015, 7, 1, 0, 0, 0.0, utc);
         Assert.assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
