@@ -12,15 +12,13 @@
   limitations under the License.
 -->
 
-Attitude
-=========
+# Attitude
 
 This tutorial emphasizes a specific usage of the attitude package
 described in the [attitudes section](../architecture/attitudes.html) of
 the library architecture documentation.
 
-Attitudes Sequence
-------------------
+## Attitudes Sequence
 
 `AttitudesSequence` enables easy switching between attitude laws on
 event occurrences when propagating some `SpacecraftState`.

@@ -111,7 +111,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         final double       r2           = sunSatVector.getNormSq();
 
         // compute flux
-        final double   rawP = kRef * getLightningRatio(position, frame, date) / r2;
+        final double   rawP = kRef * getLightingRatio(position, frame, date) / r2;
         final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
         final Vector3D acceleration = spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
@@ -122,14 +122,29 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
 
     }
 
-    /** Get the lightning ratio ([0-1]).
+    /** Get the lighting ratio ([0-1]).
      * @param position the satellite's position in the selected frame.
      * @param frame in which is defined the position
      * @param date the date
-     * @return lightning ratio
+     * @return lighting ratio
      * @exception OrekitException if the trajectory is inside the Earth
+     * @deprecated as of 7.1, replaced with {@link #getLightingRatio(Vector3D, Frame, AbsoluteDate)}
      */
+    @Deprecated
     public double getLightningRatio(final Vector3D position, final Frame frame, final AbsoluteDate date)
+        throws OrekitException {
+        return getLightingRatio(position, frame, date);
+    }
+
+    /** Get the lighting ratio ([0-1]).
+     * @param position the satellite's position in the selected frame.
+     * @param frame in which is defined the position
+     * @param date the date
+     * @return lighting ratio
+     * @exception OrekitException if the trajectory is inside the Earth
+     * @since 7.1
+     */
+    public double getLightingRatio(final Vector3D position, final Frame frame, final AbsoluteDate date)
         throws OrekitException {
 
         // Compute useful angles
@@ -150,7 +165,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         if (sunEarthAngle - alphaCentral + alphaSun <= 0.0) {
             result = 0.0;
         } else if (sunEarthAngle - alphaCentral - alphaSun < 0.0) {
-            // Compute a lightning ratio in penumbra
+            // Compute a lighting ratio in penumbra
             final double sEA2    = sunEarthAngle * sunEarthAngle;
             final double oo2sEA  = 1.0 / (2. * sunEarthAngle);
             final double aS2     = alphaSun * alphaSun;
@@ -192,7 +207,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         final DerivativeStructure r2  = sunSatVector.getNormSq();
 
         // compute flux
-        final double ratio = getLightningRatio(position.toVector3D(), frame, date);
+        final double ratio = getLightingRatio(position.toVector3D(), frame, date);
         final DerivativeStructure rawP = r2.reciprocal().multiply(kRef * ratio);
         final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<DerivativeStructure>(rawP.divide(r2.sqrt()), sunSatVector);
 
@@ -213,7 +228,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         final double       r2           = sunSatVector.getNormSq();
 
         // compute flux
-        final double   rawP = kRef * getLightningRatio(position, frame, date) / r2;
+        final double   rawP = kRef * getLightingRatio(position, frame, date) / r2;
         final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
 
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),

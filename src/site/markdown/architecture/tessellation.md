@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Tessellation
-===========
+# Tessellation
 
 This package provides tools to discretize geographical zones defined over an ellipsoid.
 	
-Overview
---------
+## Overview
 
 Earth observation missions often need to evaluate some properties globally over
 a geographic zone.
@@ -34,8 +32,7 @@ compute the Dilution Of Precision for a navigation application on each grid poin
 
 ![tessellation example](../images/tessellation-example.png)
 
-Zone Of Interest Definition
----------------------------
+## Zone Of Interest Definition
 
 The definition of the zone of interest is done using Apache Commons Math
 `SphericalPolygonsSet` class, which can handle arbitrarily complex area.
@@ -77,8 +74,7 @@ More complex zones can be built from simple ones using the set operations
 available in Apache Commons Math `RegionFactory` class (union, intersection,
 differences, symmetric difference, complement).
 
-Tile aiming
------------
+## Tile aiming
 
 Depending on the needs of the calling application, different main directions can
 be used for tile aiming. Two classical orientations are predefined:
@@ -93,8 +89,7 @@ be used for tile aiming. Two classical orientations are predefined:
 Users can provide their own implementation of the `TileAiming` interface in addition to
 the two predefined directions.
 
-Tessellation and Sampling
--------------------------
+## Tessellation and Sampling
 
 There are two main operations that can be performed on zones of interest:
 tessellation and sampling.
@@ -119,8 +114,7 @@ tiles having all the same dimensions (which will be roughly balanced around the 
 interest) or to tessellate more tightly, with the first column (resp. row) placed wery
 close to the zone boundary and the last column (resp. row) reduced in width (resp. length). 
 
-Class diagram
--------------
+## Class diagram
 
 The following class diagram shows the overall design of the package.
 

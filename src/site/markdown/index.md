@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Overview
-========
+# Overview
 
   OREKIT (ORbits Extrapolation KIT) is a free low-level space dynamics library
   written in Java.
@@ -22,8 +21,7 @@ Overview
   various algorithms to handle them (conversions, analytical and numerical
   propagation, pointing ...).
 
-Features
---------
+## Features
 
   * Time
 
@@ -180,8 +178,7 @@ Features
 
 ![Orekit top packages](./images/design/top-packages.png)
 
-Free software
--------------
+## Free software
 
 Orekit is freely available both in source and binary formats, with all related
 documentation and tests.
@@ -193,8 +190,7 @@ any application, free or not. There are no strings attached to your own code.
 Everybody is encouraged to use Orekit as a common low level layer to improve
 interoperability in space systems.
 
-Maintained library
-------------------
+## Maintained library
 
 Orekit has been in development since 2002 inside [CS Systèmes
 d'Information](http://www.c-s.fr/) and is still used and maintained by its space dynamics experts.

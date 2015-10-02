@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Contributing to Orekit
-======================
+# Contributing to Orekit
 
 Orekit is free software, which means you can use the source code as you wish,
 without charges, in your applications, and that you can improve it and have

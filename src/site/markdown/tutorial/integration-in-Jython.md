@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Integration in Jython
-=====================
+# Integration in Jython
 
 Jython is a Java-based implementation of the Python language, and interfaces well to
 Java libraries. The number of Jython modules available for plotting is limited, but
@@ -24,8 +23,7 @@ This can be set manually at the command prompt, or by using an IDE such as Eclip
 with PyDev. The file `orekit-data.zip` should be in the current directory, the same
 as your Jython files.
 
-Example SlaveMode
------------------
+## Example SlaveMode
 
 This example is a translation of the SlaveMode.java example to Jython, showing a stepped
 Keplerian propagation.
@@ -118,8 +116,7 @@ Keplerian propagation.
         cpt=cpt+1
 
 
-Example: VisibilityCheck
-------------------------
+## Example: VisibilityCheck
 
 This example is based on the VisiblityCheck.java, translated into Jython. It includes an
 example of subclassing of a Java object into a jython object.
