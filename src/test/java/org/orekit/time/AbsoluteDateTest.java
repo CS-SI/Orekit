@@ -642,6 +642,30 @@ public class AbsoluteDateTest {
                             components.getTime().getSecond(), 1.0e-15);
     }
 
+    @Test
+    public void testWrapAtMinuteEnd() throws OrekitException {
+        TimeScale tai = TimeScalesFactory.getTAI();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date0 = new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, tai);
+        AbsoluteDate ref = date0.shiftedBy(496891466.0).shiftedBy(0.7320114066633323);
+        AbsoluteDate date = ref.shiftedBy(33 * -597.9009700426262);
+        DateTimeComponents dtc = date.getComponents(utc);
+        Assert.assertEquals(2015, dtc.getDate().getYear());
+        Assert.assertEquals(   9, dtc.getDate().getMonth());
+        Assert.assertEquals(  30, dtc.getDate().getDay());
+        Assert.assertEquals(   7, dtc.getTime().getHour());
+        Assert.assertEquals(  54, dtc.getTime().getMinute());
+        Assert.assertEquals(60 - 9.094947e-13, dtc.getTime().getSecond(), 1.0e-15);
+        Assert.assertEquals("2015-09-30T07:55:00.000",
+                            date.toString(utc));
+        AbsoluteDate beforeMidnight = new AbsoluteDate(2008, 2, 29, 23, 59, 59.9994, utc);
+        AbsoluteDate stillBeforeMidnight = beforeMidnight.shiftedBy(2.0e-4);
+        Assert.assertEquals(59.9994, beforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
+        Assert.assertEquals(59.9996, stillBeforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
+        Assert.assertEquals("2008-02-29T23:59:59.999", beforeMidnight.toString(utc));
+        Assert.assertEquals("2008-03-01T00:00:00.000", stillBeforeMidnight.toString(utc));
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");

@@ -222,6 +222,34 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @return string representation of this pair
      */
     public String toString() {
+        return toString(false);
+    }
+
+    /** Return a string representation of this pair.
+     * <p>The format used is ISO8601.</p>
+     * @param inLeap if true the date is a UTC date during a leap second introduction
+     * @return string representation of this pair
+     */
+    public String toString(final boolean inLeap) {
+        double second = time.getSecond();
+        final double wrap = inLeap ? 60.9995 : 59.9995;
+        if (second >= wrap) {
+            // we should wrap around next millisecond
+            int minute = time.getMinute();
+            int hour   = time.getHour();
+            int j2000  = date.getJ2000Day();
+            second = 0;
+            ++minute;
+            if (minute > 59) {
+                minute = 0;
+                ++hour;
+                if (hour > 23) {
+                    hour = 0;
+                    ++j2000;
+                }
+            }
+            return new DateComponents(j2000).toString() + 'T' + new TimeComponents(hour, minute, second).toString();
+        }
         return date.toString() + 'T' + time.toString();
     }
 

@@ -22,6 +22,12 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Handle string conversion of dates properly for dates less than 1 millisecond
+        before midnight (they should not appear as second 60.0 of previous minute but
+        should rather wrap around to next minute).
+        Partly fixes issue #218.
+      </action>
+      <action dev="luc" type="fix" >
         Enforce Lexicographical order in DirectoryCrawler, to ensure reproducible
         loading. Before this changes, some tests could fail in one computer while
         succeeding in another computer as we use a mix of DE-4xx files, some having
