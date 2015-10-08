@@ -859,7 +859,7 @@ class TesseralContribution implements DSSTForceModel {
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
                 final DerivativeStructure jacobi =
-                        JacobiPolynomials.getValue(l, v , w, new DerivativeStructure(1, 1, 0, gamma));
+                        JacobiPolynomials.getValue(l, v, w, new DerivativeStructure(1, 1, 0, gamma));
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);

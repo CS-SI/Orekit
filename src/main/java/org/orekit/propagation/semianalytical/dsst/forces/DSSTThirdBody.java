@@ -1099,7 +1099,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
             final DerivativeStructure jac =
-                    JacobiPolynomials.getValue(l, absJmS , absJpS, new DerivativeStructure(1, 1, 0, X));
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, new DerivativeStructure(1, 1, 0, X));
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);

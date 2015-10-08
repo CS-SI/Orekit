@@ -98,7 +98,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws PropagationException , OrekitException {
+        throws PropagationException, OrekitException {
         this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, provider,
                 provider.onDate(initialOrbit.getDate()));
     }
@@ -166,7 +166,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws PropagationException , OrekitException {
+        throws PropagationException, OrekitException {
         this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -211,7 +211,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws PropagationException , OrekitException {
+        throws PropagationException, OrekitException {
         this(initialOrbit, attitudeProv, DEFAULT_MASS, provider,
                 provider.onDate(initialOrbit.getDate()));
     }
@@ -259,7 +259,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final AttitudeProvider attitudeProv,
                                      final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws PropagationException , OrekitException {
+        throws PropagationException, OrekitException {
         this(initialOrbit, attitudeProv, mass, provider,
                 provider.onDate(initialOrbit.getDate()));
     }
