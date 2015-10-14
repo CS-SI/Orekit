@@ -102,9 +102,9 @@ public class Angular extends AbstractMeasurement<Angular> {
         // partial derivatives with respect to state
         // partial derivatives of Azimuth with respect to state
         final double[] dAzOndP = new double[] {
-            azimuth.getPartialDerivative(0),
-            azimuth.getPartialDerivative(1),
-            azimuth.getPartialDerivative(2),
+            azimuth.getPartialDerivative(1, 0, 0, 0, 0, 0),
+            azimuth.getPartialDerivative(0, 1, 0, 0, 0, 0),
+            azimuth.getPartialDerivative(0, 0, 1, 0, 0, 0),
             0.0,
             0.0,
             0.0
@@ -112,9 +112,9 @@ public class Angular extends AbstractMeasurement<Angular> {
 
         // partial derivatives of Elevation with respect to state
         final double[] dElOndP = new double[] {
-            elevation.getPartialDerivative(0),
-            elevation.getPartialDerivative(1),
-            elevation.getPartialDerivative(2),
+            elevation.getPartialDerivative(1, 0, 0, 0, 0, 0),
+            elevation.getPartialDerivative(0, 1, 0, 0, 0, 0),
+            elevation.getPartialDerivative(0, 0, 1, 0, 0, 0),
             0.0,
             0.0,
             0.0
@@ -126,14 +126,14 @@ public class Angular extends AbstractMeasurement<Angular> {
 
             // partial derivatives with respect to parameters
             // partial derivatives of Azimuth with respect to parameters in inertial frame
-            final Vector3D dAzOndQI = new Vector3D(azimuth.getPartialDerivative(3),
-                                                   azimuth.getPartialDerivative(4),
-                                                   azimuth.getPartialDerivative(5));
+            final Vector3D dAzOndQI = new Vector3D(azimuth.getPartialDerivative(0, 0, 0, 1, 0, 0),
+                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 1, 0),
+                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 0, 1));
 
             // partial derivatives of Elevation with respect to parameters in inertial frame
-            final Vector3D dElOndQI = new Vector3D(elevation.getPartialDerivative(3),
-                                                   elevation.getPartialDerivative(4),
-                                                   elevation.getPartialDerivative(5));
+            final Vector3D dElOndQI = new Vector3D(elevation.getPartialDerivative(0, 0, 0, 1, 0, 0),
+                                                   elevation.getPartialDerivative(0, 0, 0, 0, 1, 0),
+                                                   elevation.getPartialDerivative(0, 0, 0, 0, 0, 1));
 
             // convert to topocentric frame, as the station position
             // offset parameter is expressed in this frame

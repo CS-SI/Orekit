@@ -23,6 +23,7 @@ import java.util.List;
 
 
 
+
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
@@ -47,6 +48,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 //import org.orekit.utils.Constants;
+import org.orekit.utils.Constants;
 
 public class AngularTest {
 
@@ -77,10 +79,14 @@ public class AngularTest {
         
         // Compute measurement to develop...
         int imes=0;
-        double[] errorsP = new double[3 * measurements.size()];
-        double[] errorsV = new double[3 * measurements.size()];
-        int indexP = 0;
-        int indexV = 0;
+        double[] AzerrorsP = new double[3 * measurements.size()];
+        double[] AzerrorsV = new double[3 * measurements.size()];
+        double[] ElerrorsP = new double[3 * measurements.size()];
+        double[] ElerrorsV = new double[3 * measurements.size()];
+        int AzindexP = 0;
+        int AzindexV = 0;
+        int ElindexP = 0;
+        int ElindexV = 0;
         
         for (final Measurement<?> measurement : measurements) {
             imes++;
@@ -94,8 +100,8 @@ public class AngularTest {
             // range would have depended only on the current position but
             // not on the current velocity.
             //final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
-            //final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
-            final AbsoluteDate    date     = measurement.getDate();
+            final double          meanDelay =  35862958.0 / Constants.SPEED_OF_LIGHT;
+            final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state    = propagator.propagate(date);
             final double[][]      jacobian = measurement.evaluate(0, state).getStateDerivatives();
 
@@ -115,19 +121,36 @@ public class AngularTest {
                     final double relativeError = FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
                                                               finiteDifferencesJacobian[i][j]);
                     if (j < 3) {
-                        errorsP[indexP++] = relativeError;
+                        if (i == 0) {
+                            AzerrorsP[AzindexP++] = relativeError;
+                        } else {
+                            ElerrorsP[ElindexP++] = relativeError;
+                        }
                     } else {
-                        errorsV[indexV++] = relativeError;
+                        if (i == 0) {
+                            AzerrorsV[AzindexV++] = relativeError;
+                        } else {
+                            ElerrorsV[ElindexV++] = relativeError;
+                        }
                     }
                 }
             }
 
         }
 
-        // median errors
-        Assert.assertEquals(0.0, new Median().evaluate(errorsP), 2.2e-8);
-        Assert.assertEquals(0.0, new Median().evaluate(errorsV), 6.8e-4);
+        // median errors on Azimuth
+        System.out.println("Ecart median Azimuth/dP : " + new Median().evaluate(AzerrorsP) + "\n");
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 2.2e-8);
+        
 
+        // median errors on Elevation
+        System.out.println("Ecart median Elevation/dP : " + new Median().evaluate(ElerrorsP) + "\n");
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 2.2e-3);
+        
+        System.out.println("Ecart median Azimuth/dV : " + new Median().evaluate(AzerrorsV) + "\n");
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.8e1);
+        System.out.println("Ecart median Elevation/dV : " + new Median().evaluate(ElerrorsV) + "\n");
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 6.8e1);
     }
 
 }
