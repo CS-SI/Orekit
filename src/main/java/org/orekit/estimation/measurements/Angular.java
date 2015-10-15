@@ -52,6 +52,13 @@ public class Angular extends AbstractMeasurement<Angular> {
         addSupportedParameter(station);
     }
 
+    /** Get the ground station from which measurement is performed.
+     * @return ground station from which measurement is performed
+     */
+    public GroundStation getStation() {
+        return station;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected Evaluation<Angular> theoreticalEvaluation(final int iteration, final SpacecraftState state)
@@ -68,12 +75,14 @@ public class Angular extends AbstractMeasurement<Angular> {
         //  the same as state)
         final double          tauD         = station.downlinkTimeOfFlight(state, getDate());
         final double          delta        = getDate().durationFrom(state.getDate());
-        final SpacecraftState transitState = state.shiftedBy(delta - tauD);
+        final double          dt           = delta - tauD;
+        final SpacecraftState transitState = state.shiftedBy(dt);
         final Vector3D        transit      = transitState.getPVCoordinates().getPosition();
+        final Vector3D        transitV     = transitState.getPVCoordinates().getVelocity();
 
         // station frame in inertial frame
-        final Vector3D east = topoToInert.transformVector(station.getBaseFrame().getEast());
-        final Vector3D north = topoToInert.transformVector(station.getBaseFrame().getNorth());
+        final Vector3D east   = topoToInert.transformVector(station.getBaseFrame().getEast());
+        final Vector3D north  = topoToInert.transformVector(station.getBaseFrame().getNorth());
         final Vector3D zenith = topoToInert.transformVector(station.getBaseFrame().getZenith());
 
         // satellite vector expressed in inertial frame
@@ -105,9 +114,9 @@ public class Angular extends AbstractMeasurement<Angular> {
             azimuth.getPartialDerivative(1, 0, 0, 0, 0, 0),
             azimuth.getPartialDerivative(0, 1, 0, 0, 0, 0),
             azimuth.getPartialDerivative(0, 0, 1, 0, 0, 0),
-            0.0,
-            0.0,
-            0.0
+            azimuth.multiply(dt).getPartialDerivative(1, 0, 0, 0, 0, 0),
+            azimuth.multiply(dt).getPartialDerivative(0, 1, 0, 0, 0, 0),
+            azimuth.multiply(dt).getPartialDerivative(0, 0, 1, 0, 0, 0)
         };
 
         // partial derivatives of Elevation with respect to state
@@ -115,9 +124,9 @@ public class Angular extends AbstractMeasurement<Angular> {
             elevation.getPartialDerivative(1, 0, 0, 0, 0, 0),
             elevation.getPartialDerivative(0, 1, 0, 0, 0, 0),
             elevation.getPartialDerivative(0, 0, 1, 0, 0, 0),
-            0.0,
-            0.0,
-            0.0
+            elevation.multiply(dt).getPartialDerivative(1, 0, 0, 0, 0, 0),
+            elevation.multiply(dt).getPartialDerivative(0, 1, 0, 0, 0, 0),
+            elevation.multiply(dt).getPartialDerivative(0, 0, 1, 0, 0, 0)
         };
 
         evaluation.setStateDerivatives(dAzOndP, dElOndP);

@@ -74,7 +74,6 @@ public class AngularTest {
         propagator.setSlaveMode();
         
         System.out.println("Azimuth and Elevation Measurement Created \n");
-        //System.out.println("Size of the measurements : " +  measurements.getDimension() + "\n");
         System.out.println("The number of measurements is : " + measurements.size() + "\n");
         
         // Compute measurement to develop...
@@ -90,7 +89,6 @@ public class AngularTest {
         
         for (final Measurement<?> measurement : measurements) {
             imes++;
-            System.out.println(imes);
             
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -99,11 +97,17 @@ public class AngularTest {
             // to velocity. If we had chosen the proper state date, the
             // range would have depended only on the current position but
             // not on the current velocity.
+            final AbsoluteDate    datemeas  = measurement.getDate();
+            SpacecraftState      state     = propagator.propagate(datemeas);
+            
+            final GroundStation stationParameter = ((Angular) measurement).getStation();
+            
+            final double         meanDelay         = stationParameter.downlinkTimeOfFlight(state, datemeas);
             //final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
-            final double          meanDelay =  35862958.0 / Constants.SPEED_OF_LIGHT;
+
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
-            final SpacecraftState state    = propagator.propagate(date);
-            final double[][]      jacobian = measurement.evaluate(0, state).getStateDerivatives();
+            state     = propagator.propagate(date);
+            final double[][]      jacobian  = measurement.evaluate(0, state).getStateDerivatives();
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
@@ -140,17 +144,17 @@ public class AngularTest {
 
         // median errors on Azimuth
         System.out.println("Ecart median Azimuth/dP : " + new Median().evaluate(AzerrorsP) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 2.2e-8);
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 2.4e-9);
         
 
         // median errors on Elevation
         System.out.println("Ecart median Elevation/dP : " + new Median().evaluate(ElerrorsP) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 2.2e-3);
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 4.4e-6);
         
         System.out.println("Ecart median Azimuth/dV : " + new Median().evaluate(AzerrorsV) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.8e1);
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 1.1e-3);
         System.out.println("Ecart median Elevation/dV : " + new Median().evaluate(ElerrorsV) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 6.8e1);
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 9.5e-4);
     }
 
 }
