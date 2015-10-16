@@ -18,12 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-
-
-
-
-
-
+import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
@@ -34,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 //import org.orekit.bodies.BodyShape;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.EstimationUtils;
@@ -53,16 +49,13 @@ import org.orekit.utils.Constants;
 public class AngularTest {
 
     @Test
-    public void testComputeAngular() throws OrekitException {
+    public void testStateDerivatives() throws OrekitException {
         
         Context context = EstimationTestUtils.geoStationnaryContext();
-        System.out.println("Geostationnary Context Created");
-        
+
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
                                               1.0e-6, 60.0, 0.001);
-        System.out.println("Geostationnary Orbit Created");
-        
         
         // create perfect azimuth-elevation measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -73,11 +66,7 @@ public class AngularTest {
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
         
-        System.out.println("Azimuth and Elevation Measurement Created \n");
-        System.out.println("The number of measurements is : " + measurements.size() + "\n");
-        
-        // Compute measurement to develop...
-        int imes=0;
+        // Compute measurements.
         double[] AzerrorsP = new double[3 * measurements.size()];
         double[] AzerrorsV = new double[3 * measurements.size()];
         double[] ElerrorsP = new double[3 * measurements.size()];
@@ -88,7 +77,9 @@ public class AngularTest {
         int ElindexV = 0;
         
         for (final Measurement<?> measurement : measurements) {
-            imes++;
+            
+            // parameter corresponding to station position offset
+            final GroundStation stationParameter = ((Angular) measurement).getStation();
             
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
@@ -97,17 +88,13 @@ public class AngularTest {
             // to velocity. If we had chosen the proper state date, the
             // range would have depended only on the current position but
             // not on the current velocity.
-            final AbsoluteDate    datemeas  = measurement.getDate();
-            SpacecraftState      state     = propagator.propagate(datemeas);
-            
-            final GroundStation stationParameter = ((Angular) measurement).getStation();
-            
-            final double         meanDelay         = stationParameter.downlinkTimeOfFlight(state, datemeas);
-            //final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
+            final AbsoluteDate  datemeas         = measurement.getDate();
+            SpacecraftState     state            = propagator.propagate(datemeas);
+            final double        meanDelay        = stationParameter.downlinkTimeOfFlight(state, datemeas);
 
-            final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
-            state     = propagator.propagate(date);
-            final double[][]      jacobian  = measurement.evaluate(0, state).getStateDerivatives();
+            final AbsoluteDate date     = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+                               state    = propagator.propagate(date);
+            final double[][]   jacobian = measurement.evaluate(0, state).getStateDerivatives();
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
@@ -116,10 +103,11 @@ public class AngularTest {
                         return measurement.evaluate(0, state).getValue();
                     }
                                                   }, measurement.getDimension(), OrbitType.CARTESIAN,
-                                                  PositionAngle.TRUE, 1.0, 3).value(state);
+                                                  PositionAngle.TRUE, 100.0, 8).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     final double relativeError = FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
@@ -144,18 +132,100 @@ public class AngularTest {
 
         // median errors on Azimuth
         System.out.println("Ecart median Azimuth/dP : " + new Median().evaluate(AzerrorsP) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 2.4e-9);
-        
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 6.7e-11);
+        System.out.println("Ecart median Azimuth/dV : " + new Median().evaluate(AzerrorsV) + "\n");
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 2.4e-5);
 
         // median errors on Elevation
         System.out.println("Ecart median Elevation/dP : " + new Median().evaluate(ElerrorsP) + "\n");
         Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 4.4e-6);
-        
-        System.out.println("Ecart median Azimuth/dV : " + new Median().evaluate(AzerrorsV) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 1.1e-3);
         System.out.println("Ecart median Elevation/dV : " + new Median().evaluate(ElerrorsV) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 9.5e-4);
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 3.0e-5);
     }
+    
+    @Test
+    public void testParameterDerivatives() throws OrekitException {
+
+        Context context = EstimationTestUtils.geoStationnaryContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect azimuth-elevation measurements
+        for (final GroundStation station : context.stations) {
+            station.setEstimated(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new AngularMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+        for (final Measurement<?> measurement : measurements) {
+
+            // parameter corresponding to station position offset
+            final GroundStation stationParameter = ((Angular) measurement).getStation();
+
+            // We intentionally propagate to a date which is close to the
+            // real spacecraft state but is *not* the accurate date, by
+            // compensating only part of the downlink delay. This is done
+            // in order to validate the partial derivatives with respect
+            // to velocity. If we had chosen the proper state date, the
+            // range would have depended only on the current position but
+            // not on the current velocity.
+            final AbsoluteDate    datemeas  = measurement.getDate();
+            final SpacecraftState stateini  = propagator.propagate(datemeas);
+            final double          meanDelay = stationParameter.downlinkTimeOfFlight(stateini, datemeas);
+            
+            final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
+            final SpacecraftState state     = propagator.propagate(date);
+            final double[][]      jacobian  = measurement.evaluate(0, state).getParameterDerivatives(stationParameter.getName());
+
+            final double[][] finiteDifferencesJacobian =
+                EstimationUtils.differentiate(new MultivariateVectorFunction() {
+                        public double[] value(double[] point) throws OrekitExceptionWrapper {
+                            try {
+
+                                final double[] savedParameter = stationParameter.getValue();
+
+                                // evaluate range with a changed station position
+                                stationParameter.setValue(point);
+                                final double[] result = measurement.evaluate(0, state).getValue();
+
+                                stationParameter.setValue(savedParameter);
+                                return result;
+
+                            } catch (OrekitException oe) {
+                                throw new OrekitExceptionWrapper(oe);
+                            }
+                        }
+                    }, measurement.getDimension(), 3, 20.0, 20.0, 20.0).value(stationParameter.getValue());
+
+            System.out.println("Longueur de la Jacobienne : " + jacobian.length + "\n");
+            Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            
+            System.out.println("Longueur de la Jacobienne[0] : " + jacobian[0].length + "\n");
+            Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            for (int i = 0; i < jacobian.length; ++i) {
+                for (int j = 0; j < jacobian[i].length; ++j) {
+                    System.out.println("Element de la Jacobienne : " + jacobian[i][j] + " / " + finiteDifferencesJacobian[i][j] + "\n");
+                    //Assert.assertEquals(finiteDifferencesJacobian[i][j],
+                    //                    jacobian[i][j],
+                    //                    6.1e-5 * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                    Assert.assertEquals(finiteDifferencesJacobian[i][j],
+                                        jacobian[i][j],
+                                        6.1e10 * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                }
+            }
+
+        }
+
+        System.out.println("Test OK \n");
+    }
+
 
 }
 

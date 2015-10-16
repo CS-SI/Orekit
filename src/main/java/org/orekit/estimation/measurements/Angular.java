@@ -78,12 +78,11 @@ public class Angular extends AbstractMeasurement<Angular> {
         final double          dt           = delta - tauD;
         final SpacecraftState transitState = state.shiftedBy(dt);
         final Vector3D        transit      = transitState.getPVCoordinates().getPosition();
-        final Vector3D        transitV     = transitState.getPVCoordinates().getVelocity();
 
         // station frame in inertial frame
-        final Vector3D east   = topoToInert.transformVector(station.getBaseFrame().getEast());
-        final Vector3D north  = topoToInert.transformVector(station.getBaseFrame().getNorth());
-        final Vector3D zenith = topoToInert.transformVector(station.getBaseFrame().getZenith());
+        final Vector3D east   = topoToInert.transformVector(station.getOffsetFrame().getEast());
+        final Vector3D north  = topoToInert.transformVector(station.getOffsetFrame().getNorth());
+        final Vector3D zenith = topoToInert.transformVector(station.getOffsetFrame().getZenith());
 
         // satellite vector expressed in inertial frame
         final FieldVector3D<DerivativeStructure> P = new FieldVector3D<DerivativeStructure> (new DerivativeStructure(6, 1, 0, transit.getX()),
@@ -132,6 +131,12 @@ public class Angular extends AbstractMeasurement<Angular> {
         evaluation.setStateDerivatives(dAzOndP, dElOndP);
 
         if (station.isEstimated()) {
+
+            /*final AngularCoordinates ac = topoToInert.getAngular().revert();
+            final Vector3D omega        = ac.getRotationRate();
+            final double dx = dt * omega.getX();
+            final double dy = dt * omega.getY();
+            final double dz = dt * omega.getZ();*/
 
             // partial derivatives with respect to parameters
             // partial derivatives of Azimuth with respect to parameters in inertial frame
