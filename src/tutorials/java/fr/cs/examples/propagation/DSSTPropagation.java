@@ -147,7 +147,8 @@ public class DSSTPropagation {
         ORBIT_CARTESIAN_VX,
         ORBIT_CARTESIAN_VY,
         ORBIT_CARTESIAN_VZ,
-        ORBIT_IS_OSCULATING,
+        INITIAL_ORBIT_IS_OSCULATING,
+        OUTPUT_ORBIT_IS_OSCULATING,
         START_DATE,
         DURATION,
         DURATION_IN_DAYS,
@@ -208,15 +209,21 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.MASS)) {
             mass = parser.getDouble(ParameterKey.MASS);
         }
-        Boolean isOsculating = false;
-        if (parser.containsKey(ParameterKey.ORBIT_IS_OSCULATING)) {
-            isOsculating = parser.getBoolean(ParameterKey.ORBIT_IS_OSCULATING);
+        boolean initialIsOsculating = false;
+        if (parser.containsKey(ParameterKey.INITIAL_ORBIT_IS_OSCULATING)) {
+            initialIsOsculating = parser.getBoolean(ParameterKey.INITIAL_ORBIT_IS_OSCULATING);
+        }
+        boolean outputIsOsculating = initialIsOsculating;
+        if (parser.containsKey(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING)) {
+            outputIsOsculating = parser.getBoolean(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING);
         }
         double fixedStepSize = -1.;
         if (parser.containsKey(ParameterKey.FIXED_INTEGRATION_STEP)) {
             fixedStepSize = parser.getDouble(ParameterKey.FIXED_INTEGRATION_STEP);
         }
-        final DSSTPropagator dsstProp = createDSSTProp(orbit, mass, isOsculating, fixedStepSize);
+        final DSSTPropagator dsstProp = createDSSTProp(orbit, mass,
+                                                       initialIsOsculating, outputIsOsculating,
+                                                       fixedStepSize);
 
         // Set Force models
         setForceModel(parser, unnormalized, earthFrame, dsstProp);
@@ -255,7 +262,7 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.NUMERICAL_COMPARISON)
                 && parser.getBoolean(ParameterKey.NUMERICAL_COMPARISON)) {
             
-            if ( !isOsculating ) {
+            if ( !outputIsOsculating ) {
                 System.out.println("\nWARNING:");
                 System.out.println("The DSST propagator considers a mean orbit while the numerical will consider an osculating one.");
                 System.out.println("The comparison will be meaningless.\n");
@@ -364,13 +371,15 @@ public class DSSTPropagation {
      *
      *  @param orbit initial orbit
      *  @param mass S/C mass (kg)
-     *  @param isOsculating if orbital elements are osculating
+     *  @param initialIsOsculating if initial orbital elements are osculating
+     *  @param outputIsOsculating if we want to output osculating parameters
      *  @param fixedStepSize step size for fixed step integrator (s)
      *  @throws OrekitException
      */
     private DSSTPropagator createDSSTProp(final Orbit orbit,
                                           final double mass,
-                                          final boolean isOsculating,
+                                          final boolean initialIsOsculating,
+                                          final boolean outputIsOsculating,
                                           final double fixedStepSize) throws OrekitException {
         AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
@@ -383,8 +392,8 @@ public class DSSTPropagation {
             ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);
         }
 
-        DSSTPropagator dsstProp = new DSSTPropagator(integrator);
-        dsstProp.setInitialState(new SpacecraftState(orbit, mass), isOsculating);
+        DSSTPropagator dsstProp = new DSSTPropagator(integrator, !outputIsOsculating);
+        dsstProp.setInitialState(new SpacecraftState(orbit, mass), initialIsOsculating);
 
         return dsstProp;
     }

@@ -81,8 +81,11 @@ orbit.angle.type = MEAN
 ## Velocity along Z in inertial frame (km/s)
 # orbit.cartesian.vz = 0.0
 
-### Do we consider orbital elements as osculating ? (true/false) [false]
-orbit.is.osculating = false
+### Do we consider initial orbital elements as osculating? (true/false) [false]
+initial.orbit.is.osculating = false
+
+### Do we output osculating orbital elements? (true/false) [inherited from initial.orbit.is.osculating by default]
+output.orbit.is.osculating = false
 
 ### Force models
 
