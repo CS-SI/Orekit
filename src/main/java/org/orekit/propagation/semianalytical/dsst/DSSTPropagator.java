@@ -149,7 +149,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.TRUE);
+        setPositionAngleType(PositionAngle.MEAN);
         setAttitudeProvider(DEFAULT_LAW);
     }
 
@@ -169,7 +169,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.TRUE);
+        setPositionAngleType(PositionAngle.MEAN);
         setAttitudeProvider(DEFAULT_LAW);
     }
 
@@ -407,10 +407,16 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * Note that for DSST, orbit type is hardcoded to {@link OrbitType#EQUINOCTIAL}
+     * and position angle type is hardcoded to {@link PositionAngle#MEAN}, so
+     * the corresponding parameters are ignored.
+     * </p>
+     */
     @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
-                                       final OrbitType orbitType, final PositionAngle positionAngleType,
+                                       final OrbitType ignoredOrbitType, final PositionAngle ignoredPositionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
 
         // create a mapper with the common settings provided as arguments
@@ -448,19 +454,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         private int                        satelliteRevolution;
 
         /** Simple constructor.
-         * <p>
-         * The position parameter type is meaningful only if {@link
-         * #getOrbitType() propagation orbit type}
-         * support it. As an example, it is not meaningful for propagation
-         * in {@link OrbitType#CARTESIAN Cartesian} parameters.
-         * </p>
          * @param referenceDate reference date
          * @param mu central attraction coefficient (m³/s²)
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
          */
         MeanPlusShortPeriodicMapper(final AbsoluteDate referenceDate, final double mu,
-                                           final AttitudeProvider attitudeProvider, final Frame frame) {
+                                    final AttitudeProvider attitudeProvider, final Frame frame) {
 
             super(referenceDate, mu, OrbitType.EQUINOCTIAL, PositionAngle.MEAN, attitudeProvider, frame);
 
