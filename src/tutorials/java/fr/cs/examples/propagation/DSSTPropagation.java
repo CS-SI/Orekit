@@ -16,18 +16,20 @@
  */
 package fr.cs.examples.propagation;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Formatter;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -39,6 +41,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
@@ -56,7 +59,9 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -165,7 +170,11 @@ public class DSSTPropagation {
         DRAG_SF,
         SOLAR_RADIATION_PRESSURE,
         SOLAR_RADIATION_PRESSURE_CR,
-        SOLAR_RADIATION_PRESSURE_SF;
+        SOLAR_RADIATION_PRESSURE_SF,
+        OUTPUT_KEPLERIAN,
+        OUTPUT_EQUINOCTIAL,
+        OUTPUT_CARTESIAN,
+        OUTPUT_SHORT_PERIOD_COEFFICIENTS;
     }
 
     private void run(final File input, final File output)
@@ -217,13 +226,28 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING)) {
             outputIsOsculating = parser.getBoolean(ParameterKey.OUTPUT_ORBIT_IS_OSCULATING);
         }
+        List<String> shortPeriodCoefficients = null;
+        if (parser.containsKey(ParameterKey.OUTPUT_SHORT_PERIOD_COEFFICIENTS)) {
+            shortPeriodCoefficients = parser.getStringsList(ParameterKey.OUTPUT_SHORT_PERIOD_COEFFICIENTS, ',');
+            if (shortPeriodCoefficients.size() == 1 && shortPeriodCoefficients.get(0).equalsIgnoreCase("all")) {
+                // special case, we use the empty list to represent all possible (unknown) keys
+                // we don't use Collections.emptyList() because we want the list to be populated later on
+                shortPeriodCoefficients = new ArrayList<String>();
+            } else if (shortPeriodCoefficients.size() == 1 && shortPeriodCoefficients.get(0).equalsIgnoreCase("none")) {
+                // special case, we use null yo select no coefficients at all
+                shortPeriodCoefficients = null;
+            } else {
+                // general case, we have an explicit list of coefficients names
+                Collections.sort(shortPeriodCoefficients);
+            }
+        }
         double fixedStepSize = -1.;
         if (parser.containsKey(ParameterKey.FIXED_INTEGRATION_STEP)) {
             fixedStepSize = parser.getDouble(ParameterKey.FIXED_INTEGRATION_STEP);
         }
         final DSSTPropagator dsstProp = createDSSTProp(orbit, mass,
                                                        initialIsOsculating, outputIsOsculating,
-                                                       fixedStepSize);
+                                                       fixedStepSize, shortPeriodCoefficients);
 
         // Set Force models
         setForceModel(parser, unnormalized, earthFrame, dsstProp);
@@ -243,53 +267,68 @@ public class DSSTPropagation {
             duration = parser.getDouble(ParameterKey.DURATION_IN_DAYS) * Constants.JULIAN_DAY;
         }
         double outStep = parser.getDouble(ParameterKey.OUTPUT_STEP);
+        boolean displayKeplerian = true;
+        if (parser.containsKey(ParameterKey.OUTPUT_KEPLERIAN)) {
+            displayKeplerian = parser.getBoolean(ParameterKey.OUTPUT_KEPLERIAN);
+        }
+        boolean displayEquinoctial = true;
+        if (parser.containsKey(ParameterKey.OUTPUT_EQUINOCTIAL)) {
+            displayEquinoctial = parser.getBoolean(ParameterKey.OUTPUT_EQUINOCTIAL);
+        }
+        boolean displayCartesian = true;
+        if (parser.containsKey(ParameterKey.OUTPUT_CARTESIAN)) {
+            displayCartesian = parser.getBoolean(ParameterKey.OUTPUT_CARTESIAN);
+        }
 
-        // Add orbit handler
-        OrbitHandler dsstHandler = new OrbitHandler();
-        dsstProp.setMasterMode(outStep, dsstHandler);
-
-        // DSST Propagation
+        // DSST Propagation without output
+        dsstProp.setEphemerisMode();
         final double dsstOn = System.currentTimeMillis();
         dsstProp.propagate(start, start.shiftedBy(duration));
         final double dsstOff = System.currentTimeMillis();
-        System.out.println("DSST execution time: " + (dsstOff - dsstOn) / 1000.);
+        System.out.println("DSST execution time : " + (dsstOff - dsstOn) / 1000.);
 
-        // Print results
-        printOutput(output, dsstHandler, start);
+        // Add output
+        final BoundedPropagator dsstEphemeris = dsstProp.getGeneratedEphemeris();
+        dsstEphemeris.setMasterMode(outStep, new OutputHandler(output,
+                                                               displayKeplerian, displayEquinoctial, displayCartesian,
+                                                               shortPeriodCoefficients));
+        System.out.println("Writing file, this may take some time ...");
+        dsstEphemeris.propagate(dsstEphemeris.getMaxDate());
         System.out.println("DSST results saved as file " + output);
 
         // Check if we want to compare numerical to DSST propagator (default is false)
         if (parser.containsKey(ParameterKey.NUMERICAL_COMPARISON)
                 && parser.getBoolean(ParameterKey.NUMERICAL_COMPARISON)) {
-            
+
             if ( !outputIsOsculating ) {
                 System.out.println("\nWARNING:");
                 System.out.println("The DSST propagator considers a mean orbit while the numerical will consider an osculating one.");
                 System.out.println("The comparison will be meaningless.\n");
             }
 
-            // output (in user's home directory)
-            File output_num = new File(input.getParentFile(), "numerical-propagation.out");
-
             // Numerical propagator definition
             final NumericalPropagator numProp = createNumProp(orbit, mass);
-            
+
             // Set Force models
             setForceModel(parser, normalized, earthFrame, numProp);
 
-            // Add orbit handler
-            OrbitHandler numHandler = new OrbitHandler();
-            numProp.setMasterMode(outStep, numHandler);
-
-            // Numerical Propagation
+            // Numerical Propagation without output
+            numProp.setEphemerisMode();
             final double numOn = System.currentTimeMillis();
             numProp.propagate(start, start.shiftedBy(duration));
             final double numOff = System.currentTimeMillis();
-            System.out.println("Numerical execution time: " + (numOff - numOn) / 1000.);
-            
-            // Print results
-            printOutput(output_num, numHandler, start);
-            System.out.println("Numerical results saved as file " + output_num);
+            System.out.println("Numerical execution time (including output): " + (numOff - numOn) / 1000.);
+
+            // Add output
+            final BoundedPropagator numEphemeris = numProp.getGeneratedEphemeris();
+            File numOutput = new File(input.getParentFile(), "numerical-propagation.out");
+            numEphemeris.setMasterMode(outStep, new OutputHandler(numOutput,
+                                                                  displayKeplerian, displayEquinoctial, displayCartesian,
+                                                                  null));
+            System.out.println("Writing file, this may take some time ...");
+            numEphemeris.propagate(numEphemeris.getMaxDate());
+            System.out.println("Numerical results saved as file " + numOutput);
+
         }
 
     }
@@ -374,13 +413,18 @@ public class DSSTPropagation {
      *  @param initialIsOsculating if initial orbital elements are osculating
      *  @param outputIsOsculating if we want to output osculating parameters
      *  @param fixedStepSize step size for fixed step integrator (s)
+     *  @param shortPeriodCoefficients list of short periodic coefficients
+     *  to output (null means no coefficients at all, empty list means all
+     *  possible coefficients)
      *  @throws OrekitException
      */
     private DSSTPropagator createDSSTProp(final Orbit orbit,
                                           final double mass,
                                           final boolean initialIsOsculating,
                                           final boolean outputIsOsculating,
-                                          final double fixedStepSize) throws OrekitException {
+                                          final double fixedStepSize,
+                                          final List<String> shortPeriodCoefficients)
+        throws OrekitException {
         AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
@@ -394,6 +438,8 @@ public class DSSTPropagation {
 
         DSSTPropagator dsstProp = new DSSTPropagator(integrator, !outputIsOsculating);
         dsstProp.setInitialState(new SpacecraftState(orbit, mass), initialIsOsculating);
+        dsstProp.setSelectedCoefficients(shortPeriodCoefficients == null ?
+                                         null : new HashSet<String>(shortPeriodCoefficients));
 
         return dsstProp;
     }
@@ -402,7 +448,7 @@ public class DSSTPropagation {
      *
      *  @param orbit initial orbit
      *  @param mass S/C mass (kg)
-     *  @throws OrekitException 
+     *  @throws OrekitException
      */
     private NumericalPropagator createNumProp(final Orbit orbit, final double mass) throws OrekitException {
         final double[][] tol = NumericalPropagator.tolerances(1.0, orbit, orbit.getType());
@@ -432,7 +478,7 @@ public class DSSTPropagation {
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = unnormalized.getAe();
-        
+
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
 
@@ -485,7 +531,7 @@ public class DSSTPropagation {
                                final NumericalPropagator numProp) throws IOException, OrekitException {
 
         final double ae = normalized.getAe();
-        
+
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
 
@@ -529,103 +575,203 @@ public class DSSTPropagation {
         }
     }
 
-    /** Print the results in the output file
-     *
-     *  @param handler orbit handler
-     *  @param output output file
-     *  @param sart start date of propagation
-     *  @throws OrekitException 
-     *  @throws IOException 
-     */
-    private void printOutput(final File output,
-                             final OrbitHandler handler,
-                             final AbsoluteDate start) throws OrekitException, IOException {
-        // Output format:
-        // time_from_start, a, e, i, raan, pa, aM, h, k, p, q, lM, px, py, pz, vx, vy, vz
-        final String format = new String(" %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e");
-        final BufferedWriter buffer = new BufferedWriter(new FileWriter(output));
-        buffer.write("##   time_from_start(s)            a(km)                      e                      i(deg)         ");
-        buffer.write("         raan(deg)                pa(deg)              mean_anomaly(deg)              ey/h          ");
-        buffer.write("           ex/k                    hy/p                     hx/q             mean_longitude_arg(deg)");
-        buffer.write("       Xposition(km)           Yposition(km)             Zposition(km)           Xvelocity(km/s)    ");
-        buffer.write("      Yvelocity(km/s)         Zvelocity(km/s)");
-        buffer.newLine();
-        for (Orbit o : handler.getOrbits()) {
-            final Formatter f = new Formatter(new StringBuilder(), Locale.ENGLISH);
-            // Time from start (s)
-            final double time = o.getDate().durationFrom(start);
-            // Semi-major axis (km)
-            final double a = o.getA() / 1000.;
-            // Keplerian elements
-            // Eccentricity
-            final double e = o.getE();
-            // Inclination (degrees)
-            final double i = Math.toDegrees(MathUtils.normalizeAngle(o.getI(), FastMath.PI));
-            // Right Ascension of Ascending Node (degrees)
-            KeplerianOrbit ko = new KeplerianOrbit(o);
-            final double ra = Math.toDegrees(MathUtils.normalizeAngle(ko.getRightAscensionOfAscendingNode(), FastMath.PI));
-            // Perigee Argument (degrees)
-            final double pa = Math.toDegrees(MathUtils.normalizeAngle(ko.getPerigeeArgument(), FastMath.PI));
-            // Mean Anomaly (degrees)
-            final double am = Math.toDegrees(MathUtils.normalizeAngle(ko.getAnomaly(PositionAngle.MEAN), FastMath.PI));
-            // Equinoctial elements
-            // ey/h component of eccentricity vector
-            final double h = o.getEquinoctialEy();
-            // ex/k component of eccentricity vector
-            final double k = o.getEquinoctialEx();
-            // hy/p component of inclination vector
-            final double p = o.getHy();
-            // hx/q component of inclination vector
-            final double q = o.getHx();
-            // Mean Longitude Argument (degrees)
-            final double lm = Math.toDegrees(MathUtils.normalizeAngle(o.getLM(), FastMath.PI));
-            // Cartesian elements
-            // Position along X in inertial frame (km)
-            final double px = o.getPVCoordinates().getPosition().getX() / 1000.;
-            // Position along Y in inertial frame (km)
-            final double py = o.getPVCoordinates().getPosition().getY() / 1000.;
-            // Position along Z in inertial frame (km)
-            final double pz = o.getPVCoordinates().getPosition().getZ() / 1000.;
-            // Velocity along X in inertial frame (km/s)
-            final double vx = o.getPVCoordinates().getVelocity().getX() / 1000.;
-            // Velocity along Y in inertial frame (km/s)
-            final double vy = o.getPVCoordinates().getVelocity().getY() / 1000.;
-            // Velocity along Z in inertial frame (km/s)
-            final double vz = o.getPVCoordinates().getVelocity().getZ() / 1000.;
-            buffer.write(f.format(format, time, a, e, i, ra, pa, am, h, k, p, q, lm, px, py, pz, vx, vy, vz).toString());
-            buffer.newLine();
-            f.close();
-        }
-        buffer.close();
-    }
+    /** Specialized step handler catching the state at each step. */
+    private static class OutputHandler implements OrekitFixedStepHandler {
 
-    /** Specialized step handler catching the orbit at each step. */
-    private static class OrbitHandler implements OrekitFixedStepHandler {
+        /** Format for delta T. */
+        private static final String DT_FORMAT                             = "%17.6f";
 
-        /** List of orbits. */
-        private final List<Orbit> orbits;
+        /** Format for Keplerian elements. */
+        private static final String KEPLERIAN_ELEMENTS_FORMAT             = " %13.6f %13.10f %14.6f %14.6f %14.6f %14.6f";
 
-        private OrbitHandler() {
-            // initialise an empty list of orbit
-            orbits = new ArrayList<Orbit>();
-        }
+        /** Format for equinoctial elements. */
+        private static final String EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT = " %13.10f %13.10f %13.10f %13.10f %14.6f";
 
-        /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        }
+        /** Format for equinoctial elements. */
+        private static final String EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT    = " %13.6f" + EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT;
 
-        /** {@inheritDoc} */
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
-            // fill in the list with the orbit from the current step
-            orbits.add(currentState.getOrbit());
-        }
+        /** Format for Cartesian elements. */
+        private static final String CARTESIAN_ELEMENTS_FORMAT             = " %13.6f %13.6f %13.6f %13.9f %13.9f %13.9f";
 
-        /** Get the list of propagated orbits.
-         * @return orbits
+        /** Format for short period coefficients. */
+        private static final String SHORT_PERIOD_COEFFICIENTS_FORMAT      = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";
+
+        /** Output file. */
+        private final File outputFile;
+
+        /** Indicator for Keplerian elements output. */
+        private final boolean outputKeplerian;
+
+        /** Indicator for equinoctial elements output. */
+        private final boolean outputEquinoctial;
+
+        /** Indicator for Cartesian elements output. */
+        private final boolean outputCartesian;
+
+        /** Start date of propagation. */
+        private AbsoluteDate start;
+
+        /** Indicator for first step. */
+        private boolean isFirst;
+
+        /** Stream for output. */
+        private PrintStream outputStream;
+
+        /** Number of columns already declared in the header. */
+        private int nbColumns;
+
+        /** Sorted list of short period coefficients to display. */
+        private List<String> shortPeriodCoefficients;
+
+        /** Simple constructor.
+         * @param outputFile output file
+         * @param outputKeplerian if true, the file should contain Keplerian elements
+         * @param outputEquinoctial if true, the file should contain equinoctial elements
+         * @param displayCaresian if true, the file should contain Cartesian elements
+         *  @param shortPeriodCoefficients list of short periodic coefficients
+         *  to output (null means no coefficients at all, empty list means all
+         *  possible coefficients)
          */
-        public List<Orbit> getOrbits() {
-            return orbits;
+        private OutputHandler(final File outputFile,
+                              final boolean outputKeplerian, final boolean outputEquinoctial,
+                              final boolean outputCartesian, final List<String> shortPeriodCoefficients) {
+            this.outputFile              = outputFile;
+            this.outputKeplerian         = outputKeplerian;
+            this.outputEquinoctial       = outputEquinoctial;
+            this.outputCartesian         = outputCartesian;
+            this.shortPeriodCoefficients = shortPeriodCoefficients;
+            this.isFirst                 = true;
         }
+
+        /** {@inheritDoc} */
+        public void init(final SpacecraftState s0, final AbsoluteDate t) throws PropagationException {
+            try {
+                nbColumns           = 0;
+                outputStream        = new PrintStream(outputFile);
+                describeNextColumn("time from start (s)");
+                if (outputKeplerian) {
+                    describeNextColumn("semi major axis a (km)");
+                    describeNextColumn("eccentricity e");
+                    describeNextColumn("inclination i (deg)");
+                    describeNextColumn("right ascension of ascending node raan (deg)");
+                    describeNextColumn("perigee argument (deg)");
+                    describeNextColumn("mean anomaly M (deg)");
+                }
+                if (outputEquinoctial) {
+                    if (!outputKeplerian) {
+                        describeNextColumn("semi major axis a (km)");
+                    }
+                    describeNextColumn("eccentricity vector component ey/h");
+                    describeNextColumn("eccentricity vector component ex/k");
+                    describeNextColumn("inclination vector component hy/p");
+                    describeNextColumn("inclination vector component hx/q");
+                    describeNextColumn("mean longitude argument L (deg)");
+                }
+                if (outputCartesian) {
+                    describeNextColumn("position along X (km)");
+                    describeNextColumn("position along Y (km)");
+                    describeNextColumn("position along Z (km)");
+                    describeNextColumn("velocity along X (km/s)");
+                    describeNextColumn("velocity along Y (km/s)");
+                    describeNextColumn("velocity along Z (km/s)");
+                }
+                start   = s0.getDate();
+                isFirst = true;
+            } catch (IOException ioe) {
+                throw new PropagationException(ioe, LocalizedFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
+            }
+        }
+
+        /** Describe next column.
+         * @param description column description
+         */
+        private void describeNextColumn(final String description) {
+            outputStream.format("# %3d %s%n", ++nbColumns, description);
+        }
+
+        /** {@inheritDoc} */
+        public void handleStep(SpacecraftState s, boolean isLast) throws PropagationException {
+            try {
+                if (isFirst) {
+                    if (shortPeriodCoefficients != null) {
+                        if (shortPeriodCoefficients.isEmpty()) {
+                            // we want all available coefficients,
+                            // they correspond to the additional states
+                            for (final Map.Entry<String, double[]> entry : s.getAdditionalStates().entrySet()) {
+                                shortPeriodCoefficients.add(entry.getKey());
+                            }
+                            Collections.sort(shortPeriodCoefficients);
+                        }
+                        for (final String coefficientName : shortPeriodCoefficients) {
+                            describeNextColumn(coefficientName + " (a)");
+                            describeNextColumn(coefficientName + " (h)");
+                            describeNextColumn(coefficientName + " (k)");
+                            describeNextColumn(coefficientName + " (p)");
+                            describeNextColumn(coefficientName + " (q)");
+                            describeNextColumn(coefficientName + " (L)");
+                        }
+                    }
+                    isFirst = false;
+                }
+                outputStream.format(Locale.US, DT_FORMAT, s.getDate().durationFrom(start));
+                if (outputKeplerian) {
+                    final KeplerianOrbit ko = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s.getOrbit());
+                    outputStream.format(Locale.US, KEPLERIAN_ELEMENTS_FORMAT,
+                                        ko.getA() / 1000.,
+                                        ko.getE(),
+                                        FastMath.toDegrees(ko.getI()),
+                                        FastMath.toDegrees(MathUtils.normalizeAngle(ko.getRightAscensionOfAscendingNode(), FastMath.PI)),
+                                        FastMath.toDegrees(MathUtils.normalizeAngle(ko.getPerigeeArgument(), FastMath.PI)),
+                                        FastMath.toDegrees(MathUtils.normalizeAngle(ko.getAnomaly(PositionAngle.MEAN), FastMath.PI)));
+                    if (outputEquinoctial) {
+                        outputStream.format(Locale.US, EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT,
+                                            ko.getEquinoctialEy(), // h
+                                            ko.getEquinoctialEx(), // k
+                                            ko.getHy(),            // p
+                                            ko.getHx(),            // q
+                                            FastMath.toDegrees(MathUtils.normalizeAngle(ko.getLM(), FastMath.PI)));
+                    }
+                } else if (outputEquinoctial) {
+                    outputStream.format(Locale.US, EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT,
+                                        s.getOrbit().getA(),
+                                        s.getOrbit().getEquinoctialEy(), // h
+                                        s.getOrbit().getEquinoctialEx(), // k
+                                        s.getOrbit().getHy(),            // p
+                                        s.getOrbit().getHx(),            // q
+                                        FastMath.toDegrees(MathUtils.normalizeAngle(s.getOrbit().getLM(), FastMath.PI)));
+                }
+                if (outputCartesian) {
+                    final PVCoordinates pv = s.getPVCoordinates();
+                    outputStream.format(Locale.US, CARTESIAN_ELEMENTS_FORMAT,
+                                        pv.getPosition().getX() * 0.001,
+                                        pv.getPosition().getY() * 0.001,
+                                        pv.getPosition().getZ() * 0.001,
+                                        pv.getVelocity().getX() * 0.001,
+                                        pv.getVelocity().getY() * 0.001,
+                                        pv.getVelocity().getZ() * 0.001);
+                }
+                if (shortPeriodCoefficients != null) {
+                    for (final String coefficientName : shortPeriodCoefficients) {
+                        final double[] coefficient = s.getAdditionalState(coefficientName);
+                        outputStream.format(Locale.US, SHORT_PERIOD_COEFFICIENTS_FORMAT,
+                                            coefficient[0],
+                                            coefficient[2], // beware, it is really 2 (ey/h), not 1 (ex/k)
+                                            coefficient[1], // beware, it is really 1 (ex/k), not 2 (ey/h)
+                                            coefficient[4], // beware, it is really 4 (hy/p), not 3 (hx/q)
+                                            coefficient[3], // beware, it is really 3 (hx/q), not 4 (hy/p)
+                                            coefficient[5]);
+                    }
+                }
+                outputStream.format(Locale.US, "%n");
+                if (isLast) {
+                    outputStream.close();
+                    outputStream = null;
+                }
+            } catch (OrekitException oe) {
+                throw new PropagationException(oe);
+            }
+        }
+
     }
 
 }

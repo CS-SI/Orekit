@@ -128,6 +128,21 @@ duration.in.days = 365.0
 ## Time step between printed elements (seconds)
 output.step = 86400.0
 
+### Output parameters
+## Output Keplerian parameters in output file (true/false) [true]
+output.Keplerian = true
+## Output equinoctial parameters in output file (true/false) [true]
+output.equinoctial = true
+## Output Cartesian parameters in output file (true/false) [true]
+output.Cartesian = true
+## Short period coefficients to output (comma separated list of coefficients names, or "none", or "all") [none]
+## in order to get the list of available coefficients names, one should perform a first
+## run with a value set to all and then look at the output file header. Note that the
+## (a), (h), (k), (p), (q) and (L) parts do not belong to the coefficient names, they
+## describe the 6 columns that correspond to one coefficient.
+## Beware that the list is huge ...
+output.short.period.coefficients = none
+
 ## Fixed integration step size for propagation (seconds) [-1.]
 ## If fixed.integration.step > 0, the ClassicalRungeKutta integrator
 ## will be used with the given value for the step size, otherwise

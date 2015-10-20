@@ -102,6 +102,12 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public String getCoefficientsKeyPrefix() {
+        return "DSST-drag-";
+    }
+
+    /** {@inheritDoc} */
     protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
         final double perigee = a * (1. - ecc);
         // Trajectory entirely out of the atmosphere

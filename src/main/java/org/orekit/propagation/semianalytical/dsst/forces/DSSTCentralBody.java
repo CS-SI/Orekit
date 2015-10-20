@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -142,6 +145,48 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         return shortPeriodics;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getCoefficientsKeyPrefix() {
+        return "DSST-central-body-";
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * For central body attraction forces,there are zonal coefficients
+     * optionally followed by tesseral coefficients
+     * </p>
+     * <p>
+     * For zonal terms contributions,there are 6 * maxJ cZij coefficients,
+     * 6 * maxJ sZij coefficients and 12 dZij coefficients, where maxJ depends
+     * on the orbit. The i index ranges from 0 to 5 and corresponds to the
+     * orbital parameter (0 for semi-major axis, ...).The j index is the
+     * integer multiplier for the true longitude argument in the cZij and sZij
+     * coefficients.
+     * </p>
+     * <p>
+     * For tesseral terms contributions,there are 6 * maxOrderMdailyTesseralSP
+     * m-daily cMim coefficients, 6 * maxOrderMdailyTesseralSP m-daily sMim
+     * coefficients, 6 * nbNonResonant cijm coefficients and 6 * nbNonResonant
+     * sijm coefficients, where maxOrderMdailyTesseralSP and nbNonResonant both
+     * depend on the orbit. To these raw coefficients, we add the two integers
+     * maxOrderMdailyTesseralSP and nbNonResonant as well as the 2 * nbNonResonant
+     * indices j and m that correspond to non-resonant pairs. The i index ranges
+     * from 0 to 5 and corresponds to the orbital parameter (0 for semi-major axis,
+     * ...). The j index is the integer multiplier for the true longitude argument
+     * and the m index is the integer multiplier for m-dailies.
+     * </p>
+     */
+    @Override
+    public Map<String, double[]> getShortPeriodicCoefficients(final AbsoluteDate date, final Set<String> selected)
+        throws OrekitException {
+        final Map<String, double[]> coefficients = zonal.getShortPeriodicCoefficients(date, selected);
+        if (tesseral != null) {
+            coefficients.putAll(tesseral.getShortPeriodicCoefficients(date, selected));
+        }
+        return coefficients;
     }
 
     /** {@inheritDoc} */
