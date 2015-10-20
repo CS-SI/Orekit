@@ -234,11 +234,16 @@ public class DSSTPropagation {
                 // we don't use Collections.emptyList() because we want the list to be populated later on
                 shortPeriodCoefficients = new ArrayList<String>();
             } else if (shortPeriodCoefficients.size() == 1 && shortPeriodCoefficients.get(0).equalsIgnoreCase("none")) {
-                // special case, we use null yo select no coefficients at all
+                // special case, we use null to select no coefficients at all
                 shortPeriodCoefficients = null;
             } else {
                 // general case, we have an explicit list of coefficients names
                 Collections.sort(shortPeriodCoefficients);
+            }
+            if (shortPeriodCoefficients != null && !outputIsOsculating) {
+                System.out.println("\nWARNING:");
+                System.out.println("Short periodic coefficients can be output only if output orbit is osculating.");
+                System.out.println("No coefficients will be computed here.\n");
             }
         }
         double fixedStepSize = -1.;
