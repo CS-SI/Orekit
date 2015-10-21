@@ -40,7 +40,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class EventSlopeFilterTest {
+@Deprecated
+public class EventFilterTest {
 
     private AbsoluteDate     iniDate;
     private Propagator       propagator;
@@ -65,14 +66,14 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
+        propagator.addEventDetector(new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
         Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
         Assert.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
+        propagator.addEventDetector(new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
         Assert.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
         Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
@@ -95,14 +96,14 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
+        propagator.addEventDetector(new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
         Assert.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
         Assert.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
+        propagator.addEventDetector(new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
         Assert.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
         Assert.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
@@ -275,7 +276,7 @@ public class EventSlopeFilterTest {
 
                 });
         Assert.assertSame(earth, detector.getBody());
-        propagator.addEventDetector(new EventSlopeFilter<EventDetector>(detector, filter));
+        propagator.addEventDetector(new EventFilter<EventDetector>(detector, filter));
         AbsoluteDate target = propagator.getInitialState().getDate().shiftedBy(dt);
         SpacecraftState finalState = propagator.propagate(target);
         Assert.assertEquals(0.0, finalState.getDate().durationFrom(target), 1.0e-10);

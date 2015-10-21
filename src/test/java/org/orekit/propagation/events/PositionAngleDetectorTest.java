@@ -47,7 +47,9 @@ public class PositionAngleDetectorTest {
     @Test
     public void testCartesian() {
         try {
-            new PositionAngleDetector(600.0, 1.e-6, OrbitType.CARTESIAN, PositionAngle.TRUE, 0.0);
+            new PositionAngleDetector(OrbitType.CARTESIAN, PositionAngle.TRUE, 0.0).
+            withMaxCheck(600.0).
+            withThreshold(1.0e-6);
             Assert.fail("an exception should habe been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             Assert.assertEquals(OrekitMessages.ORBIT_TYPE_NOT_ALLOWED, oiae.getSpecifier());
