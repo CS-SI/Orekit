@@ -158,11 +158,11 @@ class IAUPoleFactory {
                                                                0.1204 * FastMath.sin(e[1]) + 0.0700 * FastMath.sin(e[2]) -
                                                                0.0172 * FastMath.sin(e[3]) + 0.0072 * FastMath.sin(e[5]) -
                                                                0.0052 * FastMath.sin(e[9]) + 0.0043 * FastMath.sin(e[12])),
-                                                               FastMath.toRadians( 66.5392 + 0.0130 * t       + 1.5419 * FastMath.cos(e[0]) +
-                                                                                   0.0239 * FastMath.cos(e[1]) - 0.0278 * FastMath.cos(e[2]) +
-                                                                                   0.0068 * FastMath.cos(e[3]) - 0.0029 * FastMath.cos(e[5]) +
-                                                                                   0.0009 * FastMath.cos(e[6]) + 0.0008 * FastMath.cos(e[9]) -
-                                                                                   0.0009 * FastMath.cos(e[12])));
+                                            FastMath.toRadians( 66.5392 + 0.0130 * t       + 1.5419 * FastMath.cos(e[0]) +
+                                                               0.0239 * FastMath.cos(e[1]) - 0.0278 * FastMath.cos(e[2]) +
+                                                               0.0068 * FastMath.cos(e[3]) - 0.0029 * FastMath.cos(e[5]) +
+                                                               0.0009 * FastMath.cos(e[6]) + 0.0008 * FastMath.cos(e[9]) -
+                                                               0.0009 * FastMath.cos(e[12])));
                     }
 
                     /** {@inheritDoc }*/
@@ -243,7 +243,7 @@ class IAUPoleFactory {
                                                                0.001432 * FastMath.sin(jc) +
                                                                0.000030 * FastMath.sin(jd) +
                                                                0.002150 * FastMath.sin(je)),
-                                                               FastMath.toRadians( 64.495303 + 0.002413 * t) +
+                                            FastMath.toRadians( 64.495303 + 0.002413 * t) +
                                                                0.000050 * FastMath.cos(ja) +
                                                                0.000404 * FastMath.cos(jb) +
                                                                0.000617 * FastMath.cos(jc) -
