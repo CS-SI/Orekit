@@ -324,6 +324,14 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         return pvProvider;
     }
 
+    /** {@inheritDoc} */
+    public void resetInitialState(final SpacecraftState state)
+        throws PropagationException {
+        super.resetInitialState(state);
+        interpolator.globalCurrentDate = state.getDate();
+        interpolator.softCurrentDate   = interpolator.globalCurrentDate;
+    }
+
     /** Extrapolate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @return extrapolated parameters
