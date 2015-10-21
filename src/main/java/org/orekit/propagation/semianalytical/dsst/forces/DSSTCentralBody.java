@@ -159,24 +159,19 @@ public class DSSTCentralBody implements DSSTForceModel {
      * optionally followed by tesseral coefficients
      * </p>
      * <p>
-     * For zonal terms contributions,there are 6 * maxJ cZij coefficients,
-     * 6 * maxJ sZij coefficients and 12 dZij coefficients, where maxJ depends
-     * on the orbit. The i index ranges from 0 to 5 and corresponds to the
-     * orbital parameter (0 for semi-major axis, ...).The j index is the
-     * integer multiplier for the true longitude argument in the cZij and sZij
-     * coefficients.
+     * For zonal terms contributions,there are maxJ cj coefficients,
+     * maxJ sj coefficients and 2 dj coefficients, where maxJ depends
+     * on the orbit. The j index is the integer multiplier for the true
+     * longitude argument in the cj and sj coefficients and the degree
+     * in the polynomial dj coefficients.
      * </p>
      * <p>
-     * For tesseral terms contributions,there are 6 * maxOrderMdailyTesseralSP
-     * m-daily cMim coefficients, 6 * maxOrderMdailyTesseralSP m-daily sMim
-     * coefficients, 6 * nbNonResonant cijm coefficients and 6 * nbNonResonant
-     * sijm coefficients, where maxOrderMdailyTesseralSP and nbNonResonant both
-     * depend on the orbit. To these raw coefficients, we add the two integers
-     * maxOrderMdailyTesseralSP and nbNonResonant as well as the 2 * nbNonResonant
-     * indices j and m that correspond to non-resonant pairs. The i index ranges
-     * from 0 to 5 and corresponds to the orbital parameter (0 for semi-major axis,
-     * ...). The j index is the integer multiplier for the true longitude argument
-     * and the m index is the integer multiplier for m-dailies.
+     * For tesseral terms contributions,there are maxOrderMdailyTesseralSP
+     * m-daily cMm coefficients, maxOrderMdailyTesseralSP m-daily sMm
+     * coefficients, nbNonResonant cjm coefficients and nbNonResonant
+     * sjm coefficients, where maxOrderMdailyTesseralSP and nbNonResonant both
+     * depend on the orbit. The j index is the integer multiplier for the true
+     * longitude argument and the m index is the integer multiplier for m-dailies.
      * </p>
      */
     @Override
