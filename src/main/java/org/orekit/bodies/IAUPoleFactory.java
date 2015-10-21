@@ -98,7 +98,7 @@ class IAUPoleFactory {
                     private double[] computeMi(final AbsoluteDate date) {
                         final double d = d(date);
                         return new double[] {
-                            FastMath.toRadians(174.791096 +  4.092335 * d), // M1
+                            FastMath.toRadians(174.791086 +  4.092335 * d), // M1
                             FastMath.toRadians(349.582171 +  8.184670 * d), // M2
                             FastMath.toRadians(164.373257 + 12.277005 * d), // M3
                             FastMath.toRadians(339.164343 + 16.369340 * d), // M4
