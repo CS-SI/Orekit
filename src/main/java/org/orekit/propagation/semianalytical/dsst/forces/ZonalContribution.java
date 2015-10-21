@@ -459,7 +459,7 @@ class ZonalContribution implements DSSTForceModel {
         throws OrekitException {
 
         final int maxJ = 2 * maxDegreeShortPeriodics + 1;
-        final Map<String, double[]> coefficients = new HashMap<String, double[]>(12 * maxJ + 6);
+        final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * maxJ + 2);
         storeIfSelected(coefficients, selected,
                         new double[] {
                             zonalSPCoefs.getCij(0, 0, date),
