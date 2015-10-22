@@ -244,12 +244,12 @@ class IAUPoleFactory {
                                                                0.001432 * FastMath.sin(jc) +
                                                                0.000030 * FastMath.sin(jd) +
                                                                0.002150 * FastMath.sin(je)),
-                                            FastMath.toRadians( 64.495303 + 0.002413 * t) +
+                                            FastMath.toRadians( 64.495303 + 0.002413 * t +
                                                                0.000050 * FastMath.cos(ja) +
                                                                0.000404 * FastMath.cos(jb) +
                                                                0.000617 * FastMath.cos(jc) -
                                                                0.000013 * FastMath.cos(jd) +
-                                                               0.000926 * FastMath.cos(je));
+                                                               0.000926 * FastMath.cos(je)));
                     }
 
                     /** {@inheritDoc }*/
