@@ -87,16 +87,38 @@ public class CelestialBodyFactoryTest {
 
             CelestialBody original = CelestialBodyFactory.getBody(name);
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream    oos = new ObjectOutputStream(bos);
-            oos.writeObject(original);
-            Assert.assertTrue(bos.size() > 400);
-            Assert.assertTrue(bos.size() < 460);
+            ByteArrayOutputStream bosBody = new ByteArrayOutputStream();
+            ObjectOutputStream    oosBody = new ObjectOutputStream(bosBody);
+            oosBody.writeObject(original);
+            Assert.assertTrue(bosBody.size() > 400);
+            Assert.assertTrue(bosBody.size() < 460);
 
-            ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-            ObjectInputStream     ois = new ObjectInputStream(bis);
-            CelestialBody deserialized  = (CelestialBody) ois.readObject();
-            Assert.assertTrue(original == deserialized);
+            ByteArrayInputStream  bisBody = new ByteArrayInputStream(bosBody.toByteArray());
+            ObjectInputStream     oisBody = new ObjectInputStream(bisBody);
+            CelestialBody deserializedBody  = (CelestialBody) oisBody.readObject();
+            Assert.assertTrue(original == deserializedBody);
+
+            ByteArrayOutputStream bosInertialFrame = new ByteArrayOutputStream();
+            ObjectOutputStream    oosInertialFrame = new ObjectOutputStream(bosInertialFrame);
+            oosInertialFrame.writeObject(original.getInertiallyOrientedFrame());
+            Assert.assertTrue(bosInertialFrame.size() > 400);
+            Assert.assertTrue(bosInertialFrame.size() < 460);
+
+            ByteArrayInputStream  bisInertialFrame = new ByteArrayInputStream(bosInertialFrame.toByteArray());
+            ObjectInputStream     oisInertialFrame = new ObjectInputStream(bisInertialFrame);
+            Frame deserializedInertialFrame  = (Frame) oisInertialFrame.readObject();
+            Assert.assertTrue(original.getInertiallyOrientedFrame() == deserializedInertialFrame);
+
+            ByteArrayOutputStream bosBodyFrame = new ByteArrayOutputStream();
+            ObjectOutputStream    oosBodyFrame = new ObjectOutputStream(bosBodyFrame);
+            oosBodyFrame.writeObject(original.getBodyOrientedFrame());
+            Assert.assertTrue(bosBodyFrame.size() > 400);
+            Assert.assertTrue(bosBodyFrame.size() < 460);
+
+            ByteArrayInputStream  bisBodyFrame = new ByteArrayInputStream(bosBodyFrame.toByteArray());
+            ObjectInputStream     oisBodyFrame = new ObjectInputStream(bisBodyFrame);
+            Frame deserializedBodyFrame  = (Frame) oisBodyFrame.readObject();
+            Assert.assertTrue(original.getBodyOrientedFrame() == deserializedBodyFrame);
 
         }
     }
