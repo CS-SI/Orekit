@@ -19,6 +19,7 @@ package org.orekit.bodies;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 /** Factory class for IAU poles.
@@ -342,7 +343,7 @@ class IAUPoleFactory {
      * @return interval between date and standard epoch in julian centuries
      */
     private static double t(final AbsoluteDate date) {
-        return date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_CENTURY;
+        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, TimeScalesFactory.getTDB()) / Constants.JULIAN_CENTURY;
     }
 
     /** Compute the interval in julian days from standard epoch.
@@ -350,7 +351,7 @@ class IAUPoleFactory {
      * @return interval between date and standard epoch in julian days
      */
     private static double d(final AbsoluteDate date) {
-        return date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
+        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, TimeScalesFactory.getTDB()) / Constants.JULIAN_DAY;
     }
 
     /** Default IAUPole implementation for barycenters.
