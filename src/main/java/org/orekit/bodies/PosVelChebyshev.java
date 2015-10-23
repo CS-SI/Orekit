@@ -21,6 +21,7 @@ import java.io.Serializable;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
@@ -34,7 +35,10 @@ import org.orekit.utils.PVCoordinates;
 class PosVelChebyshev implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2220448511466595393L;
+    private static final long serialVersionUID = 20151023L;
+
+    /** Time scale in which the ephemeris is defined. */
+    private final TimeScale timeScale;
 
     /** Start of the validity range of the instance. */
     private final AbsoluteDate start;
@@ -53,6 +57,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
 
     /** Simple constructor.
      * @param start start of the validity range of the instance
+     * @param timeScale time scale in which the ephemeris is defined
      * @param duration duration of the validity range of the instance
      * @param xCoeffs Chebyshev polynomials coefficients for the X component
      * (a reference to the array will be stored in the instance)
@@ -61,14 +66,14 @@ class PosVelChebyshev implements TimeStamped, Serializable {
      * @param zCoeffs Chebyshev polynomials coefficients for the Z component
      * (a reference to the array will be stored in the instance)
      */
-    PosVelChebyshev(final AbsoluteDate start, final double duration,
-                           final double[] xCoeffs, final double[] yCoeffs,
-                           final double[] zCoeffs) {
-        this.start    = start;
-        this.duration = duration;
-        this.xCoeffs  = xCoeffs;
-        this.yCoeffs  = yCoeffs;
-        this.zCoeffs  = zCoeffs;
+    PosVelChebyshev(final AbsoluteDate start, final TimeScale timeScale, final double duration,
+                    final double[] xCoeffs, final double[] yCoeffs, final double[] zCoeffs) {
+        this.start     = start;
+        this.timeScale = timeScale;
+        this.duration  = duration;
+        this.xCoeffs   = xCoeffs;
+        this.yCoeffs   = yCoeffs;
+        this.zCoeffs   = zCoeffs;
     }
 
     /** {@inheritDoc} */
@@ -91,7 +96,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
      * @return true if the instance is the successor of the predecessor model
      */
     public boolean isSuccessorOf(final PosVelChebyshev predecessor) {
-        final double gap = start.durationFrom(predecessor.start) - predecessor.duration;
+        final double gap = start.offsetFrom(predecessor.start, timeScale) - predecessor.duration;
         return FastMath.abs(gap) < 0.001;
     }
 
@@ -100,7 +105,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
      * @return true if date is in validity range
      */
     public boolean inRange(final AbsoluteDate date) {
-        final double dt = date.durationFrom(start);
+        final double dt = date.offsetFrom(start, timeScale);
         return (dt >= -0.001) && (dt <= duration + 0.001);
     }
 
@@ -111,7 +116,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
     public PVCoordinates getPositionVelocityAcceleration(final AbsoluteDate date) {
 
         // normalize date
-        final double t = (2 * date.durationFrom(start) - duration) / duration;
+        final double t = (2 * date.offsetFrom(start, timeScale) - duration) / duration;
         final double twoT = 2 * t;
 
         // initialize Chebyshev polynomials recursion

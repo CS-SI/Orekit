@@ -995,7 +995,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 }
 
                 // build the position-velocity model for current chunk
-                entries.add(new PosVelChebyshev(chunkStart, duration, xCoeffs, yCoeffs, zCoeffs));
+                entries.add(new PosVelChebyshev(chunkStart, timeScale, duration, xCoeffs, yCoeffs, zCoeffs));
 
             }
 
