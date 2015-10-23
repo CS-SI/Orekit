@@ -43,7 +43,7 @@ public class IAUPoleFactoryTest {
     @Test
     public void testNaif() throws OrekitException, UnsupportedEncodingException, IOException {
         final TimeScale tdb = TimeScalesFactory.getTDB();
-        final InputStream inEntry = getClass().getResourceAsStream("/naif/Data_From_NAIF.txt");
+        final InputStream inEntry = getClass().getResourceAsStream("/naif/IAU-pole-NAIF.txt");
         BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, "UTF-8"));
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             line = line.trim();
