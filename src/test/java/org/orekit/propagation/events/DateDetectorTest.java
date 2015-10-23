@@ -9,11 +9,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -95,6 +97,43 @@ public class DateDetectorTest {
                 });
         propagator.addEventDetector(dateDetector);
         propagator.propagate(iniDate.shiftedBy(100.*dt));
+    }
+
+    /**
+     * Check that a generic event handler can be used with an event detector.
+     *
+     * @throws PropagationException on error.
+     */
+    @Test
+    public void testGenericHandler() throws PropagationException {
+        //setup
+        dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt));
+        // generic event handler that works with all detectors.
+        EventHandler<EventDetector> handler = new EventHandler<EventDetector>() {
+            @Override
+            public Action eventOccurred(SpacecraftState s,
+                                        EventDetector detector,
+                                        boolean increasing)
+                    throws OrekitException {
+                Assert.assertSame(dateDetector, detector);
+                return Action.STOP;
+            }
+
+            @Override
+            public SpacecraftState resetState(EventDetector detector,
+                                              SpacecraftState oldState)
+                    throws OrekitException {
+                throw new RuntimeException("Should not be called");
+            }
+        };
+
+        //action
+        dateDetector = dateDetector.withHandler(handler);
+        propagator.addEventDetector(dateDetector);
+        SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100 * dt));
+
+        //verify
+        Assert.assertEquals(dt, finalState.getDate().durationFrom(iniDate), threshold);
     }
 
     @Before

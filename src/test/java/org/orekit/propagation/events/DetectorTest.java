@@ -160,13 +160,13 @@ public class DetectorTest {
         private int count;
 
         public GCallsCounter(final double maxCheck, final double threshold,
-                             final int maxIter, final EventHandler<GCallsCounter> handler) {
+                             final int maxIter, final EventHandler<? super GCallsCounter> handler) {
             super(maxCheck, threshold, maxIter, handler);
             count = 0;
         }
 
         protected GCallsCounter create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<GCallsCounter> newHandler) {
+                                       final int newMaxIter, final EventHandler<? super GCallsCounter> newHandler) {
             return new GCallsCounter(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -213,7 +213,7 @@ public class DetectorTest {
         private final PVCoordinatesProvider provider;
 
         public CloseApproachDetector(double maxCheck, double threshold,
-                                     final int maxIter, final EventHandler<CloseApproachDetector> handler,
+                                     final int maxIter, final EventHandler<? super CloseApproachDetector> handler,
                                      PVCoordinatesProvider provider) {
             super(maxCheck, threshold, maxIter, handler);
             this.provider = provider;
@@ -230,7 +230,7 @@ public class DetectorTest {
 
         protected CloseApproachDetector create(final double newMaxCheck, final double newThreshold,
                                                final int newMaxIter,
-                                               final EventHandler<CloseApproachDetector> newHandler) {
+                                               final EventHandler<? super CloseApproachDetector> newHandler) {
             return new CloseApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              provider);
         }

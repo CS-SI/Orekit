@@ -104,7 +104,7 @@ public class DihedralFieldOfViewDetector extends AbstractDetector<DihedralFieldO
      * @since 6.1
      */
     private DihedralFieldOfViewDetector(final double maxCheck, final double threshold,
-                                        final int maxIter, final EventHandler<DihedralFieldOfViewDetector> handler,
+                                        final int maxIter, final EventHandler<? super DihedralFieldOfViewDetector> handler,
                                         final PVCoordinatesProvider pvTarget, final Vector3D center,
                                         final Vector3D axis1, final double halfAperture1,
                                         final Vector3D axis2, final double halfAperture2) {
@@ -128,7 +128,7 @@ public class DihedralFieldOfViewDetector extends AbstractDetector<DihedralFieldO
     @Override
     protected DihedralFieldOfViewDetector create(final double newMaxCheck, final double newThreshold,
                                                  final int newMaxIter,
-                                                 final EventHandler<DihedralFieldOfViewDetector> newHandler) {
+                                                 final EventHandler<? super DihedralFieldOfViewDetector> newHandler) {
         return new DihedralFieldOfViewDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                targetPVProvider, center,
                                                axis1, halfAperture1,

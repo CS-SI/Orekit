@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="evan" type="add">
+        Added capability to use a single EventHandler with multiple types of
+        EventDetectors.
+      </action>
       <action dev="luc" type="add" >
         Added TabulatedLofOffset for attitudes defined by tabulating rotations between Local Orbital Frame
         and spacecraft frame.

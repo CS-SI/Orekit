@@ -112,7 +112,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * @since 6.1
      */
     private EventSlopeFilter(final double maxCheck, final double threshold,
-                             final int maxIter, final EventHandler<EventSlopeFilter<T>> handler,
+                             final int maxIter, final EventHandler<? super EventSlopeFilter<T>> handler,
                              final T rawDetector, final FilterType filter) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
@@ -124,7 +124,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
     /** {@inheritDoc} */
     @Override
     protected EventSlopeFilter<T> create(final double newMaxCheck, final double newThreshold,
-                                         final int newMaxIter, final EventHandler<EventSlopeFilter<T>> newHandler) {
+                                         final int newMaxIter, final EventHandler<? super EventSlopeFilter<T>> newHandler) {
         return new EventSlopeFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }
 

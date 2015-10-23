@@ -79,14 +79,14 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @since 6.1
      */
     private ApsideDetector(final double maxCheck, final double threshold,
-                           final int maxIter, final EventHandler<ApsideDetector> handler) {
+                           final int maxIter, final EventHandler<? super ApsideDetector> handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
     protected ApsideDetector create(final double newMaxCheck, final double newThreshold,
-                                    final int newMaxIter, final EventHandler<ApsideDetector> newHandler) {
+                                    final int newMaxIter, final EventHandler<? super ApsideDetector> newHandler) {
         return new ApsideDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
