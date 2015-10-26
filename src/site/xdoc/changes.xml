@@ -22,6 +22,10 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Fixed time scale issues in JPL ephemerides and IAU pole models.
+        The time used for internal computation should be TDB, not TT.
+      </action>
+      <action dev="luc" type="fix" >
         Fixed an issue with backward propagation on analytical propagator.
         During first step, the analytical interpolator wrongly thought the
         propagation was forward.
