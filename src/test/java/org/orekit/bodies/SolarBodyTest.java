@@ -76,19 +76,24 @@ public class SolarBodyTest {
                 final AbsoluteDate date2 = new AbsoluteDate(AbsoluteDate.J2000_EPOCH,
                                                             Double.parseDouble(fields[1]),
                                                             tdb);
-                final String name        = fields[2];
-                final Vector3D pRef      = new Vector3D(Double.parseDouble(fields[3]) * 1000.0,
-                                                        Double.parseDouble(fields[4]) * 1000.0,
-                                                        Double.parseDouble(fields[5]) * 1000.0);
-                final Vector3D vRef      = new Vector3D(Double.parseDouble(fields[6]) * 1000.0,
-                                                        Double.parseDouble(fields[7]) * 1000.0,
-                                                        Double.parseDouble(fields[8]) * 1000.0);
+                String name       = fields[2];
+                final String barycenter = fields[3];
+                final Vector3D pRef     = new Vector3D(Double.parseDouble(fields[4]) * 1000.0,
+                                                       Double.parseDouble(fields[5]) * 1000.0,
+                                                       Double.parseDouble(fields[6]) * 1000.0);
+                final Vector3D vRef     = new Vector3D(Double.parseDouble(fields[7]) * 1000.0,
+                                                       Double.parseDouble(fields[8]) * 1000.0,
+                                                       Double.parseDouble(fields[9]) * 1000.0);
 
                 // check position-velocity
+                Assert.assertEquals("BARYCENTER", barycenter);
+                if (name.equals("EARTH")) {
+                    name = "EARTH-MOON BARYCENTER";
+                }
                 Assert.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
-                final PVCoordinates pv =
-                                new PVCoordinates(CelestialBodyFactory.getSun().getPVCoordinates(date2, refFrame),
-                                                  CelestialBodyFactory.getBody(name).getPVCoordinates(date2, refFrame));
+                final PVCoordinates pv = CelestialBodyFactory.getBody(name).getPVCoordinates(date2,
+                                                                                             refFrame);
+                                                  
                 Assert.assertEquals(0.0, Vector3D.distance(pRef, pv.getPosition()), 15.0);
                 Assert.assertEquals(0.0, Vector3D.distance(vRef, pv.getVelocity()), 1.0e-5);
             }
