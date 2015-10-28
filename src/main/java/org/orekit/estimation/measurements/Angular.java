@@ -78,6 +78,8 @@ public class Angular extends AbstractMeasurement<Angular> {
         final double          dt           = delta - tauD;
         final SpacecraftState transitState = state.shiftedBy(dt);
         final Vector3D        transit      = transitState.getPVCoordinates().getPosition();
+        // Pour mesure bidon
+        final Vector3D Origine = new Vector3D(0.0, 0.0, 0.0);
 
         // station frame in inertial frame
         final Vector3D east   = topoToInert.transformVector(station.getOffsetFrame().getEast());
@@ -88,18 +90,44 @@ public class Angular extends AbstractMeasurement<Angular> {
         final FieldVector3D<DerivativeStructure> P = new FieldVector3D<DerivativeStructure> (new DerivativeStructure(6, 1, 0, transit.getX()),
                                                                                              new DerivativeStructure(6, 1, 1, transit.getY()),
                                                                                              new DerivativeStructure(6, 1, 2, transit.getZ()));
+        // Pour mesure bidon
+        //final FieldVector3D<DerivativeStructure> O = new FieldVector3D<DerivativeStructure> (new DerivativeStructure(6, 1, 0, Origine.getX()),
+        //                    new DerivativeStructure(6, 1, 1, Origine.getY()),
+        //                    new DerivativeStructure(6, 1, 2, Origine.getZ()));
 
         // station vector expressed in inertial frame
         final Vector3D  stationPosition      = topoToInert.transformVector(stationArrival.getPosition());
+
+        // Calcul de la Latitude
+        //final double Geodetic_Lat = station.getBaseFrame().getPoint().getLatitude();
+
         final FieldVector3D<DerivativeStructure> Q = new FieldVector3D<DerivativeStructure> (new DerivativeStructure(6, 1, 3, stationPosition.getX()),
                                                                                              new DerivativeStructure(6, 1, 4, stationPosition.getY()),
                                                                                              new DerivativeStructure(6, 1, 5, stationPosition.getZ()));
+//
+//        final FieldVector3D<DerivativeStructure> east = new FieldVector3D<DerivativeStructure> ( DerivativeStructure.atan2(Q.getY(), Q.getX()).sin().negate(),
+//                                                                                                 DerivativeStructure.atan2(Q.getY(), Q.getX()).cos(),
+//                                                                                                  );
+//
+//        final FieldVector3D<DerivativeStructure> north = new FieldVector3D<DerivativeStructure> ( DerivativeStructure.atan2(Q.getY(), Q.getX()).sin().negate(),
+//                        DerivativeStructure.atan2(Q.getY(), Q.getX()).cos(),
+//                         );
+//
+//        final FieldVector3D<DerivativeStructure> zenith = new FieldVector3D<DerivativeStructure> ( DerivativeStructure.atan2(Q.getY(), Q.getX()).sin().negate(),
+//                        DerivativeStructure.atan2(Q.getY(), Q.getX()).cos(),
+//                        );
+//
+//        final DerivativeStructure toto   = DerivativeStructure.atan2(Q.getY(), Q.getX()).negate();
 
         // station-satellite vector expressed in inertial frame
         final FieldVector3D<DerivativeStructure> QP = P.subtract(Q);
+        //final FieldVector3D<DerivativeStructure> OQ = Q.subtract(O);
 
         final DerivativeStructure azimuth   = DerivativeStructure.atan2(QP.dotProduct(east), QP.dotProduct(north));
         final DerivativeStructure elevation = QP.dotProduct(zenith).divide(QP.getNorm());
+        // Mesure bidon QO
+        //final DerivativeStructure azimuth = OQ.getX();
+        //final DerivativeStructure elevation = OQ.getY();
 
         // prepare the evaluation
         final Evaluation<Angular> evaluation = new Evaluation<Angular>(this, iteration, transitState);
@@ -132,9 +160,13 @@ public class Angular extends AbstractMeasurement<Angular> {
 
         if (station.isEstimated()) {
 
-            /*final AngularCoordinates ac = topoToInert.getAngular().revert();
+            final AngularCoordinates ac = topoToInert.getAngular().revert();
             final Vector3D omega        = ac.getRotationRate();
-            final double dx = dt * omega.getX();
+            //final Vector3D V1 = new Vector3D(omega.getX(), omega.getY(), omega.getZ());
+            //final Vector3D V2 = new Vector3D(OQ.getX().getValue(), OQ.getY().getValue(), OQ.getZ().getValue());
+            //final Vector3D V3 = V1.crossProduct(V2);
+
+            /*final double dx = dt * omega.getX();
             final double dy = dt * omega.getY();
             final double dz = dt * omega.getZ();*/
 
@@ -151,12 +183,13 @@ public class Angular extends AbstractMeasurement<Angular> {
 
             // convert to topocentric frame, as the station position
             // offset parameter is expressed in this frame
-            final AngularCoordinates ac = topoToInert.getAngular().revert();
+            //final AngularCoordinates ac = topoToInert.getAngular().revert();
 
             final Vector3D dAzOndQT = ac.getRotation().applyTo(dAzOndQI);
             final Vector3D dElOndQT = ac.getRotation().applyTo(dElOndQI);
 
             evaluation.setParameterDerivatives(station.getName(), dAzOndQT.toArray(), dElOndQT.toArray());
+            //evaluation.setParameterDerivatives(station.getName(), dAzOndQI.toArray(), dElOndQI.toArray());
         }
 
         return evaluation;
