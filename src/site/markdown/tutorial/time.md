@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Time
-====
+# Time
 
 This tutorial shows how to handle time in Orekit.
 
-Basic use
----------
+## Basic use
 
 The first example will be devoted to basic use: creating dates,
 comparing dates and printing dates. We will build a small program

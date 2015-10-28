@@ -17,6 +17,11 @@
 package org.orekit.utils;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -324,6 +329,30 @@ public class TimeStampedPVCoordinatesTest {
             Assert.assertEquals(-FastMath.sin(dt),   a.getY(), 4.0e-8  * a.getNorm());
             Assert.assertEquals(0,                   a.getZ(), 4.0e-8  * a.getNorm());
         }
+
+    }
+
+    @Test
+    public void testSerialization() throws IOException, ClassNotFoundException {
+        TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                                                   new Vector3D(1, 2, 3),
+                                                                   new Vector3D(4, 5, 6),
+                                                                   new Vector3D(7, 8, 9));
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(pv);
+
+        Assert.assertTrue(bos.size() > 180);
+        Assert.assertTrue(bos.size() < 190);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        TimeStampedPVCoordinates deserialized  = (TimeStampedPVCoordinates) ois.readObject();
+        Assert.assertEquals(0.0, deserialized.getDate().durationFrom(pv.getDate()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(deserialized.getPosition(),     pv.getPosition()),     1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(deserialized.getVelocity(),     pv.getVelocity()),     1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(deserialized.getAcceleration(), pv.getAcceleration()), 1.0e-15);
 
     }
 

@@ -105,7 +105,7 @@ public enum Month {
     /** Simple constructor.
      * @param number month number
      */
-    private Month(final int number) {
+    Month(final int number) {
         this.number             = number;
         lowerCaseName           = toString().toLowerCase();
         capitalizedName         = toString().charAt(0) + lowerCaseName.substring(1);

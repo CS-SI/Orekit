@@ -21,7 +21,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.ode.AbstractIntegrator;
@@ -149,7 +154,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.TRUE);
+        setPositionAngleType(PositionAngle.MEAN);
         setAttitudeProvider(DEFAULT_LAW);
     }
 
@@ -169,7 +174,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.TRUE);
+        setPositionAngleType(PositionAngle.MEAN);
         setAttitudeProvider(DEFAULT_LAW);
     }
 
@@ -203,6 +208,24 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     public void resetInitialState(final SpacecraftState state) throws PropagationException {
         super.setStartDate(state.getDate());
         super.resetInitialState(state);
+    }
+
+    /** Set the selected short periodic coefficients that must be stored as additional states.
+     * @param selectedCoefficients short periodic coefficients that must be stored as additional states
+     * (null means no coefficients are selected, empty set means all coefficients are selected)
+     */
+    public void setSelectedCoefficients(final Set<String> selectedCoefficients) {
+        mapper.setSelectedCoefficients(selectedCoefficients == null ?
+                                       null : new HashSet<String>(selectedCoefficients));
+    }
+
+    /** Get the selected short periodic coefficients that must be stored as additional states.
+     * @return short periodic coefficients that must be stored as additional states
+     * (null means no coefficients are selected, empty set means all coefficients are selected)
+     */
+    public Set<String> getSelectedCoefficients() {
+        final Set<String> set = mapper.getSelectedCoefficients();
+        return set == null ? null : Collections.unmodifiableSet(set);
     }
 
     /** Check if the initial state is provided in osculating elements.
@@ -407,15 +430,21 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * Note that for DSST, orbit type is hardcoded to {@link OrbitType#EQUINOCTIAL}
+     * and position angle type is hardcoded to {@link PositionAngle#MEAN}, so
+     * the corresponding parameters are ignored.
+     * </p>
+     */
     @Override
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
-                                       final OrbitType orbitType, final PositionAngle positionAngleType,
+                                       final OrbitType ignoredOrbitType, final PositionAngle ignoredPositionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
 
         // create a mapper with the common settings provided as arguments
         final MeanPlusShortPeriodicMapper newMapper =
-                new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame);
+                new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame, null);
 
         // copy the specific settings from the existing mapper
         if (mapper != null) {
@@ -424,6 +453,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             }
             newMapper.setSatelliteRevolution(mapper.getSatelliteRevolution());
             newMapper.setInitialIsOsculating(mapper.initialIsOsculating());
+            newMapper.setSelectedCoefficients(mapper.getSelectedCoefficients());
         }
 
         mapper = newMapper;
@@ -444,27 +474,28 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Force models used to compute short periodic terms. */
         private final transient List<DSSTForceModel> forceModels;
 
+        /** Short periodic coefficients that must be stored as additional states. */
+        private Set<String>                selectedCoefficients;
+
         /** Number of satellite revolutions in the averaging interval. */
         private int                        satelliteRevolution;
 
         /** Simple constructor.
-         * <p>
-         * The position parameter type is meaningful only if {@link
-         * #getOrbitType() propagation orbit type}
-         * support it. As an example, it is not meaningful for propagation
-         * in {@link OrbitType#CARTESIAN Cartesian} parameters.
-         * </p>
          * @param referenceDate reference date
          * @param mu central attraction coefficient (m³/s²)
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
+         * @param selectedCoefficients short periodic coefficients that must be stored as additional states
          */
-        public MeanPlusShortPeriodicMapper(final AbsoluteDate referenceDate, final double mu,
-                                           final AttitudeProvider attitudeProvider, final Frame frame) {
+        MeanPlusShortPeriodicMapper(final AbsoluteDate referenceDate, final double mu,
+                                    final AttitudeProvider attitudeProvider, final Frame frame,
+                                    final Set<String> selectedCoefficients) {
 
             super(referenceDate, mu, OrbitType.EQUINOCTIAL, PositionAngle.MEAN, attitudeProvider, frame);
 
-            this.forceModels = new ArrayList<DSSTForceModel>();
+            this.forceModels          = new ArrayList<DSSTForceModel>();
+            this.selectedCoefficients = selectedCoefficients == null ?
+                                        null : new HashSet<String>(selectedCoefficients);
 
             // Default averaging period for conversion from osculating to mean elements
             this.satelliteRevolution = 2;
@@ -475,20 +506,25 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState mapArrayToState(final double t, final double[] y, final boolean meanOnly)
+        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
             throws OrekitException {
-
-            final AbsoluteDate date = mapDoubleToDate(t);
 
             // add short periodic variations to mean elements to get osculating elements
             // (the loop may not be performed if there are no force models and in the
             //  case we want to remain in mean parameters only)
             final double[] elements = y.clone();
-            if (!meanOnly) {
+            final Map<String, double[]> coefficients;
+            if (meanOnly) {
+                coefficients = null;
+            } else {
+                coefficients = selectedCoefficients == null ? null : new HashMap<String, double[]>();
                 for (final DSSTForceModel forceModel : forceModels) {
                     final double[] shortPeriodic = forceModel.getShortPeriodicVariations(date, y);
                     for (int i = 0; i < shortPeriodic.length; i++) {
                         elements[i] += shortPeriodic[i];
+                    }
+                    if (selectedCoefficients != null) {
+                        coefficients.putAll(forceModel.getShortPeriodicCoefficients(date, selectedCoefficients));
                     }
                 }
             }
@@ -501,7 +537,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final Orbit orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, PositionAngle.MEAN, date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
-            return new SpacecraftState(orbit, attitude, mass);
+            if (coefficients == null) {
+                return new SpacecraftState(orbit, attitude, mass);
+            } else {
+                return new SpacecraftState(orbit, attitude, mass, coefficients);
+            }
 
         }
 
@@ -586,6 +626,22 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          */
         public boolean initialIsOsculating() {
             return initialIsOsculating;
+        }
+
+        /** Set the selected short periodic coefficients that must be stored as additional states.
+         * @param selectedCoefficients short periodic coefficients that must be stored as additional states
+         * (null means no coefficients are selected, empty set means all coefficients are selected)
+         */
+        public void setSelectedCoefficients(final Set<String> selectedCoefficients) {
+            this.selectedCoefficients = selectedCoefficients;
+        }
+
+        /** Get the selected short periodic coefficients that must be stored as additional states.
+         * @return short periodic coefficients that must be stored as additional states
+         * (null means no coefficients are selected, empty set means all coefficients are selected)
+         */
+        public Set<String> getSelectedCoefficients() {
+            return selectedCoefficients;
         }
 
         /** Reset the short periodics coefficient for each {@link DSSTForceModel}.
@@ -721,14 +777,15 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 }
             }
             return new DataTransferObject(getReferenceDate(), getMu(), getAttitudeProvider(), getFrame(),
-                                          initialIsOsculating, serializableorceModels, satelliteRevolution);
+                                          initialIsOsculating, serializableorceModels, satelliteRevolution,
+                                          selectedCoefficients);
         }
 
         /** Internal class used only for serialization. */
         private static class DataTransferObject implements Serializable {
 
             /** Serializable UID. */
-            private static final long serialVersionUID = 20130621L;
+            private static final long serialVersionUID = 20151020L;
 
             /** Reference date. */
             private final AbsoluteDate referenceDate;
@@ -748,6 +805,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             /** Force models to use for short periodic terms computation. */
             private final DSSTForceModel[] forceModels;
 
+            /** Short periodic coefficients that must be stored as additional states. */
+            private final Set<String> selectedCoefficients;
+
             /** Number of satellite revolutions in the averaging interval. */
             private final int satelliteRevolution;
 
@@ -759,18 +819,21 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
              * @param initialIsOsculating if true, initial orbital state is given with osculating elements
              * @param forceModels force models to use for short periodic terms computation
              * @param satelliteRevolution number of satellite revolutions in the averaging interval
+             * @param selectedCoefficients short periodic coefficients that must be stored as additional states
              */
-            public DataTransferObject(final AbsoluteDate referenceDate, final double mu,
+            DataTransferObject(final AbsoluteDate referenceDate, final double mu,
                                       final AttitudeProvider attitudeProvider, final Frame frame,
                                       final boolean initialIsOsculating,
-                                      final DSSTForceModel[] forceModels, final int satelliteRevolution) {
-                this.referenceDate       = referenceDate;
-                this.mu                  = mu;
-                this.attitudeProvider    = attitudeProvider;
-                this.frame               = frame;
-                this.initialIsOsculating = initialIsOsculating;
-                this.forceModels         = forceModels;
-                this.satelliteRevolution = satelliteRevolution;
+                                      final DSSTForceModel[] forceModels, final int satelliteRevolution,
+                                      final Set<String> selectedCoefficients) {
+                this.referenceDate        = referenceDate;
+                this.mu                   = mu;
+                this.attitudeProvider     = attitudeProvider;
+                this.frame                = frame;
+                this.initialIsOsculating  = initialIsOsculating;
+                this.forceModels          = forceModels;
+                this.satelliteRevolution  = satelliteRevolution;
+                this.selectedCoefficients = selectedCoefficients;
             }
 
             /** Replace the deserialized data transfer object with a {@link MeanPlusShortPeriodicMapper}.
@@ -778,12 +841,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
              */
             private Object readResolve() {
                 final MeanPlusShortPeriodicMapper mapper =
-                        new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame);
+                        new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame, selectedCoefficients);
                 for (final DSSTForceModel forceModel : forceModels) {
                     mapper.addForceModel(forceModel);
                 }
                 mapper.setSatelliteRevolution(satelliteRevolution);
                 mapper.setInitialIsOsculating(initialIsOsculating);
+                mapper.setSelectedCoefficients(selectedCoefficients);
                 return mapper;
             }
 
@@ -806,7 +870,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
-        public Main(final AbstractIntegrator integrator) {
+        Main(final AbstractIntegrator integrator) {
             yDot = new double[7];
 
             for (final DSSTForceModel forceModel : mapper.getForceModels()) {
@@ -896,7 +960,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Constructor.
          * @param grid for interpolation of the short periodics coefficients
          */
-        public ShortPeriodicsHandler(final InterpolationGrid grid) {
+        ShortPeriodicsHandler(final InterpolationGrid grid) {
             this.grid = grid;
         }
 

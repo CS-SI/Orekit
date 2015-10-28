@@ -190,7 +190,7 @@ public class UpdatableFrame extends Frame {
         /** Simple constructor.
          * @param transform initial value of the transform
          */
-        public UpdatableProvider(final Transform transform) {
+        UpdatableProvider(final Transform transform) {
             this.transform = new AtomicReference<Transform>(transform);
         }
 

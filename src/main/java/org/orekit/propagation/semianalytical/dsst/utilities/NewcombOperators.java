@@ -449,7 +449,7 @@ public class NewcombOperators {
          * @param rho ρ
          * @param sigma σ
          */
-        public NewKey(final int n, final int s, final int rho, final int sigma) {
+        NewKey(final int n, final int s, final int rho, final int sigma) {
             this.n = n;
             this.s = s;
             this.rho = rho;

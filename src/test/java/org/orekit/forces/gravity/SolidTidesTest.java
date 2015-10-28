@@ -87,24 +87,76 @@ public class SolidTidesTest {
     }
 
     @Test
-    public void testTideEffect() throws OrekitException {
-
-        IERSConventions conventions = IERSConventions.IERS_2010;
+    public void testTideEffect1996() throws OrekitException {
         Frame eme2000 = FramesFactory.getEME2000();
-        Frame itrf    = FramesFactory.getITRF(conventions, true);
         TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        doTestTideEffect(orbit, IERSConventions.IERS_1996, 44.09481, 0.00000);
+    }
+
+    @Test
+    public void testTideEffect2003WithinAnnualPoleRange() throws OrekitException {
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(1969, 07, 01, 13, 59, 27.816, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        doTestTideEffect(orbit, IERSConventions.IERS_2003, 73.14011, 0.87360);
+    }
+
+    @Test
+    public void testTideEffect2003AfterAnnualPoleRange() throws OrekitException {
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        doTestTideEffect(orbit, IERSConventions.IERS_2003, 44.24999, 0.61752);
+    }
+
+    @Test
+    public void testTideEffect2010BeforePoleModelChange() throws OrekitException {
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        doTestTideEffect(orbit, IERSConventions.IERS_2010, 44.25001, 0.70710);
+    }
+
+    @Test
+    public void testTideEffect2010AfterModelChange() throws OrekitException {
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         Constants.EIGEN5C_EARTH_MU);
+        doTestTideEffect(orbit, IERSConventions.IERS_2010, 24.02815, 30.92816);
+    }
+
+    private void doTestTideEffect(Orbit orbit, IERSConventions conventions, double delta1, double delta2)
+        throws OrekitException {
+
+        Frame itrf    = FramesFactory.getITRF(conventions, true);
         UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getConstantNormalizedProvider(5, 5);
 
         // initialization
-        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
-        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
-                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
-                                         0, PositionAngle.MEAN, eme2000, date,
-                                         gravityField.getMu());
 
-        AbsoluteDate target = date.shiftedBy(7 * Constants.JULIAN_DAY);
+        AbsoluteDate target = orbit.getDate().shiftedBy(7 * Constants.JULIAN_DAY);
         ForceModel hf = new HolmesFeatherstoneAttractionModel(itrf, gravityField);
         SpacecraftState noTides              = propagate(orbit, target, hf);
         SpacecraftState solidTidesNoPoleTide = propagate(orbit, target, hf,
@@ -121,11 +173,11 @@ public class SolidTidesTest {
                                                                       conventions, ut1,
                                                                       CelestialBodyFactory.getSun(),
                                                                       CelestialBodyFactory.getMoon()));
-        Assert.assertEquals(44.25,
+        Assert.assertEquals(delta1,
                             Vector3D.distance(noTides.getPVCoordinates().getPosition(),
                                               solidTidesNoPoleTide.getPVCoordinates().getPosition()),
                             0.01);
-        Assert.assertEquals(0.7071,
+        Assert.assertEquals(delta2,
                             Vector3D.distance(solidTidesNoPoleTide.getPVCoordinates().getPosition(),
                                               solidTidesPoleTide.getPVCoordinates().getPosition()),
                             0.01);

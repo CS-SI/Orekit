@@ -44,7 +44,7 @@ class ITRFProvider implements EOPBasedTransformProvider {
     /** Simple constructor.
      * @param eopHistory EOP history
      */
-    public ITRFProvider(final EOPHistory eopHistory) {
+    ITRFProvider(final EOPHistory eopHistory) {
         this.eopHistory = eopHistory;
     }
 

@@ -58,7 +58,7 @@ class TEMEProvider implements EOPBasedTransformProvider {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    public TEMEProvider(final IERSConventions conventions, final EOPHistory eopHistory)
+    TEMEProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
@@ -147,7 +147,7 @@ class TEMEProvider implements EOPBasedTransformProvider {
          * @param conventions IERS conventions to apply
          * @param eopHistory EOP history
          */
-        public DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
+        DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
             this.conventions = conventions;
             this.eopHistory  = eopHistory;
         }

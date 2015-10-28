@@ -12,11 +12,9 @@
   limitations under the License.
 -->
 
-Downloads
-=========
+# Downloads
 
-Development Library version
----------------------------
+## Development Library version
 
 The development version of the Orekit library is always available to
 download from our version control system. We use [ Git](http://git-scm.com/)
@@ -31,8 +29,7 @@ development environment:
 
     git clone https://www.orekit.org/git/orekit-main.git
 
-Released Library versions
--------------------------
+## Released Library versions
 
 Orekit is provided both in several packaging systems. You can pick up
 the one that better suits your needs. Source packages are the most complete
@@ -107,8 +104,7 @@ version 4.0 downloads (release date: 2008-10-13)
 |  javadoc | [orekit-3.1-doc.jar](https://www.orekit.org/forge/attachments/download/4/orekit-3.1-doc.jar)              |
 version 3.1 downloads (release date: 2008-07-16)
 
-Data
-----
+## Data
 
 For convenience, a zip archive containing some configuration data is
 available for download. Putting this zip archive in your disk and putting its

@@ -12,14 +12,12 @@
   limitations under the License.
 -->
 
-Forces
-======
+# Forces
 
 The `org.orekit.forces` package provides the interface for the force models to be used by a 
 `NumericalPropagator`.
   
-Forces presentation
--------------------
+## Forces presentation
 
 Objects implementing the force model interface are intended to be added to a
 numerical propagator before the propagation is started.
@@ -40,8 +38,7 @@ is called once just before propagation starts. The events states will be checked
 the propagator to ensure accurate propagation and proper events handling.
 
 
-Available force models
-----------------------
+## Available force models
 
 The force models implemented are as follows:
 
@@ -84,8 +81,7 @@ The force models implemented are as follows:
   are implemented, with the possibility to define an impulse maneuver, thanks 
   to the event detector mechanism.
 
-Spacecraft shapes
------------------
+## Spacecraft shapes
 
 Surface forces like atmospheric drag or radiation pressure can use either
 a simple `SphericalSpacecraft` shape or a more accurate

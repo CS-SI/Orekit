@@ -12,11 +12,9 @@
   limitations under the License.
 -->
 
-Contacts
-========
+# Contacts
 
-Mailing lists
--------------
+## Mailing lists
 
 Most discussions should occur on the public mailing lists.
 
@@ -30,16 +28,14 @@ Please register to these mailing lists before attempting to post!
 
 We're preventing unregistered members from posting in order to prevent spam. Thank you.
 
-Technical contact
------------------
+## Technical contact
 
 If for some reason you cannot use the public lists, you can reach the CS
 Systèmes d'Information Orekit team for any question (either technically
 oriented or administrative) at the following email address:
 [orekit@c-s.fr](mailto:orekit@c-s.fr)
 
-Administrative contact
-----------------------
+## Administrative contact
 
 If you want to discuss with the space division staff at CS Systèmes d'Information,
 please use the following address:

@@ -37,7 +37,7 @@ class Normalizer implements NormalizedSphericalHarmonicsProvider {
      * @exception OrekitException if degree and order are too large
      * and the normalization coefficients underflow
      */
-    public Normalizer(final UnnormalizedSphericalHarmonicsProvider unnormalized)
+    Normalizer(final UnnormalizedSphericalHarmonicsProvider unnormalized)
         throws OrekitException {
         this.unnormalized = unnormalized;
         this.factors      = GravityFieldFactory.getUnnormalizationFactors(unnormalized.getMaxDegree(),

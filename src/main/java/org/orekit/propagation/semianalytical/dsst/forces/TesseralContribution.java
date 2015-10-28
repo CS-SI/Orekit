@@ -17,8 +17,11 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -253,7 +256,7 @@ class TesseralContribution implements DSSTForceModel {
      *  @param provider provider for spherical harmonics
      *  @param mDailiesOnly if true only M-dailies tesseral harmonics are taken into account for short periodics
      */
-    public TesseralContribution(final Frame centralBodyFrame,
+    TesseralContribution(final Frame centralBodyFrame,
                                 final double centralBodyRotationRate,
                                 final UnnormalizedSphericalHarmonicsProvider provider,
                                 final boolean mDailiesOnly) {
@@ -572,6 +575,109 @@ class TesseralContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
+    public String getCoefficientsKeyPrefix() {
+        return "DSST-central-body-tesseral-";
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * For tesseral terms contributions,there are maxOrderMdailyTesseralSP
+     * m-daily cMm coefficients, maxOrderMdailyTesseralSP m-daily sMm
+     * coefficients, nbNonResonant cjm coefficients and nbNonResonant
+     * sjm coefficients, where maxOrderMdailyTesseralSP and nbNonResonant both
+     * depend on the orbit. The j index is the integer multiplier for the true
+     * longitude argument and the m index is the integer multiplier for m-dailies.
+     * </p>
+     */
+    @Override
+    public Map<String, double[]> getShortPeriodicCoefficients(final AbsoluteDate date, final Set<String> selected)
+        throws OrekitException {
+
+        if (!nonResOrders.isEmpty() || mDailiesOnly) {
+            final Map<String, double[]> coefficients =
+                            new HashMap<String, double[]>(12 * maxOrderMdailyTesseralSP +
+                                                          12 * nonResOrders.size());
+
+            for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
+                storeIfSelected(coefficients, selected,
+                                new double[] {
+                                    tesseralSPCoefs.getCijm(0, 0, m, date),
+                                    tesseralSPCoefs.getCijm(1, 0, m, date),
+                                    tesseralSPCoefs.getCijm(2, 0, m, date),
+                                    tesseralSPCoefs.getCijm(3, 0, m, date),
+                                    tesseralSPCoefs.getCijm(4, 0, m, date),
+                                    tesseralSPCoefs.getCijm(5, 0, m, date)
+                                }, "cM", m);
+                storeIfSelected(coefficients, selected,
+                                new double[] {
+                                    tesseralSPCoefs.getSijm(0, 0, m, date),
+                                    tesseralSPCoefs.getSijm(1, 0, m, date),
+                                    tesseralSPCoefs.getSijm(2, 0, m, date),
+                                    tesseralSPCoefs.getSijm(3, 0, m, date),
+                                    tesseralSPCoefs.getSijm(4, 0, m, date),
+                                    tesseralSPCoefs.getSijm(5, 0, m, date)
+                                }, "sM", m);
+            }
+
+            for (final Map.Entry<Integer, List<Integer>> entry : nonResOrders.entrySet()) {
+                final int           m     = entry.getKey();
+                final List<Integer> listJ = entry.getValue();
+
+                for (int j : listJ) {
+                    for (int i = 0; i < 6; ++i) {
+                        storeIfSelected(coefficients, selected,
+                                        new double[] {
+                                            tesseralSPCoefs.getCijm(0, j, m, date),
+                                            tesseralSPCoefs.getCijm(1, j, m, date),
+                                            tesseralSPCoefs.getCijm(2, j, m, date),
+                                            tesseralSPCoefs.getCijm(3, j, m, date),
+                                            tesseralSPCoefs.getCijm(4, j, m, date),
+                                            tesseralSPCoefs.getCijm(5, j, m, date)
+                                        }, "c", j, m);
+                        storeIfSelected(coefficients, selected,
+                                        new double[] {
+                                            tesseralSPCoefs.getSijm(0, j, m, date),
+                                            tesseralSPCoefs.getSijm(1, j, m, date),
+                                            tesseralSPCoefs.getSijm(2, j, m, date),
+                                            tesseralSPCoefs.getSijm(3, j, m, date),
+                                            tesseralSPCoefs.getSijm(4, j, m, date),
+                                            tesseralSPCoefs.getSijm(5, j, m, date)
+                                        }, "s", j, m);
+                    }
+                }
+            }
+
+            return coefficients;
+
+        } else {
+            return Collections.emptyMap();
+        }
+
+    }
+
+    /** Put a coefficient in a map if selected.
+     * @param map map to populate
+     * @param selected set of coefficients that should be put in the map
+     * (empty set means all coefficients are selected)
+     * @param value coefficient value
+     * @param id coefficient identifier
+     * @param indices list of coefficient indices
+     */
+    private void storeIfSelected(final Map<String, double[]> map, final Set<String> selected,
+                                 final double[] value, final String id, final int ... indices) {
+        final StringBuilder keyBuilder = new StringBuilder(getCoefficientsKeyPrefix());
+        keyBuilder.append(id);
+        for (int index : indices) {
+            keyBuilder.append('[').append(index).append(']');
+        }
+        final String key = keyBuilder.toString();
+        if (selected.isEmpty() || selected.contains(key)) {
+            map.put(key, value);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public EventDetector[] getEventsDetectors() {
         return null;
     }
@@ -859,7 +965,7 @@ class TesseralContribution implements DSSTForceModel {
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
                 final DerivativeStructure jacobi =
-                        JacobiPolynomials.getValue(l, v , w, new DerivativeStructure(1, 1, 0, gamma));
+                        JacobiPolynomials.getValue(l, v, w, new DerivativeStructure(1, 1, 0, gamma));
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);
@@ -984,7 +1090,7 @@ class TesseralContribution implements DSSTForceModel {
          *  @param jMax absolute limit for j ( -jMax <= j <= jMax )
          *  @param mMax maximum value for m
          */
-        public FourierCjSjCoefficients(final int jMax, final int mMax) {
+        FourierCjSjCoefficients(final int jMax, final int mMax) {
             // initialise fields
             final int rows    = mMax + 1;
             final int columns = 2 * jMax + 1;
@@ -1235,7 +1341,7 @@ class TesseralContribution implements DSSTForceModel {
          * @param mMax maximum value for m
          * @param interpolationPoints number of points used in the interpolation process
          */
-        public TesseralShortPeriodicCoefficients(final int jMax, final int mMax, final int interpolationPoints) {
+        TesseralShortPeriodicCoefficients(final int jMax, final int mMax, final int interpolationPoints) {
 
             // Initialize fields
             final int rows    = mMax + 1;

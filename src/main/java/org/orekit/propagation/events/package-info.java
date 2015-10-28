@@ -44,6 +44,10 @@
  *  <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
  *  detects apside crossing (and by default stop at perigee)
  *  </li>
+ *  <li>{@link org.orekit.propagation.events.PositionAngleDetector PositionAngleDetector}
+ *  detects anomaly, latitude argument or longitude argument crossings, with either true
+ *  eccentric or mean angles (the increasing/decreasing flag is irrelevant for this detector)
+ *  </li>
  *  <li>{@link org.orekit.propagation.events.CircularFieldOfViewDetector CircularFieldOfViewDetector}
  *  detects target entry/exit a satellite sensor field of view with a circular boundary
  *  (and by default continue on entry and stop on exit)
@@ -61,6 +65,21 @@
  *  <li>{@link org.orekit.propagation.events.ElevationDetector ElevationDetector}
  *  detects satellite raising/setting (and by default stop at setting)
  *  </li>
+ *  <li>{@link org.orekit.propagation.events.ElevationExtremumDetector ElevationExtremumDetector}
+ *  detects satellite maximum/minimum elevation (and by default stop at minimum)
+ *  </li>
+ *  <li>{@link org.orekit.propagation.events.LatitudeCrossingDetector LatitudeCrossingDetector}
+ *  detects satellite crossing a parallel (and by default stop at northward crossing)
+ *  </li>
+ *  <li>{@link org.orekit.propagation.events.LatitudeExtremumDetector LatitudeExtremumDetector}
+ *  detects satellite maximum/minimum latitude (and by default stop at minimum)
+ *  </li>
+ *  <li>{@link org.orekit.propagation.events.LongitudeCrossingDetector LongitudeCrossingDetector}
+ *  detects satellite crossing a meridian (the increasing/decreasing flag is irrelevant for this detector)
+ *  </li>
+ *  <li>{@link org.orekit.propagation.events.LongitudeExtremumDetector LongitudeExtremumDetector}
+ *  detects satellite maximum/minimum longitude (and by default stop at minimum)
+ *  </li>
  *  <li>{@link org.orekit.propagation.events.GeographicZoneDetector GeographicZoneDetector}
  *  detects geographic boundaries crossings (and by default stop at zone exit)
  *  </li>
@@ -73,9 +92,11 @@
  * In addition to raw events, the class also provides {@link org.orekit.propagation.events.EventsLogger
  * EventsLogger} to gather all events that occurred during a propagation, {@link
  * org.orekit.propagation.events.EventShifter EventShifter} which allows to slightly shift an
- * event in time  (for example to trigger something say 5 minutes before eclipse entry), and {@link
- * org.orekit.propagation.events.EventFilter EventFilter} to trigger only specific types of events,
- * without losing computation time by locating events user is not interested in.
+ * event in time  (for example to trigger something say 5 minutes before eclipse entry), {@link
+ * org.orekit.propagation.events.EventSlopeFilter EventSlopeFilter} and {@link
+ * org.orekit.propagation.events.EventEnablingPredicateFilter EventEnablingPredicateFilter} to trigger
+ * only specific types of events, without losing computation time by locating events user is not
+ * interested in.
  * </p>
  *
  * <p>

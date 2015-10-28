@@ -312,7 +312,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
              * @param headerRegExp regular expression for header
              * @param dataRegExp regular expression for data
              */
-            private Section(final String headerRegExp, final String dataRegExp) {
+            Section(final String headerRegExp, final String dataRegExp) {
                 this.header = Pattern.compile(headerRegExp);
                 this.data   = Pattern.compile(dataRegExp);
             }
@@ -358,7 +358,7 @@ public class UTCTAIBulletinAFilesLoader implements UTCTAIOffsetsLoader {
 
         /** Simple constructor.
          */
-        public Parser() {
+        Parser() {
             this.taiUtc     = new TreeMap<Integer, Integer>();
             this.ut1Utc     = new TreeMap<Integer, Double>();
             this.lineNumber = 0;

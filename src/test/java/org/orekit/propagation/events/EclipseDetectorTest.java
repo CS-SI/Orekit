@@ -92,19 +92,20 @@ public class EclipseDetectorTest {
 
     @Test
     public void testTooSmallMaxIterationCount() throws OrekitException {
+        int n = 5;
         EclipseDetector e = new EclipseDetector(60., 1.e-3,
                                                 CelestialBodyFactory.getSun(), sunRadius,
                                                 CelestialBodyFactory.getEarth(), earthRadius).
                              withHandler(new StopOnDecreasing<EclipseDetector>()).
                              withMaxCheck(120.0).
                              withThreshold(1.0e-4).
-                             withMaxIter(8);
+                             withMaxIter(n);
        propagator.addEventDetector(e);
         try {
             propagator.propagate(iniDate.shiftedBy(6000));
             Assert.fail("an exception should have been thrown");
         } catch (PropagationException pe) {
-            Assert.assertEquals(8, ((TooManyEvaluationsException) pe.getCause()).getMax());
+            Assert.assertEquals(n, ((TooManyEvaluationsException) pe.getCause()).getMax());
         }
     }
 

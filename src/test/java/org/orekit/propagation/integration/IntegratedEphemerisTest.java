@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -252,6 +255,17 @@ public class IntegratedEphemerisTest {
 
             @Override
             public void resetShortPeriodicsCoefficients() {
+            }
+
+            @Override
+            public String getCoefficientsKeyPrefix() {
+                return "dummy";
+            }
+
+            @Override
+            public Map<String, double[]> getShortPeriodicCoefficients(AbsoluteDate date,
+                                                                      Set<String> selected) {
+                return Collections.emptyMap();
             }
         });
 

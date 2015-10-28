@@ -146,7 +146,7 @@ public class EllipsoidTessellatorTest {
         EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, aiming, 16);
 
-        SphericalPolygonsSet small = buildSimpleZone(new double[][] {
+        SphericalPolygonsSet small = buildSimpleZone(1.0e-10, new double[][] {
             { 43.6543, 1.4268 }, { 43.6120, 1.4179 }, { 43.6016, 1.3994 }, { 43.5682, 1.4159 },
             { 43.5707, 1.4358 }, { 43.5573, 1.4941 }, { 43.6041, 1.4866 }
         });
@@ -185,7 +185,7 @@ public class EllipsoidTessellatorTest {
         EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, aiming, 16);
 
-        SphericalPolygonsSet small = buildSimpleZone(new double[][] {
+        SphericalPolygonsSet small = buildSimpleZone(1.0e-10, new double[][] {
             { 43.6543, 1.4268 }, { 43.6120, 1.4179 }, { 43.6016, 1.3994 }, { 43.5682, 1.4159 },
             { 43.5707, 1.4358 }, { 43.5573, 1.4941 }, { 43.6041, 1.4866 }
         });
@@ -222,7 +222,7 @@ public class EllipsoidTessellatorTest {
         EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, aiming, 16);
 
-        SphericalPolygonsSet small = buildSimpleZone(new double[][] {
+        SphericalPolygonsSet small = buildSimpleZone(1.0e-10, new double[][] {
             { 45.335,  0.457 },
             { 45.342,  0.469 },
             { 45.371,  0.424 }
@@ -253,7 +253,7 @@ public class EllipsoidTessellatorTest {
         EllipsoidTessellator tessellator =
                 new EllipsoidTessellator(ellipsoid, aiming, 16);
 
-        SphericalPolygonsSet small = buildSimpleZone(new double[][]{
+        SphericalPolygonsSet small = buildSimpleZone(1.0e-10, new double[][]{
             { 32.7342, -16.9407 }, { 32.7415, -16.9422 }, { 32.7481, -16.9463 }, { 32.7531, -16.9528 },
             { 32.7561, -16.9608 }, { 32.7567, -16.9696 }, { 32.7549, -16.9781 }, { 32.7508, -16.9855 },
             { 32.7450, -16.9909 }, { 32.7379, -16.9937 }, { 32.7305, -16.9937 }, { 32.7235, -16.9909 },
@@ -277,6 +277,49 @@ public class EllipsoidTessellatorTest {
             Assert.assertTrue(Vector3D.distance(v2, v3) < 0.3 * maxLength);
             Assert.assertEquals(maxWidth, Vector3D.distance(v3, v0), 0.1);
         }
+
+    }
+
+    @Test
+    public void testNormalZoneTolerance() throws OrekitException {
+        doTestVariableTolerance(1.0e-10);
+    }
+
+    @Test
+    public void testLargeZoneTolerance() throws OrekitException {
+        // this used to trigger an exception in EllipsoidTessellator.recurseMeetInside (Orekit)
+        doTestVariableTolerance(1.0e-6);
+    }
+
+    @Test
+    public void testHugeZoneTolerance() throws OrekitException {
+        // this used to trigger an exception in Characterization.characterize (Apache Commons Math)
+        // this was due to issue MATH-1266, solved in Apache Commons Math 3.6
+        doTestVariableTolerance(1.0e-4);
+    }
+
+    private void doTestVariableTolerance(final double tolerance) throws OrekitException {
+        final ConstantAzimuthAiming aiming = new ConstantAzimuthAiming(ellipsoid,
+                                                                       FastMath.toRadians(-168.178485));
+        EllipsoidTessellator tessellator =
+                new EllipsoidTessellator(ellipsoid, aiming, 16);
+
+        SphericalPolygonsSet small = buildSimpleZone(tolerance, new double[][]{
+            { -0.01048739, 0.01598931 }, { -0.00789627, 0.01555693 }, { -0.00558595, 0.01430664 },
+            { -0.00380677, 0.01237394 }, { -0.00275154, 0.00996826 }, { -0.00253461, 0.00735029 },
+            { -0.00317949, 0.00480374 }, { -0.00461629, 0.00260455 }, { -0.00668931, 0.00099105 },
+            { -0.00917392, 0.00013808 }, { -0.01180086, 0.00013808 }, { -0.01428546, 0.00099105 },
+            { -0.01635849, 0.00260455 }, { -0.01779529, 0.00480374 }, { -0.01844016, 0.00735029 },
+            { -0.01822323, 0.00996826 }, { -0.01716800, 0.01237394 }, { -0.01538882, 0.01430664 },
+            { -0.01307850, 0.01555693 }
+        });
+
+        final double maxWidth  = 40000.0;
+        final double maxLength = 40000.0;
+        final List<List<Tile>> tiles =
+                tessellator.tessellate(small, maxWidth, maxLength, 0, 0, false, true);
+        Assert.assertEquals(1, tiles.size());
+        Assert.assertEquals(1, tiles.get(0).size());
 
     }
 
@@ -337,7 +380,7 @@ public class EllipsoidTessellatorTest {
 
     private SphericalPolygonsSet buildFrance() {
 
-        final SphericalPolygonsSet continental = buildSimpleZone(new double[][] {
+        final SphericalPolygonsSet continental = buildSimpleZone(1.0e-10, new double[][] {
             { 51.14850,  2.51357 }, { 50.94660,  1.63900 }, { 50.12717,  1.33876 }, { 49.34737, -0.98946 },
             { 49.77634, -1.93349 }, { 48.64442, -1.61651 }, { 48.90169, -3.29581 }, { 48.68416, -4.59234 },
             { 47.95495, -4.49155 }, { 47.57032, -2.96327 }, { 46.01491, -1.19379 }, { 44.02261, -1.38422 },
@@ -373,12 +416,12 @@ public class EllipsoidTessellatorTest {
 
     }
 
-    private SphericalPolygonsSet buildSimpleZone(double[][] points) {
+    private SphericalPolygonsSet buildSimpleZone(double tolerance, double[][] points) {
         for (int i = 0; i < points.length; ++i) {
             points[i][0] = FastMath.toRadians(points[i][0]);
             points[i][1] = FastMath.toRadians(points[i][1]);
         }
-        return EllipsoidTessellator.buildSimpleZone(1.0e-10, points);
+        return EllipsoidTessellator.buildSimpleZone(tolerance, points);
     }
 
     private Orbit orbit;

@@ -12,8 +12,9 @@
   limitations under the License.
 -->
 
-References
-----------
+# Frequently Asked Questions (FAQ)
+
+## References
 
 ### Has Orekit already been used?
 
@@ -92,8 +93,7 @@ As thread-safety was an important need for many people, this problem has been ad
 starting with version 6.0 many Orekit classes are thread-safe. Note however that some parts
 for which sequential access is natural (like numerical propagators) are <em>not</em> thread-safe.
 
-Installation
-------------
+## Installation
 
 ### What are Orekit dependencies?
 
@@ -111,6 +111,33 @@ with version 4.1, Orekit depends only on officially released versions of Apache 
   Orekit 6.1   | Apache Commons Math 3.2
   Orekit 7.0   | Apache Commons Math 3.4.1
 
+### Maven failed to compile Orekit and complained about a missing artifact.
+
+The released versions of Orekit always depend only on released Apache Commons
+Math versions, but development Orekit versions may depend on unreleased Apache
+Commons Math versions. Maven knows how to download the pre-built binary for
+released Apache Commons Math versions but it cannot download
+pre-built binaries for unreleased Apache Commons Math versions as none are
+publicly available. In this case the mavan command will end with an error message
+like:
+
+    [ERROR] Failed to execute goal on project orekit: Could not resolve dependencies for project org.orekit:orekit:jar:7.1-SNAPSHOT: Could not find artifact org.apache.commons:commons-math3:jar:3.6-SNAPSHOT
+
+In this case, you should build the missing Apache Commons Math artifact and
+install it in your local maven repository beforehand. This is done by cloning
+the Apache Commons Math source (using the MATH_3_X branch) from Apache git
+repository in some temporary folder and install it with maven. This is done by
+running the commands below (using Linux command syntax):
+
+    git clone --branch MATH_3_X https://git-wip-us.apache.org/repos/asf/commons-math.git
+    cd commons-math
+    mvn install
+
+Once the Apache Commons Math development version has been installed locally using
+the previous commands, you can delete the cloned folder if you want. You can then
+attempt again the mvn command at Orekit level, this time it should succeed as the
+necessary artifact is now locally available.
+
 ### The orekit-data.zip file you provide is not up to date. Can you update it?
 
 There is no regular update for this file. Data are provided only as an example, to allow quick
@@ -127,8 +154,7 @@ the IERS publish them.
 
 Concerning UTC leap seconds, as of end 2013, the last one was introduced at the end of June 2012.
 
-Runtime errors
---------------
+## Runtime errors
 
 ### I get an error "no IERS UTC-TAI history data loaded" (or something similar in another language). What does it mean?
 

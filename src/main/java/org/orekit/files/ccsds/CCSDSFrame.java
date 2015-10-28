@@ -210,7 +210,7 @@ public enum CCSDSFrame {
     /** Simple constructor.
      * @param lofType type of Local Orbital Frame (null if frame is not a Local Orbital Frame)
      */
-    private CCSDSFrame(final LOFType lofType) {
+    CCSDSFrame(final LOFType lofType) {
         this.lofType = lofType;
     }
 

@@ -12,13 +12,11 @@
   limitations under the License.
 -->
 
-Attitudes
-=========
+# Attitudes
 
 The `org.orekit.attitudes` package provides classes to represent simple attitudes.
 	
-Attitudes Presentation
-----------------------
+## Attitudes Presentation
  
 Some force models, such as the atmospheric drag for maneuvers, need to
 know the spacecraft orientation in an inertial frame. Orekit uses a simple
@@ -37,8 +35,7 @@ under an abstract class called "GroundPointing".
 Finally, there exist attitude laws that wrap a "base" attitude law, and add to this 
 base attitude law a complementary rotation in order to fulfill specific mission constraints.
 
-Description of attitudes providers
-----------------------------------
+## Description of attitudes providers
 
 ### Basic attitude laws
 

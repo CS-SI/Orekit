@@ -226,7 +226,7 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
     /** Build a loader for IERS bulletins B files.
     * @param supportedNames regular expression for supported files names
     */
-    public BulletinBFilesLoader(final String supportedNames) {
+    BulletinBFilesLoader(final String supportedNames) {
         this.supportedNames = supportedNames;
     }
 
@@ -266,7 +266,7 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
         /** Simple constructor.
          * @param converter converter to use
          */
-        public Parser(final IERSConventions.NutationCorrectionConverter converter) {
+        Parser(final IERSConventions.NutationCorrectionConverter converter) {
             this.converter  = converter;
             this.history    = new ArrayList<EOPEntry>();
             this.fieldsMap  = new HashMap<Integer, double[]>();

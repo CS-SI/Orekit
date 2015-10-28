@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Configuration
-=============
+# Configuration
 
 The Orekit library relies on some external data for physical models. Typical
 data are the Earth Orientation Parameters and the leap seconds history, both being
@@ -24,8 +23,7 @@ provided.
 
 Orekit must be configured appropriately to find and use such data.
 
-Data sets
----------
+## Data sets
 
 For user convenience, data that is only a few tens of kilobytes and can be assumed to
 never change like precession-nutation models are already embedded in the core library.
@@ -45,8 +43,7 @@ publishes new Earth Orientation Parameter files covering new time ranges whereas
 ephemerides represent megabytes-sized files. These data sets must be provided by users and
 Orekit must be configured to find and read them at run time.
 
-Data formats
-------------
+## Data formats
 
 In order to simplify data updates for users and to avoid transformations errors, Orekit
 uses each supported data set in the native format in which it is publicly available. So
@@ -60,8 +57,7 @@ If a data set format changes or a new data set should be supported, a modificati
 reading classes inside Orekit would be needed. This design choice has been selected because
 format changes remain rare (except IERS EOP data perhaps ...).
 
-Data storage
-------------
+## Data storage
 
 Data sets must be stored at locations where the Orekit library will find them. This may
 be simply a directories tree on a disk, but may be almost anything else as this simple
@@ -115,8 +111,7 @@ in the library itself.
     is not trusted). The sandbox prevents access to the user disk. Data must be embedded
     within the application jar file, in the internal classpath.
 
-Data handling in Orekit
------------------------
+## Data handling in Orekit
 
 The following diagram shows data handling in Orekit.
   
@@ -145,8 +140,7 @@ depending on the use case and perhaps configuration data (environment variables,
 properties, users preferences ...). If the manager is not configured, a default configuration
 is set up.
 
-Default configuration
----------------------
+## Default configuration
 
 The default configuration is based on a single Java property named `orekit.data.path`.
 This property should be set to a list of directories trees or zip/jar archives containing the
@@ -207,8 +201,7 @@ class can be used. If the property is set up by the application, it must be done
 feature is called, since some data are initialized very early (mainly frame and time related data
 like leap seconds for UTC).
 
-Setting up a customized configuration
--------------------------------------
+## Setting up a customized configuration
 
 If the default configuration doesn't suit users needs, a custom configuration must be set up.
 This happens for example if data must be embedded within the application and loaded from
@@ -233,8 +226,7 @@ defined implementations are providers fetching data from a relational database o
 providers fetching data using an external library. This corresponds to the plugin feature
 announced above.
 
-Quick setup using default data
-------------------------------
+## Quick setup using default data
 
 For convenience, a zip file containing some default data is available for
 download on orekit forge:
@@ -254,8 +246,7 @@ parameters from 1973 to end 2012 with predicted date to mid-2013 (both IAU-1980
 and IAU-2000), UTC-TAI history from 1972 to end of 2013, Marshall Solar Activity Future
 Estimation from 1999 to 2013 and the Eigen 06S gravity field.
 
-Supported data types
---------------------
+## Supported data types
 
 The data types supported by Orekit are described in the following table, where the `#`
 character represents any digit, `(m/p)` represents either the m character or the p

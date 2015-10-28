@@ -24,9 +24,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.math3.util.FastMath;
@@ -35,7 +38,9 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
@@ -46,6 +51,10 @@ public class DEFile {
     private static final int INPOP_DE_NUMBER                = 100;
     private static final int CONSTANTS_MAX_NUMBER           = 400;
 
+    private static final int HEADER_LABEL_SIZE              = 84;
+    private static final int HEADER_LABEL_1_OFFSET          = 0;
+    private static final int HEADER_LABEL_2_OFFSET          = HEADER_LABEL_1_OFFSET + HEADER_LABEL_SIZE;
+    private static final int HEADER_LABEL_3_OFFSET          = HEADER_LABEL_2_OFFSET + HEADER_LABEL_SIZE;
     private static final int HEADER_EPHEMERIS_TYPE_OFFSET   = 2840;
     private static final int HEADER_RECORD_SIZE_OFFSET      = 2856;
     private static final int HEADER_START_EPOCH_OFFSET      = 2652;
@@ -64,8 +73,12 @@ public class DEFile {
     private int          recordSize;
     private boolean      bigEndian;
     private int          deNum;
+    private String       label1;
+    private String       label2;
+    private String       label3;
     private AbsoluteDate headerStartEpoch;
     private AbsoluteDate headerFinalEpoch;
+    private TimeScale    timeScale;
     private final Map<String, Double> headerConstants;
 
     /** Program entry point.
@@ -74,7 +87,7 @@ public class DEFile {
     public static void main(String[] args) {
         try {
             Autoconfiguration.configureOrekit();
-            String inName = null;
+            String inName  = null;
             String outName = null;
             List<String> constants = new ArrayList<String>();
             boolean allConstants = false;
@@ -109,8 +122,13 @@ public class DEFile {
             DEFile de = new DEFile(inName, outName);                
 
             de.processHeader();
-            System.out.println("header start epoch " + de.headerStartEpoch);
-            System.out.println("header end epoch " + de.headerFinalEpoch);
+            System.out.println("header label 1     " + de.label1);
+            System.out.println("header label 2     " + de.label2);
+            System.out.println("header label 3     " + de.label3);
+            System.out.println("header start epoch " + de.headerStartEpoch.toString(de.timeScale) +
+                               " (" + de.timeScale.getName() + ")");
+            System.out.println("header end epoch   " + de.headerFinalEpoch.toString(de.timeScale) +
+                               " (" + de.timeScale.getName() + ")");
 
             for (String constant : constants) {
                 Double value = de.headerConstants.get(constant);
@@ -165,8 +183,9 @@ public class DEFile {
         second = new byte[recordSize];
         readInRecord(second, 0);
 
-        headerStartEpoch = extractDate(first, HEADER_START_EPOCH_OFFSET, bigEndian);
-        headerFinalEpoch = extractDate(first, HEADER_END_EPOCH_OFFSET, bigEndian);
+        label1 = extractString(first, HEADER_LABEL_1_OFFSET, HEADER_LABEL_SIZE);
+        label2 = extractString(first, HEADER_LABEL_2_OFFSET, HEADER_LABEL_SIZE);
+        label3 = extractString(first, HEADER_LABEL_3_OFFSET, HEADER_LABEL_SIZE);
 
         // constants defined in the file
         for (int i = 0; i < CONSTANTS_MAX_NUMBER; ++i) {
@@ -180,6 +199,16 @@ public class DEFile {
             final double constantValue = extractDouble(second, HEADER_CONSTANTS_VALUES_OFFSET + 8 * i, bigEndian);
             headerConstants.put(constantName, constantValue);
         }
+
+        final Double timesc = headerConstants.get("TIMESC");
+        if (timesc != null && !Double.isNaN(timesc) && timesc.intValue() == 1) {
+            timeScale = TimeScalesFactory.getTCB();
+        } else {
+            timeScale = TimeScalesFactory.getTDB();
+        }
+
+        headerStartEpoch = extractDate(first, HEADER_START_EPOCH_OFFSET, bigEndian);
+        headerFinalEpoch = extractDate(first, HEADER_END_EPOCH_OFFSET, bigEndian);
 
     }
 
@@ -215,6 +244,43 @@ public class DEFile {
                 System.arraycopy(selected.get(selected.size() - 1), DATE_END_RANGE_OFFSET,
                                  first, HEADER_END_EPOCH_OFFSET,
                                  8);
+
+                // patch header labels
+                final AbsoluteDate       start = extractDate(first, HEADER_START_EPOCH_OFFSET, bigEndian);
+                final DateTimeComponents sc    = start.getComponents(timeScale);
+                final AbsoluteDate       end   = extractDate(first, HEADER_END_EPOCH_OFFSET, bigEndian);
+                final DateTimeComponents ec    = end.getComponents(timeScale);
+                System.arraycopy(padString("THIS IS NOT A GENUINE JPL DE FILE," +
+                                           " THIS IS AN EXCERPT WITH A LIMITED TIME RANGE",
+                                           HEADER_LABEL_SIZE), 0,
+                                 first, HEADER_LABEL_1_OFFSET,
+                                 HEADER_LABEL_SIZE);
+                System.arraycopy(padString(String.format(Locale.US,
+                                                         "Start Epoch: JED=  %.1f %4d-%s-%2d %2d:%2d%2.0f",
+                                                         (start.durationFrom(AbsoluteDate.JULIAN_EPOCH)) /
+                                                         Constants.JULIAN_DAY,
+                                                         sc.getDate().getYear(),
+                                                         sc.getDate().getMonthEnum().getUpperCaseAbbreviation(),
+                                                         sc.getDate().getDay(),
+                                                         sc.getTime().getHour(),
+                                                         sc.getTime().getMinute(),
+                                                         sc.getTime().getSecond()),
+                                           HEADER_LABEL_SIZE), 0,
+                                 first, HEADER_LABEL_2_OFFSET,
+                                 HEADER_LABEL_SIZE);
+                System.arraycopy(padString(String.format(Locale.US,
+                                                         "Final Epoch: JED=  %.1f %4d-%s-%2d %2d:%2d%2.0f",
+                                                         (end.durationFrom(AbsoluteDate.JULIAN_EPOCH)) /
+                                                         Constants.JULIAN_DAY,
+                                                         ec.getDate().getYear(),
+                                                         ec.getDate().getMonthEnum().getUpperCaseAbbreviation(),
+                                                         ec.getDate().getDay(),
+                                                         ec.getTime().getHour(),
+                                                         ec.getTime().getMinute(),
+                                                         ec.getTime().getSecond()),
+                                           HEADER_LABEL_SIZE), 0,
+                                 first, HEADER_LABEL_3_OFFSET,
+                                 HEADER_LABEL_SIZE);
 
                 // write patched header
                 out.write(first);
@@ -373,7 +439,7 @@ public class DEFile {
                                      final int offset,
                                      final boolean bigEndian) {
 
-        final double t       = extractDouble(record, offset, bigEndian);
+        final double t = extractDouble(record, offset, bigEndian);
         int    jDay    = (int) FastMath.floor(t);
         double seconds = (t + 0.5 - jDay) * Constants.JULIAN_DAY;
         if (seconds >= Constants.JULIAN_DAY) {
@@ -382,7 +448,7 @@ public class DEFile {
         }
         final AbsoluteDate date =
             new AbsoluteDate(new DateComponents(DateComponents.JULIAN_EPOCH, jDay),
-                             new TimeComponents(seconds), TimeScalesFactory.getTDB());
+                             new TimeComponents(seconds), timeScale);
         return date;
     }
 
@@ -447,6 +513,20 @@ public class DEFile {
         } catch (UnsupportedEncodingException uee) {
             throw new OrekitInternalError(uee);
         }
+    }
+
+    /** Pad a string into a bytes array.
+     * @param s string to pad
+     * @param length length of the padded bytes array
+     * @return padded bytes array
+     */
+    private static byte[] padString(final String s, final int length) {
+        final Charset charSet = Charset.forName("US-ASCII");
+        final byte[] array = new byte[length];
+        Arrays.fill(array, charSet.encode(" ").get());
+        final byte[] sb = charSet.encode(s).array();
+        System.arraycopy(sb, 0, array, 0, FastMath.min(sb.length, array.length));
+        return array;
     }
 
 }

@@ -165,7 +165,7 @@ public class TabulatedEphemerisTest {
     }
 
     private interface StateFilter {
-        public SpacecraftState filter(final SpacecraftState state);
+        SpacecraftState filter(final SpacecraftState state);
     }
 
     @Test

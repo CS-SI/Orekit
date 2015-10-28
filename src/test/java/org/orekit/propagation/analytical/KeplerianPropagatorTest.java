@@ -342,7 +342,7 @@ public class KeplerianPropagatorTest {
     }
 
     @Test(expected = PropagationException.class)
-    public void testException() throws PropagationException {
+    public void testStepException() throws PropagationException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -359,19 +359,27 @@ public class KeplerianPropagatorTest {
                 }
             }
         });
-        propagator.setMasterMode(new OrekitStepHandler() {
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-            public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) throws PropagationException {
-                if (isLast) {
-                    throw new PropagationException((Throwable) null, new DummyLocalizable("dummy error"));
-                }
-            }
-        });
 
         propagator.propagate(orbit.getDate().shiftedBy(-3600));
 
+    }
+
+    @Test(expected = PropagationException.class)
+    public void tesWrapedAttitudeException() throws PropagationException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
+        KeplerianPropagator propagator = new KeplerianPropagator(orbit,
+                                                                 new AttitudeProvider() {
+                                                                    private static final long serialVersionUID = 1L;
+                                                                    public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date,
+                                                                                                Frame frame)
+                                                                        throws OrekitException {
+                                                                        throw new OrekitException((Throwable) null,
+                                                                                                  new DummyLocalizable("dummy error"));
+                                                                    }
+                                                                });
+        propagator.propagate(orbit.getDate().shiftedBy(10.09));
     }
 
     @Test
