@@ -166,9 +166,9 @@ public class FiniteDifferenceUtils {
          * @param orbitType orbit type
          * @param positionAngle position angle type
          */
-        public StateComponentFunction(final int index, final StateFunction f,
-                                      final SpacecraftState baseState,
-                                      final OrbitType orbitType, final PositionAngle positionAngle) {
+        StateComponentFunction(final int index, final StateFunction f,
+                               final SpacecraftState baseState,
+                               final OrbitType orbitType, final PositionAngle positionAngle) {
             this.index         = index;
             this.f             = f;
             this.orbitType     = orbitType;

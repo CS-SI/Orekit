@@ -101,9 +101,9 @@ class Model implements MultivariateJacobianFunction {
      * @param measurementsParameters measurements parameters
      * @param orbitDate orbit date
      */
-    public Model(final NumericalPropagatorBuilder propagatorBuilder, final List<String> propagatorParameters,
-                 final List<Measurement<?>> measurements, final List<Parameter> measurementsParameters,
-                 final AbsoluteDate orbitDate) {
+    Model(final NumericalPropagatorBuilder propagatorBuilder, final List<String> propagatorParameters,
+          final List<Measurement<?>> measurements, final List<Parameter> measurementsParameters,
+          final AbsoluteDate orbitDate) {
 
         this.propagatorBuilder      = propagatorBuilder;
         this.propagatorParameters   = propagatorParameters;
