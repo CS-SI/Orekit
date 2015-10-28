@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -100,6 +101,30 @@ public class EllipseTest {
                             Vector3D.distance(g0.getAcceleration(), ref.getAcceleration()) / ref.getAcceleration().getNorm(),
                             8.0e-8);
 
+    }
+
+    @Test
+    public void testMinRadiusOfCurvature() {
+        final double a = 100.0;
+        final double b =  50.0;
+        Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
+                                a, b, FramesFactory.getGCRF());
+        Vector2D point = new Vector2D(10 * a, 0.0);
+        Assert.assertEquals(b * b / a,
+                           Vector2D.distance(e.projectToEllipse(point), e.getCenterOfCurvature(point)),
+                           1.0e-15);
+    }
+
+    @Test
+    public void testMaxRadiusOfCurvature() {
+        final double a = 100.0;
+        final double b =  50.0;
+        Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
+                                a, b, FramesFactory.getGCRF());
+        Vector2D point = new Vector2D(0.0, 10 * b);
+        Assert.assertEquals(a * a / b,
+                           Vector2D.distance(e.projectToEllipse(point), e.getCenterOfCurvature(point)),
+                           1.0e-15);
     }
 
     @Before
