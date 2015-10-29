@@ -175,7 +175,8 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS("unable to compute mean orbit from osculating orbit after {0} iterations"),
     OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range"),
     OUT_OF_RANGE_LATITUDE("out of range latitude: {0}, [{1}, {2}]"),
-    ORBIT_TYPE_NOT_ALLOWED("orbit type {0} not allowed here, allowed types: {1}");
+    ORBIT_TYPE_NOT_ALLOWED("orbit type {0} not allowed here, allowed types: {1}"),
+    BODY_SHAPE_IS_NOT_AN_ELLIPSOID("body shape is not an ellipsoid");
 
     // CHECKSTYLE: resume JavadocVariable check
 

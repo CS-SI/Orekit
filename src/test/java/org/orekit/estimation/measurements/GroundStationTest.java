@@ -18,23 +18,40 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
+import org.apache.commons.math3.analysis.UnivariateMatrixFunction;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableMatrixFunction;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937a;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.bodies.BodyShape;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
+import org.orekit.estimation.measurements.GroundStation.OffsetDerivatives;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class GroundStationTest {
 
@@ -102,6 +119,261 @@ public class GroundStationTest {
         Assert.assertEquals(deltaTopo.getY(), moved.getValue()[1], 2.8e-7);
         Assert.assertEquals(deltaTopo.getZ(), moved.getValue()[2], 1.1e-7);
 
+    }
+
+    @Test
+    public void testOffsetDerivativesOctantPxPyPz() throws OrekitException {
+        double tolerancePositionValue       = 1.0e-15;
+        double tolerancePositionDerivative  = 1.0e-7;
+        double toleranceDirectionValue      = 1.0e-15;
+        double toleranceDirectionDerivative = 2.0e-7;
+        doTestOffsetDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0,
+                                tolerancePositionValue, tolerancePositionDerivative,
+                                toleranceDirectionValue, toleranceDirectionDerivative);
+    }
+
+    @Test
+    public void testOffsetDerivativesOctantPxPyMz() throws OrekitException {
+        double tolerancePositionValue       = 1.0e-15;
+        double tolerancePositionDerivative  = 1.0e-7;
+        double toleranceDirectionValue      = 1.0e-15;
+        double toleranceDirectionDerivative = 2.0e-7;
+        doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0,
+                                tolerancePositionValue, tolerancePositionDerivative,
+                                toleranceDirectionValue, toleranceDirectionDerivative);
+    }
+
+    @Test
+    public void testOffsetDerivativesOctantPxMyPz() throws OrekitException {
+        double tolerancePositionValue       = 1.0e-15;
+        double tolerancePositionDerivative  = 1.0e-7;
+        double toleranceDirectionValue      = 1.0e-15;
+        double toleranceDirectionDerivative = 2.0e-7;
+        doTestOffsetDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0,
+                                tolerancePositionValue, tolerancePositionDerivative,
+                                toleranceDirectionValue, toleranceDirectionDerivative);
+    }
+
+    @Test
+    public void testOffsetDerivativesOctantPxMyMz() throws OrekitException {
+        double tolerancePositionValue       = 1.0e-15;
+        double tolerancePositionDerivative  = 1.0e-7;
+        double toleranceDirectionValue      = 1.0e-15;
+        double toleranceDirectionDerivative = 2.0e-7;
+        doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0,
+                                tolerancePositionValue, tolerancePositionDerivative,
+                                toleranceDirectionValue, toleranceDirectionDerivative);
+    }
+
+    @Test
+    public void testOffsetDerivativesOctantMxPyPz() throws OrekitException {
+        double tolerancePositionValue       = 1.0e-15;
+        double tolerancePositionDerivative  = 1.0e-7;
+        double toleranceDirectionValue      = 1.0e-15;
+        double toleranceDirectionDerivative = 2.0e-7;
+        doTestOffsetDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0,
+                                tolerancePositionValue, tolerancePositionDerivative,
+                                toleranceDirectionValue, toleranceDirectionDerivative);
+    }
+
+    @Test
+    public void testOffsetDerivativesOctantMxPyMz() throws OrekitException {
+        double tolerancePositionValue       = 1.0e-15;
+        double tolerancePositionDerivative  = 1.0e-7;
+        double toleranceDirectionValue      = 1.0e-15;
+        double toleranceDirectionDerivative = 2.0e-7;
+        doTestOffsetDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0,
+                                tolerancePositionValue, tolerancePositionDerivative,
+                                toleranceDirectionValue, toleranceDirectionDerivative);
+    }
+
+    @Test
+    public void testOffsetDerivativesOctantMxMyPz() throws OrekitException {
+        double tolerancePositionValue       = 1.0e-15;
+        double tolerancePositionDerivative  = 1.0e-7;
+        double toleranceDirectionValue      = 1.0e-15;
+        double toleranceDirectionDerivative = 2.0e-7;
+        doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
+                                tolerancePositionValue, tolerancePositionDerivative,
+                                toleranceDirectionValue, toleranceDirectionDerivative);
+    }
+
+    @Test
+    public void testOffsetDerivativesOctantMxMyMz() throws OrekitException {
+        double tolerancePositionValue       = 1.0e-15;
+        double tolerancePositionDerivative  = 1.0e-7;
+        double toleranceDirectionValue      = 1.0e-15;
+        double toleranceDirectionDerivative = 2.0e-7;
+        doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
+                                tolerancePositionValue, tolerancePositionDerivative,
+                                toleranceDirectionValue, toleranceDirectionDerivative);
+    }
+
+    @Test
+    public void testOffsetDerivativesNearPole() throws OrekitException {
+        double tolerancePositionValue       = 1.0e-15;
+        double tolerancePositionDerivative  = 1.0e-7;
+        double toleranceDirectionValue      = 1.0e-15;
+        double toleranceDirectionDerivative = 9.0e-5; // near pole, derivatives of East vector become singular
+        doTestOffsetDerivatives(FastMath.toRadians(89.9), FastMath.toRadians(0), 1200.0,
+                                tolerancePositionValue, tolerancePositionDerivative,
+                                toleranceDirectionValue, toleranceDirectionDerivative);
+    }
+
+    private void doTestOffsetDerivatives(double latitude, double longitude, double altitude,
+                                         double tolerancePositionValue, double tolerancePositionDerivative,
+                                         double toleranceDirectionValue, double toleranceDirectionDerivative)
+        throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final OneAxisEllipsoid earth =
+                        new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                             Constants.WGS84_EARTH_FLATTENING,
+                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final GroundStation station = new GroundStation(new TopocentricFrame(earth,
+                                                                             new GeodeticPoint(latitude, longitude, altitude),
+                                                                             "dummy"));
+        final int parameters  = 3;
+        final int eastIndex   = 0;
+        final int northIndex  = 1;
+        final int zenithIndex = 2;
+        UnivariateDifferentiableMatrixFunction[] dF = new UnivariateDifferentiableMatrixFunction[parameters];
+        for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
+            final FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(3, 0.1);
+            dF[k] = differentiator.differentiate(new UnivariateMatrixFunction() {
+                @Override
+                public double[][] value(double x) {
+                    final double[][] result = new double[4][3];
+                    try {
+                        final double[] p = station.getValue();
+                        final double previouspI = p[k];
+                        p[k] += x;
+                        station.setValue(p);
+                        Vector3D origin = station.getOffsetFrame().getPVCoordinates(AbsoluteDate.J2000_EPOCH, earth.getFrame()).getPosition();
+                        result[0][0] = origin.getX();
+                        result[0][1] = origin.getY();
+                        result[0][2] = origin.getZ();
+                        Vector3D east = station.getOffsetFrame().getEast();
+                        result[1][0] = east.getX();
+                        result[1][1] = east.getY();
+                        result[1][2] = east.getZ();
+                        Vector3D north = station.getOffsetFrame().getNorth();
+                        result[2][0] = north.getX();
+                        result[2][1] = north.getY();
+                        result[2][2] = north.getZ();
+                        Vector3D zenith = station.getOffsetFrame().getZenith();
+                        result[3][0] = zenith.getX();
+                        result[3][1] = zenith.getY();
+                        result[3][2] = zenith.getZ();
+                        p[k] = previouspI;
+                        station.setValue(p);
+                    } catch (OrekitException oe) {
+                        Assert.fail(oe.getLocalizedMessage());
+                    }
+                    return result;
+                }
+            });
+        }
+
+        double maxPosValueError      = 0;
+        double maxPosDerivativeError = 0;
+        double maxDirValueError      = 0;
+        double maxDirDerivativeError = 0;
+        for (double dEast = -2; dEast <= 2; dEast += 0.5) { 
+            for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) { 
+                for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) { 
+                    station.setValue(dEast, dNorth, dZenith);
+                    OffsetDerivatives od = station.getOffsetDerivatives(parameters, eastIndex, northIndex, zenithIndex);
+                    for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
+                        DerivativeStructure[][] result = dF[k].value(new DerivativeStructure(1, 1, 0, 0.0));
+                        int[] orders = new int[3];
+                        orders[k] = 1;
+
+                        // position of the offset frame
+                        maxPosValueError = FastMath.max(maxPosValueError, FastMath.abs(result[0][0].getValue() - od.getOrigin().getX().getValue()));
+                        maxPosValueError = FastMath.max(maxPosValueError, FastMath.abs(result[0][1].getValue() - od.getOrigin().getY().getValue()));
+                        maxPosValueError = FastMath.max(maxPosValueError, FastMath.abs(result[0][2].getValue() - od.getOrigin().getZ().getValue()));
+                        maxPosDerivativeError = FastMath.max(maxPosDerivativeError, FastMath.abs(result[0][0].getPartialDerivative(1) - od.getOrigin().getX().getPartialDerivative(orders)));
+                        maxPosDerivativeError = FastMath.max(maxPosDerivativeError, FastMath.abs(result[0][1].getPartialDerivative(1) - od.getOrigin().getY().getPartialDerivative(orders)));
+                        maxPosDerivativeError = FastMath.max(maxPosDerivativeError, FastMath.abs(result[0][2].getPartialDerivative(1) - od.getOrigin().getZ().getPartialDerivative(orders)));
+
+                        // East vector of the offset frame
+                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[1][0].getValue() - od.getEast().getX().getValue()));
+                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[1][1].getValue() - od.getEast().getY().getValue()));
+                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[1][2].getValue() - od.getEast().getZ().getValue()));
+                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[1][0].getPartialDerivative(1) - od.getEast().getX().getPartialDerivative(orders)));
+                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[1][1].getPartialDerivative(1) - od.getEast().getY().getPartialDerivative(orders)));
+                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[1][2].getPartialDerivative(1) - od.getEast().getZ().getPartialDerivative(orders)));
+
+                        // North vector of the offset frame
+                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[2][0].getValue() - od.getNorth().getX().getValue()));
+                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[2][1].getValue() - od.getNorth().getY().getValue()));
+                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[2][2].getValue() - od.getNorth().getZ().getValue()));
+                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[2][0].getPartialDerivative(1) - od.getNorth().getX().getPartialDerivative(orders)));
+                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[2][1].getPartialDerivative(1) - od.getNorth().getY().getPartialDerivative(orders)));
+                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[2][2].getPartialDerivative(1) - od.getNorth().getZ().getPartialDerivative(orders)));
+
+                        // Zenith vector of the offset frame
+                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[3][0].getValue() - od.getZenith().getX().getValue()));
+                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[3][1].getValue() - od.getZenith().getY().getValue()));
+                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[3][2].getValue() - od.getZenith().getZ().getValue()));
+                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[3][0].getPartialDerivative(1) - od.getZenith().getX().getPartialDerivative(orders)));
+                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[3][1].getPartialDerivative(1) - od.getZenith().getY().getPartialDerivative(orders)));
+                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[3][2].getPartialDerivative(1) - od.getZenith().getZ().getPartialDerivative(orders)));
+
+                    }
+                }
+            }
+        }
+
+        Assert.assertEquals(0.0, maxPosValueError,      tolerancePositionValue);
+        Assert.assertEquals(0.0, maxPosDerivativeError, tolerancePositionDerivative);
+        Assert.assertEquals(0.0, maxDirValueError,      toleranceDirectionValue);
+        Assert.assertEquals(0.0, maxDirDerivativeError, toleranceDirectionDerivative);
+
+    }
+
+    @Test
+    public void testNonEllipsoid() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final OneAxisEllipsoid ellipsoid =
+                        new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                             Constants.WGS84_EARTH_FLATTENING,
+                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        BodyShape nonEllipsoid = new BodyShape() {
+            private static final long serialVersionUID = 1L;
+            public Vector3D transform(GeodeticPoint point) {
+                return ellipsoid.transform(point);
+            }
+            public GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date)
+                            throws OrekitException {
+                return ellipsoid.transform(point, frame, date);
+            }
+            public TimeStampedPVCoordinates projectToGround(TimeStampedPVCoordinates pv, Frame frame)
+                    throws OrekitException {
+                return ellipsoid.projectToGround(pv, frame);
+            }
+            public Vector3D projectToGround(Vector3D point, AbsoluteDate date, Frame frame)
+                    throws OrekitException {
+                return ellipsoid.projectToGround(point, date, frame);
+            }
+            public GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
+                                                      Frame frame, AbsoluteDate date)
+                                                              throws OrekitException {
+                return ellipsoid.getIntersectionPoint(line, close, frame, date);
+            }
+            public Frame getBodyFrame() {
+                return ellipsoid.getBodyFrame();
+            }
+        };
+        GroundStation g = new GroundStation(new TopocentricFrame(nonEllipsoid,
+                                                                 new GeodeticPoint(0, 0, 0),
+                                                                 "dummy"));
+        try {
+            g.getOffsetDerivatives(3, 0, 1, 2);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.BODY_SHAPE_IS_NOT_AN_ELLIPSOID, oe.getSpecifier());
+        }
     }
 
 }

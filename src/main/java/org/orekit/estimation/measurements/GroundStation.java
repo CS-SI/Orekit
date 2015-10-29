@@ -16,10 +16,17 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
+import org.orekit.bodies.Ellipse;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Parameter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
@@ -165,6 +172,214 @@ public class GroundStation extends Parameter {
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
 
         return delay;
+
+    }
+
+    /** Get the offset frame defining vectors with derivatives.
+     * <p>
+     * Note that this method works only if the ground station is defined on
+     * an {@link OneAxisEllipsoid ellipsoid} body. For any other body shape,
+     * the method will throw an exception.
+     * </p>
+     * @param parameters number of free parameters in derivatives computations
+     * @param eastOffsetIndex index of the East offset in the set of
+     * free parameters in derivatives computations
+     * @param northOffsetIndex index of the North offset in the set of
+     * free parameters in derivatives computations
+     * @param zenithOffsetIndex index of the Zenith offset in the set of
+     * free parameters in derivatives computations
+     * @return offset frame defining vectors with derivatives
+     * @exception OrekitException if some frame transforms cannot be computed
+     * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
+     */
+    public OffsetDerivatives getOffsetDerivatives(final int parameters,
+                                                  final int eastOffsetIndex,
+                                                  final int northOffsetIndex,
+                                                  final int zenithOffsetIndex)
+        throws OrekitException {
+
+        // base frame
+        final Frame     bodyFrame    = baseFrame.getParent();
+        final Vector3D  baseEast     = baseFrame.getEast();
+        final Vector3D  baseNorth    = baseFrame.getNorth();
+        final Vector3D  baseZenith   = baseFrame.getZenith();
+
+        // zero vector with derivatives along the base station axes
+        // (adding this vector to a regular Vector3D converts it to a
+        //  FieldVector3D<DerivativeStructure> with the same value but
+        //  with partial derivatives properly set up)
+        final DerivativeStructure zeroEast   = new DerivativeStructure(parameters, 1, eastOffsetIndex,   0.0);
+        final DerivativeStructure zeroNorth  = new DerivativeStructure(parameters, 1, northOffsetIndex,  0.0);
+        final DerivativeStructure zeroZenith = new DerivativeStructure(parameters, 1, zenithOffsetIndex, 0.0);
+        final FieldVector3D<DerivativeStructure> derivatives =
+            new FieldVector3D<DerivativeStructure>(zeroEast, baseEast, zeroNorth, baseNorth, zeroZenith, baseZenith);
+
+        // offset frame origin
+        final Transform offsetToBody = offsetFrame.getTransformTo(bodyFrame, null);
+        final Vector3D offsetOrigin  = offsetToBody.transformPosition(Vector3D.ZERO);
+        final FieldVector3D<DerivativeStructure> offsetOriginDS = derivatives.add(offsetOrigin);
+
+        // vectors changes due to offset in the meridian plane
+        // (we are in fact only interested in the derivatives parts, not the values)
+        final Vector3D meridianCenter = centerOfCurvature(offsetOrigin, baseEast);
+        final FieldVector3D<DerivativeStructure> meridianCenterToOffset = offsetOriginDS.subtract(meridianCenter);
+        final FieldVector3D<DerivativeStructure> meridianZ = meridianCenterToOffset.normalize();
+        FieldVector3D<DerivativeStructure>       meridianE = FieldVector3D.crossProduct(Vector3D.PLUS_K, meridianZ);
+        if (meridianE.getNormSq().getValue() < Precision.SAFE_MIN) {
+            meridianE = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, 0.0),
+                                                               new DerivativeStructure(parameters, 1, 1.0),
+                                                               new DerivativeStructure(parameters, 1, 0.0));
+        } else {
+            meridianE = meridianE.normalize();
+        }
+        final FieldVector3D<DerivativeStructure> meridianN = FieldVector3D.crossProduct(meridianZ, meridianE);
+
+        // vectors changes due to offset in the transverse plane
+        // (we are in fact only interested in the derivatives parts, not the values)
+        final Vector3D transverseCenter = centerOfCurvature(offsetOrigin, baseNorth);
+        final FieldVector3D<DerivativeStructure> transverseCenterToOffset = offsetOriginDS.subtract(transverseCenter);
+        final FieldVector3D<DerivativeStructure> transverseZ = transverseCenterToOffset.normalize();
+        FieldVector3D<DerivativeStructure>       transverseE = FieldVector3D.crossProduct(Vector3D.PLUS_K, transverseZ);
+        if (transverseE.getNormSq().getValue() < Precision.SAFE_MIN) {
+            transverseE = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, 0.0),
+                                                                 new DerivativeStructure(parameters, 1, 1.0),
+                                                                 new DerivativeStructure(parameters, 1, 0.0));
+        } else {
+            transverseE = transverseE.normalize();
+        }
+        final FieldVector3D<DerivativeStructure> transverseN = FieldVector3D.crossProduct(transverseZ, transverseE);
+
+        // compose the value from the offset frame and the derivatives
+        // (the derivatives along the two orthogonal directions of principal curvatures are additive)
+        return new OffsetDerivatives(offsetOriginDS,
+                                     combine(offsetFrame.getEast(),   meridianE, transverseE),
+                                     combine(offsetFrame.getNorth(),  meridianN, transverseN),
+                                     combine(offsetFrame.getZenith(), meridianZ, transverseZ));
+
+    }
+
+    /** Get the center of curvature of the ellipsoid below a point.
+     * @param point point under which we want the center of curvature
+     * @param normal normal to the plane into which we want the center of curvature
+     * @return center of curvature of the ellipsoid surface, below the point and
+     * in the specified plane
+     * @exception OrekitException if some frame transforms cannot be computed
+     * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
+     */
+    private Vector3D centerOfCurvature(final Vector3D point, final Vector3D normal)
+        throws OrekitException {
+
+        // get the ellipsoid
+        if (!(baseFrame.getParentShape() instanceof OneAxisEllipsoid)) {
+            throw new OrekitException(OrekitMessages.BODY_SHAPE_IS_NOT_AN_ELLIPSOID);
+        }
+        final OneAxisEllipsoid ellipsoid = (OneAxisEllipsoid) baseFrame.getParentShape();
+
+        // set up a plane section containing the point and orthogonal to the specified normal vector
+        final Ellipse section = ellipsoid.getPlaneSection(point, normal);
+
+        // compute center of curvature in the 2D ellipse
+        final Vector2D centerOfCurvature = section.getCenterOfCurvature(section.toPlane(point));
+
+        // convert back to 3D
+        return section.toSpace(centerOfCurvature);
+
+    }
+
+    /** Combine a vector and additive derivatives.
+     * @param v vector value
+     * @param d1 vector derivative (values will be ignored)
+     * @param d2 vector derivative (values will be ignored)
+     * @return combined vector
+     */
+    private FieldVector3D<DerivativeStructure> combine(final Vector3D v,
+                                                       final FieldVector3D<DerivativeStructure> d1,
+                                                       final FieldVector3D<DerivativeStructure> d2) {
+
+        // combine value and derivatives for all coordinates
+        final double[] x = d1.getX().add(d2.getX()).getAllDerivatives();
+        x[0] = v.getX();
+        final double[] y = d1.getY().add(d2.getY()).getAllDerivatives();
+        y[0] = v.getY();
+        final double[] z = d1.getZ().add(d2.getZ()).getAllDerivatives();
+        z[0] = v.getZ();
+
+        // build the combined vector
+        final int parameters = d1.getX().getFreeParameters();
+        final int order      = d1.getX().getOrder();
+        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, x),
+                                                      new DerivativeStructure(parameters, order, y),
+                                                      new DerivativeStructure(parameters, order, z));
+
+    }
+
+    /** Container for offset frame defining vectors with derivatives.
+     * <p>
+     * The defining vectors are represented as vectors whose coordinates
+     * for which both the value and the first order derivatives with
+     * respect to the East, North and Zenith station offset are available.
+     * This allows to compute the partial derivatives of measurements
+     * with respect to station position.
+     * </p>
+     * @see GroundStation#getOffsetDerivatives(int, int, int, int)
+     */
+    public static class OffsetDerivatives {
+
+        /** Offset frame origin. */
+        private final FieldVector3D<DerivativeStructure> origin;
+
+        /** Offset frame East vector. */
+        private final FieldVector3D<DerivativeStructure> east;
+
+        /** Offset frame North vector. */
+        private final FieldVector3D<DerivativeStructure> north;
+
+        /** Offset frame Zenith vector. */
+        private final FieldVector3D<DerivativeStructure> zenith;
+
+        /** Simple constructor.
+         * @param origin offset frame origin
+         * @param east offset frame East vector
+         * @param north offset frame North vector
+         * @param zenith offset frame Zenith vector
+         */
+        private OffsetDerivatives(final FieldVector3D<DerivativeStructure> origin,
+                                  final FieldVector3D<DerivativeStructure> east,
+                                  final FieldVector3D<DerivativeStructure> north,
+                                  final FieldVector3D<DerivativeStructure> zenith) {
+            this.origin = origin;
+            this.east   = east;
+            this.north  = north;
+            this.zenith = zenith;
+        }
+
+        /** Get the offset frame origin.
+         * @return offset frame origin, in parent shape frame
+         */
+        public FieldVector3D<DerivativeStructure> getOrigin() {
+            return origin;
+        }
+
+        /** Get the offset frame East vector.
+         * @return offset frame East vector, in parent shape frame
+         */
+        public FieldVector3D<DerivativeStructure> getEast() {
+            return east;
+        }
+
+        /** Get the offset frame North vector.
+         * @return offset frame North vector, in parent shape frame
+         */
+        public FieldVector3D<DerivativeStructure> getNorth() {
+            return north;
+        }
+
+        /** Get the offset frame Zenith vector.
+         * @return offset frame Zenith vector, in parent shape frame
+         */
+        public FieldVector3D<DerivativeStructure> getZenith() {
+            return zenith;
+        }
 
     }
 
