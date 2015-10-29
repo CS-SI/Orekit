@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
@@ -46,7 +49,7 @@ import org.orekit.time.AbsoluteDate;
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
  */
-public class DSSTThirdBody  implements DSSTForceModel {
+public class DSSTThirdBody implements DSSTForceModel {
 
     /** Max power for summation. */
     private static final int       MAX_POWER = 22;
@@ -452,6 +455,76 @@ public class DSSTThirdBody  implements DSSTForceModel {
         return shortPeriodic;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getCoefficientsKeyPrefix() {
+        return "DSST-3rd-body-" + body.getName() + "-";
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * For third body attraction forces,there are maxFreqF + 1 cj coefficients,
+     * maxFreqF sj coefficients where maxFreqF depends on the orbit.
+     * The j index is the integer multiplier for the eccentric longitude argument
+     * in the cj and sj coefficients.
+     * </p>
+     */
+    @Override
+    public Map<String, double[]> getShortPeriodicCoefficients(final AbsoluteDate date, final Set<String> selected)
+        throws OrekitException {
+        final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * maxFreqF + 1);
+        storeIfSelected(coefficients, selected,
+                        new double[] {
+                            cjsjCoeficients.getCij(0, 0, date),
+                            cjsjCoeficients.getCij(1, 0, date),
+                            cjsjCoeficients.getCij(2, 0, date),
+                            cjsjCoeficients.getCij(3, 0, date),
+                            cjsjCoeficients.getCij(4, 0, date),
+                            cjsjCoeficients.getCij(5, 0, date)
+                        }, "c", 0);
+        for (int j = 1; j <= maxFreqF; j++) {
+            storeIfSelected(coefficients, selected,
+                            new double[] {
+                                cjsjCoeficients.getCij(0, j, date),
+                                cjsjCoeficients.getCij(1, j, date),
+                                cjsjCoeficients.getCij(2, j, date),
+                                cjsjCoeficients.getCij(3, j, date),
+                                cjsjCoeficients.getCij(4, j, date),
+                                cjsjCoeficients.getCij(5, j, date)
+                            }, "c", j);
+            storeIfSelected(coefficients, selected,
+                            new double[] {
+                                cjsjCoeficients.getSij(0, j, date),
+                                cjsjCoeficients.getSij(1, j, date),
+                                cjsjCoeficients.getSij(2, j, date),
+                                cjsjCoeficients.getSij(3, j, date),
+                                cjsjCoeficients.getSij(4, j, date),
+                                cjsjCoeficients.getSij(5, j, date)
+                            }, "s", j);
+        }
+        return coefficients;
+    }
+
+    /** Put a coefficient in a map if selected.
+     * @param map map to populate
+     * @param selected set of coefficients that should be put in the map
+     * (empty set means all coefficients are selected)
+     * @param value coefficient value
+     * @param id coefficient identifier
+     * @param indices list of coefficient indices
+     */
+    private void storeIfSelected(final Map<String, double[]> map, final Set<String> selected,
+                                 final double[] value, final String id, final int ... indices) {
+        final StringBuilder keyBuilder = new StringBuilder(getCoefficientsKeyPrefix());
+        keyBuilder.append(id);
+        for (int index : indices) {
+            keyBuilder.append('[').append(index).append(']');
+        }
+        final String key = keyBuilder.toString();
+        if (selected.isEmpty() || selected.contains(key)) {
+            map.put(key, value);
+        }
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -1099,7 +1172,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
             final DerivativeStructure jac =
-                    JacobiPolynomials.getValue(l, absJmS , absJpS, new DerivativeStructure(1, 1, 0, X));
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, new DerivativeStructure(1, 1, 0, X));
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);

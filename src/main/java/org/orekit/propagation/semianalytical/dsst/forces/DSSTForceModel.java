@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
@@ -124,4 +127,48 @@ public interface DSSTForceModel {
      * </p>
      */
     void resetShortPeriodicsCoefficients();
+
+    /** Get the prefix for short periodic coefficients keys.
+     * <p>
+     * This prefix is used to identify the coefficients of the
+     * current force model from the coefficients pêrtaining to
+     * other force models. All the keys in the map returned by
+     * {@link #getShortPeriodicCoefficients(AbsoluteDate date)}
+     * start with this prefix, which must be unique among all
+     * providers.
+     * </p>
+     * @return the prefix for short periodic coefficients keys
+     * @see #getShortPeriodicCoefficients(AbsoluteDate)
+     *  @since 7.1
+     */
+    String getCoefficientsKeyPrefix();
+
+    /** Computes the coefficients of the {@link
+     * DSSTForceModel#getShortPeriodicVariations(AbsoluteDate, double[])
+     * short periodic variations}.
+     * <p>
+     * This method is intended mainly for validation purposes. Its output
+     * is highly dependent on the implementation details in each force model
+     * and may change from version to version. It is <em>not</em> recommended
+     * to use it for any operational purposes.
+     * </p>
+     * <p>
+     * This method must be called <em>after</em> {@link
+     * DSSTForceModel#getShortPeriodicVariations(AbsoluteDate, double[])
+     * getShortPeriodicVariations} has been called, in order for the coefficients
+     * to have been properly computed.
+     * </p>
+     *  @param date current date
+     * @param selected set of coefficients that should be put in the map
+     * (empty set means all coefficients are selected)
+     *  @return the selected coefficients of the short periodic variations,
+     *  in a map where all keys start with {@link #getCoefficientsKeyPrefix()}
+     *  @throws OrekitException if some specific error occurs
+     *  @se {@link #getCoefficientsKeyPrefix()}
+     *  @see DSSTForceModel#getShortPeriodicVariations(AbsoluteDate, double[])
+     *  @since 7.1
+     */
+    Map<String, double[]> getShortPeriodicCoefficients(AbsoluteDate date, Set<String> selected)
+        throws OrekitException;
+
 }

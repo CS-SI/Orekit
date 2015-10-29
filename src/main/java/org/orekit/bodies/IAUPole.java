@@ -21,7 +21,7 @@ import java.io.Serializable;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 
-/** Interface for IAU pole and primer meridian orientations.
+/** Interface for IAU pole and prime meridian orientations.
  * <p>
  * This interface defines methods compliant with the report of the
  * IAU/IAG Working Group on Cartographic Coordinates and Rotational

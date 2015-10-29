@@ -439,7 +439,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
         }
 
         /** Enumerate for data file content. */
-        private static enum DataFileContent {
+        private enum DataFileContent {
 
             /** Unknown content. */
             UNKNOWN,

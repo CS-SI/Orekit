@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.util.FastMath;
@@ -434,6 +437,90 @@ class ZonalContribution implements DSSTForceModel {
         }
 
         return shortPeriodicVariation;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getCoefficientsKeyPrefix() {
+        return "DSST-central-body-zonal-";
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * For zonal terms contributions,there are maxJ cj coefficients,
+     * maxJ sj coefficients and 2 dj coefficients, where maxJ depends
+     * on the orbit. The j index is the integer multiplier for the true
+     * longitude argument in the cj and sj coefficients and the degree
+     * in the polynomial dj coefficients.
+     * </p>
+     */
+    @Override
+    public Map<String, double[]> getShortPeriodicCoefficients(final AbsoluteDate date, final Set<String> selected)
+        throws OrekitException {
+
+        final int maxJ = 2 * maxDegreeShortPeriodics + 1;
+        final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * maxJ + 2);
+        storeIfSelected(coefficients, selected,
+                        new double[] {
+                            zonalSPCoefs.getCij(0, 0, date),
+                            zonalSPCoefs.getCij(1, 0, date),
+                            zonalSPCoefs.getCij(2, 0, date),
+                            zonalSPCoefs.getCij(3, 0, date),
+                            zonalSPCoefs.getCij(4, 0, date),
+                            zonalSPCoefs.getCij(5, 0, date),
+                        }, "d", 0);
+        storeIfSelected(coefficients, selected,
+                        new double[] {
+                            zonalSPCoefs.getDi(0, date),
+                            zonalSPCoefs.getDi(1, date),
+                            zonalSPCoefs.getDi(2, date),
+                            zonalSPCoefs.getDi(3, date),
+                            zonalSPCoefs.getDi(4, date),
+                            zonalSPCoefs.getDi(5, date),
+                        }, "d", 1);
+        for (int j = 1; j <= maxJ; j++) {
+            storeIfSelected(coefficients, selected,
+                            new double[] {
+                                zonalSPCoefs.getCij(0, j, date),
+                                zonalSPCoefs.getCij(1, j, date),
+                                zonalSPCoefs.getCij(2, j, date),
+                                zonalSPCoefs.getCij(3, j, date),
+                                zonalSPCoefs.getCij(4, j, date),
+                                zonalSPCoefs.getCij(5, j, date),
+                            }, "c", j);
+            storeIfSelected(coefficients, selected,
+                            new double[] {
+                                zonalSPCoefs.getSij(0, j, date),
+                                zonalSPCoefs.getSij(1, j, date),
+                                zonalSPCoefs.getSij(2, j, date),
+                                zonalSPCoefs.getSij(3, j, date),
+                                zonalSPCoefs.getSij(4, j, date),
+                                zonalSPCoefs.getSij(5, j, date),
+                            }, "s", j);
+        }
+        return coefficients;
+
+    }
+
+    /** Put a coefficient in a map if selected.
+     * @param map map to populate
+     * @param selected set of coefficients that should be put in the map
+     * (empty set means all coefficients are selected)
+     * @param value coefficient value
+     * @param id coefficient identifier
+     * @param indices list of coefficient indices
+     */
+    private void storeIfSelected(final Map<String, double[]> map, final Set<String> selected,
+                                 final double[] value, final String id, final int ... indices) {
+        final StringBuilder keyBuilder = new StringBuilder(getCoefficientsKeyPrefix());
+        keyBuilder.append(id);
+        for (int index : indices) {
+            keyBuilder.append('[').append(index).append(']');
+        }
+        final String key = keyBuilder.toString();
+        if (selected.isEmpty() || selected.contains(key)) {
+            map.put(key, value);
+        }
     }
 
     /** {@inheritDoc} */

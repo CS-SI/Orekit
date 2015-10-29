@@ -230,8 +230,8 @@ public class JPLEphemeridesLoaderTest {
             Vector3D pInpopTCBBig    = bodysInpopTCBBig.getPVCoordinates(date, eme2000).getPosition();
             Assert.assertTrue(pDE405.distance(pInpopTDBBig) >  650.0);
             Assert.assertTrue(pDE405.distance(pInpopTDBBig) < 1050.0);
-            Assert.assertTrue(pDE405.distance(pInpopTCBBig) > 1350.0);
-            Assert.assertTrue(pDE405.distance(pInpopTCBBig) < 1900.0);
+            Assert.assertTrue(pDE405.distance(pInpopTCBBig) > 1000.0);
+            Assert.assertTrue(pDE405.distance(pInpopTCBBig) < 2000.0);
         }
 
     }
@@ -293,7 +293,7 @@ public class JPLEphemeridesLoaderTest {
         Vector3D estimatedV = new Vector3D(-3 * c, d4, 32 * c, d3, -168 * c, d2, 672 * c, d1);
 
         Vector3D loadedV = body.getPVCoordinates(date, eme2000).getVelocity();
-        Assert.assertEquals(0, loadedV.subtract(estimatedV).getNorm(), 5.0e-11 * loadedV.getNorm());
+        Assert.assertEquals(0, loadedV.subtract(estimatedV).getNorm(), 3.5e-10 * loadedV.getNorm());
     }
 
     @Before

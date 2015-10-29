@@ -20,7 +20,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -197,6 +199,22 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
         return new Vector3D(getDouble(xKey), getDouble(yKey), getDouble(zKey));
     }
 
+    /** Get a strings list from a parameters map.
+     * @param key parameter key
+     * @param separator elements separator
+     * @return strings list value corresponding to the key
+     * @exception NoSuchElementException if key is not in the map
+     */
+    public List<String> getStringsList(final Key key, final char separator)
+        throws NoSuchElementException {
+        final String value = map.get(key);
+        if (value == null) {
+            throw new NoSuchElementException(key.toString());
+        }
+        return Arrays.asList(value.trim().split("\\s*" + separator + "\\s*"));
+    }
+
+    /** Get a raw double value from a parameters map.
     /** Get an inertial frame from a parameters map.
      * @param key parameter key
      * @return inertial frame corresponding to the key

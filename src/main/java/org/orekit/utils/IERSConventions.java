@@ -1939,6 +1939,7 @@ public enum IERSConventions {
 
             stream = IERSConventions.class.getResourceAsStream(nameLove);
             if (stream == null) {
+                // this should never happen with files embedded within Orekit
                 throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, nameLove);
             }
 
@@ -1981,6 +1982,7 @@ public enum IERSConventions {
             return new LoveNumbers(real, imaginary, plus);
 
         } catch (IOException ioe) {
+            // this should never happen with files embedded within Orekit
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, nameLove);
         } finally {
             try {

@@ -197,43 +197,43 @@ public class CelestialBodyFactory {
         throws OrekitException {
 
         CelestialBodyLoader loader = null;
-        if (name.equals(SOLAR_SYSTEM_BARYCENTER)) {
+        if (name.equalsIgnoreCase(SOLAR_SYSTEM_BARYCENTER)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER);
-        } else if (name.equals(SUN)) {
+        } else if (name.equalsIgnoreCase(SUN)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SUN);
-        } else if (name.equals(MERCURY)) {
+        } else if (name.equalsIgnoreCase(MERCURY)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY);
-        } else if (name.equals(VENUS)) {
+        } else if (name.equalsIgnoreCase(VENUS)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.VENUS);
-        } else if (name.equals(EARTH_MOON)) {
+        } else if (name.equalsIgnoreCase(EARTH_MOON)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH_MOON);
-        } else if (name.equals(EARTH)) {
+        } else if (name.equalsIgnoreCase(EARTH)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH);
-        } else if (name.equals(MOON)) {
+        } else if (name.equalsIgnoreCase(MOON)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MOON);
-        } else if (name.equals(MARS)) {
+        } else if (name.equalsIgnoreCase(MARS)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MARS);
-        } else if (name.equals(JUPITER)) {
+        } else if (name.equalsIgnoreCase(JUPITER)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.JUPITER);
-        } else if (name.equals(SATURN)) {
+        } else if (name.equalsIgnoreCase(SATURN)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SATURN);
-        } else if (name.equals(URANUS)) {
+        } else if (name.equalsIgnoreCase(URANUS)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.URANUS);
-        } else if (name.equals(NEPTUNE)) {
+        } else if (name.equalsIgnoreCase(NEPTUNE)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.NEPTUNE);
-        } else if (name.equals(PLUTO)) {
+        } else if (name.equalsIgnoreCase(PLUTO)) {
             loader =
                 new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.PLUTO);
         }

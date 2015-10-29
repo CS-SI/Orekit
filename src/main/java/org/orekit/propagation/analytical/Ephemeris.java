@@ -47,9 +47,12 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPropagator {
+public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPropagator, Serializable {
 
-    /** First date in range. */
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20151022L;
+
+     /** First date in range. */
     private final AbsoluteDate minDate;
 
     /** Last date in range. */

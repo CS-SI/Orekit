@@ -22,6 +22,20 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Fixed time scale issues in JPL ephemerides and IAU pole models.
+        The time used for internal computation should be TDB, not TT.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed an issue with backward propagation on analytical propagator.
+        During first step, the analytical interpolator wrongly thought the
+        propagation was forward.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to retrieve short period coefficients from DSST as
+        spacecraft state additional parameters. This is mainly intended
+        for test and validation purposes.
+      </action>
+      <action dev="luc" type="fix" >
         Prevent small overshoots of step limits in event detection.
         Fixes issue #218.
       </action>
