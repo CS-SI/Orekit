@@ -110,6 +110,7 @@ public class EstimationTestUtils {
         final Vector3D rotationRate = new Vector3D(0.0, 0.0, 2.0*FastMath.PI/86400.);
 
         TransformProvider MyEarthFrame = new TransformProvider() {
+            private static final long serialVersionUID = 1L;
             public Transform getTransform(final AbsoluteDate date) {
                 final double rotationduration = date.durationFrom(datedef);
                 final Vector3D alpharot = new Vector3D(rotationduration, rotationRate);
