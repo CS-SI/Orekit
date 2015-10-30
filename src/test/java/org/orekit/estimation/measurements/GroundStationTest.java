@@ -123,106 +123,134 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesOctantPxPyPz() throws OrekitException {
-        double tolerancePositionValue       = 1.0e-15;
-        double tolerancePositionDerivative  = 1.0e-7;
-        double toleranceDirectionValue      = 1.0e-15;
-        double toleranceDirectionDerivative = 2.0e-7;
+        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionDerivative    = 9.8e-9;
+        double toleranceENDirectionValue      = 1.0e-15;
+        double toleranceENDirectionDerivative = 1.9e-7;
+        double toleranceZDirectionValue       = 1.0e-15;
+        double toleranceZDirectionDerivative  = 1.5e-7;
         doTestOffsetDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0,
-                                tolerancePositionValue, tolerancePositionDerivative,
-                                toleranceDirectionValue, toleranceDirectionDerivative);
+                                tolerancePositionValue,    tolerancePositionDerivative,
+                                toleranceENDirectionValue, toleranceENDirectionDerivative,
+                                toleranceZDirectionValue,  toleranceZDirectionDerivative);
     }
 
     @Test
     public void testOffsetDerivativesOctantPxPyMz() throws OrekitException {
-        double tolerancePositionValue       = 1.0e-15;
-        double tolerancePositionDerivative  = 1.0e-7;
-        double toleranceDirectionValue      = 1.0e-15;
-        double toleranceDirectionDerivative = 2.0e-7;
+        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionDerivative    = 4.6e-9;
+        double toleranceENDirectionValue      = 1.0e-15;
+        double toleranceENDirectionDerivative = 1.9e-7;
+        double toleranceZDirectionValue       = 1.0e-15;
+        double toleranceZDirectionDerivative  = 1.5e-7;
         doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0,
-                                tolerancePositionValue, tolerancePositionDerivative,
-                                toleranceDirectionValue, toleranceDirectionDerivative);
+                                tolerancePositionValue,    tolerancePositionDerivative,
+                                toleranceENDirectionValue, toleranceENDirectionDerivative,
+                                toleranceZDirectionValue,  toleranceZDirectionDerivative);
     }
 
     @Test
     public void testOffsetDerivativesOctantPxMyPz() throws OrekitException {
-        double tolerancePositionValue       = 1.0e-15;
-        double tolerancePositionDerivative  = 1.0e-7;
-        double toleranceDirectionValue      = 1.0e-15;
-        double toleranceDirectionDerivative = 2.0e-7;
+        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionDerivative    = 6.6e-9;
+        double toleranceENDirectionValue      = 1.0e-15;
+        double toleranceENDirectionDerivative = 1.9e-7;
+        double toleranceZDirectionValue       = 1.0e-15;
+        double toleranceZDirectionDerivative  = 1.5e-7;
         doTestOffsetDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0,
-                                tolerancePositionValue, tolerancePositionDerivative,
-                                toleranceDirectionValue, toleranceDirectionDerivative);
+                                tolerancePositionValue,    tolerancePositionDerivative,
+                                toleranceENDirectionValue, toleranceENDirectionDerivative,
+                                toleranceZDirectionValue,  toleranceZDirectionDerivative);
     }
 
     @Test
     public void testOffsetDerivativesOctantPxMyMz() throws OrekitException {
-        double tolerancePositionValue       = 1.0e-15;
-        double tolerancePositionDerivative  = 1.0e-7;
-        double toleranceDirectionValue      = 1.0e-15;
-        double toleranceDirectionDerivative = 2.0e-7;
+        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionDerivative    = 4.6e-9;
+        double toleranceENDirectionValue      = 1.0e-15;
+        double toleranceENDirectionDerivative = 1.9e-7;
+        double toleranceZDirectionValue       = 1.0e-15;
+        double toleranceZDirectionDerivative  = 1.5e-7;
         doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0,
-                                tolerancePositionValue, tolerancePositionDerivative,
-                                toleranceDirectionValue, toleranceDirectionDerivative);
+                                tolerancePositionValue,    tolerancePositionDerivative,
+                                toleranceENDirectionValue, toleranceENDirectionDerivative,
+                                toleranceZDirectionValue,  toleranceZDirectionDerivative);
     }
 
     @Test
     public void testOffsetDerivativesOctantMxPyPz() throws OrekitException {
-        double tolerancePositionValue       = 1.0e-15;
-        double tolerancePositionDerivative  = 1.0e-7;
-        double toleranceDirectionValue      = 1.0e-15;
-        double toleranceDirectionDerivative = 2.0e-7;
+        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionDerivative    = 6.1e-9;
+        double toleranceENDirectionValue      = 1.0e-15;
+        double toleranceENDirectionDerivative = 1.8e-7;
+        double toleranceZDirectionValue       = 1.0e-15;
+        double toleranceZDirectionDerivative  = 1.5e-7;
         doTestOffsetDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0,
-                                tolerancePositionValue, tolerancePositionDerivative,
-                                toleranceDirectionValue, toleranceDirectionDerivative);
+                                tolerancePositionValue,    tolerancePositionDerivative,
+                                toleranceENDirectionValue, toleranceENDirectionDerivative,
+                                toleranceZDirectionValue,  toleranceZDirectionDerivative);
     }
 
     @Test
     public void testOffsetDerivativesOctantMxPyMz() throws OrekitException {
-        double tolerancePositionValue       = 1.0e-15;
-        double tolerancePositionDerivative  = 1.0e-7;
-        double toleranceDirectionValue      = 1.0e-15;
-        double toleranceDirectionDerivative = 2.0e-7;
+        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionDerivative    = 6.1e-9;
+        double toleranceENDirectionValue      = 1.0e-15;
+        double toleranceENDirectionDerivative = 1.8e-7;
+        double toleranceZDirectionValue       = 1.0e-15;
+        double toleranceZDirectionDerivative  = 1.5e-7;
         doTestOffsetDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0,
-                                tolerancePositionValue, tolerancePositionDerivative,
-                                toleranceDirectionValue, toleranceDirectionDerivative);
+                                tolerancePositionValue,    tolerancePositionDerivative,
+                                toleranceENDirectionValue, toleranceENDirectionDerivative,
+                                toleranceZDirectionValue,  toleranceZDirectionDerivative);
     }
 
     @Test
     public void testOffsetDerivativesOctantMxMyPz() throws OrekitException {
-        double tolerancePositionValue       = 1.0e-15;
-        double tolerancePositionDerivative  = 1.0e-7;
-        double toleranceDirectionValue      = 1.0e-15;
-        double toleranceDirectionDerivative = 2.0e-7;
+        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionDerivative    = 5.9e-9;
+        double toleranceENDirectionValue      = 1.0e-15;
+        double toleranceENDirectionDerivative = 1.8e-7;
+        double toleranceZDirectionValue       = 1.0e-15;
+        double toleranceZDirectionDerivative  = 1.5e-7;
         doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
-                                tolerancePositionValue, tolerancePositionDerivative,
-                                toleranceDirectionValue, toleranceDirectionDerivative);
+                                tolerancePositionValue,    tolerancePositionDerivative,
+                                toleranceENDirectionValue, toleranceENDirectionDerivative,
+                                toleranceZDirectionValue,  toleranceZDirectionDerivative);
     }
 
     @Test
     public void testOffsetDerivativesOctantMxMyMz() throws OrekitException {
-        double tolerancePositionValue       = 1.0e-15;
-        double tolerancePositionDerivative  = 1.0e-7;
-        double toleranceDirectionValue      = 1.0e-15;
-        double toleranceDirectionDerivative = 2.0e-7;
+        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionDerivative    = 5.9e-9;
+        double toleranceENDirectionValue      = 1.0e-15;
+        double toleranceENDirectionDerivative = 1.8e-7;
+        double toleranceZDirectionValue       = 1.0e-15;
+        double toleranceZDirectionDerivative  = 1.5e-7;
         doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
-                                tolerancePositionValue, tolerancePositionDerivative,
-                                toleranceDirectionValue, toleranceDirectionDerivative);
+                                tolerancePositionValue,    tolerancePositionDerivative,
+                                toleranceENDirectionValue, toleranceENDirectionDerivative,
+                                toleranceZDirectionValue,  toleranceZDirectionDerivative);
     }
 
     @Test
     public void testOffsetDerivativesNearPole() throws OrekitException {
-        double tolerancePositionValue       = 1.0e-15;
-        double tolerancePositionDerivative  = 1.0e-7;
-        double toleranceDirectionValue      = 1.0e-15;
-        double toleranceDirectionDerivative = 9.0e-5; // near pole, derivatives of East vector become singular
-        doTestOffsetDerivatives(FastMath.toRadians(89.9), FastMath.toRadians(0), 1200.0,
-                                tolerancePositionValue, tolerancePositionDerivative,
-                                toleranceDirectionValue, toleranceDirectionDerivative);
+        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionDerivative    = 1.1e-8;
+        double toleranceENDirectionValue      = 1.0e-15;
+        double toleranceENDirectionDerivative = 0.0092; // near pole, East and North vectors are singular
+        double toleranceZDirectionValue       = 1.0e-15;
+        double toleranceZDirectionDerivative  = 1.6e-7;
+        doTestOffsetDerivatives(FastMath.toRadians(89.999), FastMath.toRadians(90), 1200.0,
+                                tolerancePositionValue,    tolerancePositionDerivative,
+                                toleranceENDirectionValue, toleranceENDirectionDerivative,
+                                toleranceZDirectionValue,  toleranceZDirectionDerivative);
     }
 
     private void doTestOffsetDerivatives(double latitude, double longitude, double altitude,
                                          double tolerancePositionValue, double tolerancePositionDerivative,
-                                         double toleranceDirectionValue, double toleranceDirectionDerivative)
+                                         double toleranceENDirectionValue, double toleranceENDirectionDerivative,
+                                         double toleranceZDirectionValue, double toleranceZDirectionDerivative)
         throws OrekitException {
         Utils.setDataRoot("regular-data");
         final OneAxisEllipsoid earth =
@@ -238,7 +266,7 @@ public class GroundStationTest {
         final int zenithIndex = 2;
         UnivariateDifferentiableMatrixFunction[] dF = new UnivariateDifferentiableMatrixFunction[parameters];
         for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
-            final FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(3, 0.1);
+            final FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0);
             dF[k] = differentiator.differentiate(new UnivariateMatrixFunction() {
                 @Override
                 public double[][] value(double x) {
@@ -274,10 +302,12 @@ public class GroundStationTest {
             });
         }
 
-        double maxPosValueError      = 0;
-        double maxPosDerivativeError = 0;
-        double maxDirValueError      = 0;
-        double maxDirDerivativeError = 0;
+        double maxPosValueError        = 0;
+        double maxPosDerivativeError   = 0;
+        double maxENDirValueError      = 0;
+        double maxENDirDerivativeError = 0;
+        double maxZDirValueError       = 0;
+        double maxZDirDerivativeError  = 0;
         for (double dEast = -2; dEast <= 2; dEast += 0.5) { 
             for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) { 
                 for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) { 
@@ -297,38 +327,40 @@ public class GroundStationTest {
                         maxPosDerivativeError = FastMath.max(maxPosDerivativeError, FastMath.abs(result[0][2].getPartialDerivative(1) - od.getOrigin().getZ().getPartialDerivative(orders)));
 
                         // East vector of the offset frame
-                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[1][0].getValue() - od.getEast().getX().getValue()));
-                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[1][1].getValue() - od.getEast().getY().getValue()));
-                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[1][2].getValue() - od.getEast().getZ().getValue()));
-                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[1][0].getPartialDerivative(1) - od.getEast().getX().getPartialDerivative(orders)));
-                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[1][1].getPartialDerivative(1) - od.getEast().getY().getPartialDerivative(orders)));
-                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[1][2].getPartialDerivative(1) - od.getEast().getZ().getPartialDerivative(orders)));
+                        maxENDirValueError = FastMath.max(maxENDirValueError, FastMath.abs(result[1][0].getValue() - od.getEast().getX().getValue()));
+                        maxENDirValueError = FastMath.max(maxENDirValueError, FastMath.abs(result[1][1].getValue() - od.getEast().getY().getValue()));
+                        maxENDirValueError = FastMath.max(maxENDirValueError, FastMath.abs(result[1][2].getValue() - od.getEast().getZ().getValue()));
+                        maxENDirDerivativeError = FastMath.max(maxENDirDerivativeError, FastMath.abs(result[1][0].getPartialDerivative(1) - od.getEast().getX().getPartialDerivative(orders)));
+                        maxENDirDerivativeError = FastMath.max(maxENDirDerivativeError, FastMath.abs(result[1][1].getPartialDerivative(1) - od.getEast().getY().getPartialDerivative(orders)));
+                        maxENDirDerivativeError = FastMath.max(maxENDirDerivativeError, FastMath.abs(result[1][2].getPartialDerivative(1) - od.getEast().getZ().getPartialDerivative(orders)));
 
                         // North vector of the offset frame
-                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[2][0].getValue() - od.getNorth().getX().getValue()));
-                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[2][1].getValue() - od.getNorth().getY().getValue()));
-                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[2][2].getValue() - od.getNorth().getZ().getValue()));
-                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[2][0].getPartialDerivative(1) - od.getNorth().getX().getPartialDerivative(orders)));
-                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[2][1].getPartialDerivative(1) - od.getNorth().getY().getPartialDerivative(orders)));
-                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[2][2].getPartialDerivative(1) - od.getNorth().getZ().getPartialDerivative(orders)));
+                        maxENDirValueError = FastMath.max(maxENDirValueError, FastMath.abs(result[2][0].getValue() - od.getNorth().getX().getValue()));
+                        maxENDirValueError = FastMath.max(maxENDirValueError, FastMath.abs(result[2][1].getValue() - od.getNorth().getY().getValue()));
+                        maxENDirValueError = FastMath.max(maxENDirValueError, FastMath.abs(result[2][2].getValue() - od.getNorth().getZ().getValue()));
+                        maxENDirDerivativeError = FastMath.max(maxENDirDerivativeError, FastMath.abs(result[2][0].getPartialDerivative(1) - od.getNorth().getX().getPartialDerivative(orders)));
+                        maxENDirDerivativeError = FastMath.max(maxENDirDerivativeError, FastMath.abs(result[2][1].getPartialDerivative(1) - od.getNorth().getY().getPartialDerivative(orders)));
+                        maxENDirDerivativeError = FastMath.max(maxENDirDerivativeError, FastMath.abs(result[2][2].getPartialDerivative(1) - od.getNorth().getZ().getPartialDerivative(orders)));
 
                         // Zenith vector of the offset frame
-                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[3][0].getValue() - od.getZenith().getX().getValue()));
-                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[3][1].getValue() - od.getZenith().getY().getValue()));
-                        maxDirValueError = FastMath.max(maxDirValueError, FastMath.abs(result[3][2].getValue() - od.getZenith().getZ().getValue()));
-                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[3][0].getPartialDerivative(1) - od.getZenith().getX().getPartialDerivative(orders)));
-                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[3][1].getPartialDerivative(1) - od.getZenith().getY().getPartialDerivative(orders)));
-                        maxDirDerivativeError = FastMath.max(maxDirDerivativeError, FastMath.abs(result[3][2].getPartialDerivative(1) - od.getZenith().getZ().getPartialDerivative(orders)));
+                        maxZDirValueError = FastMath.max(maxZDirValueError, FastMath.abs(result[3][0].getValue() - od.getZenith().getX().getValue()));
+                        maxZDirValueError = FastMath.max(maxZDirValueError, FastMath.abs(result[3][1].getValue() - od.getZenith().getY().getValue()));
+                        maxZDirValueError = FastMath.max(maxZDirValueError, FastMath.abs(result[3][2].getValue() - od.getZenith().getZ().getValue()));
+                        maxZDirDerivativeError = FastMath.max(maxZDirDerivativeError, FastMath.abs(result[3][0].getPartialDerivative(1) - od.getZenith().getX().getPartialDerivative(orders)));
+                        maxZDirDerivativeError = FastMath.max(maxZDirDerivativeError, FastMath.abs(result[3][1].getPartialDerivative(1) - od.getZenith().getY().getPartialDerivative(orders)));
+                        maxZDirDerivativeError = FastMath.max(maxZDirDerivativeError, FastMath.abs(result[3][2].getPartialDerivative(1) - od.getZenith().getZ().getPartialDerivative(orders)));
 
                     }
                 }
             }
         }
 
-        Assert.assertEquals(0.0, maxPosValueError,      tolerancePositionValue);
-        Assert.assertEquals(0.0, maxPosDerivativeError, tolerancePositionDerivative);
-        Assert.assertEquals(0.0, maxDirValueError,      toleranceDirectionValue);
-        Assert.assertEquals(0.0, maxDirDerivativeError, toleranceDirectionDerivative);
+        Assert.assertEquals(0.0, maxPosValueError,        tolerancePositionValue);
+        Assert.assertEquals(0.0, maxPosDerivativeError,   tolerancePositionDerivative);
+        Assert.assertEquals(0.0, maxENDirValueError,      toleranceENDirectionValue);
+        Assert.assertEquals(0.0, maxENDirDerivativeError, toleranceENDirectionDerivative);
+        Assert.assertEquals(0.0, maxZDirValueError,       toleranceZDirectionValue);
+        Assert.assertEquals(0.0, maxZDirDerivativeError,  toleranceZDirectionDerivative);
 
     }
 
