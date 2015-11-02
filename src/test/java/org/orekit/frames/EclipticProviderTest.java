@@ -118,21 +118,23 @@ public class EclipticProviderTest {
 
     @Test
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
-        Frame frame = FramesFactory.getEcliptic(IERSConventions.IERS_2010);
+        TransformProvider provider = new EclipticProvider(IERSConventions.IERS_2010);
         
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(frame);
+        oos.writeObject(provider);
 
-        Assert.assertTrue(bos.size() > 100);
-        Assert.assertTrue(bos.size() < 150);
+        Assert.assertTrue(bos.size() > 200);
+        Assert.assertTrue(bos.size() < 250);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
-        Frame deserialized  = (Frame) ois.readObject();
+        TransformProvider deserialized  = (TransformProvider) ois.readObject();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 3600) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
-            Transform expectedIdentity = frame.getTransformTo(deserialized, date);
+            Transform expectedIdentity = new Transform(date,
+                                                       provider.getTransform(date).getInverse(),
+                                                       deserialized.getTransform(date));;
             Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
             Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }

@@ -381,3 +381,9 @@ OUT_OF_RANGE_DERIVATION_ORDER = ordinul de derivare {0} este in afara domeniului
 
 # out of range latitude: {0}, [{1}, {2}]
 OUT_OF_RANGE_LATITUDE = <MISSING TRANSLATION>
+
+# orbit type {0} not allowed here, allowed types: {1}
+ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
+
+# body shape is not an ellipsoid
+BODY_SHAPE_IS_NOT_AN_ELLIPSOID = <MISSING TRANSLATION>

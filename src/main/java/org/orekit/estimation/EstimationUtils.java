@@ -165,9 +165,9 @@ public class EstimationUtils {
          * @param orbitType type used to map the orbit to a one dimensional array
          * @param positionAngle type of the position angle used for orbit mapping to array
          */
-        public StateComponentFunction(final int index, final StateFunction f,
-                                      final SpacecraftState baseState,
-                                      final OrbitType orbitType, final PositionAngle positionAngle) {
+        StateComponentFunction(final int index, final StateFunction f,
+                               final SpacecraftState baseState,
+                               final OrbitType orbitType, final PositionAngle positionAngle) {
             this.index         = index;
             this.f             = f;
             this.orbitType     = orbitType;

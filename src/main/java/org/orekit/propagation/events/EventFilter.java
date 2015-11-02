@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
  *
- * <p>General {@link EventDetector events} are defined implicitely
+ * <p>General {@link EventDetector events} are defined implicitly
  * by a {@link EventDetector#g(SpacecraftState) g function} crossing
  * zero. This function needs to be continuous in the event neighborhood,
  * and its sign must remain consistent between events. This implies that
@@ -58,9 +58,9 @@ import org.orekit.time.AbsoluteDate;
  * the interesting events, i.e. either only {@code increasing} events or
  * {@code decreasing} events. the number of calls to the {@link
  * EventDetector#g(SpacecraftState) g function} will also be reduced.</p>
- *
+ * @deprecated as of 7.1, replaced with {@link EventSlopeFilter}
  */
-
+@Deprecated
 public class EventFilter<T extends EventDetector> extends AbstractDetector<EventFilter<T>> {
 
     /** Serializable UID. */
@@ -124,7 +124,7 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
     /** {@inheritDoc} */
     @Override
     protected EventFilter<T> create(final double newMaxCheck, final double newThreshold,
-                                 final int newMaxIter, final EventHandler<EventFilter<T>> newHandler) {
+                                    final int newMaxIter, final EventHandler<EventFilter<T>> newHandler) {
         return new EventFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }
 
@@ -157,12 +157,12 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
                 final Transformer previous = transformers[last];
                 final Transformer next     = filter.selectTransformer(previous, rawG, forward);
                 if (next != previous) {
-                    // there is a root somewhere between extremeT end t
-                    // the new transformer, which is valid on both sides of the root,
-                    // so it is valid for t (this is how we have just computed it above),
-                    // but it was already valid before, so we store the switch at extremeT
-                    // for safety, to ensure the previous transformer is not applied too
-                    // close of the root
+                    // there is a root somewhere between extremeT and t.
+                    // the new transformer is valid for t (this is how we have just computed
+                    // it above), but it is in fact valid on both sides of the root, so
+                    // it was already valid before t and even up to previous time. We store
+                    // the switch at extremeT for safety, to ensure the previous transformer
+                    // is not applied too close of the root
                     System.arraycopy(updates,      1, updates,      0, last);
                     System.arraycopy(transformers, 1, transformers, 0, last);
                     updates[last]      = extremeT;
@@ -196,12 +196,12 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
                 final Transformer previous = transformers[0];
                 final Transformer next     = filter.selectTransformer(previous, rawG, forward);
                 if (next != previous) {
-                    // there is a root somewhere between extremeT end t
-                    // the new transformer, which is valid on both sides of the root,
-                    // so it is valid for t (this is how we have just computed it above),
-                    // but it was already valid before, so we store the switch at extremeT
-                    // for safety, to ensure the previous transformer is not applied too
-                    // close of the root
+                    // there is a root somewhere between extremeT and t.
+                    // the new transformer is valid for t (this is how we have just computed
+                    // it above), but it is in fact valid on both sides of the root, so
+                    // it was already valid before t and even up to previous time. We store
+                    // the switch at extremeT for safety, to ensure the previous transformer
+                    // is not applied too close of the root
                     System.arraycopy(updates,      0, updates,      1, updates.length - 1);
                     System.arraycopy(transformers, 0, transformers, 1, transformers.length - 1);
                     updates[0]      = extremeT;

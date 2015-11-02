@@ -128,7 +128,7 @@ class TIRFProvider implements EOPBasedTransformProvider {
         /** Simple constructor.
          * @param eopHistory EOP history
          */
-        public DataTransferObject(final EOPHistory eopHistory) {
+        DataTransferObject(final EOPHistory eopHistory) {
             this.eopHistory = eopHistory;
         }
 

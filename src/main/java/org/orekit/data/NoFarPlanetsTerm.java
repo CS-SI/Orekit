@@ -66,7 +66,7 @@ class NoFarPlanetsTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cJu coefficient for mean Jupiter longitude
      * @param cSa coefficient for mean Saturn longitude
      */
-    public NoFarPlanetsTerm(final int cL, final int cF, final int cD, final int cOmega,
+    NoFarPlanetsTerm(final int cL, final int cF, final int cD, final int cOmega,
                             final int cMe, final int cVe, final int cE, final int cMa,
                             final int cJu, final int cSa) {
         this.cL     = cL;

@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Integration in Matlab
-=====================
+# Integration in Matlab
 
 Matlab is a commercial tool for technical computation, with easy access to graphical
 plot routines. It can access Java libraries and convert the results to Matlab objects.

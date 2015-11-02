@@ -16,14 +16,21 @@
  */
 package org.orekit.propagation.integration;
 
+import org.orekit.time.AbsoluteDate;
+
 /** Common interface for all propagator mode handlers initialization.
  * @author Luc Maisonobe
  */
 public interface ModeHandler {
 
-    /** Initialize the mode handler.
+    /**
+     * Initialize the mode handler.
+     *
      * @param activateHandlers if handlers shall be active
+     * @param targetDate       propagation is expected to end on this date, but
+     *                         it may end early due to event detectors or
+     *                         exceptions.
      */
-    void initialize(boolean activateHandlers);
+    void initialize(boolean activateHandlers, AbsoluteDate targetDate);
 
 }

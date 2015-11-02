@@ -176,6 +176,12 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public String getCoefficientsKeyPrefix() {
+        return "DSST-SRP-";
+    }
+
+    /** {@inheritDoc} */
     protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
         // Default bounds without shadow [-PI, PI]
         final double[] ll = {-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),

@@ -450,7 +450,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
          * @exception TimeStampedCacheException if entries are not chronologically
          * sorted or if new data cannot be generated
          */
-        public Slot(final AbsoluteDate date) throws TimeStampedCacheException {
+        Slot(final AbsoluteDate date) throws TimeStampedCacheException {
 
             // allocate cache
             this.cache = new ArrayList<Entry>();
@@ -835,7 +835,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
              * @param data entry data
              * @param quantum entry quantum
              */
-            public Entry(final T data, final long quantum) {
+            Entry(final T data, final long quantum) {
                 this.quantum = quantum;
                 this.data  = data;
             }

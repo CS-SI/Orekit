@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Integration in other languages
-==============================
+# Integration in other languages
 
 The Orekit library can be accessed from other languages, for integration into existing
 software or for quick prototyping in a scripting language such as Jython, Python or

@@ -19,6 +19,7 @@ package org.orekit.bodies;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 /** Factory class for IAU poles.
@@ -98,7 +99,7 @@ class IAUPoleFactory {
                     private double[] computeMi(final AbsoluteDate date) {
                         final double d = d(date);
                         return new double[] {
-                            FastMath.toRadians(174.791096 +  4.092335 * d), // M1
+                            FastMath.toRadians(174.791086 +  4.092335 * d), // M1
                             FastMath.toRadians(349.582171 +  8.184670 * d), // M2
                             FastMath.toRadians(164.373257 + 12.277005 * d), // M3
                             FastMath.toRadians(339.164343 + 16.369340 * d), // M4
@@ -158,11 +159,11 @@ class IAUPoleFactory {
                                                                0.1204 * FastMath.sin(e[1]) + 0.0700 * FastMath.sin(e[2]) -
                                                                0.0172 * FastMath.sin(e[3]) + 0.0072 * FastMath.sin(e[5]) -
                                                                0.0052 * FastMath.sin(e[9]) + 0.0043 * FastMath.sin(e[12])),
-                                                               FastMath.toRadians( 66.5392 + 0.0130 * t       + 1.5419 * FastMath.cos(e[0]) +
-                                                                                   0.0239 * FastMath.cos(e[1]) - 0.0278 * FastMath.cos(e[2]) +
-                                                                                   0.0068 * FastMath.cos(e[3]) - 0.0029 * FastMath.cos(e[5]) +
-                                                                                   0.0009 * FastMath.cos(e[6]) + 0.0008 * FastMath.cos(e[9]) -
-                                                                                   0.0009 * FastMath.cos(e[12])));
+                                            FastMath.toRadians( 66.5392 + 0.0130 * t       + 1.5419 * FastMath.cos(e[0]) +
+                                                               0.0239 * FastMath.cos(e[1]) - 0.0278 * FastMath.cos(e[2]) +
+                                                               0.0068 * FastMath.cos(e[3]) - 0.0029 * FastMath.cos(e[5]) +
+                                                               0.0009 * FastMath.cos(e[6]) + 0.0008 * FastMath.cos(e[9]) -
+                                                               0.0009 * FastMath.cos(e[12])));
                     }
 
                     /** {@inheritDoc }*/
@@ -243,12 +244,12 @@ class IAUPoleFactory {
                                                                0.001432 * FastMath.sin(jc) +
                                                                0.000030 * FastMath.sin(jd) +
                                                                0.002150 * FastMath.sin(je)),
-                                                               FastMath.toRadians( 64.495303 + 0.002413 * t) +
+                                            FastMath.toRadians( 64.495303 + 0.002413 * t +
                                                                0.000050 * FastMath.cos(ja) +
                                                                0.000404 * FastMath.cos(jb) +
                                                                0.000617 * FastMath.cos(jc) -
                                                                0.000013 * FastMath.cos(jd) +
-                                                               0.000926 * FastMath.cos(je));
+                                                               0.000926 * FastMath.cos(je)));
                     }
 
                     /** {@inheritDoc }*/
@@ -342,7 +343,7 @@ class IAUPoleFactory {
      * @return interval between date and standard epoch in julian centuries
      */
     private static double t(final AbsoluteDate date) {
-        return date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_CENTURY;
+        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, TimeScalesFactory.getTDB()) / Constants.JULIAN_CENTURY;
     }
 
     /** Compute the interval in julian days from standard epoch.
@@ -350,7 +351,7 @@ class IAUPoleFactory {
      * @return interval between date and standard epoch in julian days
      */
     private static double d(final AbsoluteDate date) {
-        return date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
+        return date.offsetFrom(AbsoluteDate.J2000_EPOCH, TimeScalesFactory.getTDB()) / Constants.JULIAN_DAY;
     }
 
     /** Default IAUPole implementation for barycenters.

@@ -128,6 +128,24 @@ public abstract class StateMapper {
         return referenceDate.shiftedBy(t);
     }
 
+    /**
+     * Map the raw double time offset to a date.
+     *
+     * @param t    date offset
+     * @param date The expected date.
+     * @return {@code date} if it is the same time as {@code t} to within the
+     * lower precision of the latter. Otherwise a new date is returned that
+     * corresponds to time {@code t}.
+     */
+    public AbsoluteDate mapDoubleToDate(final double t,
+                                        final AbsoluteDate date) {
+        if (date.durationFrom(referenceDate) == t) {
+            return date;
+        } else {
+            return mapDoubleToDate(t);
+        }
+    }
+
     /** Map a date to a raw double time offset.
      * @param date date
      * @return time offset
@@ -143,7 +161,19 @@ public abstract class StateMapper {
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public abstract SpacecraftState mapArrayToState(final double t, final double[] y, final boolean meanOnly)
+    public SpacecraftState mapArrayToState(final double t, final double[] y, final boolean meanOnly)
+            throws OrekitException {
+        return mapArrayToState(mapDoubleToDate(t), y, meanOnly);
+    }
+
+    /** Map the raw double components to a spacecraft state.
+     * @param date of the state components
+     * @param y state components
+     * @param meanOnly use only the mean elements to build the state
+     * @return spacecraft state
+     * @exception OrekitException if array is inconsistent or cannot be mapped
+     */
+    public abstract SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
         throws OrekitException;
 
     /** Map a spacecraft state to raw double components.

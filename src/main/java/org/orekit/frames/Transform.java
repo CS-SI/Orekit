@@ -867,7 +867,7 @@ public class Transform
         private static final long serialVersionUID = -9042082036141830517L;
 
         /** Simple constructor. */
-        public IdentityTransform() {
+        IdentityTransform() {
             super(AbsoluteDate.J2000_EPOCH, PVCoordinates.ZERO, AngularCoordinates.IDENTITY);
         }
 

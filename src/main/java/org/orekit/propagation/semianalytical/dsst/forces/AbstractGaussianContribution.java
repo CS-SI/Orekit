@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.math3.analysis.UnivariateVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -364,6 +368,90 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     }
 
+    /** {@inheritDoc}
+     * <p>
+     * For Gaussian forces,there are JMAX cj coefficients,
+     * JMAX sj coefficients and 3 dj coefficients. As JMAX = 12,
+     * this sums up to 27 coefficients. The j index is the integer
+     * multiplier for the true longitude argument in the cj and sj
+     * coefficients and to the degree in  the polynomial dj coefficients.
+     * </p>
+     */
+    @Override
+    public Map<String, double[]> getShortPeriodicCoefficients(final AbsoluteDate date, final Set<String> selected)
+        throws OrekitException {
+        final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * JMAX + 3);
+        storeIfSelected(coefficients, selected,
+                        new double[] {
+                            gaussianSPCoefs.getCij(0, 0, date),
+                            gaussianSPCoefs.getCij(1, 0, date),
+                            gaussianSPCoefs.getCij(2, 0, date),
+                            gaussianSPCoefs.getCij(3, 0, date),
+                            gaussianSPCoefs.getCij(4, 0, date),
+                            gaussianSPCoefs.getCij(5, 0, date),
+                        }, "d", 0);
+        storeIfSelected(coefficients, selected,
+                        new double[] {
+                            gaussianSPCoefs.getDij(0, 1, date),
+                            gaussianSPCoefs.getDij(1, 1, date),
+                            gaussianSPCoefs.getDij(2, 1, date),
+                            gaussianSPCoefs.getDij(3, 1, date),
+                            gaussianSPCoefs.getDij(4, 1, date),
+                            gaussianSPCoefs.getDij(5, 1, date),
+                        }, "d", 1);
+        storeIfSelected(coefficients, selected,
+                        new double[] {
+                            gaussianSPCoefs.getDij(0, 2, date),
+                            gaussianSPCoefs.getDij(1, 2, date),
+                            gaussianSPCoefs.getDij(2, 2, date),
+                            gaussianSPCoefs.getDij(3, 2, date),
+                            gaussianSPCoefs.getDij(4, 2, date),
+                            gaussianSPCoefs.getDij(5, 2, date),
+                        }, "d", 2);
+        for (int j = 1; j <= JMAX; j++) {
+            storeIfSelected(coefficients, selected,
+                            new double[] {
+                                gaussianSPCoefs.getCij(0, j, date),
+                                gaussianSPCoefs.getCij(1, j, date),
+                                gaussianSPCoefs.getCij(2, j, date),
+                                gaussianSPCoefs.getCij(3, j, date),
+                                gaussianSPCoefs.getCij(4, j, date),
+                                gaussianSPCoefs.getCij(5, j, date),
+                            }, "c", j);
+            storeIfSelected(coefficients, selected,
+                            new double[] {
+                                gaussianSPCoefs.getSij(0, j, date),
+                                gaussianSPCoefs.getSij(1, j, date),
+                                gaussianSPCoefs.getSij(2, j, date),
+                                gaussianSPCoefs.getSij(3, j, date),
+                                gaussianSPCoefs.getSij(4, j, date),
+                                gaussianSPCoefs.getSij(5, j, date),
+                            }, "s", j);
+        }
+        return coefficients;
+    }
+
+    /** Put a coefficient in a map if selected.
+     * @param map map to populate
+     * @param selected set of coefficients that should be put in the map
+     * (empty set means all coefficients are selected)
+     * @param value coefficient value
+     * @param id coefficient identifier
+     * @param indices list of coefficient indices
+     */
+    private void storeIfSelected(final Map<String, double[]> map, final Set<String> selected,
+                                 final double[] value, final String id, final int ... indices) {
+        final StringBuilder keyBuilder = new StringBuilder(getCoefficientsKeyPrefix());
+        keyBuilder.append(id);
+        for (int index : indices) {
+            keyBuilder.append('[').append(index).append(']');
+        }
+        final String key = keyBuilder.toString();
+        if (selected.isEmpty() || selected.contains(key)) {
+            map.put(key, value);
+        }
+    }
+
     /** {@inheritDoc} */
     @Override
     public void computeShortPeriodicsCoefficients(final SpacecraftState state)
@@ -394,7 +482,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Simple constructor.
          *  @param state input state
          */
-        public AccelerationRetriever(final SpacecraftState state) {
+        AccelerationRetriever(final SpacecraftState state) {
             this.acceleration = Vector3D.ZERO;
             this.state = state;
         }
@@ -456,7 +544,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *                  if false return the values associated to the short periodic elements variation
          * @param j the j index. used only for short periodic variation. Ignored for mean elements variation.
          */
-        public IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j) {
+        IntegrableFunction(final SpacecraftState state, final boolean meanMode, final int j) {
             this.state = state;
             this.meanMode = meanMode;
             this.j = j;
@@ -1113,7 +1201,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *
          *  @param numberOfPoints Order of the integration rule.
          */
-        public GaussQuadrature(final int numberOfPoints) {
+        GaussQuadrature(final int numberOfPoints) {
 
             switch(numberOfPoints) {
                 case 12 :
@@ -1268,7 +1356,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param jMax maximum value for j
          * @throws OrekitException in case of an error
          */
-        public FourierCjSjCoefficients(final SpacecraftState state, final int jMax) throws OrekitException {
+        FourierCjSjCoefficients(final SpacecraftState state, final int jMax) throws OrekitException {
             //Initialise the fields
             this.jMax = jMax;
 
@@ -1399,7 +1487,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *  @param jMax maximum value for j index
          *  @param interpolationPoints number of points used in the interpolation process
          */
-        public GaussianShortPeriodicCoefficients(final int jMax, final int interpolationPoints) {
+        GaussianShortPeriodicCoefficients(final int jMax, final int interpolationPoints) {
             //Initialise fields
             this.jMax = jMax;
 
@@ -1602,7 +1690,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @return D<sub>i</sub><sup>j</sup>
          */
         public double getDij(final int i, final int j, final AbsoluteDate date) {
-            return dij[j][i].value(date);
+            return dij[j][i] == null ? 0.0 : dij[j][i].value(date);
         }
     }
 
@@ -1667,7 +1755,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param fourierCjSj the fourier coefficients C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup>
          * @param jMax maximum value for j index
          */
-        public UijVijCoefficients(final double[][] currentRhoSigmaj, final FourierCjSjCoefficients fourierCjSj, final int jMax) {
+        UijVijCoefficients(final double[][] currentRhoSigmaj, final FourierCjSjCoefficients fourierCjSj, final int jMax) {
             this.currentRhoSigmaj = currentRhoSigmaj;
             this.fourierCjSj = fourierCjSj;
             this.jMax = jMax;

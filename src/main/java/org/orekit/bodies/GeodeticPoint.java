@@ -27,6 +27,7 @@ import org.apache.commons.math3.util.MathUtils;
 /** Point location relative to a 2D body surface.
  * <p>Instance of this class are guaranteed to be immutable.</p>
  * @see BodyShape
+ * @see FieldGeodeticPoint
  * @author Luc Maisonobe
  */
 public class GeodeticPoint implements Serializable {
@@ -77,7 +78,6 @@ public class GeodeticPoint implements Serializable {
             // latitude is beyond the pole -> add 180 to longitude
             lat = FastMath.PI - lat;
             lon = MathUtils.normalizeAngle(longitude + FastMath.PI, 0);
-
         }
         this.latitude  = lat;
         this.longitude = lon;

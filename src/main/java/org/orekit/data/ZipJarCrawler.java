@@ -258,7 +258,7 @@ public class ZipJarCrawler implements DataProvider {
          * @param rawStream raw stream
          * @exception IOException if first entry cannot be retrieved
          */
-        public Archive(final InputStream rawStream) throws IOException {
+        Archive(final InputStream rawStream) throws IOException {
             zip = new ZipInputStream(rawStream);
             goToNext();
         }
@@ -327,7 +327,7 @@ public class ZipJarCrawler implements DataProvider {
              * @param name name of the entry
              * @param isDirectory if true, the entry is a directory
              */
-            public EntryStream(final String name, final boolean isDirectory) {
+            EntryStream(final String name, final boolean isDirectory) {
                 this.name        = name;
                 this.isDirectory = isDirectory;
                 this.closed      = false;

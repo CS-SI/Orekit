@@ -53,7 +53,7 @@ class TODProvider implements EOPBasedTransformProvider {
      * @param eopHistory EOP history
      * @exception OrekitException if IERS conventions tables cannot be read
      */
-    public TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
+    TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
         this.conventions       = conventions;
         this.eopHistory        = eopHistory;
@@ -140,7 +140,7 @@ class TODProvider implements EOPBasedTransformProvider {
          * @param conventions IERS conventions to apply
          * @param eopHistory EOP history
          */
-        public DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
+        DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
             this.conventions = conventions;
             this.eopHistory  = eopHistory;
         }

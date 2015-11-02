@@ -153,7 +153,7 @@ public class HelmertTransformation implements TransformProvider {
          * @param r2Dot rate of rotation parameter around Y axis (BEWARE, this is in mas/y)
          * @param r3Dot rate of rotation parameter around Z axis (BEWARE, this is in mas/y)
          */
-        private Predefined(final int refYear,
+        Predefined(final int refYear,
                            final double t1, final double t2, final double t3,
                            final double r1, final double r2, final double r3,
                            final double t1Dot, final double t2Dot, final double t3Dot,

@@ -46,7 +46,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * </p>
  * <p>
  * The solar array rotation with respect to satellite body can be either
- * the best lightning orientation (i.e. Sun exactly in solar array meridian
+ * the best lighting orientation (i.e. Sun exactly in solar array meridian
  * plane defined by solar array rotation axis and solar array normal vector)
  * or a rotation evolving linearly according to a start position and an
  * angular rate (which can be set to 0 for non-rotating panels, which may
@@ -101,7 +101,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Sun model. */
     private final PVCoordinatesProvider sun;
 
-    /** Build a spacecraft model with best lightning of solar array.
+    /** Build a spacecraft model with best lighting of solar array.
      * <p>
      * Solar arrays orientation will be such that at each time the Sun direction
      * will always be in the solar array meridian plane defined by solar array
@@ -130,7 +130,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
              dragCoeff, absorptionCoeff, reflectionCoeff);
     }
 
-    /** Build a spacecraft model with best lightning of solar array.
+    /** Build a spacecraft model with best lighting of solar array.
      * <p>
      * The spacecraft body is described by an array of surface vectors. Each facet of
      * the body is describe by a vector normal to the facet (pointing outward of the spacecraft)
@@ -271,7 +271,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param position position of spacecraft in reference frame
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @return solar array normal in spacecraft frame
-     * @exception OrekitException if sun direction cannot be computed in best lightning
+     * @exception OrekitException if sun direction cannot be computed in best lighting
      * configuration
      */
     public synchronized Vector3D getNormal(final AbsoluteDate date, final Frame frame,
@@ -284,7 +284,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             return new Vector3D(FastMath.cos(alpha), saX, FastMath.sin(alpha), saY);
         }
 
-        // compute orientation for best lightning
+        // compute orientation for best lighting
         final Vector3D sunInert = sun.getPVCoordinates(date, frame).getPosition().subtract(position).normalize();
         final Vector3D sunSpacecraft = rotation.applyTo(sunInert);
         final double d = Vector3D.dotProduct(sunSpacecraft, saZ);
@@ -308,7 +308,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param position position of spacecraft in reference frame
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @return solar array normal in spacecraft frame
-     * @exception OrekitException if sun direction cannot be computed in best lightning
+     * @exception OrekitException if sun direction cannot be computed in best lighting
      * configuration
      */
     public synchronized FieldVector3D<DerivativeStructure> getNormal(final AbsoluteDate date, final Frame frame,
@@ -324,7 +324,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             return new FieldVector3D<DerivativeStructure>(alpha.cos(), saX, alpha.sin(), saY);
         }
 
-        // compute orientation for best lightning
+        // compute orientation for best lighting
         final FieldVector3D<DerivativeStructure> sunInert =
                 position.subtract(sun.getPVCoordinates(date, frame).getPosition()).negate().normalize();
         final FieldVector3D<DerivativeStructure> sunSpacecraft = rotation.applyTo(sunInert);

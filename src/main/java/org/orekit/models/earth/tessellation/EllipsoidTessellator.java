@@ -744,13 +744,13 @@ public class EllipsoidTessellator {
             }
         } else {
             final Hyperplane<Sphere2D> hyperplane = node.getCut().getHyperplane();
-            switch (sub.side(hyperplane)) {
+            final SubHyperplane.SplitSubHyperplane<Sphere2D> split = sub.split(hyperplane);
+            switch (split.getSide()) {
                 case PLUS:
                     return recurseMeetInside(node.getPlus(),  sub);
                 case MINUS:
                     return recurseMeetInside(node.getMinus(), sub);
                 case BOTH:
-                    final SubHyperplane.SplitSubHyperplane<Sphere2D> split = sub.split(hyperplane);
                     if (recurseMeetInside(node.getPlus(), split.getPlus())) {
                         return true;
                     } else {
@@ -854,7 +854,7 @@ public class EllipsoidTessellator {
          * @param lower lower index
          * @param upper upper index
          */
-        public Range(final int lower, final int upper) {
+        Range(final int lower, final int upper) {
             this.lower = lower;
             this.upper = upper;
         }
@@ -874,7 +874,7 @@ public class EllipsoidTessellator {
          * @param across across range
          * @param along along range
          */
-        public RangePair(final Range across, final Range along) {
+        RangePair(final Range across, final Range along) {
             this.across = across;
             this.along  = along;
         }

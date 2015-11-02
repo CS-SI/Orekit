@@ -25,6 +25,10 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -563,6 +567,113 @@ public class OneAxisEllipsoidTest {
         Assert.assertEquals(FastMath.toRadians(89.5364061088196), geoInter.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(FastMath.toRadians(35.555543683351125), geoInter.getLatitude(), Utils.epsilonAngle);
 
+    }
+
+    @Test
+    public void testMovingGeodeticPointSymmetry() throws OrekitException {
+
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        double lat0 = FastMath.toRadians(60.0);
+        double lon0 = FastMath.toRadians(25.0);
+        double alt0 = 100.0;
+        double lat1 =   1.0e-3;
+        double lon1 =  -2.0e-3;
+        double alt1 =   1.2;
+        double lat2 =  -1.0e-5;
+        double lon2 =  -3.0e-5;
+        double alt2 =  -0.01;
+        final DerivativeStructure latDS = new DerivativeStructure(1, 2, lat0, lat1, lat2);
+        final DerivativeStructure lonDS = new DerivativeStructure(1, 2, lon0, lon1, lon2);
+        final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
+
+        // direct computation of position, velocity and acceleration
+        PVCoordinates pv = earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS));
+        FieldGeodeticPoint<DerivativeStructure> rebuilt = earth.transform(pv, earth.getBodyFrame(),null);
+        Assert.assertEquals(lat0, rebuilt.getLatitude().getReal(),                1.0e-16);
+        Assert.assertEquals(lat1, rebuilt.getLatitude().getPartialDerivative(1),  5.0e-19);
+        Assert.assertEquals(lat2, rebuilt.getLatitude().getPartialDerivative(2),  5.0e-14);
+        Assert.assertEquals(lon0, rebuilt.getLongitude().getReal(),               1.0e-16);
+        Assert.assertEquals(lon1, rebuilt.getLongitude().getPartialDerivative(1), 5.0e-19);
+        Assert.assertEquals(lon2, rebuilt.getLongitude().getPartialDerivative(2), 1.0e-20);
+        Assert.assertEquals(alt0, rebuilt.getAltitude().getReal(),                2.0e-11);
+        Assert.assertEquals(alt1, rebuilt.getAltitude().getPartialDerivative(1),  6.0e-13);
+        Assert.assertEquals(alt2, rebuilt.getAltitude().getPartialDerivative(2),  2.0e-14);
+
+    }
+
+    @Test
+    public void testMovingGeodeticPoint() throws OrekitException {
+
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        double lat0 = FastMath.toRadians(60.0);
+        double lon0 = FastMath.toRadians(25.0);
+        double alt0 = 100.0;
+        double lat1 =   1.0e-3;
+        double lon1 =  -2.0e-3;
+        double alt1 =   1.2;
+        double lat2 =  -1.0e-5;
+        double lon2 =  -3.0e-5;
+        double alt2 =  -0.01;
+        final DerivativeStructure latDS = new DerivativeStructure(1, 2, lat0, lat1, lat2);
+        final DerivativeStructure lonDS = new DerivativeStructure(1, 2, lon0, lon1, lon2);
+        final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
+
+        // direct computation of position, velocity and acceleration
+        PVCoordinates pv = earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS));
+
+        // finite differences computation
+        FiniteDifferencesDifferentiator differentiator =
+                new FiniteDifferencesDifferentiator(5, 0.1);
+        UnivariateDifferentiableFunction fx =
+                differentiator.differentiate(new UnivariateFunction() {
+                    public double value(double dt) {
+                        GeodeticPoint gp =
+                                new GeodeticPoint(latDS.taylor(dt), lonDS.taylor(dt), altDS.taylor(dt));
+                        return earth.transform(gp).getX();
+                    }
+                });
+        UnivariateDifferentiableFunction fy =
+                differentiator.differentiate(new UnivariateFunction() {
+                    public double value(double dt) {
+                        GeodeticPoint gp =
+                                new GeodeticPoint(latDS.taylor(dt), lonDS.taylor(dt), altDS.taylor(dt));
+                        return earth.transform(gp).getY();
+                    }
+                });
+        UnivariateDifferentiableFunction fz =
+                differentiator.differentiate(new UnivariateFunction() {
+                    public double value(double dt) {
+                        GeodeticPoint gp =
+                                new GeodeticPoint(latDS.taylor(dt), lonDS.taylor(dt), altDS.taylor(dt));
+                        return earth.transform(gp).getZ();
+                    }
+                });
+        DerivativeStructure dtZero = new DerivativeStructure(1, 2, 0, 0.0);
+        DerivativeStructure xDS    = fx.value(dtZero);
+        DerivativeStructure yDS    = fy.value(dtZero);
+        DerivativeStructure zDS    = fz.value(dtZero);
+        Assert.assertEquals(xDS.getValue(),              pv.getPosition().getX(),
+                            2.0e-20 * FastMath.abs(xDS.getValue()));
+        Assert.assertEquals(xDS.getPartialDerivative(1), pv.getVelocity().getX(),
+                            2.0e-12 * FastMath.abs(xDS.getPartialDerivative(1)));
+        Assert.assertEquals(xDS.getPartialDerivative(2), pv.getAcceleration().getX(),
+                            2.0e-9  * FastMath.abs(xDS.getPartialDerivative(2)));
+        Assert.assertEquals(yDS.getValue(),              pv.getPosition().getY(),
+                            2.0e-20 * FastMath.abs(yDS.getValue()));
+        Assert.assertEquals(yDS.getPartialDerivative(1), pv.getVelocity().getY(),
+                            2.0e-12 * FastMath.abs(yDS.getPartialDerivative(1)));
+        Assert.assertEquals(yDS.getPartialDerivative(2), pv.getAcceleration().getY(),
+                            2.0e-9  * FastMath.abs(yDS.getPartialDerivative(2)));
+        Assert.assertEquals(zDS.getValue(),              pv.getPosition().getZ(),
+                            2.0e-20 * FastMath.abs(zDS.getValue()));
+        Assert.assertEquals(zDS.getPartialDerivative(1), pv.getVelocity().getZ(),
+                            2.0e-12 * FastMath.abs(zDS.getPartialDerivative(1)));
+        Assert.assertEquals(zDS.getPartialDerivative(2), pv.getAcceleration().getZ(),
+                            2.0e-9  * FastMath.abs(zDS.getPartialDerivative(2)));
     }
 
     private void checkCartesianToEllipsoidic(double ae, double f,

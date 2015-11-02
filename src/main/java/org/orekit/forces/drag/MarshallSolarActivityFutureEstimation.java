@@ -77,7 +77,7 @@ import org.orekit.time.TimeStamped;
 public class MarshallSolarActivityFutureEstimation implements DTM2000InputParameters, DataLoader {
 
     /** Strength level of activity. */
-    public static enum StrengthLevel {
+    public enum StrengthLevel {
 
         /** Strong level of activity. */
         STRONG,
@@ -108,7 +108,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     /** Mean geomagnetic indices array. */
     private static final double[] AP_ARRAY = new double[] {
         0, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 22, 27, 32,
-        39, 48, 56, 67, 80, 94, 111, 132, 154 , 179, 207, 236, 300, 400
+        39, 48, 56, 67, 80, 94, 111, 132, 154, 179, 207, 236, 300, 400
     };
 
     /** Pattern for the data fields of MSAFE data. */

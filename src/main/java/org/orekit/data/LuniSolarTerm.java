@@ -46,7 +46,7 @@ class LuniSolarTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cD coefficient for mean elongation of the Moon from the Sun
      * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      */
-    public LuniSolarTerm(final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
+    LuniSolarTerm(final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
         this.cL      = cL;
         this.cLPrime = cLPrime;
         this.cF      = cF;

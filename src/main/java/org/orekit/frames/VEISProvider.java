@@ -50,7 +50,7 @@ class VEISProvider implements TransformProvider {
 
     /** Constructor for the singleton.
      */
-    public VEISProvider() {
+    VEISProvider() {
     }
 
     /** Get the transform from GTOD at specified date.

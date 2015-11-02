@@ -260,7 +260,7 @@ public enum Predefined {
     /** Simple constructor.
      * @param name name of the frame
      */
-    private Predefined(final String name) {
+    Predefined(final String name) {
         this.name = name;
     }
 

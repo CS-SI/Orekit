@@ -404,7 +404,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * header must be parsed before the dates can be checked.</p>
      * <p>
      * There are alternate names for constants since for example JPL names are
-     * different from INPOP names (Sun gravity: GMS or GM_Sun, Mercury gravity:
+     * different from INPOP names (Sun gravity: GMS or GM_Sun, Mars gravity:
      * GM4 or GM_Mar...).
      * </p>
      * @param names alternate names of the constant
@@ -828,7 +828,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         /** Simple constructor.
          */
-        public EphemerisParser() {
+        EphemerisParser() {
             entries = new TreeSet<PosVelChebyshev>(new Comparator<PosVelChebyshev>() {
                 public int compare(final PosVelChebyshev o1, final PosVelChebyshev o2) {
                     return o1.getDate().compareTo(o2.getDate());
@@ -995,7 +995,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 }
 
                 // build the position-velocity model for current chunk
-                entries.add(new PosVelChebyshev(chunkStart, duration, xCoeffs, yCoeffs, zCoeffs));
+                entries.add(new PosVelChebyshev(chunkStart, timeScale, duration, xCoeffs, yCoeffs, zCoeffs));
 
             }
 

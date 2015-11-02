@@ -12,11 +12,9 @@
   limitations under the License.
 -->
 
-Getting the sources
-===================
+# Getting the sources
 
-Released versions
------------------
+## Released versions
 
 In order to get the source for officially released versions, go to the
 [Files](https://www.orekit.org/forge/projects/orekit/files) tab in Orekit
@@ -27,8 +25,7 @@ forge and select one of the orekit-x.y-src.zip files. The x.y part in the name
  orekit-data.zip file which is an example file suitable for a quick start (see
  [configuration](./configuration.html) for further reading about data configuration).
 
-Development version
--------------------
+## Development version
 
 The development of the Orekit project is done using the [Git](http://git-scm.com/)
 source code control system. Orekit Git master repository is available online.

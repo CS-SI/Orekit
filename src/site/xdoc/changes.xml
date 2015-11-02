@@ -21,6 +21,72 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Fixed time scale issues in JPL ephemerides and IAU pole models.
+        The time used for internal computation should be TDB, not TT.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed an issue with backward propagation on analytical propagator.
+        During first step, the analytical interpolator wrongly thought the
+        propagation was forward.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to retrieve short period coefficients from DSST as
+        spacecraft state additional parameters. This is mainly intended
+        for test and validation purposes.
+      </action>
+      <action dev="luc" type="fix" >
+        Prevent small overshoots of step limits in event detection.
+        Fixes issue #218.
+      </action>
+      <action dev="luc" type="fix" >
+        Handle string conversion of dates properly for dates less than 1 millisecond
+        before midnight (they should not appear as second 60.0 of previous minute but
+        should rather wrap around to next minute).
+        Partly fixes issue #218.
+      </action>
+      <action dev="luc" type="fix" >
+        Enforce Lexicographical order in DirectoryCrawler, to ensure reproducible
+        loading. Before this changes, some tests could fail in one computer while
+        succeeding in another computer as we use a mix of DE-4xx files, some having
+        a different EMRAT (81.30056907419062 for DE-431, 81.30056 for DE-405 and DE-406).
+      </action>
+      <action dev="luc" type="add" >
+        Added EventEnablingPredicateFilter to filter event based on an user-provided
+        enabling predicate function. This allow for example to dynamically turn some
+        events on and off during propagation or to set up some elaborate logic like
+        triggering on elevation first time derivative (i.e. one elevation maximum)
+        but only when elevation itself is above some threshold.
+      </action>
+      <action dev="luc" type="update" >
+        Renamed EventFilter into EventSlopeFilter.
+      </action>
+      <action dev="luc" type="add" >
+        Added elevation extremum event detector.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed ellipsoid tessellation with large tolerances.
+        Fixes issue #215.
+      </action>
+      <action dev="evan" type="fix" >
+        Fixed numerical precision issues for start/end dates of generated
+        ephemerides.
+        Fixes issues #210
+      </action>
+      <action dev="luc" type="add" >
+        Added anomaly, latitude argument, or longitude argument crossings detector,
+        either true, mean or eccentric.
+        Fixes issue #213.
+      </action>
+      <action dev="luc" type="add" >
+        Added latitude and longitude extremum detector.
+      </action>
+      <action dev="luc" type="add" >
+        Added latitude and longitude crossing detector.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to convert between PVA and geodetic points with time derivatives.
+      </action>
       <action dev="luc" type="add" >
         Allow truncation of tiles in ellipsoid tessellation.
       </action>

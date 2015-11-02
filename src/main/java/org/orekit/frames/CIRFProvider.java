@@ -54,7 +54,7 @@ class CIRFProvider implements EOPBasedTransformProvider {
      * library cannot be read.
      * @see Frame
      */
-    public CIRFProvider(final EOPHistory eopHistory)
+    CIRFProvider(final EOPHistory eopHistory)
         throws OrekitException {
 
         // load the nutation model
@@ -139,7 +139,7 @@ class CIRFProvider implements EOPBasedTransformProvider {
         /** Simple constructor.
          * @param eopHistory EOP history
          */
-        public DataTransferObject(final EOPHistory eopHistory) {
+        DataTransferObject(final EOPHistory eopHistory) {
             this.eopHistory = eopHistory;
         }
 

@@ -71,7 +71,7 @@ public class LoveNumbers implements Serializable {
      * @param m order of the Love number (must be less than {@code n})
      * @return real part of k<sub>n,m</sub>
      */
-    public final double getReal(final int n , final int m) {
+    public final double getReal(final int n, final int m) {
         return real[n][m];
     }
 
@@ -80,7 +80,7 @@ public class LoveNumbers implements Serializable {
      * @param m order of the Love number (must be less than {@code n})
      * @return imaginary part of k<sub>n,m</sub>
      */
-    public final double getImaginary(final int n , final int m) {
+    public final double getImaginary(final int n, final int m) {
         return imaginary[n][m];
     }
 
@@ -89,7 +89,7 @@ public class LoveNumbers implements Serializable {
      * @param m order of the Love number (must be less than {@code n})
      * @return k<sub>n,m</sub><sup>+</sup>
      */
-    public final double getPlus(final int n , final int m) {
+    public final double getPlus(final int n, final int m) {
         return plus[n][m];
     }
 

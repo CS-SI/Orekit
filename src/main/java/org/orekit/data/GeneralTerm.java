@@ -82,7 +82,7 @@ class GeneralTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cNe coefficient for mean Neptune longitude
      * @param cPa coefficient for general accumulated precession in longitude
      */
-    public GeneralTerm(final int cL, final int cLPrime, final int cF, final int cD, final int cOmega,
+    GeneralTerm(final int cL, final int cLPrime, final int cF, final int cD, final int cOmega,
                        final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
                        final int cSa, final int cUr, final int cNe, final int cPa) {
         this.cL      = cL;

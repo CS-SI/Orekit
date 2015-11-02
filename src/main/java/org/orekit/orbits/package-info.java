@@ -82,7 +82,7 @@
  * non-cartesian representation. This choice is a pragmatic one. These parameters
  * are really used in many places in algorithms, for computation related to
  * period (setting a convergence threshold or a search interval) or geometry
- * (computing swath or lightning). A side-effect of this choice is that all orbits
+ * (computing swath or lighting). A side-effect of this choice is that all orbits
  * do include a value for μ, the acceleration coefficient of the central body.
  * This value is only used for the representation of the parameters and for conversion
  * purposes, it is <em>not</em> always the same as the value used for propagation (but

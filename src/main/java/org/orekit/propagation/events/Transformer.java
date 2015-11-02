@@ -26,7 +26,7 @@ import org.apache.commons.math3.util.Precision;
  * Apache Commons Math library. The changes performed consist in replacing
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
- * @see EventFilter
+ * @see EventSlopeFilter
  * @see FilterType
  * @since 6.0
  */

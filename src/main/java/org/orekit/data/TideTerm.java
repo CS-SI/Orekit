@@ -63,7 +63,7 @@ class TideTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cD coefficient for mean elongation of the Moon from the Sun
      * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      */
-    public TideTerm(final int cGamma,
+    TideTerm(final int cGamma,
                     final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
         this.cGamma  = cGamma;
         this.cL      = cL;

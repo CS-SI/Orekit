@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -142,6 +145,43 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         return shortPeriodics;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getCoefficientsKeyPrefix() {
+        return "DSST-central-body-";
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * For central body attraction forces,there are zonal coefficients
+     * optionally followed by tesseral coefficients
+     * </p>
+     * <p>
+     * For zonal terms contributions,there are maxJ cj coefficients,
+     * maxJ sj coefficients and 2 dj coefficients, where maxJ depends
+     * on the orbit. The j index is the integer multiplier for the true
+     * longitude argument in the cj and sj coefficients and the degree
+     * in the polynomial dj coefficients.
+     * </p>
+     * <p>
+     * For tesseral terms contributions,there are maxOrderMdailyTesseralSP
+     * m-daily cMm coefficients, maxOrderMdailyTesseralSP m-daily sMm
+     * coefficients, nbNonResonant cjm coefficients and nbNonResonant
+     * sjm coefficients, where maxOrderMdailyTesseralSP and nbNonResonant both
+     * depend on the orbit. The j index is the integer multiplier for the true
+     * longitude argument and the m index is the integer multiplier for m-dailies.
+     * </p>
+     */
+    @Override
+    public Map<String, double[]> getShortPeriodicCoefficients(final AbsoluteDate date, final Set<String> selected)
+        throws OrekitException {
+        final Map<String, double[]> coefficients = zonal.getShortPeriodicCoefficients(date, selected);
+        if (tesseral != null) {
+            coefficients.putAll(tesseral.getShortPeriodicCoefficients(date, selected));
+        }
+        return coefficients;
     }
 
     /** {@inheritDoc} */

@@ -896,7 +896,13 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
      */
     public String toString(final TimeScale timeScale) {
-        return getComponents(timeScale).toString();
+        final boolean inLeap;
+        if (timeScale instanceof UTCScale) {
+            inLeap = ((UTCScale) timeScale).insideLeap(this);
+        } else {
+            inLeap = false;
+        }
+        return getComponents(timeScale).toString(inLeap);
     }
 
 }

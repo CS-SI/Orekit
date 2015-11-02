@@ -195,7 +195,7 @@ public class DihedralFieldOfViewDetector extends AbstractDetector<DihedralFieldO
 
         // g function value is distance to the FOV boundary, computed as a dihedral angle.
         // It is positive inside the FOV, and negative outside.
-        return FastMath.min(halfAperture1 - FastMath.abs(angle1) ,  halfAperture2 - FastMath.abs(angle2));
+        return FastMath.min(halfAperture1 - FastMath.abs(angle1),  halfAperture2 - FastMath.abs(angle2));
     }
 
 }

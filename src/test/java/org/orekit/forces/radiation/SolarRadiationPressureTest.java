@@ -58,7 +58,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class SolarRadiationPressureTest extends AbstractForceModelTest {
 
     @Test
-    public void testLightning() throws OrekitException, ParseException {
+    public void testLighting() throws OrekitException, ParseException {
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
@@ -89,8 +89,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             currentDate = date.shiftedBy(t);
             try {
 
-                double ratio = SRP.getLightningRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),
-                                                     FramesFactory.getEME2000(), currentDate);
+                double ratio = SRP.getLightingRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),
+                                                    FramesFactory.getEME2000(), currentDate);
 
                 if(FastMath.floor(ratio)!=changed) {
                     changed = FastMath.floor(ratio);

@@ -12,8 +12,7 @@
   limitations under the License.
 -->
 
-Overview
-========
+# Overview
 
   OREKIT (ORbits Extrapolation KIT) is a free low-level space dynamics library
   written in Java.
@@ -22,8 +21,7 @@ Overview
   various algorithms to handle them (conversions, analytical and numerical
   propagation, pointing ...).
 
-Features
---------
+## Features
 
   * Time
 
@@ -110,19 +108,28 @@ Features
     * predefined discrete events
       * eclipse (both umbra and penumbra)
       * ascending and descending node crossing
+      * anomaly, latitude argument or longitude argument crossings,
+        with either true, eccentric or mean angles
       * apogee and perigee crossing
       * alignment with some body in the orbital plane
         (with customizable threshold angle)
       * raising/setting with respect to a ground location
         (with customizable triggering elevation)
       * date
-      * altitude crossing
+      * latitude, longitude, altitude crossing
+      * latitude, longitude extremum
+      * elevation extremum
+      * anomaly, latitude argument, or longitude argument crossings, either true, mean or eccentric
       * target detection in sensor field of view (circular or dihedral)
       * complex geographic zones traversal
       * impulse maneuvers occurrence
     * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
+    * possibility of filtering events based on their direction (for example to detect
+      only eclipse entries and not eclipse exits)
+    * possibility of filtering events based on an external enabling function (for
+      example to detect events only during selected orbits and not others)
 
   * Attitude
 
@@ -188,8 +195,7 @@ Features
 
 ![Orekit top packages](./images/design/top-packages.png)
 
-Free software
--------------
+## Free software
 
 Orekit is freely available both in source and binary formats, with all related
 documentation and tests.
@@ -201,8 +207,7 @@ any application, free or not. There are no strings attached to your own code.
 Everybody is encouraged to use Orekit as a common low level layer to improve
 interoperability in space systems.
 
-Maintained library
-------------------
+## Maintained library
 
 Orekit has been in development since 2002 inside [CS Systèmes
 d'Information](http://www.c-s.fr/) and is still used and maintained by its space dynamics experts.

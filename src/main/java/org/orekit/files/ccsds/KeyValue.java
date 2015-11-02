@@ -78,7 +78,7 @@ class KeyValue {
      * @param lineNumber number of the line in the CCSDS data message
      * @param fileName name of the file
      */
-    public KeyValue(final String line, final int lineNumber, final String fileName) {
+    KeyValue(final String line, final int lineNumber, final String fileName) {
 
         this.line       = line;
         this.lineNumber = lineNumber;
