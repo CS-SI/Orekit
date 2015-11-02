@@ -64,7 +64,7 @@ public class Angular extends AbstractMeasurement<Angular> {
     protected Evaluation<Angular> theoreticalEvaluation(final int iteration, final SpacecraftState state)
         throws OrekitException {
 
-        // station position in inertial frame at signal arrival
+        // station position in satellite inertial frame at signal arrival
         final Transform topoToInert =
                 station.getOffsetFrame().getTransformTo(state.getFrame(), getDate());
         final PVCoordinates stationArrival = topoToInert.transformPVCoordinates(PVCoordinates.ZERO);
@@ -78,8 +78,9 @@ public class Angular extends AbstractMeasurement<Angular> {
         final double          dt           = delta - tauD;
         final SpacecraftState transitState = state.shiftedBy(dt);
         final Vector3D        transit      = transitState.getPVCoordinates().getPosition();
+
         // Pour mesure bidon
-        final Vector3D Origine = new Vector3D(0.0, 0.0, 0.0);
+        //final Vector3D Origine = new Vector3D(0.0, 0.0, 0.0);
 
         // station frame in inertial frame
         final Vector3D east   = topoToInert.transformVector(station.getOffsetFrame().getEast());
@@ -96,7 +97,7 @@ public class Angular extends AbstractMeasurement<Angular> {
         //                    new DerivativeStructure(6, 1, 2, Origine.getZ()));
 
         // station vector expressed in inertial frame
-        final Vector3D  stationPosition      = topoToInert.transformVector(stationArrival.getPosition());
+        final Vector3D stationPosition = topoToInert.transformVector(stationArrival.getPosition());
 
         // Calcul de la Latitude
         //final double Geodetic_Lat = station.getBaseFrame().getPoint().getLatitude();
@@ -119,7 +120,7 @@ public class Angular extends AbstractMeasurement<Angular> {
 //
 //        final DerivativeStructure toto   = DerivativeStructure.atan2(Q.getY(), Q.getX()).negate();
 
-        // station-satellite vector expressed in inertial frame
+        // station-satellite vector expressed in satellite inertial frame
         final FieldVector3D<DerivativeStructure> QP = P.subtract(Q);
         //final FieldVector3D<DerivativeStructure> OQ = Q.subtract(O);
 
@@ -161,7 +162,7 @@ public class Angular extends AbstractMeasurement<Angular> {
         if (station.isEstimated()) {
 
             final AngularCoordinates ac = topoToInert.getAngular().revert();
-            final Vector3D omega        = ac.getRotationRate();
+            //final Vector3D omega        = ac.getRotationRate();
             //final Vector3D V1 = new Vector3D(omega.getX(), omega.getY(), omega.getZ());
             //final Vector3D V2 = new Vector3D(OQ.getX().getValue(), OQ.getY().getValue(), OQ.getZ().getValue());
             //final Vector3D V3 = V1.crossProduct(V2);
