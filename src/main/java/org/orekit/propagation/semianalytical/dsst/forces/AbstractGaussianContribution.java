@@ -328,7 +328,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
-            final double[] meanElements) throws OrekitException {
+                                               final double[] meanElements)
+        throws OrekitException {
 
         // Build an Orbit object from the mean elements
         final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(
