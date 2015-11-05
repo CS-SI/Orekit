@@ -293,20 +293,15 @@ public class DSSTPropagation {
             displayCartesian = parser.getBoolean(ParameterKey.OUTPUT_CARTESIAN);
         }
 
-        // DSST Propagation without output
+        // DSST Propagation
         dsstProp.setEphemerisMode();
         final double dsstOn = System.currentTimeMillis();
+        dsstProp.setMasterMode(outStep, new OutputHandler(output,
+                                                          displayKeplerian, displayEquinoctial, displayCartesian,
+                                                          shortPeriodCoefficients));
         dsstProp.propagate(start, start.shiftedBy(duration));
         final double dsstOff = System.currentTimeMillis();
-        System.out.println("DSST execution time : " + (dsstOff - dsstOn) / 1000.);
-
-        // Add output
-        final BoundedPropagator dsstEphemeris = dsstProp.getGeneratedEphemeris();
-        dsstEphemeris.setMasterMode(outStep, new OutputHandler(output,
-                                                               displayKeplerian, displayEquinoctial, displayCartesian,
-                                                               shortPeriodCoefficients));
-        System.out.println("Writing file, this may take some time ...");
-        dsstEphemeris.propagate(dsstEphemeris.getMaxDate());
+        System.out.println("DSST execution time (including large file write) : " + (dsstOff - dsstOn) / 1000.);
         System.out.println("DSST results saved as file " + output);
 
         // Check if we want to compare numerical to DSST propagator (default is false)
