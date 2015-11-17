@@ -57,7 +57,7 @@ public class LofOffsetTest {
     // Body mu
     private double mu;
 
-    // Reference frame = ITRF 2005C
+    // Reference frame = ITRF
     private Frame itrf;
 
     // Earth shape
@@ -100,10 +100,10 @@ public class LofOffsetTest {
         // ************************************
         // Elliptic earth shape
         final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
-        final GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
+        final GeodeticPoint geoTargetITRF = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
 
         // Attitude law definition from geodetic point target
-        final TargetPointing targetLaw = new TargetPointing(circ.getFrame(), geoTargetITRF2005, earthShape);
+        final TargetPointing targetLaw = new TargetPointing(circ.getFrame(), geoTargetITRF, earthShape);
         final Rotation targetRot = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Create lof aligned attitude provider
@@ -292,7 +292,7 @@ public class LofOffsetTest {
             // Body mu
             mu = 3.9860047e14;
 
-            // Reference frame = ITRF 2005
+            // Reference frame = ITRF
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Elliptic earth shape

@@ -214,7 +214,7 @@ public class TabulatedProviderTest {
             // Body mu
             final double mu = 3.9860047e14;
 
-            // Reference frame = ITRF 2005
+            // Reference frame = ITRF
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             //  Satellite position

@@ -54,7 +54,7 @@ public class LofOffsetPointingTest {
     // Body mu
     private double mu;
 
-    // Reference frame = ITRF 2005C
+    // Reference frame = ITRF
     private Frame frameItrf;
 
     // Earth shape
