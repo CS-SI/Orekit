@@ -17,6 +17,15 @@
 package org.orekit.propagation.analytical;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.Map;
+
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -42,6 +51,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -61,8 +71,8 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 public class KeplerianPropagatorTest {
@@ -576,6 +586,7 @@ public class KeplerianPropagatorTest {
                                               FramesFactory.getEME2000(), date, mu);
 
         Propagator propagator = new KeplerianPropagator(orbit) {
+            private static final long serialVersionUID = 1L;
             AbsoluteDate lastDate = AbsoluteDate.PAST_INFINITY;
             
             protected SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
@@ -609,6 +620,102 @@ public class KeplerianPropagatorTest {
         PVCoordinates pvWithMu1 = new KeplerianPropagator(orbit2, orbit1.getMu()).propagate(target).getPVCoordinates();
         Assert.assertEquals(0.026054, Vector3D.distance(pv1.getPosition(), pv2.getPosition()),       1.0e-6);
         Assert.assertEquals(0.0,      Vector3D.distance(pv1.getPosition(), pvWithMu1.getPosition()), 1.0e-15);
+    }
+
+    @Test
+    public void testIssue223()
+        throws OrekitException, IOException, ClassNotFoundException {
+
+        // Inertial frame
+        Frame inertialFrame = FramesFactory.getEME2000();
+        
+        // Initial date
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,utc);
+        
+        // Central attraction coefficient
+        double mu =  3.986004415e+14;
+        
+        // Initial orbit
+        double a = 42100;                       // semi major axis in meters
+        double e = 0.01;                        // eccentricity
+        double i = FastMath.toRadians(6);       // inclination
+        double omega = FastMath.toRadians(180); // perigee argument
+        double raan = FastMath.toRadians(261);  // right ascention of ascending node
+        double lM = 0;                          // mean anomaly
+        Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, inertialFrame, initialDate, mu);
+        
+        // Initial state definition
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
+
+        // Propagator
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
+        propagator.addAdditionalStateProvider(new SevenProvider());
+        propagator.setEphemerisMode();
+        propagator.propagate(initialState.getDate().shiftedBy(40000));
+        
+        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+
+        Assert.assertSame(inertialFrame, ephemeris.getFrame());
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(ephemeris);
+
+        Assert.assertTrue(bos.size() > 2200);
+        Assert.assertTrue(bos.size() < 2300);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        BoundedPropagator deserialized  = (BoundedPropagator) ois.readObject();
+        Assert.assertEquals(initialOrbit.getA(), deserialized.getInitialState().getA(), 1.0e-10);
+        Assert.assertEquals(initialOrbit.getEquinoctialEx(), deserialized.getInitialState().getEquinoctialEx(), 1.0e-10);
+        SpacecraftState s = deserialized.propagate(initialState.getDate().shiftedBy(20000));
+        Map<String, double[]> additional = s.getAdditionalStates();
+        Assert.assertEquals(1, additional.size());
+        Assert.assertEquals(1, additional.get("seven").length);
+        Assert.assertEquals(7, additional.get("seven")[0], 1.0e-15);
+        
+
+    }
+
+    private static class SevenProvider implements AdditionalStateProvider, Serializable {
+        private static final long serialVersionUID = 1L;
+        public String getName() {
+            return "seven";
+        }
+        public double[] getAdditionalState(final SpacecraftState state) {
+            return new double[] { 7 };
+        }
+    }
+
+    @Test
+    public void testNonSerializableStateProvider() throws OrekitException, IOException {
+        KeplerianPropagator propagator =
+                        new KeplerianPropagator(new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+                                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                                                   Constants.WGS84_EARTH_MU));
+
+        // this serialization should work
+        new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(propagator);
+
+        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() {
+                return "not serializable";
+            }
+            public double[] getAdditionalState(SpacecraftState state) {
+                return new double[] { 0 };
+            }
+        });
+
+        try {
+            // this serialization should not work
+            new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(propagator);
+            Assert.fail("an exception should have been thrown");
+        } catch (NotSerializableException nse) {
+            // expected
+        }
+
     }
 
     private static double tangLEmLv(double Lv,double ex,double ey){

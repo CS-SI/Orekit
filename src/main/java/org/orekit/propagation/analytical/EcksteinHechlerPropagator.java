@@ -16,6 +16,11 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -23,6 +28,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -32,6 +38,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -72,7 +79,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @see Orbit
  * @author Guylaine Prat
  */
-public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
+public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20151117L;
 
     /** Eckstein-Hechler model. */
     private EHModel model;
@@ -797,7 +807,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         DerivativeStructure alphaEMalphaM = alphaM.getField().getZero();
         DerivativeStructure cosAlphaE     = alphaE.cos();
         DerivativeStructure sinAlphaE     = alphaE.sin();
-        int    iter          = 0;
+        int                 iter          = 0;
         do {
             final DerivativeStructure f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
             final DerivativeStructure f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
@@ -820,6 +830,93 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     /** {@inheritDoc} */
     protected double getMass(final AbsoluteDate date) {
         return mass;
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     * @exception NotSerializableException if an additional state provider is not serializable
+     */
+    private Object writeReplace() throws NotSerializableException {
+        try {
+            // managed states providers
+            final List<AdditionalStateProvider> serializableProviders = new ArrayList<AdditionalStateProvider>();
+            for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+                if (provider instanceof Serializable) {
+                    serializableProviders.add(provider);
+                } else {
+                    throw new NotSerializableException(provider.getClass().getName());
+                }
+            }
+
+            return new DataTransferObject(getInitialState().getOrbit(), mass,
+                                          referenceRadius, mu, ck0, getAttitudeProvider(),
+                                          serializableProviders.toArray(new AdditionalStateProvider[serializableProviders.size()]));
+        } catch (OrekitException orekitException) {
+            // this should never happen
+            throw new OrekitInternalError(null);
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20151117L;
+
+        /** Initial orbit. */
+        private final Orbit orbit;
+
+        /** Attitude provider. */
+        private final AttitudeProvider attitudeProvider;
+
+        /** Mass and gravity field. */
+        private double[] g;
+
+        /** Providers for additional states. */
+        private final AdditionalStateProvider[] providers;
+
+        /** Simple constructor.
+         * @param orbit initial orbit
+         * @param mass spacecraft mass
+         * @param referenceRadius reference radius of the Earth for the potential model (m)
+         * @param mu central attraction coefficient (m³/s²)
+         * @param ck0 un-normalized zonal coefficients
+         * @param attitudeProvider attitude provider
+         * @param providers providers for additional states
+         */
+        DataTransferObject(final Orbit orbit, final double mass,
+                           final double referenceRadius, final double mu,
+                           final double[] ck0,
+                           final AttitudeProvider attitudeProvider,
+                           final AdditionalStateProvider[] providers) {
+            this.orbit            = orbit;
+            this.attitudeProvider = attitudeProvider;
+            this.g = new double[] {
+                mass, referenceRadius, mu,
+                ck0[2], ck0[3], ck0[4], ck0[5], ck0[6] // ck0[0] and ck0[1] are both zero so not serialized
+            };
+            this.providers        = providers;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link EcksteinHechlerPropagator}.
+         * @return replacement {@link EcksteinHechlerPropagator}
+         */
+        private Object readResolve() {
+            try {
+                final EcksteinHechlerPropagator propagator =
+                                new EcksteinHechlerPropagator(orbit, attitudeProvider,
+                                                              g[0], g[1], g[2],              // mass, referenceRadius, mu
+                                                              g[3], g[4], g[5], g[6], g[7]); // c20, c30, c40, c50, c60
+                for (final AdditionalStateProvider provider : providers) {
+                    propagator.addAdditionalStateProvider(provider);
+                }
+                return propagator;
+            } catch (OrekitException oe) {
+                throw new OrekitInternalError(oe);
+            }
+        }
+
     }
 
 }
