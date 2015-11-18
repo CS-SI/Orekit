@@ -1288,7 +1288,7 @@ class TesseralContribution implements DSSTForceModel {
     /** The C<sup>i</sup><sub>m</sub><sub>t</sub> and S<sup>i</sup><sub>m</sub><sub>t</sub> coefficients used to compute
      * the short-periodic zonal contribution.
      *   <p>
-     *  Those coefficients are given by expression 2.5.4-5 from the Danielsno paper.
+     *  Those coefficients are given by expression 2.5.4-5 from the Danielson paper.
      *   </p>
      *
      * @author Sorin Scortan
