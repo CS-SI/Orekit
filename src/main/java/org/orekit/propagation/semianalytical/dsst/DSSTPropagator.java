@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.sampling.StepHandler;
@@ -38,6 +37,7 @@ import org.apache.commons.math3.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -50,7 +50,9 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.CachedShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.VariableStepInterpolationGrid;
@@ -136,6 +138,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Number of grid points per integration step to be used in interpolation of short periodics coefficients.*/
     private static final int INTERPOLATION_POINTS_PER_STEP = 3;
 
+    /** Force models used to compute short periodic terms. */
+    private final transient List<DSSTForceModel> forceModels;
+
     /** State mapper holding the force models. */
     private MeanPlusShortPeriodicMapper mapper;
 
@@ -151,6 +156,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public DSSTPropagator(final AbstractIntegrator integrator, final boolean meanOnly) {
         super(integrator, meanOnly);
+        forceModels = new ArrayList<DSSTForceModel>();
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
@@ -171,6 +177,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public DSSTPropagator(final AbstractIntegrator integrator) {
         super(integrator, true);
+        forceModels = new ArrayList<DSSTForceModel>();
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
@@ -234,7 +241,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * are interpolated
      */
     public void setShortPeriodCoefficientInterpolation(final boolean shortPeriodCoefficientInterpolation) {
-        mapper.setShortPeriodCoefficientInterpolation(shortPeriodCoefficientInterpolation);
+        mapper.setShortPeriodsCache(shortPeriodCoefficientInterpolation ?
+                                    new CachedShortPeriodTerms() : null);
     }
 
     // TODO: remove this feature after debugging
@@ -242,7 +250,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @return true if short period coefficients are interpolated
      */
     public boolean getShortPeriodCoefficientInterpolation() {
-        return mapper.getShortPeriodCoefficientInterpolation();
+        return mapper.getShortPeriodsCache() != null;
     }
 
     /** Check if the initial state is provided in osculating elements.
@@ -261,7 +269,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @see #removeForceModels()
      */
     public void addForceModel(final DSSTForceModel force) {
-        mapper.addForceModel(force);
+        forceModels.add(force);
         force.registerAttitudeProvider(getAttitudeProvider());
     }
 
@@ -273,7 +281,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @see #addForceModel(DSSTForceModel)
      */
     public void removeForceModels() {
-        mapper.removeForceModels();
+        forceModels.clear();
     }
 
     /** Conversion from mean to osculating orbit.
@@ -291,7 +299,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @return osculating state in a DSST sense
      * @throws OrekitException if computation of short periodics fails
      */
-    public static SpacecraftState computeOsculatingState(final SpacecraftState mean, final Collection<DSSTForceModel> forces)
+    public static SpacecraftState computeOsculatingState(final SpacecraftState mean,
+                                                         final Collection<DSSTForceModel> forces)
         throws OrekitException {
 
         // Creation of a DSSTPropagator instance
@@ -306,9 +315,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             dsst.addForceModel(force);
         }
 
-        final Orbit osculatingOrbit = dsst.mapper.computeOsculatingOrbit(mean);
+        final Orbit osculatingOrbit = computeOsculatingOrbit(mean, forces);
 
-        return new SpacecraftState(osculatingOrbit, mean.getAttitude(), mean.getMass(), mean.getAdditionalStates());
+        return new SpacecraftState(osculatingOrbit, mean.getAttitude(), mean.getMass(),
+                                   mean.getAdditionalStates());
+
     }
 
     /** Conversion from osculating to mean, orbit.
@@ -324,11 +335,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * The computing is done through a fixed-point iteration process.
      * </p>
      * @param osculating Osculating state to convert
-     * @param forces Forces to take into account
+     * @param forceModels Forces to take into account
      * @return mean state in a DSST sense
      * @throws OrekitException if computation of short periodics fails or iteration algorithm does not converge
      */
-    public static SpacecraftState computeMeanState(final SpacecraftState osculating, final Collection<DSSTForceModel> forces)
+    public static SpacecraftState computeMeanState(final SpacecraftState osculating,
+                                                   final Collection<DSSTForceModel> forceModels)
         throws OrekitException {
 
         // Creation of a DSSTPropagator instance
@@ -338,14 +350,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final AuxiliaryElements aux = new AuxiliaryElements(osculating.getOrbit(), I);
 
         // Set the force models
-        for (final DSSTForceModel force : forces) {
+        for (final DSSTForceModel force : forceModels) {
             force.initialize(aux, false);
             dsst.addForceModel(force);
         }
 
         dsst.setInitialState(osculating, true);
 
-        final Orbit meanOrbit = dsst.mapper.computeMeanOrbit(osculating);
+        final Orbit meanOrbit = computeMeanOrbit(osculating, forceModels);
 
         return new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass(), osculating.getAdditionalStates());
     }
@@ -376,7 +388,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         super.setAttitudeProvider(attitudeProvider);
 
         //Register the attitude provider for each force model
-        for (final DSSTForceModel force : mapper.getForceModels()) {
+        for (final DSSTForceModel force : forceModels) {
             force.registerAttitudeProvider(attitudeProvider);
         }
     }
@@ -401,14 +413,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final boolean meanOnly = isMeanOrbit();
 
         // initialize all perturbing forces
-        for (final DSSTForceModel force : mapper.getForceModels()) {
+        for (final DSSTForceModel force : forceModels) {
             force.initialize(aux, meanOnly);
         }
 
         // if required, insert the special short periodics step handler
         if (!meanOnly) {
             final InterpolationGrid grid = new VariableStepInterpolationGrid(INTERPOLATION_POINTS_PER_STEP);
-            final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(grid);
+            final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(grid, forceModels);
             final Collection<StepHandler> stepHandlers = new ArrayList<StepHandler>();
             stepHandlers.add(spHandler);
             final AbstractIntegrator integrator = getIntegrator();
@@ -447,6 +459,116 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
     }
 
+    /** Launch the computation of short periodics coefficients.
+     * @param meanState input mean state
+     * @param forceModels force models
+     * @return list of short period terms
+     * @throws OrekitException if the computation of a short periodic coefficient fails
+     * @see {@link DSSTForceModel#computeShortPeriodicsCoefficients(AuxiliaryElements)}
+     */
+    private static List<ShortPeriodTerms> computeShortPeriodicsCoefficients(final SpacecraftState meanState,
+                                                                            final Collection<DSSTForceModel> forceModels)
+        throws OrekitException {
+        final List<ShortPeriodTerms> spt = new ArrayList<ShortPeriodTerms>();
+        final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), I);
+        for (final DSSTForceModel forceModel : forceModels) {
+            forceModel.initializeStep(aux);
+            spt.addAll(forceModel.computeShortPeriodicsCoefficients(meanState));
+        }
+        return spt;
+    }
+
+    /** Compute mean state from osculating state.
+     * <p>
+     * Compute in a DSST sense the mean state corresponding to the input osculating state.
+     * </p><p>
+     * The computing is done through a fixed-point iteration process.
+     * </p>
+     * @param osculating initial osculating state
+     * @param forceModels force models
+     * @return mean state
+     * @throws OrekitException if the underlying computation of short periodic variation fails
+     */
+    private static Orbit computeMeanOrbit(final SpacecraftState osculating,
+                                          final Collection<DSSTForceModel> forceModels)
+        throws OrekitException {
+
+        // rough initialization of the mean parameters
+        EquinoctialOrbit meanOrbit = new EquinoctialOrbit(
+                osculating.getOrbit());
+
+        // threshold for each parameter
+        final double epsilon         = 1.0e-13;
+        final double thresholdA      = epsilon * (1 + FastMath.abs(meanOrbit.getA()));
+        final double thresholdE      = epsilon * (1 + meanOrbit.getE());
+        final double thresholdAngles = epsilon * FastMath.PI;
+
+        int i = 0;
+        while (i++ < 200) {
+
+            final SpacecraftState meanState = new SpacecraftState(
+                    meanOrbit, osculating.getAttitude(), osculating.getMass());
+            // recompute the osculating parameters from the current mean parameters
+            final EquinoctialOrbit rebuilt = (EquinoctialOrbit) computeOsculatingOrbit(meanState, forceModels);
+
+            // adapted parameters residuals
+            final double deltaA = osculating.getA() - rebuilt.getA();
+            final double deltaEx = osculating.getEquinoctialEx() - rebuilt.getEquinoctialEx();
+            final double deltaEy = osculating.getEquinoctialEy() - rebuilt.getEquinoctialEy();
+            final double deltaHx = osculating.getHx() - rebuilt.getHx();
+            final double deltaHy = osculating.getHy() - rebuilt.getHy();
+            final double deltaLm = MathUtils.normalizeAngle(osculating.getLM() - rebuilt.getLM(), 0.0);
+
+            // check convergence
+            if ((FastMath.abs(deltaA) < thresholdA) &&
+                    (FastMath.abs(deltaEx) < thresholdE) &&
+                    (FastMath.abs(deltaEy) < thresholdE) &&
+                    (FastMath.abs(deltaLm) < thresholdAngles)) {
+                return meanOrbit;
+            }
+
+            // update mean parameters
+            meanOrbit = new EquinoctialOrbit(
+                    meanOrbit.getA() + deltaA,
+                    meanOrbit.getEquinoctialEx() + deltaEx,
+                    meanOrbit.getEquinoctialEy() + deltaEy,
+                    meanOrbit.getHx() + deltaHx,
+                    meanOrbit.getHy() + deltaHy,
+                    meanOrbit.getLM() + deltaLm,
+                    PositionAngle.MEAN, meanOrbit.getFrame(),
+                    meanOrbit.getDate(), meanOrbit.getMu());
+        }
+
+        throw new PropagationException(OrekitMessages.UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS, i);
+    }
+
+    /** Compute osculating state from mean state.
+     * <p>
+     * Compute and add the short periodic variation to the mean {@link SpacecraftState}.
+     * </p>
+     * @param meanState initial mean state
+     * @param forceModels force models
+     * @return osculating state
+     * @throws OrekitException if the computation of the short-periodic variation fails
+     */
+    private static Orbit computeOsculatingOrbit(final SpacecraftState meanState,
+                                                final Collection<DSSTForceModel> forceModels)
+    throws OrekitException {
+
+        final double[] mean = new double[6];
+        OrbitType.EQUINOCTIAL.mapOrbitToArray(meanState.getOrbit(), PositionAngle.MEAN, mean);
+        final double[] y = mean.clone();
+        for (final ShortPeriodTerms spt : computeShortPeriodicsCoefficients(meanState, forceModels)) {
+            final double[] shortPeriodic = spt.value(meanState.getOrbit());
+            for (int i = 0; i < shortPeriodic.length; i++) {
+                y[i] += shortPeriodic[i];
+            }
+        }
+        return OrbitType.EQUINOCTIAL.mapArrayToOrbit(y,
+                                                     PositionAngle.MEAN, meanState.getDate(),
+                                                     meanState.getMu(), meanState.getFrame());
+    }
+
     /** {@inheritDoc}
      * <p>
      * Note that for DSST, orbit type is hardcoded to {@link OrbitType#EQUINOCTIAL}
@@ -461,24 +583,20 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         // create a mapper with the common settings provided as arguments
         final MeanPlusShortPeriodicMapper newMapper =
-                new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame);
+                new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame, forceModels);
 
         // copy the specific settings from the existing mapper
         if (mapper != null) {
-            for (final DSSTForceModel forceModel : mapper.getForceModels()) {
-                newMapper.addForceModel(forceModel);
-            }
             newMapper.setSatelliteRevolution(mapper.getSatelliteRevolution());
             newMapper.setInitialIsOsculating(mapper.initialIsOsculating());
             newMapper.setSelectedCoefficients(mapper.getSelectedCoefficients());
-            newMapper.setShortPeriodCoefficientInterpolation(mapper.getShortPeriodCoefficientInterpolation());
+            newMapper.setShortPeriodsCache(mapper.getShortPeriodsCache());
         }
 
         mapper = newMapper;
         return mapper;
 
     }
-
 
     /** Internal mapper using mean parameters plus short periodic terms. */
     private static class MeanPlusShortPeriodicMapper extends StateMapper implements Serializable {
@@ -489,39 +607,51 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Flag specifying whether the initial orbital state is given with osculating elements. */
         private boolean                    initialIsOsculating;
 
-        /** Force models used to compute short periodic terms. */
-        private final transient List<DSSTForceModel> forceModels;
-
         /** Short periodic coefficients that must be stored as additional states. */
         private Set<String>                selectedCoefficients;
 
         /** Number of satellite revolutions in the averaging interval. */
         private int                        satelliteRevolution;
 
-        // TODO: remove this feature after debugging
-        /** Interpolation flag for short period coefficients. */
-        private boolean                    shortPeriodCoefficientInterpolation;
+        /** Cache for short period terms. */
+        private CachedShortPeriodTerms     shortPeriodsCache;
+
+        // TODO: remove this field after debugging
+        /** Force models. */
+        private List<DSSTForceModel> forceModels;
 
         /** Simple constructor.
          * @param referenceDate reference date
          * @param mu central attraction coefficient (m³/s²)
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
+         * @param forceModels force models
          */
         MeanPlusShortPeriodicMapper(final AbsoluteDate referenceDate, final double mu,
-                                    final AttitudeProvider attitudeProvider, final Frame frame) {
+                                    final AttitudeProvider attitudeProvider, final Frame frame,
+                                    final List<DSSTForceModel> forceModels) {
 
             super(referenceDate, mu, OrbitType.EQUINOCTIAL, PositionAngle.MEAN, attitudeProvider, frame);
 
-            this.forceModels          = new ArrayList<DSSTForceModel>();
+            this.forceModels = forceModels;
             this.selectedCoefficients = null;
 
             // Default averaging period for conversion from osculating to mean elements
             this.satelliteRevolution = 2;
 
             this.initialIsOsculating = true;
-            this.shortPeriodCoefficientInterpolation = true;
+            this.shortPeriodsCache   = new CachedShortPeriodTerms();
 
+        }
+
+        /** Cache some short period terms.
+             * @param validityStart start date of the validity period for the instance
+            * @param validityEnd end date of the validity period for the instance
+            * @param shortPeriodTerms short periods terms
+         */
+        public void cacheShortPeriodTerms(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
+                                          final List<ShortPeriodTerms> shortPeriodTerms) {
+            shortPeriodsCache.addEntry(validityStart, validityEnd, shortPeriodTerms);
         }
 
         /** {@inheritDoc} */
@@ -537,24 +667,25 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             if (meanOnly) {
                 coefficients = null;
             } else {
+                final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, PositionAngle.MEAN, date, getMu(), getFrame());
+                final List<ShortPeriodTerms> shortPeriods;
                 // TODO: remove this feature after debugging
-                if (!shortPeriodCoefficientInterpolation) {
-                    // as we don't want interpolation, we force recomputation of the coefficients
-                    // at current date, interpolation will therefore become no-op
-                    final Orbit meanOrbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, PositionAngle.MEAN, date, getMu(), getFrame());
+                if (shortPeriodsCache == null) {
+                    // as we don't have a cache, we force recomputation of the coefficients
                     final Attitude meanAttitude = getAttitudeProvider().getAttitude(meanOrbit, date, getFrame());
                     final SpacecraftState meanState = new SpacecraftState(meanOrbit, meanAttitude, elements[6]);
-                    computeShortPeriodicsCoefficients(meanState);
+                    shortPeriods = computeShortPeriodicsCoefficients(meanState, forceModels);
+                } else {
+                    shortPeriods = shortPeriodsCache.getShortPeriodTerms(date);
                 }
                 coefficients = selectedCoefficients == null ? null : new HashMap<String, double[]>();
-                for (final DSSTForceModel forceModel : forceModels) {
-                    final double[] shortPeriodic =
-                            forceModel.getShortPeriodicVariations(date, y);
+                for (final ShortPeriodTerms spt : shortPeriods) {
+                    final double[] shortPeriodic = spt.value(meanOrbit);
                     for (int i = 0; i < shortPeriodic.length; i++) {
                         elements[i] += shortPeriodic[i];
                     }
                     if (selectedCoefficients != null) {
-                        coefficients.putAll(forceModel.getShortPeriodicCoefficients(date, selectedCoefficients));
+                        coefficients.putAll(spt.getCoefficients(date, selectedCoefficients));
                     }
                 }
             }
@@ -592,36 +723,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             OrbitType.EQUINOCTIAL.mapOrbitToArray(meanOrbit, PositionAngle.MEAN, y);
             y[6] = state.getMass();
 
-        }
-
-        /** Add a force model to the global perturbation model.
-         *  <p>
-         *  If this method is not called at all,
-         *  the integrated orbit will follow a keplerian evolution only.
-         *  </p>
-         *  @param force perturbing {@link DSSTForceModel force} to add
-         *  @see #removeForceModels()
-         */
-        public void addForceModel(final DSSTForceModel force) {
-            forceModels.add(force);
-        }
-
-        /** Remove all perturbing force models from the global perturbation model.
-         *  <p>
-         *  Once all perturbing forces have been removed (and as long as no new force model is added),
-         *  the integrated orbit will follow a keplerian evolution only.
-         *  </p>
-         *  @see #addForceModel(DSSTForceModel)
-         */
-        public void removeForceModels() {
-            forceModels.clear();
-        }
-
-        /** Get the force models.
-         * @return force models
-         */
-        public List<DSSTForceModel> getForceModels() {
-            return forceModels;
         }
 
         /** Set the number of satellite revolutions to use for converting osculating to mean elements.
@@ -674,139 +775,20 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             return selectedCoefficients;
         }
 
-        // TODO: remove this feature after debugging
-        /** Set interpolation flag for short period coefficients.
-         * @param shortPeriodCoefficientInterpolation if true, short period coefficients
-         * are interpolated
+        /** Set short periods cache.
+         * @param cache cache for short periods
          * @since 7.1
          */
-        public void setShortPeriodCoefficientInterpolation(final boolean shortPeriodCoefficientInterpolation) {
-            this.shortPeriodCoefficientInterpolation = shortPeriodCoefficientInterpolation;
+        public void setShortPeriodsCache(final CachedShortPeriodTerms cache) {
+            this.shortPeriodsCache = cache;
         }
 
-        // TODO: remove this feature after debugging
-        /** Get interpolation flag for short period coefficients.
-         * @return true if short period coefficients are interpolated
+        /** Get the cache for short periods.
+         * @return cache for short periods
          * @since 7.1
          */
-        public boolean getShortPeriodCoefficientInterpolation() {
-            return shortPeriodCoefficientInterpolation;
-        }
-
-        /** Reset the short periodics coefficient for each {@link DSSTForceModel}.
-         * @see DSSTForceModel#resetShortPeriodicsCoefficients()
-         */
-        private void resetShortPeriodicsCoefficients() {
-            for (final DSSTForceModel forceModel : forceModels) {
-                forceModel.resetShortPeriodicsCoefficients();
-            }
-        }
-
-        /** Launch the computation of short periodics coefficients.
-         * @param state input state
-         * @throws OrekitException if the computation of a short periodic coefficient fails
-         * @see {@link DSSTForceModel#computeShortPeriodicsCoefficients(AuxiliaryElements)}
-         */
-        private void computeShortPeriodicsCoefficients(final SpacecraftState state)
-            throws OrekitException {
-            final AuxiliaryElements aux = new AuxiliaryElements(state.getOrbit(), I);
-            for (final DSSTForceModel forceModel : forceModels) {
-                forceModel.initializeStep(aux);
-                forceModel.computeShortPeriodicsCoefficients(state);
-            }
-        }
-
-        /** Compute mean state from osculating state.
-         * <p>
-         * Compute in a DSST sense the mean state corresponding to the input osculating state.
-         * </p><p>
-         * The computing is done through a fixed-point iteration process.
-         * </p>
-         * @param osculating initial osculating state
-         * @return mean state
-         * @throws OrekitException if the underlying computation of short periodic variation fails
-         */
-        private Orbit computeMeanOrbit(final SpacecraftState osculating)
-            throws OrekitException {
-
-            // rough initialization of the mean parameters
-            EquinoctialOrbit meanOrbit = new EquinoctialOrbit(
-                    osculating.getOrbit());
-
-            // threshold for each parameter
-            final double epsilon         = 1.0e-13;
-            final double thresholdA      = epsilon * (1 + FastMath.abs(meanOrbit.getA()));
-            final double thresholdE      = epsilon * (1 + meanOrbit.getE());
-            final double thresholdAngles = epsilon * FastMath.PI;
-
-            int i = 0;
-            while (i++ < 200) {
-
-                final SpacecraftState meanState = new SpacecraftState(
-                        meanOrbit, osculating.getAttitude(), osculating.getMass());
-                // recompute the osculating parameters from the current mean parameters
-                final EquinoctialOrbit rebuilt = (EquinoctialOrbit) computeOsculatingOrbit(meanState);
-
-                // adapted parameters residuals
-                final double deltaA = osculating.getA() - rebuilt.getA();
-                final double deltaEx = osculating.getEquinoctialEx() - rebuilt.getEquinoctialEx();
-                final double deltaEy = osculating.getEquinoctialEy() - rebuilt.getEquinoctialEy();
-                final double deltaHx = osculating.getHx() - rebuilt.getHx();
-                final double deltaHy = osculating.getHy() - rebuilt.getHy();
-                final double deltaLm = MathUtils.normalizeAngle(osculating.getLM() - rebuilt.getLM(), 0.0);
-
-                // check convergence
-                if ((FastMath.abs(deltaA) < thresholdA) &&
-                        (FastMath.abs(deltaEx) < thresholdE) &&
-                        (FastMath.abs(deltaEy) < thresholdE) &&
-                        (FastMath.abs(deltaLm) < thresholdAngles)) {
-                    return meanOrbit;
-                }
-
-                // update mean parameters
-                meanOrbit = new EquinoctialOrbit(
-                        meanOrbit.getA() + deltaA,
-                        meanOrbit.getEquinoctialEx() + deltaEx,
-                        meanOrbit.getEquinoctialEy() + deltaEy,
-                        meanOrbit.getHx() + deltaHx,
-                        meanOrbit.getHy() + deltaHy,
-                        meanOrbit.getLM() + deltaLm,
-                        PositionAngle.MEAN, meanOrbit.getFrame(),
-                        meanOrbit.getDate(), meanOrbit.getMu());
-            }
-
-            throw new PropagationException(OrekitMessages.UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS, i);
-        }
-
-        /** Compute osculating state from mean state.
-         * <p>
-         * Compute and add the short periodic variation to the mean {@link SpacecraftState}.
-         * </p>
-         * @param meanState initial mean state
-         * @return osculating state
-         * @throws OrekitException if the computation of the short-periodic variation fails
-         */
-        private Orbit computeOsculatingOrbit(final SpacecraftState meanState) throws OrekitException {
-
-            resetShortPeriodicsCoefficients();
-            computeShortPeriodicsCoefficients(meanState);
-
-
-            final double[] mean = new double[6];
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(meanState.getOrbit(), PositionAngle.MEAN, mean);
-            final double[] y = mean.clone();
-            for (final DSSTForceModel forceModel : this.forceModels) {
-
-                final double[] shortPeriodic =
-                        forceModel.getShortPeriodicVariations(meanState.getDate(), mean);
-
-                for (int i = 0; i < shortPeriodic.length; i++) {
-                    y[i] += shortPeriodic[i];
-                }
-            }
-            return OrbitType.EQUINOCTIAL.mapArrayToOrbit(y,
-                    PositionAngle.MEAN, meanState.getDate(),
-                    meanState.getMu(), meanState.getFrame());
+        public CachedShortPeriodTerms getShortPeriodsCache() {
+            return shortPeriodsCache;
         }
 
         /** Replace the instance with a data transfer object for serialization.
@@ -814,27 +796,17 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          * @exception NotSerializableException if one of the force models cannot be serialized
          */
         private Object writeReplace() throws NotSerializableException {
-
-            // Check the force models can be serialized
-            final DSSTForceModel[] serializableorceModels = new DSSTForceModel[forceModels.size()];
-            for (int i = 0; i < serializableorceModels.length; ++i) {
-                final DSSTForceModel forceModel = forceModels.get(i);
-                if (forceModel instanceof Serializable) {
-                    serializableorceModels[i] = forceModel;
-                } else {
-                    throw new NotSerializableException(forceModel.getClass().getName());
-                }
-            }
             return new DataTransferObject(getReferenceDate(), getMu(), getAttitudeProvider(), getFrame(),
-                                          initialIsOsculating, serializableorceModels, satelliteRevolution,
-                                          selectedCoefficients, shortPeriodCoefficientInterpolation);
+                                          initialIsOsculating, satelliteRevolution,
+                                          selectedCoefficients, shortPeriodsCache,
+                                          forceModels);
         }
 
         /** Internal class used only for serialization. */
         private static class DataTransferObject implements Serializable {
 
             /** Serializable UID. */
-            private static final long serialVersionUID = 20151104L;
+            private static final long serialVersionUID = 20151106L;
 
             /** Reference date. */
             private final AbsoluteDate referenceDate;
@@ -851,45 +823,45 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             /** Flag specifying whether the initial orbital state is given with osculating elements. */
             private final boolean initialIsOsculating;
 
-            /** Force models to use for short periodic terms computation. */
-            private final DSSTForceModel[] forceModels;
-
             /** Short periodic coefficients that must be stored as additional states. */
             private final Set<String> selectedCoefficients;
 
             /** Number of satellite revolutions in the averaging interval. */
             private final int satelliteRevolution;
 
-            // TODO: remove this feature after debugging
-            /** Interpolation flag for short period coefficients. */
-            private final boolean shortPeriodCoefficientInterpolation;
+            /** Cache for short period coefficients. */
+            private final CachedShortPeriodTerms shortPeriodsCache;
 
+            // TODO: remove this field after debugging
+            /** Force models. */
+            private List<DSSTForceModel> forceModels;
             /** Simple constructor.
              * @param referenceDate reference date
              * @param mu central attraction coefficient (m³/s²)
              * @param attitudeProvider attitude provider
              * @param frame inertial frame
              * @param initialIsOsculating if true, initial orbital state is given with osculating elements
-             * @param forceModels force models to use for short periodic terms computation
              * @param satelliteRevolution number of satellite revolutions in the averaging interval
              * @param selectedCoefficients short periodic coefficients that must be stored as additional states
-             * @param shortPeriodCoefficientInterpolation interpolation flag for short period coefficients
+             * @param shortPeriodsCache cache for short period coefficients
+             * @param forceModels force models
              */
             DataTransferObject(final AbsoluteDate referenceDate, final double mu,
                                       final AttitudeProvider attitudeProvider, final Frame frame,
                                       final boolean initialIsOsculating,
-                                      final DSSTForceModel[] forceModels, final int satelliteRevolution,
+                                      final int satelliteRevolution,
                                       final Set<String> selectedCoefficients,
-                                      final boolean shortPeriodCoefficientInterpolation) {
-                this.referenceDate                       = referenceDate;
-                this.mu                                  = mu;
-                this.attitudeProvider                    = attitudeProvider;
-                this.frame                               = frame;
-                this.initialIsOsculating                 = initialIsOsculating;
-                this.forceModels                         = forceModels;
-                this.satelliteRevolution                 = satelliteRevolution;
-                this.selectedCoefficients                = selectedCoefficients;
-                this.shortPeriodCoefficientInterpolation = shortPeriodCoefficientInterpolation;
+                                      final CachedShortPeriodTerms shortPeriodsCache,
+                                      final List<DSSTForceModel> forceModels) {
+                this.referenceDate        = referenceDate;
+                this.mu                   = mu;
+                this.attitudeProvider     = attitudeProvider;
+                this.frame                = frame;
+                this.initialIsOsculating  = initialIsOsculating;
+                this.satelliteRevolution  = satelliteRevolution;
+                this.selectedCoefficients = selectedCoefficients;
+                this.shortPeriodsCache    = shortPeriodsCache;
+                this.forceModels          = forceModels;
             }
 
             /** Replace the deserialized data transfer object with a {@link MeanPlusShortPeriodicMapper}.
@@ -897,14 +869,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
              */
             private Object readResolve() {
                 final MeanPlusShortPeriodicMapper mapper =
-                        new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame);
-                for (final DSSTForceModel forceModel : forceModels) {
-                    mapper.addForceModel(forceModel);
-                }
+                        new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame, forceModels);
                 mapper.setSatelliteRevolution(satelliteRevolution);
                 mapper.setInitialIsOsculating(initialIsOsculating);
                 mapper.setSelectedCoefficients(selectedCoefficients);
-                mapper.setShortPeriodCoefficientInterpolation(shortPeriodCoefficientInterpolation);
+                mapper.setShortPeriodsCache(shortPeriodsCache);
                 return mapper;
             }
 
@@ -930,7 +899,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         Main(final AbstractIntegrator integrator) {
             yDot = new double[7];
 
-            for (final DSSTForceModel forceModel : mapper.getForceModels()) {
+            for (final DSSTForceModel forceModel : forceModels) {
                 final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
                 if (modelDetectors != null) {
                     for (final EventDetector detector : modelDetectors) {
@@ -949,14 +918,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final AuxiliaryElements aux = new AuxiliaryElements(state.getOrbit(), I);
 
             // initialize all perturbing forces
-            for (final DSSTForceModel force : mapper.getForceModels()) {
+            for (final DSSTForceModel force : forceModels) {
                 force.initializeStep(aux);
             }
 
             Arrays.fill(yDot, 0.0);
 
             // compute the contributions of all perturbing forces
-            for (final DSSTForceModel forceModel : mapper.getForceModels()) {
+            for (final DSSTForceModel forceModel : forceModels) {
                 final double[] daidt = forceModel.getMeanElementRate(state);
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] += daidt[i];
@@ -1014,11 +983,16 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Grid for interpolation of the short periodics coefficients. */
         private final InterpolationGrid grid;
 
+        /** Force models used to compute short periodic terms. */
+        private final List<DSSTForceModel> forceModels;
+
         /** Constructor.
          * @param grid for interpolation of the short periodics coefficients
+         * @param forceModels force models
          */
-        ShortPeriodicsHandler(final InterpolationGrid grid) {
-            this.grid = grid;
+        ShortPeriodicsHandler(final InterpolationGrid grid, final List<DSSTForceModel> forceModels) {
+            this.grid        = grid;
+            this.forceModels = forceModels;
         }
 
         @Override
@@ -1028,34 +1002,43 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
+        public void handleStep(final StepInterpolator interpolator, final boolean isLast)
+            throws OrekitExceptionWrapper {
 
-            // Reset the short periodics coefficients in order to ensure that interpolation
-            // will be based on current step only
-            mapper.resetShortPeriodicsCoefficients();
-
-            // Get the grid points to compute
-            final double[] interpolationPoints = grid.getGridPoints(
-                    interpolator.getPreviousTime(), interpolator.getCurrentTime());
-
-            for (final double time : interpolationPoints) {
-                // Move the interpolator to the grid point
-                interpolator.setInterpolatedTime(time);
-
-                // Build the corresponding state
-                SpacecraftState state;
-                try {
-                    state = mapper.mapArrayToState(time,
-                            interpolator.getInterpolatedState(), true);
-                    // Launch the computation of short periodic coefficients for this date
-                    mapper.computeShortPeriodicsCoefficients(state);
-
-                } catch (MaxCountExceededException e) {
-                    e.printStackTrace();
-                } catch (OrekitException e) {
-                    e.printStackTrace();
-                }
+            // TODO: remove this after debugging, the cache will never be null
+            if (mapper.getShortPeriodsCache() == null) {
+                return;
             }
+
+            try {
+                // Get the grid points to compute
+                final double[] interpolationPoints =
+                        grid.getGridPoints(interpolator.getPreviousTime(), interpolator.getCurrentTime());
+
+                for (int i = 0; i < interpolationPoints.length - 1; ++i) {
+
+                    final double time = interpolationPoints[i];
+                    final double duration = interpolationPoints[i + 1] - time;
+                    // Move the interpolator to the grid point
+                    interpolator.setInterpolatedTime(time);
+
+                    // Build the corresponding mean state
+                    final SpacecraftState state =
+                            mapper.mapArrayToState(time, interpolator.getInterpolatedState(), true);
+
+                    // Computate short periodic coefficients for this date
+                    final AbsoluteDate validityStart = state.getDate();
+                    final AbsoluteDate validityEnd   = validityStart.shiftedBy(duration);
+                    final List<ShortPeriodTerms> spt = computeShortPeriodicsCoefficients(state, forceModels);
+                    mapper.cacheShortPeriodTerms(validityStart, validityEnd, spt);
+
+                }
+
+
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
+
         }
     }
 }

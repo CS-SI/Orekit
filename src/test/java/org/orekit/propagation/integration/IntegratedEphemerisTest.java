@@ -23,8 +23,7 @@ import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -53,6 +52,7 @@ import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -233,13 +233,12 @@ public class IntegratedEphemerisTest {
             public void initialize(AuxiliaryElements aux, boolean meanOnly) {
             }
 
-            public double[] getShortPeriodicVariations(AbsoluteDate date,
-                                                       double[] meanElements) {
+            public double[] getMeanElementRate(SpacecraftState state) {
                 return new double[6];
             }
 
-            public double[] getMeanElementRate(SpacecraftState state) {
-                return new double[6];
+            public List<ShortPeriodTerms> computeShortPeriodicsCoefficients(SpacecraftState meanState) {
+                return Collections.emptyList();
             }
 
             public EventDetector[] getEventsDetectors() {
@@ -250,23 +249,6 @@ public class IntegratedEphemerisTest {
             public void registerAttitudeProvider(AttitudeProvider provider) {
             }
 
-            public void computeShortPeriodicsCoefficients(SpacecraftState state) {
-            }
-
-            @Override
-            public void resetShortPeriodicsCoefficients() {
-            }
-
-            @Override
-            public String getCoefficientsKeyPrefix() {
-                return "dummy";
-            }
-
-            @Override
-            public Map<String, double[]> getShortPeriodicCoefficients(AbsoluteDate date,
-                                                                      Set<String> selected) {
-                return Collections.emptyMap();
-            }
         });
 
         dsstProp.setEphemerisMode();

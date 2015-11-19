@@ -155,8 +155,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final RadiationSensitive spacecraft) {
 
         //Call to the constructor from superclass using the numerical SRP model as ForceModel
-        super(GAUSS_THRESHOLD, new SolarRadiationPressure(
-                dRef, pRef, sun, equatorialRadius, spacecraft));
+        super("DSST-SRP-", GAUSS_THRESHOLD,
+              new SolarRadiationPressure(dRef, pRef, sun, equatorialRadius, spacecraft));
 
         this.sun  = sun;
         this.ae   = equatorialRadius;
@@ -173,12 +173,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getCoefficientsKeyPrefix() {
-        return "DSST-SRP-";
     }
 
     /** {@inheritDoc} */

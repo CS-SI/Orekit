@@ -16,15 +16,13 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.time.AbsoluteDate;
 
 /** This interface represents a force modifying spacecraft motion for a {@link
  *  org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -89,16 +87,6 @@ public interface DSSTForceModel {
      */
     double[] getMeanElementRate(SpacecraftState state) throws OrekitException;
 
-    /** Computes the short periodic variations.
-     *
-     *  @param date current date
-     *  @param meanElements mean elements at current date
-     *  @return the short periodic variations
-     *  @throws OrekitException if some specific error occurs
-     */
-    double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
-        throws OrekitException;
-
     /** Get the discrete events related to the model.
      * @return array of events detectors or null if the model is not
      * related to any discrete events
@@ -113,62 +101,12 @@ public interface DSSTForceModel {
      */
     void registerAttitudeProvider(AttitudeProvider provider);
 
-    /** Compute the coefficients used for short periodic variations.
-     *
-     * @param state current state information: date, kinematics, attitude
+    /** Compute the short period terms.
+     * @param meanState current mean state information: date, kinematics, attitude
+     * @return short period terms
      * @throws OrekitException if some specific error occurs
      */
-    void computeShortPeriodicsCoefficients(SpacecraftState state) throws OrekitException;
-
-    /** Reset the coefficients used for short periodic variations.
-     * <p>
-     * This method is aimed to reset short periodics coefficients.
-     * It is called when one goes from a interpolation step to the next one.
-     * </p>
-     */
-    void resetShortPeriodicsCoefficients();
-
-    /** Get the prefix for short periodic coefficients keys.
-     * <p>
-     * This prefix is used to identify the coefficients of the
-     * current force model from the coefficients pêrtaining to
-     * other force models. All the keys in the map returned by
-     * {@link #getShortPeriodicCoefficients(AbsoluteDate date)}
-     * start with this prefix, which must be unique among all
-     * providers.
-     * </p>
-     * @return the prefix for short periodic coefficients keys
-     * @see #getShortPeriodicCoefficients(AbsoluteDate)
-     *  @since 7.1
-     */
-    String getCoefficientsKeyPrefix();
-
-    /** Computes the coefficients of the {@link
-     * DSSTForceModel#getShortPeriodicVariations(AbsoluteDate, double[])
-     * short periodic variations}.
-     * <p>
-     * This method is intended mainly for validation purposes. Its output
-     * is highly dependent on the implementation details in each force model
-     * and may change from version to version. It is <em>not</em> recommended
-     * to use it for any operational purposes.
-     * </p>
-     * <p>
-     * This method must be called <em>after</em> {@link
-     * DSSTForceModel#getShortPeriodicVariations(AbsoluteDate, double[])
-     * getShortPeriodicVariations} has been called, in order for the coefficients
-     * to have been properly computed.
-     * </p>
-     *  @param date current date
-     * @param selected set of coefficients that should be put in the map
-     * (empty set means all coefficients are selected)
-     *  @return the selected coefficients of the short periodic variations,
-     *  in a map where all keys start with {@link #getCoefficientsKeyPrefix()}
-     *  @throws OrekitException if some specific error occurs
-     *  @se {@link #getCoefficientsKeyPrefix()}
-     *  @see DSSTForceModel#getShortPeriodicVariations(AbsoluteDate, double[])
-     *  @since 7.1
-     */
-    Map<String, double[]> getShortPeriodicCoefficients(AbsoluteDate date, Set<String> selected)
+    List<ShortPeriodTerms> computeShortPeriodicsCoefficients(SpacecraftState meanState)
         throws OrekitException;
 
 }
