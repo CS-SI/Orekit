@@ -645,9 +645,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
 
         /** Cache some short period terms.
-             * @param validityStart start date of the validity period for the instance
-            * @param validityEnd end date of the validity period for the instance
-            * @param shortPeriodTerms short periods terms
+         * @param validityStart start date of the validity period for the instance
+         * @param validityEnd end date of the validity period for the instance
+         * @param shortPeriodTerms short periods terms
          */
         public void cacheShortPeriodTerms(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
                                           final List<ShortPeriodTerms> shortPeriodTerms) {
