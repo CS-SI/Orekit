@@ -24,6 +24,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /** Cache for short period terms.
  * @see DSSTForceModel
@@ -55,12 +56,18 @@ public class CachedShortPeriodTerms implements Serializable {
         // create the entry
         final Entry entry = new Entry(validityStart, validityEnd, shortPeriodTerms);
 
-        // use entry mid-date to locate where to put it
-        final double       span    = validityEnd.durationFrom(validityStart);
-        final AbsoluteDate midDate = validityStart.shiftedBy(0.5 * span);
-
         // insert the entry at its chronological location
-        cache.add(findIndex(midDate), entry);
+        final int index = findIndex(entry.getDate());
+        if (index >= cache.size()) {
+            cache.add(entry);
+        } else {
+            final Entry existing = cache.get(index);
+            if (existing.getEarliest().compareTo(entry.getDate()) > 0) {
+                cache.add(index, entry);
+            } else {
+                cache.add(index + 1, entry);
+            }
+        }
 
     }
 
@@ -82,16 +89,16 @@ public class CachedShortPeriodTerms implements Serializable {
         // check if we have found an entry
         if (index < cache.size()) {
             final Entry entry = cache.get(index);
-            if (date.compareTo(entry.getValidityStart()) >= 0 &&
-                date.compareTo(entry.getValidityEnd())   <= 0) {
+            if (date.compareTo(entry.getEarliest()) >= 0 &&
+                date.compareTo(entry.getLatest())   <= 0) {
                 return entry.getShortPeriodTerms();
             }
         }
 
         throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
                                   date,
-                                  cache.get(0).getValidityStart(),
-                                  cache.get(cache.size() - 1).getValidityEnd());
+                                  cache.get(0).getEarliest(),
+                                  cache.get(cache.size() - 1).getLatest());
 
     }
 
@@ -103,25 +110,27 @@ public class CachedShortPeriodTerms implements Serializable {
 
         if (cache.size() > 0) {
 
-            final AbsoluteDate reference = cache.get(0).getValidityStart();
+            final AbsoluteDate reference = cache.get(0).getDate();
             final double t = date.durationFrom(reference);
 
             int iInf = 0;
             final double tInf = 0.0;
             int  iSup = cache.size() - 1;
-            final double tSup = cache.get(iSup).getValidityStart().durationFrom(reference);
+            final double tSup = cache.get(iSup).getDate().durationFrom(reference);
             while (iSup - iInf > 0) {
                 final int iInterp = (int) ((iInf * (tSup - t) + iSup * (t - tInf)) / (tSup - tInf));
                 final int iMed    = FastMath.max(iInf, FastMath.min(iInterp, iSup));
                 final Entry entry = cache.get(iMed);
-                if (date.compareTo(entry.getValidityStart()) < 0) {
+                if (date.compareTo(entry.getEarliest()) < 0) {
                     iSup = iMed - 1;
-                } else if (date.compareTo(entry.getValidityEnd()) > 0) {
+                } else if (date.compareTo(entry.getLatest()) > 0) {
                     iInf = FastMath.min(iSup, iMed + 1);
                 } else {
                     return iMed;
                 }
             }
+
+            return iInf;
 
         }
 
@@ -130,16 +139,19 @@ public class CachedShortPeriodTerms implements Serializable {
     }
 
     /** Local class for cached entries. */
-    private static class Entry implements Serializable {
+    private static class Entry implements TimeStamped, Serializable {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20151106L;
 
-        /** Start date of the validity period for the instance. */
-        private final AbsoluteDate validityStart;
+        /** Mid date of the validity period for the instance. */
+        private final AbsoluteDate midDate;
 
-        /** End date of the validity period for the instance. */
-        private final AbsoluteDate validityEnd;
+        /** Earliest date covered by the entry. */
+        private final AbsoluteDate earliest;
+
+        /** Latest date covered by the entry. */
+        private final AbsoluteDate latest;
 
         /** Short periods terms. */
         private final List<ShortPeriodTerms> shortPeriodsTerm;
@@ -151,23 +163,35 @@ public class CachedShortPeriodTerms implements Serializable {
          */
         Entry(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
               final List<ShortPeriodTerms> shortPeriodTerms) {
-            this.validityStart    = validityStart;
-            this.validityEnd      = validityEnd;
+            final double deltaT = validityEnd.durationFrom(validityStart);
+            this.midDate        = validityStart.shiftedBy(0.5 * deltaT);
+            if (deltaT >= 0) {
+                earliest = validityStart;
+                latest   = validityEnd;
+            } else {
+                earliest = validityEnd;
+                latest   = validityStart;
+            }
             this.shortPeriodsTerm = shortPeriodTerms;
         }
 
-        /** Get the start date of the validity period for the instance.
-         * @return start date of the validity period for the instance
-         */
-        public AbsoluteDate getValidityStart() {
-            return validityStart;
+        /** {@inheritDoc} */
+        public AbsoluteDate getDate() {
+            return midDate;
         }
 
-        /** Get the end date of the validity period for the instance.
-         * @return end date of the validity period for the instance
+        /** Get the earliest date covered by the entry.
+         * @return earliest date covered by the entry
          */
-        public AbsoluteDate getValidityEnd() {
-            return validityEnd;
+        public AbsoluteDate getEarliest() {
+            return earliest;
+        }
+
+        /** Get the latest date covered by the entry.
+         * @return latest date covered by the entry
+         */
+        public AbsoluteDate getLatest() {
+            return latest;
         }
 
         /** Get the short periods terms.
