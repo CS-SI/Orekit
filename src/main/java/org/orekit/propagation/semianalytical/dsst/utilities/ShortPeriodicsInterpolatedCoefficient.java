@@ -37,7 +37,7 @@ import org.orekit.time.AbsoluteDate;
 public class ShortPeriodicsInterpolatedCoefficient {
 
     /**Values of the already computed coefficients.*/
-    private ArrayList<Double> values;
+    private ArrayList<double[]> values;
 
     /**Grid points.*/
     private ArrayList<AbsoluteDate> abscissae;
@@ -54,7 +54,7 @@ public class ShortPeriodicsInterpolatedCoefficient {
     public ShortPeriodicsInterpolatedCoefficient(final int interpolationPoints) {
         this.interpolationPoints = interpolationPoints;
         this.abscissae = new ArrayList<AbsoluteDate>();
-        this.values = new ArrayList<Double>();
+        this.values = new ArrayList<double[]>();
         this.latestClosestNeighbor = 0;
     }
 
@@ -62,21 +62,19 @@ public class ShortPeriodicsInterpolatedCoefficient {
      * @param date date at which the coefficient should be computed
      * @return value of the coefficient
      */
-    public double value(final AbsoluteDate date) {
+    public double[] value(final AbsoluteDate date) {
         //Get the closest points from the input date
         final int[] neighbors = getNeighborsIndices(date);
 
         //Creation and set up of the interpolator
         final HermiteInterpolator interpolator = new HermiteInterpolator();
         for (int i : neighbors) {
-            final double abscissa = abscissae.get(i).durationFrom(date);
-            final double value = values.get(i);
-
-            interpolator.addSamplePoint(abscissa, new double[]{value});
+            interpolator.addSamplePoint(abscissae.get(i).durationFrom(date), values.get(i));
         }
 
         //interpolation
-        return interpolator.value(0.0)[0];
+        return interpolator.value(0.0);
+
     }
 
     /**Find the closest available points from the specified date.
@@ -202,7 +200,7 @@ public class ShortPeriodicsInterpolatedCoefficient {
      * @param date abscissa of the point
      * @param value value of the element
      */
-    public void addGridPoint(final AbsoluteDate date, final double value) {
+    public void addGridPoint(final AbsoluteDate date, final double[] value) {
         //If the grid is empty, the value is directly added to both arrays
         if (abscissae.isEmpty()) {
             abscissae.add(date);

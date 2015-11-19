@@ -241,23 +241,17 @@ class ZonalContribution implements DSSTForceModel {
 
         final int jMax = 2 * maxDegreeShortPeriodics + 1;
         final int rows = jMax + 1;
-        final ShortPeriodicsInterpolatedCoefficient[] di =
-                new ShortPeriodicsInterpolatedCoefficient[6];
-        final ShortPeriodicsInterpolatedCoefficient[][] cij =
-                new ShortPeriodicsInterpolatedCoefficient[rows][6];
-        final ShortPeriodicsInterpolatedCoefficient[][] sij =
-                new ShortPeriodicsInterpolatedCoefficient[rows][6];
+        final ShortPeriodicsInterpolatedCoefficient di =
+                new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
+        final ShortPeriodicsInterpolatedCoefficient[] cij =
+                new ShortPeriodicsInterpolatedCoefficient[rows];
+        final ShortPeriodicsInterpolatedCoefficient[] sij =
+                new ShortPeriodicsInterpolatedCoefficient[rows];
 
         //Initialise the arrays
         for (int j = 0; j <= jMax; j++) {
-            for (int i = 0; i < 6; i++) {
-                cij[j][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-                sij[j][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-            }
-        }
-
-        for (int i = 0; i < 6; i++) {
-            di[i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
+            cij[j] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
+            sij[j] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
         }
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
@@ -656,8 +650,10 @@ class ZonalContribution implements DSSTForceModel {
                 currentDi[i] += -1.5 * 2 * U * oon2a2;
             }
 
-            zonalSPCoefs.di[i].addGridPoint(date, currentDi[i]);
         }
+
+        zonalSPCoefs.di.addGridPoint(date, currentDi);
+
     }
 
     /**
@@ -890,17 +886,17 @@ class ZonalContribution implements DSSTForceModel {
             for (int i = 0; i < 6; i++) {
                 //Add the current coefficients contribution to C<sub>i</sub>⁰
                 currentCi0[i] -= currentCij[i] * rhoSigma[j][0] + currentSij[i] * rhoSigma[j][1];
-
-                // Add the coefficients to the interpolation grid
-                zonalSPCoefs.cij[j][i].addGridPoint(date, currentCij[i]);
-                zonalSPCoefs.sij[j][i].addGridPoint(date, currentSij[i]);
             }
+
+            // Add the coefficients to the interpolation grid
+            zonalSPCoefs.cij[j].addGridPoint(date, currentCij);
+            zonalSPCoefs.sij[j].addGridPoint(date, currentSij);
+
         }
 
         //Add C<sub>i</sub>⁰ to the interpolation grid
-        for (int i = 0; i < 6; i++) {
-            zonalSPCoefs.cij[0][i].addGridPoint(date, currentCi0[i]);
-        }
+        zonalSPCoefs.cij[0].addGridPoint(date, currentCi0);
+
     }
 
     /**
@@ -973,7 +969,7 @@ class ZonalContribution implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[] di;
+        private final ShortPeriodicsInterpolatedCoefficient di;
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>
@@ -988,7 +984,7 @@ class ZonalContribution implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][] cij;
+        private final ShortPeriodicsInterpolatedCoefficient[] cij;
 
         /** The coefficients S<sub>i</sub><sup>j</sup>.
          * <p>
@@ -1002,7 +998,7 @@ class ZonalContribution implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][] sij;
+        private final ShortPeriodicsInterpolatedCoefficient[] sij;
 
         /** Constructor.
          * @param maxDegreeShortPeriodics maximal degree to consider for harmonics potential
@@ -1011,9 +1007,9 @@ class ZonalContribution implements DSSTForceModel {
          * @param sij the coefficients S<sub>i</sub><sup>j</sup>.
          */
         ZonalShortPeriodicCoefficients(final int maxDegreeShortPeriodics,
-                                       final ShortPeriodicsInterpolatedCoefficient[]   di,
-                                       final ShortPeriodicsInterpolatedCoefficient[][] cij,
-                                       final ShortPeriodicsInterpolatedCoefficient[][] sij) {
+                                       final ShortPeriodicsInterpolatedCoefficient   di,
+                                       final ShortPeriodicsInterpolatedCoefficient[] cij,
+                                       final ShortPeriodicsInterpolatedCoefficient[] sij) {
 
             // Save parameters
             this.maxDegreeShortPeriodics = maxDegreeShortPeriodics;
@@ -1037,17 +1033,21 @@ class ZonalContribution implements DSSTForceModel {
             final double center = L - meanOrbit.getLM();
 
             // Initialize short periodic variations
-            final double[] shortPeriodicVariation = new double[6];
+            final double[] shortPeriodicVariation = getCij(0, meanOrbit.getDate());
+            final double[] d = getDi(meanOrbit.getDate());
             for (int i = 0; i < 6; i++) {
-                shortPeriodicVariation[i] = getCij(i, 0, meanOrbit.getDate()) +
-                        center * getDi(i, meanOrbit.getDate());
+                shortPeriodicVariation[i] +=  center * d[i];
             }
 
             for (int j = 1; j <= maxJ; j++) {
+                final double[] c = getCij(j, meanOrbit.getDate());
+                final double[] s = getSij(j, meanOrbit.getDate());
+                final double cos = FastMath.cos(j * L);
+                final double sin = FastMath.sin(j * L);
                 for (int i = 0; i < 6; i++) {
                     // add corresponding term to the short periodic variation
-                    shortPeriodicVariation[i] += getCij(i, j, meanOrbit.getDate()) * FastMath.cos(j * L);
-                    shortPeriodicVariation[i] += getSij(i, j, meanOrbit.getDate()) * FastMath.sin(j * L);
+                    shortPeriodicVariation[i] += c[i] * cos;
+                    shortPeriodicVariation[i] += s[i] * sin;
                 }
             }
 
@@ -1056,33 +1056,30 @@ class ZonalContribution implements DSSTForceModel {
 
         /** Get C<sub>i</sub><sup>j</sup>.
          *
-         * @param i i index
          * @param j j index
          * @param date the date
          * @return C<sub>i</sub><sup>j</sup>
          */
-        public double getCij(final int i, final int j, final AbsoluteDate date) {
-            return cij[j][i].value(date);
+        public double[] getCij(final int j, final AbsoluteDate date) {
+            return cij[j].value(date);
         }
 
         /** Get S<sub>i</sub><sup>j</sup>.
          *
-         * @param i i index
          * @param j j index
          * @param date the date
          * @return S<sub>i</sub><sup>j</sup>
          */
-        public double getSij(final int i, final int j, final AbsoluteDate date) {
-            return sij[j][i].value(date);
+        public double[] getSij(final int j, final AbsoluteDate date) {
+            return sij[j].value(date);
         }
 
         /** Get D<sub>i</sub>.
-         * @param i i index
          * @param date target date
          * @return D<sub>i</sub>
          */
-        public double getDi(final int i, final AbsoluteDate date) {
-            return di[i].value(date);
+        public double[] getDi(final AbsoluteDate date) {
+            return di.value(date);
         }
         /** {@inheritDoc} */
         @Override
@@ -1105,43 +1102,11 @@ class ZonalContribution implements DSSTForceModel {
 
             final int maxJ = 2 * maxDegreeShortPeriodics + 1;
             final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * maxJ + 2);
-            storeIfSelected(coefficients, selected,
-                            new double[] {
-                                getCij(0, 0, date),
-                                getCij(1, 0, date),
-                                getCij(2, 0, date),
-                                getCij(3, 0, date),
-                                getCij(4, 0, date),
-                                getCij(5, 0, date),
-                            }, "d", 0);
-            storeIfSelected(coefficients, selected,
-                            new double[] {
-                                getDi(0, date),
-                                getDi(1, date),
-                                getDi(2, date),
-                                getDi(3, date),
-                                getDi(4, date),
-                                getDi(5, date),
-                            }, "d", 1);
+            storeIfSelected(coefficients, selected, getCij(0, date), "d", 0);
+            storeIfSelected(coefficients, selected, getDi(date), "d", 1);
             for (int j = 1; j <= maxJ; j++) {
-                storeIfSelected(coefficients, selected,
-                                new double[] {
-                                    getCij(0, j, date),
-                                    getCij(1, j, date),
-                                    getCij(2, j, date),
-                                    getCij(3, j, date),
-                                    getCij(4, j, date),
-                                    getCij(5, j, date),
-                                }, "c", j);
-                storeIfSelected(coefficients, selected,
-                                new double[] {
-                                    getSij(0, j, date),
-                                    getSij(1, j, date),
-                                    getSij(2, j, date),
-                                    getSij(3, j, date),
-                                    getSij(4, j, date),
-                                    getSij(5, j, date),
-                                }, "s", j);
+                storeIfSelected(coefficients, selected, getCij(j, date), "c", j);
+                storeIfSelected(coefficients, selected, getSij(j, date), "s", j);
             }
             return coefficients;
 

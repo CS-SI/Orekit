@@ -302,13 +302,11 @@ public class DSSTThirdBody implements DSSTForceModel {
         // allocate the coefficients arrays
         final int jMax = maxAR3Pow + 1;
         final int size = jMax + 1;
-        final ShortPeriodicsInterpolatedCoefficient[][] cij = new ShortPeriodicsInterpolatedCoefficient[size][6];
-        final ShortPeriodicsInterpolatedCoefficient[][] sij = new ShortPeriodicsInterpolatedCoefficient[size][6];
+        final ShortPeriodicsInterpolatedCoefficient[] cij = new ShortPeriodicsInterpolatedCoefficient[size];
+        final ShortPeriodicsInterpolatedCoefficient[] sij = new ShortPeriodicsInterpolatedCoefficient[size];
         for (int j = 0; j <= jMax; j++) {
-            for (int i = 0; i < 6; i++) {
-                cij[j][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-                sij[j][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-            }
+            cij[j] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
+            sij[j] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
         }
 
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
@@ -476,9 +474,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             currentCij[5] = -ax2oAn * gfCoefs.getdSdaCj(j) + BoABpon * (h * gfCoefs.getdSdhCj(j) + k * gfCoefs.getdSdkCj(j)) + pSagmIqSbgoABnCj + m3onA * gfCoefs.getSCj(j);
 
             // add the computed coefficients to the interpolators
-            for (int i = 0; i < 6; i++) {
-                shortPeriods.cij[j][i].addGridPoint(meanState.getDate(), currentCij[i]);
-            }
+            shortPeriods.cij[j].addGridPoint(meanState.getDate(), currentCij);
 
             // Compute the S<sub>i</sub><sup>j</sup> coefficients
             final double[] currentSij = new double[6];
@@ -499,15 +495,15 @@ public class DSSTThirdBody implements DSSTForceModel {
             currentSij[5] = -ax2oAn * gfCoefs.getdSdaSj(j) + BoABpon * (h * gfCoefs.getdSdhSj(j) + k * gfCoefs.getdSdkSj(j)) + pSagmIqSbgoABnSj + m3onA * gfCoefs.getSSj(j);
 
             // add the computed coefficients to the interpolators
-            for (int i = 0; i < 6; i++) {
-                shortPeriods.sij[j][i].addGridPoint(meanState.getDate(), currentSij[i]);
-            }
+            shortPeriods.sij[j].addGridPoint(meanState.getDate(), currentSij);
 
             if (j == 1) {
                 //Compute the C⁰ coefficients using Danielson 2.5.2-15a.
-                for (int i = 0; i < 6; i++) {
-                    shortPeriods.cij[0][i].addGridPoint(meanState.getDate(), currentCij[i] * k / 2. + currentSij[i] * h / 2.);
+                final double[] value = new double[6];
+                for (int i = 0; i < 6; ++i) {
+                    value[i] = currentCij[i] * k / 2. + currentSij[i] * h / 2.;
                 }
+                shortPeriods.cij[0].addGridPoint(meanState.getDate(), value);
             }
         }
     }
@@ -1857,7 +1853,7 @@ public class DSSTThirdBody implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][] cij;
+        private final ShortPeriodicsInterpolatedCoefficient[] cij;
 
         /** The coefficients S<sub>i</sub><sup>j</sup>.
          * <p>
@@ -1871,7 +1867,7 @@ public class DSSTThirdBody implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][] sij;
+        private final ShortPeriodicsInterpolatedCoefficient[] sij;
 
         /**
          * Standard constructor.
@@ -1882,8 +1878,8 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param sij the S<sub>i, j</sub> coefficients
          */
         ThirdBodyShortPeriodicCoefficients(final int maxFreqF, final String bodyName,
-                                           final ShortPeriodicsInterpolatedCoefficient[][] cij,
-                                           final ShortPeriodicsInterpolatedCoefficient[][] sij) {
+                                           final ShortPeriodicsInterpolatedCoefficient[] cij,
+                                           final ShortPeriodicsInterpolatedCoefficient[] sij) {
             this.maxFreqF = maxFreqF;
             this.prefix   = "DSST-3rd-body-" + bodyName + "-";
             this.cij      = cij;
@@ -1897,12 +1893,8 @@ public class DSSTThirdBody implements DSSTForceModel {
             // the current eccentric longitude
             final double F = meanOrbit.getLE();
 
-            final double[] shortPeriodic = new double[6];
-
             //initialize the short periodic contribution with the corresponding C⁰ coeficient
-            for (int i = 0; i < 6; i++) {
-                shortPeriodic[i] = getCij(i, 0, meanOrbit.getDate());
-            }
+            final double[] shortPeriodic = getCij(0, meanOrbit.getDate());
 
             // Add the cos and sin dependent terms
             for (int j = 1; j <= maxFreqF; j++) {
@@ -1910,9 +1902,10 @@ public class DSSTThirdBody implements DSSTForceModel {
                 final double cosjF = FastMath.cos(j * F);
                 final double sinjF = FastMath.sin(j * F);
 
+                final double[] c = getCij(j, meanOrbit.getDate());
+                final double[] s = getSij(j, meanOrbit.getDate());
                 for (int i = 0; i < 6; i++) {
-                    shortPeriodic[i] += getCij(i, j, meanOrbit.getDate()) * cosjF +
-                                        getSij(i, j, meanOrbit.getDate()) * sinjF;
+                    shortPeriodic[i] += c[i] * cosjF + s[i] * sinjF;
                 }
             }
 
@@ -1938,34 +1931,10 @@ public class DSSTThirdBody implements DSSTForceModel {
         public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
             throws OrekitException {
             final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * maxFreqF + 1);
-            storeIfSelected(coefficients, selected,
-                            new double[] {
-                                getCij(0, 0, date),
-                                getCij(1, 0, date),
-                                getCij(2, 0, date),
-                                getCij(3, 0, date),
-                                getCij(4, 0, date),
-                                getCij(5, 0, date)
-                            }, "c", 0);
+            storeIfSelected(coefficients, selected, getCij(0, date), "c", 0);
             for (int j = 1; j <= maxFreqF; j++) {
-                storeIfSelected(coefficients, selected,
-                                new double[] {
-                                    getCij(0, j, date),
-                                    getCij(1, j, date),
-                                    getCij(2, j, date),
-                                    getCij(3, j, date),
-                                    getCij(4, j, date),
-                                    getCij(5, j, date)
-                                }, "c", j);
-                storeIfSelected(coefficients, selected,
-                                new double[] {
-                                    getSij(0, j, date),
-                                    getSij(1, j, date),
-                                    getSij(2, j, date),
-                                    getSij(3, j, date),
-                                    getSij(4, j, date),
-                                    getSij(5, j, date)
-                                }, "s", j);
+                storeIfSelected(coefficients, selected, getCij(j, date), "c", j);
+                storeIfSelected(coefficients, selected, getSij(j, date), "s", j);
             }
             return coefficients;
         }
@@ -1993,24 +1962,22 @@ public class DSSTThirdBody implements DSSTForceModel {
 
        /** Get C<sub>i</sub><sup>j</sup>.
         *
-        * @param i i index
         * @param j j index
         * @param date the date
         * @return C<sub>i</sub><sup>j</sup>
         */
-        private double getCij(final int i, final int j, final AbsoluteDate date) {
-            return cij[j][i].value(date);
+        private double[] getCij(final int j, final AbsoluteDate date) {
+            return cij[j].value(date);
         }
 
        /** Get S<sub>i</sub><sup>j</sup>.
         *
-        * @param i i index
         * @param j j index
         * @param date the date
         * @return S<sub>i</sub><sup>j</sup>
         */
-        private double getSij(final int i, final int j, final AbsoluteDate date) {
-            return sij[j][i].value(date);
+        private double[] getSij(final int j, final AbsoluteDate date) {
+            return sij[j].value(date);
         }
 
     }

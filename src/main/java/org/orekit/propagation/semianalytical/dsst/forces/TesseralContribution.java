@@ -347,14 +347,12 @@ class TesseralContribution implements DSSTForceModel {
 
         final int rows    = mMax + 1;
         final int columns = 2 * jMax + 1;
-        final ShortPeriodicsInterpolatedCoefficient[][][] cijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns][6];
-        final ShortPeriodicsInterpolatedCoefficient[][][] sijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns][6];
+        final ShortPeriodicsInterpolatedCoefficient[][] cijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns];
+        final ShortPeriodicsInterpolatedCoefficient[][] sijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns];
         for (int m = 1; m <= mMax; m++) {
             for (int j = -jMax; j <= jMax; j++) {
-                for (int i = 0; i < 6; i++) {
-                    cijm[m][j + jMax][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-                    sijm[m][j + jMax][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-                }
+                cijm[m][j + jMax] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
+                sijm[m][j + jMax] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
             }
         }
         shortPeriodTerms = new TesseralShortPeriodicCoefficients(bodyFrame, maxOrderMdailyTesseralSP,
@@ -599,10 +597,8 @@ class TesseralContribution implements DSSTForceModel {
         }
 
         // Add the coefficients to the interpolation grid
-        for (int i = 0; i < 6; i++) {
-            shortPeriodTerms.cijm[m][j + jMax][i].addGridPoint(date, currentCijm[i]);
-            shortPeriodTerms.sijm[m][j + jMax][i].addGridPoint(date, currentSijm[i]);
-        }
+        shortPeriodTerms.cijm[m][j + jMax].addGridPoint(date, currentCijm);
+        shortPeriodTerms.sijm[m][j + jMax].addGridPoint(date, currentSijm);
 
     }
 
@@ -1242,7 +1238,7 @@ class TesseralContribution implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][][] cijm;
+        private final ShortPeriodicsInterpolatedCoefficient[][] cijm;
 
         /** The coefficients S<sub>i</sub><sup>j</sup><sup>m</sup>.
          * <p>
@@ -1256,7 +1252,7 @@ class TesseralContribution implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][][] sijm;
+        private final ShortPeriodicsInterpolatedCoefficient[][] sijm;
 
         /** Constructor.
          * @param bodyFrame central body rotating frame
@@ -1268,8 +1264,8 @@ class TesseralContribution implements DSSTForceModel {
          */
         TesseralShortPeriodicCoefficients(final Frame bodyFrame, final int maxOrderMdailyTesseralSP,
                                           final boolean mDailiesOnly, final SortedMap<Integer, List<Integer> > nonResOrders,
-                                          final ShortPeriodicsInterpolatedCoefficient[][][] cijm,
-                                          final ShortPeriodicsInterpolatedCoefficient[][][] sijm) {
+                                          final ShortPeriodicsInterpolatedCoefficient[][] cijm,
+                                          final ShortPeriodicsInterpolatedCoefficient[][] sijm) {
             this.bodyFrame                = bodyFrame;
             this.maxOrderMdailyTesseralSP = maxOrderMdailyTesseralSP;
             this.mDailiesOnly             = mDailiesOnly;
@@ -1283,7 +1279,7 @@ class TesseralContribution implements DSSTForceModel {
         public double[] value(final Orbit meanOrbit) throws OrekitException {
 
             // Initialise the short periodic variations
-            final double[] shortPeriodicVariation = new double[] {0., 0., 0., 0., 0., 0.};
+            final double[] shortPeriodicVariation = new double[6];
 
             // Compute only if there is at least one non-resonant tesseral or
             // only the m-daily tesseral should be taken into account
@@ -1309,9 +1305,10 @@ class TesseralContribution implements DSSTForceModel {
                     final double cosPhi = FastMath.cos(jlMmt);
 
                     // compute contribution for each element
+                    final double[] c = getCijm(0, m, meanOrbit.getDate());
+                    final double[] s = getSijm(0, m, meanOrbit.getDate());
                     for (int i = 0; i < 6; i++) {
-                        shortPeriodicVariation[i] += getCijm(i, 0, m, meanOrbit.getDate()) * cosPhi +
-                                                     getSijm(i, 0, m, meanOrbit.getDate()) * sinPhi;
+                        shortPeriodicVariation[i] += c[i] * cosPhi + s[i] * sinPhi;
                     }
                 }
 
@@ -1327,9 +1324,10 @@ class TesseralContribution implements DSSTForceModel {
                         final double cosPhi = FastMath.cos(jlMmt);
 
                         // compute contribution for each element
+                        final double[] c = getCijm(j, m, meanOrbit.getDate());
+                        final double[] s = getSijm(j, m, meanOrbit.getDate());
                         for (int i = 0; i < 6; i++) {
-                            shortPeriodicVariation[i] += getCijm(i, j, m, meanOrbit.getDate()) * cosPhi +
-                                                         getSijm(i, j, m, meanOrbit.getDate()) * sinPhi;
+                            shortPeriodicVariation[i] += c[i] * cosPhi + s[i] * sinPhi;
                         }
 
                     }
@@ -1366,24 +1364,8 @@ class TesseralContribution implements DSSTForceModel {
                                                               12 * nonResOrders.size());
 
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
-                    storeIfSelected(coefficients, selected,
-                                    new double[] {
-                                        getCijm(0, 0, m, date),
-                                        getCijm(1, 0, m, date),
-                                        getCijm(2, 0, m, date),
-                                        getCijm(3, 0, m, date),
-                                        getCijm(4, 0, m, date),
-                                        getCijm(5, 0, m, date)
-                                    }, "cM", m);
-                    storeIfSelected(coefficients, selected,
-                                    new double[] {
-                                        getSijm(0, 0, m, date),
-                                        getSijm(1, 0, m, date),
-                                        getSijm(2, 0, m, date),
-                                        getSijm(3, 0, m, date),
-                                        getSijm(4, 0, m, date),
-                                        getSijm(5, 0, m, date)
-                                    }, "sM", m);
+                    storeIfSelected(coefficients, selected, getCijm(0, m, date), "cM", m);
+                    storeIfSelected(coefficients, selected, getSijm(0, m, date), "sM", m);
                 }
 
                 for (final Map.Entry<Integer, List<Integer>> entry : nonResOrders.entrySet()) {
@@ -1392,24 +1374,8 @@ class TesseralContribution implements DSSTForceModel {
 
                     for (int j : listJ) {
                         for (int i = 0; i < 6; ++i) {
-                            storeIfSelected(coefficients, selected,
-                                            new double[] {
-                                                getCijm(0, j, m, date),
-                                                getCijm(1, j, m, date),
-                                                getCijm(2, j, m, date),
-                                                getCijm(3, j, m, date),
-                                                getCijm(4, j, m, date),
-                                                getCijm(5, j, m, date)
-                                            }, "c", j, m);
-                            storeIfSelected(coefficients, selected,
-                                            new double[] {
-                                                getSijm(0, j, m, date),
-                                                getSijm(1, j, m, date),
-                                                getSijm(2, j, m, date),
-                                                getSijm(3, j, m, date),
-                                                getSijm(4, j, m, date),
-                                                getSijm(5, j, m, date)
-                                            }, "s", j, m);
+                            storeIfSelected(coefficients, selected, getCijm(j, m, date), "c", j, m);
+                            storeIfSelected(coefficients, selected, getSijm(j, m, date), "s", j, m);
                         }
                     }
                 }
@@ -1445,28 +1411,26 @@ class TesseralContribution implements DSSTForceModel {
 
         /** Get C<sub>i</sub><sup>j</sup><sup>m</sup>.
          *
-         * @param i i index
          * @param j j index
          * @param m m index
          * @param date the date
          * @return C<sub>i</sub><sup>j</sup><sup>m</sup>
          */
-        private double getCijm(final int i, final int j, final int m, final AbsoluteDate date) {
+        private double[] getCijm(final int j, final int m, final AbsoluteDate date) {
             final int jMax = (cijm[m].length - 1) / 2;
-            return cijm[m][j + jMax][i].value(date);
+            return cijm[m][j + jMax].value(date);
         }
 
         /** Get S<sub>i</sub><sup>j</sup><sup>m</sup>.
          *
-         * @param i i index
          * @param j j index
          * @param m m index
          * @param date the date
          * @return S<sub>i</sub><sup>j</sup><sup>m</sup>
          */
-        private double getSijm(final int i, final int j, final int m, final AbsoluteDate date) {
+        private double[] getSijm(final int j, final int m, final AbsoluteDate date) {
             final int jMax = (cijm[m].length - 1) / 2;
-            return sijm[m][j + jMax][i].value(date);
+            return sijm[m][j + jMax].value(date);
         }
 
     }

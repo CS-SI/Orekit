@@ -1345,7 +1345,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][] dij;
+        private final ShortPeriodicsInterpolatedCoefficient[] dij;
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>
@@ -1359,7 +1359,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][] cij;
+        private final ShortPeriodicsInterpolatedCoefficient[] cij;
 
         /** The coefficients S<sub>i</sub><sup>j</sup>.
          * <p>
@@ -1373,7 +1373,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * - i=5 for λ <br/>
          * </p>
          */
-        private final ShortPeriodicsInterpolatedCoefficient[][] sij;
+        private final ShortPeriodicsInterpolatedCoefficient[] sij;
 
         /** The current computed values for the ρ<sub>j</sub> and σ<sub>j</sub> coefficients.
          * <p>
@@ -1397,25 +1397,23 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             this.coefficientsKeyPrefix = coefficientsKeyPrefix;
             this.jMax = jMax;
 
-            this.dij = new ShortPeriodicsInterpolatedCoefficient[3][6];
+            this.dij = new ShortPeriodicsInterpolatedCoefficient[3];
 
             final int rows = jMax + 1;
-            this.cij = new ShortPeriodicsInterpolatedCoefficient[rows][6];
-            this.sij = new ShortPeriodicsInterpolatedCoefficient[rows][6];
+            this.cij = new ShortPeriodicsInterpolatedCoefficient[rows];
+            this.sij = new ShortPeriodicsInterpolatedCoefficient[rows];
 
             this.currentRhoSigmaj = new double[2][3 * jMax + 1];
 
             // Initialise the C<sub>i</sub><sup>j</sup>, S<sub>i</sub><sup>j</sup> and D<sub>i</sub><sup>j</sup> coefficients
             for (int j = 0; j <= jMax; j++) {
-                for (int i = 0; i < 6; i++) {
-                    this.cij[j][i] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
-                    if (j > 0) {
-                        this.sij[j][i] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
-                    }
-                    // Initialise only the non-zero D<sub>i</sub><sup>j</sup> coefficients
-                    if (j == 1 || (j == 2 && i == 5)) {
-                        this.dij[j][i] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
-                    }
+                this.cij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                if (j > 0) {
+                    this.sij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                }
+                // Initialise only the non-zero D<sub>i</sub><sup>j</sup> coefficients
+                if (j == 1 || j == 2) {
+                    this.dij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
                 }
             }
         }
@@ -1449,47 +1447,52 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final double to4an = to2an / 2;
 
             // Compute the coefficients for each element
+            final int size = jMax + 1;
+            final double[]   di1        = new double[6];
+            final double[]   di2        = new double[6];
+            final double[][] currentCij = new double[size][6];
+            final double[][] currentSij = new double[size][6];
             for (int i = 0; i < 6; i++) {
 
                 // compute D<sub>i</sub>¹ and D<sub>i</sub>² (all others are 0)
-                double di1 = -oon * fourierCjSj.getCij(i, 0);
+                di1[i] = -oon * fourierCjSj.getCij(i, 0);
                 if (i == 5) {
-                    di1 += to2an * uijvij.getU1(0, 0);
+                    di1[i] += to2an * uijvij.getU1(0, 0);
                 }
-                double di2 = 0.;
+                di2[i] = 0.;
                 if (i == 5) {
-                    di2 += -to4an * fourierCjSj.getCij(0, 0);
+                    di2[i] += -to4an * fourierCjSj.getCij(0, 0);
                 }
 
                 //the C<sub>i</sub>⁰ is computed based on all others
-                double currentCi0 = -di2 * k20;
+                currentCij[0][i] = -di2[i] * k20;
 
                 for (int j = 1; j <= jMax; j++) {
                     // compute the current C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup>
-                    double currentCij = oon * uijvij.getU1(j, i);
+                    currentCij[j][i] = oon * uijvij.getU1(j, i);
                     if (i == 5) {
-                        currentCij += -to2an * uijvij.getU2(j);
+                        currentCij[j][i] += -to2an * uijvij.getU2(j);
                     }
-                    double currentSij = oon * uijvij.getV1(j, i);
+                    currentSij[j][i] = oon * uijvij.getV1(j, i);
                     if (i == 5) {
-                        currentSij += -to2an * uijvij.getV2(j);
+                        currentSij[j][i] += -to2an * uijvij.getV2(j);
                     }
 
                     // add the computed coefficients to C<sub>i</sub>⁰
-                    currentCi0 += -(currentCij * currentRhoSigmaj[0][j] + currentSij * currentRhoSigmaj[1][j]);
-
-                    // add the values to the interpolators
-                    cij[j][i].addGridPoint(date, currentCij);
-                    sij[j][i].addGridPoint(date, currentSij);
+                    currentCij[0][i] += -(currentCij[j][i] * currentRhoSigmaj[0][j] + currentSij[j][i] * currentRhoSigmaj[1][j]);
                 }
 
-                // add the computed values to the interpolators
-                cij[0][i].addGridPoint(date, currentCi0);
-                dij[1][i].addGridPoint(date, di1);
-                if (i == 5) {
-                    dij[2][i].addGridPoint(date, di2);
-                }
             }
+
+            // add the values to the interpolators
+            cij[0].addGridPoint(date, currentCij[0]);
+            dij[1].addGridPoint(date, di1);
+            dij[2].addGridPoint(date, di2);
+            for (int j = 1; j <= jMax; j++) {
+                cij[j].addGridPoint(date, currentCij[j]);
+                sij[j].addGridPoint(date, currentSij[j]);
+            }
+
         }
 
         /** Compute the coefficient k₂⁰ by using the equation
@@ -1522,34 +1525,31 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
         /** Get C<sub>i</sub><sup>j</sup>.
          *
-         * @param i i index
          * @param j j index
          * @param date the date
          * @return C<sub>i</sub><sup>j</sup>
          */
-        private double getCij(final int i, final int j, final AbsoluteDate date) {
-            return cij[j][i].value(date);
+        private double[] getCij(final int j, final AbsoluteDate date) {
+            return cij[j].value(date);
         }
 
         /** Get S<sub>i</sub><sup>j</sup>.
          *
-         * @param i i index
          * @param j j index
          * @param date the date
          * @return S<sub>i</sub><sup>j</sup>
          */
-        private double getSij(final int i, final int j, final AbsoluteDate date) {
-            return sij[j][i].value(date);
+        private double[] getSij(final int j, final AbsoluteDate date) {
+            return sij[j].value(date);
         }
 
         /** Get D<sub>i</sub><sup>j</sup>.
-         * @param i i index
          * @param j j index
          * @param date target date
          * @return D<sub>i</sub><sup>j</sup>
          */
-        private double getDij(final int i, final int j, final AbsoluteDate date) {
-            return dij[j][i] == null ? 0.0 : dij[j][i].value(date);
+        private double[] getDij(final int j, final AbsoluteDate date) {
+            return dij[j].value(date);
         }
 
         /** {@inheritDoc} */
@@ -1565,20 +1565,22 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final double center2 = center * center;
 
             // Initialize short periodic variations
-            final double[] shortPeriodicVariation = new double[6];
+            final double[] shortPeriodicVariation = getCij(0, meanOrbit.getDate());
+            final double[] d1 = getDij(1, meanOrbit.getDate());
+            final double[] d2 = getDij(2, meanOrbit.getDate());
             for (int i = 0; i < 6; i++) {
-                shortPeriodicVariation[i] = getCij(i, 0, meanOrbit.getDate()) +
-                                            center * getDij(i, 1, meanOrbit.getDate());
-                if (i == 5) {
-                    shortPeriodicVariation[i] += center2 * getDij(i, 2, meanOrbit.getDate());
-                }
+                shortPeriodicVariation[i] += center * d1[i] + center2 * d2[i];
             }
 
             for (int j = 1; j <= JMAX; j++) {
+                final double[] c = getCij(j, meanOrbit.getDate());
+                final double[] s = getSij(j, meanOrbit.getDate());
+                final double cos = FastMath.cos(j * L);
+                final double sin = FastMath.sin(j * L);
                 for (int i = 0; i < 6; i++) {
                     // add corresponding term to the short periodic variation
-                    shortPeriodicVariation[i] += getCij(i, j, meanOrbit.getDate()) * FastMath.cos(j * L);
-                    shortPeriodicVariation[i] += getSij(i, j, meanOrbit.getDate()) * FastMath.sin(j * L);
+                    shortPeriodicVariation[i] += c[i] * cos;
+                    shortPeriodicVariation[i] += s[i] * sin;
                 }
             }
 
@@ -1604,52 +1606,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
             throws OrekitException {
             final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * JMAX + 3);
-            storeIfSelected(coefficients, selected,
-                            new double[] {
-                                getCij(0, 0, date),
-                                getCij(1, 0, date),
-                                getCij(2, 0, date),
-                                getCij(3, 0, date),
-                                getCij(4, 0, date),
-                                getCij(5, 0, date),
-                            }, "d", 0);
-            storeIfSelected(coefficients, selected,
-                            new double[] {
-                                getDij(0, 1, date),
-                                getDij(1, 1, date),
-                                getDij(2, 1, date),
-                                getDij(3, 1, date),
-                                getDij(4, 1, date),
-                                getDij(5, 1, date),
-                            }, "d", 1);
-            storeIfSelected(coefficients, selected,
-                            new double[] {
-                                getDij(0, 2, date),
-                                getDij(1, 2, date),
-                                getDij(2, 2, date),
-                                getDij(3, 2, date),
-                                getDij(4, 2, date),
-                                getDij(5, 2, date),
-                            }, "d", 2);
+            storeIfSelected(coefficients, selected, getCij(0, date), "d", 0);
+            storeIfSelected(coefficients, selected, getDij(1, date), "d", 1);
+            storeIfSelected(coefficients, selected, getDij(2, date), "d", 2);
             for (int j = 1; j <= JMAX; j++) {
-                storeIfSelected(coefficients, selected,
-                                new double[] {
-                                    getCij(0, j, date),
-                                    getCij(1, j, date),
-                                    getCij(2, j, date),
-                                    getCij(3, j, date),
-                                    getCij(4, j, date),
-                                    getCij(5, j, date),
-                                }, "c", j);
-                storeIfSelected(coefficients, selected,
-                                new double[] {
-                                    getSij(0, j, date),
-                                    getSij(1, j, date),
-                                    getSij(2, j, date),
-                                    getSij(3, j, date),
-                                    getSij(4, j, date),
-                                    getSij(5, j, date),
-                                }, "s", j);
+                storeIfSelected(coefficients, selected, getCij(j, date), "c", j);
+                storeIfSelected(coefficients, selected, getSij(j, date), "s", j);
             }
             return coefficients;
         }
