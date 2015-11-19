@@ -241,6 +241,12 @@ class TesseralContribution implements DSSTForceModel {
      * The indexes are s + maxDegree and j */
     private HansenTesseralLinear[][] hansenObjects;
 
+    /** Fourier coefficients. */
+    private FourierCjSjCoefficients cjsjFourier;
+
+    /** Short period terms. */
+    private TesseralShortPeriodicCoefficients shortPeriodTerms;
+
     /** Single constructor.
      *  @param centralBodyFrame rotating body frame
      *  @param centralBodyRotationRate central body rotation rate (rad/s)
@@ -297,7 +303,7 @@ class TesseralContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
         // Keplerian period
@@ -335,6 +341,29 @@ class TesseralContribution implements DSSTForceModel {
 
         //initialize the HansenTesseralLinear objects needed
         createHansenObjects(meanOnly);
+
+        final int mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
+        cjsjFourier = new FourierCjSjCoefficients(jMax, mMax);
+
+        final int rows    = mMax + 1;
+        final int columns = 2 * jMax + 1;
+        final ShortPeriodicsInterpolatedCoefficient[][][] cijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns][6];
+        final ShortPeriodicsInterpolatedCoefficient[][][] sijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns][6];
+        for (int m = 1; m <= mMax; m++) {
+            for (int j = -jMax; j <= jMax; j++) {
+                for (int i = 0; i < 6; i++) {
+                    cijm[m][j + jMax][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
+                    sijm[m][j + jMax][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
+                }
+            }
+        }
+        shortPeriodTerms = new TesseralShortPeriodicCoefficients(bodyFrame, maxOrderMdailyTesseralSP,
+                                                                 mDailiesOnly, nonResOrders,
+                                                                 cijm, sijm);
+
+        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
+        list.add(shortPeriodTerms);
+        return list;
 
     }
 
@@ -493,7 +522,7 @@ class TesseralContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> computeShortPeriodicsCoefficients(final SpacecraftState meanState)
+    public void updateShortPeriodTerms(final SpacecraftState meanState)
         throws OrekitException {
 
         // Initialise the Hansen coefficients
@@ -508,21 +537,6 @@ class TesseralContribution implements DSSTForceModel {
             }
         }
 
-        final int mMax    = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
-        final int rows    = mMax + 1;
-        final int columns = 2 * jMax + 1;
-        final ShortPeriodicsInterpolatedCoefficient[][][] cijm        = new ShortPeriodicsInterpolatedCoefficient[rows][columns][6];
-        final ShortPeriodicsInterpolatedCoefficient[][][] sijm        = new ShortPeriodicsInterpolatedCoefficient[rows][columns][6];
-        final FourierCjSjCoefficients                     cjsjFourier = new FourierCjSjCoefficients(jMax, mMax);
-
-        for (int m = 1; m <= mMax; m++) {
-            for (int j = -jMax; j <= jMax; j++) {
-                for (int i = 0; i < 6; i++) {
-                    cijm[m][j + jMax][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-                    sijm[m][j + jMax][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-                }
-            }
-        }
         // Compute coefficients
         // Compute only if there is at least one non-resonant tesseral
         if (!nonResOrders.isEmpty() || mDailiesOnly) {
@@ -535,7 +549,7 @@ class TesseralContribution implements DSSTForceModel {
             // build the mDaily coefficients
             for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
                 // build the coefficients
-                buildCoefficients(meanState.getDate(), m, 0, tnota, cjsjFourier, cijm, sijm);
+                buildCoefficients(meanState.getDate(), m, 0, tnota);
             }
 
             if (!mDailiesOnly) {
@@ -545,27 +559,11 @@ class TesseralContribution implements DSSTForceModel {
 
                     for (int j: listJ) {
                         // build the coefficients
-                        buildCoefficients(meanState.getDate(), m, j, tnota, cjsjFourier, cijm, sijm);
+                        buildCoefficients(meanState.getDate(), m, j, tnota);
                     }
                 }
             }
         }
-
-        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
-        list.add(new TesseralShortPeriodicCoefficients(bodyFrame, maxOrderMdailyTesseralSP,
-                                                       mDailiesOnly, nonResOrders, I, f, g,
-                                                       cijm, sijm));
-        return list;
-
-    }
-
-    /** Compute the short periodic coefficients.
-     *
-     * @param date the current date
-     * @throws OrekitException if an error occurs
-     */
-    public void computeCoefficients(final AbsoluteDate date)
-                    throws OrekitException {
 
     }
 
@@ -575,15 +573,9 @@ class TesseralContribution implements DSSTForceModel {
      * @param m m index
      * @param j j index
      * @param tnota 3n/2a
-     * @param cjsjFourier Fourier coefficients
-     * @param cijm placeholder for the coefficients SC<sub>i</sub><sup>j</sup><sup>m</sup>
-     * @param sijm placeholder the coefficients S<sub>i</sub><sup>j</sup><sup>m</sup>
      */
     private void buildCoefficients(final AbsoluteDate date, final int m, final int j,
-                                   final double tnota,
-                                   final FourierCjSjCoefficients cjsjFourier,
-                                   final ShortPeriodicsInterpolatedCoefficient[][][] cijm,
-                                   final ShortPeriodicsInterpolatedCoefficient[][][] sijm) {
+                                   final double tnota) {
         // Create local arrays
         final double[] currentCijm = new double[] {0., 0., 0., 0., 0., 0.};
         final double[] currentSijm = new double[] {0., 0., 0., 0., 0., 0.};
@@ -608,9 +600,10 @@ class TesseralContribution implements DSSTForceModel {
 
         // Add the coefficients to the interpolation grid
         for (int i = 0; i < 6; i++) {
-            cijm[m][j + jMax][i].addGridPoint(date, currentCijm[i]);
-            sijm[m][j + jMax][i].addGridPoint(date, currentSijm[i]);
+            shortPeriodTerms.cijm[m][j + jMax][i].addGridPoint(date, currentCijm[i]);
+            shortPeriodTerms.sijm[m][j + jMax][i].addGridPoint(date, currentSijm[i]);
         }
+
     }
 
     /** {@inheritDoc} */
@@ -1210,6 +1203,21 @@ class TesseralContribution implements DSSTForceModel {
         /** Serializable UID. */
         private static final long serialVersionUID = 20151119L;
 
+        /** Retrograde factor I.
+         *  <p>
+         *  DSST model needs equinoctial orbit as internal representation.
+         *  Classical equinoctial elements have discontinuities when inclination
+         *  is close to zero. In this representation, I = +1. <br>
+         *  To avoid this discontinuity, another representation exists and equinoctial
+         *  elements can be expressed in a different way, called "retrograde" orbit.
+         *  This implies I = -1. <br>
+         *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
+         *  But for the sake of consistency with the theory, the retrograde factor
+         *  has been kept in the formulas.
+         *  </p>
+         */
+        private static final int I = 1;
+
         /** Central body rotating frame. */
         private final Frame bodyFrame;
 
@@ -1221,15 +1229,6 @@ class TesseralContribution implements DSSTForceModel {
 
         /** List of non resonant orders with j != 0. */
         private final SortedMap<Integer, List<Integer> > nonResOrders;
-
-        /** Retrograde factor. */
-        private final int    I;
-
-        /** Equinoctial frame f vector. */
-        private final Vector3D f;
-
-        /** Equinoctial frame g vector. */
-        private final Vector3D g;
 
         /** The coefficients C<sub>i</sub><sup>j</sup><sup>m</sup>.
          * <p>
@@ -1264,24 +1263,17 @@ class TesseralContribution implements DSSTForceModel {
          * @param maxOrderMdailyTesseralSP maximal order to consider for short periodics m-daily tesseral harmonics potential
          * @param mDailiesOnly flag to take into account only M-dailies harmonic tesserals for short periodic perturbations
          * @param nonResOrders lst of non resonant orders with j != 0
-         * @param I retrograde factor
-         * @param f equinoctial frame f vector
-         * @param g equinoctial frame g vector
          * @param cijm the coefficients SC<sub>i</sub><sup>j</sup><sup>m</sup>
          * @param sijm the coefficients S<sub>i</sub><sup>j</sup><sup>m</sup>
          */
         TesseralShortPeriodicCoefficients(final Frame bodyFrame, final int maxOrderMdailyTesseralSP,
                                           final boolean mDailiesOnly, final SortedMap<Integer, List<Integer> > nonResOrders,
-                                          final int I, final Vector3D f, final Vector3D g,
                                           final ShortPeriodicsInterpolatedCoefficient[][][] cijm,
                                           final ShortPeriodicsInterpolatedCoefficient[][][] sijm) {
             this.bodyFrame                = bodyFrame;
             this.maxOrderMdailyTesseralSP = maxOrderMdailyTesseralSP;
             this.mDailiesOnly             = mDailiesOnly;
             this.nonResOrders             = nonResOrders;
-            this.I                        = I;
-            this.f                        = f;
-            this.g                        = g;
             this.cijm                     = cijm;
             this.sijm                     = sijm;
         }
@@ -1304,6 +1296,8 @@ class TesseralContribution implements DSSTForceModel {
                 final Transform t = bodyFrame.getTransformTo(aux.getFrame(), aux.getDate());
                 final Vector3D xB = t.transformVector(Vector3D.PLUS_I);
                 final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
+                final Vector3D  f = aux.getVectorF();
+                final Vector3D  g = aux.getVectorG();
                 final double currentTheta = FastMath.atan2(-f.dotProduct(yB) + I * g.dotProduct(xB),
                                                             f.dotProduct(xB) + I * g.dotProduct(yB));
 

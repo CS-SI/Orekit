@@ -64,9 +64,11 @@ public interface DSSTForceModel {
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
      *  @param meanOnly only mean elements are used during the propagation
+     *  @return a list of objects that will hold short period terms (the objects
+     *  are also retained by the force model, which will update them during propagation)
      *  @throws OrekitException if some specific error occurs
      */
-    void initialize(AuxiliaryElements aux, boolean meanOnly)
+    List<ShortPeriodTerms> initialize(AuxiliaryElements aux, boolean meanOnly)
         throws OrekitException;
 
     /** Performs initialization at each integration step for the current force model.
@@ -101,12 +103,16 @@ public interface DSSTForceModel {
      */
     void registerAttitudeProvider(AttitudeProvider provider);
 
-    /** Compute the short period terms.
+    /** Update the short period terms.
+     * <p>
+     * The {@link ShortPeriodTerms short period terms} that will be updated
+     * are the ones that were returned during the call to {@link
+     * #initialize(AuxiliaryElements, boolean)}.
+     * </p>
      * @param meanState current mean state information: date, kinematics, attitude
-     * @return short period terms
      * @throws OrekitException if some specific error occurs
      */
-    List<ShortPeriodTerms> computeShortPeriodicsCoefficients(SpacecraftState meanState)
+    void updateShortPeriodTerms(SpacecraftState meanState)
         throws OrekitException;
 
 }

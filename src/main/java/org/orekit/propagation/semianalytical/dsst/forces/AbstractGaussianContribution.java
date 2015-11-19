@@ -153,6 +153,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Prefix for coefficients keys. */
     private final String coefficientsKeyPrefix;
 
+    /** Short period terms. */
+    private GaussianShortPeriodicCoefficients gaussianSPCoefs;
+
     /** Build a new instance.
      *  @param coefficientsKeyPrefix prefix for coefficients keys
      *  @param threshold tolerance for the choice of the Gauss quadrature order
@@ -170,7 +173,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void initialize(final AuxiliaryElements aux, final boolean meanOnly) {
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly) {
+
+        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
+        gaussianSPCoefs = new GaussianShortPeriodicCoefficients(coefficientsKeyPrefix,
+                                                                JMAX, INTERPOLATION_POINTS);
+        list.add(gaussianSPCoefs);
+        return list;
+
     }
 
     /** {@inheritDoc} */
@@ -317,22 +327,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> computeShortPeriodicsCoefficients(final SpacecraftState state)
+    public void updateShortPeriodTerms(final SpacecraftState state)
         throws OrekitException {
 
-        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
-
-        //Compute the coefficients
-        final GaussianShortPeriodicCoefficients gaussianSPCoefs =
-                new GaussianShortPeriodicCoefficients(coefficientsKeyPrefix,
-                                                      JMAX, INTERPOLATION_POINTS);
         final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(state.getDate());
         final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(state, JMAX);
         final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
         gaussianSPCoefs.computeCoefficients(state, fourierCjSj, uijvij, n, a);
-        list.add(gaussianSPCoefs);
-
-        return list;
 
     }
 

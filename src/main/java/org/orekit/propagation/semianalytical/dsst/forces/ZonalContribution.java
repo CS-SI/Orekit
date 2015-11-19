@@ -85,6 +85,9 @@ class ZonalContribution implements DSSTForceModel {
     /** Highest power of the eccentricity to be used in short periodic computations. */
     private int maxEccPowShortPeriodics;
 
+    /** Short period terms. */
+    private ZonalShortPeriodicCoefficients zonalSPCoefs;
+
     // Equinoctial elements (according to DSST notation)
     /** a. */
     private double a;
@@ -204,19 +207,19 @@ class ZonalContribution implements DSSTForceModel {
         return provider;
     }
 
-    /** Computes the highest power of the eccentricity to appear in the truncated
+    /** {@inheritDoc}
+     *  <p>
+     *  Computes the highest power of the eccentricity to appear in the truncated
      *  analytical power series expansion.
+     *  </p>
      *  <p>
      *  This method computes the upper value for the central body potential and
      *  determines the maximal power for the eccentricity producing potential
      *  terms bigger than a defined tolerance.
      *  </p>
-     *  @param aux auxiliary elements related to the current orbit
-     *  @param meanOnly only mean elements will be used during the propagation
-     *  @throws OrekitException if some specific error occurs
      */
     @Override
-    public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
         computeMeanElementsTruncations(aux);
@@ -236,11 +239,6 @@ class ZonalContribution implements DSSTForceModel {
             this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
         }
 
-    }
-
-    @Override
-    public List<ShortPeriodTerms> computeShortPeriodicsCoefficients(final SpacecraftState meanState)
-        throws OrekitException {
         final int jMax = 2 * maxDegreeShortPeriodics + 1;
         final int rows = jMax + 1;
         final ShortPeriodicsInterpolatedCoefficient[] di =
@@ -261,11 +259,9 @@ class ZonalContribution implements DSSTForceModel {
         for (int i = 0; i < 6; i++) {
             di[i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
         }
-        computeCoefficients(meanState.getDate(), di, cij, sij);
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
-        final ZonalShortPeriodicCoefficients zonalSPCoefs =
-                new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics, di, cij, sij);
+        zonalSPCoefs = new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics, di, cij, sij);
         list.add(zonalSPCoefs);
         return list;
 
@@ -606,18 +602,9 @@ class ZonalContribution implements DSSTForceModel {
         return index >= lowerBound && index <= upperBound;
     }
 
-    /** Compute the short periodic coefficients.
-     *
-     * @param date current date
-     * @param di the coefficients D<sub>i</sub>
-     * @param cij the coefficients C<sub>i,j</sub>
-     * @param sij the coefficients S<sub>i,j</sub>
-     * @throws OrekitException if an error occurs
-     */
-    private void computeCoefficients(final AbsoluteDate date,
-                                     final ShortPeriodicsInterpolatedCoefficient[]   di,
-                                     final ShortPeriodicsInterpolatedCoefficient[][] cij,
-                                     final ShortPeriodicsInterpolatedCoefficient[][] sij)
+    /** {@inheritDoc} */
+    @Override
+    public void updateShortPeriodTerms(final SpacecraftState meanState)
         throws OrekitException {
         // h * k.
         this.hk = h * k;
@@ -641,24 +628,22 @@ class ZonalContribution implements DSSTForceModel {
         this.BB = B * B;
 
         // Compute rhoj and sigmaj
-        final double[][] rhoSigma = computeRhoSigmaCoefficients(date, cij.length);
+        final double[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate());
 
         // Compute Di
-        computeDiCoefficients(date, di);
+        computeDiCoefficients(meanState.getDate());
 
         // generate the Cij and Sij coefficients
-        final FourierCjSjCoefficients cjsj = new FourierCjSjCoefficients(date, maxDegreeShortPeriodics, maxEccPow);
-        computeCijSijCoefficients(date, cjsj, rhoSigma, cij, sij);
+        final FourierCjSjCoefficients cjsj = new FourierCjSjCoefficients(meanState.getDate(), maxDegreeShortPeriodics, maxEccPow);
+        computeCijSijCoefficients(meanState.getDate(), cjsj, rhoSigma);
 
     }
 
     /** Generate the values for the D<sub>i</sub> coefficients.
      * @param date target date
-     * @param di the coefficients D<sub>i</sub>
      * @throws OrekitException if an error occurs during the coefficient computation
      */
-    private void computeDiCoefficients(final AbsoluteDate date,
-                                       final ShortPeriodicsInterpolatedCoefficient[] di)
+    private void computeDiCoefficients(final AbsoluteDate date)
         throws OrekitException {
         final double[] meanElementRates = computeMeanElementRates(date);
         final double[] currentDi = new double[6];
@@ -671,7 +656,7 @@ class ZonalContribution implements DSSTForceModel {
                 currentDi[i] += -1.5 * 2 * U * oon2a2;
             }
 
-            di[i].addGridPoint(date, currentDi[i]);
+            zonalSPCoefs.di[i].addGridPoint(date, currentDi[i]);
         }
     }
 
@@ -680,20 +665,16 @@ class ZonalContribution implements DSSTForceModel {
      * @param date date of computation
      * @param cjsj Fourier coefficients
      * @param rhoSigma ρ<sub>j</sub> and σ<sub>j</sub>
-     * @param cij the coefficients C<sub>i,j</sub>
-     * @param sij the coefficients S<sub>i,j</sub>
      */
     private void computeCijSijCoefficients(final AbsoluteDate date,
                                            final FourierCjSjCoefficients cjsj,
-                                           final double[][] rhoSigma,
-                                           final ShortPeriodicsInterpolatedCoefficient[][] cij,
-                                           final ShortPeriodicsInterpolatedCoefficient[][] sij) {
+                                           final double[][] rhoSigma) {
 
         final int nMax = maxDegreeShortPeriodics;
 
         // The C<sub>i</sub>⁰ coefficients
         final double[] currentCi0 = new double[] {0., 0., 0., 0., 0., 0.};
-        for (int j = 1; j < cij.length; j++) {
+        for (int j = 1; j < zonalSPCoefs.cij.length; j++) {
 
             // Create local arrays
             final double[] currentCij = new double[] {0., 0., 0., 0., 0., 0.};
@@ -911,14 +892,14 @@ class ZonalContribution implements DSSTForceModel {
                 currentCi0[i] -= currentCij[i] * rhoSigma[j][0] + currentSij[i] * rhoSigma[j][1];
 
                 // Add the coefficients to the interpolation grid
-                cij[j][i].addGridPoint(date, currentCij[i]);
-                sij[j][i].addGridPoint(date, currentSij[i]);
+                zonalSPCoefs.cij[j][i].addGridPoint(date, currentCij[i]);
+                zonalSPCoefs.sij[j][i].addGridPoint(date, currentSij[i]);
             }
         }
 
         //Add C<sub>i</sub>⁰ to the interpolation grid
         for (int i = 0; i < 6; i++) {
-            cij[0][i].addGridPoint(date, currentCi0[i]);
+            zonalSPCoefs.cij[0][i].addGridPoint(date, currentCi0[i]);
         }
     }
 
@@ -930,18 +911,17 @@ class ZonalContribution implements DSSTForceModel {
      *  σ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
      * </p>
      * @param date target date
-     * @param n size of the returned array
      * @return array containing ρ<sub>j</sub> and σ<sub>j</sub>
      */
-    private double[][] computeRhoSigmaCoefficients(final AbsoluteDate date, final int n) {
+    private double[][] computeRhoSigmaCoefficients(final AbsoluteDate date) {
         final CjSjCoefficient cjsjKH = new CjSjCoefficient(k, h);
         final double b = 1. / (1 + B);
 
         // (-b)<sup>j</sup>
         double mbtj = 1;
 
-        final double[][] rhoSigma = new double[n][2];
-        for (int j = 1; j <= n - 1; j++) {
+        final double[][] rhoSigma = new double[zonalSPCoefs.cij.length][2];
+        for (int j = 1; j < rhoSigma.length; j++) {
             double rho;
             double sigma;
 

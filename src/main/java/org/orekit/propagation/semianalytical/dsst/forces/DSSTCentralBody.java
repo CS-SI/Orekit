@@ -84,16 +84,18 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
         // Initialize zonal contribution
-        zonal.initialize(aux, meanOnly);
+        final List<ShortPeriodTerms> list = zonal.initialize(aux, meanOnly);
 
         // Initialize tesseral contribution if needed
         if (tesseral != null) {
-            tesseral.initialize(aux, meanOnly);
+            list.addAll(tesseral.initialize(aux, meanOnly));
         }
+
+        return list;
 
     }
 
@@ -136,13 +138,12 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public List<ShortPeriodTerms> computeShortPeriodicsCoefficients(final SpacecraftState state) throws OrekitException {
+    public void updateShortPeriodTerms(final SpacecraftState state) throws OrekitException {
         //relay the call to the Zonal and Tesseral contributions
-        final List<ShortPeriodTerms> list = zonal.computeShortPeriodicsCoefficients(state);
+        zonal.updateShortPeriodTerms(state);
         if (tesseral != null) {
-            list.addAll(tesseral.computeShortPeriodicsCoefficients(state));
+            tesseral.updateShortPeriodTerms(state);
         }
-        return list;
     }
 
     /** Get the spherical harmonics provider.

@@ -80,6 +80,12 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Distance from center of mass of the central body to the 3rd body. */
     private double R3;
 
+    /** Generating function coefficients. */
+    private GeneratingFunctionCoefficients gfCoefs;
+
+    /** Short period terms. */
+    private ThirdBodyShortPeriodicCoefficients shortPeriods;
+
     // Equinoctial elements (according to DSST notation)
     /** a. */
     private double a;
@@ -221,7 +227,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  @throws OrekitException if some specific error occurs
      */
     @Override
-    public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
         // Initializes specific parameters.
@@ -292,6 +298,26 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         maxFreqF = maxAR3Pow + 1;
         maxEccPowShort = MAX_ECCPOWER_SP;
+
+        // allocate the coefficients arrays
+        final int jMax = maxAR3Pow + 1;
+        final int size = jMax + 1;
+        final ShortPeriodicsInterpolatedCoefficient[][] cij = new ShortPeriodicsInterpolatedCoefficient[size][6];
+        final ShortPeriodicsInterpolatedCoefficient[][] sij = new ShortPeriodicsInterpolatedCoefficient[size][6];
+        for (int j = 0; j <= jMax; j++) {
+            for (int i = 0; i < 6; i++) {
+                cij[j][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
+                sij[j][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
+            }
+        }
+
+        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
+        gfCoefs = new GeneratingFunctionCoefficients(maxAR3Pow, MAX_ECCPOWER_SP, jMax);
+        shortPeriods = new ThirdBodyShortPeriodicCoefficients(maxFreqF, body.getName(), cij, sij);
+
+        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
+        list.add(shortPeriods);
+        return list;
 
     }
 
@@ -404,43 +430,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public List<ShortPeriodTerms> computeShortPeriodicsCoefficients(final SpacecraftState meanState) {
-
-        // allocate the coefficients arrays
-        final int jMax = maxAR3Pow + 1;
-        final int size = jMax + 1;
-        final ShortPeriodicsInterpolatedCoefficient[][] cij = new ShortPeriodicsInterpolatedCoefficient[size][6];
-        final ShortPeriodicsInterpolatedCoefficient[][] sij = new ShortPeriodicsInterpolatedCoefficient[size][6];
-        for (int j = 0; j <= jMax; j++) {
-            for (int i = 0; i < 6; i++) {
-                cij[j][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-                sij[j][i] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-            }
-        }
-
-        // compute the coefficients
-        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
-        final GeneratingFunctionCoefficients gfCoefs =
-                        new GeneratingFunctionCoefficients(maxAR3Pow, MAX_ECCPOWER_SP, jMax);
-        computeCoefficients(meanState.getDate(), gfCoefs, cij, sij);
-
-        final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
-        list.add(new ThirdBodyShortPeriodicCoefficients(maxFreqF, body.getName(), cij, sij));
-        return list;
-
-    }
-
-    /** Compute the short periodic coefficients.
-    *
-    * @param date current date
-    * @param gfCoefs generating function coefficients
-    * @param cij placeholder for the C<sub>i, j</sub> coefficients
-    * @param sij placeholder for the S<sub>i, j</sub> coefficients
-    */
-    public void computeCoefficients(final AbsoluteDate date,
-                                    final GeneratingFunctionCoefficients gfCoefs,
-                                    final ShortPeriodicsInterpolatedCoefficient[][] cij,
-                                    final ShortPeriodicsInterpolatedCoefficient[][] sij) {
+    public void updateShortPeriodTerms(final SpacecraftState meanState) {
 
         // Qns coefficients
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
@@ -466,7 +456,7 @@ public class DSSTThirdBody implements DSSTForceModel {
         final double m3onA = -3 / (A * meanMotion);
 
         //Compute the C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> coefficients.
-        for (int j = 1; j < cij.length; j++) {
+        for (int j = 1; j < shortPeriods.cij.length; j++) {
             // First compute the C<sub>i</sub><sup>j</sup> coefficients
             final double[] currentCij = new double[6];
 
@@ -487,7 +477,7 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             // add the computed coefficients to the interpolators
             for (int i = 0; i < 6; i++) {
-                cij[j][i].addGridPoint(date, currentCij[i]);
+                shortPeriods.cij[j][i].addGridPoint(meanState.getDate(), currentCij[i]);
             }
 
             // Compute the S<sub>i</sub><sup>j</sup> coefficients
@@ -510,13 +500,13 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             // add the computed coefficients to the interpolators
             for (int i = 0; i < 6; i++) {
-                sij[j][i].addGridPoint(date, currentSij[i]);
+                shortPeriods.sij[j][i].addGridPoint(meanState.getDate(), currentSij[i]);
             }
 
             if (j == 1) {
                 //Compute the C⁰ coefficients using Danielson 2.5.2-15a.
                 for (int i = 0; i < 6; i++) {
-                    cij[0][i].addGridPoint(date, currentCij[i] * k / 2. + currentSij[i] * h / 2.);
+                    shortPeriods.cij[0][i].addGridPoint(meanState.getDate(), currentCij[i] * k / 2. + currentSij[i] * h / 2.);
                 }
             }
         }
