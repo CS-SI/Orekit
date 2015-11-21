@@ -82,8 +82,8 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);
@@ -164,8 +164,8 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);
@@ -213,8 +213,8 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);
@@ -253,8 +253,8 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
 
         // Station
         final double longitude = FastMath.toRadians(-147.5);
@@ -350,8 +350,8 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, itrf);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
                                                 0.0);

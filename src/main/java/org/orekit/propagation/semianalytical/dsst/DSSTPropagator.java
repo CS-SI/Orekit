@@ -228,6 +228,23 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         return set == null ? null : Collections.unmodifiableSet(set);
     }
 
+    // TODO: remove this feature after debugging
+    /** Set interpolation flag for short period coefficients.
+     * @param shortPeriodCoefficientInterpolation if true, short period coefficients
+     * are interpolated
+     */
+    public void setShortPeriodCoefficientInterpolation(final boolean shortPeriodCoefficientInterpolation) {
+        mapper.setShortPeriodCoefficientInterpolation(shortPeriodCoefficientInterpolation);
+    }
+
+    // TODO: remove this feature after debugging
+    /** Get interpolation flag for short period coefficients.
+     * @return true if short period coefficients are interpolated
+     */
+    public boolean getShortPeriodCoefficientInterpolation() {
+        return mapper.getShortPeriodCoefficientInterpolation();
+    }
+
     /** Check if the initial state is provided in osculating elements.
      * @return true if initial state is provided in osculating elements
      */
@@ -444,7 +461,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         // create a mapper with the common settings provided as arguments
         final MeanPlusShortPeriodicMapper newMapper =
-                new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame, null);
+                new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame);
 
         // copy the specific settings from the existing mapper
         if (mapper != null) {
@@ -454,6 +471,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             newMapper.setSatelliteRevolution(mapper.getSatelliteRevolution());
             newMapper.setInitialIsOsculating(mapper.initialIsOsculating());
             newMapper.setSelectedCoefficients(mapper.getSelectedCoefficients());
+            newMapper.setShortPeriodCoefficientInterpolation(mapper.getShortPeriodCoefficientInterpolation());
         }
 
         mapper = newMapper;
@@ -466,7 +484,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     private static class MeanPlusShortPeriodicMapper extends StateMapper implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20130621L;
+        private static final long serialVersionUID = 20151104L;
 
         /** Flag specifying whether the initial orbital state is given with osculating elements. */
         private boolean                    initialIsOsculating;
@@ -480,27 +498,29 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Number of satellite revolutions in the averaging interval. */
         private int                        satelliteRevolution;
 
+        // TODO: remove this feature after debugging
+        /** Interpolation flag for short period coefficients. */
+        private boolean                    shortPeriodCoefficientInterpolation;
+
         /** Simple constructor.
          * @param referenceDate reference date
          * @param mu central attraction coefficient (m³/s²)
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
-         * @param selectedCoefficients short periodic coefficients that must be stored as additional states
          */
         MeanPlusShortPeriodicMapper(final AbsoluteDate referenceDate, final double mu,
-                                    final AttitudeProvider attitudeProvider, final Frame frame,
-                                    final Set<String> selectedCoefficients) {
+                                    final AttitudeProvider attitudeProvider, final Frame frame) {
 
             super(referenceDate, mu, OrbitType.EQUINOCTIAL, PositionAngle.MEAN, attitudeProvider, frame);
 
             this.forceModels          = new ArrayList<DSSTForceModel>();
-            this.selectedCoefficients = selectedCoefficients == null ?
-                                        null : new HashSet<String>(selectedCoefficients);
+            this.selectedCoefficients = null;
 
             // Default averaging period for conversion from osculating to mean elements
             this.satelliteRevolution = 2;
 
             this.initialIsOsculating = true;
+            this.shortPeriodCoefficientInterpolation = true;
 
         }
 
@@ -517,9 +537,19 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             if (meanOnly) {
                 coefficients = null;
             } else {
+                // TODO: remove this feature after debugging
+                if (!shortPeriodCoefficientInterpolation) {
+                    // as we don't want interpolation, we force recomputation of the coefficients
+                    // at current date, interpolation will therefore become no-op
+                    final Orbit meanOrbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, PositionAngle.MEAN, date, getMu(), getFrame());
+                    final Attitude meanAttitude = getAttitudeProvider().getAttitude(meanOrbit, date, getFrame());
+                    final SpacecraftState meanState = new SpacecraftState(meanOrbit, meanAttitude, elements[6]);
+                    computeShortPeriodicsCoefficients(meanState);
+                }
                 coefficients = selectedCoefficients == null ? null : new HashMap<String, double[]>();
                 for (final DSSTForceModel forceModel : forceModels) {
-                    final double[] shortPeriodic = forceModel.getShortPeriodicVariations(date, y);
+                    final double[] shortPeriodic =
+                            forceModel.getShortPeriodicVariations(date, y);
                     for (int i = 0; i < shortPeriodic.length; i++) {
                         elements[i] += shortPeriodic[i];
                     }
@@ -644,6 +674,25 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             return selectedCoefficients;
         }
 
+        // TODO: remove this feature after debugging
+        /** Set interpolation flag for short period coefficients.
+         * @param shortPeriodCoefficientInterpolation if true, short period coefficients
+         * are interpolated
+         * @since 7.1
+         */
+        public void setShortPeriodCoefficientInterpolation(final boolean shortPeriodCoefficientInterpolation) {
+            this.shortPeriodCoefficientInterpolation = shortPeriodCoefficientInterpolation;
+        }
+
+        // TODO: remove this feature after debugging
+        /** Get interpolation flag for short period coefficients.
+         * @return true if short period coefficients are interpolated
+         * @since 7.1
+         */
+        public boolean getShortPeriodCoefficientInterpolation() {
+            return shortPeriodCoefficientInterpolation;
+        }
+
         /** Reset the short periodics coefficient for each {@link DSSTForceModel}.
          * @see DSSTForceModel#resetShortPeriodicsCoefficients()
          */
@@ -748,8 +797,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final double[] y = mean.clone();
             for (final DSSTForceModel forceModel : this.forceModels) {
 
-                final double[] shortPeriodic = forceModel
-                        .getShortPeriodicVariations(meanState.getDate(), mean);
+                final double[] shortPeriodic =
+                        forceModel.getShortPeriodicVariations(meanState.getDate(), mean);
 
                 for (int i = 0; i < shortPeriodic.length; i++) {
                     y[i] += shortPeriodic[i];
@@ -778,14 +827,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             }
             return new DataTransferObject(getReferenceDate(), getMu(), getAttitudeProvider(), getFrame(),
                                           initialIsOsculating, serializableorceModels, satelliteRevolution,
-                                          selectedCoefficients);
+                                          selectedCoefficients, shortPeriodCoefficientInterpolation);
         }
 
         /** Internal class used only for serialization. */
         private static class DataTransferObject implements Serializable {
 
             /** Serializable UID. */
-            private static final long serialVersionUID = 20151020L;
+            private static final long serialVersionUID = 20151104L;
 
             /** Reference date. */
             private final AbsoluteDate referenceDate;
@@ -811,6 +860,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             /** Number of satellite revolutions in the averaging interval. */
             private final int satelliteRevolution;
 
+            // TODO: remove this feature after debugging
+            /** Interpolation flag for short period coefficients. */
+            private final boolean shortPeriodCoefficientInterpolation;
+
             /** Simple constructor.
              * @param referenceDate reference date
              * @param mu central attraction coefficient (m³/s²)
@@ -820,20 +873,23 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
              * @param forceModels force models to use for short periodic terms computation
              * @param satelliteRevolution number of satellite revolutions in the averaging interval
              * @param selectedCoefficients short periodic coefficients that must be stored as additional states
+             * @param shortPeriodCoefficientInterpolation interpolation flag for short period coefficients
              */
             DataTransferObject(final AbsoluteDate referenceDate, final double mu,
                                       final AttitudeProvider attitudeProvider, final Frame frame,
                                       final boolean initialIsOsculating,
                                       final DSSTForceModel[] forceModels, final int satelliteRevolution,
-                                      final Set<String> selectedCoefficients) {
-                this.referenceDate        = referenceDate;
-                this.mu                   = mu;
-                this.attitudeProvider     = attitudeProvider;
-                this.frame                = frame;
-                this.initialIsOsculating  = initialIsOsculating;
-                this.forceModels          = forceModels;
-                this.satelliteRevolution  = satelliteRevolution;
-                this.selectedCoefficients = selectedCoefficients;
+                                      final Set<String> selectedCoefficients,
+                                      final boolean shortPeriodCoefficientInterpolation) {
+                this.referenceDate                       = referenceDate;
+                this.mu                                  = mu;
+                this.attitudeProvider                    = attitudeProvider;
+                this.frame                               = frame;
+                this.initialIsOsculating                 = initialIsOsculating;
+                this.forceModels                         = forceModels;
+                this.satelliteRevolution                 = satelliteRevolution;
+                this.selectedCoefficients                = selectedCoefficients;
+                this.shortPeriodCoefficientInterpolation = shortPeriodCoefficientInterpolation;
             }
 
             /** Replace the deserialized data transfer object with a {@link MeanPlusShortPeriodicMapper}.
@@ -841,13 +897,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
              */
             private Object readResolve() {
                 final MeanPlusShortPeriodicMapper mapper =
-                        new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame, selectedCoefficients);
+                        new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame);
                 for (final DSSTForceModel forceModel : forceModels) {
                     mapper.addForceModel(forceModel);
                 }
                 mapper.setSatelliteRevolution(satelliteRevolution);
                 mapper.setInitialIsOsculating(initialIsOsculating);
                 mapper.setSelectedCoefficients(selectedCoefficients);
+                mapper.setShortPeriodCoefficientInterpolation(shortPeriodCoefficientInterpolation);
                 return mapper;
             }
 

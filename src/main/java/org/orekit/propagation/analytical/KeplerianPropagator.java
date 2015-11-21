@@ -16,12 +16,19 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -29,7 +36,10 @@ import org.orekit.time.AbsoluteDate;
  * @see Orbit
  * @author Guylaine Prat
  */
-public class KeplerianPropagator extends AbstractAnalyticalPropagator {
+public class KeplerianPropagator extends AbstractAnalyticalPropagator implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20151117L;
 
     /** Initial state. */
     private SpacecraftState initialState;
@@ -146,6 +156,90 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
     /** {@inheritDoc}*/
     protected double getMass(final AbsoluteDate date) {
         return initialState.getMass();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     * @exception NotSerializableException if an additional state provider is not serializable
+     */
+    private Object writeReplace() throws NotSerializableException {
+        try {
+
+            // managed states providers
+            final List<AdditionalStateProvider> serializableProviders = new ArrayList<AdditionalStateProvider>();
+            for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+                if (provider instanceof Serializable) {
+                    serializableProviders.add(provider);
+                } else {
+                    throw new NotSerializableException(provider.getClass().getName());
+                }
+            }
+
+            return new DataTransferObject(getInitialState().getOrbit(), getAttitudeProvider(),
+                                          getInitialState().getMu(), getInitialState().getMass(),
+                                          serializableProviders.toArray(new AdditionalStateProvider[serializableProviders.size()]));
+        } catch (OrekitException orekitException) {
+            // this should never happen
+            throw new OrekitInternalError(null);
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20151117L;
+
+        /** Initial orbit. */
+        private final Orbit orbit;
+
+        /** Attitude provider. */
+        private final AttitudeProvider attitudeProvider;
+
+        /** Central attraction coefficient (m³/s²). */
+        private final double mu;
+
+        /** Spacecraft mass (kg). */
+        private final double mass;
+
+        /** Providers for additional states. */
+        private final AdditionalStateProvider[] providers;
+
+        /** Simple constructor.
+         * @param orbit initial orbit
+         * @param attitudeProvider attitude provider
+         * @param mu central attraction coefficient (m³/s²)
+         * @param mass spacecraft mass (kg)
+         * @param providers providers for additional states
+         */
+        DataTransferObject(final Orbit orbit,
+                           final AttitudeProvider attitudeProvider,
+                           final double mu, final double mass,
+                           final AdditionalStateProvider[] providers) {
+            this.orbit            = orbit;
+            this.attitudeProvider = attitudeProvider;
+            this.mu               = mu;
+            this.mass             = mass;
+            this.providers        = providers;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link KeplerianPropagator}.
+         * @return replacement {@link KeplerianPropagator}
+         */
+        private Object readResolve() {
+            try {
+                final KeplerianPropagator propagator =
+                                new KeplerianPropagator(orbit, attitudeProvider, mu, mass);
+                for (final AdditionalStateProvider provider : providers) {
+                    propagator.addAdditionalStateProvider(provider);
+                }
+                return propagator;
+            } catch (OrekitException oe) {
+                throw new OrekitInternalError(oe);
+            }
+        }
+
     }
 
 }

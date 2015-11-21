@@ -161,6 +161,7 @@ example of subclassing of a Java object into a jython object.
     from org.orekit.time import AbsoluteDate
     from org.orekit.time import TimeScalesFactory
     from org.orekit.utils import PVCoordinates
+    from org.orekit.utils import IERSConventions
 
     from math import degrees, radians, pi
 
@@ -185,8 +186,8 @@ example of subclassing of a Java object into a jython object.
     #Earth and frame
     ae =  6378137.0 # // equatorial radius in meter
     f  =  1.0 / 298.257223563 #; // flattening
-    ITRF2005 = FramesFactory.getITRF2005() #; // terrestrial frame at an arbitrary date
-    earth = OneAxisEllipsoid(ae, f, ITRF2005)
+    itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, True) #; // terrestrial frame at an arbitrary date
+    earth = OneAxisEllipsoid(ae, f, itrf)
 
     # Station
     longitude = radians(45.0)

@@ -21,13 +21,26 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        As a side effect of fixing issue #223, KeplerianPropagator and
+        Eckstein-Hechler propagator are now serializable.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed missing additional states handling in ephemeris propagators
+        created from analytical propagators.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed NPE and serialization issues in ephemeris propagators created
+        from analytical propagators.
+        Fixes issue #223.
+      </action>
       <action dev="luc" type="fix" >
         Fixed time scale issues in JPL ephemerides and IAU pole models.
         The time used for internal computation should be TDB, not TT.
       </action>
       <action dev="luc" type="fix" >
         Fixed an issue with backward propagation on analytical propagator.
-        During first step, the analytical interpolator wrongly thought the
+        During first step, the analytical interpolator wrongly considered the
         propagation was forward.
       </action>
       <action dev="luc" type="add" >
