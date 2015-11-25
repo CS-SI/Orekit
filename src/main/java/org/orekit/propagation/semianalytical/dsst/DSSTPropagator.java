@@ -927,9 +927,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     // Build the corresponding mean state
                     final SpacecraftState meanState =
                             mapper.mapArrayToState(time, interpolator.getInterpolatedState(), true);
+                    final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), I);
 
                     // Computate short periodic coefficients for this date
                     for (DSSTForceModel forceModel : forceModels) {
+                        forceModel.initializeStep(aux);
                         forceModel.updateShortPeriodTerms(meanState);
                     }
 
