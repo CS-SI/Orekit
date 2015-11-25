@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Allow parsing TLE with non-unclassified modifier.
+      </action>
       <action dev="luc" type="add" >
         As a side effect of fixing issue #223, KeplerianPropagator and
         Eckstein-Hechler propagator are now serializable.
