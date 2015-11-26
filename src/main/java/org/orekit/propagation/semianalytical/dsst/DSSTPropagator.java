@@ -894,6 +894,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Force models used to compute short periodic terms. */
         private final List<DSSTForceModel> forceModels;
 
+        /** First step indicator. */
+        private boolean first;
+
         /** Constructor.
          * @param grid for interpolation of the short periodics coefficients
          * @param forceModels force models
@@ -905,7 +908,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         @Override
         public void init(final double t0, final double[] y0, final double t) {
-            //No particular initialization is necessary
+            first = true;
         }
 
         /** {@inheritDoc} */
@@ -918,7 +921,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 final double[] interpolationPoints =
                         grid.getGridPoints(interpolator.getPreviousTime(), interpolator.getCurrentTime());
 
-                for (int i = 0; i < interpolationPoints.length - 1; ++i) {
+                for (int i = first ? 0 : 1; i < interpolationPoints.length; ++i) {
 
                     final double time = interpolationPoints[i];
                     // Move the interpolator to the grid point
