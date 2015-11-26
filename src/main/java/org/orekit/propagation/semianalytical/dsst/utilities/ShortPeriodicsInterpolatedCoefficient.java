@@ -17,6 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.util.FastMath;
@@ -65,6 +66,16 @@ public class ShortPeriodicsInterpolatedCoefficient {
     public double[] value(final AbsoluteDate date) {
         //Get the closest points from the input date
         final int[] neighbors = getNeighborsIndices(date);
+
+        // TODO: remove
+        // temporary hack to mimic 7.0 version interpolation behavior
+        Arrays.sort(neighbors);
+        final int shift = neighbors[0] % (interpolationPoints - 1) + 1 - interpolationPoints;
+        if (neighbors[0] - shift >= 0 && neighbors[neighbors.length - 1] - shift < abscissae.size()) {
+            for (int i = 0; i < neighbors.length; ++i) {
+                neighbors[i] -= shift;
+            }
+        }
 
         //Creation and set up of the interpolator
         final HermiteInterpolator interpolator = new HermiteInterpolator();
