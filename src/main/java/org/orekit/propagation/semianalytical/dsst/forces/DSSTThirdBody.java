@@ -80,9 +80,6 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Distance from center of mass of the central body to the 3rd body. */
     private double R3;
 
-    /** Generating function coefficients. */
-    private GeneratingFunctionCoefficients gfCoefs;
-
     /** Short period terms. */
     private ThirdBodyShortPeriodicCoefficients shortPeriods;
 
@@ -310,7 +307,6 @@ public class DSSTThirdBody implements DSSTForceModel {
         }
 
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
-        gfCoefs = new GeneratingFunctionCoefficients(maxAR3Pow, MAX_ECCPOWER_SP, jMax);
         shortPeriods = new ThirdBodyShortPeriodicCoefficients(maxFreqF, body.getName(), cij, sij);
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
@@ -432,6 +428,9 @@ public class DSSTThirdBody implements DSSTForceModel {
 
         // Qns coefficients
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
+        final GeneratingFunctionCoefficients gfCoefs =
+                        new GeneratingFunctionCoefficients(maxAR3Pow, MAX_ECCPOWER_SP, maxAR3Pow + 1);
+
         // a / R3 up to power maxAR3Pow
         final double aoR3 = a / R3;
         aoR3Pow[0] = 1.;
