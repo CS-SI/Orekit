@@ -21,6 +21,14 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Fixed date offset by one second for TLE built from their components,
+        if a leap second was introduced earlier in the same year.
+        Fixes issue #225.
+      </action>
+      <action dev="luc" type="fix" >
+        Allow parsing TLE with non-unclassified modifier.
+      </action>
       <action dev="luc" type="add" >
         As a side effect of fixing issue #223, KeplerianPropagator and
         Eckstein-Hechler propagator are now serializable.
