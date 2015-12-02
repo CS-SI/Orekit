@@ -22,6 +22,10 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Fixed wrong ephemeris generation for analytical propagators with maneuvers.
+        Fixes issue #224.
+      </action>
+       <action dev="luc" type="fix" >
         Fixed date offset by one second for TLE built from their components,
         if a leap second was introduced earlier in the same year.
         Fixes issue #225.

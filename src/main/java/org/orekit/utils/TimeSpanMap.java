@@ -16,7 +16,9 @@
  */
 package org.orekit.utils;
 
+import java.util.Collections;
 import java.util.NavigableSet;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.time.AbsoluteDate;
@@ -66,11 +68,11 @@ public class TimeSpanMap<T> {
 
         if (data.size() == 1) {
             final Transition<T> single = data.first();
-            if (single.before == single.after) {
+            if (single.getBefore() == single.getAfter()) {
                 // the single entry was a dummy one, without a real transition
                 // we replace it entirely
                 data.clear();
-                data.add(new Transition<T>(latestValidityDate, entry, single.after));
+                data.add(new Transition<T>(latestValidityDate, entry, single.getAfter()));
                 return;
             }
         }
@@ -79,12 +81,12 @@ public class TimeSpanMap<T> {
                 data.floor(new Transition<T>(latestValidityDate, entry, null));
         if (previous == null) {
             // the new transition will be the first one
-            data.add(new Transition<T>(latestValidityDate, entry, data.first().before));
+            data.add(new Transition<T>(latestValidityDate, entry, data.first().getBefore()));
         } else {
             // the new transition will be after the previous one
             data.remove(previous);
-            data.add(new Transition<T>(previous.date,      previous.before, entry));
-            data.add(new Transition<T>(latestValidityDate, entry,           previous.after));
+            data.add(new Transition<T>(previous.date,      previous.getBefore(), entry));
+            data.add(new Transition<T>(latestValidityDate, entry,                previous.getAfter()));
         }
 
     }
@@ -108,11 +110,11 @@ public class TimeSpanMap<T> {
 
         if (data.size() == 1) {
             final Transition<T> single = data.first();
-            if (single.before == single.after) {
+            if (single.getBefore() == single.getAfter()) {
                 // the single entry was a dummy one, without a real transition
                 // we replace it entirely
                 data.clear();
-                data.add(new Transition<T>(earliestValidityDate, single.before, entry));
+                data.add(new Transition<T>(earliestValidityDate, single.getBefore(), entry));
                 return;
             }
         }
@@ -121,12 +123,12 @@ public class TimeSpanMap<T> {
                 data.ceiling(new Transition<T>(earliestValidityDate, entry, null));
         if (next == null) {
             // the new transition will be the last one
-            data.add(new Transition<T>(earliestValidityDate, data.last().after, entry));
+            data.add(new Transition<T>(earliestValidityDate, data.last().getAfter(), entry));
         } else {
             // the new transition will be before the next one
             data.remove(next);
-            data.add(new Transition<T>(earliestValidityDate, next.before, entry));
-            data.add(new Transition<T>(next.date,            entry,       next.after));
+            data.add(new Transition<T>(earliestValidityDate, next.getBefore(), entry));
+            data.add(new Transition<T>(next.date,            entry,            next.getAfter()));
         }
 
     }
@@ -140,14 +142,21 @@ public class TimeSpanMap<T> {
         if (previous == null) {
             // there are no transition before the specified date
             // return the first valid entry
-            return data.first().before;
+            return data.first().getBefore();
         } else {
-            return previous.after;
+            return previous.getAfter();
         }
     }
 
+    /** Get an unmodifiable view of the sorted transitions.
+     * @return unmodifiable view of the sorted transitions
+     */
+    public SortedSet<Transition<T>> getTransitions() {
+        return Collections.unmodifiableSortedSet(data);
+    }
+
     /** Local class holding transition times. */
-    private static class Transition<S> implements TimeStamped {
+    public static class Transition<S> implements TimeStamped {
 
         /** Transition date. */
         private final AbsoluteDate date;
@@ -159,7 +168,7 @@ public class TimeSpanMap<T> {
         private final S after;
 
         /** Simple constructor.
-         * @param date ttransition date
+         * @param date transition date
          * @param before entry valid before the transition
          * @param after entry valid after the transition
          */
@@ -169,10 +178,26 @@ public class TimeSpanMap<T> {
             this.after  = after;
         }
 
-        /** {@inheritDoc} */
+        /** Get the transition date.
+         * @return transition date
+         */
         @Override
         public AbsoluteDate getDate() {
             return date;
+        }
+
+        /** Get the entry valid before transition.
+         * @return entry valid before transition
+         */
+        public S getBefore() {
+            return before;
+        }
+
+        /** Get the entry valid after transition.
+         * @return entry valid after transition
+         */
+        public S getAfter() {
+            return after;
         }
 
     }
