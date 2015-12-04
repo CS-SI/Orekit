@@ -270,7 +270,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             final SpacecraftState resetState = currentEvent.reset(eventY);
             if (resetState != null) {
-                resetInitialState(resetState);
+                resetIntermediateState(resetState, interpolator.isForward());
                 return resetState;
             }
 
@@ -332,6 +332,18 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         super.resetInitialState(state);
+        interpolator.globalCurrentDate = state.getDate();
+        interpolator.softCurrentDate   = interpolator.globalCurrentDate;
+    }
+
+    /** Reset an intermediate state.
+     * @param state new intermediate state to consider
+     * @param forward if true, the intermediate state is valid for
+     * propagations after itself
+     * @exception PropagationException if initial state cannot be reset
+     */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws PropagationException {
         interpolator.globalCurrentDate = state.getDate();
         interpolator.softCurrentDate   = interpolator.globalCurrentDate;
     }
@@ -453,6 +465,12 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void resetInitialState(final SpacecraftState state) throws PropagationException {
             AbstractAnalyticalPropagator.this.resetInitialState(state);
+        }
+
+        /** {@inheritDoc} */
+        protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+            throws PropagationException {
+            AbstractAnalyticalPropagator.this.resetIntermediateState(state, forward);
         }
 
         /** {@inheritDoc} */

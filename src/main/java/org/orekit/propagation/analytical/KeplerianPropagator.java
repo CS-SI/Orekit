@@ -20,6 +20,7 @@ import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -31,6 +32,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /** Simple keplerian orbit propagator.
  * @see Orbit
@@ -43,6 +45,9 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
 
     /** Initial state. */
     private SpacecraftState initialState;
+
+    /** All states. */
+    private TimeSpanMap<SpacecraftState> states;
 
     /** Build a propagator from orbit only.
      * <p>The central attraction coefficient μ is set to the same value used
@@ -135,6 +140,18 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
         throws PropagationException {
         super.resetInitialState(state);
         initialState   = state;
+        states         = new TimeSpanMap<SpacecraftState>(initialState);
+    }
+
+    /** {@inheritDoc} */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws PropagationException {
+        super.resetIntermediateState(state, forward);
+        if (forward) {
+            states.addValidAfter(state, state.getDate());
+        } else {
+            states.addValidBefore(state, state.getDate());
+        }
     }
 
     /** {@inheritDoc} */
@@ -142,7 +159,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
         throws PropagationException {
 
         // propagate orbit
-        Orbit orbit = initialState.getOrbit();
+        Orbit orbit = states.get(date).getOrbit();
         do {
             // we use a loop here to compensate for very small date shifts error
             // that occur with long propagation time
@@ -155,7 +172,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
 
     /** {@inheritDoc}*/
     protected double getMass(final AbsoluteDate date) {
-        return initialState.getMass();
+        return states.get(date).getMass();
     }
 
     /** Replace the instance with a data transfer object for serialization.
@@ -175,8 +192,32 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
                 }
             }
 
+            // states transitions
+            final AbsoluteDate[]    transitionDates;
+            final SpacecraftState[] allStates;
+            final SortedSet<TimeSpanMap.Transition<SpacecraftState>> transitions = states.getTransitions();
+            if (transitions.size() == 1  && transitions.first().getBefore() == transitions.first().getAfter()) {
+                // the single entry is a dummy one, without a real transition
+                // we ignore it completely
+                transitionDates = null;
+                allStates       = null;
+            } else {
+                transitionDates = new AbsoluteDate[transitions.size()];
+                allStates       = new SpacecraftState[transitions.size() + 1];
+                int i = 0;
+                for (final TimeSpanMap.Transition<SpacecraftState> transition : transitions) {
+                    if (i == 0) {
+                        // state before the first transition
+                        allStates[i] = transition.getBefore();
+                    }
+                    transitionDates[i] = transition.getDate();
+                    allStates[++i]     = transition.getAfter();
+                }
+            }
+
             return new DataTransferObject(getInitialState().getOrbit(), getAttitudeProvider(),
                                           getInitialState().getMu(), getInitialState().getMass(),
+                                          transitionDates, allStates,
                                           serializableProviders.toArray(new AdditionalStateProvider[serializableProviders.size()]));
         } catch (OrekitException orekitException) {
             // this should never happen
@@ -189,7 +230,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20151117L;
+        private static final long serialVersionUID = 20151202L;
 
         /** Initial orbit. */
         private final Orbit orbit;
@@ -203,6 +244,12 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
         /** Spacecraft mass (kg). */
         private final double mass;
 
+        /** Transition dates (may be null). */
+        private final AbsoluteDate[] transitionDates;
+
+        /** States before and after transitions (may be null). */
+        private final SpacecraftState[] allStates;
+
         /** Providers for additional states. */
         private final AdditionalStateProvider[] providers;
 
@@ -210,17 +257,23 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
          * @param orbit initial orbit
          * @param attitudeProvider attitude provider
          * @param mu central attraction coefficient (m³/s²)
-         * @param mass spacecraft mass (kg)
+         * @param mass initial spacecraft mass (kg)
+         * @param transitionDates transition dates (may be null)
+         * @param allStates states before and after transitions (may be null)
          * @param providers providers for additional states
          */
         DataTransferObject(final Orbit orbit,
                            final AttitudeProvider attitudeProvider,
                            final double mu, final double mass,
+                           final AbsoluteDate[] transitionDates,
+                           final SpacecraftState[] allStates,
                            final AdditionalStateProvider[] providers) {
             this.orbit            = orbit;
             this.attitudeProvider = attitudeProvider;
             this.mu               = mu;
             this.mass             = mass;
+            this.transitionDates  = transitionDates;
+            this.allStates        = allStates;
             this.providers        = providers;
         }
 
@@ -229,12 +282,23 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
          */
         private Object readResolve() {
             try {
+
                 final KeplerianPropagator propagator =
                                 new KeplerianPropagator(orbit, attitudeProvider, mu, mass);
                 for (final AdditionalStateProvider provider : providers) {
                     propagator.addAdditionalStateProvider(provider);
                 }
+
+                if (transitionDates != null) {
+                    // override the state transitions
+                    propagator.states = new TimeSpanMap<SpacecraftState>(allStates[0]);
+                    for (int i = 0; i < transitionDates.length; ++i) {
+                        propagator.states.addValidAfter(allStates[i + 1], transitionDates[i]);
+                    }
+                }
+
                 return propagator;
+
             } catch (OrekitException oe) {
                 throw new OrekitInternalError(oe);
             }
