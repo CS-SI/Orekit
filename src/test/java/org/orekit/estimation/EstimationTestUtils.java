@@ -136,7 +136,7 @@ public class EstimationTestUtils {
                                                                          map));
         context.gravity = GravityFieldFactory.getNormalizedProvider(20, 20);
 
-        // semimajor axis for a geostationnary satellite
+        // semimajor axis for a geostationnary  or polar satellite
         double da = FastMath.cbrt( (0.25 * context.gravity.getMu() * 86400.0 * 86400.0 / FastMath.PI / FastMath.PI));
                                                               
         //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
@@ -159,17 +159,19 @@ public class EstimationTestUtils {
         final Vector3D sat_pos = new Vector3D(0., 0., da-stationPositionEME.getNorm());
         final Vector3D acceleration = new Vector3D(-context.gravity.getMu(), sat_pos);
         final PVCoordinates pv_sat_topo = new PVCoordinates(sat_pos, geovelocity, acceleration);
-        System.out.println("Satellite position in TopoStation[0]: " + pv_sat_topo);
+        //System.out.println("Satellite position in TopoStation[0]: " + pv_sat_topo);
 
         // satellite position in EME2000
         final PVCoordinates pv_sat_iner = topoToEME.transformPVCoordinates(pv_sat_topo);
-        System.out.println("EME2000 Satellite position: " + pv_sat_iner);
+        //System.out.println("EME2000 Satellite position: " + pv_sat_iner);
 
         // Geo-stationary Satellite Orbit, tightly above the station (l0-L0)
         context.initialOrbit = new KeplerianOrbit(pv_sat_iner,
                                                   FramesFactory.getEME2000(),
                                                   new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc),
                                                   context.gravity.getMu());
+
+        context.stations = Arrays.asList(context.createStation(30.0, 30.0, 0.0, "Lat30_Long10") );
         return context;
 
     }

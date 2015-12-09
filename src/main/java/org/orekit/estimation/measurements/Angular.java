@@ -148,24 +148,24 @@ public class Angular extends AbstractMeasurement<Angular> {
 
         final DerivativeStructure azimuth   = DerivativeStructure.atan2(QP.dotProduct(east), QP.dotProduct(north));
         final DerivativeStructure elevation = (QP.dotProduct(zenith).divide(QP.getNorm())).asin();
-        //System.out.println("azimuth : " + azimuth.getValue() + "\n");
-        //System.out.println("elevation : " + elevation.getValue() + "\n");
+        //System.out.println("Reference azimuth : " + azimuth.getValue() + "\n");
+        //System.out.println("Reference elevation : " + elevation.getValue() + "\n");
 
-//        // New Way, computation in Topocentric frame
-//        // satellite vector expressed in planetocentric frame
-//        final FieldVector3D<DerivativeStructure> Ppla   = iner2planeto.transformVector(Pi);
-//        // Station-satellite vector expressed in planetocentric frame
-//        final FieldVector3D<DerivativeStructure> QPpla = Ppla.subtract(Qpla);
+        // New Way, computation in Planetocentric frame
+        // satellite vector expressed in planetocentric frame
+        //final FieldVector3D<DerivativeStructure> Ppla   = iner2planeto.transformVector(Pi);
+        // Station-satellite vector expressed in planetocentric frame
+        //final FieldVector3D<DerivativeStructure> QPpla = Ppla.subtract(Qpla);
 //        // Station-satellite vector expressed in planetocentric frame
 //        final FieldVector3D<DerivativeStructure> QPtopo = planeto2topo.transformVector(QPpla);
 //        final FieldVector3D<DerivativeStructure> northtopo = planeto2topo.transformVector(northP);
 //        final FieldVector3D<DerivativeStructure> easttopo = planeto2topo.transformVector(eastP);
 //        final FieldVector3D<DerivativeStructure> zenithtopo = planeto2topo.transformVector(zenithP);
 //
-//        final DerivativeStructure azimuthtopo   = DerivativeStructure.atan2(QPtopo.dotProduct(easttopo), QPtopo.dotProduct(northtopo));
-//        final DerivativeStructure elevationtopo = (QPtopo.dotProduct(zenithtopo).divide(QPtopo.getNorm())).asin();
-//        System.out.println("azimuthtopo : " + azimuthtopo.getValue() + "\n");
-//        System.out.println("elevationtopo : " + elevationtopo.getValue() + "\n");
+//        final DerivativeStructure azimuthpla   = DerivativeStructure.atan2(QPpla.dotProduct(east), QPpla.dotProduct(north));
+//        final DerivativeStructure elevationpla = (QPpla.dotProduct(zenith).divide(QPpla.getNorm())).asin();
+//        System.out.println("azimuth Planeto : " + azimuthpla.getValue() + "\n");
+//        System.out.println("elevation Planeto: " + elevationpla.getValue() + "\n");
 
         // prepare the evaluation
         final Evaluation<Angular> evaluation = new Evaluation<Angular>(this, iteration, transitState);
@@ -384,37 +384,37 @@ public class Angular extends AbstractMeasurement<Angular> {
 
             final DerivativeStructure azimuthtopo   = DerivativeStructure.atan2(QPtopo.dotProduct(easttopo), QPtopo.dotProduct(northtopo));
             final DerivativeStructure elevationtopo = (QPtopo.dotProduct(zenithtopo).divide(QPtopo.getNorm())).asin();
-            System.out.println("azimuth from topo : " + azimuthtopo.getValue() + "\n");
-            System.out.println("elevation from topo : " + elevationtopo.getValue() + "\n");
+            //System.out.println("azimuth from topo : " + azimuthtopo.getValue() + "\n");
+            //System.out.println("elevation from topo : " + elevationtopo.getValue() + "\n");
 
             final DerivativeStructure sinsite = QPtopo.dotProduct(zenithtopo).divide(QPtopo.getNorm());
             final double coef0 = sinsite.getValue();
             final double coef1 = 1.0 / FastMath.sqrt(1.0 - coef0 * coef0);
 
-            final double [] stasat= new double [] {
+            final double[] stasat = new double[] {
                                                    QPtopo.getX().getValue(),
                                                    QPtopo.getY().getValue(),
                                                    QPtopo.getZ().getValue()
             };
 
-            final double [] zen= new double [] {
+            final double[] zen = new double[] {
                                                    zenithtopo.getX().getValue(),
                                                    zenithtopo.getY().getValue(),
                                                    zenithtopo.getZ().getValue()
             };
-            
-            final double [] dZendQ = new double [] {
-                                                    zenithP.getX().getPartialDerivative(0,0,0,1,0,0),
-                                                    zenithP.getY().getPartialDerivative(0,0,0,1,0,0),
-                                                    zenithP.getZ().getPartialDerivative(0,0,0,1,0,0)
+
+            final double[] dZendQ = new double[] {
+                                                    zenithP.getX().getPartialDerivative(0, 0, 0, 1, 0, 0),
+                                                    zenithP.getY().getPartialDerivative(0, 0, 0, 1, 0, 0),
+                                                    zenithP.getZ().getPartialDerivative(0, 0, 0, 1, 0, 0)
             };
-            
+
             final double coeff2 = (zen[0] + stasat[0] * zen[0] + stasat[1] * zen[1] + stasat[2] * zen[2]) * QPtopo.getNorm().getValue();
             final double coeff3 = (stasat[0] * dZendQ[0] + stasat[1] * dZendQ[1] + stasat[2] * dZendQ[2]) * stasat[0] / QPtopo.getNorm().getValue();
-            
+
             final double dSiteOnDXsta = coef1 * (coeff2 - coeff3) / ( QPtopo.getNorm().getValue() * QPtopo.getNorm().getValue() );
-            System.out.println("dSiteOnDXsta : " + dSiteOnDXsta + "\n");
-            
+            //System.out.println("dSiteOnDXsta : " + dSiteOnDXsta + "\n");
+
             //final AngularCoordinates ac = topoToInert.getAngular().revert();
             //final AngularCoordinates ac2 = topoToInert.getAngular();
             //final Vector3D omega        = ac.getRotationRate();

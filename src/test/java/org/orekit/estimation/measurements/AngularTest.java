@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.apache.commons.math3.stat.ranking.NaNStrategy;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 //import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
@@ -63,7 +64,9 @@ public class AngularTest {
         final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
+                                                               //0.25, 3.0, 21600.0);
+                                                               0.25, 3.0, 600.0);
+
         propagator.setSlaveMode();
         
         // Compute measurements.
@@ -103,26 +106,41 @@ public class AngularTest {
                         return measurement.evaluate(0, state).getValue();
                     }
                                                   }, measurement.getDimension(), OrbitType.CARTESIAN,
-                                                  PositionAngle.TRUE, 100.0, 8).value(state);
+                                                  PositionAngle.TRUE, 250.0, 8).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
-
+            
+            final double smallest = FastMath.ulp((double) 1.0);
+            //System.out.println("The smallest value is : " + smallest + "\n");
+            
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
-                    final double relativeError = FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
+                    double relativeError = FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
                                                               finiteDifferencesJacobian[i][j]);
+                    
+                    
+                    if ((FastMath.sqrt(finiteDifferencesJacobian[i][j]) < smallest) && (FastMath.sqrt(jacobian[i][j]) < smallest) ){
+                        relativeError = 0.0;
+                    }
+                    
+                    
+                    
                     if (j < 3) {
                         if (i == 0) {
                             AzerrorsP[AzindexP++] = relativeError;
+                            //System.out.println("AZ Error dP : " + finiteDifferencesJacobian[i][j] + "   " + jacobian[i][j] + "    " + relativeError + "\n");
                         } else {
                             ElerrorsP[ElindexP++] = relativeError;
+                            //System.out.println("El Error dP : " + finiteDifferencesJacobian[i][j] + "   " + jacobian[i][j] + "    " + relativeError + "\n");
                         }
                     } else {
                         if (i == 0) {
                             AzerrorsV[AzindexV++] = relativeError;
+                            //System.out.println("AZ Error dv : " + finiteDifferencesJacobian[i][j] + "   " + jacobian[i][j] + "    " + relativeError + "\n");
                         } else {
                             ElerrorsV[ElindexV++] = relativeError;
+                            //System.out.println("El Error dv : " + finiteDifferencesJacobian[i][j] + "   " + jacobian[i][j] + "    " + relativeError + "\n");
                         }
                     }
                 }
@@ -131,16 +149,16 @@ public class AngularTest {
         }
 
         // median errors on Azimuth
-        System.out.println("Ecart median Azimuth/dP : " + new Median().evaluate(AzerrorsP) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 6.7e-11);
-        System.out.println("Ecart median Azimuth/dV : " + new Median().evaluate(AzerrorsV) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 2.4e-5);
+        System.out.println("Ecart median Azimuth/dP : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(AzerrorsP) + "\n");
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 4.0e-6);
+        System.out.println("Ecart median Azimuth/dV : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(AzerrorsV) + "\n");
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 1.5e-5);
 
         // median errors on Elevation
-        System.out.println("Ecart median Elevation/dP : " + new Median().evaluate(ElerrorsP) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 4.4e-6);
-        System.out.println("Ecart median Elevation/dV : " + new Median().evaluate(ElerrorsV) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 3.0e-5);
+        System.out.println("Ecart median Elevation/dP : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(ElerrorsP) + "\n");
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 4.2e-6);
+        System.out.println("Ecart median Elevation/dV : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(ElerrorsV) + "\n");
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 2.0e-5);
     }
     
     @Test
@@ -161,7 +179,7 @@ public class AngularTest {
         final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularMeasurementCreator(context),
-                                                               1.0, 3.0, 300.0);
+                                                               0.25, 3.0, 600.0);
         propagator.setSlaveMode();
 
         for (final Measurement<?> measurement : measurements) {
@@ -214,10 +232,8 @@ public class AngularTest {
                     System.out.println("Element de la Jacobienne : " + jacobian[i][j] + " / " + finiteDifferencesJacobian[i][j] + "\n");
                     //Assert.assertEquals(finiteDifferencesJacobian[i][j],
                     //                    jacobian[i][j],
-                    //                    6.1e-5 * FastMath.abs(finiteDifferencesJacobian[i][j]));
-                    //Assert.assertEquals(finiteDifferencesJacobian[i][j],
-                    //                   jacobian[i][j],
-                    //                    6.1e10 * FastMath.abs(finiteDifferencesJacobian[i][j]));
+                    //                    1e3 * FastMath.abs(finiteDifferencesJacobian[i][j]));
+
                 }
             }
 

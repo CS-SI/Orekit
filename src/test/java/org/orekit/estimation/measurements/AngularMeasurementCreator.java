@@ -43,7 +43,7 @@ public class AngularMeasurementCreator extends MeasurementCreator {
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
         throws PropagationException {
         try {
-            System.out.println("Welcome in AngularMeasurementCreator...");  
+            //System.out.println("Welcome in AngularMeasurementCreator...");  
             for (final GroundStation station : context.stations) {
 
                 final AbsoluteDate     date      = currentState.getDate();
@@ -67,7 +67,10 @@ public class AngularMeasurementCreator extends MeasurementCreator {
                     }, -1.0, 1.0);
 
                     // Satellite position at signal departure
+                    //final AbsoluteDate CurrentDate =  currentState.getOrbit().getDate();
                     final Vector3D satelliteAtDeparture = currentState.shiftedBy(-downLinkDelay).getPVCoordinates().getPosition();
+                    //System.out.println("Satellite at CurrentDate: " + CurrentDate + "\n");
+                    //System.out.println("Satellite Position : " + satelliteAtDeparture.getX() + "   " + satelliteAtDeparture.getY() + "   " + satelliteAtDeparture.getZ() + "\n");
 
                     // Initialize measurement
                     final double[] angular = new double[2];
