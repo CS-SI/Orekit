@@ -18,18 +18,14 @@ package org.orekit.estimation.measurements;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.util.FastMath;
 //import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.CartesianDerivativesFilter;
 
 /** Class modeling an Azimuth-Elevation measurement from a ground station.
  * @author Thierry Ceolin
