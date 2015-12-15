@@ -56,9 +56,13 @@ base attitude law a complementary rotation in order to fulfill specific mission 
 * LofOffset, defined as a given angular offset around three axes from local orbital 
   frame at given date.
 
-* TabulatedProvider, defined by interpolating within a user-provided ephemerides,
-  using any number of interpolation points and either using or ignoring the
-  tabulated rotation rates.
+* TabulatedLofOffset, defined by interpolating within a user-provided ephemerides
+  with resepct to a local orbital frame,  using any number of interpolation points and
+  either using or ignoring the tabulated rotation rates.
+
+* TabulatedProvider, defined by interpolating within a user-provided ephemerides
+  with respect to an inertial frame,  using any number of interpolation points and
+  either using or ignoring the tabulated rotation rates.
 
 ### Ground pointing laws
 
