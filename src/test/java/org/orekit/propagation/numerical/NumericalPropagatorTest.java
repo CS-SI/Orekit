@@ -530,13 +530,13 @@ public class NumericalPropagatorTest {
         }
         
         private AdditionalStateLinearDetector(double maxCheck, double threshold, int maxIter,
-                                              EventHandler<AdditionalStateLinearDetector> handler) {
+                                              EventHandler<? super AdditionalStateLinearDetector> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
         
         protected AdditionalStateLinearDetector create(final double newMaxCheck, final double newThreshold,
                                                        final int newMaxIter,
-                                                       final EventHandler<AdditionalStateLinearDetector> newHandler) {
+                                                       final EventHandler<? super AdditionalStateLinearDetector> newHandler) {
             return new AdditionalStateLinearDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 

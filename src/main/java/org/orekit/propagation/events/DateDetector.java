@@ -95,7 +95,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @since 6.1
      */
     private DateDetector(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<DateDetector> handler,
+                         final int maxIter, final EventHandler<? super DateDetector> handler,
                          final TimeStamped ... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
@@ -109,7 +109,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
     /** {@inheritDoc} */
     @Override
     protected DateDetector create(final double newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler<DateDetector> newHandler) {
+                                  final int newMaxIter, final EventHandler<? super DateDetector> newHandler) {
         return new DateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
     }

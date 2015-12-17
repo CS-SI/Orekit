@@ -127,7 +127,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @since 6.1
      */
     private EclipseDetector(final double maxCheck, final double threshold,
-                            final int maxIter, final EventHandler<EclipseDetector> handler,
+                            final int maxIter, final EventHandler<? super EclipseDetector> handler,
                             final PVCoordinatesProvider occulted,  final double occultedRadius,
                             final PVCoordinatesProvider occulting, final double occultingRadius,
                             final boolean totalEclipse) {
@@ -142,7 +142,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
     /** {@inheritDoc} */
     @Override
     protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
-                                     final int nawMaxIter, final EventHandler<EclipseDetector> newHandler) {
+                                     final int nawMaxIter, final EventHandler<? super EclipseDetector> newHandler) {
         return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
                                    occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }

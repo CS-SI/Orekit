@@ -138,7 +138,7 @@
       * central body related attitude (nadir pointing, center pointing, target pointing, yaw compensation, yaw-steering),
       * orbit referenced attitudes (LOF aligned, offset on all axes),
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
-      * tabulated attitudes
+      * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
 
   * Orbit file handling
   

@@ -110,7 +110,7 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
      * @param enabler event enabling function to use
      */
     private EventEnablingPredicateFilter(final double maxCheck, final double threshold,
-                                         final int maxIter, final EventHandler<EventEnablingPredicateFilter<T>> handler,
+                                         final int maxIter, final EventHandler<? super EventEnablingPredicateFilter<T>> handler,
                                          final T rawDetector, final EnablingPredicate<T> enabler) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
@@ -123,7 +123,7 @@ public class EventEnablingPredicateFilter<T extends EventDetector>
     @Override
     protected EventEnablingPredicateFilter<T> create(final double newMaxCheck, final double newThreshold,
                                                      final int newMaxIter,
-                                                     final EventHandler<EventEnablingPredicateFilter<T>> newHandler) {
+                                                     final EventHandler<? super EventEnablingPredicateFilter<T>> newHandler) {
         return new EventEnablingPredicateFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);
     }
 

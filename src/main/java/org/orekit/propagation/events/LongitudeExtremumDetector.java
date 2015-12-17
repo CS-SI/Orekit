@@ -73,7 +73,7 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
      * @param body body on which the longitude is defined
      */
     private LongitudeExtremumDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<LongitudeExtremumDetector> handler,
+                                     final int maxIter, final EventHandler<? super LongitudeExtremumDetector> handler,
                                      final OneAxisEllipsoid body) {
         super(maxCheck, threshold, maxIter, handler);
         this.body = body;
@@ -83,7 +83,7 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
     @Override
     protected LongitudeExtremumDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<LongitudeExtremumDetector> newHandler) {
+                                              final EventHandler<? super LongitudeExtremumDetector> newHandler) {
         return new LongitudeExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, body);
     }
 
