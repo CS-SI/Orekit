@@ -741,8 +741,9 @@ public class JB2006 implements Atmosphere {
         final GeodeticPoint inBody = earth.transform(position, frame, date);
 
         // compute sun position
+        final Frame ecef = earth.getBodyFrame();
         final GeodeticPoint sunInBody =
-            earth.transform(sun.getPVCoordinates(date, frame).getPosition(), frame, date);
+            earth.transform(sun.getPVCoordinates(date, ecef).getPosition(), ecef, date);
         return getDensity(dateMJD,
                           sunInBody.getLongitude(), sunInBody.getLatitude(),
                           inBody.getLongitude(), inBody.getLatitude(),
