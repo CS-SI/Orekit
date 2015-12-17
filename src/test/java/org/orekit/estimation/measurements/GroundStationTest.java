@@ -123,12 +123,12 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesOctantPxPyPz() throws OrekitException {
-        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionValue         = 1.0e-20;
         double tolerancePositionDerivative    = 9.8e-9;
-        double toleranceENDirectionValue      = 1.0e-15;
-        double toleranceENDirectionDerivative = 1.9e-7;
-        double toleranceZDirectionValue       = 1.0e-15;
-        double toleranceZDirectionDerivative  = 1.5e-7;
+        double toleranceENDirectionValue      = 1.0e-20;
+        double toleranceENDirectionDerivative = 5.7e-14;
+        double toleranceZDirectionValue       = 1.0e-20;
+        double toleranceZDirectionDerivative  = 5.6e-14;
         doTestOffsetDerivatives(FastMath.toRadians(35), FastMath.toRadians(20), 1200.0,
                                 tolerancePositionValue,    tolerancePositionDerivative,
                                 toleranceENDirectionValue, toleranceENDirectionDerivative,
@@ -137,12 +137,12 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesOctantPxPyMz() throws OrekitException {
-        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionValue         = 1.0e-20;
         double tolerancePositionDerivative    = 4.6e-9;
-        double toleranceENDirectionValue      = 1.0e-15;
-        double toleranceENDirectionDerivative = 1.9e-7;
-        double toleranceZDirectionValue       = 1.0e-15;
-        double toleranceZDirectionDerivative  = 1.5e-7;
+        double toleranceENDirectionValue      = 1.0e-20;
+        double toleranceENDirectionDerivative = 5.7e-14;
+        double toleranceZDirectionValue       = 1.0e-20;
+        double toleranceZDirectionDerivative  = 5.6e-14;
         doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(20), 1200.0,
                                 tolerancePositionValue,    tolerancePositionDerivative,
                                 toleranceENDirectionValue, toleranceENDirectionDerivative,
@@ -151,12 +151,12 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesOctantPxMyPz() throws OrekitException {
-        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionValue         = 1.0e-20;
         double tolerancePositionDerivative    = 6.6e-9;
-        double toleranceENDirectionValue      = 1.0e-15;
-        double toleranceENDirectionDerivative = 1.9e-7;
-        double toleranceZDirectionValue       = 1.0e-15;
-        double toleranceZDirectionDerivative  = 1.5e-7;
+        double toleranceENDirectionValue      = 1.0e-20;
+        double toleranceENDirectionDerivative = 5.7e-14;
+        double toleranceZDirectionValue       = 1.0e-20;
+        double toleranceZDirectionDerivative  = 5.6e-14;
         doTestOffsetDerivatives(FastMath.toRadians(35), FastMath.toRadians(-20), 1200.0,
                                 tolerancePositionValue,    tolerancePositionDerivative,
                                 toleranceENDirectionValue, toleranceENDirectionDerivative,
@@ -165,12 +165,12 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesOctantPxMyMz() throws OrekitException {
-        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionValue         = 1.0e-20;
         double tolerancePositionDerivative    = 4.6e-9;
-        double toleranceENDirectionValue      = 1.0e-15;
-        double toleranceENDirectionDerivative = 1.9e-7;
-        double toleranceZDirectionValue       = 1.0e-15;
-        double toleranceZDirectionDerivative  = 1.5e-7;
+        double toleranceENDirectionValue      = 1.0e-20;
+        double toleranceENDirectionDerivative = 5.7e-14;
+        double toleranceZDirectionValue       = 1.0e-20;
+        double toleranceZDirectionDerivative  = 5.6e-14;
         doTestOffsetDerivatives(FastMath.toRadians(-35), FastMath.toRadians(-20), 1200.0,
                                 tolerancePositionValue,    tolerancePositionDerivative,
                                 toleranceENDirectionValue, toleranceENDirectionDerivative,
@@ -179,12 +179,12 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesOctantMxPyPz() throws OrekitException {
-        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionValue         = 1.0e-20;
         double tolerancePositionDerivative    = 6.1e-9;
-        double toleranceENDirectionValue      = 1.0e-15;
-        double toleranceENDirectionDerivative = 1.8e-7;
-        double toleranceZDirectionValue       = 1.0e-15;
-        double toleranceZDirectionDerivative  = 1.5e-7;
+        double toleranceENDirectionValue      = 1.0e-20;
+        double toleranceENDirectionDerivative = 5.4e-14;
+        double toleranceZDirectionValue       = 1.2e-16;
+        double toleranceZDirectionDerivative  = 5.5e-14;
         doTestOffsetDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0,
                                 tolerancePositionValue,    tolerancePositionDerivative,
                                 toleranceENDirectionValue, toleranceENDirectionDerivative,
@@ -193,12 +193,12 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesOctantMxPyMz() throws OrekitException {
-        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionValue         = 1.0e-20;
         double tolerancePositionDerivative    = 6.1e-9;
-        double toleranceENDirectionValue      = 1.0e-15;
-        double toleranceENDirectionDerivative = 1.8e-7;
-        double toleranceZDirectionValue       = 1.0e-15;
-        double toleranceZDirectionDerivative  = 1.5e-7;
+        double toleranceENDirectionValue      = 1.0e-20;
+        double toleranceENDirectionDerivative = 5.4e-14;
+        double toleranceZDirectionValue       = 1.2e-16;
+        double toleranceZDirectionDerivative  = 5.5e-14;
         doTestOffsetDerivatives(FastMath.toRadians(150), FastMath.toRadians(20), 1200.0,
                                 tolerancePositionValue,    tolerancePositionDerivative,
                                 toleranceENDirectionValue, toleranceENDirectionDerivative,
@@ -207,12 +207,12 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesOctantMxMyPz() throws OrekitException {
-        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionValue         = 1.0e-20;
         double tolerancePositionDerivative    = 5.9e-9;
-        double toleranceENDirectionValue      = 1.0e-15;
-        double toleranceENDirectionDerivative = 1.8e-7;
-        double toleranceZDirectionValue       = 1.0e-15;
-        double toleranceZDirectionDerivative  = 1.5e-7;
+        double toleranceENDirectionValue      = 1.0e-20;
+        double toleranceENDirectionDerivative = 5.4e-14;
+        double toleranceZDirectionValue       = 5.6e-17;
+        double toleranceZDirectionDerivative  = 5.5e-14;
         doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
                                 tolerancePositionValue,    tolerancePositionDerivative,
                                 toleranceENDirectionValue, toleranceENDirectionDerivative,
@@ -221,12 +221,12 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesOctantMxMyMz() throws OrekitException {
-        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionValue         = 1.0e-20;
         double tolerancePositionDerivative    = 5.9e-9;
-        double toleranceENDirectionValue      = 1.0e-15;
-        double toleranceENDirectionDerivative = 1.8e-7;
-        double toleranceZDirectionValue       = 1.0e-15;
-        double toleranceZDirectionDerivative  = 1.5e-7;
+        double toleranceENDirectionValue      = 1.0e-20;
+        double toleranceENDirectionDerivative = 5.4e-14;
+        double toleranceZDirectionValue       = 5.6e-17;
+        double toleranceZDirectionDerivative  = 5.5e-14;
         doTestOffsetDerivatives(FastMath.toRadians(-150), FastMath.toRadians(-20), 1200.0,
                                 tolerancePositionValue,    tolerancePositionDerivative,
                                 toleranceENDirectionValue, toleranceENDirectionDerivative,
@@ -235,13 +235,13 @@ public class GroundStationTest {
 
     @Test
     public void testOffsetDerivativesNearPole() throws OrekitException {
-        double tolerancePositionValue         = 1.0e-15;
+        double tolerancePositionValue         = 4.5e-16;
         double tolerancePositionDerivative    = 1.1e-8;
-        double toleranceENDirectionValue      = 1.0e-15;
-        double toleranceENDirectionDerivative = 0.0092; // near pole, East and North vectors are singular
-        double toleranceZDirectionValue       = 1.0e-15;
-        double toleranceZDirectionDerivative  = 1.6e-7;
-        doTestOffsetDerivatives(FastMath.toRadians(89.999), FastMath.toRadians(90), 1200.0,
+        double toleranceENDirectionValue      = 1.2e-16;
+        double toleranceENDirectionDerivative = 0.002; // near pole, East and North vectors are singular
+        double toleranceZDirectionValue       = 5.3e-23;
+        double toleranceZDirectionDerivative  = 4.9e-14;
+        doTestOffsetDerivatives(FastMath.toRadians(89.99995), FastMath.toRadians(90), 1200.0,
                                 tolerancePositionValue,    tolerancePositionDerivative,
                                 toleranceENDirectionValue, toleranceENDirectionDerivative,
                                 toleranceZDirectionValue,  toleranceZDirectionDerivative);
@@ -310,7 +310,7 @@ public class GroundStationTest {
         double maxZDirDerivativeError  = 0;
         for (double dEast = -2; dEast <= 2; dEast += 0.5) { 
             for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) { 
-                for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) { 
+            for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) { 
                     station.setValue(dEast, dNorth, dZenith);
                     OffsetDerivatives od = station.getOffsetDerivatives(parameters, eastIndex, northIndex, zenithIndex);
                     for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {

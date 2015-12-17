@@ -184,7 +184,7 @@ public class GroundStation extends Parameter {
      * <p>
      * As the East and North vector are not well defined at pole, the derivatives
      * of these two vectors diverge to infinity as we get closer to the pole.
-     * So this method should not be used for stations less than 0.001 degree from
+     * So this method should not be used for stations less than 0.0001 degree from
      * either poles.
      * </p>
      * @param parameters number of free parameters in derivatives computations
@@ -207,20 +207,23 @@ public class GroundStation extends Parameter {
         // offset frame origin
         final Transform offsetToBody = offsetFrame.getTransformTo(baseFrame.getParent(), null);
         final Vector3D  offsetOrigin  = offsetToBody.transformPosition(Vector3D.ZERO);
-        final DerivativeStructure oneConstant = new DerivativeStructure(parameters, 1, 1.0);
-        final DerivativeStructure zeroEast    = new DerivativeStructure(parameters, 1, eastOffsetIndex,   0.0);
-        final DerivativeStructure zeroNorth   = new DerivativeStructure(parameters, 1, northOffsetIndex,  0.0);
-        final DerivativeStructure zeroZenith  = new DerivativeStructure(parameters, 1, zenithOffsetIndex, 0.0);
+        final FieldVector3D<DerivativeStructure> zeroEast =
+                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, eastOffsetIndex,   0.0),
+                                                               baseFrame.getEast());
+        final FieldVector3D<DerivativeStructure> zeroNorth =
+                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, northOffsetIndex,  0.0),
+                                                               baseFrame.getNorth());
+        final FieldVector3D<DerivativeStructure> zeroZenith =
+                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, zenithOffsetIndex, 0.0),
+                                                               baseFrame.getZenith());
         final FieldVector3D<DerivativeStructure> offsetOriginDS =
-                new FieldVector3D<DerivativeStructure>(oneConstant, offsetOrigin,
-                                                       zeroEast,    baseFrame.getEast(),
-                                                       zeroNorth,   baseFrame.getNorth(),
-                                                       zeroZenith,  baseFrame.getZenith());
+                zeroEast.add(zeroNorth).add(zeroZenith).add(offsetOrigin);
 
         // vectors changes due to offset in the meridian plane
         // (we are in fact only interested in the derivatives parts, not the values)
         final Vector3D meridianCenter = centerOfCurvature(offsetOrigin, offsetFrame.getEast());
-        final FieldVector3D<DerivativeStructure> meridianCenterToOffset = offsetOriginDS.subtract(meridianCenter);
+        final FieldVector3D<DerivativeStructure> meridianCenterToOffset =
+                        zeroNorth.add(offsetOrigin).subtract(meridianCenter);
         final FieldVector3D<DerivativeStructure> meridianZ = meridianCenterToOffset.normalize();
         FieldVector3D<DerivativeStructure>       meridianE = FieldVector3D.crossProduct(Vector3D.PLUS_K, meridianZ);
         if (meridianE.getNormSq().getValue() < Precision.SAFE_MIN) {
@@ -236,7 +239,8 @@ public class GroundStation extends Parameter {
         // vectors changes due to offset in the transverse plane
         // (we are in fact only interested in the derivatives parts, not the values)
         final Vector3D transverseCenter = centerOfCurvature(offsetOrigin, offsetFrame.getNorth());
-        final FieldVector3D<DerivativeStructure> transverseCenterToOffset = offsetOriginDS.subtract(transverseCenter);
+        final FieldVector3D<DerivativeStructure> transverseCenterToOffset =
+                        zeroEast.add(offsetOrigin).subtract(transverseCenter);
         final FieldVector3D<DerivativeStructure> transverseZ = transverseCenterToOffset.normalize();
         FieldVector3D<DerivativeStructure>       transverseE = FieldVector3D.crossProduct(Vector3D.PLUS_K, transverseZ);
         if (transverseE.getNormSq().getValue() < Precision.SAFE_MIN) {
