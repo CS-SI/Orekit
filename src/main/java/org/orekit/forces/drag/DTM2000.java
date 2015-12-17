@@ -862,17 +862,21 @@ public class DTM2000 implements Atmosphere {
         final Calendar cal = new GregorianCalendar();
         cal.setTime(date.toDate(TimeScalesFactory.getUTC()));
         final int day = cal.get(Calendar.DAY_OF_YEAR);
+        //position in ECEF so we only have to do the transform once
+        final Frame ecef = earth.getBodyFrame();
+        final Vector3D pEcef = frame.getTransformTo(ecef, date)
+                .transformPosition(position);
         // compute geodetic position
-        final GeodeticPoint inBody = earth.transform(position, frame, date);
+        final GeodeticPoint inBody = earth.transform(pEcef, ecef, date);
         final double alti = inBody.getAltitude();
         final double lon = inBody.getLongitude();
         final double lat = inBody.getLatitude();
 
         // compute local solar time
-
-        final Vector3D sunPos = sun.getPVCoordinates(date, frame).getPosition();
-        final double hl = FastMath.PI + FastMath.atan2(sunPos.getX() * position.getY() - sunPos.getY() * position.getX(),
-                                               sunPos.getX() * position.getX() + sunPos.getY() * position.getY());
+        final Vector3D sunPos = sun.getPVCoordinates(date, ecef).getPosition();
+        final double hl = FastMath.PI + FastMath.atan2(
+                sunPos.getX() * pEcef.getY() - sunPos.getY() * pEcef.getX(),
+                sunPos.getX() * pEcef.getX() + sunPos.getY() * pEcef.getY());
 
         // get current solar activity data and compute
         return getDensity(day, alti, lon, lat, hl, inputParams.getInstantFlux(date),
