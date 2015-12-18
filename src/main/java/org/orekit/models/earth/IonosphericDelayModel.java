@@ -34,10 +34,11 @@ public interface IonosphericDelayModel extends Serializable {
      *
      * @param date        current date
      * @param geo         the Geodetic point of receiver/station
-     * @param elevation   the elevation of the satellite, in degrees
-     * @param azimuth     the azimuth of the satellite, in degrees
+     * @param elevation   the elevation of the satellite
+     * @param azimuth     the azimuth of the satellite
      *
      * @return the path delay due to the troposphere in m
      */
-    double calculatePathDelay(final AbsoluteDate date, final GeodeticPoint geo, final double elevation, final double azimuth);
+    double calculatePathDelay(AbsoluteDate date, GeodeticPoint geo, double elevation, double azimuth);
+
 }

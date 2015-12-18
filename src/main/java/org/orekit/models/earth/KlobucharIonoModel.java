@@ -67,8 +67,8 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
      * @param beta coefficients of a cubic equation representing the period of the model.
      */
     public KlobucharIonoModel(final double[] alpha, final double[] beta) {
-        this.alpha = alpha;
-        this.beta = beta;
+        this.alpha = alpha.clone();
+        this.beta  = beta.clone();
         this.ratio = 1.;
     }
 
@@ -80,8 +80,8 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
      * @param frequency frequency of the radiowave signal in MHz
      */
     public KlobucharIonoModel(final double[] alpha, final double[] beta, final double frequency) {
-        this.alpha = alpha;
-        this.beta = beta;
+        this.alpha = alpha.clone();
+        this.beta  = beta.clone();
         this.ratio = FastMath.pow(1575.42 / frequency, 2);
     }
 
@@ -90,23 +90,21 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
     public double calculatePathDelay(final AbsoluteDate date, final GeodeticPoint geo,
                                      final double elevation, final double azimuth) {
         // degees to semisircles
-        final double deg2semi = 1. / 180.;
-        final double rad2semi = 1. / Math.PI;
-        final double semi2rad = Math.PI;
-        final double deg2rad = Math.PI / 180.;
+        final double rad2semi = 1. / FastMath.PI;
+        final double semi2rad = FastMath.PI;
 
         // Earth Centered angle
-        final double psi = 0.0137 / (elevation * deg2semi + 0.11) - 0.022;
+        final double psi = 0.0137 / (elevation / FastMath.PI + 0.11) - 0.022;
 
         // Subionospheric latitude: the latitude of the IPP (Ionospheric Pierce Point)
         // in [-0.416, 0.416], semicircle
         final double latIono = FastMath.min(
-                                      FastMath.max(geo.getLatitude() * rad2semi + psi * FastMath.cos(azimuth * deg2rad), -0.416),
+                                      FastMath.max(geo.getLatitude() * rad2semi + psi * FastMath.cos(azimuth), -0.416),
                                       0.416);
 
         // Subionospheric longitude: the longitude of the IPP
         // in semicircle
-        final double lonIono = geo.getLongitude() * rad2semi + (psi * FastMath.sin(azimuth * deg2rad) / Math.cos(latIono * semi2rad));
+        final double lonIono = geo.getLongitude() * rad2semi + (psi * FastMath.sin(azimuth) / FastMath.cos(latIono * semi2rad));
 
         // Geomagnetic latitude, semicircle
         final double latGeom = latIono + 0.064 * FastMath.cos((lonIono - 1.617) * semi2rad);
@@ -122,21 +120,21 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
         final double tsec = t - FastMath.floor(t / 86400.) * 86400; // Seconds of day
 
         // Slant factor, semicircle
-        final double slantFactor = 1.0 + 16.0 * FastMath.pow(0.53 - elevation * deg2semi, 3);
+        final double slantFactor = 1.0 + 16.0 * FastMath.pow(0.53 - elevation / FastMath.PI, 3);
 
         // Period of model, seconds
         final double period = FastMath.max(72000., beta[0] + (beta[1]  + (beta[2] + beta[3] * latGeom) * latGeom) * latGeom);
 
         // Phase of the model, radians
         // (Max at 14.00 = 50400 sec local time)
-        final double x = 2.0 * Math.PI * (tsec - 50400.0) / period;
+        final double x = 2.0 * FastMath.PI * (tsec - 50400.0) / period;
 
         // Amplitude of the model, seconds
         final double amplitude = FastMath.max(0, alpha[0] + (alpha[1]  + (alpha[2] + alpha[3] * latGeom) * latGeom) * latGeom);
 
         // Ionospheric correction (L1)
         double ionoTimeDelayL1 = slantFactor * (5. * 1e-9);
-        if (Math.abs(x) < 1.570) {
+        if (FastMath.abs(x) < 1.570) {
             ionoTimeDelayL1 += slantFactor * (amplitude * (1.0 - FastMath.pow(x, 2) / 2.0 + FastMath.pow(x, 4) / 24.0));
         }
 

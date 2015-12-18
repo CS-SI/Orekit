@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationUtils;
@@ -46,6 +45,7 @@ import org.orekit.propagation.SpacecraftState;
  * @since 7.1
  */
 public class RangeRateIonosphericDelayModifier implements EvaluationModifier<RangeRate> {
+
     /** Ionospheric delay model. */
     private final IonosphericDelayModel ionoModel;
 
@@ -55,12 +55,12 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
     /** Constructor.
      *
      * @param model  Ionospheric delay model appropriate for the current range-rate measurement method.
-     * @param tw     Flag indicating whether the measurement is two-way.
+     * @param twoWay     Flag indicating whether the measurement is two-way.
      */
-    public RangeRateIonosphericDelayModifier(final IonosphericDelayModel model, final boolean tw) {
+    public RangeRateIonosphericDelayModifier(final IonosphericDelayModel model, final boolean twoWay) {
         ionoModel = model;
 
-        if (tw) {
+        if (twoWay) {
             fTwoWay = 2.;
         } else {
             fTwoWay = 1.;
@@ -73,9 +73,8 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
      * @return the measurement error due to Ionosphere
      * @throws OrekitException  if frames transformations cannot be computed
      */
-    private double rangerateErrorIonosphericModel(final GroundStation station,
-                                                  final SpacecraftState state) throws OrekitException
-    {
+    private double rangerateErrorIonosphericModel(final GroundStation station, final SpacecraftState state)
+        throws OrekitException {
         // The effect of ionospheric correction on the range rate is
         // computed using finite differences.
 
@@ -84,20 +83,18 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
-        // elevation in degrees
-        final double elevation = FastMath.toDegrees(
-                                                    station.getBaseFrame().getElevation(position,
-                                                                                        state.getFrame(),
-                                                                                        state.getDate()));
+        // elevation
+        final double elevation = station.getBaseFrame().getElevation(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
 
         // only consider measures above the horizon
         if (elevation > 0) {
 
-            // compute azimuth in degrees
-            final double azimuth = FastMath.toDegrees(
-                                                      station.getBaseFrame().getAzimuth(position,
-                                                                                        state.getFrame(),
-                                                                                        state.getDate()));
+            // compute azimuth
+            final double azimuth = station.getBaseFrame().getAzimuth(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
 
             // delay in meters
             final double delay1 = ionoModel.calculatePathDelay(state.getDate(),
@@ -110,16 +107,14 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
 
             // spacecraft position and elevation as seen from the ground station
             final Vector3D position2 = state2.getPVCoordinates().getPosition();
-            final double elevation2 = FastMath.toDegrees(
-                                                         station.getBaseFrame().getElevation(position2,
-                                                                                             state2.getFrame(),
-                                                                                             state2.getDate()) );
+            final double elevation2 = station.getBaseFrame().getElevation(position2,
+                                                                          state2.getFrame(),
+                                                                          state2.getDate());
 
             // compute azimuth in degrees
-            final double azimuth2 = FastMath.toDegrees(
-                                                       station.getBaseFrame().getAzimuth(position2,
-                                                                                         state2.getFrame(),
-                                                                                         state2.getDate()));
+            final double azimuth2 = station.getBaseFrame().getAzimuth(position2,
+                                                                      state2.getFrame(),
+                                                                      state2.getDate());
 
             // ionospheric delay dt after in meters
             final double delay2 = ionoModel.calculatePathDelay(state2.getDate(),
@@ -143,8 +138,8 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
-                                          final SpacecraftState refstate) throws OrekitException
-    {
+                                               final SpacecraftState refstate)
+        throws OrekitException {
         final double[][] finiteDifferencesJacobian =
                         EstimationUtils.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
@@ -175,8 +170,8 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
      */
     private double[][] rangeErrorJacobianParameter(final GroundStation station,
                                                    final SpacecraftState state,
-                                                   final double delay) throws OrekitException
-    {
+                                                   final double delay)
+        throws OrekitException {
         final GroundStation stationParameter = station;
 
         final double[][] finiteDifferencesJacobian =

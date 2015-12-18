@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationUtils;
@@ -69,26 +68,23 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
-        // elevation in degrees
-        final double elevation = FastMath.toDegrees(
-                                                    station.getBaseFrame().getElevation(position,
-                                                                                        state.getFrame(),
-                                                                                        state.getDate()));
+        // elevation
+        final double elevation = station.getBaseFrame().getElevation(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
 
         // only consider measures above the horizon
         if (elevation > 0) {
 
-            // compute azimuth in degrees
-            final double azimuth = FastMath.toDegrees(
-                                                      station.getBaseFrame().getAzimuth(position,
-                                                                                        state.getFrame(),
-                                                                                        state.getDate()) );
+            // compute azimuth
+            final double azimuth = station.getBaseFrame().getAzimuth(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
 
             // delay in meters
             final double delay = ionoModel.calculatePathDelay(state.getDate(),
                                                               station.getBaseFrame().getPoint(),
-                                                              elevation,
-                                                              azimuth);
+                                                              elevation, azimuth);
 
             // Multiply by two because it is a two-way measurment.
             return 2 * delay;
@@ -106,8 +102,8 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeErrorJacobianState(final GroundStation station,
-                                          final SpacecraftState refstate) throws OrekitException
-    {
+                                               final SpacecraftState refstate)
+        throws OrekitException {
         final double[][] finiteDifferencesJacobian =
                         EstimationUtils.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {

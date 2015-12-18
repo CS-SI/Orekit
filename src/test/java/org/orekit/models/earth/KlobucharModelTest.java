@@ -68,7 +68,8 @@ public class KlobucharModelTest {
 
         final GeodeticPoint geo = new GeodeticPoint(latitude, longitude, altitude);
                 
-        double delayMeters = model.calculatePathDelay(date, geo, elevation, azimuth);
+        double delayMeters = model.calculatePathDelay(date, geo,
+                                                      FastMath.toRadians(elevation), FastMath.toRadians(azimuth));
 
         Assert.assertTrue(Precision.compareTo(delayMeters, 12., epsilon) < 0);
         Assert.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
@@ -88,7 +89,9 @@ public class KlobucharModelTest {
 
         final GeodeticPoint geo = new GeodeticPoint(latitude, longitude, altitude);
                 
-        final double delayMeters = model.calculatePathDelay(date, geo, elevation, azimuth);
+        final double delayMeters = model.calculatePathDelay(date, geo,
+                                                            FastMath.toRadians(elevation),
+                                                            FastMath.toRadians(azimuth));
 
         Assert.assertEquals(23.784, delayMeters, 0.001);
     }

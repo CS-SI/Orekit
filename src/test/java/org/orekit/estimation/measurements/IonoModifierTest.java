@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
@@ -178,17 +177,15 @@ public class IonoModifierTest {
             //
             final GeodeticPoint geo = station.getBaseFrame().getPoint();
             
-            // elevation in degrees
-            final double elevation =
-                    FastMath.toDegrees(station.getBaseFrame().getElevation(position,
-                                                                           state.getFrame(),
-                                                                           state.getDate()));
-            
-            // elevation in degrees
-            final double azimuth =
-                    FastMath.toDegrees(station.getBaseFrame().getAzimuth(position,
+            // elevation
+            final double elevation = station.getBaseFrame().getElevation(position,
                                                                          state.getFrame(),
-                                                                         state.getDate()));
+                                                                         state.getDate());
+            
+            // elevation
+            final double azimuth = station.getBaseFrame().getAzimuth(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
             
             double delayMeters = model.calculatePathDelay(date, geo, elevation, azimuth);
             
