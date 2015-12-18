@@ -213,7 +213,7 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
     /** {@inheritDoc} */
     @Override
     public double[] getObservedValue() {
-        return observed;
+        return observed.clone();
     }
 
     /** {@inheritDoc} */
