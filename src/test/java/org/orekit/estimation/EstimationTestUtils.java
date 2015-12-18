@@ -171,7 +171,7 @@ public class EstimationTestUtils {
                                                   new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc),
                                                   context.gravity.getMu());
 
-        context.stations = Arrays.asList(context.createStation(30.0, 30.0, 0.0, "Lat30_Long10") );
+        context.stations = Arrays.asList(context.createStation(10.0, 45.0, 0.0, "Lat10_Long45") );
         return context;
 
     }
