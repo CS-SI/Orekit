@@ -85,7 +85,7 @@ public class IodLambert {
         final double[] Vdep = new double[2];
 
         // call Lambert's problem solver
-        final boolean exitflag = SolveLambertPb(r1 / R, r2 / R, dth,
+        final boolean exitflag = solveLambertPb(r1 / R, r2 / R, dth,
                                           tau / T,
                                           nRev,
                                           Vdep);
@@ -126,9 +126,8 @@ public class IodLambert {
     * @param V1 velocity at departure in (T,N) basis
     * @return something
     */
-    public boolean SolveLambertPb(final double r1, final double r2, final double dth, final double tau,
-                                   final int mRev,
-                                   final double[] V1) {
+    public boolean solveLambertPb(final double r1, final double r2, final double dth, final double tau,
+                                  final int mRev, final double[] V1) {
        // decide whether to use the left or right branch (for multi-revolution
        // problems), and the long- or short way.
         final boolean leftbranch = Math.signum(mRev) > 0;

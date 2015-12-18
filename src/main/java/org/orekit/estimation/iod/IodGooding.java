@@ -164,7 +164,7 @@ public class IodGooding {
         final int maxiter = 100; // maximum iter
 
         // solve the range problem
-        SolveRangeProblem(rho1init / R, rho3init / R,
+        solveRangeProblem(rho1init / R, rho3init / R,
                           dateObs3.durationFrom(dateObs1) / T, dateObs2.durationFrom(dateObs1) / T,
                           0,
                           true,
@@ -194,15 +194,14 @@ public class IodGooding {
      * @param maxIterations         max iter
      * @return nothing
      */
-    private boolean SolveRangeProblem(
-                      final double rho1init, final double rho3init,
-                      final double T13, final double T12,
-                      final int nrev,
-                      final boolean direction,
-                      final Vector3D lineOfSight1,
-                      final Vector3D lineOfSight2,
-                      final Vector3D lineOfSight3,
-                      final int maxIterations) {
+    private boolean solveRangeProblem(final double rho1init, final double rho3init,
+                                      final double T13, final double T12,
+                                      final int nrev,
+                                      final boolean direction,
+                                      final Vector3D lineOfSight1,
+                                      final Vector3D lineOfSight2,
+                                      final Vector3D lineOfSight3,
+                                      final int maxIterations) {
         final double ARBF = 1e-6;   // finite differences step
         boolean withHalley = true;  // use Halley's method
         final double cvtol = 1e-14; // convergence tolerance
@@ -513,7 +512,7 @@ public class IodGooding {
         // Solve the Lambert's problem to get the velocities at endpoints
         final double[] V1 = new double[2];
         // work with non-dimensional units (MU=1)
-        final boolean exitflag = lambert.SolveLambertPb(R1, R3, TH,
+        final boolean exitflag = lambert.solveLambertPb(R1, R3, TH,
                                        T13, 0,
                                        V1);
 
