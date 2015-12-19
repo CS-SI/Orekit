@@ -134,7 +134,7 @@ public class SaastamoinenModel implements TroposphericModel, TroposphericDelayMo
      */
     private double getDeltaR(final double height, final double zenith) {
         // limit the height to a range of [0, 5000] m
-        final double h = FastMath.min(Math.max(0, height), 5000);
+        final double h = FastMath.min(FastMath.max(0, height), 5000);
         // limit the zenith angle to 90 degree
         // Note: the function is symmetric for negative zenith angles
         final double z = FastMath.min(FastMath.abs(zenith), 0.5 * FastMath.PI);

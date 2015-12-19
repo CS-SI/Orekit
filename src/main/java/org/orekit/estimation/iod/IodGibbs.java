@@ -17,6 +17,7 @@
 package org.orekit.estimation.iod;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
@@ -90,8 +91,8 @@ public class IodGibbs {
         final double num = (r1.normalize())
                         .dotProduct(
                                     (r2.normalize()).crossProduct(r3.normalize()));
-        final double alpha = Math.PI / 2.0 - Math.acos(num);
-        if (Math.abs(alpha) > 5 * Math.PI / 180.) { // not coplanar
+        final double alpha = FastMath.PI / 2.0 - FastMath.acos(num);
+        if (FastMath.abs(alpha) > 5 * FastMath.PI / 180.) { // not coplanar
             // throw something
             //throw new OrekitException("Non coplanar points!");
         }
@@ -111,7 +112,7 @@ public class IodGibbs {
                              .add(r3.scalarMultiply(r1.getNorm() - r2.getNorm())));
 
         // middle velocity
-        final double vm = Math.sqrt(mu / (N.getNorm() * D.getNorm()));
+        final double vm = FastMath.sqrt(mu / (N.getNorm() * D.getNorm()));
         final Vector3D vlEci = B.scalarMultiply( vm / (r2.getNorm()) )
                             .add( S.scalarMultiply(vm));
 

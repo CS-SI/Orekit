@@ -17,6 +17,7 @@
 package org.orekit;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -319,7 +320,7 @@ public class OrekitMatchers {
             }
 
             private double actualDelta(Double item) {
-                return (Math.abs((item - value)) - delta);
+                return (FastMath.abs((item - value)) - delta);
             }
         };
 

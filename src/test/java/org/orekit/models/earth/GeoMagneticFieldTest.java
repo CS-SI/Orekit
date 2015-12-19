@@ -410,7 +410,7 @@ public class GeoMagneticFieldTest {
             if (st.hasMoreTokens()) {
                 s = Integer.valueOf(st.nextToken());
             }
-            double deg = Math.abs(d) + m / 60d + s / 3600d;
+            double deg = FastMath.abs(d) + m / 60d + s / 3600d;
             if (d < 0) {
                 deg = -deg;
             }

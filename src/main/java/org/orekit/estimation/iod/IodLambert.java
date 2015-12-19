@@ -77,9 +77,9 @@ public class IodLambert {
         double dth = FastMath.atan2(P12.getNorm(), P1.dotProduct(P2));
         // compute the number of revolutions
         if (!posigrade) {
-            dth = Math.PI - dth;
+            dth = FastMath.PI - dth;
         }
-        dth = dth + nRev * Math.PI;
+        dth = dth + nRev * FastMath.PI;
 
         // velocity vectors in the orbital plane, in the R-T frame
         final double[] Vdep = new double[2];
@@ -130,24 +130,24 @@ public class IodLambert {
                                   final int mRev, final double[] V1) {
        // decide whether to use the left or right branch (for multi-revolution
        // problems), and the long- or short way.
-        final boolean leftbranch = Math.signum(mRev) > 0;
+        final boolean leftbranch = FastMath.signum(mRev) > 0;
         int longway = 0;
         if (tau > 0) {
             longway = 1;
         }
 
-        final int m = Math.abs(mRev);
-        final double rtof = Math.abs(tau);
+        final int m = FastMath.abs(mRev);
+        final double rtof = FastMath.abs(tau);
         double theta = dth;
         if (longway < 0) {
-            theta = 2 * Math.PI - dth;
+            theta = 2 * FastMath.PI - dth;
         }
 
         // non-dimensional chord ||r2-r1||
         final double chord = FastMath.sqrt(r1 * r1 + r2 * r2 - 2 * r1 * r2 * FastMath.cos(theta));
 
         // non-dimensional semi-perimeter of the triangle
-        final double speri = (r1 + r2 + chord) / 2;
+        final double speri = 0.5 * (r1 + r2 + chord);
 
         // minimum energy ellipse semi-major axis
         final double minSma = speri / 2.;
@@ -182,8 +182,8 @@ public class IodLambert {
                 in1 = 0.723334;
                 in2 = 0.523334;
             }
-            x1 = FastMath.tan(in1 * Math.PI / 2.);
-            x2 = FastMath.tan(in2 * Math.PI / 2.);
+            x1 = FastMath.tan(in1 * 0.5 * FastMath.PI);
+            x2 = FastMath.tan(in2 * 0.5 * FastMath.PI);
         }
 
         // initial estimates for the tof
@@ -194,8 +194,8 @@ public class IodLambert {
         double y1;
         double y2;
         if (m == 0) {
-            y1 = Math.log(tof1) - logt;
-            y2 = Math.log(tof2) - logt;
+            y1 = FastMath.log(tof1) - logt;
+            y2 = FastMath.log(tof2) - logt;
         } else {
             y1 = tof1 - rtof;
             y2 = tof2 - rtof;
@@ -216,7 +216,7 @@ public class IodLambert {
             if (m == 0) {
                 x = FastMath.exp(xnew) - 1;
             } else {
-                x = FastMath.atan(xnew) * 2 / Math.PI;
+                x = FastMath.atan(xnew) * 2 / FastMath.PI;
             }
 
             final double tof = timeOfFlight(x, longway, m, minSma, speri, chord);
@@ -236,7 +236,7 @@ public class IodLambert {
             y2 = ynew;
 
             // update error
-            err = Math.abs(x1 - xnew);
+            err = FastMath.abs(x1 - xnew);
 
             // increment number of iterations
             ++iterations;
@@ -252,7 +252,7 @@ public class IodLambert {
         if (m == 0) {
             x = FastMath.exp(xnew) - 1;
         } else {
-            x = FastMath.atan(xnew) * 2 / Math.PI;
+            x = FastMath.atan(xnew) * 2 / FastMath.PI;
         }
 
         // Solution for the semi-major axis (Eq. 7.20)
@@ -271,7 +271,7 @@ public class IodLambert {
         } else {
             // hyperbola
             final double gamma = 2 * FastMath.acosh(x);
-            final double delta = longway * 2 * FastMath.asinh(Math.sqrt((chord - speri) / (2 * sma)));
+            final double delta = longway * 2 * FastMath.asinh(FastMath.sqrt((chord - speri) / (2 * sma)));
             //
             final double psi  = (gamma - delta) / 2.;
             final double etaSq = -2 * sma * FastMath.pow(FastMath.sinh(psi), 2) / speri;
@@ -280,7 +280,7 @@ public class IodLambert {
 
         // radial and tangential directions for departure velocity (Eq. 7.36)
         final double VR1 = (1. / eta) * FastMath.sqrt(1. / minSma) * (2 * lambda * minSma / r1 - (lambda + x * eta));
-        final double VT1 = (1. / eta) * FastMath.sqrt(1. / minSma) * FastMath.sqrt(r2 / r1) * Math.sin(dth / 2);
+        final double VT1 = (1. / eta) * FastMath.sqrt(1. / minSma) * FastMath.sqrt(r2 / r1) * FastMath.sin(dth / 2);
         V1[0] = VR1;
         V1[1] = VT1;
 
@@ -304,17 +304,17 @@ public class IodLambert {
         final double a = minSma / (1 - x * x);
 
         double tof;
-        if (Math.abs(x) < 1) {
+        if (FastMath.abs(x) < 1) {
             // Lagrange form of the time of flight equation Eq. (7.9)
             // elliptical orbit (note: mu = 1)
-            final double beta = longway * 2 * Math.asin(Math.sqrt((speri - chord) / (2. * a)));
-            final double alfa = 2 * Math.acos(x);
-            tof = a * Math.sqrt(a) * ((alfa - Math.sin(alfa)) - (beta - Math.sin(beta)) + 2 * Math.PI * mrev);
+            final double beta = longway * 2 * FastMath.asin(FastMath.sqrt((speri - chord) / (2. * a)));
+            final double alfa = 2 * FastMath.acos(x);
+            tof = a * FastMath.sqrt(a) * ((alfa - FastMath.sin(alfa)) - (beta - FastMath.sin(beta)) + 2 * FastMath.PI * mrev);
         } else {
             // hyperbolic orbit
             final double alfa = 2 * FastMath.acosh(x);
-            final double beta = longway * 2 * FastMath.asinh(Math.sqrt((speri - chord) / (-2. * a)));
-            tof = -a * Math.sqrt(-a) * ((Math.sinh(alfa) - alfa) - (Math.sinh(beta) - beta));
+            final double beta = longway * 2 * FastMath.asinh(FastMath.sqrt((speri - chord) / (-2. * a)));
+            tof = -a * FastMath.sqrt(-a) * ((FastMath.sinh(alfa) - alfa) - (FastMath.sinh(beta) - beta));
         }
 
         return tof;

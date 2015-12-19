@@ -71,13 +71,13 @@ public class CoefficientFactoryTest {
                             CoefficientsFactory.getVmns(12, 26, 20,
                                                         CombinatoricsUtils.factorialDouble(26 + 20),
                                                         CombinatoricsUtils.factorialDouble(26 - 12)),
-                            Math.abs(eps12 * vmnsp));
+                            FastMath.abs(eps12 * vmnsp));
         final double vmnsm = getVmns2(12, 27, -21);
         Assert.assertEquals(vmnsm,
                             CoefficientsFactory.getVmns(12, 27, -21,
                                                         CombinatoricsUtils.factorialDouble(27 + 21),
                                                         CombinatoricsUtils.factorialDouble(27 - 12)),
-                            Math.abs(eps12 * vmnsm));
+                            FastMath.abs(eps12 * vmnsm));
     }
 
     /** Error if m > n */
@@ -105,7 +105,7 @@ public class CoefficientFactoryTest {
                 final int sdim = FastMath.min(smax + 2, n);
                 for (int s = 0; s <= sdim; s++) {
                     final double qp = getQnsPolynomialValue(gamma, n, s);
-                    Assert.assertEquals(qns[n][s], qp, Math.abs(eps10 * qns[n][s]));
+                    Assert.assertEquals(qns[n][s], qp, FastMath.abs(eps10 * qns[n][s]));
                 }
             }
         }
@@ -126,8 +126,8 @@ public class CoefficientFactoryTest {
             final double[][] GH = CoefficientsFactory.computeGsHs(k, h, a, b, s);
             for (int j = 1; j < s; j++) {
                 final double[] GsHs = getGsHs(k, h, a, b, j);
-                Assert.assertEquals(GsHs[0], GH[0][j], Math.abs(eps12 * GsHs[0]));
-                Assert.assertEquals(GsHs[1], GH[1][j], Math.abs(eps12 * GsHs[1]));
+                Assert.assertEquals(GsHs[0], GH[0][j], FastMath.abs(eps12 * GsHs[0]));
+                Assert.assertEquals(GsHs[1], GH[1][j], FastMath.abs(eps12 * GsHs[1]));
             }
         }
     }

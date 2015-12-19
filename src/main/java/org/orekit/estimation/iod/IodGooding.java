@@ -212,7 +212,7 @@ public class IodGooding {
 
         int iter = 0;
         double stoppingCriterion = 10 * cvtol;
-        while ((iter < maxIterations) && (Math.abs(stoppingCriterion) > cvtol))  {
+        while ((iter < maxIterations) && (FastMath.abs(stoppingCriterion) > cvtol))  {
             facFiniteDiff = ARBF;
 
             // proposed in the original algorithm by Gooding.
@@ -291,7 +291,7 @@ public class IodGooding {
                 rho3 = rho3 + D1;
 
                 // convergence tests
-                final double den = Math.max(CR, R2);
+                final double den = FastMath.max(CR, R2);
                 stoppingCriterion = Fc / den;
             }
 
@@ -317,8 +317,8 @@ public class IodGooding {
         D3 = R13.dotProduct(lineOfSight3);
         final double D2 = lineOfSight1.dotProduct(lineOfSight3);
         final double D4 = 1. - D2 * D2;
-        rho1 = Math.max((D1 - D3 * D2) / D4, 0.);
-        rho3 = Math.max((D1 * D2 - D3) / D4, 0.);
+        rho1 = FastMath.max((D1 - D3 * D2) / D4, 0.);
+        rho3 = FastMath.max((D1 * D2 - D3) / D4, 0.);
     }
 
     /** Compute the derivatives by finite-differences for the range problem.
@@ -505,9 +505,9 @@ public class IodGooding {
 
         // compute the number of revolutions
         if (!posigrade) {
-            TH = Math.PI - TH;
+            TH = FastMath.PI - TH;
         }
-        TH = TH + nRev * Math.PI;
+        TH = TH + nRev * FastMath.PI;
 
         // Solve the Lambert's problem to get the velocities at endpoints
         final double[] V1 = new double[2];

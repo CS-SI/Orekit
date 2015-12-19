@@ -293,10 +293,10 @@ public class GeoMagneticField {
         }
 
         final double factor = (year - epoch) / (otherModel.epoch - epoch);
-        final int maxNCommon = Math.min(maxN, otherModel.maxN);
+        final int maxNCommon = FastMath.min(maxN, otherModel.maxN);
         final int maxNCommonIndex = maxNCommon * (maxNCommon + 1) / 2 + maxNCommon;
 
-        final int newMaxN = Math.max(maxN, otherModel.maxN);
+        final int newMaxN = FastMath.max(maxN, otherModel.maxN);
 
         final GeoMagneticField transformed = new GeoMagneticField(modelName, year, newMaxN, 0,
                                                                   validityStart, validityEnd);

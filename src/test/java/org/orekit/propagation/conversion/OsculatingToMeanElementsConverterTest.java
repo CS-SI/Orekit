@@ -25,8 +25,8 @@ public class OsculatingToMeanElementsConverterTest {
     public void testTrivial() throws Exception {
         final AbsoluteDate date = new AbsoluteDate("2011-12-12T11:57:20.000", TimeScalesFactory.getUTC());
         final Orbit orbit1 = new CircularOrbit(7204535.848109436, -4.484755873986251E-4, 0.0011562979012178316,
-                                               Math.toRadians(98.74341600466741), Math.toRadians(43.32990110790338),
-                                               Math.toRadians(180.0), PositionAngle.MEAN, FramesFactory.getGCRF(),
+                                               FastMath.toRadians(98.74341600466741), FastMath.toRadians(43.32990110790338),
+                                               FastMath.toRadians(180.0), PositionAngle.MEAN, FramesFactory.getGCRF(),
                                                date, Constants.WGS84_EARTH_MU);
         final SpacecraftState initialState = new SpacecraftState(orbit1);
         // Set up the numerical propagator

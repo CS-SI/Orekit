@@ -27,12 +27,13 @@ import java.util.Scanner;
 
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.general.OrbitFile.TimeSystem;
 import org.orekit.files.general.OrbitFileParser;
 import org.orekit.files.general.SatelliteInformation;
 import org.orekit.files.general.SatelliteTimeCoordinate;
-import org.orekit.files.general.OrbitFile.TimeSystem;
 import org.orekit.files.sp3.SP3File.SP3FileType;
 import org.orekit.files.sp3.SP3File.SP3OrbitType;
 import org.orekit.time.AbsoluteDate;
@@ -241,7 +242,7 @@ public class SP3Parser implements OrbitFileParser {
                         final int exponent = Integer.parseInt(line.substring(startIdx, startIdx + 3).trim());
                         // the accuracy is calculated as 2**exp (in m) -> can be safely
                         // converted to an integer as there will be no fraction
-                        satInfo.setAccuracy((int) Math.pow(2d, exponent));
+                        satInfo.setAccuracy((int) FastMath.pow(2d, exponent));
                         startIdx += 3;
                     }
                     break;
@@ -391,10 +392,10 @@ public class SP3Parser implements OrbitFileParser {
                     // 73).trim());
                     //
                     // pi.posStdDevRecord =
-                    // new PositionStdDevRecord(Math.pow(pi.posVelBase, xStdDevExp),
-                    // Math.pow(pi.posVelBase,
-                    // yStdDevExp), Math.pow(pi.posVelBase, zStdDevExp),
-                    // Math.pow(pi.clockBase, cStdDevExp));
+                    // new PositionStdDevRecord(FastMath.pow(pi.posVelBase, xStdDevExp),
+                    // FastMath.pow(pi.posVelBase,
+                    // yStdDevExp), FastMath.pow(pi.posVelBase, zStdDevExp),
+                    // FastMath.pow(pi.clockBase, cStdDevExp));
                     //
                     // String clockEventFlag = line.substring(74, 75);
                     // String clockPredFlag = line.substring(75, 76);
