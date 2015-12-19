@@ -17,19 +17,19 @@
 package org.orekit.models.earth;
 
 
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.utils.Constants;
 
 public class MariniMurrayModelTest {
 
     private static double epsilon = 1e-6;
 
-    private TroposphericDelayModel model;
+    private TroposphericModel model;
 
     @BeforeClass
     public static void setUpGlobal() {
@@ -39,7 +39,7 @@ public class MariniMurrayModelTest {
     @Before
     public void setUp() throws Exception {
         // ruby laser with wavelength 694.3 nm
-        model = MariniMurrayModel.getStandardModel(45.0, 694.3);
+        model = MariniMurrayModel.getStandardModel(FastMath.toRadians(45.0), 694.3);
     }
     
     @Test
@@ -47,10 +47,8 @@ public class MariniMurrayModelTest {
         final double elevation = 10d;
         final double height = 100d;
 
-        final double delay = model.calculateSignalDelay(elevation, height);
-        final double path = model.calculatePathDelay(elevation, height);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), height);
 
-        Assert.assertEquals(path / Constants.SPEED_OF_LIGHT, delay, epsilon);
         Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
@@ -60,7 +58,7 @@ public class MariniMurrayModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.calculatePathDelay(elev, 350);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), 350);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
@@ -72,7 +70,7 @@ public class MariniMurrayModelTest {
         double height = 0;
         double elevation = 10;
         double expectedValue = 13.919144625789874;
-        double actualValue = model.calculatePathDelay(elevation, height);
+        double actualValue = model.pathDelay(FastMath.toRadians(elevation), height);
         
         Assert.assertEquals(expectedValue, actualValue, epsilon);
     }

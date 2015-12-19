@@ -17,7 +17,6 @@
 package org.orekit.models.earth;
 
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.utils.Constants;
 
 /** The Marini-Murray tropospheric delay model for laser ranging.
  *
@@ -26,7 +25,7 @@ import org.orekit.utils.Constants;
  *
  * @author Joris Olympio
  */
-public class MariniMurrayModel implements TroposphericDelayModel {
+public class MariniMurrayModel implements TroposphericModel {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 8442906721207317886L;
@@ -51,7 +50,7 @@ public class MariniMurrayModel implements TroposphericDelayModel {
      * @param t0 the temperature at the station, K
      * @param p0 the atmospheric pressure at the station, mbar
      * @param rh the humidity at the station, percent (50% -> 0.5)
-     * @param latitude site latitude, deg
+     * @param latitude site latitude
      * @param lambda laser wavelength (c/f), nm
      */
     public MariniMurrayModel(final double t0, final double p0, final double rh, final double latitude, final double lambda) {
@@ -60,7 +59,7 @@ public class MariniMurrayModel implements TroposphericDelayModel {
 
         this.e0 = getWaterVapor(rh);
 
-        this.latitude = FastMath.toRadians(latitude);
+        this.latitude = latitude;
 
         this.lambda = lambda * 1e-3;
     }
@@ -73,7 +72,7 @@ public class MariniMurrayModel implements TroposphericDelayModel {
      * <li>humidity: 50%
      * </ul>
      * </p>
-     * @param latitude site latitude, deg
+     * @param latitude site latitude
      * @param frequency laser frequency, Hz
      *
      * @return a Saastamoinen model with standard environmental values
@@ -83,7 +82,7 @@ public class MariniMurrayModel implements TroposphericDelayModel {
     }
 
     @Override
-    public double calculatePathDelay(final double elevation, final double height) {
+    public double pathDelay(final double elevation, final double height) {
         final double A = 0.002357 * P0 + 0.000141 * e0;
         final double K = 1.163 * 0.00968 * FastMath.cos(2 * latitude) - 0.00104 * T0 + 0.00001435 * P0;
         final double B = (1.084 * 1e-8) * P0 * T0 * K + (4.734 * 1e-8) * P0 * (P0 / T0) * (2 * K) / (3 * K - 1);
@@ -91,14 +90,9 @@ public class MariniMurrayModel implements TroposphericDelayModel {
 
         final double fsite = getSiteFunctionValue(height / 1000.);
 
-        final double sinE = FastMath.sin( FastMath.toRadians(elevation) );
+        final double sinE = FastMath.sin(elevation);
         final double dR = (flambda / fsite) * (A + B) / (sinE + B / ((A + B) * (sinE + 0.01)) );
         return dR;
-    }
-
-    @Override
-    public double calculateSignalDelay(final double elevation, final double height) {
-        return calculatePathDelay(elevation, height) / Constants.SPEED_OF_LIGHT;
     }
 
     /** Get the laser frequency parameter f(lambda).

@@ -21,37 +21,17 @@ import java.io.Serializable;
 /** Defines a tropospheric model, used to calculate the path delay imposed to
  * electro-magnetic signals between an orbital satellite and a ground station.
  * @author Thomas Neidhart
- * @deprecated as of 7.1, replaced with {@link TroposphericModel}, which
- * uses radians in the interface
+ * @since 7.1
  */
-@Deprecated
-public interface TroposphericDelayModel extends Serializable {
+public interface TroposphericModel extends Serializable {
 
     /** Calculates the tropospheric path delay for the signal path from a ground
      * station to a satellite.
      *
-     * @param elevation the elevation of the satellite in degrees
+     * @param elevation the elevation of the satellite, in radians
      * @param height the height of the station in m above sea level
      * @return the path delay due to the troposphere in m
-     * @deprecated as of 7.1, replaced with {@link TroposphericModel#pathDelay(double, double)}
      */
-    @Deprecated
-    double calculatePathDelay(final double elevation, final double height);
-
-    /** Calculates the tropospheric signal delay for the signal path from a
-     * ground station to a satellite. This method exists only for convenience
-     * reasons and returns the same as
-     *
-     * <pre>
-     *   {@link #calculatePathDelay(double, double)}/{@link org.orekit.utils.Constants#SPEED_OF_LIGHT}
-     * </pre>
-     *
-     * @param elevation the elevation of the satellite in degrees
-     * @param height the height of the station in m above sea level
-     * @return the signal delay due to the troposphere in s
-     * @deprecated as of 7.1, replaced with {@link TroposphericModel#signalDelay(double, double)}
-     */
-    @Deprecated
-    double calculateSignalDelay(final double elevation, final double height);
+    double pathDelay(final double elevation, final double height);
 
 }

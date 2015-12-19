@@ -19,30 +19,27 @@ package org.orekit.models.earth;
 
 import static org.junit.Assert.assertEquals;
 
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.utils.Constants;
 
 public class SaastamoinenModelTest {
 
     private static double epsilon = 1e-6;
 
-    private TroposphericDelayModel model;
+    private TroposphericModel model;
 
     @Test
     public void testDelay() {
         final double elevation = 10d;
         final double height = 100d;
 
-        final double delay = model.calculateSignalDelay(elevation, height);
-        final double path = model.calculatePathDelay(elevation, height);
+        final double path = model.pathDelay(FastMath.toRadians(elevation), height);
 
-        Assert.assertEquals(path / Constants.SPEED_OF_LIGHT, delay, epsilon);
         Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
         Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
@@ -52,7 +49,7 @@ public class SaastamoinenModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
-            final double delay = model.calculatePathDelay(5, height);
+            final double delay = model.pathDelay(FastMath.toRadians(5), height);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
@@ -63,7 +60,7 @@ public class SaastamoinenModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.calculatePathDelay(elev, 350);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), 350);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
@@ -212,25 +209,11 @@ public class SaastamoinenModelTest {
                 double height = heights[h];
                 double elevation = elevations[e];
                 double expectedValue = expectedValues[h][e];
-                double actualValue = model.calculatePathDelay(elevation, height);
+                double actualValue = model.pathDelay(FastMath.toRadians(elevation), height);
                 assertEquals("For height=" + height + " elevation = " + elevation + " precision not met",
                              expectedValue, actualValue, epsilon);
             }
         }
-    }
-
-    @Test
-    @Ignore
-    public void testPerformance() {
-        final double elevation = 10d;
-
-        long RUNS = 100000;
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < RUNS; i++) {
-            model.calculateSignalDelay(elevation, 350);
-        }
-
-        System.out.println(RUNS + " runs took " + (System.currentTimeMillis() - start) + "ms");
     }
 
     @BeforeClass

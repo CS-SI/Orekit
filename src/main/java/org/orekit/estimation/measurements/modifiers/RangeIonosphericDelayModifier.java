@@ -29,7 +29,7 @@ import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.models.earth.IonosphericDelayModel;
+import org.orekit.models.earth.IonosphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -46,13 +46,13 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> {
     /** Ionospheric delay model. */
-    private final IonosphericDelayModel ionoModel;
+    private final IonosphericModel ionoModel;
 
     /** Constructor.
      *
      * @param model  Ionospheric delay model appropriate for the current range measurement method.
      */
-    public RangeIonosphericDelayModifier(final IonosphericDelayModel model) {
+    public RangeIonosphericDelayModifier(final IonosphericModel model) {
         ionoModel = model;
     }
 
@@ -63,8 +63,8 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double rangeErrorIonosphericModel(final GroundStation station,
-                                              final SpacecraftState state) throws OrekitException
-    {
+                                              final SpacecraftState state)
+        throws OrekitException {
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -82,7 +82,7 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
                                                                      state.getDate());
 
             // delay in meters
-            final double delay = ionoModel.calculatePathDelay(state.getDate(),
+            final double delay = ionoModel.pathDelay(state.getDate(),
                                                               station.getBaseFrame().getPoint(),
                                                               elevation, azimuth);
 

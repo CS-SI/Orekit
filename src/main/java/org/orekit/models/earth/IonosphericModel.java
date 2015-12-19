@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Joris Olympio
  * @since 7.1
  */
-public interface IonosphericDelayModel extends Serializable {
+public interface IonosphericModel extends Serializable {
 
     /** Calculates the ionospheric path delay for the signal path from a ground
      * station to a satellite.
@@ -37,8 +37,8 @@ public interface IonosphericDelayModel extends Serializable {
      * @param elevation   the elevation of the satellite
      * @param azimuth     the azimuth of the satellite
      *
-     * @return the path delay due to the troposphere in m
+     * @return the path delay due to the ionosphere in m
      */
-    double calculatePathDelay(AbsoluteDate date, GeodeticPoint geo, double elevation, double azimuth);
+    double pathDelay(AbsoluteDate date, GeodeticPoint geo, double elevation, double azimuth);
 
 }

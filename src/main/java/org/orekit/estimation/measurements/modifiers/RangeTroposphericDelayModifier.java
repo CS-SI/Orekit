@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationUtils;
@@ -30,7 +29,7 @@ import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Range;
-import org.orekit.models.earth.TroposphericDelayModel;
+import org.orekit.models.earth.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -47,13 +46,13 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class RangeTroposphericDelayModifier implements EvaluationModifier<Range> {
     /** Tropospheric delay model. */
-    private final TroposphericDelayModel tropoModel;
+    private final TroposphericModel tropoModel;
 
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range measurement method.
      */
-    public RangeTroposphericDelayModifier(final TroposphericDelayModel model) {
+    public RangeTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
     }
 
@@ -80,11 +79,10 @@ public class RangeTroposphericDelayModifier implements EvaluationModifier<Range>
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
-        // elevation in degrees
-        final double elevation = FastMath.toDegrees(
-                                                    station.getBaseFrame().getElevation(position,
-                                                                                        state.getFrame(),
-                                                                                        state.getDate()));
+        // elevation
+        final double elevation = station.getBaseFrame().getElevation(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
 
         // only consider measures above the horizon
         if (elevation > 0) {
@@ -92,7 +90,7 @@ public class RangeTroposphericDelayModifier implements EvaluationModifier<Range>
             final double height = getStationHeightAMSL(station);
 
             // delay in meters
-            final double delay = tropoModel.calculatePathDelay(elevation, height);
+            final double delay = tropoModel.pathDelay(elevation, height);
 
             // Multiply by two because it is a two-way measurment.
             return 2 * delay;

@@ -187,7 +187,7 @@ public class IonoModifierTest {
                                                                      state.getFrame(),
                                                                      state.getDate());
             
-            double delayMeters = model.calculatePathDelay(date, geo, elevation, azimuth);
+            double delayMeters = model.pathDelay(date, geo, elevation, azimuth);
             
             final double epsilon = 1e-6;
             Assert.assertTrue(Precision.compareTo(delayMeters, 15., epsilon) < 0);

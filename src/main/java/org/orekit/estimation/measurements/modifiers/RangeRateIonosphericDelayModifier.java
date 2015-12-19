@@ -29,7 +29,7 @@ import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
-import org.orekit.models.earth.IonosphericDelayModel;
+import org.orekit.models.earth.IonosphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -47,7 +47,7 @@ import org.orekit.propagation.SpacecraftState;
 public class RangeRateIonosphericDelayModifier implements EvaluationModifier<RangeRate> {
 
     /** Ionospheric delay model. */
-    private final IonosphericDelayModel ionoModel;
+    private final IonosphericModel ionoModel;
 
     /** Coefficient for measurment configuration (one-way, two-way). */
     private final double fTwoWay;
@@ -57,7 +57,7 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
      * @param model  Ionospheric delay model appropriate for the current range-rate measurement method.
      * @param twoWay     Flag indicating whether the measurement is two-way.
      */
-    public RangeRateIonosphericDelayModifier(final IonosphericDelayModel model, final boolean twoWay) {
+    public RangeRateIonosphericDelayModifier(final IonosphericModel model, final boolean twoWay) {
         ionoModel = model;
 
         if (twoWay) {
@@ -97,7 +97,7 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
                                                                      state.getDate());
 
             // delay in meters
-            final double delay1 = ionoModel.calculatePathDelay(state.getDate(),
+            final double delay1 = ionoModel.pathDelay(state.getDate(),
                                                               station.getBaseFrame().getPoint(),
                                                               elevation,
                                                               azimuth);
@@ -117,7 +117,7 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
                                                                       state2.getDate());
 
             // ionospheric delay dt after in meters
-            final double delay2 = ionoModel.calculatePathDelay(state2.getDate(),
+            final double delay2 = ionoModel.pathDelay(state2.getDate(),
                                                                station.getBaseFrame().getPoint(),
                                                                elevation2,
                                                                azimuth2);

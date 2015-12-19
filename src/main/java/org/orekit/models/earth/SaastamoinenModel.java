@@ -58,7 +58,8 @@ import org.orekit.utils.InterpolationTableLoader;
  * @author Thomas Neidhart
  * @see "Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007"
  */
-public class SaastamoinenModel implements TroposphericDelayModel {
+@SuppressWarnings("deprecation")
+public class SaastamoinenModel implements TroposphericModel, TroposphericDelayModel {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -5702086204232977550L;
@@ -99,7 +100,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
     }
 
     /** {@inheritDoc} */
-    public double calculatePathDelay(final double elevation, final double height) {
+    public double pathDelay(final double elevation, final double height) {
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final double T = t0 - 6.5e-3 * height;
         // the corrected pressure
@@ -112,29 +113,23 @@ public class SaastamoinenModel implements TroposphericDelayModel {
         // calculate e
         final double e = R * FastMath.exp(Functions.INSTANCE.e.value(T));
 
-        // calculate the zenith angle from the elevation and convert to radians
-        final double zInDegree = FastMath.abs(90.0 - elevation);
-        final double z = FastMath.toRadians(zInDegree);
+        // calculate the zenith angle from the elevation
+        final double z = FastMath.abs(0.5 * FastMath.PI - elevation);
 
         // get correction factor
-        final double deltaR = getDeltaR(height, zInDegree);
+        final double deltaR = getDeltaR(height, z);
 
         // calculate the path delay in m
         final double tan = FastMath.tan(z);
-        final double delta = 2.277e-3 / Math.cos(z) *
+        final double delta = 2.277e-3 / FastMath.cos(z) *
                              (P + (1255d / T + 5e-2) * e - B * tan * tan) + deltaR;
 
         return delta;
     }
 
-    /** {@inheritDoc} */
-    public double calculateSignalDelay(final double elevation, final double height) {
-        return calculatePathDelay(elevation, height) / Constants.SPEED_OF_LIGHT;
-    }
-
     /** Calculates the delta R correction term using linear interpolation.
      * @param height the height of the station in m
-     * @param zenith the zenith angle of the satellite in degrees
+     * @param zenith the zenith angle of the satellite
      * @return the delta R correction term in m
      */
     private double getDeltaR(final double height, final double zenith) {
@@ -142,7 +137,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
         final double h = FastMath.min(Math.max(0, height), 5000);
         // limit the zenith angle to 90 degree
         // Note: the function is symmetric for negative zenith angles
-        final double z = FastMath.min(Math.abs(zenith), 90);
+        final double z = FastMath.min(FastMath.abs(zenith), 0.5 * FastMath.PI);
         return Functions.INSTANCE.deltaR.value(h, z);
     }
 
@@ -181,9 +176,12 @@ public class SaastamoinenModel implements TroposphericDelayModel {
             try {
                 DataProvidersManager.getInstance().feed("^saastamoinen-correction\\.txt$", loader);
                 if (!loader.stillAcceptsData()) {
-                    func = new BilinearInterpolator().interpolate(loader.getAbscissaGrid(),
-                                                                       loader.getOrdinateGrid(),
-                                                                       loader.getValuesSamples());
+                    final double[] ordinateGrid = loader.getOrdinateGrid();
+                    for (int i = 0; i < ordinateGrid.length; ++i) {
+                        ordinateGrid[i] = FastMath.toRadians(ordinateGrid[i]);
+                    }
+                    func = new BilinearInterpolator().interpolate(loader.getAbscissaGrid(), ordinateGrid,
+                                                                  loader.getValuesSamples());
                 }
             } catch (OrekitException ex) {
                 // config file could not be loaded, use the default values instead
@@ -201,8 +199,12 @@ public class SaastamoinenModel implements TroposphericDelayModel {
                 // the height in m
                 final double xValForR[] = {0, 500, 1000, 1500, 2000, 3000, 4000, 5000};
                 // the zenith angle in degrees
-                final double yValForR[] = {0.0, 60.0, 66.0, 70.0, 73.0, 75.0, 76.0, 77.0,
-                                           78.0, 78.50, 79.0, 79.50, 79.75, 80.0, 90.0};
+                final double yValForR[] = {
+                    FastMath.toRadians( 0.00), FastMath.toRadians(60.00), FastMath.toRadians(66.00), FastMath.toRadians(70.00),
+                    FastMath.toRadians(73.00), FastMath.toRadians(75.00), FastMath.toRadians(76.00), FastMath.toRadians(77.00),
+                    FastMath.toRadians(78.00), FastMath.toRadians(78.50), FastMath.toRadians(79.00), FastMath.toRadians(79.50),
+                    FastMath.toRadians(79.75), FastMath.toRadians(80.00), FastMath.toRadians(90.00)
+                };
 
                 final double[][] fval = new double[][] {
                     {0.000, 0.003, 0.006, 0.012, 0.020, 0.031, 0.039, 0.050, 0.065,
@@ -397,6 +399,20 @@ public class SaastamoinenModel implements TroposphericDelayModel {
 
         }
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Deprecated
+    public double calculatePathDelay(final double elevation, final double height) {
+        return pathDelay(FastMath.toRadians(elevation), height);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Deprecated
+    public double calculateSignalDelay(final double elevation, final double height) {
+        return calculatePathDelay(elevation, height) / Constants.SPEED_OF_LIGHT;
     }
 
 }

@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationUtils;
@@ -30,7 +29,7 @@ import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
-import org.orekit.models.earth.TroposphericDelayModel;
+import org.orekit.models.earth.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -48,7 +47,7 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class RangeRateTroposphericDelayModifier implements EvaluationModifier<RangeRate> {
     /** Tropospheric delay model. */
-    private final TroposphericDelayModel tropoModel;
+    private final TroposphericModel tropoModel;
 
     /** */
     private final double fTwoWay;
@@ -58,7 +57,7 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
      * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
      * @param tw     Flag indicating whether the measurement is two-way.
      */
-    public RangeRateTroposphericDelayModifier(final TroposphericDelayModel model, final boolean tw) {
+    public RangeRateTroposphericDelayModifier(final TroposphericModel model, final boolean tw) {
         tropoModel = model;
         if (tw) {
             fTwoWay = 2.;
@@ -98,16 +97,15 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
         // spacecraft position and elevation as seen from the ground station
         final Vector3D position = state.getPVCoordinates().getPosition();
 
-        // elevation in degrees
-        final double elevation1 = FastMath.toDegrees(
-                                                     station.getBaseFrame().getElevation(position,
-                                                                                         state.getFrame(),
-                                                                                         state.getDate()));
+        // elevation
+        final double elevation1 = station.getBaseFrame().getElevation(position,
+                                                                      state.getFrame(),
+                                                                      state.getDate());
 
         // only consider measures above the horizon
         if (elevation1 > 0) {
             // tropospheric delay in meters
-            final double d1 = tropoModel.calculatePathDelay(elevation1, height);
+            final double d1 = tropoModel.pathDelay(elevation1, height);
 
             // propagate spacecraft state forward by dt
             final SpacecraftState state2 = state.shiftedBy(dt);
@@ -115,14 +113,13 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
             // spacecraft position and elevation as seen from the ground station
             final Vector3D position2 = state2.getPVCoordinates().getPosition();
 
-            // elevation in degrees
-            final double elevation2 = FastMath.toDegrees(
-                                                         station.getBaseFrame().getElevation(position2,
-                                                                                             state2.getFrame(),
-                                                                                             state2.getDate()));
+            // elevation
+            final double elevation2 = station.getBaseFrame().getElevation(position2,
+                                                                          state2.getFrame(),
+                                                                          state2.getDate());
 
             // tropospheric delay dt after
-            final double d2 = tropoModel.calculatePathDelay(elevation2, height);
+            final double d2 = tropoModel.pathDelay(elevation2, height);
 
             return fTwoWay * (d2 - d1) / dt;
         }

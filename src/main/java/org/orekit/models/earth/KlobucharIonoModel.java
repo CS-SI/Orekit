@@ -47,7 +47,7 @@ import org.orekit.utils.Constants;
  * @since 7.1
  *
  */
-public class KlobucharIonoModel implements IonosphericDelayModel {
+public class KlobucharIonoModel implements IonosphericModel {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 7277525837842061107L;
@@ -87,7 +87,7 @@ public class KlobucharIonoModel implements IonosphericDelayModel {
 
     /** {@inheritDoc} */
     @Override
-    public double calculatePathDelay(final AbsoluteDate date, final GeodeticPoint geo,
+    public double pathDelay(final AbsoluteDate date, final GeodeticPoint geo,
                                      final double elevation, final double azimuth) {
         // degees to semisircles
         final double rad2semi = 1. / FastMath.PI;
