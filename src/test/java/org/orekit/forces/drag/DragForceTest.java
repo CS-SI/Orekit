@@ -18,17 +18,21 @@ package org.orekit.forces.drag;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.util.FastMath;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.SphericalSpacecraft;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -37,6 +41,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -44,7 +49,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class DragForceTest extends AbstractForceModelTest {
 
@@ -101,7 +106,7 @@ public class DragForceTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 3.0e-4);
+                           1e3, tolerances[0], 2.0e-8);
 
     }
 
@@ -160,7 +165,63 @@ public class DragForceTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           1e3, tolerances[0], 2.0e-3);
+                           1e3, tolerances[0], 3.0e-8);
+
+    }
+
+    @Test
+    public void testIssue229() throws OrekitException {
+        AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 0, 0, 0., TimeScalesFactory.getUTC());
+        Frame frame       = FramesFactory.getEME2000();
+        double rpe         = 160.e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+        double rap         = 2000.e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+        double inc         = FastMath.toRadians(0.);
+        double aop         = FastMath.toRadians(0.);
+        double raan        = FastMath.toRadians(0.);
+        double mean        = FastMath.toRadians(180.);
+        double mass        = 100.;
+        KeplerianOrbit orbit = new KeplerianOrbit(0.5 * (rpe + rap), (rap - rpe) / (rpe + rap),
+                                                  inc, aop, raan, mean, PositionAngle.MEAN,
+                                                  frame, initialDate, Constants.EIGEN5C_EARTH_MU);
+
+        SphericalSpacecraft shape = new SphericalSpacecraft(10., 2.2, 0., 0.);
+
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        BodyShape earthShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, itrf);
+        Atmosphere atmosphere = new SimpleExponentialAtmosphere(earthShape, 2.6e-10, 200000, 26000);
+
+        double[][]          tolerance  = NumericalPropagator.tolerances(0.1, orbit, OrbitType.CARTESIAN);
+        AbstractIntegrator  integrator = new DormandPrince853Integrator(1.0e-3, 300, tolerance[0], tolerance[1]);
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setMu(orbit.getMu());
+        propagator.addForceModel(new DragForce(atmosphere, shape));
+        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+        propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(orbit, mass), 6, 0));
+
+        SpacecraftState state = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
+
+        double delta = 0.1;
+        Orbit shifted = new CartesianOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
+                                                                        orbit.getPVCoordinates().getPosition().add(new Vector3D(delta, 0, 0)),
+                                                                        orbit.getPVCoordinates().getVelocity()),
+                                           orbit.getFrame(), orbit.getMu());
+        propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(shifted, mass), 6, 0));
+        SpacecraftState newState = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
+        double[] dPVdX = new double[] {
+            (newState.getPVCoordinates().getPosition().getX() - state.getPVCoordinates().getPosition().getX()) / delta,
+            (newState.getPVCoordinates().getPosition().getY() - state.getPVCoordinates().getPosition().getY()) / delta,
+            (newState.getPVCoordinates().getPosition().getZ() - state.getPVCoordinates().getPosition().getZ()) / delta,
+            (newState.getPVCoordinates().getVelocity().getX() - state.getPVCoordinates().getVelocity().getX()) / delta,
+            (newState.getPVCoordinates().getVelocity().getY() - state.getPVCoordinates().getVelocity().getY()) / delta,
+            (newState.getPVCoordinates().getVelocity().getZ() - state.getPVCoordinates().getVelocity().getZ()) / delta,
+        };
+
+        double[][] dYdY0 = new double[6][6];
+        partials.getMapper().getStateJacobian(state, dYdY0);
+        for (int i = 0; i < 6; ++i) {
+            Assert.assertEquals(dPVdX[i], dYdY0[i][0], 4.5e-6 * FastMath.abs(dPVdX[i]));
+        }
 
     }
 

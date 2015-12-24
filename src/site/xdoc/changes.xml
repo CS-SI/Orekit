@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed state partial derivatives in drag force model.
+        Fixes issue #229
+      </action>
       <action dev="evan" type="fix">
         Fixed incorrect density in DTM2000 when the input position is not in ECI
         or ECEF.

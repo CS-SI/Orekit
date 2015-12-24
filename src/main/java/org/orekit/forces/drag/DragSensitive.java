@@ -75,7 +75,7 @@ public interface DragSensitive {
      */
     FieldVector3D<DerivativeStructure> dragAcceleration(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position,
                                                         FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass,
-                                                        double density, FieldVector3D<DerivativeStructure> relativeVelocity)
+                                                        DerivativeStructure density, FieldVector3D<DerivativeStructure> relativeVelocity)
         throws OrekitException;
 
     /** Compute acceleration due to drag, with parameters derivatives.

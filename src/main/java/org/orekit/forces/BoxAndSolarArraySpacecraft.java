@@ -374,7 +374,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                                                final FieldVector3D<DerivativeStructure> position,
                                                                final FieldRotation<DerivativeStructure> rotation,
                                                                final DerivativeStructure mass,
-                                                               final double density,
+                                                               final DerivativeStructure density,
                                                                final FieldVector3D<DerivativeStructure> relativeVelocity)
         throws OrekitException {
 
@@ -395,7 +395,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             }
         }
 
-        return new FieldVector3D<DerivativeStructure>(sv.multiply(density * dragCoeff / 2.0).divide(mass),
+        return new FieldVector3D<DerivativeStructure>(sv.multiply(density.multiply(dragCoeff / 2.0)).divide(mass),
                                                       relativeVelocity);
 
     }
