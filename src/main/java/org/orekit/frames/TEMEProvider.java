@@ -19,6 +19,7 @@ package org.orekit.frames;
 import java.io.Serializable;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -87,7 +88,7 @@ class TEMEProvider implements EOPBasedTransformProvider {
      */
     public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
         final double eqe = getEquationOfEquinoxes(date);
-        return new Transform(date, new Rotation(Vector3D.PLUS_K, -eqe));
+        return new Transform(date, new Rotation(Vector3D.PLUS_K, eqe, RotationConvention.FRAME_TRANSFORM));
     }
 
     /** Get the Equation of the Equinoxes at the current date.

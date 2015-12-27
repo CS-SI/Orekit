@@ -18,6 +18,7 @@ package org.orekit.attitudes;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -81,14 +82,14 @@ public class LofOffsetPointingTest {
         //*************************************
         final BodyCenterPointing centerLaw = new BodyCenterPointing(circ.getFrame(), earthSpheric);
         final Rotation centerRot = centerLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
+        final double angleBodyCenter = centerRot.composeInverse(lofRot, RotationConvention.VECTOR_OPERATOR).getAngle();
         Assert.assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
         // Compare to nadir pointing law
         //*******************************
         final NadirPointing nadirLaw = new NadirPointing(circ.getFrame(), earthSpheric);
         final Rotation nadirRot = nadirLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
+        final double angleNadir = nadirRot.composeInverse(lofRot, RotationConvention.VECTOR_OPERATOR).getAngle();
         Assert.assertEquals(0., angleNadir, Utils.epsilonAngle);
 
     }

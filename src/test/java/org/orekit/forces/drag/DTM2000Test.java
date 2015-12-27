@@ -18,6 +18,7 @@ package org.orekit.forces.drag;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
@@ -168,7 +169,7 @@ public class DTM2000Test {
         //setup
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        Rotation rotation = new Rotation(Vector3D.PLUS_I, FastMath.PI / 2);
+        Rotation rotation = new Rotation(Vector3D.PLUS_I, FastMath.PI / 2, RotationConvention.VECTOR_OPERATOR);
         Frame frame = new Frame(ecef, new Transform(date, rotation), "other");
         Vector3D pEcef = new Vector3D(6378137 + 300e3, 0, 0);
         Vector3D pFrame = ecef.getTransformTo(frame, date)

@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
@@ -99,7 +100,7 @@ public class TargetPointingTest {
         Rotation rotGeo = geoTargetAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Rotations composition
-        Rotation rotCompo = rotGeo.applyInverseTo(rotPv);
+        Rotation rotCompo = rotGeo.composeInverse(rotPv, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
         Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
@@ -166,7 +167,7 @@ public class TargetPointingTest {
         Attitude att1 = geoTargetAttitudeLaw.getAttitude(circ, date, cirf);
         Attitude att2 = geoTargetAttitudeLaw.getAttitude(circ, date, itrf);
         Attitude att3 = att2.withReferenceFrame(cirf);
-        Assert.assertEquals(0.0, att3.getRotation().applyInverseTo(att1.getRotation()).getAngle(), 1.0e-15);
+        Assert.assertEquals(0.0, Rotation.distance(att3.getRotation(), att1.getRotation()), 1.0e-15);
 
     }
 
@@ -223,7 +224,7 @@ public class TargetPointingTest {
         Rotation rotNadir = nadirAttitudeLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
 
         // Compose attitude rotations
-        Rotation rotCompo = rotTarget.applyInverseTo(rotNadir);
+        Rotation rotCompo = rotTarget.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
         Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
@@ -245,7 +246,7 @@ public class TargetPointingTest {
         Rotation extrapRotNadir = nadirAttitudeLaw.getAttitude(extrapOrbit, extrapDate, extrapOrbit.getFrame()).getRotation();
 
         // Compose attitude rotations
-        Rotation extrapRotCompo = extrapRotTarget.applyInverseTo(extrapRotNadir);
+        Rotation extrapRotCompo = extrapRotTarget.composeInverse(extrapRotNadir, RotationConvention.VECTOR_OPERATOR);
         double extrapAngle = extrapRotCompo.getAngle();
         Assert.assertEquals(extrapAngle, FastMath.toRadians(24.684793905118823), Utils.epsilonAngle);
 
@@ -354,7 +355,7 @@ public class TargetPointingTest {
         double deltaExpected = FastMath.atan(tanDeltaExpected);
 
         //  real
-        double deltaReal = rotSatEME2000.applyInverseTo(rotSatRefEME2000).getAngle();
+        double deltaReal = Rotation.distance(rotSatEME2000, rotSatRefEME2000);
 
         Assert.assertEquals(deltaReal, deltaExpected, 1.e-4);
 

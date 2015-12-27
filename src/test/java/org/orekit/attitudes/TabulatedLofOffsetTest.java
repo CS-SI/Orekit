@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.CardanEulerSingularityException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -94,7 +95,7 @@ public class TabulatedLofOffsetTest {
                 Rotation  offsetAtt    = law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()).getRotation();
                 LofOffset aligned      = new LofOffset(orbit.getFrame(), type);
                 Rotation  alignedAtt   = aligned.getAttitude(orbit, orbit.getDate(), orbit.getFrame()).getRotation();
-                Rotation  offsetProper = offsetAtt.applyTo(alignedAtt.revert());
+                Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
                 TabulatedLofOffset tabulated =
                         new TabulatedLofOffset(orbit.getFrame(), type,
                                                Arrays.asList(new TimeStampedAngularCoordinates(orbit.getDate().shiftedBy(-10),
@@ -138,7 +139,7 @@ public class TabulatedLofOffsetTest {
                     LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
                     Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
                                                                  currentState.getFrame()).getRotation();
-                    Rotation  offsetProper = offsetAtt.applyTo(alignedAtt.revert());
+                    Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
                     sample.add(new TimeStampedAngularCoordinates(currentState.getDate(),
                                                                  offsetProper, Vector3D.ZERO, Vector3D.ZERO));
                 } catch (OrekitException oe) {
@@ -197,7 +198,7 @@ public class TabulatedLofOffsetTest {
                     LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
                     Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
                                                                  currentState.getFrame()).getRotation();
-                    Rotation  offsetProper = offsetAtt.applyTo(alignedAtt.revert());
+                    Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
                     sample.add(new TimeStampedAngularCoordinates(currentState.getDate(),
                                                                  offsetProper, Vector3D.ZERO, Vector3D.ZERO));
                 } catch (OrekitException oe) {

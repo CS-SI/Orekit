@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
@@ -76,7 +77,9 @@ class VEISProvider implements TransformProvider {
         final Vector3D rotationRate = new Vector3D(-VSTD, Vector3D.PLUS_K);
 
         // set up the transform from parent GTOD
-        return new Transform(date, new Rotation(Vector3D.PLUS_K, vst), rotationRate);
+        return new Transform(date,
+                             new Rotation(Vector3D.PLUS_K, vst, RotationConvention.VECTOR_OPERATOR),
+                             rotationRate);
 
     }
 
