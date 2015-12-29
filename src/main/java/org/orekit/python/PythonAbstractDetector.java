@@ -89,7 +89,7 @@ public class PythonAbstractDetector<T extends EventDetector> extends AbstractDet
     /** {@inheritDoc} */
 	@Override
 	public native T create(double newMaxCheck, double newThreshold, int newMaxIter,
-			EventHandler<T> newHandler);
+			EventHandler<? super T> newHandler);
 	
 
 }
