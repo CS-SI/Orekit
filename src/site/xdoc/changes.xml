@@ -21,6 +21,22 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Use new Rotation API from Apache Commons Math 3.6.
+        This API allows to use both vector operator convention and frames
+        transform convention naturally. This is useful when axis/angles are
+        involved, or when composing rotations. This probably fixes one of
+        the oldest stumbling blocks for Orekit users.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed state partial derivatives in drag force model.
+        Fixes issue #229
+      </action>
+      <action dev="evan" type="fix">
+        Fixed incorrect density in DTM2000 when the input position is not in ECI
+        or ECEF.
+        Fixes issue #228
+      </action>
       <action dev="evan" type="add">
         Added capability to use a single EventHandler with multiple types of
         EventDetectors.

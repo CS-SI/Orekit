@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
@@ -134,8 +135,8 @@ public class YawSteeringTest {
         Rotation rotYaw = yawCompensLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
 
         // Compose rotations composition
-        Rotation compoRot = rotYaw.applyTo(rotNoYaw.revert());
-        Vector3D yawAxis = compoRot.getAxis();
+        Rotation compoRot = rotYaw.compose(rotNoYaw.revert(), RotationConvention.VECTOR_OPERATOR);
+        Vector3D yawAxis = compoRot.getAxis(RotationConvention.VECTOR_OPERATOR);
 
         // Check axis
         Assert.assertEquals(0., yawAxis.getX(), Utils.epsilonTest);

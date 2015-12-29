@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -139,7 +140,7 @@ public class Attitude
         // we have to take an intermediate rotation into account
         final Transform t = newReferenceFrame.getTransformTo(referenceFrame, orientation.getDate());
         return new Attitude(orientation.getDate(), newReferenceFrame,
-                            orientation.getRotation().applyTo(t.getRotation()),
+                            orientation.getRotation().compose(t.getRotation(), RotationConvention.VECTOR_OPERATOR),
                             orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())),
                             orientation.getRotationAcceleration().add(orientation.getRotation().applyTo(t.getRotationAcceleration())));
 

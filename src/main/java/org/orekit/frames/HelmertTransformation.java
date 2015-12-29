@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.time.AbsoluteDate;
@@ -251,8 +252,10 @@ public class HelmertTransformation implements TransformProvider {
         final double angle = dR.getNorm();
         final Transform rotationTransform =
                 new Transform(date,
-                              (angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
-                                                           rotationRate);
+                              (angle < Precision.SAFE_MIN) ?
+                              Rotation.IDENTITY :
+                              new Rotation(dR, angle, RotationConvention.VECTOR_OPERATOR),
+                              rotationRate);
 
         // combine both parts
         return new Transform(date, translationTransform, rotationTransform);
