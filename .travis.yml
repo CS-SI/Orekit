@@ -11,3 +11,7 @@ before_install:
   - pushd ~/builds/MATH_3_X 
   - mvn install  
   - popd 
+
+matrix:
+    allow_failures:
+        - jdk: openjdk6
