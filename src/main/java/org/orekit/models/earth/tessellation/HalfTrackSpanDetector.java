@@ -48,7 +48,7 @@ class HalfTrackSpanDetector extends AbstractDetector<HalfTrackSpanDetector> {
      * @param bodyFrame body frame
      */
     protected HalfTrackSpanDetector(final double maxCheck, final double threshold, final int maxIter,
-                                    final EventHandler<HalfTrackSpanDetector> handler, final Frame bodyFrame) {
+                                    final EventHandler<? super HalfTrackSpanDetector> handler, final Frame bodyFrame) {
         super(maxCheck, threshold, maxIter, handler);
         this.bodyFrame = bodyFrame;
     }
@@ -58,7 +58,7 @@ class HalfTrackSpanDetector extends AbstractDetector<HalfTrackSpanDetector> {
     protected HalfTrackSpanDetector create(final double newMaxCheck,
                                            final double newThreshold,
                                            final int newMaxIter,
-                                           final EventHandler<HalfTrackSpanDetector> newHandler) {
+                                           final EventHandler<? super HalfTrackSpanDetector> newHandler) {
         return new HalfTrackSpanDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, bodyFrame);
     }
 

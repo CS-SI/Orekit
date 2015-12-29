@@ -21,6 +21,15 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="evan" type="add">
+        Added capability to use a single EventHandler with multiple types of
+        EventDetectors.
+      </action>
+      <action dev="luc" type="add" >
+        Added TabulatedLofOffset for attitudes defined by tabulating rotations between Local Orbital Frame
+        and spacecraft frame.
+        Fixes issue #227
+      </action>
       <action dev="luc" type="fix" >
         Fixed wrong ephemeris generation for analytical propagators with maneuvers.
         Fixes issue #224.

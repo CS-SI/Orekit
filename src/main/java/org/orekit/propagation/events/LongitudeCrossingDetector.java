@@ -85,7 +85,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
      * @param longitude longitude to be crossed
      */
     private LongitudeCrossingDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<LongitudeCrossingDetector> handler,
+                                     final int maxIter, final EventHandler<? super LongitudeCrossingDetector> handler,
                                      final OneAxisEllipsoid body, final double longitude) {
         super(maxCheck, threshold, maxIter, handler);
         this.body          = body;
@@ -98,7 +98,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
     @Override
     protected LongitudeCrossingDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<LongitudeCrossingDetector> newHandler) {
+                                              final EventHandler<? super LongitudeCrossingDetector> newHandler) {
         return new LongitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                           body, longitude);
     }

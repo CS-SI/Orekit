@@ -34,6 +34,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * This class handles an attitude provider interpolating from a predefined table.
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
+ * @see TabulatedLofOffset
  * @since 6.1
  */
 public class TabulatedProvider implements AttitudeProvider {
