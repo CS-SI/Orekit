@@ -28,11 +28,10 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.Constants;
 
 /** This class is a container for a single set of TLE data.
  *
@@ -72,7 +71,7 @@ public class TLE implements TimeStamped, Serializable {
 
     /** Pattern for line 1. */
     private static final Pattern LINE_1_PATTERN =
-        Pattern.compile("1 [ 0-9]{5}U [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ +-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
+        Pattern.compile("1 [ 0-9]{5}[A-Z] [ 0-9]{5}[ A-Z]{3} [ 0-9]{5}[.][ 0-9]{8} (?:(?:[ +-][.][ 0-9]{8})|(?: [ +-][.][ 0-9]{7})) " +
                         "[ +-][ 0-9]{5}[+-][ 0-9] [ +-][ 0-9]{5}[+-][ 0-9] [ 0-9] [ 0-9]{4}[ 0-9]");
 
     /** Pattern for line 2. */
@@ -296,7 +295,6 @@ public class TLE implements TimeStamped, Serializable {
         throws OrekitException {
 
         final StringBuffer buffer = new StringBuffer();
-        final DecimalFormat f38  = new DecimalFormat("000.00000000", SYMBOLS);
 
         buffer.append('1');
 
@@ -310,11 +308,13 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(addPadding("launchPiece",  launchPiece, ' ', 3, false));
 
         buffer.append(' ');
-        final TimeScale utc = TimeScalesFactory.getUTC();
-        final int year = epoch.getComponents(utc).getDate().getYear();
-        buffer.append(addPadding("year", year % 100, '0', 2, true));
-        final double day = 1.0 + epoch.durationFrom(new AbsoluteDate(year, 1, 1, utc)) / Constants.JULIAN_DAY;
-        buffer.append(f38.format(day));
+        final DateTimeComponents dtc = epoch.getComponents(TimeScalesFactory.getUTC());
+        buffer.append(addPadding("year", dtc.getDate().getYear() % 100, '0', 2, true));
+        buffer.append(addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true));
+        buffer.append('.');
+        // nota: 31250/27 == 100000000/86400
+        final int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInDay() / 27.0);
+        buffer.append(addPadding("fraction", fraction,  '0', 8, true));
 
         buffer.append(' ');
         final double n1 = meanMotionFirstDerivative * 1.86624e9 / FastMath.PI;

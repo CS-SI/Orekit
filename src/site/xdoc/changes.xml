@@ -21,13 +21,43 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added TabulatedLofOffset for attitudes defined by tabulating rotations between Local Orbital Frame
+        and spacecraft frame.
+        Fixes issue #227
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed wrong ephemeris generation for analytical propagators with maneuvers.
+        Fixes issue #224.
+      </action>
+       <action dev="luc" type="fix" >
+        Fixed date offset by one second for TLE built from their components,
+        if a leap second was introduced earlier in the same year.
+        Fixes issue #225.
+      </action>
+      <action dev="luc" type="fix" >
+        Allow parsing TLE with non-unclassified modifier.
+      </action>
+      <action dev="luc" type="add" >
+        As a side effect of fixing issue #223, KeplerianPropagator and
+        Eckstein-Hechler propagator are now serializable.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed missing additional states handling in ephemeris propagators
+        created from analytical propagators.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed NPE and serialization issues in ephemeris propagators created
+        from analytical propagators.
+        Fixes issue #223.
+      </action>
       <action dev="luc" type="fix" >
         Fixed time scale issues in JPL ephemerides and IAU pole models.
         The time used for internal computation should be TDB, not TT.
       </action>
       <action dev="luc" type="fix" >
         Fixed an issue with backward propagation on analytical propagator.
-        During first step, the analytical interpolator wrongly thought the
+        During first step, the analytical interpolator wrongly considered the
         propagation was forward.
       </action>
       <action dev="luc" type="add" >

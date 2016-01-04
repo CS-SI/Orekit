@@ -32,7 +32,7 @@
  *
  * <p>
  * The {@link org.orekit.frames.FramesFactory} class implements several predefined reference
- * frames. One set correspond to the frames from the IERS 2003 conventions (ITRF2005 and others).
+ * frames. One set correspond to the frames from the various IERS conventions (ITRF and others).
  * Other frames not belonging to the previous set are the EME2000 frame that was used prior
  * to GCRF and which is linked to GCRF by a simple bias rotation, the MOD (Mean Of Date) frame
  * which involves the IAU 1976 precession model, the TOD (True Of Date) frame which involves
@@ -50,7 +50,7 @@
  * </p>
  *
  * <p>
- * The frames can be time dependent (for example the ITRF2005 frame depends on time due to
+ * The frames can be time dependent (for example the ITRF frame depends on time due to
  * precession/nutation, Earth rotation and pole motion). In order to get a transform from one
  * frame to another one, the date must be specified, and {@link
  * org.orekit.frames.TransformProvider#getTransform(AbsoluteDate)} is called under the hood.

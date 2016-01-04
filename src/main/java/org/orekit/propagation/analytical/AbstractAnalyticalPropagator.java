@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,10 +31,12 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -266,7 +270,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             final SpacecraftState resetState = currentEvent.reset(eventY);
             if (resetState != null) {
-                resetInitialState(resetState);
+                resetIntermediateState(resetState, interpolator.isForward());
                 return resetState;
             }
 
@@ -332,6 +336,18 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         interpolator.softCurrentDate   = interpolator.globalCurrentDate;
     }
 
+    /** Reset an intermediate state.
+     * @param state new intermediate state to consider
+     * @param forward if true, the intermediate state is valid for
+     * propagations after itself
+     * @exception PropagationException if initial state cannot be reset
+     */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws PropagationException {
+        interpolator.globalCurrentDate = state.getDate();
+        interpolator.softCurrentDate   = interpolator.globalCurrentDate;
+    }
+
     /** Extrapolate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @return extrapolated parameters
@@ -379,7 +395,12 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     }
 
     /** {@link BoundedPropagator} view of the instance. */
-    private class BoundedPropagatorView extends AbstractAnalyticalPropagator implements BoundedPropagator {
+    private class BoundedPropagatorView
+        extends AbstractAnalyticalPropagator
+        implements BoundedPropagator, Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20151117L;
 
         /** Min date. */
         private final AbsoluteDate minDate;
@@ -400,6 +421,18 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 minDate = endDate;
                 maxDate = startDate;
             }
+
+            try {
+                // copy the same additional state providers as the original propagator
+                for (AdditionalStateProvider provider : AbstractAnalyticalPropagator.this.getAdditionalStateProviders()) {
+                    addAdditionalStateProvider(provider);
+                }
+            } catch (OrekitException oe) {
+                // as the providers are already compatible with each other,
+                // this should never happen
+                throw new OrekitInternalError(null);
+            }
+
         }
 
         /** {@inheritDoc} */
@@ -435,8 +468,66 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+            throws PropagationException {
+            AbstractAnalyticalPropagator.this.resetIntermediateState(state, forward);
+        }
+
+        /** {@inheritDoc} */
         public SpacecraftState getInitialState() throws PropagationException {
             return AbstractAnalyticalPropagator.this.getInitialState();
+        }
+
+        /** {@inheritDoc} */
+        public Frame getFrame() {
+            return AbstractAnalyticalPropagator.this.getFrame();
+        }
+
+        /** Replace the instance with a data transfer object for serialization.
+         * @return data transfer object that will be serialized
+         * @exception NotSerializableException if attitude provider or additional
+         * state provider is not serializable
+         */
+        private Object writeReplace() throws NotSerializableException {
+            return new DataTransferObject(minDate, maxDate, AbstractAnalyticalPropagator.this);
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20151117L;
+
+        /** Min date. */
+        private final AbsoluteDate minDate;
+
+        /** Max date. */
+        private final AbsoluteDate maxDate;
+
+        /** Underlying propagator. */
+        private final AbstractAnalyticalPropagator propagator;
+
+        /** Simple constructor.
+         * @param minDate min date
+         * @param maxDate max date
+         * @param propagator underlying propagator
+         */
+        DataTransferObject(final AbsoluteDate minDate, final AbsoluteDate maxDate,
+                           final AbstractAnalyticalPropagator propagator) {
+            this.minDate    = minDate;
+            this.maxDate    = maxDate;
+            this.propagator = propagator;
+        }
+
+        /** Replace the deserialized data transfer object with an {@link BoundedPropagatorView}.
+         * @return replacement {@link BoundedPropagatorView}
+         */
+        private Object readResolve() {
+            propagator.lastPropagationStart = minDate;
+            propagator.lastPropagationEnd   = maxDate;
+            return propagator.getGeneratedEphemeris();
         }
 
     }

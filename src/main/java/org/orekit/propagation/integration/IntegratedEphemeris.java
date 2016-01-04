@@ -244,6 +244,12 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws PropagationException {
+        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    /** {@inheritDoc} */
     public SpacecraftState getInitialState() throws PropagationException {
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
