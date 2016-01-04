@@ -22,6 +22,11 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add" >
+        Added a way to customize interpolation grid in DSST, either using a fixed number
+        of points or a maximum time gap between points, for each mean elements integration
+        step.
+      </action>
+      <action dev="luc" type="add" >
         Added TabulatedLofOffset for attitudes defined by tabulating rotations between Local Orbital Frame
         and spacecraft frame.
         Fixes issue #227

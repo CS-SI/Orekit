@@ -159,6 +159,8 @@ public class DSSTPropagation {
         DURATION_IN_DAYS,
         OUTPUT_STEP,
         FIXED_INTEGRATION_STEP,
+        FIXED_NUMBER_OF_INTERPOLATION_POINTS,
+        MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS,
         NUMERICAL_COMPARISON,
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
@@ -254,6 +256,19 @@ public class DSSTPropagation {
                                                        initialIsOsculating, outputIsOsculating,
                                                        fixedStepSize, shortPeriodCoefficients);
 
+        if (parser.containsKey(ParameterKey.FIXED_NUMBER_OF_INTERPOLATION_POINTS)) {
+            if (parser.containsKey(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS)) {
+                throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+                                          "cannot specify both fixed.number.of.interpolation.points" +
+                                          " and max.time.gap.between.interpolation.points");
+            }
+            dsstProp.setInterpolationGridToFixedNumberOfPoints(parser.getInt(ParameterKey.FIXED_NUMBER_OF_INTERPOLATION_POINTS));
+        } else if (parser.containsKey(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS)) {
+            dsstProp.setInterpolationGridToMaxTimeGap(parser.getDouble(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS));
+        } else {
+            dsstProp.setInterpolationGridToFixedNumberOfPoints(3);
+        }
+
         // Set Force models
         setForceModel(parser, unnormalized, earthFrame, dsstProp);
 
@@ -294,8 +309,8 @@ public class DSSTPropagation {
         System.out.println("writing file...");
         final BoundedPropagator dsstEphem = dsstProp.getGeneratedEphemeris();
         dsstEphem.setMasterMode(outStep, new OutputHandler(output,
-                                                          displayKeplerian, displayEquinoctial, displayCartesian,
-                                                          shortPeriodCoefficients));
+                                                           displayKeplerian, displayEquinoctial, displayCartesian,
+                                                           shortPeriodCoefficients));
         dsstEphem.propagate(start, start.shiftedBy(duration));
         System.out.println("DSST results saved as file " + output);
 
@@ -434,7 +449,7 @@ public class DSSTPropagation {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
         } else {
             final double minStep = orbit.getKeplerianPeriod();
-            final double maxStep = minStep * 100.;
+            final double maxStep = minStep * 10.;
             final double[][] tol = DSSTPropagator.tolerances(1.0, orbit);
             integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
             ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);

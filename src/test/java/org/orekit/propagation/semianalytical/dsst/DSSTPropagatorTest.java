@@ -21,6 +21,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -41,6 +42,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -63,6 +65,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -512,6 +515,67 @@ public class DSSTPropagatorTest {
         // both the initial orbit and final orbit are mean orbits
         Assert.assertEquals(1478.05, orbit.getA() - finalState.getA(), 10.0);
 
+    }
+
+    @Test
+    public void testEphemerisGenertion() throws OrekitException {
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
+        UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+                                         FramesFactory.getTOD(false),
+                                         new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
+                                         nshp.getMu());
+        double period = orbit.getKeplerianPeriod();
+        double[][] tolerance = DSSTPropagator.tolerances(1.0, orbit);
+        AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(10 * period);
+        DSSTPropagator propagator = new DSSTPropagator(integrator, false);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getGTOD(false));
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        CelestialBody moon = CelestialBodyFactory.getMoon();
+        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp));
+//        propagator.addForceModel(new DSSTThirdBody(sun));
+        propagator.addForceModel(new DSSTThirdBody(moon));
+//        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
+//        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
+        propagator.setInterpolationGridToMaxTimeGap(0.5 * Constants.JULIAN_DAY);
+
+        // direct generation of states
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
+        final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        propagator.setMasterMode(600, new OrekitFixedStepHandler() {
+
+            /** {@inheritDoc} */
+            @Override
+            public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            }
+            
+            @Override
+            public void handleStep(SpacecraftState currentState, boolean isLast) {
+                states.add(currentState);
+            }
+        });
+        propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+
+        // ephemeris generation
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
+        propagator.setEphemerisMode();
+        propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+
+        double maxError = 0;
+        for (final SpacecraftState state : states) {
+            final SpacecraftState fromEphemeris = ephemeris.propagate(state.getDate());
+            final double error = Vector3D.distance(state.getPVCoordinates().getPosition(),
+                                                   fromEphemeris.getPVCoordinates().getPosition());
+            System.out.println(state.getDate().durationFrom(orbit.getDate()) + " " + error);
+            maxError = FastMath.max(maxError, error);
+        }
+        Assert.assertEquals(0.0, maxError, 0.01);
     }
 
     @Test

@@ -53,7 +53,8 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
-import org.orekit.propagation.semianalytical.dsst.utilities.VariableStepInterpolationGrid;
+import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
+import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -145,6 +146,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** State mapper holding the force models. */
     private MeanPlusShortPeriodicMapper mapper;
 
+    /** Generator for the interpolation grid. */
+    private InterpolationGrid interpolationgrid;
+
     /** Create a new instance of DSSTPropagator.
      *  <p>
      *  After creation, there are no perturbing forces at all.
@@ -163,6 +167,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.MEAN);
         setAttitudeProvider(DEFAULT_LAW);
+        setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
     }
 
 
@@ -184,6 +189,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.MEAN);
         setAttitudeProvider(DEFAULT_LAW);
+        setInterpolationGridToFixedNumberOfPoints(INTERPOLATION_POINTS_PER_STEP);
     }
 
     /** Set the initial state with osculating orbital elements.
@@ -241,6 +247,43 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public boolean initialIsOsculating() {
         return initialIsOsculating;
+    }
+
+    /** Set the interpolation grid generator.
+     * <p>
+     * The generator will create an interpolation grid with a fixed
+     * number of points for each mean element integration step.
+     * </p>
+     * <p>
+     * If neither {@link #setInterpolationGridToFixedNumberOfPoints(int)}
+     * nor {@link #setInterpolationGridToMaxTimeGap(double)} has been called,
+     * by default the propagator is set as to 3 interpolations points per step.
+     * </p>
+     * @param interpolationPoints number of interpolation points at
+     * each integration step
+     * @see #setInterpolationGridToMaxTimeGap(double)
+     * @since 7.1
+     */
+    public void setInterpolationGridToFixedNumberOfPoints(final int interpolationPoints) {
+        interpolationgrid = new FixedNumberInterpolationGrid(interpolationPoints);
+    }
+
+    /** Set the interpolation grid generator.
+     * <p>
+     * The generator will create an interpolation grid with a maximum
+     * time gap between interpolation points.
+     * </p>
+     * <p>
+     * If neither {@link #setInterpolationGridToFixedNumberOfPoints(int)}
+     * nor {@link #setInterpolationGridToMaxTimeGap(double)} has been called,
+     * by default the propagator is set as to 3 interpolations points per step.
+     * </p>
+     * @param maxGap maximum time gap between interpolation points (seconds)
+     * @see #setInterpolationGridToFixedNumberOfPoints(int)
+     * @since 7.1
+     */
+    public void setInterpolationGridToMaxTimeGap(final double maxGap) {
+        interpolationgrid = new MaxGapInterpolationGrid(maxGap);
     }
 
     /** Add a force model to the global perturbation model.
@@ -387,8 +430,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         // if required, insert the special short periodics step handler
         if (!meanOnly) {
-            final InterpolationGrid grid = new VariableStepInterpolationGrid(INTERPOLATION_POINTS_PER_STEP);
-            final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(grid, forceModels);
+            final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(forceModels);
             final Collection<StepHandler> stepHandlers = new ArrayList<StepHandler>();
             stepHandlers.add(spHandler);
             final AbstractIntegrator integrator = getIntegrator();
@@ -888,9 +930,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private class ShortPeriodicsHandler implements StepHandler {
 
-        /** Grid for interpolation of the short periodics coefficients. */
-        private final InterpolationGrid grid;
-
         /** Force models used to compute short periodic terms. */
         private final List<DSSTForceModel> forceModels;
 
@@ -898,11 +937,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         private boolean first;
 
         /** Constructor.
-         * @param grid for interpolation of the short periodics coefficients
          * @param forceModels force models
          */
-        ShortPeriodicsHandler(final InterpolationGrid grid, final List<DSSTForceModel> forceModels) {
-            this.grid        = grid;
+        ShortPeriodicsHandler(final List<DSSTForceModel> forceModels) {
             this.forceModels = forceModels;
         }
 
@@ -919,7 +956,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             try {
                 // Get the grid points to compute
                 final double[] interpolationPoints =
-                        grid.getGridPoints(interpolator.getPreviousTime(), interpolator.getCurrentTime());
+                        interpolationgrid.getGridPoints(interpolator.getPreviousTime(),
+                                                        interpolator.getCurrentTime());
 
                 for (int i = first ? 0 : 1; i < interpolationPoints.length; ++i) {
 

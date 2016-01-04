@@ -16,7 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-/** Interpolation grid where points are evenly spaced between the start and the end of the integration step.
+/** Interpolation grid where a fixed number of points are
+ * evenly spaced between the start and the end of the integration step.
  * <p>
  * The grid is adapted to the step considered,
  * meaning that for short steps, the grid will be dense,
@@ -25,15 +26,15 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
  *
  * @author Nicolas Bernard
  */
-public class VariableStepInterpolationGrid implements InterpolationGrid {
+public class FixedNumberInterpolationGrid implements InterpolationGrid {
 
-    /** number of points in the grid per step. */
-    private int pointsPerStep;
+    /** Number of points in the grid per step. */
+    private final int pointsPerStep;
 
     /** Constructor.
      * @param pointsPerStep number of points in the grid per step
      */
-    public VariableStepInterpolationGrid(final int pointsPerStep) {
+    public FixedNumberInterpolationGrid(final int pointsPerStep) {
         this.pointsPerStep = pointsPerStep;
     }
 
