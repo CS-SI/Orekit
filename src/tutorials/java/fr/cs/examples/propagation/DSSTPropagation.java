@@ -288,12 +288,15 @@ public class DSSTPropagation {
         // DSST Propagation
         dsstProp.setEphemerisMode();
         final double dsstOn = System.currentTimeMillis();
-        dsstProp.setMasterMode(outStep, new OutputHandler(output,
-                                                          displayKeplerian, displayEquinoctial, displayCartesian,
-                                                          shortPeriodCoefficients));
         dsstProp.propagate(start, start.shiftedBy(duration));
         final double dsstOff = System.currentTimeMillis();
-        System.out.println("DSST execution time (including large file write) : " + (dsstOff - dsstOn) / 1000.);
+        System.out.println("DSST execution time (without large file write) : " + (dsstOff - dsstOn) / 1000.);
+        System.out.println("writing file...");
+        final BoundedPropagator dsstEphem = dsstProp.getGeneratedEphemeris();
+        dsstEphem.setMasterMode(outStep, new OutputHandler(output,
+                                                          displayKeplerian, displayEquinoctial, displayCartesian,
+                                                          shortPeriodCoefficients));
+        dsstEphem.propagate(start, start.shiftedBy(duration));
         System.out.println("DSST results saved as file " + output);
 
         // Check if we want to compare numerical to DSST propagator (default is false)
