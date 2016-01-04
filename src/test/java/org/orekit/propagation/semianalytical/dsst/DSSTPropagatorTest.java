@@ -497,9 +497,20 @@ public class DSSTPropagatorTest {
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
         propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
 
-        propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
-        final SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), true);
+        SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        // the following comparison is in fact meaningless
+        // the initial orbit is osculating the final orbit is a mean orbit
+        // and they are not considered at the same epoch
+        // we keep it only as is was an historical test
         Assert.assertEquals(2189.4, orbit.getA() - finalState.getA(), 10.0);
+
+        propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
+        finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        // the following comparison is realistic
+        // both the initial orbit and final orbit are mean orbits
+        Assert.assertEquals(1478.05, orbit.getA() - finalState.getA(), 10.0);
 
     }
 
