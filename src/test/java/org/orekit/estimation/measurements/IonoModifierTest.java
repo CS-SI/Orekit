@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.MathUtils;
 import org.apache.commons.math3.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
@@ -28,6 +29,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.modifiers.AngularIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.models.earth.KlobucharIonoModel;
@@ -89,7 +91,7 @@ public class IonoModifierTest {
             Range range = (Range) measurement;
             Evaluation<Range> evalNoMod = range.evaluate(0,  refstate);
             
-            // add mofifier
+            // add modifier
             range.addModifier(modifier);
             // 
             Evaluation<Range> eval = range.evaluate(0,  refstate);
@@ -132,7 +134,7 @@ public class IonoModifierTest {
             RangeRate rangeRate = (RangeRate) measurement;
             Evaluation<RangeRate> evalNoMod = rangeRate.evaluate(0,  refstate);
             
-            // add mofifier
+            // add modifier
             rangeRate.addModifier(modifier);
 
             // 
@@ -142,6 +144,51 @@ public class IonoModifierTest {
             // TODO: check threshold
             Assert.assertEquals(0.0, diffMetersSec, 0.015);
 
+        }
+    }
+
+    @Test
+    public void testAngularIonoModifier() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        for (final GroundStation station : context.stations) {
+            station.setEstimated(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new AngularMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+        
+        final AngularIonosphericDelayModifier modifier = new AngularIonosphericDelayModifier(model);
+        
+        for (final Measurement<?> measurement : measurements) {
+            final AbsoluteDate date = measurement.getDate();
+
+            final SpacecraftState refstate     = propagator.propagate(date);
+            
+            Angular angular = (Angular) measurement;
+            Evaluation<Angular> evalNoMod = angular.evaluate(0, refstate);
+            
+            // add modifier
+            angular.addModifier(modifier);
+            // 
+            Evaluation<Angular> eval = angular.evaluate(0,  refstate);
+            
+            final double diffAz = MathUtils.normalizeAngle(eval.getValue()[0], evalNoMod.getValue()[0]) - evalNoMod.getValue()[0];
+            final double diffEl = MathUtils.normalizeAngle(eval.getValue()[1], evalNoMod.getValue()[1]) - evalNoMod.getValue()[1];
+            // TODO: check threshold
+            Assert.assertEquals(0.0, diffAz, 5.0e-5);
+            Assert.assertEquals(0.0, diffEl, 5.0e-6);
         }
     }
 
