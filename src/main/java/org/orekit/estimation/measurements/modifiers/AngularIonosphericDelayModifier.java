@@ -1,0 +1,148 @@
+/* Copyright 2002-2015 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.estimation.measurements.modifiers;
+
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.estimation.Parameter;
+import org.orekit.estimation.measurements.Angular;
+import org.orekit.estimation.measurements.Evaluation;
+import org.orekit.estimation.measurements.EvaluationModifier;
+import org.orekit.estimation.measurements.GroundStation;
+import org.orekit.frames.Frame;
+import org.orekit.models.earth.IonosphericModel;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+
+import java.util.List;
+
+/** Class modifying theoretical angular measurement with ionospheric delay.
+ * The effect of ionospheric correction on the angular is directly computed
+ * through the computation of the ionospheric delay.
+ *
+ * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
+ * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
+ *
+ * @author Thierry Ceolin
+ * @since 7.1
+ */
+public class AngularIonosphericDelayModifier implements EvaluationModifier<Angular> {
+    /** Ionospheric delay model. */
+    private final IonosphericModel ionoModel;
+
+    /** Constructor.
+     *
+     * @param model  Ionospheric delay model appropriate for the current angular measurement method.
+     */
+    public AngularIonosphericDelayModifier(final IonosphericModel model) {
+        ionoModel = model;
+    }
+
+    /** Compute the measurement error due to ionosphere.
+     * @param station station
+     * @param state spacecraft state
+     * @return the measurement error due to ionosphere
+     * @throws OrekitException  if frames transformations cannot be computed
+     */
+    private double angularErrorIonosphericModel(final GroundStation station,
+                                                final SpacecraftState state)
+        throws OrekitException {
+
+        final Vector3D position = state.getPVCoordinates().getPosition();
+
+        // elevation in radians
+        final double elevation = station.getBaseFrame().getElevation(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
+     // only consider measures above the horizon
+        if (elevation > 0.0) {
+
+            // compute azimuth
+            final double azimuth = station.getBaseFrame().getAzimuth(position,
+                                                                     state.getFrame(),
+                                                                     state.getDate());
+            // delay in meters
+            final double delay = ionoModel.pathDelay(state.getDate(),
+                                                     station.getBaseFrame().getPoint(),
+                                                     elevation, azimuth);
+
+            // Take into account one way
+            return delay;
+        }
+
+        return 0;
+    }
+
+    @Override
+    public List<Parameter> getSupportedParameters() {
+        return null;
+    }
+
+    @Override
+    public void modify(final Evaluation<Angular> evaluation)
+        throws OrekitException {
+        final Angular         measure = evaluation.getMeasurement();
+        final GroundStation   station = measure.getStation();
+        final SpacecraftState state   = evaluation.getState();
+
+        final double delay = angularErrorIonosphericModel(station, state);
+        // Delay is taken into account to shift the spacecraft position
+        final double dt = delay / Constants.SPEED_OF_LIGHT;
+
+        // Position of the spacecraft shifted of dt
+        final SpacecraftState transitState = state.shiftedBy(-dt);
+
+        // Update measurement value taking into account the ionospheric delay.
+        final AbsoluteDate     date      = transitState.getDate();
+        final Vector3D         position  = transitState.getPVCoordinates().getPosition();
+        final Frame            inertial  = transitState.getFrame();
+
+        // elevation and azimuth in radians
+        final double elevation = station.getBaseFrame().getElevation(position, inertial, date);
+        final double azimuth   = station.getBaseFrame().getAzimuth(position, inertial, date);
+        // azimuth - elevation values
+        evaluation.setValue(azimuth, elevation);
+
+        // The ionospheric delay is directly added to the range.
+        //final double[] newValue = oldValue.clone();
+        //newValue[0] = newValue[0] + delay;
+        //evaluation.setValue(newValue);
+//        // update measurement derivatives with jacobian of the measure wrt state
+//        final double[][] djac = angularErrorJacobianState(station, state);
+//        final double[][] stateDerivatives = evaluation.getStateDerivatives();
+//        for (int irow = 0; irow < stateDerivatives.length; ++irow) {
+//            for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
+//                stateDerivatives[irow][jcol] += djac[irow][jcol];
+//            }
+//        }
+//        evaluation.setStateDerivatives(stateDerivatives);
+//
+//
+//        if (station.isEstimated()) {
+//            // update measurement derivatives with jacobian of the measure with respect to station parameters
+//            final double[][] djacdp = angularErrorJacobianParameter(station, state, delay);
+//            final double[][] parameterDerivatives = evaluation.getParameterDerivatives(station.getName());
+//            for (int irow = 0; irow < parameterDerivatives.length; ++irow) {
+//                for (int jcol = 0; jcol < parameterDerivatives[0].length; ++jcol) {
+//                    parameterDerivatives[irow][jcol] += djacdp[irow][jcol];
+//                }
+//            }
+//            evaluation.setParameterDerivatives(station.getName(), parameterDerivatives);
+//        }
+    }
+}
