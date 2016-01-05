@@ -92,44 +92,32 @@ public class ShortPeriodicsInterpolatedCoefficient {
             for (int i = 0; i < sizeofNeighborhood; i++) {
                 neighborsIndices[i] = i;
             }
-        }
+        } else {
+            // get indices around closest neighbor
+            int inf = getClosestNeighbor(date);
+            int sup = inf + 1;
 
-        //Else the neighborsIndices array is completed step-by-step,
-        //starting with its closest neighbor
-        else {
-            final int closestNeighbor = getClosestNeighbor(date);
-
-            neighborsIndices[0] = closestNeighbor;
-
-            int i = 1;
-            int lowerNeighbor = closestNeighbor - 1;
-            int upperNeighbor = closestNeighbor + 1;
-
-            while (i < interpolationPoints) {
-                if (lowerNeighbor < 0) { //This means that we have reached the earliest date
-                    neighborsIndices[i] = upperNeighbor;
-                    upperNeighbor++;
-                }
-                else if (upperNeighbor >= abscissae.size()) { //This means that we have reached the latest date
-                    neighborsIndices[i] = lowerNeighbor;
-                    lowerNeighbor--;
-                }
-                else { //the choice is made between the two next neighbors
-                    final double lowerNeighborDistance = FastMath.abs(abscissae.get(lowerNeighbor).durationFrom(date));
-                    final double upperNeighborDistance = FastMath.abs(abscissae.get(upperNeighbor).durationFrom(date));
+            while (sup - inf < interpolationPoints) {
+                if (inf == 0) { //This means that we have reached the earliest date
+                    sup++;
+                } else if (sup >= abscissae.size()) { //This means that we have reached the latest date
+                    inf--;
+                } else { //the choice is made between the two next neighbors
+                    final double lowerNeighborDistance = FastMath.abs(abscissae.get(inf - 1).durationFrom(date));
+                    final double upperNeighborDistance = FastMath.abs(abscissae.get(sup).durationFrom(date));
 
                     if (lowerNeighborDistance <= upperNeighborDistance) {
-                        neighborsIndices[i] = lowerNeighbor;
-                        lowerNeighbor--;
-                    }
-                    else {
-                        neighborsIndices[i] = upperNeighbor;
-                        upperNeighbor++;
+                        inf--;
+                    } else {
+                        sup++;
                     }
                 }
-
-                i++;
             }
+
+            for (int i = 0; i < interpolationPoints; ++i) {
+                neighborsIndices[i] = inf + i;
+            }
+
         }
 
         return neighborsIndices;
