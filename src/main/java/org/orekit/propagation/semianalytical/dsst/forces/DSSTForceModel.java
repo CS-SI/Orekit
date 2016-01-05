@@ -109,10 +109,10 @@ public interface DSSTForceModel {
      * are the ones that were returned during the call to {@link
      * #initialize(AuxiliaryElements, boolean)}.
      * </p>
-     * @param meanState current mean state information: date, kinematics, attitude
+     * @param meanStates mean states information: date, kinematics, attitude
      * @throws OrekitException if some specific error occurs
      */
-    void updateShortPeriodTerms(SpacecraftState meanState)
+    void updateShortPeriodTerms(SpacecraftState ... meanStates)
         throws OrekitException;
 
 }

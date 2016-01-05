@@ -336,11 +336,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
         for (final DSSTForceModel force : forces) {
             shortPeriodTerms.addAll(force.initialize(aux, false));
-            force.initializeStep(aux);
             force.updateShortPeriodTerms(mean);
         }
 
-        final Orbit osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
+        final EquinoctialOrbit osculatingOrbit = computeOsculatingOrbit(mean, shortPeriodTerms);
 
         return new SpacecraftState(osculatingOrbit, mean.getAttitude(), mean.getMass(),
                                    mean.getAdditionalStates());
@@ -485,20 +484,19 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         throws OrekitException {
 
         // rough initialization of the mean parameters
-        EquinoctialOrbit meanOrbit = new EquinoctialOrbit(
-                osculating.getOrbit());
+        EquinoctialOrbit meanOrbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(osculating.getOrbit());
 
         // threshold for each parameter
-        final double epsilon         = 1.0e-13;
-        final double thresholdA      = epsilon * (1 + FastMath.abs(meanOrbit.getA()));
-        final double thresholdE      = epsilon * (1 + meanOrbit.getE());
-        final double thresholdAngles = epsilon * FastMath.PI;
+        final double epsilon    = 1.0e-13;
+        final double thresholdA = epsilon * (1 + FastMath.abs(meanOrbit.getA()));
+        final double thresholdE = epsilon * (1 + meanOrbit.getE());
+        final double thresholdI = epsilon * (1 + meanOrbit.getI());
+        final double thresholdL = epsilon * FastMath.PI;
 
         int i = 0;
         while (i++ < 200) {
 
-            final SpacecraftState meanState = new SpacecraftState(
-                    meanOrbit, osculating.getAttitude(), osculating.getMass());
+            final SpacecraftState meanState = new SpacecraftState(meanOrbit, osculating.getAttitude(), osculating.getMass());
 
             //Create the auxiliary object
             final AuxiliaryElements aux = new AuxiliaryElements(meanOrbit, I);
@@ -507,39 +505,39 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final List<ShortPeriodTerms> shortPeriodTerms = new ArrayList<ShortPeriodTerms>();
             for (final DSSTForceModel force : forceModels) {
                 shortPeriodTerms.addAll(force.initialize(aux, false));
-                force.initializeStep(aux);
-                force.updateShortPeriodTerms(osculating);
+                force.updateShortPeriodTerms(meanState);
             }
 
             // recompute the osculating parameters from the current mean parameters
-            final EquinoctialOrbit rebuilt = (EquinoctialOrbit) computeOsculatingOrbit(meanState, shortPeriodTerms);
+            final EquinoctialOrbit rebuilt = computeOsculatingOrbit(meanState, shortPeriodTerms);
 
             // adapted parameters residuals
-            final double deltaA = osculating.getA() - rebuilt.getA();
+            final double deltaA  = osculating.getA() - rebuilt.getA();
             final double deltaEx = osculating.getEquinoctialEx() - rebuilt.getEquinoctialEx();
             final double deltaEy = osculating.getEquinoctialEy() - rebuilt.getEquinoctialEy();
             final double deltaHx = osculating.getHx() - rebuilt.getHx();
             final double deltaHy = osculating.getHy() - rebuilt.getHy();
-            final double deltaLm = MathUtils.normalizeAngle(osculating.getLM() - rebuilt.getLM(), 0.0);
+            final double deltaLv = MathUtils.normalizeAngle(osculating.getLv() - rebuilt.getLv(), 0.0);
 
             // check convergence
-            if ((FastMath.abs(deltaA) < thresholdA) &&
-                    (FastMath.abs(deltaEx) < thresholdE) &&
-                    (FastMath.abs(deltaEy) < thresholdE) &&
-                    (FastMath.abs(deltaLm) < thresholdAngles)) {
+            if (FastMath.abs(deltaA)  < thresholdA &&
+                FastMath.abs(deltaEx) < thresholdE &&
+                FastMath.abs(deltaEy) < thresholdE &&
+                FastMath.abs(deltaHx) < thresholdI &&
+                FastMath.abs(deltaHy) < thresholdI &&
+                FastMath.abs(deltaLv) < thresholdL) {
                 return meanOrbit;
             }
 
             // update mean parameters
-            meanOrbit = new EquinoctialOrbit(
-                    meanOrbit.getA() + deltaA,
-                    meanOrbit.getEquinoctialEx() + deltaEx,
-                    meanOrbit.getEquinoctialEy() + deltaEy,
-                    meanOrbit.getHx() + deltaHx,
-                    meanOrbit.getHy() + deltaHy,
-                    meanOrbit.getLM() + deltaLm,
-                    PositionAngle.MEAN, meanOrbit.getFrame(),
-                    meanOrbit.getDate(), meanOrbit.getMu());
+            meanOrbit = new EquinoctialOrbit(meanOrbit.getA() + deltaA,
+                                             meanOrbit.getEquinoctialEx() + deltaEx,
+                                             meanOrbit.getEquinoctialEy() + deltaEy,
+                                             meanOrbit.getHx() + deltaHx,
+                                             meanOrbit.getHy() + deltaHy,
+                                             meanOrbit.getLv() + deltaLv,
+                                             PositionAngle.TRUE, meanOrbit.getFrame(),
+                                             meanOrbit.getDate(), meanOrbit.getMu());
         }
 
         throw new PropagationException(OrekitMessages.UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS, i);
@@ -554,8 +552,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @return osculating state
      * @throws OrekitException if the computation of the short-periodic variation fails
      */
-    private static Orbit computeOsculatingOrbit(final SpacecraftState meanState,
-                                                final List<ShortPeriodTerms> shortPeriodTerms)
+    private static EquinoctialOrbit computeOsculatingOrbit(final SpacecraftState meanState,
+                                                           final List<ShortPeriodTerms> shortPeriodTerms)
     throws OrekitException {
 
         final double[] mean = new double[6];
@@ -567,9 +565,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 y[i] += shortPeriodic[i];
             }
         }
-        return OrbitType.EQUINOCTIAL.mapArrayToOrbit(y,
-                                                     PositionAngle.MEAN, meanState.getDate(),
-                                                     meanState.getMu(), meanState.getFrame());
+        return (EquinoctialOrbit) OrbitType.EQUINOCTIAL.mapArrayToOrbit(y,
+                                                                        PositionAngle.MEAN, meanState.getDate(),
+                                                                        meanState.getMu(), meanState.getFrame());
     }
 
     /** {@inheritDoc} */
@@ -933,9 +931,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Force models used to compute short periodic terms. */
         private final List<DSSTForceModel> forceModels;
 
-        /** First step indicator. */
-        private boolean first;
-
         /** Constructor.
          * @param forceModels force models
          */
@@ -945,7 +940,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         @Override
         public void init(final double t0, final double[] y0, final double t) {
-            first = true;
         }
 
         /** {@inheritDoc} */
@@ -959,25 +953,20 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                         interpolationgrid.getGridPoints(interpolator.getPreviousTime(),
                                                         interpolator.getCurrentTime());
 
-                for (int i = first ? 0 : 1; i < interpolationPoints.length; ++i) {
+                final SpacecraftState[] meanStates = new SpacecraftState[interpolationPoints.length];
+                for (int i = 0; i < interpolationPoints.length; ++i) {
 
+                    // Build the mean state interpolated at grid point
                     final double time = interpolationPoints[i];
-                    // Move the interpolator to the grid point
                     interpolator.setInterpolatedTime(time);
-
-                    // Build the corresponding mean state
-                    final SpacecraftState meanState =
-                            mapper.mapArrayToState(time, interpolator.getInterpolatedState(), true);
-                    final AuxiliaryElements aux = new AuxiliaryElements(meanState.getOrbit(), I);
-
-                    // Computate short periodic coefficients for this date
-                    for (DSSTForceModel forceModel : forceModels) {
-                        forceModel.initializeStep(aux);
-                        forceModel.updateShortPeriodTerms(meanState);
-                    }
+                    meanStates[i] = mapper.mapArrayToState(time, interpolator.getInterpolatedState(), true);
 
                 }
 
+                // Computate short periodic coefficients for this step
+                for (DSSTForceModel forceModel : forceModels) {
+                    forceModel.updateShortPeriodTerms(meanStates);
+                }
 
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);

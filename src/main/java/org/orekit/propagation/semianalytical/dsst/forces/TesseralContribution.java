@@ -46,6 +46,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenTesseralLinear;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /** Tesseral contribution to the {@link DSSTCentralBody central body gravitational
  *  perturbation}.
@@ -254,9 +255,9 @@ class TesseralContribution implements DSSTForceModel {
      *  @param mDailiesOnly if true only M-dailies tesseral harmonics are taken into account for short periodics
      */
     TesseralContribution(final Frame centralBodyFrame,
-                                final double centralBodyRotationRate,
-                                final UnnormalizedSphericalHarmonicsProvider provider,
-                                final boolean mDailiesOnly) {
+                         final double centralBodyRotationRate,
+                         final UnnormalizedSphericalHarmonicsProvider provider,
+                         final boolean mDailiesOnly) {
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;
@@ -345,19 +346,9 @@ class TesseralContribution implements DSSTForceModel {
         final int mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
         cjsjFourier = new FourierCjSjCoefficients(jMax, mMax);
 
-        final int rows    = mMax + 1;
-        final int columns = 2 * jMax + 1;
-        final ShortPeriodicsInterpolatedCoefficient[][] cijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns];
-        final ShortPeriodicsInterpolatedCoefficient[][] sijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns];
-        for (int m = 1; m <= mMax; m++) {
-            for (int j = -jMax; j <= jMax; j++) {
-                cijm[m][j + jMax] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-                sijm[m][j + jMax] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-            }
-        }
         shortPeriodTerms = new TesseralShortPeriodicCoefficients(bodyFrame, maxOrderMdailyTesseralSP,
                                                                  mDailiesOnly, nonResOrders,
-                                                                 cijm, sijm);
+                                                                 mMax, jMax, INTERPOLATION_POINTS);
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
         list.add(shortPeriodTerms);
@@ -520,47 +511,55 @@ class TesseralContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState meanState)
+    public void updateShortPeriodTerms(final SpacecraftState ... meanStates)
         throws OrekitException {
 
-        // Initialise the Hansen coefficients
-        for (int s = -maxDegree; s <= maxDegree; s++) {
-            // coefficients with j == 0 are always needed
-            this.hansenObjects[s + maxDegree][0].computeInitValues(e2, chi, chi2);
-            if (!mDailiesOnly) {
-                // initialize other objects only if required
-                for (int j = 1; j <= jMax; j++) {
-                    this.hansenObjects[s + maxDegree][j].computeInitValues(e2, chi, chi2);
-                }
-            }
-        }
+        final Slot slot = shortPeriodTerms.createSlot(meanStates);
 
-        // Compute coefficients
-        // Compute only if there is at least one non-resonant tesseral
-        if (!nonResOrders.isEmpty() || mDailiesOnly) {
-            // Generate the fourrier coefficients
-            cjsjFourier.generateCoefficients(meanState.getDate());
+        for (final SpacecraftState meanState : meanStates) {
 
-            // the coefficient 3n / 2a
-            final double tnota = 1.5 * meanMotion / a;
+            initializeStep(new AuxiliaryElements(meanState.getOrbit(), I));
 
-            // build the mDaily coefficients
-            for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
-                // build the coefficients
-                buildCoefficients(meanState.getDate(), m, 0, tnota);
-            }
-
-            if (!mDailiesOnly) {
-                // generate the other coefficients, if required
-                for (int m: nonResOrders.keySet()) {
-                    final List<Integer> listJ = nonResOrders.get(m);
-
-                    for (int j: listJ) {
-                        // build the coefficients
-                        buildCoefficients(meanState.getDate(), m, j, tnota);
+            // Initialise the Hansen coefficients
+            for (int s = -maxDegree; s <= maxDegree; s++) {
+                // coefficients with j == 0 are always needed
+                this.hansenObjects[s + maxDegree][0].computeInitValues(e2, chi, chi2);
+                if (!mDailiesOnly) {
+                    // initialize other objects only if required
+                    for (int j = 1; j <= jMax; j++) {
+                        this.hansenObjects[s + maxDegree][j].computeInitValues(e2, chi, chi2);
                     }
                 }
             }
+
+            // Compute coefficients
+            // Compute only if there is at least one non-resonant tesseral
+            if (!nonResOrders.isEmpty() || mDailiesOnly) {
+                // Generate the fourrier coefficients
+                cjsjFourier.generateCoefficients(meanState.getDate());
+
+                // the coefficient 3n / 2a
+                final double tnota = 1.5 * meanMotion / a;
+
+                // build the mDaily coefficients
+                for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
+                    // build the coefficients
+                    buildCoefficients(meanState.getDate(), slot, m, 0, tnota);
+                }
+
+                if (!mDailiesOnly) {
+                    // generate the other coefficients, if required
+                    for (int m: nonResOrders.keySet()) {
+                        final List<Integer> listJ = nonResOrders.get(m);
+
+                        for (int j: listJ) {
+                            // build the coefficients
+                            buildCoefficients(meanState.getDate(), slot, m, j, tnota);
+                        }
+                    }
+                }
+            }
+
         }
 
     }
@@ -568,12 +567,13 @@ class TesseralContribution implements DSSTForceModel {
     /** Build a set of coefficients.
      *
      * @param date the current date
+     * @param slot slot to which the coefficients belong
      * @param m m index
      * @param j j index
      * @param tnota 3n/2a
      */
-    private void buildCoefficients(final AbsoluteDate date, final int m, final int j,
-                                   final double tnota) {
+    private void buildCoefficients(final AbsoluteDate date, final Slot slot,
+                                   final int m, final int j, final double tnota) {
         // Create local arrays
         final double[] currentCijm = new double[] {0., 0., 0., 0., 0., 0.};
         final double[] currentSijm = new double[] {0., 0., 0., 0., 0., 0.};
@@ -597,8 +597,8 @@ class TesseralContribution implements DSSTForceModel {
         }
 
         // Add the coefficients to the interpolation grid
-        shortPeriodTerms.cijm[m][j + jMax].addGridPoint(date, currentCijm);
-        shortPeriodTerms.sijm[m][j + jMax].addGridPoint(date, currentSijm);
+        slot.cijm[m][j + jMax].addGridPoint(date, currentCijm);
+        slot.sijm[m][j + jMax].addGridPoint(date, currentSijm);
 
     }
 
@@ -1226,57 +1226,62 @@ class TesseralContribution implements DSSTForceModel {
         /** List of non resonant orders with j != 0. */
         private final SortedMap<Integer, List<Integer> > nonResOrders;
 
-        /** The coefficients C<sub>i</sub><sup>j</sup><sup>m</sup>.
-         * <p>
-         * The index order is cijm[m][j][i] <br/>
-         * i corresponds to the equinoctial element, as follows: <br/>
-         * - i=0 for a <br/>
-         * - i=1 for k <br/>
-         * - i=2 for h <br/>
-         * - i=3 for q <br/>
-         * - i=4 for p <br/>
-         * - i=5 for λ <br/>
-         * </p>
-         */
-        private final ShortPeriodicsInterpolatedCoefficient[][] cijm;
+        /** Maximum value for m index. */
+        private final int mMax;
 
-        /** The coefficients S<sub>i</sub><sup>j</sup><sup>m</sup>.
-         * <p>
-         * The index order is sijm[m][j][i] <br/>
-         * i corresponds to the equinoctial element, as follows: <br/>
-         * - i=0 for a <br/>
-         * - i=1 for k <br/>
-         * - i=2 for h <br/>
-         * - i=3 for q <br/>
-         * - i=4 for p <br/>
-         * - i=5 for λ <br/>
-         * </p>
-         */
-        private final ShortPeriodicsInterpolatedCoefficient[][] sijm;
+        /** Maximum value for j index. */
+        private final int jMax;
+
+        /** Number of points used in the interpolation process. */
+        private final int interpolationPoints;
+
+        /** All coefficients slots. */
+        private final TimeSpanMap<Slot> slots;
 
         /** Constructor.
          * @param bodyFrame central body rotating frame
          * @param maxOrderMdailyTesseralSP maximal order to consider for short periodics m-daily tesseral harmonics potential
          * @param mDailiesOnly flag to take into account only M-dailies harmonic tesserals for short periodic perturbations
          * @param nonResOrders lst of non resonant orders with j != 0
-         * @param cijm the coefficients SC<sub>i</sub><sup>j</sup><sup>m</sup>
-         * @param sijm the coefficients S<sub>i</sub><sup>j</sup><sup>m</sup>
+         *  @param mMax maximum value for m index
+         *  @param jMax maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
          */
         TesseralShortPeriodicCoefficients(final Frame bodyFrame, final int maxOrderMdailyTesseralSP,
                                           final boolean mDailiesOnly, final SortedMap<Integer, List<Integer> > nonResOrders,
-                                          final ShortPeriodicsInterpolatedCoefficient[][] cijm,
-                                          final ShortPeriodicsInterpolatedCoefficient[][] sijm) {
+                                          final int mMax, final int jMax, final int interpolationPoints) {
             this.bodyFrame                = bodyFrame;
             this.maxOrderMdailyTesseralSP = maxOrderMdailyTesseralSP;
             this.mDailiesOnly             = mDailiesOnly;
             this.nonResOrders             = nonResOrders;
-            this.cijm                     = cijm;
-            this.sijm                     = sijm;
+            this.mMax                     = mMax;
+            this.jMax                     = jMax;
+            this.interpolationPoints      = interpolationPoints;
+            this.slots                    = new TimeSpanMap<Slot>(new Slot(mMax, jMax, interpolationPoints));
+        }
+
+        /** Get the slot valid for some date.
+         * @param meanStates mean states defining the slot
+         * @return slot valid at the specified date
+         */
+        public Slot createSlot(final SpacecraftState ... meanStates) {
+            final Slot         slot  = new Slot(mMax, jMax, interpolationPoints);
+            final AbsoluteDate first = meanStates[0].getDate();
+            final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
+            if (first.compareTo(last) <= 0) {
+                slots.addValidAfter(slot, first);
+            } else {
+                slots.addValidBefore(slot, first);
+            }
+            return slot;
         }
 
         /** {@inheritDoc} */
         @Override
         public double[] value(final Orbit meanOrbit) throws OrekitException {
+
+            // select the coefficients slot
+            final Slot slot = slots.get(meanOrbit.getDate());
 
             // Initialise the short periodic variations
             final double[] shortPeriodicVariation = new double[6];
@@ -1305,8 +1310,8 @@ class TesseralContribution implements DSSTForceModel {
                     final double cosPhi = FastMath.cos(jlMmt);
 
                     // compute contribution for each element
-                    final double[] c = getCijm(0, m, meanOrbit.getDate());
-                    final double[] s = getSijm(0, m, meanOrbit.getDate());
+                    final double[] c = slot.getCijm(0, m, meanOrbit.getDate());
+                    final double[] s = slot.getSijm(0, m, meanOrbit.getDate());
                     for (int i = 0; i < 6; i++) {
                         shortPeriodicVariation[i] += c[i] * cosPhi + s[i] * sinPhi;
                     }
@@ -1324,8 +1329,8 @@ class TesseralContribution implements DSSTForceModel {
                         final double cosPhi = FastMath.cos(jlMmt);
 
                         // compute contribution for each element
-                        final double[] c = getCijm(j, m, meanOrbit.getDate());
-                        final double[] s = getSijm(j, m, meanOrbit.getDate());
+                        final double[] c = slot.getCijm(j, m, meanOrbit.getDate());
+                        final double[] s = slot.getSijm(j, m, meanOrbit.getDate());
                         for (int i = 0; i < 6; i++) {
                             shortPeriodicVariation[i] += c[i] * cosPhi + s[i] * sinPhi;
                         }
@@ -1358,14 +1363,17 @@ class TesseralContribution implements DSSTForceModel {
         public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
             throws OrekitException {
 
+            // select the coefficients slot
+            final Slot slot = slots.get(date);
+
             if (!nonResOrders.isEmpty() || mDailiesOnly) {
                 final Map<String, double[]> coefficients =
                                 new HashMap<String, double[]>(12 * maxOrderMdailyTesseralSP +
                                                               12 * nonResOrders.size());
 
                 for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
-                    storeIfSelected(coefficients, selected, getCijm(0, m, date), "cM", m);
-                    storeIfSelected(coefficients, selected, getSijm(0, m, date), "sM", m);
+                    storeIfSelected(coefficients, selected, slot.getCijm(0, m, date), "cM", m);
+                    storeIfSelected(coefficients, selected, slot.getSijm(0, m, date), "sM", m);
                 }
 
                 for (final Map.Entry<Integer, List<Integer>> entry : nonResOrders.entrySet()) {
@@ -1374,8 +1382,8 @@ class TesseralContribution implements DSSTForceModel {
 
                     for (int j : listJ) {
                         for (int i = 0; i < 6; ++i) {
-                            storeIfSelected(coefficients, selected, getCijm(j, m, date), "c", j, m);
-                            storeIfSelected(coefficients, selected, getSijm(j, m, date), "s", j, m);
+                            storeIfSelected(coefficients, selected, slot.getCijm(j, m, date), "c", j, m);
+                            storeIfSelected(coefficients, selected, slot.getSijm(j, m, date), "s", j, m);
                         }
                     }
                 }
@@ -1409,6 +1417,59 @@ class TesseralContribution implements DSSTForceModel {
             }
         }
 
+    }
+
+    /** Coefficients valid for one time slot. */
+    private static class Slot {
+
+        /** The coefficients C<sub>i</sub><sup>j</sup><sup>m</sup>.
+         * <p>
+         * The index order is cijm[m][j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final ShortPeriodicsInterpolatedCoefficient[][] cijm;
+
+        /** The coefficients S<sub>i</sub><sup>j</sup><sup>m</sup>.
+         * <p>
+         * The index order is sijm[m][j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final ShortPeriodicsInterpolatedCoefficient[][] sijm;
+
+        /** Simple constructor.
+         *  @param mMax maximum value for m index
+         *  @param jMax maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
+         */
+        Slot(final int mMax, final int jMax, final int interpolationPoints) {
+
+            final int rows    = mMax + 1;
+            final int columns = 2 * jMax + 1;
+            cijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns];
+            sijm = new ShortPeriodicsInterpolatedCoefficient[rows][columns];
+            for (int m = 1; m <= mMax; m++) {
+                for (int j = -jMax; j <= jMax; j++) {
+                    cijm[m][j + jMax] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                    sijm[m][j + jMax] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                }
+            }
+
+        }
+
         /** Get C<sub>i</sub><sup>j</sup><sup>m</sup>.
          *
          * @param j j index
@@ -1416,7 +1477,7 @@ class TesseralContribution implements DSSTForceModel {
          * @param date the date
          * @return C<sub>i</sub><sup>j</sup><sup>m</sup>
          */
-        private double[] getCijm(final int j, final int m, final AbsoluteDate date) {
+        double[] getCijm(final int j, final int m, final AbsoluteDate date) {
             final int jMax = (cijm[m].length - 1) / 2;
             return cijm[m][j + jMax].value(date);
         }
@@ -1428,7 +1489,7 @@ class TesseralContribution implements DSSTForceModel {
          * @param date the date
          * @return S<sub>i</sub><sup>j</sup><sup>m</sup>
          */
-        private double[] getSijm(final int j, final int m, final AbsoluteDate date) {
+        double[] getSijm(final int j, final int m, final AbsoluteDate date) {
             final int jMax = (cijm[m].length - 1) / 2;
             return sijm[m][j + jMax].value(date);
         }

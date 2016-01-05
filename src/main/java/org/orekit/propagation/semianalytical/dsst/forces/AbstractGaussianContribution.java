@@ -40,6 +40,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterpolatedCoefficient;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /** Common handling of {@link DSSTForceModel} methods for Gaussian contributions to DSST propagation.
  * <p>
@@ -327,13 +328,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState state)
+    public void updateShortPeriodTerms(final SpacecraftState ... meanStates)
         throws OrekitException {
 
-        final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(state.getDate());
-        final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(state, JMAX);
-        final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
-        gaussianSPCoefs.computeCoefficients(state, fourierCjSj, uijvij, n, a);
+        final Slot slot = gaussianSPCoefs.createSlot(meanStates);
+        for (final SpacecraftState meanState : meanStates) {
+            initializeStep(new AuxiliaryElements(meanState.getOrbit(), I));
+            final double[][] currentRhoSigmaj = computeRhoSigmaCoefficients(meanState.getDate());
+            final FourierCjSjCoefficients fourierCjSj = new FourierCjSjCoefficients(meanState, JMAX);
+            final UijVijCoefficients uijvij = new UijVijCoefficients(currentRhoSigmaj, fourierCjSj, JMAX);
+            gaussianSPCoefs.computeCoefficients(meanState, slot, fourierCjSj, uijvij, n, a);
+        }
 
     }
 
@@ -1333,58 +1338,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** Maximum value for j index. */
         private final int jMax;
 
-        /**The coefficients D<sub>i</sub><sup>j</sup>.
-         * <p>
-         * Only for j = 1 and j = 2 the coefficients are not 0. <br>
-         * i corresponds to the equinoctial element, as follows:
-         * - i=0 for a <br/>
-         * - i=1 for k <br/>
-         * - i=2 for h <br/>
-         * - i=3 for q <br/>
-         * - i=4 for p <br/>
-         * - i=5 for λ <br/>
-         * </p>
-         */
-        private final ShortPeriodicsInterpolatedCoefficient[] dij;
-
-        /** The coefficients C<sub>i</sub><sup>j</sup>.
-         * <p>
-         * The index order is cij[j][i] <br/>
-         * i corresponds to the equinoctial element, as follows: <br/>
-         * - i=0 for a <br/>
-         * - i=1 for k <br/>
-         * - i=2 for h <br/>
-         * - i=3 for q <br/>
-         * - i=4 for p <br/>
-         * - i=5 for λ <br/>
-         * </p>
-         */
-        private final ShortPeriodicsInterpolatedCoefficient[] cij;
-
-        /** The coefficients S<sub>i</sub><sup>j</sup>.
-         * <p>
-         * The index order is sij[j][i] <br/>
-         * i corresponds to the equinoctial element, as follows: <br/>
-         * - i=0 for a <br/>
-         * - i=1 for k <br/>
-         * - i=2 for h <br/>
-         * - i=3 for q <br/>
-         * - i=4 for p <br/>
-         * - i=5 for λ <br/>
-         * </p>
-         */
-        private final ShortPeriodicsInterpolatedCoefficient[] sij;
-
-        /** The current computed values for the ρ<sub>j</sub> and σ<sub>j</sub> coefficients.
-         * <p>
-         * Index 0 corresponds to ρ, index 1 corresponds to σ
-         * Used to compute the U<sub>i</sub><sup>j</sup> and V<sub>i</sub><sup>j</sup> coefficients.
-         * </p>
-         */
-        private final double[][] currentRhoSigmaj;
+        /** Number of points used in the interpolation process. */
+        private final int interpolationPoints;
 
         /** Prefix for coefficients keys. */
         private final String coefficientsKeyPrefix;
+
+        /** All coefficients slots. */
+        private final TimeSpanMap<Slot> slots;
 
         /** Constructor.
          *  @param coefficientsKeyPrefix prefix for coefficients keys
@@ -1393,41 +1354,40 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          */
         GaussianShortPeriodicCoefficients(final String coefficientsKeyPrefix,
                                           final int jMax, final int interpolationPoints) {
-            //Initialise fields
+            //Initialize fields
+            this.jMax                  = jMax;
+            this.interpolationPoints   = interpolationPoints;
             this.coefficientsKeyPrefix = coefficientsKeyPrefix;
-            this.jMax = jMax;
+            this.slots                 = new TimeSpanMap<Slot>(new Slot(jMax, interpolationPoints));
+        }
 
-            this.dij = new ShortPeriodicsInterpolatedCoefficient[3];
-
-            final int rows = jMax + 1;
-            this.cij = new ShortPeriodicsInterpolatedCoefficient[rows];
-            this.sij = new ShortPeriodicsInterpolatedCoefficient[rows];
-
-            this.currentRhoSigmaj = new double[2][3 * jMax + 1];
-
-            // Initialise the C<sub>i</sub><sup>j</sup>, S<sub>i</sub><sup>j</sup> and D<sub>i</sub><sup>j</sup> coefficients
-            for (int j = 0; j <= jMax; j++) {
-                this.cij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
-                if (j > 0) {
-                    this.sij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
-                }
-                // Initialise only the non-zero D<sub>i</sub><sup>j</sup> coefficients
-                if (j == 1 || j == 2) {
-                    this.dij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
-                }
+        /** Get the slot valid for some date.
+         * @param meanStates mean states defining the slot
+         * @return slot valid at the specified date
+         */
+        public Slot createSlot(final SpacecraftState ... meanStates) {
+            final Slot         slot  = new Slot(jMax, interpolationPoints);
+            final AbsoluteDate first = meanStates[0].getDate();
+            final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
+            if (first.compareTo(last) <= 0) {
+                slots.addValidAfter(slot, first);
+            } else {
+                slots.addValidBefore(slot, first);
             }
+            return slot;
         }
 
         /** Compute the short periodic coefficients.
          *
          * @param state current state information: date, kinematics, attitude
+         * @param slot coefficients slot
          * @param fourierCjSj Fourier coefficients
          * @param uijvij U and V coefficients
          * @param n Keplerian mean motion
          * @param a semi major axis
          * @throws OrekitException if an error occurs
          */
-        private void computeCoefficients(final SpacecraftState state,
+        private void computeCoefficients(final SpacecraftState state, final Slot slot,
                                          final FourierCjSjCoefficients fourierCjSj,
                                          final UijVijCoefficients uijvij,
                                          final double n, final double a)
@@ -1437,7 +1397,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final AbsoluteDate date = state.getDate();
 
             // compute the k₂⁰ coefficient
-            final double k20 = computeK20(jMax);
+            final double k20 = computeK20(jMax, uijvij.currentRhoSigmaj);
 
             // 1. / n
             final double oon = 1. / n;
@@ -1479,18 +1439,18 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                     }
 
                     // add the computed coefficients to C<sub>i</sub>⁰
-                    currentCij[0][i] += -(currentCij[j][i] * currentRhoSigmaj[0][j] + currentSij[j][i] * currentRhoSigmaj[1][j]);
+                    currentCij[0][i] += -(currentCij[j][i] * uijvij.currentRhoSigmaj[0][j] + currentSij[j][i] * uijvij.currentRhoSigmaj[1][j]);
                 }
 
             }
 
             // add the values to the interpolators
-            cij[0].addGridPoint(date, currentCij[0]);
-            dij[1].addGridPoint(date, di1);
-            dij[2].addGridPoint(date, di2);
+            slot.cij[0].addGridPoint(date, currentCij[0]);
+            slot.dij[1].addGridPoint(date, di1);
+            slot.dij[2].addGridPoint(date, di2);
             for (int j = 1; j <= jMax; j++) {
-                cij[j].addGridPoint(date, currentCij[j]);
-                sij[j].addGridPoint(date, currentSij[j]);
+                slot.cij[j].addGridPoint(date, currentCij[j]);
+                slot.sij[j].addGridPoint(date, currentSij[j]);
             }
 
         }
@@ -1502,9 +1462,10 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * k₂⁰ = &Sigma;<sub>k=1</sub><sup>kMax</sup>[(2 / k²) * (σ<sub>k</sub>² + ρ<sub>k</sub>²)]
          * </p>
          * @param kMax max value fot k index
+         * @param currentRhoSigmaj the current computed values for the ρ<sub>j</sub> and σ<sub>j</sub> coefficients
          * @return the coefficient k₂⁰
          */
-        private double computeK20(final int kMax) {
+        private double computeK20(final int kMax, final double[][] currentRhoSigmaj) {
             double k20 = 0.;
 
             for (int kIndex = 1; kIndex <= kMax; kIndex++) {
@@ -1523,38 +1484,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             return k20;
         }
 
-        /** Get C<sub>i</sub><sup>j</sup>.
-         *
-         * @param j j index
-         * @param date the date
-         * @return C<sub>i</sub><sup>j</sup>
-         */
-        private double[] getCij(final int j, final AbsoluteDate date) {
-            return cij[j].value(date);
-        }
-
-        /** Get S<sub>i</sub><sup>j</sup>.
-         *
-         * @param j j index
-         * @param date the date
-         * @return S<sub>i</sub><sup>j</sup>
-         */
-        private double[] getSij(final int j, final AbsoluteDate date) {
-            return sij[j].value(date);
-        }
-
-        /** Get D<sub>i</sub><sup>j</sup>.
-         * @param j j index
-         * @param date target date
-         * @return D<sub>i</sub><sup>j</sup>
-         */
-        private double[] getDij(final int j, final AbsoluteDate date) {
-            return dij[j].value(date);
-        }
-
         /** {@inheritDoc} */
         @Override
         public double[] value(final Orbit meanOrbit) {
+
+            // select the coefficients slot
+            final Slot slot = slots.get(meanOrbit.getDate());
 
             // Get the True longitude L
             final double L = meanOrbit.getLv();
@@ -1565,16 +1500,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final double center2 = center * center;
 
             // Initialize short periodic variations
-            final double[] shortPeriodicVariation = getCij(0, meanOrbit.getDate());
-            final double[] d1 = getDij(1, meanOrbit.getDate());
-            final double[] d2 = getDij(2, meanOrbit.getDate());
+            final double[] shortPeriodicVariation = slot.cij[0].value(meanOrbit.getDate());
+            final double[] d1 = slot.dij[1].value(meanOrbit.getDate());
+            final double[] d2 = slot.dij[2].value(meanOrbit.getDate());
             for (int i = 0; i < 6; i++) {
                 shortPeriodicVariation[i] += center * d1[i] + center2 * d2[i];
             }
 
             for (int j = 1; j <= JMAX; j++) {
-                final double[] c = getCij(j, meanOrbit.getDate());
-                final double[] s = getSij(j, meanOrbit.getDate());
+                final double[] c = slot.cij[j].value(meanOrbit.getDate());
+                final double[] s = slot.sij[j].value(meanOrbit.getDate());
                 final double cos = FastMath.cos(j * L);
                 final double sin = FastMath.sin(j * L);
                 for (int i = 0; i < 6; i++) {
@@ -1605,15 +1540,21 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         @Override
         public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
             throws OrekitException {
+
+            // select the coefficients slot
+            final Slot slot = slots.get(date);
+
             final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * JMAX + 3);
-            storeIfSelected(coefficients, selected, getCij(0, date), "d", 0);
-            storeIfSelected(coefficients, selected, getDij(1, date), "d", 1);
-            storeIfSelected(coefficients, selected, getDij(2, date), "d", 2);
+            storeIfSelected(coefficients, selected, slot.cij[0].value(date), "d", 0);
+            storeIfSelected(coefficients, selected, slot.dij[1].value(date), "d", 1);
+            storeIfSelected(coefficients, selected, slot.dij[2].value(date), "d", 2);
             for (int j = 1; j <= JMAX; j++) {
-                storeIfSelected(coefficients, selected, getCij(j, date), "c", j);
-                storeIfSelected(coefficients, selected, getSij(j, date), "s", j);
+                storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
+                storeIfSelected(coefficients, selected, slot.sij[j].value(date), "s", j);
             }
+
             return coefficients;
+
         }
 
         /** Put a coefficient in a map if selected.
@@ -1920,4 +1861,76 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             return v2ij[j];
         }
     }
+
+    /** Coefficients valid for one time slot. */
+    private static class Slot {
+
+        /**The coefficients D<sub>i</sub><sup>j</sup>.
+         * <p>
+         * Only for j = 1 and j = 2 the coefficients are not 0. <br>
+         * i corresponds to the equinoctial element, as follows:
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final ShortPeriodicsInterpolatedCoefficient[] dij;
+
+        /** The coefficients C<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The index order is cij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final ShortPeriodicsInterpolatedCoefficient[] cij;
+
+        /** The coefficients S<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The index order is sij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final ShortPeriodicsInterpolatedCoefficient[] sij;
+
+        /** Simple constructor.
+         *  @param jMax maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
+         */
+        Slot(final int jMax, final int interpolationPoints) {
+
+            dij = new ShortPeriodicsInterpolatedCoefficient[3];
+            cij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1];
+            sij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1];
+
+            // Initialize the C<sub>i</sub><sup>j</sup>, S<sub>i</sub><sup>j</sup> and D<sub>i</sub><sup>j</sup> coefficients
+            for (int j = 0; j <= jMax; j++) {
+                cij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                if (j > 0) {
+                    sij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                }
+                // Initialize only the non-zero D<sub>i</sub><sup>j</sup> coefficients
+                if (j == 1 || j == 2) {
+                    dij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                }
+            }
+
+        }
+
+    }
+
 }

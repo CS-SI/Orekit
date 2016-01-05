@@ -41,6 +41,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.ShortPeriodicsInterp
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenZonalLinear;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /** Zonal contribution to the {@link DSSTCentralBody central body gravitational perturbation}.
  *
@@ -240,22 +241,8 @@ class ZonalContribution implements DSSTForceModel {
         }
 
         final int jMax = 2 * maxDegreeShortPeriodics + 1;
-        final int rows = jMax + 1;
-        final ShortPeriodicsInterpolatedCoefficient di =
-                new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-        final ShortPeriodicsInterpolatedCoefficient[] cij =
-                new ShortPeriodicsInterpolatedCoefficient[rows];
-        final ShortPeriodicsInterpolatedCoefficient[] sij =
-                new ShortPeriodicsInterpolatedCoefficient[rows];
-
-        //Initialise the arrays
-        for (int j = 0; j <= jMax; j++) {
-            cij[j] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-            sij[j] = new ShortPeriodicsInterpolatedCoefficient(INTERPOLATION_POINTS);
-        }
-
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
-        zonalSPCoefs = new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics, di, cij, sij);
+        zonalSPCoefs = new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics, jMax, INTERPOLATION_POINTS);
         list.add(zonalSPCoefs);
         return list;
 
@@ -506,7 +493,7 @@ class ZonalContribution implements DSSTForceModel {
         double dUdGa = 0.;
 
         for (int s = 0; s <= maxEccPowMeanElements; s++) {
-            //Initialise the Hansen roots
+            //Initialize the Hansen roots
             this.hansenObjects[s].computeInitValues(X);
 
             // Get the current Gs coefficient
@@ -598,46 +585,55 @@ class ZonalContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState meanState)
+    public void updateShortPeriodTerms(final SpacecraftState ... meanStates)
         throws OrekitException {
-        // h * k.
-        this.hk = h * k;
-        // k² - h².
-        this.k2mh2 = k * k - h * h;
-        // (k² - h²) / 2.
-        this.k2mh2o2 = k2mh2 / 2.;
-        // 1 / (n² * a²) = 1 / (n * A)
-        this.oon2a2 = 1 / (A * meanMotion);
-        // 1 / (n² * a) = a / (n * A)
-        this.oon2a = a * oon2a2;
-        // χ³ / (n² * a)
-        this.x3on2a = XXX * oon2a;
-        // χ / (n² * a²)
-        this.xon2a2 = X * oon2a2;
-        // (C * χ) / ( 2 * n² * a² )
-        this.cxo2n2a2 = xon2a2 * C / 2;
-        // (χ²) / (n² * a² * (χ + 1 ) )
-        this.x2on2a2xp1 = xon2a2 * X / (X + 1);
-        // B * B
-        this.BB = B * B;
 
-        // Compute rhoj and sigmaj
-        final double[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate());
+        final Slot slot = zonalSPCoefs.createSlot(meanStates);
+        for (final SpacecraftState meanState : meanStates) {
 
-        // Compute Di
-        computeDiCoefficients(meanState.getDate());
+            initializeStep(new AuxiliaryElements(meanState.getOrbit(), I));
 
-        // generate the Cij and Sij coefficients
-        final FourierCjSjCoefficients cjsj = new FourierCjSjCoefficients(meanState.getDate(), maxDegreeShortPeriodics, maxEccPow);
-        computeCijSijCoefficients(meanState.getDate(), cjsj, rhoSigma);
+            // h * k.
+            this.hk = h * k;
+            // k² - h².
+            this.k2mh2 = k * k - h * h;
+            // (k² - h²) / 2.
+            this.k2mh2o2 = k2mh2 / 2.;
+            // 1 / (n² * a²) = 1 / (n * A)
+            this.oon2a2 = 1 / (A * meanMotion);
+            // 1 / (n² * a) = a / (n * A)
+            this.oon2a = a * oon2a2;
+            // χ³ / (n² * a)
+            this.x3on2a = XXX * oon2a;
+            // χ / (n² * a²)
+            this.xon2a2 = X * oon2a2;
+            // (C * χ) / ( 2 * n² * a² )
+            this.cxo2n2a2 = xon2a2 * C / 2;
+            // (χ²) / (n² * a² * (χ + 1 ) )
+            this.x2on2a2xp1 = xon2a2 * X / (X + 1);
+            // B * B
+            this.BB = B * B;
+
+            // Compute rhoj and sigmaj
+            final double[][] rhoSigma = computeRhoSigmaCoefficients(meanState.getDate(), slot);
+
+            // Compute Di
+            computeDiCoefficients(meanState.getDate(), slot);
+
+            // generate the Cij and Sij coefficients
+            final FourierCjSjCoefficients cjsj = new FourierCjSjCoefficients(meanState.getDate(),
+                                                                             maxDegreeShortPeriodics, maxEccPow);
+            computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma);
+        }
 
     }
 
     /** Generate the values for the D<sub>i</sub> coefficients.
      * @param date target date
+     * @param slot slot to which the coefficients belong
      * @throws OrekitException if an error occurs during the coefficient computation
      */
-    private void computeDiCoefficients(final AbsoluteDate date)
+    private void computeDiCoefficients(final AbsoluteDate date, final Slot slot)
         throws OrekitException {
         final double[] meanElementRates = computeMeanElementRates(date);
         final double[] currentDi = new double[6];
@@ -652,17 +648,18 @@ class ZonalContribution implements DSSTForceModel {
 
         }
 
-        zonalSPCoefs.di.addGridPoint(date, currentDi);
+        slot.di.addGridPoint(date, currentDi);
 
     }
 
     /**
      * Generate the values for the C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup> coefficients.
      * @param date date of computation
+     * @param slot slot to which the coefficients belong
      * @param cjsj Fourier coefficients
      * @param rhoSigma ρ<sub>j</sub> and σ<sub>j</sub>
      */
-    private void computeCijSijCoefficients(final AbsoluteDate date,
+    private void computeCijSijCoefficients(final AbsoluteDate date, final Slot slot,
                                            final FourierCjSjCoefficients cjsj,
                                            final double[][] rhoSigma) {
 
@@ -670,7 +667,7 @@ class ZonalContribution implements DSSTForceModel {
 
         // The C<sub>i</sub>⁰ coefficients
         final double[] currentCi0 = new double[] {0., 0., 0., 0., 0., 0.};
-        for (int j = 1; j < zonalSPCoefs.cij.length; j++) {
+        for (int j = 1; j < slot.cij.length; j++) {
 
             // Create local arrays
             final double[] currentCij = new double[] {0., 0., 0., 0., 0., 0.};
@@ -889,13 +886,13 @@ class ZonalContribution implements DSSTForceModel {
             }
 
             // Add the coefficients to the interpolation grid
-            zonalSPCoefs.cij[j].addGridPoint(date, currentCij);
-            zonalSPCoefs.sij[j].addGridPoint(date, currentSij);
+            slot.cij[j].addGridPoint(date, currentCij);
+            slot.sij[j].addGridPoint(date, currentSij);
 
         }
 
         //Add C<sub>i</sub>⁰ to the interpolation grid
-        zonalSPCoefs.cij[0].addGridPoint(date, currentCi0);
+        slot.cij[0].addGridPoint(date, currentCi0);
 
     }
 
@@ -907,16 +904,17 @@ class ZonalContribution implements DSSTForceModel {
      *  σ<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
      * </p>
      * @param date target date
+     * @param slot slot to which the coefficients belong
      * @return array containing ρ<sub>j</sub> and σ<sub>j</sub>
      */
-    private double[][] computeRhoSigmaCoefficients(final AbsoluteDate date) {
+    private double[][] computeRhoSigmaCoefficients(final AbsoluteDate date, final Slot slot) {
         final CjSjCoefficient cjsjKH = new CjSjCoefficient(k, h);
         final double b = 1. / (1 + B);
 
         // (-b)<sup>j</sup>
         double mbtj = 1;
 
-        final double[][] rhoSigma = new double[zonalSPCoefs.cij.length][2];
+        final double[][] rhoSigma = new double[slot.cij.length][2];
         for (int j = 1; j < rhoSigma.length; j++) {
             double rho;
             double sigma;
@@ -958,70 +956,53 @@ class ZonalContribution implements DSSTForceModel {
         /** Maximal degree to consider for harmonics potential. */
         private final int maxDegreeShortPeriodics;
 
-        /**The coefficients D<sub>i</sub>.
-         * <p>
-         * i corresponds to the equinoctial element, as follows:
-         * - i=0 for a <br/>
-         * - i=1 for k <br/>
-         * - i=2 for h <br/>
-         * - i=3 for q <br/>
-         * - i=4 for p <br/>
-         * - i=5 for λ <br/>
-         * </p>
-         */
-        private final ShortPeriodicsInterpolatedCoefficient di;
+        /** Maximum value for j index. */
+        private final int jMax;
 
-        /** The coefficients C<sub>i</sub><sup>j</sup>.
-         * <p>
-         * The constant term C<sub>i</sub>⁰ is also stored in this variable at index j = 0 <br>
-         * The index order is cij[j][i] <br/>
-         * i corresponds to the equinoctial element, as follows: <br/>
-         * - i=0 for a <br/>
-         * - i=1 for k <br/>
-         * - i=2 for h <br/>
-         * - i=3 for q <br/>
-         * - i=4 for p <br/>
-         * - i=5 for λ <br/>
-         * </p>
-         */
-        private final ShortPeriodicsInterpolatedCoefficient[] cij;
+        /** Number of points used in the interpolation process. */
+        private final int interpolationPoints;
 
-        /** The coefficients S<sub>i</sub><sup>j</sup>.
-         * <p>
-         * The index order is sij[j][i] <br/>
-         * i corresponds to the equinoctial element, as follows: <br/>
-         * - i=0 for a <br/>
-         * - i=1 for k <br/>
-         * - i=2 for h <br/>
-         * - i=3 for q <br/>
-         * - i=4 for p <br/>
-         * - i=5 for λ <br/>
-         * </p>
-         */
-        private final ShortPeriodicsInterpolatedCoefficient[] sij;
+        /** All coefficients slots. */
+        private final TimeSpanMap<Slot> slots;
 
         /** Constructor.
          * @param maxDegreeShortPeriodics maximal degree to consider for harmonics potential
-         * @param di the coefficients D<sub>i</sub>
-         * @param cij the coefficients C<sub>i</sub><sup>j</sup>
-         * @param sij the coefficients S<sub>i</sub><sup>j</sup>.
+         *  @param jMax maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
          */
         ZonalShortPeriodicCoefficients(final int maxDegreeShortPeriodics,
-                                       final ShortPeriodicsInterpolatedCoefficient   di,
-                                       final ShortPeriodicsInterpolatedCoefficient[] cij,
-                                       final ShortPeriodicsInterpolatedCoefficient[] sij) {
+                                       final int jMax, final int interpolationPoints) {
 
             // Save parameters
             this.maxDegreeShortPeriodics = maxDegreeShortPeriodics;
-            this.di  = di;
-            this.cij = cij;
-            this.sij = sij;
+            this.jMax                    = jMax;
+            this.interpolationPoints     = interpolationPoints;
+            this.slots                   = new TimeSpanMap<Slot>(new Slot(jMax, interpolationPoints));
 
+        }
+
+        /** Get the slot valid for some date.
+         * @param meanStates mean states defining the slot
+         * @return slot valid at the specified date
+         */
+        public Slot createSlot(final SpacecraftState ... meanStates) {
+            final Slot         slot  = new Slot(jMax, interpolationPoints);
+            final AbsoluteDate first = meanStates[0].getDate();
+            final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
+            if (first.compareTo(last) <= 0) {
+                slots.addValidAfter(slot, first);
+            } else {
+                slots.addValidBefore(slot, first);
+            }
+            return slot;
         }
 
         /** {@inheritDoc} */
         @Override
         public double[] value(final Orbit meanOrbit) {
+
+            // select the coefficients slot
+            final Slot slot = slots.get(meanOrbit.getDate());
 
             // Get the True longitude L
             final double L = meanOrbit.getLv();
@@ -1033,15 +1014,15 @@ class ZonalContribution implements DSSTForceModel {
             final double center = L - meanOrbit.getLM();
 
             // Initialize short periodic variations
-            final double[] shortPeriodicVariation = getCij(0, meanOrbit.getDate());
-            final double[] d = getDi(meanOrbit.getDate());
+            final double[] shortPeriodicVariation = slot.cij[0].value(meanOrbit.getDate());
+            final double[] d = slot.di.value(meanOrbit.getDate());
             for (int i = 0; i < 6; i++) {
                 shortPeriodicVariation[i] +=  center * d[i];
             }
 
             for (int j = 1; j <= maxJ; j++) {
-                final double[] c = getCij(j, meanOrbit.getDate());
-                final double[] s = getSij(j, meanOrbit.getDate());
+                final double[] c = slot.cij[j].value(meanOrbit.getDate());
+                final double[] s = slot.sij[j].value(meanOrbit.getDate());
                 final double cos = FastMath.cos(j * L);
                 final double sin = FastMath.sin(j * L);
                 for (int i = 0; i < 6; i++) {
@@ -1054,33 +1035,6 @@ class ZonalContribution implements DSSTForceModel {
             return shortPeriodicVariation;
         }
 
-        /** Get C<sub>i</sub><sup>j</sup>.
-         *
-         * @param j j index
-         * @param date the date
-         * @return C<sub>i</sub><sup>j</sup>
-         */
-        public double[] getCij(final int j, final AbsoluteDate date) {
-            return cij[j].value(date);
-        }
-
-        /** Get S<sub>i</sub><sup>j</sup>.
-         *
-         * @param j j index
-         * @param date the date
-         * @return S<sub>i</sub><sup>j</sup>
-         */
-        public double[] getSij(final int j, final AbsoluteDate date) {
-            return sij[j].value(date);
-        }
-
-        /** Get D<sub>i</sub>.
-         * @param date target date
-         * @return D<sub>i</sub>
-         */
-        public double[] getDi(final AbsoluteDate date) {
-            return di.value(date);
-        }
         /** {@inheritDoc} */
         @Override
         public String getCoefficientsKeyPrefix() {
@@ -1100,13 +1054,16 @@ class ZonalContribution implements DSSTForceModel {
         public Map<String, double[]> getCoefficients(final AbsoluteDate date, final Set<String> selected)
                 throws OrekitException {
 
+            // select the coefficients slot
+            final Slot slot = slots.get(date);
+
             final int maxJ = 2 * maxDegreeShortPeriodics + 1;
             final Map<String, double[]> coefficients = new HashMap<String, double[]>(2 * maxJ + 2);
-            storeIfSelected(coefficients, selected, getCij(0, date), "d", 0);
-            storeIfSelected(coefficients, selected, getDi(date), "d", 1);
+            storeIfSelected(coefficients, selected, slot.cij[0].value(date), "d", 0);
+            storeIfSelected(coefficients, selected, slot.di.value(date), "d", 1);
             for (int j = 1; j <= maxJ; j++) {
-                storeIfSelected(coefficients, selected, getCij(j, date), "c", j);
-                storeIfSelected(coefficients, selected, getSij(j, date), "s", j);
+                storeIfSelected(coefficients, selected, slot.cij[j].value(date), "c", j);
+                storeIfSelected(coefficients, selected, slot.sij[j].value(date), "s", j);
             }
             return coefficients;
 
@@ -1931,6 +1888,72 @@ class ZonalContribution implements DSSTForceModel {
         public double getdSjdGamma(final int j) {
             return sCoef[6][j];
         }
+    }
+
+    /** Coefficients valid for one time slot. */
+    private static class Slot {
+
+        /**The coefficients D<sub>i</sub>.
+         * <p>
+         * i corresponds to the equinoctial element, as follows:
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final ShortPeriodicsInterpolatedCoefficient di;
+
+        /** The coefficients C<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The constant term C<sub>i</sub>⁰ is also stored in this variable at index j = 0 <br>
+         * The index order is cij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final ShortPeriodicsInterpolatedCoefficient[] cij;
+
+        /** The coefficients S<sub>i</sub><sup>j</sup>.
+         * <p>
+         * The index order is sij[j][i] <br/>
+         * i corresponds to the equinoctial element, as follows: <br/>
+         * - i=0 for a <br/>
+         * - i=1 for k <br/>
+         * - i=2 for h <br/>
+         * - i=3 for q <br/>
+         * - i=4 for p <br/>
+         * - i=5 for λ <br/>
+         * </p>
+         */
+        private final ShortPeriodicsInterpolatedCoefficient[] sij;
+
+        /** Simple constructor.
+         *  @param jMax maximum value for j index
+         *  @param interpolationPoints number of points used in the interpolation process
+         */
+        Slot(final int jMax, final int interpolationPoints) {
+
+            final int rows = jMax + 1;
+            di  = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+            cij = new ShortPeriodicsInterpolatedCoefficient[rows];
+            sij = new ShortPeriodicsInterpolatedCoefficient[rows];
+
+            //Initialize the arrays
+            for (int j = 0; j <= jMax; j++) {
+                cij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+                sij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+            }
+
+        }
+
     }
 
 }

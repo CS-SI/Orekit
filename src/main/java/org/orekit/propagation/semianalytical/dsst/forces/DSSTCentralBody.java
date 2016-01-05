@@ -138,7 +138,8 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public void updateShortPeriodTerms(final SpacecraftState state) throws OrekitException {
+    public void updateShortPeriodTerms(final SpacecraftState ... state)
+        throws OrekitException {
         //relay the call to the Zonal and Tesseral contributions
         zonal.updateShortPeriodTerms(state);
         if (tesseral != null) {
