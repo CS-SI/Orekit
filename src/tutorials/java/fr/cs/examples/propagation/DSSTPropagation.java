@@ -159,6 +159,8 @@ public class DSSTPropagation {
         DURATION_IN_DAYS,
         OUTPUT_STEP,
         FIXED_INTEGRATION_STEP,
+        FIXED_NUMBER_OF_INTERPOLATION_POINTS,
+        MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS,
         NUMERICAL_COMPARISON,
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
@@ -174,9 +176,7 @@ public class DSSTPropagation {
         OUTPUT_KEPLERIAN,
         OUTPUT_EQUINOCTIAL,
         OUTPUT_CARTESIAN,
-        OUTPUT_SHORT_PERIOD_COEFFICIENTS,
-        // TODO: remove this feature after debugging
-        SHORT_PERIOD_COEFFICIENT_INTERPOLATOR;
+        OUTPUT_SHORT_PERIOD_COEFFICIENTS;
     }
 
     private void run(final File input, final File output)
@@ -248,19 +248,26 @@ public class DSSTPropagation {
                 System.out.println("No coefficients will be computed here.\n");
             }
         }
-        // TODO: remove this feature after debugging
-        boolean shortPeriodCoefficientInterpolator = true;
-        if (parser.containsKey(ParameterKey.SHORT_PERIOD_COEFFICIENT_INTERPOLATOR)) {
-            shortPeriodCoefficientInterpolator = parser.getBoolean(ParameterKey.SHORT_PERIOD_COEFFICIENT_INTERPOLATOR);
-        }
         double fixedStepSize = -1.;
         if (parser.containsKey(ParameterKey.FIXED_INTEGRATION_STEP)) {
             fixedStepSize = parser.getDouble(ParameterKey.FIXED_INTEGRATION_STEP);
         }
         final DSSTPropagator dsstProp = createDSSTProp(orbit, mass,
                                                        initialIsOsculating, outputIsOsculating,
-                                                       fixedStepSize, shortPeriodCoefficients,
-                                                       shortPeriodCoefficientInterpolator);
+                                                       fixedStepSize, shortPeriodCoefficients);
+
+        if (parser.containsKey(ParameterKey.FIXED_NUMBER_OF_INTERPOLATION_POINTS)) {
+            if (parser.containsKey(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS)) {
+                throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+                                          "cannot specify both fixed.number.of.interpolation.points" +
+                                          " and max.time.gap.between.interpolation.points");
+            }
+            dsstProp.setInterpolationGridToFixedNumberOfPoints(parser.getInt(ParameterKey.FIXED_NUMBER_OF_INTERPOLATION_POINTS));
+        } else if (parser.containsKey(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS)) {
+            dsstProp.setInterpolationGridToMaxTimeGap(parser.getDouble(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS));
+        } else {
+            dsstProp.setInterpolationGridToFixedNumberOfPoints(3);
+        }
 
         // Set Force models
         setForceModel(parser, unnormalized, earthFrame, dsstProp);
@@ -296,12 +303,15 @@ public class DSSTPropagation {
         // DSST Propagation
         dsstProp.setEphemerisMode();
         final double dsstOn = System.currentTimeMillis();
-        dsstProp.setMasterMode(outStep, new OutputHandler(output,
-                                                          displayKeplerian, displayEquinoctial, displayCartesian,
-                                                          shortPeriodCoefficients));
         dsstProp.propagate(start, start.shiftedBy(duration));
         final double dsstOff = System.currentTimeMillis();
-        System.out.println("DSST execution time (including large file write) : " + (dsstOff - dsstOn) / 1000.);
+        System.out.println("DSST execution time (without large file write) : " + (dsstOff - dsstOn) / 1000.);
+        System.out.println("writing file...");
+        final BoundedPropagator dsstEphem = dsstProp.getGeneratedEphemeris();
+        dsstEphem.setMasterMode(outStep, new OutputHandler(output,
+                                                           displayKeplerian, displayEquinoctial, displayCartesian,
+                                                           shortPeriodCoefficients));
+        dsstEphem.propagate(start, start.shiftedBy(duration));
         System.out.println("DSST results saved as file " + output);
 
         // Check if we want to compare numerical to DSST propagator (default is false)
@@ -414,6 +424,7 @@ public class DSSTPropagation {
         return orbit;
 
     }
+
     /** Set up the DSST Propagator
      *
      *  @param orbit initial orbit
@@ -424,8 +435,6 @@ public class DSSTPropagation {
      *  @param shortPeriodCoefficients list of short periodic coefficients
      *  to output (null means no coefficients at all, empty list means all
      *  possible coefficients)
-     *  @param shortPeriodCoefficientInterpolator if short period coefficients
-     *  should use interpolation
      *  @throws OrekitException
      */
     private DSSTPropagator createDSSTProp(final Orbit orbit,
@@ -433,15 +442,14 @@ public class DSSTPropagation {
                                           final boolean initialIsOsculating,
                                           final boolean outputIsOsculating,
                                           final double fixedStepSize,
-                                          final List<String> shortPeriodCoefficients,
-                                          final boolean shortPeriodCoefficientInterpolator)
+                                          final List<String> shortPeriodCoefficients)
         throws OrekitException {
         AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
         } else {
             final double minStep = orbit.getKeplerianPeriod();
-            final double maxStep = minStep * 100.;
+            final double maxStep = minStep * 10.;
             final double[][] tol = DSSTPropagator.tolerances(1.0, orbit);
             integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
             ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);
@@ -451,8 +459,6 @@ public class DSSTPropagation {
         dsstProp.setInitialState(new SpacecraftState(orbit, mass), initialIsOsculating);
         dsstProp.setSelectedCoefficients(shortPeriodCoefficients == null ?
                                          null : new HashSet<String>(shortPeriodCoefficients));
-        // TODO: remove this feature after debugging
-        dsstProp.setShortPeriodCoefficientInterpolation(shortPeriodCoefficientInterpolator);
 
         return dsstProp;
     }
