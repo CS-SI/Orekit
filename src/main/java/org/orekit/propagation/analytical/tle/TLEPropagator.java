@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical.tle;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -179,7 +180,9 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         initializeCommons();
         sxpInitialize();
         // set the initial state
-        super.resetInitialState(new SpacecraftState(propagateOrbit(initialTLE.getDate())));
+        final Orbit orbit = propagateOrbit(initialTLE.getDate());
+        final Attitude attitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
     }
 
     /** Selects the extrapolator to use with the selected TLE.
