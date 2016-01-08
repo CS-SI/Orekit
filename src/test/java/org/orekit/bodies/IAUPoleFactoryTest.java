@@ -24,8 +24,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
@@ -63,7 +63,9 @@ public class IAUPoleFactoryTest {
                 int index = 6;
                 for (int i = 0; i < 3; ++i) {
                     for (int j = 0; j < 3; ++j) {
-                        m[i][j] = Double.parseDouble(fields[index++]);
+                        // we transpose the matrix to get the transform
+                        // from ICRF to body frame
+                        m[j][i] = Double.parseDouble(fields[index++]);
                     }
                 }
                 Rotation rRef = new Rotation(m, 1.0e-10);
@@ -77,13 +79,14 @@ public class IAUPoleFactoryTest {
                 Assert.assertEquals(deltaRef, pole.getDelta(), 2.4e-13);
                 Assert.assertEquals(wRef, MathUtils.normalizeAngle(w, wRef), 2.5e-12);
 
-//                // check matrix
-//                Vector3D qNode = Vector3D.crossProduct(Vector3D.PLUS_K, pole);
-//                if (qNode.getNormSq() < Precision.SAFE_MIN) {
-//                    qNode = Vector3D.PLUS_I;
-//                }
-//                final Rotation rotation = new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
-//                Assert.assertEquals(0.0, Rotation.distance(rRef.revert(), rotation), 2.7e-7);
+                // check matrix
+                Vector3D qNode = Vector3D.crossProduct(Vector3D.PLUS_K, pole);
+                if (qNode.getNormSq() < Precision.SAFE_MIN) {
+                    qNode = Vector3D.PLUS_I;
+                }
+                final Rotation rotation = new Rotation(Vector3D.PLUS_K, wRef, RotationConvention.FRAME_TRANSFORM).
+                                          applyTo(new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
+                Assert.assertEquals(0.0, Rotation.distance(rRef, rotation), 1.9e-15);
 
             }
         }
