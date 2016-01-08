@@ -62,6 +62,7 @@ import org.orekit.errors.OrekitInternalError;
  * the size of the zone to be tessellated increases.
  * </p>
  * @author Luc Maisonobe
+ * @since 7.1
  */
 public class EllipsoidTessellator {
 
