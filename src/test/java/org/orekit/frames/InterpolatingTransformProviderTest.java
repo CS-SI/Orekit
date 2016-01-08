@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
@@ -184,7 +185,9 @@ public class InterpolatingTransformProviderTest {
                                                new Vector3D(omega * sin, -omega * cos, 0),
                                                new Vector3D(omega * omega * cos, omega * omega * sin, 0)),
                                  new Transform(date,
-                                               new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt),
+                                               new Rotation(Vector3D.PLUS_K,
+                                                            FastMath.PI - omega * dt,
+                                                            RotationConvention.VECTOR_OPERATOR),
                                                new Vector3D(omega, Vector3D.PLUS_K)));
         }
 

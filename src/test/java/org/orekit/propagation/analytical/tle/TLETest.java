@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -386,6 +386,12 @@ public class TLETest {
         PVCoordinates pv = propagator.propagate(tle.getDate().shiftedBy(100)).getPVCoordinates();
         Assert.assertEquals(42171546.979560345, pv.getPosition().getNorm(), 1.0e-3);
         Assert.assertEquals(3074.1890089357994, pv.getVelocity().getNorm(), 1.0e-6);
+    }
+
+    @Test
+    public void testSymmetryAfterLeapSecondIntroduction() throws OrekitException {
+        checkSymmetry("1 34602U 09013A   12187.35117436  .00002472  18981-5  42406-5 0  9995",
+                      "2 34602  96.5991 210.0210 0006808 112.8142 247.3865 16.06008103193411");
     }
 
     @Before

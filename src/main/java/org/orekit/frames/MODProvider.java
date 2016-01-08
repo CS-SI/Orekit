@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,8 @@ package org.orekit.frames;
 import java.io.Serializable;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -43,7 +45,7 @@ class MODProvider implements TransformProvider {
     /** Function computing the precession angles. */
     private final transient TimeFunction<double[]> precessionFunction;
 
-    /** Constant rotation betwee ecliptic and equatoror poles at J2000.0. */
+    /** Constant rotation between ecliptic and equator poles at J2000.0. */
     private final Rotation r4;
 
     /** Simple constructor.
@@ -56,10 +58,10 @@ class MODProvider implements TransformProvider {
         final TimeFunction<Double> epsilonAFunction = conventions.getMeanObliquityFunction();
         final AbsoluteDate date0 = conventions.getNutationReferenceEpoch();
         final double epsilon0 = epsilonAFunction.value(date0);
-        r4 = new Rotation(Vector3D.PLUS_I, -epsilon0);
+        r4 = new Rotation(Vector3D.PLUS_I, epsilon0, RotationConvention.FRAME_TRANSFORM);
     }
 
-    /** Get the transfrom from parent frame.
+    /** Get the transform from parent frame.
      * <p>The update considers the precession effects.</p>
      * @param date new value of the date
      * @return transform at the specified date
@@ -69,13 +71,10 @@ class MODProvider implements TransformProvider {
         // compute the precession angles phiA, omegaA, chiA
         final double[] angles = precessionFunction.value(date);
 
-        // elementary rotations for precession
-        final Rotation r1 = new Rotation(Vector3D.PLUS_K, -angles[2]);
-        final Rotation r2 = new Rotation(Vector3D.PLUS_I,  angles[1]);
-        final Rotation r3 = new Rotation(Vector3D.PLUS_K,  angles[0]);
-
         // complete precession
-        final Rotation precession = r1.applyTo(r2.applyTo(r3.applyTo(r4)));
+        final Rotation precession = r4.compose(new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
+                                                            -angles[0], -angles[1], angles[2]),
+                                               RotationConvention.FRAME_TRANSFORM);
 
         // set up the transform from parent GCRF
         return new Transform(date, precession);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.analysis.interpolation.FieldHermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 import org.orekit.errors.OrekitException;
@@ -116,7 +117,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
         final FieldVector3D<T> rOmega    = getRotation().applyTo(offset.getRotationRate());
         final FieldVector3D<T> rOmegaDot = getRotation().applyTo(offset.getRotationAcceleration());
         return new TimeStampedFieldAngularCoordinates<T>(date,
-                                                         getRotation().applyTo(offset.getRotation()),
+                                                         getRotation().compose(offset.getRotation(), RotationConvention.VECTOR_OPERATOR),
                                                          getRotationRate().add(rOmega),
                                                          new FieldVector3D<T>( 1.0, getRotationAcceleration(),
                                                                                1.0, rOmegaDot,
@@ -270,7 +271,8 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                 // interpolation failed, some intermediate rotation was too close to 2π
                 // we need to offset all rotations to avoid the singularity
                 offset = offset.addOffset(new FieldAngularCoordinates<T>(new FieldRotation<T>(new FieldVector3D<T>(one, zero, zero),
-                                                                                              zero.add(epsilon)),
+                                                                                              zero.add(epsilon),
+                                                                                              RotationConvention.VECTOR_OPERATOR),
                                                                          new FieldVector3D<T>(zero, zero, zero),
                                                                          new FieldVector3D<T>(zero, zero, zero)));
             } else {

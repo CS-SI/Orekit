@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,9 @@
 package org.orekit.forces.drag;
 
 
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,6 +31,8 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -157,6 +162,30 @@ public class DTM2000Test {
         Assert.assertEquals(tzTestCase,  atm.getT(), tzTestCase * 1e-13);
         Assert.assertEquals(tinfTestCase, atm.getTinf(), tinfTestCase * 1e-13);
 
+    }
+
+    @Test
+    public void testNonEarthRotationAxisAlignedFrame() throws OrekitException {
+        //setup
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Rotation rotation = new Rotation(Vector3D.PLUS_I, FastMath.PI / 2, RotationConvention.VECTOR_OPERATOR);
+        Frame frame = new Frame(ecef, new Transform(date, rotation), "other");
+        Vector3D pEcef = new Vector3D(6378137 + 300e3, 0, 0);
+        Vector3D pFrame = ecef.getTransformTo(frame, date)
+                .transformPosition(pEcef);
+        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(
+                6378136.460, 1.0 / 298.257222101, ecef);
+        SolarInputs97to05 in = SolarInputs97to05.getInstance();
+        earth.setAngularThreshold(1e-10);
+        DTM2000 atm = new DTM2000(in, sun, earth);
+
+        //action
+        final double actual = atm.getDensity(date, pFrame, frame);
+
+        //verify
+        Assert.assertEquals(atm.getDensity(date, pEcef, ecef), actual, 0.0);
     }
 
     @Before

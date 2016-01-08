@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitMessages;
@@ -337,7 +338,7 @@ public class CartesianOrbit extends Orbit {
 
         // find canonical 2D frame with p pointing to perigee
         final double v0      = 2 * FastMath.atan(sqrt * FastMath.tanh(H0 / 2));
-        final Vector3D p     = new Rotation(pvM, -v0).applyTo(pvP).normalize();
+        final Vector3D p     = new Rotation(pvM, v0, RotationConvention.FRAME_TRANSFORM).applyTo(pvP).normalize();
         final Vector3D q     = Vector3D.crossProduct(pvM, p).normalize();
 
         // compute shifted eccentric anomaly

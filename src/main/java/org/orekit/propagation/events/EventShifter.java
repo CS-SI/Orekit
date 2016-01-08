@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -97,7 +97,7 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
      * @since 6.1
      */
     private EventShifter(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<EventShifter<T>> handler,
+                         final int maxIter, final EventHandler<? super EventShifter<T>> handler,
                          final T detector, final boolean useShiftedStates,
                          final double increasingTimeShift, final double decreasingTimeShift) {
         super(maxCheck, threshold, maxIter, handler);
@@ -110,7 +110,7 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
     /** {@inheritDoc} */
     @Override
     protected EventShifter<T> create(final double newMaxCheck, final double newThreshold,
-                                     final int newMaxIter, final EventHandler<EventShifter<T>> newHandler) {
+                                     final int newMaxIter, final EventHandler<? super EventShifter<T>> newHandler) {
         return new EventShifter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                    detector, useShiftedStates, -increasingOffset, -decreasingOffset);
     }

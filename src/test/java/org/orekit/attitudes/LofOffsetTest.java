@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 
 import org.apache.commons.math3.geometry.euclidean.threed.CardanEulerSingularityException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -57,7 +58,7 @@ public class LofOffsetTest {
     // Body mu
     private double mu;
 
-    // Reference frame = ITRF 2005C
+    // Reference frame = ITRF
     private Frame itrf;
 
     // Earth shape
@@ -100,10 +101,10 @@ public class LofOffsetTest {
         // ************************************
         // Elliptic earth shape
         final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
-        final GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
+        final GeodeticPoint geoTargetITRF = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
 
         // Attitude law definition from geodetic point target
-        final TargetPointing targetLaw = new TargetPointing(circ.getFrame(), geoTargetITRF2005, earthShape);
+        final TargetPointing targetLaw = new TargetPointing(circ.getFrame(), geoTargetITRF, earthShape);
         final Rotation targetRot = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Create lof aligned attitude provider
@@ -112,8 +113,8 @@ public class LofOffsetTest {
         final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Get rotation from LOF to target pointing attitude
-        Rotation rollPitchYaw = targetRot.applyTo(lofAlignedRot.revert()).revert();
-        final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX);
+        Rotation rollPitchYaw = targetRot.compose(lofAlignedRot.revert(), RotationConvention.VECTOR_OPERATOR).revert();
+        final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX, RotationConvention.VECTOR_OPERATOR);
         final double yaw = angles[0];
         final double pitch = angles[1];
         final double roll = angles[2];
@@ -124,7 +125,7 @@ public class LofOffsetTest {
         final Rotation lofOffsetRot = lofOffsetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Compose rotations : target pointing attitudes
-        final double angleCompo = targetRot.applyInverseTo(lofOffsetRot).getAngle();
+        final double angleCompo = targetRot.composeInverse(lofOffsetRot, RotationConvention.VECTOR_OPERATOR).getAngle();
         Assert.assertEquals(0., angleCompo, Utils.epsilonAngle);
 
     }
@@ -143,8 +144,8 @@ public class LofOffsetTest {
         final LofOffset lofAlignedLaw = new LofOffset(orbit.getFrame(), LOFType.VVLH);
         final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(orbit, date, orbit.getFrame()).getRotation();
         final Attitude targetAttitude = targetLaw.getAttitude(orbit, date, orbit.getFrame());
-        final Rotation rollPitchYaw = targetAttitude.getRotation().applyTo(lofAlignedRot.revert()).revert();
-        final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX);
+        final Rotation rollPitchYaw = targetAttitude.getRotation().compose(lofAlignedRot.revert(), RotationConvention.VECTOR_OPERATOR).revert();
+        final double[] angles = rollPitchYaw.getAngles(RotationOrder.ZYX, RotationConvention.VECTOR_OPERATOR);
         final double yaw   = angles[0];
         final double pitch = angles[1];
         final double roll  = angles[2];
@@ -258,8 +259,8 @@ public class LofOffsetTest {
         LofOffset law = new LofOffset(orbit.getFrame(), LOFType.VVLH, order, alpha1, alpha2, alpha3);
         Rotation offsetAtt  = law.getAttitude(orbit, date, orbit.getFrame()).getRotation();
         Rotation alignedAtt = new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, date, orbit.getFrame()).getRotation();
-        Rotation offsetProper = offsetAtt.applyTo(alignedAtt.revert());
-        double[] angles = offsetProper.revert().getAngles(order);
+        Rotation offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
+        double[] angles = offsetProper.revert().getAngles(order, RotationConvention.VECTOR_OPERATOR);
         Assert.assertEquals(alpha1, angles[0], 1.0e-11);
         Assert.assertEquals(alpha2, angles[1], 1.0e-11);
         Assert.assertEquals(alpha3, angles[2], 1.0e-11);
@@ -292,7 +293,7 @@ public class LofOffsetTest {
             // Body mu
             mu = 3.9860047e14;
 
-            // Reference frame = ITRF 2005
+            // Reference frame = ITRF
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Elliptic earth shape

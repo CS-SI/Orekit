@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,7 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
      * @param body body on which the latitude is defined
      */
     private LatitudeExtremumDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<LatitudeExtremumDetector> handler,
+                                     final int maxIter, final EventHandler<? super LatitudeExtremumDetector> handler,
                                      final OneAxisEllipsoid body) {
         super(maxCheck, threshold, maxIter, handler);
         this.body = body;
@@ -83,7 +83,7 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
     @Override
     protected LatitudeExtremumDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<LatitudeExtremumDetector> newHandler) {
+                                              final EventHandler<? super LatitudeExtremumDetector> newHandler) {
         return new LatitudeExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, body);
     }
 

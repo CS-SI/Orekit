@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.attitudes;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
@@ -46,12 +47,13 @@ public class InertialAttitudeTest {
 
     @Test
     public void testIsInertial() throws OrekitException {
-        InertialProvider law = new InertialProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9));
+        InertialProvider law = new InertialProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9, RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
             Attitude attitude = propagator.propagate(t0.shiftedBy(t)).getAttitude();
-            Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
+            Rotation evolution = attitude.getRotation().compose(initial.getRotation().revert(),
+                                                                RotationConvention.VECTOR_OPERATOR);
             Assert.assertEquals(0, evolution.getAngle(), 1.0e-10);
             Assert.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
@@ -59,12 +61,13 @@ public class InertialAttitudeTest {
 
     @Test
     public void testCompensateMomentum() throws OrekitException {
-        InertialProvider law = new InertialProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2));
+        InertialProvider law = new InertialProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2, RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
         Attitude initial = propagator.propagate(t0).getAttitude();
         for (double t = 0; t < 10000.0; t += 100) {
             Attitude attitude = propagator.propagate(t0.shiftedBy(t)).getAttitude();
-            Rotation evolution = attitude.getRotation().applyTo(initial.getRotation().revert());
+            Rotation evolution = attitude.getRotation().compose(initial.getRotation().revert(),
+                                                                RotationConvention.VECTOR_OPERATOR);
             Assert.assertEquals(0, evolution.getAngle(), 1.0e-10);
             Assert.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
@@ -77,7 +80,7 @@ public class InertialAttitudeTest {
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
-        AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2));
+        AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2, RotationConvention.VECTOR_OPERATOR));
 
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
@@ -107,7 +110,7 @@ public class InertialAttitudeTest {
         // compute spin axis using finite differences
         Rotation rMinus = sMinus.getAttitude().getRotation();
         Rotation rPlus  = sPlus.getAttitude().getRotation();
-        Rotation dr     = rPlus.applyTo(rMinus.revert());
+        Rotation dr     = rPlus.compose(rMinus.revert(), RotationConvention.VECTOR_OPERATOR);
         Assert.assertEquals(0, dr.getAngle(), 1.0e-10);
 
         Vector3D spin0 = s0.getAttitude().getSpin();

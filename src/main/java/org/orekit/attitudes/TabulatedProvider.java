@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * This class handles an attitude provider interpolating from a predefined table.
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
+ * @see TabulatedLofOffset
  * @since 6.1
  */
 public class TabulatedProvider implements AttitudeProvider {

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
@@ -92,7 +93,7 @@ class TIRFProvider implements EOPBasedTransformProvider {
         final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 
         // set up the transform from parent CIRF2000
-        final Rotation rotation     = new Rotation(Vector3D.PLUS_K, -correctedERA);
+        final Rotation rotation     = new Rotation(Vector3D.PLUS_K, correctedERA, RotationConvention.FRAME_TRANSFORM);
         return new Transform(date, rotation, rotationRate);
 
     }

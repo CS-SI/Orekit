@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -195,7 +195,7 @@ public class FrameTest {
                                                                                               0.0),
                                                        "launch pad");
 
-        // create a new inertially oriented frame that is aligned with ITRF2005 at h0 - 9 seconds
+        // create a new inertially oriented frame that is aligned with ITRF at h0 - 9 seconds
         AbsoluteDate h0M9       = h0.shiftedBy(-9.0);
         Frame eme2000           = FramesFactory.getEME2000();
         Frame frozenLaunchFrame = rotatingPadFrame.getFrozenFrame(eme2000, h0M9, "launch frame");

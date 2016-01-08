@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -84,7 +84,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * @param topo topocentric frame centered on ground point
      */
     private ElevationExtremumDetector(final double maxCheck, final double threshold,
-                                      final int maxIter, final EventHandler<ElevationExtremumDetector> handler,
+                                      final int maxIter, final EventHandler<? super ElevationExtremumDetector> handler,
                                       final TopocentricFrame topo) {
         super(maxCheck, threshold, maxIter, handler);
         this.topo = topo;
@@ -94,7 +94,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     @Override
     protected ElevationExtremumDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<ElevationExtremumDetector> newHandler) {
+                                              final EventHandler<? super ElevationExtremumDetector> newHandler) {
         return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);
     }
 

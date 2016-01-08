@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.models.earth.tessellation;
 
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.LatitudeExtremumDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
@@ -25,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
  * @see AlongTrackAiming
  * @author Luc Maisonobe
  */
-class HalfTrackSpanHandler implements EventHandler<HalfTrackSpanDetector> {
+class HalfTrackSpanHandler implements EventHandler<LatitudeExtremumDetector> {
 
     /** Indicator for zone tiling with respect to ascending or descending orbits. */
     private final boolean isAscending;
@@ -63,7 +64,7 @@ class HalfTrackSpanHandler implements EventHandler<HalfTrackSpanDetector> {
     /** {@inheritDoc} */
     @Override
     public Action eventOccurred(final SpacecraftState s,
-                                final HalfTrackSpanDetector detector,
+                                final LatitudeExtremumDetector detector,
                                 final boolean increasing) {
         if (increasing ^ isAscending) {
             // we have found an end event
@@ -84,7 +85,7 @@ class HalfTrackSpanHandler implements EventHandler<HalfTrackSpanDetector> {
 
     /** {@inheritDoc} */
     @Override
-    public SpacecraftState resetState(final HalfTrackSpanDetector detector,
+    public SpacecraftState resetState(final LatitudeExtremumDetector detector,
                                       final SpacecraftState oldState) {
         return oldState;
     }

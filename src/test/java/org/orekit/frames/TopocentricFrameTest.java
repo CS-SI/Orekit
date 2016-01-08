@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ public class TopocentricFrameTest {
     // Computation date
     private AbsoluteDate date;
 
-    // Reference frame = ITRF 2005
+    // Reference frame = ITRF
     private Frame itrf;
 
     // Earth shape
@@ -430,10 +430,10 @@ public class TopocentricFrameTest {
 
     @Test
     public void testIssue145() throws OrekitException {
-        Frame itrf2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
-                                               itrf2005);
+                                               itrf);
         TopocentricFrame staFrame = new TopocentricFrame(earth, new GeodeticPoint(0.0,0.0,0.0), "test");
         GeodeticPoint gp = staFrame.computeLimitVisibilityPoint(Constants.WGS84_EARTH_EQUATORIAL_RADIUS+600000,
                                                                 0.0, FastMath.toRadians(5.0));
@@ -449,7 +449,7 @@ public class TopocentricFrameTest {
 
             Utils.setDataRoot("regular-data");
 
-            // Reference frame = ITRF 2005
+            // Reference frame = ITRF
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Elliptic earth shape

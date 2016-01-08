@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -49,7 +49,7 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
     private final int maxIter;
 
     /** Default handler for event overrides. */
-    private final EventHandler<T> handler;
+    private final EventHandler<? super T> handler;
 
     /** Build a new instance.
      * @param maxCheck maximum checking interval (s)
@@ -58,7 +58,7 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
      * @param handler event handler to call at event occurrences
      */
     protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter,
-                               final EventHandler<T> handler) {
+                               final EventHandler<? super T> handler) {
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
         this.maxIter   = maxIter;
@@ -136,14 +136,14 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
      * @return a new detector with updated configuration (the instance is not changed)
      * @since 6.1
      */
-    public T withHandler(final EventHandler<T> newHandler) {
+    public T withHandler(final EventHandler<? super T> newHandler) {
         return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
     /** Get the handler.
      * @return event handler to call at event occurrences
      */
-    public EventHandler<T> getHandler() {
+    public EventHandler<? super T> getHandler() {
         return handler;
     }
 
@@ -170,6 +170,6 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
      * @return a new instance of the appropriate sub-type
      */
     protected abstract T create(final double newMaxCheck, final double newThreshold,
-                                final int newMaxIter, final EventHandler<T> newHandler);
+                                final int newMaxIter, final EventHandler<? super T> newHandler);
 
 }

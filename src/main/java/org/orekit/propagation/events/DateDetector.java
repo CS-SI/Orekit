@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -95,7 +95,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @since 6.1
      */
     private DateDetector(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<DateDetector> handler,
+                         final int maxIter, final EventHandler<? super DateDetector> handler,
                          final TimeStamped ... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
@@ -109,7 +109,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
     /** {@inheritDoc} */
     @Override
     protected DateDetector create(final double newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler<DateDetector> newHandler) {
+                                  final int newMaxIter, final EventHandler<? super DateDetector> newHandler) {
         return new DateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
     }

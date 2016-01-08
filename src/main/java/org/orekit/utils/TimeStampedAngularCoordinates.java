@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
@@ -184,7 +185,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
         final Vector3D rOmega    = getRotation().applyTo(offset.getRotationRate());
         final Vector3D rOmegaDot = getRotation().applyTo(offset.getRotationAcceleration());
         return new TimeStampedAngularCoordinates(date,
-                                                 getRotation().applyTo(offset.getRotation()),
+                                                 getRotation().compose(offset.getRotation(), RotationConvention.VECTOR_OPERATOR),
                                                  getRotationRate().add(rOmega),
                                                  new Vector3D( 1.0, getRotationAcceleration(),
                                                                1.0, rOmegaDot,
@@ -338,7 +339,9 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
             if (restart) {
                 // interpolation failed, some intermediate rotation was too close to 2π
                 // we need to offset all rotations to avoid the singularity
-                offset = offset.addOffset(new AngularCoordinates(new Rotation(Vector3D.PLUS_I, epsilon),
+                offset = offset.addOffset(new AngularCoordinates(new Rotation(Vector3D.PLUS_I,
+                                                                              epsilon,
+                                                                              RotationConvention.VECTOR_OPERATOR),
                                                                  Vector3D.ZERO, Vector3D.ZERO));
             } else {
                 // interpolation succeeded with the current offset

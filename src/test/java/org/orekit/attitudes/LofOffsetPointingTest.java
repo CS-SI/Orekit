@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,7 @@ package org.orekit.attitudes;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -54,7 +55,7 @@ public class LofOffsetPointingTest {
     // Body mu
     private double mu;
 
-    // Reference frame = ITRF 2005C
+    // Reference frame = ITRF
     private Frame frameItrf;
 
     // Earth shape
@@ -81,14 +82,14 @@ public class LofOffsetPointingTest {
         //*************************************
         final BodyCenterPointing centerLaw = new BodyCenterPointing(circ.getFrame(), earthSpheric);
         final Rotation centerRot = centerLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        final double angleBodyCenter = centerRot.applyInverseTo(lofRot).getAngle();
+        final double angleBodyCenter = centerRot.composeInverse(lofRot, RotationConvention.VECTOR_OPERATOR).getAngle();
         Assert.assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
         // Compare to nadir pointing law
         //*******************************
         final NadirPointing nadirLaw = new NadirPointing(circ.getFrame(), earthSpheric);
         final Rotation nadirRot = nadirLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
+        final double angleNadir = nadirRot.composeInverse(lofRot, RotationConvention.VECTOR_OPERATOR).getAngle();
         Assert.assertEquals(0., angleNadir, Utils.epsilonAngle);
 
     }

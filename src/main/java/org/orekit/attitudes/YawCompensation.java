@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.attitudes;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -185,7 +186,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
         throws OrekitException {
         final Rotation rBase        = getBaseState(pvProv, date, frame).getRotation();
         final Rotation rCompensated = getAttitude(pvProv, date, frame).getRotation();
-        final Rotation compensation = rCompensated.applyTo(rBase.revert());
+        final Rotation compensation = rCompensated.compose(rBase.revert(), RotationConvention.VECTOR_OPERATOR);
         return -compensation.applyTo(Vector3D.PLUS_I).getAlpha();
     }
 

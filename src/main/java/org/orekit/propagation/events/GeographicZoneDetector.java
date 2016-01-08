@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -106,7 +106,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      * @param margin angular margin to apply to the zone
      */
     private GeographicZoneDetector(final double maxCheck, final double threshold,
-                                   final int maxIter, final EventHandler<GeographicZoneDetector> handler,
+                                   final int maxIter, final EventHandler<? super GeographicZoneDetector> handler,
                                    final BodyShape body,
                                    final SphericalPolygonsSet zone,
                                    final EnclosingBall<Sphere2D, S2Point> cap,
@@ -121,7 +121,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
     /** {@inheritDoc} */
     @Override
     protected GeographicZoneDetector create(final double newMaxCheck, final double newThreshold,
-                                            final int newMaxIter, final EventHandler<GeographicZoneDetector> newHandler) {
+                                            final int newMaxIter, final EventHandler<? super GeographicZoneDetector> newHandler) {
         return new GeographicZoneDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                           body, zone, cap, margin);
     }

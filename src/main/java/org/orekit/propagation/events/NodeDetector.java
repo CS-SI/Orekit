@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -97,7 +97,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @since 6.1
      */
     private NodeDetector(final double maxCheck, final double threshold,
-                         final int maxIter, final EventHandler<NodeDetector> handler,
+                         final int maxIter, final EventHandler<? super NodeDetector> handler,
                          final Frame frame) {
         super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
@@ -106,7 +106,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
     /** {@inheritDoc} */
     @Override
     protected NodeDetector create(final double newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler<NodeDetector> newHandler) {
+                                  final int newMaxIter, final EventHandler<? super NodeDetector> newHandler) {
         return new NodeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }
 

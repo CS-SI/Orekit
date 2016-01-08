@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -326,14 +326,14 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
          * @since 6.1
          */
         private UmbraDetector(final double maxCheck, final double threshold,
-                              final int maxIter, final EventHandler<UmbraDetector> handler) {
+                              final int maxIter, final EventHandler<? super UmbraDetector> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
         protected UmbraDetector create(final double newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler<UmbraDetector> newHandler) {
+                                       final int newMaxIter, final EventHandler<? super UmbraDetector> newHandler) {
             return new UmbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
@@ -389,14 +389,14 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
          * @since 6.1
          */
         private PenumbraDetector(final double maxCheck, final double threshold,
-                                 final int maxIter, final EventHandler<PenumbraDetector> handler) {
+                                 final int maxIter, final EventHandler<? super PenumbraDetector> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
         protected PenumbraDetector create(final double newMaxCheck, final double newThreshold,
-                                          final int newMaxIter, final EventHandler<PenumbraDetector> newHandler) {
+                                          final int newMaxIter, final EventHandler<? super PenumbraDetector> newHandler) {
             return new PenumbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 

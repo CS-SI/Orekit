@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
@@ -294,7 +295,10 @@ public class TimeStampedFieldAngularCoordinatesTest {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> acPi =
                     (TimeStampedFieldAngularCoordinates<DerivativeStructure>) factory.invoke(null, piRotation, identity());
             Assert.assertEquals(FastMath.PI, acPi.getRotation().getAngle().getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.angle(axis, acPi.getRotation().getAxis()).sin().getReal(), 1.0e-15);
+            Assert.assertEquals(0.0,
+                                FieldVector3D.angle(axis,
+                                                    acPi.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR)).sin().getReal(),
+                                1.0e-15);
             Assert.assertEquals(0.0, acPi.getRotationRate().getNorm().getReal(), 1.0e-16);
         }
 
@@ -380,7 +384,8 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> ac0 =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(t0,
                                                                             new FieldRotation<DerivativeStructure>(createVector(1, 0, 0, 4),
-                                                                                                                   new DerivativeStructure(4, 1, 3, FastMath.toRadians(179.999))),
+                                                                                                                   new DerivativeStructure(4, 1, 3, FastMath.toRadians(179.999)),
+                                                                                                                   RotationConvention.VECTOR_OPERATOR),
                                                                             createVector(FastMath.toRadians(0), 0, 0, 4),
                                                                             createVector(0, 0, 0, 4));
         sample.add(ac0);
@@ -390,7 +395,8 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> ac1 =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(t1,
                                                                             new FieldRotation<DerivativeStructure>(createVector(1, 0, 0, 4),
-                                                                                                                   new DerivativeStructure(4, 1, 3, FastMath.toRadians(-179.999))),
+                                                                                                                   new DerivativeStructure(4, 1, 3, FastMath.toRadians(-179.999)),
+                                                                                                                   RotationConvention.VECTOR_OPERATOR),
                                                                             createVector(FastMath.toRadians(0), 0, 0, 4),
                                                                             createVector(0, 0, 0, 4));
         sample.add(ac1);
@@ -412,7 +418,8 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure>  reference =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date,
                                                                             new FieldRotation<DerivativeStructure>(createVector(0, 0, 1, 4),
-                                                                                                                   new DerivativeStructure(4, 1, 3, alpha0)),
+                                                                                                                   new DerivativeStructure(4, 1, 3, alpha0),
+                                                                                                                   RotationConvention.VECTOR_OPERATOR),
                                                                             createVector(0, 0, -omega, 4),
                                                                             createVector(0, 0, 0, 4));
 
@@ -487,7 +494,9 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     private FieldRotation<DerivativeStructure> createRotation(FieldVector3D<DerivativeStructure> axis, double angle) {
-        return new FieldRotation<DerivativeStructure>(axis, new DerivativeStructure(4, 1, angle));
+        return new FieldRotation<DerivativeStructure>(axis,
+                                                      new DerivativeStructure(4, 1, angle),
+                                                      RotationConvention.VECTOR_OPERATOR);
     }
 
     private FieldRotation<DerivativeStructure> createRotation(double q0, double q1, double q2, double q3,

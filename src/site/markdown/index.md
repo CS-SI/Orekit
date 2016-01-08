@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2016 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -138,7 +138,7 @@
       * central body related attitude (nadir pointing, center pointing, target pointing, yaw compensation, yaw-steering),
       * orbit referenced attitudes (LOF aligned, offset on all axes),
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
-      * tabulated attitudes
+      * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
 
   * Orbit determination
   

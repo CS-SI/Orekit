@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
@@ -107,7 +108,9 @@ public class TODProviderTest {
                 FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
         final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
         final Transform fix =
-                new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));
+                new Transform(t0, new Rotation(Vector3D.PLUS_K,
+                                               dDeltaPsi * FastMath.cos(epsilonA),
+                                               RotationConvention.FRAME_TRANSFORM));
 
         checkPV(pvTODiau76, fix.transformPVCoordinates(tt.transformPVCoordinates(pvMODiau76)), 1.13e-3, 5.3e-5);
         checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76WithoutNutCorr), 1.07e-3, 5.3e-5);
@@ -161,7 +164,9 @@ public class TODProviderTest {
                 FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
         final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
         final Transform fix =
-                new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));
+                new Transform(t0, new Rotation(Vector3D.PLUS_K,
+                                               dDeltaPsi * FastMath.cos(epsilonA),
+                                               RotationConvention.FRAME_TRANSFORM));
 
         checkPV(pvTODiau76, fix.transformPVCoordinates(tt.transformPVCoordinates(pvMODiau76)), 4.86e-4, 6.2e-5);
         checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76WithoutNutCorr), 4.87e-4, 6.31e-5);

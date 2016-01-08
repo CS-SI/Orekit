@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ package fr.cs.examples.frames;
 import java.util.Locale;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -65,7 +66,9 @@ public class Frames2 {
             // Finally, the GPS antenna frame can be defined from the satellite frame by 2 transforms:
             // a translation and a rotation
             Transform translateGPS = new Transform(date, new Vector3D(0, 0, 1));
-            Transform rotateGPS    = new Transform(date, new Rotation(new Vector3D(0, 1, 3), FastMath.toRadians(10)));
+            Transform rotateGPS    = new Transform(date, new Rotation(new Vector3D(0, 1, 3),
+                                                                      FastMath.toRadians(10),
+                                                                      RotationConvention.VECTOR_OPERATOR));
             Frame gpsFrame         = new Frame(satFrame, new Transform(date, translateGPS, rotateGPS), "GPS", false);
 
 

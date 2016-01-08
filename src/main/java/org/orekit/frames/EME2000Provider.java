@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.time.AbsoluteDate;
@@ -52,9 +53,10 @@ class EME2000Provider extends FixedTransformProvider {
 
         // build the bias transform
         super(new Transform(AbsoluteDate.J2000_EPOCH,
-                            new Rotation(Vector3D.PLUS_I, D_EPSILON_B).
-                            applyTo(new Rotation(Vector3D.PLUS_J, -D_PSI_B * FastMath.sin(EPSILON_0)).
-                                    applyTo(new Rotation(Vector3D.PLUS_K, -ALPHA_0)))));
+                            new Rotation(Vector3D.PLUS_I, D_EPSILON_B, RotationConvention.VECTOR_OPERATOR).
+                            compose(new Rotation(Vector3D.PLUS_J, -D_PSI_B * FastMath.sin(EPSILON_0), RotationConvention.VECTOR_OPERATOR).
+                                    compose(new Rotation(Vector3D.PLUS_K, -ALPHA_0, RotationConvention.VECTOR_OPERATOR), RotationConvention.VECTOR_OPERATOR),
+                                    RotationConvention.VECTOR_OPERATOR)));
 
     }
 

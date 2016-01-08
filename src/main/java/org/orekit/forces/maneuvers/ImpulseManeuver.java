@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -121,7 +121,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
      * @since 6.1
      */
     private ImpulseManeuver(final double maxCheck, final double threshold,
-                            final int maxIter, final EventHandler<ImpulseManeuver<T>> handler,
+                            final int maxIter, final EventHandler<? super ImpulseManeuver<T>> handler,
                             final T trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
                             final double isp) {
         super(maxCheck, threshold, maxIter, handler);
@@ -135,7 +135,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     /** {@inheritDoc} */
     @Override
     protected ImpulseManeuver<T> create(final double newMaxCheck, final double newThreshold,
-                                        final int newMaxIter, final EventHandler<ImpulseManeuver<T>> newHandler) {
+                                        final int newMaxIter, final EventHandler<? super ImpulseManeuver<T>> newHandler) {
         return new ImpulseManeuver<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                       trigger, attitudeOverride, deltaVSat, isp);
     }

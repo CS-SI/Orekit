@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.attitudes;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -100,7 +101,7 @@ public class LofOffset implements AttitudeProvider {
                      final RotationOrder order, final double alpha1,
                      final double alpha2, final double alpha3) throws OrekitException {
         this.type = type;
-        this.offset = new Rotation(order, alpha1, alpha2, alpha3).revert();
+        this.offset = new Rotation(order, RotationConvention.VECTOR_OPERATOR, alpha1, alpha2, alpha3).revert();
         if (!inertialFrame.isPseudoInertial()) {
             throw new OrekitException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME,
                                       inertialFrame.getName());
@@ -124,7 +125,7 @@ public class LofOffset implements AttitudeProvider {
 
         // compose with offset rotation
         return new Attitude(date, frame,
-                            offset.applyTo(frameToLof.getRotation()),
+                            offset.compose(frameToLof.getRotation(), RotationConvention.VECTOR_OPERATOR),
                             offset.applyTo(frameToLof.getRotationRate()),
                             offset.applyTo(frameToLof.getRotationAcceleration()));
 

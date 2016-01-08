@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
@@ -341,11 +342,11 @@ public class AngularCoordinatesTest {
         RandomGenerator random = new Well1024a(0x2158523e6accb859l);
         for (int i = 0; i < 100; ++i) {
             Vector3D axis = randomVector(random, 1.0);
-            AngularCoordinates original = new AngularCoordinates(new Rotation(axis, FastMath.PI),
+            AngularCoordinates original = new AngularCoordinates(new Rotation(axis, FastMath.PI, RotationConvention.VECTOR_OPERATOR),
                                                                  Vector3D.ZERO, Vector3D.ZERO);
             AngularCoordinates rebuilt = AngularCoordinates.createFromModifiedRodrigues(original.getModifiedRodrigues(1.0));
             Assert.assertEquals(FastMath.PI, rebuilt.getRotation().getAngle(), 1.0e-15);
-            Assert.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, rebuilt.getRotation().getAxis())), 1.0e-15);
+            Assert.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, rebuilt.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR))), 1.0e-15);
             Assert.assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-16);
         }
 
@@ -481,7 +482,7 @@ public class AngularCoordinatesTest {
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
         AngularCoordinates reference =
-                new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0),
+                new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0, RotationConvention.VECTOR_OPERATOR),
                                        new Vector3D(omega, Vector3D.MINUS_K),
                                        Vector3D.ZERO);
 
@@ -496,7 +497,10 @@ public class AngularCoordinatesTest {
             Rotation r            = interpolated.getRotation();
             Vector3D rate         = interpolated.getRotationRate();
             Vector3D acceleration = interpolated.getRotationAcceleration();
-            Assert.assertEquals(0.0, Rotation.distance(new Rotation(Vector3D.PLUS_K, alpha0 + omega * dt), r), 1.1e-15);
+            Assert.assertEquals(0.0, Rotation.distance(new Rotation(Vector3D.PLUS_K,
+                                                                    alpha0 + omega * dt,
+                                                                    RotationConvention.VECTOR_OPERATOR),
+                                                       r), 1.1e-15);
             Assert.assertEquals(0.0, Vector3D.distance(new Vector3D(omega, Vector3D.MINUS_K), rate), 4.0e-15);
             Assert.assertEquals(0.0, Vector3D.distance(Vector3D.ZERO, acceleration), 3.0e-14);
         }

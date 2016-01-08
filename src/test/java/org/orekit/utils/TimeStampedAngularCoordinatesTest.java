@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
@@ -225,7 +226,9 @@ public class TimeStampedAngularCoordinatesTest {
         // add angular coordinates at t0: 179.999 degrees rotation along X axis
         AbsoluteDate t0 = new AbsoluteDate("2012-01-01T00:00:00.000", TimeScalesFactory.getTAI());
         TimeStampedAngularCoordinates ac0 = new TimeStampedAngularCoordinates(t0,
-                                                                              new Rotation(Vector3D.PLUS_I, FastMath.toRadians(179.999)),
+                                                                              new Rotation(Vector3D.PLUS_I,
+                                                                                           FastMath.toRadians(179.999),
+                                                                                           RotationConvention.VECTOR_OPERATOR),
                                                                               new Vector3D(FastMath.toRadians(0), 0, 0),
                                                                               Vector3D.ZERO);
         sample.add(ac0);
@@ -233,7 +236,9 @@ public class TimeStampedAngularCoordinatesTest {
         // add angular coordinates at t1: -179.999 degrees rotation (= 180.001 degrees) along X axis
         AbsoluteDate t1 = new AbsoluteDate("2012-01-01T00:00:02.000", TimeScalesFactory.getTAI());
         TimeStampedAngularCoordinates ac1 = new TimeStampedAngularCoordinates(t1,
-                                                                              new Rotation(Vector3D.PLUS_I, FastMath.toRadians(-179.999)),
+                                                                              new Rotation(Vector3D.PLUS_I,
+                                                                                           FastMath.toRadians(-179.999),
+                                                                                           RotationConvention.VECTOR_OPERATOR),
                                                                               new Vector3D(FastMath.toRadians(0), 0, 0),
                                                                               Vector3D.ZERO);
         sample.add(ac1);
@@ -254,7 +259,8 @@ public class TimeStampedAngularCoordinatesTest {
         double omega  = 0.05  * FastMath.PI;
         final TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
-                                                  new Rotation(Vector3D.PLUS_K, alpha0),
+                                                  new Rotation(Vector3D.PLUS_K, alpha0,
+                                                               RotationConvention.VECTOR_OPERATOR),
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
         double[] errors = interpolationErrors(reference, 1.0);
@@ -271,7 +277,8 @@ public class TimeStampedAngularCoordinatesTest {
         double eta    = 0.005 * FastMath.PI;
         final TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
-                                                  new Rotation(Vector3D.PLUS_K, alpha0),
+                                                  new Rotation(Vector3D.PLUS_K, alpha0,
+                                                               RotationConvention.VECTOR_OPERATOR),
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   new Vector3D(eta,   Vector3D.PLUS_J));
         double[] errors = interpolationErrors(reference, 1.0);
@@ -380,7 +387,8 @@ public class TimeStampedAngularCoordinatesTest {
         double omega  = 0.5 * FastMath.PI;
         TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
-                                                  new Rotation(Vector3D.PLUS_K, alpha0),
+                                                  new Rotation(Vector3D.PLUS_K, alpha0,
+                                                               RotationConvention.VECTOR_OPERATOR),
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
 
@@ -408,7 +416,8 @@ public class TimeStampedAngularCoordinatesTest {
         double omega  = 0.5 * FastMath.PI;
         TimeStampedAngularCoordinates reference =
                 new TimeStampedAngularCoordinates(date,
-                                                  new Rotation(Vector3D.PLUS_K, alpha0),
+                                                  new Rotation(Vector3D.PLUS_K, alpha0,
+                                                               RotationConvention.VECTOR_OPERATOR),
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
 

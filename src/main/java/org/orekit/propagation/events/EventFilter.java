@@ -112,7 +112,7 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
      * @since 6.1
      */
     private EventFilter(final double maxCheck, final double threshold,
-                        final int maxIter, final EventHandler<EventFilter<T>> handler,
+                        final int maxIter, final EventHandler<? super EventFilter<T>> handler,
                         final T rawDetector, final FilterType filter) {
         super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
@@ -124,7 +124,7 @@ public class EventFilter<T extends EventDetector> extends AbstractDetector<Event
     /** {@inheritDoc} */
     @Override
     protected EventFilter<T> create(final double newMaxCheck, final double newThreshold,
-                                    final int newMaxIter, final EventHandler<EventFilter<T>> newHandler) {
+                                    final int newMaxIter, final EventHandler<? super EventFilter<T>> newHandler) {
         return new EventFilter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }
 

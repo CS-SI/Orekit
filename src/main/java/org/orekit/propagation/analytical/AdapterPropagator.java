@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -119,6 +120,16 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         reference.resetInitialState(state);
+    }
+
+    /** {@inheritDoc} */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws PropagationException {
+        if (reference instanceof AbstractAnalyticalPropagator) {
+            ((AbstractAnalyticalPropagator) reference).resetIntermediateState(state, forward);
+        } else {
+            throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+        }
     }
 
     /** {@inheritDoc} */

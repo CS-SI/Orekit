@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -77,7 +77,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
      * @param latitude latitude to be crossed
      */
     private LatitudeCrossingDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<LatitudeCrossingDetector> handler,
+                                     final int maxIter, final EventHandler<? super LatitudeCrossingDetector> handler,
                                      final OneAxisEllipsoid body, final double latitude) {
         super(maxCheck, threshold, maxIter, handler);
         this.body     = body;
@@ -88,7 +88,7 @@ public class LatitudeCrossingDetector extends AbstractDetector<LatitudeCrossingD
     @Override
     protected LatitudeCrossingDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<LatitudeCrossingDetector> newHandler) {
+                                              final EventHandler<? super LatitudeCrossingDetector> newHandler) {
         return new LatitudeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                           body, latitude);
     }

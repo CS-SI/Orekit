@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,7 @@ package org.orekit.bodies;
 import java.io.Serializable;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
@@ -226,7 +227,7 @@ class JPLCelestialBody implements CelestialBody {
                     final double w0 = iauPole.getPrimeMeridianAngle(date);
                     final double w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
                     return new Transform(date,
-                                         new Rotation(Vector3D.PLUS_K, -w0),
+                                         new Rotation(Vector3D.PLUS_K, w0, RotationConvention.FRAME_TRANSFORM),
                                          new Vector3D((w1 - w0) / dt, Vector3D.PLUS_K));
                 }
 

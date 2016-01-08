@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -79,14 +79,14 @@ public class ApsideDetector extends AbstractDetector<ApsideDetector> {
      * @since 6.1
      */
     private ApsideDetector(final double maxCheck, final double threshold,
-                           final int maxIter, final EventHandler<ApsideDetector> handler) {
+                           final int maxIter, final EventHandler<? super ApsideDetector> handler) {
         super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
     protected ApsideDetector create(final double newMaxCheck, final double newThreshold,
-                                    final int newMaxIter, final EventHandler<ApsideDetector> newHandler) {
+                                    final int newMaxIter, final EventHandler<? super ApsideDetector> newHandler) {
         return new ApsideDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 

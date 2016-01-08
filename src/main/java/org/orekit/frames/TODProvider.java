@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,7 +19,8 @@ package org.orekit.frames;
 import java.io.Serializable;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
@@ -101,13 +102,9 @@ class TODProvider implements EOPBasedTransformProvider {
         // compute the true obliquity of the ecliptic
         final double toe = moe + deps;
 
-        // set up the elementary rotations for nutation
-        final Rotation r1 = new Rotation(Vector3D.PLUS_I,  toe);
-        final Rotation r2 = new Rotation(Vector3D.PLUS_K,  dpsi);
-        final Rotation r3 = new Rotation(Vector3D.PLUS_I, -moe);
-
         // complete nutation
-        final Rotation nutation = r1.applyTo(r2.applyTo(r3));
+        final Rotation nutation = new Rotation(RotationOrder.XZX, RotationConvention.FRAME_TRANSFORM,
+                                               moe, -dpsi, -toe);
 
         // set up the transform from parent MOD
         return new Transform(date, nutation);

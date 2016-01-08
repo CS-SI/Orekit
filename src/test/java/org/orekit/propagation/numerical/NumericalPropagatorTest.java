@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -530,13 +530,13 @@ public class NumericalPropagatorTest {
         }
         
         private AdditionalStateLinearDetector(double maxCheck, double threshold, int maxIter,
-                                              EventHandler<AdditionalStateLinearDetector> handler) {
+                                              EventHandler<? super AdditionalStateLinearDetector> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
         
         protected AdditionalStateLinearDetector create(final double newMaxCheck, final double newThreshold,
                                                        final int newMaxIter,
-                                                       final EventHandler<AdditionalStateLinearDetector> newHandler) {
+                                                       final EventHandler<? super AdditionalStateLinearDetector> newHandler) {
             return new AdditionalStateLinearDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 

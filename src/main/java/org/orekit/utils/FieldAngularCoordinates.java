@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -96,8 +97,9 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
         FieldVector3D<T> estimateRate(final FieldRotation<T> start,
                                       final FieldRotation<T> end,
                                       final double dt) {
-        final FieldRotation<T> evolution = start.applyTo(end.revert());
-        return new FieldVector3D<T>(evolution.getAngle().divide(dt), evolution.getAxis());
+        final FieldRotation<T> evolution = start.compose(end.revert(), RotationConvention.VECTOR_OPERATOR);
+        return new FieldVector3D<T>(evolution.getAngle().divide(dt),
+                                    evolution.getAxis(RotationConvention.VECTOR_OPERATOR));
     }
 
     /** Revert a FieldRotation<T>/FieldRotation<T>/FieldRotation<T> acceleration triplet.
@@ -142,11 +144,14 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
         final T one  = rate.getField().getOne();
         final FieldRotation<T> rateContribution = (rate.getReal() == 0.0) ?
                                                   new FieldRotation<T>(one, zero, zero, zero, false) :
-                                                  new FieldRotation<T>(rotationRate, rate.multiply(-dt));
+                                                  new FieldRotation<T>(rotationRate,
+                                                                       rate.multiply(dt),
+                                                                       RotationConvention.FRAME_TRANSFORM);
 
         // append rotation and rate contribution
         final FieldAngularCoordinates<T> linearPart =
-                new FieldAngularCoordinates<T>(rateContribution.applyTo(rotation), rotationRate);
+                new FieldAngularCoordinates<T>(rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR),
+                                               rotationRate);
 
         final T acc  = rotationAcceleration.getNorm();
         if (acc.getReal() == 0.0) {
@@ -160,7 +165,8 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
         // frame seem to rotate in the opposite direction
         final FieldAngularCoordinates<T> quadraticContribution =
                 new FieldAngularCoordinates<T>(new FieldRotation<T>(rotationAcceleration,
-                                                                    acc.multiply(-0.5 * dt * dt)),
+                                                                    acc.multiply(0.5 * dt * dt),
+                                                                    RotationConvention.FRAME_TRANSFORM),
                                                new FieldVector3D<T>(dt, rotationAcceleration),
                                                rotationAcceleration);
 
@@ -214,7 +220,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
     public FieldAngularCoordinates<T> addOffset(final FieldAngularCoordinates<T> offset) {
         final FieldVector3D<T> rOmega    = rotation.applyTo(offset.rotationRate);
         final FieldVector3D<T> rOmegaDot = rotation.applyTo(offset.rotationAcceleration);
-        return new FieldAngularCoordinates<T>(rotation.applyTo(offset.rotation),
+        return new FieldAngularCoordinates<T>(rotation.compose(offset.rotation, RotationConvention.VECTOR_OPERATOR),
                                               rotationRate.add(rOmega),
                                               new FieldVector3D<T>( 1.0, rotationAcceleration,
                                                                     1.0, rOmegaDot,

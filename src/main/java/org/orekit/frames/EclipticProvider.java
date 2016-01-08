@@ -19,6 +19,7 @@ package org.orekit.frames;
 import java.io.Serializable;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -67,7 +68,7 @@ public class EclipticProvider implements TransformProvider {
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
         //mean obliquity of date
         final double epsA = obliquity.value(date);
-        return new Transform(date, new Rotation(Vector3D.MINUS_I, epsA));
+        return new Transform(date, new Rotation(Vector3D.MINUS_I, epsA, RotationConvention.VECTOR_OPERATOR));
     }
 
     /** Replace the instance with a data transfer object for serialization.

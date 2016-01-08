@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,6 +25,7 @@ import java.io.ObjectOutputStream;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,10 +67,12 @@ public class MODProviderTest {
 
             public Transform getTransform(AbsoluteDate date) {
                 final double tc = IERSConventions.IERS_1996.evaluateTC(date);
-                final Rotation r1 = new Rotation(Vector3D.PLUS_K,  zA.value(tc));
-                final Rotation r2 = new Rotation(Vector3D.PLUS_J, -thetaA.value(tc));
-                final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zetaA.value(tc));
-                return new Transform(date, r1.applyTo(r2.applyTo(r3)));
+                final Rotation r1 = new Rotation(Vector3D.PLUS_K,  zA.value(tc), RotationConvention.VECTOR_OPERATOR);
+                final Rotation r2 = new Rotation(Vector3D.PLUS_J, -thetaA.value(tc), RotationConvention.VECTOR_OPERATOR);
+                final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zetaA.value(tc), RotationConvention.VECTOR_OPERATOR);
+                return new Transform(date, r1.compose(r2.compose(r3,
+                                                                 RotationConvention.VECTOR_OPERATOR),
+                                                      RotationConvention.VECTOR_OPERATOR));
             }
         };
 
@@ -116,10 +119,12 @@ public class MODProviderTest {
 
             public Transform getTransform(AbsoluteDate date) {
                 final double tc = IERSConventions.IERS_2003.evaluateTC(date);
-                final Rotation r1 = new Rotation(Vector3D.PLUS_K,  zA.value(tc));
-                final Rotation r2 = new Rotation(Vector3D.PLUS_J, -thetaA.value(tc));
-                final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zetaA.value(tc));
-                return new Transform(date, r1.applyTo(r2.applyTo(r3)));
+                final Rotation r1 = new Rotation(Vector3D.PLUS_K,  zA.value(tc), RotationConvention.VECTOR_OPERATOR);
+                final Rotation r2 = new Rotation(Vector3D.PLUS_J, -thetaA.value(tc), RotationConvention.VECTOR_OPERATOR);
+                final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zetaA.value(tc), RotationConvention.VECTOR_OPERATOR);
+                return new Transform(date, r1.compose(r2.compose(r3,
+                                                                 RotationConvention.VECTOR_OPERATOR),
+                                                      RotationConvention.VECTOR_OPERATOR));
             }
         };
 

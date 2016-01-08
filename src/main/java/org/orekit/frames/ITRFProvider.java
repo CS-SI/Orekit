@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,8 @@
 package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -77,13 +79,9 @@ class ITRFProvider implements EOPBasedTransformProvider {
         // pole correction parameters
         final PoleCorrection eop = eopHistory.getPoleCorrection(date);
 
-        // elementary rotations due to pole motion in terrestrial frame
-        final Rotation r1 = new Rotation(Vector3D.PLUS_I, -eop.getYp());
-        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -eop.getXp());
-        final Rotation r3 = new Rotation(Vector3D.PLUS_K, S_PRIME_RATE * ttc);
-
-        // complete pole motion in terrestrial frame
-        final Rotation wRot = r3.applyTo(r2.applyTo(r1));
+        // pole motion in terrestrial frame
+        final Rotation wRot = new Rotation(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                                           eop.getYp(), eop.getXp(), -S_PRIME_RATE * ttc);
 
         // combined effects
         final Rotation combined = wRot.revert();

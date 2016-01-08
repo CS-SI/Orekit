@@ -1,4 +1,4 @@
-<!--- Copyright 2002-2015 CS Systèmes d'Information
+<!--- Copyright 2002-2016 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -28,7 +28,7 @@ as your Jython files.
 This example is a translation of the SlaveMode.java example to Jython, showing a stepped
 Keplerian propagation.
 
-    /* Copyright 2002-2015 CS Systèmes d'Information
+    /* Copyright 2002-2016 CS Systèmes d'Information
      * Licensed to CS Systèmes d'Information (CS) under one or more
      * contributor license agreements.  See the NOTICE file distributed with
      * this work for additional information regarding copyright ownership.
@@ -121,7 +121,7 @@ Keplerian propagation.
 This example is based on the VisiblityCheck.java, translated into Jython. It includes an
 example of subclassing of a Java object into a jython object.
 
-    /* Copyright 2002-2015 CS Systèmes d'Information
+    /* Copyright 2002-2016 CS Systèmes d'Information
      * Licensed to CS Systèmes d'Information (CS) under one or more
      * contributor license agreements.  See the NOTICE file distributed with
      * this work for additional information regarding copyright ownership.
@@ -161,6 +161,7 @@ example of subclassing of a Java object into a jython object.
     from org.orekit.time import AbsoluteDate
     from org.orekit.time import TimeScalesFactory
     from org.orekit.utils import PVCoordinates
+    from org.orekit.utils import IERSConventions
 
     from math import degrees, radians, pi
 
@@ -185,8 +186,8 @@ example of subclassing of a Java object into a jython object.
     #Earth and frame
     ae =  6378137.0 # // equatorial radius in meter
     f  =  1.0 / 298.257223563 #; // flattening
-    ITRF2005 = FramesFactory.getITRF2005() #; // terrestrial frame at an arbitrary date
-    earth = OneAxisEllipsoid(ae, f, ITRF2005)
+    itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, True) #; // terrestrial frame at an arbitrary date
+    earth = OneAxisEllipsoid(ae, f, itrf)
 
     # Station
     longitude = radians(45.0)

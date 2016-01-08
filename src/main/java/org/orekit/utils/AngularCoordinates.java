@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,6 +27,7 @@ import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.exception.NumberIsTooLargeException;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -416,8 +417,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @return rotation rate allowing to go from start to end orientations
      */
     public static Vector3D estimateRate(final Rotation start, final Rotation end, final double dt) {
-        final Rotation evolution = start.applyTo(end.revert());
-        return new Vector3D(evolution.getAngle() / dt, evolution.getAxis());
+        final Rotation evolution = start.compose(end.revert(), RotationConvention.VECTOR_OPERATOR);
+        return new Vector3D(evolution.getAngle() / dt, evolution.getAxis(RotationConvention.VECTOR_OPERATOR));
     }
 
     /** Revert a rotation/rotation rate/ rotation acceleration triplet.
@@ -458,11 +459,13 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         // the target frame rotates in one direction, the vectors in the origin
         // frame seem to rotate in the opposite direction
         final double rate = rotationRate.getNorm();
-        final Rotation rateContribution = (rate == 0.0) ? Rotation.IDENTITY : new Rotation(rotationRate, -rate * dt);
+        final Rotation rateContribution = (rate == 0.0) ?
+                                          Rotation.IDENTITY :
+                                          new Rotation(rotationRate, rate * dt, RotationConvention.FRAME_TRANSFORM);
 
         // append rotation and rate contribution
         final AngularCoordinates linearPart =
-                new AngularCoordinates(rateContribution.applyTo(rotation), rotationRate);
+                new AngularCoordinates(rateContribution.compose(rotation, RotationConvention.VECTOR_OPERATOR), rotationRate);
 
         final double acc  = rotationAcceleration.getNorm();
         if (acc == 0.0) {
@@ -475,7 +478,9 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         // the target frame rotates in one direction, the vectors in the origin
         // frame seem to rotate in the opposite direction
         final AngularCoordinates quadraticContribution =
-                new AngularCoordinates(new Rotation(rotationAcceleration, -0.5 * acc * dt * dt),
+                new AngularCoordinates(new Rotation(rotationAcceleration,
+                                                    0.5 * acc * dt * dt,
+                                                    RotationConvention.FRAME_TRANSFORM),
                                        new Vector3D(dt, rotationAcceleration),
                                        rotationAcceleration);
 
@@ -529,7 +534,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     public AngularCoordinates addOffset(final AngularCoordinates offset) {
         final Vector3D rOmega    = rotation.applyTo(offset.rotationRate);
         final Vector3D rOmegaDot = rotation.applyTo(offset.rotationAcceleration);
-        return new AngularCoordinates(rotation.applyTo(offset.rotation),
+        return new AngularCoordinates(rotation.compose(offset.rotation, RotationConvention.VECTOR_OPERATOR),
                                       rotationRate.add(rOmega),
                                       new Vector3D( 1.0, rotationAcceleration,
                                                     1.0, rOmegaDot,

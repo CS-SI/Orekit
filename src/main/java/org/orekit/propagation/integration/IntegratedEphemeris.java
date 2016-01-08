@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -239,6 +239,12 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
+        throws PropagationException {
+        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    /** {@inheritDoc} */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
         throws PropagationException {
         throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
     }

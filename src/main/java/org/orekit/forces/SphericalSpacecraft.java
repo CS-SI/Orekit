@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -80,8 +80,8 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
                                                                final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
-                                                               final double density, final FieldVector3D<DerivativeStructure> relativeVelocity) {
-        return new FieldVector3D<DerivativeStructure>(relativeVelocity.getNorm().multiply(density * dragCoeff * crossSection / 2).divide(mass),
+                                                               final DerivativeStructure density, final FieldVector3D<DerivativeStructure> relativeVelocity) {
+        return new FieldVector3D<DerivativeStructure>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
                               relativeVelocity);
     }
 

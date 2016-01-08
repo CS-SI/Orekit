@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,23 +16,38 @@
  */
 package org.orekit.propagation.analytical;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
+
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeSpanMap;
 
 /** Simple keplerian orbit propagator.
  * @see Orbit
  * @author Guylaine Prat
  */
-public class KeplerianPropagator extends AbstractAnalyticalPropagator {
+public class KeplerianPropagator extends AbstractAnalyticalPropagator implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20151117L;
 
     /** Initial state. */
     private SpacecraftState initialState;
+
+    /** All states. */
+    private TimeSpanMap<SpacecraftState> states;
 
     /** Build a propagator from orbit only.
      * <p>The central attraction coefficient μ is set to the same value used
@@ -125,6 +140,18 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         throws PropagationException {
         super.resetInitialState(state);
         initialState   = state;
+        states         = new TimeSpanMap<SpacecraftState>(initialState);
+    }
+
+    /** {@inheritDoc} */
+    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws PropagationException {
+        super.resetIntermediateState(state, forward);
+        if (forward) {
+            states.addValidAfter(state, state.getDate());
+        } else {
+            states.addValidBefore(state, state.getDate());
+        }
     }
 
     /** {@inheritDoc} */
@@ -132,7 +159,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
         throws PropagationException {
 
         // propagate orbit
-        Orbit orbit = initialState.getOrbit();
+        Orbit orbit = states.get(date).getOrbit();
         do {
             // we use a loop here to compensate for very small date shifts error
             // that occur with long propagation time
@@ -145,7 +172,138 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc}*/
     protected double getMass(final AbsoluteDate date) {
-        return initialState.getMass();
+        return states.get(date).getMass();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     * @exception NotSerializableException if an additional state provider is not serializable
+     */
+    private Object writeReplace() throws NotSerializableException {
+        try {
+
+            // managed states providers
+            final List<AdditionalStateProvider> serializableProviders = new ArrayList<AdditionalStateProvider>();
+            for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+                if (provider instanceof Serializable) {
+                    serializableProviders.add(provider);
+                } else {
+                    throw new NotSerializableException(provider.getClass().getName());
+                }
+            }
+
+            // states transitions
+            final AbsoluteDate[]    transitionDates;
+            final SpacecraftState[] allStates;
+            final SortedSet<TimeSpanMap.Transition<SpacecraftState>> transitions = states.getTransitions();
+            if (transitions.size() == 1  && transitions.first().getBefore() == transitions.first().getAfter()) {
+                // the single entry is a dummy one, without a real transition
+                // we ignore it completely
+                transitionDates = null;
+                allStates       = null;
+            } else {
+                transitionDates = new AbsoluteDate[transitions.size()];
+                allStates       = new SpacecraftState[transitions.size() + 1];
+                int i = 0;
+                for (final TimeSpanMap.Transition<SpacecraftState> transition : transitions) {
+                    if (i == 0) {
+                        // state before the first transition
+                        allStates[i] = transition.getBefore();
+                    }
+                    transitionDates[i] = transition.getDate();
+                    allStates[++i]     = transition.getAfter();
+                }
+            }
+
+            return new DataTransferObject(getInitialState().getOrbit(), getAttitudeProvider(),
+                                          getInitialState().getMu(), getInitialState().getMass(),
+                                          transitionDates, allStates,
+                                          serializableProviders.toArray(new AdditionalStateProvider[serializableProviders.size()]));
+        } catch (OrekitException orekitException) {
+            // this should never happen
+            throw new OrekitInternalError(null);
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20151202L;
+
+        /** Initial orbit. */
+        private final Orbit orbit;
+
+        /** Attitude provider. */
+        private final AttitudeProvider attitudeProvider;
+
+        /** Central attraction coefficient (m³/s²). */
+        private final double mu;
+
+        /** Spacecraft mass (kg). */
+        private final double mass;
+
+        /** Transition dates (may be null). */
+        private final AbsoluteDate[] transitionDates;
+
+        /** States before and after transitions (may be null). */
+        private final SpacecraftState[] allStates;
+
+        /** Providers for additional states. */
+        private final AdditionalStateProvider[] providers;
+
+        /** Simple constructor.
+         * @param orbit initial orbit
+         * @param attitudeProvider attitude provider
+         * @param mu central attraction coefficient (m³/s²)
+         * @param mass initial spacecraft mass (kg)
+         * @param transitionDates transition dates (may be null)
+         * @param allStates states before and after transitions (may be null)
+         * @param providers providers for additional states
+         */
+        DataTransferObject(final Orbit orbit,
+                           final AttitudeProvider attitudeProvider,
+                           final double mu, final double mass,
+                           final AbsoluteDate[] transitionDates,
+                           final SpacecraftState[] allStates,
+                           final AdditionalStateProvider[] providers) {
+            this.orbit            = orbit;
+            this.attitudeProvider = attitudeProvider;
+            this.mu               = mu;
+            this.mass             = mass;
+            this.transitionDates  = transitionDates;
+            this.allStates        = allStates;
+            this.providers        = providers;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link KeplerianPropagator}.
+         * @return replacement {@link KeplerianPropagator}
+         */
+        private Object readResolve() {
+            try {
+
+                final KeplerianPropagator propagator =
+                                new KeplerianPropagator(orbit, attitudeProvider, mu, mass);
+                for (final AdditionalStateProvider provider : providers) {
+                    propagator.addAdditionalStateProvider(provider);
+                }
+
+                if (transitionDates != null) {
+                    // override the state transitions
+                    propagator.states = new TimeSpanMap<SpacecraftState>(allStates[0]);
+                    for (int i = 0; i < transitionDates.length; ++i) {
+                        propagator.states.addValidAfter(allStates[i + 1], transitionDates[i]);
+                    }
+                }
+
+                return propagator;
+
+            } catch (OrekitException oe) {
+                throw new OrekitInternalError(oe);
+            }
+        }
+
     }
 
 }

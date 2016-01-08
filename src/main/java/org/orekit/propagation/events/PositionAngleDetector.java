@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -110,7 +110,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
      * @exception OrekitIllegalArgumentException if orbit type is {@link OrbitType#CARTESIAN}
      */
     private PositionAngleDetector(final double maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler<PositionAngleDetector> handler,
+                                     final int maxIter, final EventHandler<? super PositionAngleDetector> handler,
                                      final OrbitType orbitType, final PositionAngle positionAngle,
                                      final double angle)
         throws OrekitIllegalArgumentException {
@@ -134,7 +134,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     @Override
     protected PositionAngleDetector create(final double newMaxCheck, final double newThreshold,
                                               final int newMaxIter,
-                                              final EventHandler<PositionAngleDetector> newHandler) {
+                                              final EventHandler<? super PositionAngleDetector> newHandler) {
         return new PositionAngleDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                          orbitType, positionAngle, angle);
     }

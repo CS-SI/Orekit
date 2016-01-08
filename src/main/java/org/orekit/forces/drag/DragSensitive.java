@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -75,7 +75,7 @@ public interface DragSensitive {
      */
     FieldVector3D<DerivativeStructure> dragAcceleration(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position,
                                                         FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass,
-                                                        double density, FieldVector3D<DerivativeStructure> relativeVelocity)
+                                                        DerivativeStructure density, FieldVector3D<DerivativeStructure> relativeVelocity)
         throws OrekitException;
 
     /** Compute acceleration due to drag, with parameters derivatives.

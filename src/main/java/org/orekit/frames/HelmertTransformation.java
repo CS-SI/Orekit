@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.time.AbsoluteDate;
@@ -251,8 +252,10 @@ public class HelmertTransformation implements TransformProvider {
         final double angle = dR.getNorm();
         final Transform rotationTransform =
                 new Transform(date,
-                              (angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
-                                                           rotationRate);
+                              (angle < Precision.SAFE_MIN) ?
+                              Rotation.IDENTITY :
+                              new Rotation(dR, angle, RotationConvention.VECTOR_OPERATOR),
+                              rotationRate);
 
         // combine both parts
         return new Transform(date, translationTransform, rotationTransform);

@@ -149,5 +149,15 @@ output.short.period.coefficients = none
 ## the adaptative step size integrator DormandPrince853 will be used
 # fixed.integration.step = 43200.
 
+## interpolation grid specification
+## only one of the two following options can be set: either fixed number
+## of points or maximum gap. If both options are specified, an error
+## will be generated.
+## if neither option is set, a fixed number of 3 points will be used
+# fixed number of interpolation points at each mean elements integration step
+# fixed.number.of.interpolation.points = 3
+# maximum gap between interpolation points
+max.time.gap.between.interpolation.points = 86400
+
 ## Do we want to compare the DSST with the numerical propagator ? [false]
 numerical.comparison = false

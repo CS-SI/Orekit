@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,6 +32,7 @@ import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.LatitudeExtremumDetector;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class used to orient tiles along an orbit track.
@@ -137,8 +138,11 @@ public class AlongTrackAiming implements TileAiming {
             // find the span of the next half track
             final Propagator propagator = new KeplerianPropagator(orbit);
             final HalfTrackSpanHandler handler = new HalfTrackSpanHandler(isAscending);
-            propagator.addEventDetector(new HalfTrackSpanDetector(0.25 * orbit.getKeplerianPeriod(),
-                                                                  1.0e-3, 100, handler, ellipsoid.getBodyFrame()));
+            final LatitudeExtremumDetector detector =
+                    new LatitudeExtremumDetector(0.25 * orbit.getKeplerianPeriod(), 1.0e-3, ellipsoid).
+                    withHandler(handler).
+                    withMaxIter(100);
+            propagator.addEventDetector(detector);
             propagator.propagate(orbit.getDate().shiftedBy(3 * orbit.getKeplerianPeriod()));
 
             // sample the half track
