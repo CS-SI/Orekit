@@ -33,7 +33,8 @@ import java.util.List;
 
 /** Class modifying theoretical angular measurement with ionospheric delay.
  * The effect of ionospheric correction on the angular is directly computed
- * through the computation of the ionospheric delay.
+ * through the computation of the ionospheric delay. The spacecraft position
+ * is shifted (delayed) by the delay time.
  *
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
@@ -108,9 +109,9 @@ public class AngularIonosphericDelayModifier implements EvaluationModifier<Angul
         final SpacecraftState transitState = state.shiftedBy(-dt);
 
         // Update measurement value taking into account the ionospheric delay.
-        final AbsoluteDate     date      = transitState.getDate();
-        final Vector3D         position  = transitState.getPVCoordinates().getPosition();
-        final Frame            inertial  = transitState.getFrame();
+        final AbsoluteDate date     = transitState.getDate();
+        final Vector3D     position = transitState.getPVCoordinates().getPosition();
+        final Frame        inertial = transitState.getFrame();
 
         // elevation and azimuth in radians
         final double elevation = station.getBaseFrame().getElevation(position, inertial, date);

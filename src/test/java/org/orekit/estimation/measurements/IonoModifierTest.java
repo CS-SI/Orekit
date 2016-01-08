@@ -86,10 +86,10 @@ public class IonoModifierTest {
         for (final Measurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
-            final SpacecraftState refstate     = propagator.propagate(date);
+            final SpacecraftState refstate = propagator.propagate(date);
             
             Range range = (Range) measurement;
-            Evaluation<Range> evalNoMod = range.evaluate(0,  refstate);
+            Evaluation<Range> evalNoMod = range.evaluate(0, refstate);
             
             // add modifier
             range.addModifier(modifier);
@@ -129,10 +129,10 @@ public class IonoModifierTest {
         for (final Measurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
-            final SpacecraftState refstate     = propagator.propagate(date);
+            final SpacecraftState refstate = propagator.propagate(date);
             
             RangeRate rangeRate = (RangeRate) measurement;
-            Evaluation<RangeRate> evalNoMod = rangeRate.evaluate(0,  refstate);
+            Evaluation<RangeRate> evalNoMod = rangeRate.evaluate(0, refstate);
             
             // add modifier
             rangeRate.addModifier(modifier);
@@ -174,7 +174,7 @@ public class IonoModifierTest {
         for (final Measurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
-            final SpacecraftState refstate     = propagator.propagate(date);
+            final SpacecraftState refstate = propagator.propagate(date);
             
             Angular angular = (Angular) measurement;
             Evaluation<Angular> evalNoMod = angular.evaluate(0, refstate);
@@ -182,7 +182,7 @@ public class IonoModifierTest {
             // add modifier
             angular.addModifier(modifier);
             // 
-            Evaluation<Angular> eval = angular.evaluate(0,  refstate);
+            Evaluation<Angular> eval = angular.evaluate(0, refstate);
             
             final double diffAz = MathUtils.normalizeAngle(eval.getValue()[0], evalNoMod.getValue()[0]) - evalNoMod.getValue()[0];
             final double diffEl = MathUtils.normalizeAngle(eval.getValue()[1], evalNoMod.getValue()[1]) - evalNoMod.getValue()[1];
@@ -213,11 +213,10 @@ public class IonoModifierTest {
         propagator.setSlaveMode();
                 
         for (final Measurement<?> measurement : measurements) {
-
             // parameter corresponding to station position offset
-            final GroundStation station = ((Range) measurement).getStation();
-            final AbsoluteDate date = ((Range) measurement).getDate();
-            final SpacecraftState state     = propagator.propagate(date);
+            final GroundStation   station = ((Range) measurement).getStation();
+            final AbsoluteDate    date    = ((Range) measurement).getDate();
+            final SpacecraftState state   = propagator.propagate(date);
 
             final Vector3D position = state.getPVCoordinates().getPosition();
             
