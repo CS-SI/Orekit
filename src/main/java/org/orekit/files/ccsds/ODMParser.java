@@ -459,87 +459,87 @@ public abstract class ODMParser {
 
             case CX_X:
                 general.createCovarianceMatrix();
-                general.setCovarianceMatrixEntry(0, 0, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(0, 0, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CY_X:
-                general.setCovarianceMatrixEntry(0, 1, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(0, 1, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CY_Y:
-                general.setCovarianceMatrixEntry(1, 1, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(1, 1, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CZ_X:
-                general.setCovarianceMatrixEntry(0, 2, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(0, 2, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CZ_Y:
-                general.setCovarianceMatrixEntry(1, 2, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(1, 2, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CZ_Z:
-                general.setCovarianceMatrixEntry(2, 2, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(2, 2, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CX_DOT_X:
-                general.setCovarianceMatrixEntry(0, 3, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(0, 3, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CX_DOT_Y:
-                general.setCovarianceMatrixEntry(1, 3, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(1, 3, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CX_DOT_Z:
-                general.setCovarianceMatrixEntry(2, 3, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(2, 3, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CX_DOT_X_DOT:
-                general.setCovarianceMatrixEntry(3, 3, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(3, 3, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CY_DOT_X:
-                general.setCovarianceMatrixEntry(0, 4, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(0, 4, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CY_DOT_Y:
-                general.setCovarianceMatrixEntry(1, 4, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(1, 4, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CY_DOT_Z:
-                general.setCovarianceMatrixEntry(2, 4, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(2, 4, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CY_DOT_X_DOT:
-                general.setCovarianceMatrixEntry(3, 4, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(3, 4, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CY_DOT_Y_DOT:
-                general.setCovarianceMatrixEntry(4, 4, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(4, 4, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CZ_DOT_X:
-                general.setCovarianceMatrixEntry(0, 5, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(0, 5, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CZ_DOT_Y:
-                general.setCovarianceMatrixEntry(1, 5, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(1, 5, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CZ_DOT_Z:
-                general.setCovarianceMatrixEntry(2, 5, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(2, 5, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CZ_DOT_X_DOT:
-                general.setCovarianceMatrixEntry(3, 5, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(3, 5, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CZ_DOT_Y_DOT:
-                general.setCovarianceMatrixEntry(4, 5, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(4, 5, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case CZ_DOT_Z_DOT:
-                general.setCovarianceMatrixEntry(5, 5, keyValue.getDoubleValue());
+                general.setCovarianceMatrixEntry(5, 5, keyValue.getDoubleValue() * 1.0e6);
                 return true;
 
             case USER_DEFINED_X:

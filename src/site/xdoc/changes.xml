@@ -22,6 +22,12 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Fixed covariance matrices units when read from CCSDS ODM files. The
+        data returned at API level are now consistent with SI units, instead of being
+        kilometer-based.
+        Fixes issue #217
+      </action>
+      <action dev="luc" type="fix">
         Fixed DSST ephemeris generation.
         Fixes issue #222
       </action>
