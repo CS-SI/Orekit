@@ -32,9 +32,10 @@ import org.orekit.utils.Constants;
 import java.util.List;
 
 /** Class modifying theoretical angular measurement with ionospheric delay.
- * The effect of ionospheric correction on the angular is directly computed
- * through the computation of the ionospheric delay. The spacecraft position
- * is shifted (delayed) by the delay time.
+ * The effect of ionospheric correction on the angular measurement is computed
+ * through the computation of the ionospheric delay. The spacecraft state
+ * is shifted by the computed delay time and elevation and azimuth are computed
+ * again with the new spacecraft state.
  *
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
@@ -70,7 +71,7 @@ public class AngularIonosphericDelayModifier implements EvaluationModifier<Angul
         final double elevation = station.getBaseFrame().getElevation(position,
                                                                      state.getFrame(),
                                                                      state.getDate());
-     // only consider measures above the horizon
+        // only consider measures above the horizon
         if (elevation > 0.0) {
 
             // compute azimuth
@@ -82,7 +83,7 @@ public class AngularIonosphericDelayModifier implements EvaluationModifier<Angul
                                                      station.getBaseFrame().getPoint(),
                                                      elevation, azimuth);
 
-            // Take into account one way
+            // Take into account one way measurement
             return delay;
         }
 
@@ -119,31 +120,5 @@ public class AngularIonosphericDelayModifier implements EvaluationModifier<Angul
         // azimuth - elevation values
         evaluation.setValue(azimuth, elevation);
 
-        // The ionospheric delay is directly added to the range.
-        //final double[] newValue = oldValue.clone();
-        //newValue[0] = newValue[0] + delay;
-        //evaluation.setValue(newValue);
-//        // update measurement derivatives with jacobian of the measure wrt state
-//        final double[][] djac = angularErrorJacobianState(station, state);
-//        final double[][] stateDerivatives = evaluation.getStateDerivatives();
-//        for (int irow = 0; irow < stateDerivatives.length; ++irow) {
-//            for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
-//                stateDerivatives[irow][jcol] += djac[irow][jcol];
-//            }
-//        }
-//        evaluation.setStateDerivatives(stateDerivatives);
-//
-//
-//        if (station.isEstimated()) {
-//            // update measurement derivatives with jacobian of the measure with respect to station parameters
-//            final double[][] djacdp = angularErrorJacobianParameter(station, state, delay);
-//            final double[][] parameterDerivatives = evaluation.getParameterDerivatives(station.getName());
-//            for (int irow = 0; irow < parameterDerivatives.length; ++irow) {
-//                for (int jcol = 0; jcol < parameterDerivatives[0].length; ++jcol) {
-//                    parameterDerivatives[irow][jcol] += djacdp[irow][jcol];
-//                }
-//            }
-//            evaluation.setParameterDerivatives(station.getName(), parameterDerivatives);
-//        }
     }
 }

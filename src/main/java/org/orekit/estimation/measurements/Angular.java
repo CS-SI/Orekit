@@ -26,6 +26,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
 
 /** Class modeling an Azimuth-Elevation measurement from a ground station.
+ * The motion of the spacecraft during the signal flight time is taken into
+ * account. The date of the measurement corresponds to the reception on
+ * ground of the reflected signal.
+ *
  * @author Thierry Ceolin
  * @since 7.1
  */

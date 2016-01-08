@@ -33,8 +33,9 @@ import org.orekit.utils.Constants;
 
 /** Class modifying theoretical angular measurement with tropospheric delay.
  * The effect of tropospheric correction on the angular is computed
- * through the computation of the tropospheric delay and the new position of
- * the satellite.
+ * through the computation of the tropospheric delay.The spacecraft state
+ * is shifted by the computed delay time and elevation and azimuth are computed
+ * again with the new spacecraft state.
  *
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
@@ -117,16 +118,15 @@ public class AngularTroposphericDelayModifier implements EvaluationModifier<Angu
         final SpacecraftState transitState = state.shiftedBy(-dt);
 
         // Update measurement value taking into account the ionospheric delay.
-        final AbsoluteDate     date      = transitState.getDate();
-        final Vector3D         position  = transitState.getPVCoordinates().getPosition();
-        final Frame            inertial  = transitState.getFrame();
+        final AbsoluteDate date      = transitState.getDate();
+        final Vector3D     position  = transitState.getPVCoordinates().getPosition();
+        final Frame        inertial  = transitState.getFrame();
 
         // elevation and azimuth in radians
         final double elevation = station.getBaseFrame().getElevation(position, inertial, date);
         final double azimuth   = station.getBaseFrame().getAzimuth(position, inertial, date);
 
         // update measurement value taking into account the tropospheric delay.
-        // The tropospheric delay is directly added to the angular.
         // azimuth - elevation values
         evaluation.setValue(azimuth, elevation);
     }
