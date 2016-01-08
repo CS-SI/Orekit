@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Petrus Hyvönen">
+        Enlarged access to SGP4 and DeepSDP4 propagators.
+        Fixes issue #207
+      </action>
       <action dev="luc" type="fix">
         Fixed covariance matrices units when read from CCSDS ODM files. The
         data returned at API level are now consistent with SI units, instead of being
