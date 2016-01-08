@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Carlos Casas">
+        Added a protection against low altitudes in JB2006 model.
+        Fixes issue #214
+      </action>
       <action dev="luc" type="fix" due-to="Petrus Hyvönen">
         Enlarged access to SGP4 and DeepSDP4 propagators.
         Fixes issue #207
