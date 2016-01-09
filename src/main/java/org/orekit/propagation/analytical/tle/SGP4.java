@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,7 +32,7 @@ import org.orekit.errors.OrekitException;
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (java translation)
  */
-class SGP4 extends TLEPropagator {
+public class SGP4 extends TLEPropagator {
 
     /** If perige is less than 220 km, some calculus are avoided. */
     private boolean lessThan220;
@@ -59,7 +59,7 @@ class SGP4 extends TLEPropagator {
      * @param mass spacecraft mass (kg)
      * @exception OrekitException if some specific error occurs
      */
-    protected SGP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
+    public SGP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                        final double mass) throws OrekitException {
         super(initialTLE, attitudeProvider, mass);
     }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -155,8 +155,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             final RadiationSensitive spacecraft) {
 
         //Call to the constructor from superclass using the numerical SRP model as ForceModel
-        super(GAUSS_THRESHOLD, new SolarRadiationPressure(
-                dRef, pRef, sun, equatorialRadius, spacecraft));
+        super("DSST-SRP-", GAUSS_THRESHOLD,
+              new SolarRadiationPressure(dRef, pRef, sun, equatorialRadius, spacecraft));
 
         this.sun  = sun;
         this.ae   = equatorialRadius;
@@ -173,12 +173,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getCoefficientsKeyPrefix() {
-        return "DSST-SRP-";
     }
 
     /** {@inheritDoc} */

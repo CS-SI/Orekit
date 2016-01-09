@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -26,7 +25,6 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.time.AbsoluteDate;
 
 /** Central body gravitational contribution to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
@@ -86,16 +84,19 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
+    public List<ShortPeriodTerms> initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
         // Initialize zonal contribution
-        zonal.initialize(aux, meanOnly);
+        final List<ShortPeriodTerms> list = zonal.initialize(aux, meanOnly);
 
         // Initialize tesseral contribution if needed
         if (tesseral != null) {
-            tesseral.initialize(aux, meanOnly);
+            list.addAll(tesseral.initialize(aux, meanOnly));
         }
+
+        return list;
+
     }
 
     /** {@inheritDoc} */
@@ -109,6 +110,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         if (tesseral != null) {
             tesseral.initializeStep(aux);
         }
+
     }
 
     /** {@inheritDoc} */
@@ -127,61 +129,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         return meanElementRate;
-    }
 
-    /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
-        throws OrekitException {
-
-        // Get zonal harmonics contribution to short periodic variations
-        final double[] shortPeriodics = zonal.getShortPeriodicVariations(date, meanElements);
-
-        // Get tesseral resonant harmonics contribution to short periodic variations
-        if (tesseral != null) {
-            final double[] tesseralShort = tesseral.getShortPeriodicVariations(date, meanElements);
-            for (int i = 0; i < 6; i++) {
-                shortPeriodics[i] += tesseralShort[i];
-            }
-        }
-
-        return shortPeriodics;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getCoefficientsKeyPrefix() {
-        return "DSST-central-body-";
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * For central body attraction forces,there are zonal coefficients
-     * optionally followed by tesseral coefficients
-     * </p>
-     * <p>
-     * For zonal terms contributions,there are maxJ cj coefficients,
-     * maxJ sj coefficients and 2 dj coefficients, where maxJ depends
-     * on the orbit. The j index is the integer multiplier for the true
-     * longitude argument in the cj and sj coefficients and the degree
-     * in the polynomial dj coefficients.
-     * </p>
-     * <p>
-     * For tesseral terms contributions,there are maxOrderMdailyTesseralSP
-     * m-daily cMm coefficients, maxOrderMdailyTesseralSP m-daily sMm
-     * coefficients, nbNonResonant cjm coefficients and nbNonResonant
-     * sjm coefficients, where maxOrderMdailyTesseralSP and nbNonResonant both
-     * depend on the orbit. The j index is the integer multiplier for the true
-     * longitude argument and the m index is the integer multiplier for m-dailies.
-     * </p>
-     */
-    @Override
-    public Map<String, double[]> getShortPeriodicCoefficients(final AbsoluteDate date, final Set<String> selected)
-        throws OrekitException {
-        final Map<String, double[]> coefficients = zonal.getShortPeriodicCoefficients(date, selected);
-        if (tesseral != null) {
-            coefficients.putAll(tesseral.getShortPeriodicCoefficients(date, selected));
-        }
-        return coefficients;
     }
 
     /** {@inheritDoc} */
@@ -190,21 +138,12 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public void computeShortPeriodicsCoefficients(final SpacecraftState state) throws OrekitException {
+    public void updateShortPeriodTerms(final SpacecraftState ... state)
+        throws OrekitException {
         //relay the call to the Zonal and Tesseral contributions
-        zonal.computeShortPeriodicsCoefficients(state);
+        zonal.updateShortPeriodTerms(state);
         if (tesseral != null) {
-            tesseral.computeShortPeriodicsCoefficients(state);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void resetShortPeriodicsCoefficients() {
-      //relay the call to the Zonal and Tesseral contributions
-        zonal.resetShortPeriodicsCoefficients();
-        if (tesseral != null) {
-            tesseral.resetShortPeriodicsCoefficients();
+            tesseral.updateShortPeriodTerms(state);
         }
     }
 

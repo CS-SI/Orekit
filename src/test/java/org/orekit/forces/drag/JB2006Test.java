@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
@@ -86,6 +87,16 @@ public class JB2006Test {
         Assert.assertEquals(roTestCase*1e12, FastMath.round(myRo*1e15)/1e3,0);
         Assert.assertEquals(tzTestCase, FastMath.round(atm.getLocalTemp()*10)/10.0,0);
         Assert.assertEquals(tinfTestCase, FastMath.round(atm.getExosphericTemp()*10)/10.0,0);
+
+        // alt = 89.999km
+        try {
+            atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,89999.0,F10, F10B, AP,S10,S10B,XM10,XM10B);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, oe.getSpecifier());
+            Assert.assertEquals(89999.0, (Double) oe.getParts()[0], 1.0e-15);
+            Assert.assertEquals(90000.0, (Double) oe.getParts()[1], 1.0e-15);
+        }
 
         // alt = 90
         myRo = atm.getDensity(AMJD, 90.*PI/180., 20.*PI/180.,90.*PI/180.,45.*PI/180.,1000*90,F10, F10B, AP,S10,S10B,XM10,XM10B);

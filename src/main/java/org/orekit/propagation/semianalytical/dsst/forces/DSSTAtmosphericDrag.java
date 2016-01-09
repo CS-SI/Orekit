@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -71,7 +71,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft) {
 
         //Call to the constructor from superclass using the numerical drag model as ForceModel
-        super(GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft));
+        super("DSST-drag-", GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft));
 
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
@@ -99,12 +99,6 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getCoefficientsKeyPrefix() {
-        return "DSST-drag-";
     }
 
     /** {@inheritDoc} */

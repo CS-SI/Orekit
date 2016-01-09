@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2015 CS Systèmes d'Information
+<!-- Copyright 2002-2016 CS Systèmes d'Information
   Licensed to CS Systèmes d'Information (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -21,6 +21,27 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Carlos Casas">
+        Added a protection against low altitudes in JB2006 model.
+        Fixes issue #214
+      </action>
+      <action dev="luc" type="fix" due-to="Petrus Hyvönen">
+        Enlarged access to SGP4 and DeepSDP4 propagators.
+        Fixes issue #207
+      </action>
+      <action dev="luc" type="fix">
+        Fixed covariance matrices units when read from CCSDS ODM files. The
+        data returned at API level are now consistent with SI units, instead of being
+        kilometer-based.
+        Fixes issue #217
+      </action>
+      <action dev="luc" type="fix">
+        Fixed DSST ephemeris generation.
+        Fixes issue #222
+      </action>
+      <action dev="luc" type="update">
+        Vastly improved DSS short period terms interpolation.
+      </action>
       <action dev="luc" type="fix">
         Use new Rotation API from Apache Commons Math 3.6.
         This API allows to use both vector operator convention and frames
@@ -40,6 +61,11 @@
       <action dev="evan" type="add">
         Added capability to use a single EventHandler with multiple types of
         EventDetectors.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to customize interpolation grid in DSST, either using a fixed number
+        of points or a maximum time gap between points, for each mean elements integration
+        step.
       </action>
       <action dev="luc" type="add" >
         Added TabulatedLofOffset for attitudes defined by tabulating rotations between Local Orbital Frame

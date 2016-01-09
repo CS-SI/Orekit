@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -236,12 +236,18 @@ public class JB2006 implements Atmosphere {
      * @param xm10 MG2 index scaled to F10
      * @param xm10B MG2 81-day ave. centered index. Tabular time 5.0 days earlier.
      * @return total mass-Density at input position (kg/m³)
+     * @exception OrekitException if altitude is below 90 km
      */
     public double getDensity(final double dateMJD, final double sunRA, final double sunDecli,
                              final double satLon, final double satLat, final double satAlt,
                              final double f10, final double f10B, final double ap,
-                             final double s10, final double s10B, final double xm10, final double xm10B) {
+                             final double s10, final double s10B, final double xm10, final double xm10B)
+        throws OrekitException {
 
+        if (satAlt < 90000) {
+            throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD,
+                                      satAlt, 90000.0);
+        }
         final double scaledSatAlt = satAlt / 1000.0;
 
         // Equation (14)

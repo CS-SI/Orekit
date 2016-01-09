@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -37,7 +37,7 @@ import org.orekit.utils.Constants;
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (java translation)
  */
-class DeepSDP4 extends SDP4 {
+public class DeepSDP4 extends SDP4 {
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -174,7 +174,7 @@ class DeepSDP4 extends SDP4 {
      * @param mass spacecraft mass (kg)
      * @exception OrekitException if some specific error occurs
      */
-    protected DeepSDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
+    public DeepSDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
                        final double mass) throws OrekitException {
         super(initialTLE, attitudeProvider, mass);
     }

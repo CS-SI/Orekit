@@ -1,4 +1,4 @@
-/* Copyright 2002-2015 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -484,6 +484,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
     }
 
+    /** Get the initial state for integration.
+     * @return initial state for integration
+     * @exception PropagationException if initial state cannot be retrieved
+     */
+    protected SpacecraftState getInitialIntegrationState() throws PropagationException {
+        return getInitialState();
+    }
+
     /** Create an ODE with all equations.
      * @param integ numerical integrator to use for propagation.
      * @return a new ode
@@ -494,7 +502,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         // retrieve initial state
         final double[] initialStateVector  = new double[getBasicDimension()];
-        stateMapper.mapStateToArray(getInitialState(), initialStateVector);
+        stateMapper.mapStateToArray(getInitialIntegrationState(), initialStateVector);
 
         // main part of the ODE
         final ExpandableStatefulODE ode =
