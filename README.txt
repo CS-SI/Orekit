@@ -30,4 +30,5 @@ test-time dependency:
     http://www.junit.org/
     released under the Common Public License Version 1.0
 
-[![Build Status](https://travis-ci.org/petrushy/Orekit.svg?branch=python-wrapper-additions)]
+[![Build Status](https://travis-ci.org/petrushy/Orekit.png?branch=python-wrapper-additions)](https://travis-ci.org/petrushy/Orekit)
+
