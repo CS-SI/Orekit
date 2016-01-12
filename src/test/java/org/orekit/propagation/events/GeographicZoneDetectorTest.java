@@ -114,8 +114,8 @@ public class GeographicZoneDetectorTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(d);
 
-        Assert.assertTrue(bos.size() > 1950);
-        Assert.assertTrue(bos.size() < 2050);
+        Assert.assertTrue(bos.size() > 2100);
+        Assert.assertTrue(bos.size() < 2200);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
