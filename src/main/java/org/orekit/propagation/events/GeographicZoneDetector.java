@@ -40,6 +40,7 @@ import org.orekit.utils.SphericalPolygonsSetTransferObject;
  * they can include poles, they can have holes like the Caspian Sea (this
  * would be a hole only if one is interested in land masses, of course).
  * Complex shapes involve of course more computing time than simple shapes.</p>
+ * @see FootprintOverlapDetector
  * @author Luc Maisonobe
  * @since 6.2
  */

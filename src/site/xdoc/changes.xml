@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added a FootprintOverlapDetector which is triggered when a sensor
+        Field Of View (any shape, even split in non-connected parts or
+        containing holes) overlaps a geographic zone, which can be non-convex,
+        split in different sub-zones, have holes, contain the pole...
+        Fixes issue #216
+      </action>
       <action dev="luc" type="fix" due-to="Carlos Casas">
         Added a protection against low altitudes in JB2006 model.
         Fixes issue #214
