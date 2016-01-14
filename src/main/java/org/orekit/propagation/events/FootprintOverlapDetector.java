@@ -236,8 +236,8 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * positive value is returned.
      * </p>
      * <p>
-     * As per the previous definition, when the regions enters the Field Of
-     * View, a decreasing event is generated, and when the regions leaves
+     * As per the previous definition, when the region enters the Field Of
+     * View, a decreasing event is generated, and when the region leaves
      * the Field Of View, an increasing event is generated.
      * </p>
      */
