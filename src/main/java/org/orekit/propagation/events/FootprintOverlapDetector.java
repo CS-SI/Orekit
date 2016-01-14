@@ -70,7 +70,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
     private static final long serialVersionUID = 20150112L;
 
     /** Field of view. */
-    private final transient SphericalPolygonsSet fov;
+    private final transient FieldOfView fov;
 
     /** Body on which the geographic zone is defined. */
     private final OneAxisEllipsoid body;
@@ -103,7 +103,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      * @param samplingStep linear step used for sampling the geographic zone (in meters)
      * @exception OrekitException if the geographic zone cannot be sampled
      */
-    public FootprintOverlapDetector(final SphericalPolygonsSet fov,
+    public FootprintOverlapDetector(final FieldOfView fov,
                                     final OneAxisEllipsoid body,
                                     final SphericalPolygonsSet zone,
                                     final double samplingStep)
@@ -131,7 +131,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      */
     private FootprintOverlapDetector(final double maxCheck, final double threshold,
                                      final int maxIter, final EventHandler<? super FootprintOverlapDetector> handler,
-                                     final SphericalPolygonsSet fov,
+                                     final FieldOfView fov,
                                      final OneAxisEllipsoid body,
                                      final SphericalPolygonsSet zone,
                                      final double samplingStep,
@@ -218,7 +218,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
     /** Get the Field Of View.
      * @return Field Of View
      */
-    public SphericalPolygonsSet getFieldOfView() {
+    public FieldOfView getFieldOfView() {
         return fov;
     }
 
@@ -270,14 +270,11 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         }
 
         // the spacecraft may be visible from some points in the zone, check them all
-        final Transform bodyToSc = new Transform(s.getDate(),
-                                                 body.getFrame().getTransformTo(s.getFrame(), s.getDate()),
-                                                 s.toTransform());
+        final Transform bodyToInert = body.getFrame().getTransformTo(s.getFrame(), s.getDate());
         for (final SamplingPoint point : sampledZone) {
             final Vector3D lineOfSightBody = point.getPosition().subtract(scBody);
             if (Vector3D.dotProduct(lineOfSightBody, point.getZenith()) <= 0) {
-                final S2Point lineOfSightSc = new S2Point(bodyToSc.transformVector(lineOfSightBody));
-                final double  offset        = fov.projectToBoundary(lineOfSightSc).getOffset();
+                final double offset = fov.offsetFromBoundary(s, bodyToInert.transformPosition(point.getPosition()));
                 value = FastMath.min(value, offset);
             }
         }
@@ -311,8 +308,8 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         /** Body on which the geographic zone is defined. */
         private final OneAxisEllipsoid body;
 
-        /** Proxy for Field Of View. */
-        private final SphericalPolygonsSetTransferObject fov;
+        /** Field Of View. */
+        private final FieldOfView fov;
 
         /** Proxy for geographic zone. */
         private final SphericalPolygonsSetTransferObject zone;
@@ -327,7 +324,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
             this.maxCheck     = detector.getMaxCheckInterval();
             this.threshold    = detector.getThreshold();
             this.maxIter      = detector.getMaxIterationCount();
-            this.fov          = new SphericalPolygonsSetTransferObject(detector.fov);
+            this.fov          = detector.fov;
             this.body         = detector.body;
             this.zone         = new SphericalPolygonsSetTransferObject(detector.zone);
             this.samplingStep = detector.samplingStep;
@@ -338,7 +335,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
          */
         private Object readResolve() {
             try {
-                return new FootprintOverlapDetector(fov.rebuildZone(), body, zone.rebuildZone(), samplingStep).
+                return new FootprintOverlapDetector(fov, body, zone.rebuildZone(), samplingStep).
                                 withMaxCheck(maxCheck).
                                 withThreshold(threshold).
                                 withMaxIter(maxIter);
