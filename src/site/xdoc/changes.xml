@@ -22,6 +22,11 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Replaced CircularFieldOfViewDetector and DihedralFieldOfViewDetector
+        with a more generic FieldOfViewDetector that can handle any
+        Field Of View shape.
+      </action>
+      <action dev="luc" type="add">
         Added a FieldOfView class to model Fields Of View with any shape.
       </action>
       <action dev="luc" type="add">

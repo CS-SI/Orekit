@@ -44,16 +44,8 @@
  *  <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
  *  detects apside crossing (and by default stop at perigee)
  *  </li>
- *  <li>{@link org.orekit.propagation.events.CircularFieldOfViewDetector CircularFieldOfViewDetector}
- *  detects target entry/exit a satellite sensor field of view with a circular boundary
- *  (and by default continue on entry and stop on exit)
- *  </li>
  *  <li>{@link org.orekit.propagation.events.DateDetector DateDetector}
  *  detects occurrence of a predefine instant (and by default stop there)
- *  </li>
- *  <li>{@link org.orekit.propagation.events.DihedralFieldOfViewDetector DihedralFieldOfViewDetector}
- *  detects target entry/exit a satellite sensor field of view with a dihedral boundary
- *  (and by default continue on entry and stop on exit)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.EclipseDetector EclipseDetector}
  *  detects satellite entering/exiting an eclipse (and by default stop on exit)
@@ -63,6 +55,10 @@
  *  </li>
  *  <li>{@link org.orekit.propagation.events.ElevationExtremumDetector ElevationExtremumDetector}
  *  detects satellite maximum/minimum elevation (and by default stop at minimum)
+ *  </li>
+ *  <li>{@link org.orekit.propagation.events.FieldOfViewDetector FieldOfViewDetector}
+ *  detects target entry/exit a satellite sensor Field Of View with an arbitrarily
+ *  shaped boundary (and by default continue on entry and stop on exit)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.FootprintOverlapDetector FootprintOverlapDetector}
  *  detects geographic zone entering or exiting Field Of View of a spacecraft sensor (and by default stop at zone exit)

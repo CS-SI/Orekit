@@ -41,6 +41,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
+@Deprecated
 public class DihedralFieldOfViewDetectorTest {
 
     // Body mu

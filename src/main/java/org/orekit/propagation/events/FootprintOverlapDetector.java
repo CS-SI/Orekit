@@ -41,13 +41,13 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.SphericalPolygonsSetTransferObject;
 
 /** Detector triggered by geographical region entering/leaving a spacecraft sensor Field Of View.
- * <p>This detector is an extended mix between to {@link CircularFieldOfViewDetector},
- * {@link DihedralFieldOfViewDetector} and {@link GeographicZoneDetector}.
- * Similar to the two first detectors above, it triggers events related to entry/exit
- * of targets in a Field Of View, taking attitude into account, but is not devoted to
- * circular or dihedral shapes, it handles many other shapes too. Similar to the third
- * detector above, its target is an entire geographic region (which can even be split
- * in several non-connected patches and can have holes).</p>
+ * <p>
+ * This detector is a mix between to {@link FieldOfViewDetector} and {@link
+ * GeographicZoneDetector}. Similar to the first detector above, it triggers events
+ * related to entry/exit of targets in a Field Of View, taking attitude into account.
+ * Similar to the second detector above, its target is an entire geographic region
+ * (which can even be split in several non-connected patches and can have holes).
+ * </p>
  * <p>
  * This detector is typically used for ground observation missions with agile
  * satellites than can look away from nadir.
@@ -59,8 +59,7 @@ import org.orekit.utils.SphericalPolygonsSetTransferObject;
  * at FOV exit. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
- * @see CircularFieldOfViewDetector
- * @see DihedralFieldOfViewDetector
+ * @see FieldOfViewDetector
  * @see GeographicZoneDetector
  * @author Luc Maisonobe
  * @since 7.1

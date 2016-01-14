@@ -41,8 +41,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-@Deprecated
-public class CircularFieldOfViewDetectorTest {
+public class FieldOfViewDetectorTest {
 
     // Body mu
     private double mu;
@@ -60,7 +59,7 @@ public class CircularFieldOfViewDetectorTest {
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     @Test
-    public void testCircularFielOfView() throws OrekitException {
+    public void testDihedralFielOfView() throws OrekitException {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -68,14 +67,19 @@ public class CircularFieldOfViewDetectorTest {
         // Extrapolator definition
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, earthCenterAttitudeLaw);
 
-        // Event definition : circular field of view, along X axis, aperture 35°
+        // Event definition : circular field of view, along X axis, aperture 56°
         final double maxCheck  = 1.;
         final PVCoordinatesProvider sunPV = CelestialBodyFactory.getSun();
-        final Vector3D center = Vector3D.PLUS_I;
-        final double aperture = FastMath.toRadians(35);
+        final Vector3D center = Vector3D.MINUS_J;
+        final Vector3D axis1 = Vector3D.PLUS_K;
+        final Vector3D axis2 = Vector3D.PLUS_I;
+        final double aperture1 = FastMath.toRadians(28);
+        final double aperture2 = FastMath.toRadians(28);
 
         final EventDetector sunVisi =
-            new CircularFieldOfViewDetector(maxCheck, sunPV, center, aperture).withHandler(new CircularSunVisiHandler());
+                new FieldOfViewDetector(sunPV, new FieldOfView(center, axis1, aperture1, axis2, aperture2, 0.0)).
+                withMaxCheck(maxCheck).
+                withHandler(new DihedralSunVisiHandler());
 
         // Add event to be detected
         propagator.addEventDetector(sunVisi);
@@ -121,29 +125,30 @@ public class CircularFieldOfViewDetectorTest {
 
 
     /** Handler for visibility event. */
-    private static class CircularSunVisiHandler implements EventHandler<CircularFieldOfViewDetector> {
+    private static class DihedralSunVisiHandler implements EventHandler<FieldOfViewDetector> {
 
-        public Action eventOccurred(final SpacecraftState s, final CircularFieldOfViewDetector detector,
+        public Action eventOccurred(final SpacecraftState s, final FieldOfViewDetector detector,
                                     final boolean increasing)
             throws OrekitException {
             if (increasing) {
-                // System.err.println(" Sun visibility starts " + s.getDate());
+                //System.err.println(" Sun visibility starts " + s.getDate());
                 AbsoluteDate startVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
-                                                            new TimeComponents(0, 11 , 7.820),
-                                                            TimeScalesFactory.getUTC());
-              Assert.assertTrue(s.getDate().durationFrom(startVisiDate) <= 1);
+                                                              new TimeComponents(1, 19, 00.381),
+                                                              TimeScalesFactory.getUTC());
+
+                Assert.assertTrue(s.getDate().durationFrom(startVisiDate) <= 1);
                 return Action.CONTINUE;
             } else {
-                // System.err.println(" Sun visibility ends at " + s.getDate());
                 AbsoluteDate endVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
-                                                            new TimeComponents(0, 25 , 18.224),
-                                                            TimeScalesFactory.getUTC());
+                                                              new TimeComponents(1, 39 , 42.674),
+                                                              TimeScalesFactory.getUTC());
                 Assert.assertTrue(s.getDate().durationFrom(endVisiDate) <= 1);
+                //System.err.println(" Sun visibility ends at " + s.getDate());
                 return Action.CONTINUE;//STOP;
             }
         }
 
-        public SpacecraftState resetState(CircularFieldOfViewDetector detector, SpacecraftState oldState) {
+        public SpacecraftState resetState(FieldOfViewDetector detector, SpacecraftState oldState) {
             return oldState;
         }
 
