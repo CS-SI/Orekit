@@ -22,6 +22,9 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added a FieldOfView class to model Fields Of View with any shape.
+      </action>
+      <action dev="luc" type="add">
         Added a FootprintOverlapDetector which is triggered when a sensor
         Field Of View (any shape, even split in non-connected parts or
         containing holes) overlaps a geographic zone, which can be non-convex,
