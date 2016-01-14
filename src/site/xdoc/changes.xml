@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="evan" type="fix">
+        Support parsing lowercase values in CCSDS orbit data messages.
+        Fixes issue #230
+      </action>
       <action dev="luc" type="add">
         Replaced CircularFieldOfViewDetector and DihedralFieldOfViewDetector
         with a more generic FieldOfViewDetector that can handle any
