@@ -199,8 +199,9 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> implements Serial
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof GeodeticPoint) {
-            final GeodeticPoint other = (GeodeticPoint) object;
+        if (object instanceof FieldGeodeticPoint<?>) {
+            @SuppressWarnings("unchecked")
+            final FieldGeodeticPoint<T> other = (FieldGeodeticPoint<T>) object;
             return getLatitude().equals(other.getLatitude()) &&
                    getLongitude().equals(other.getLongitude()) &&
                    getAltitude().equals(other.getAltitude());
