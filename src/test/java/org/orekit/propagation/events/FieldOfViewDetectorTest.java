@@ -67,7 +67,7 @@ public class FieldOfViewDetectorTest {
         // Extrapolator definition
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit, earthCenterAttitudeLaw);
 
-        // Event definition : circular field of view, along X axis, aperture 56°
+        // Event definition : square field of view, along X axis, aperture 56°
         final double maxCheck  = 1.;
         final PVCoordinatesProvider sunPV = CelestialBodyFactory.getSun();
         final Vector3D center = Vector3D.MINUS_J;
