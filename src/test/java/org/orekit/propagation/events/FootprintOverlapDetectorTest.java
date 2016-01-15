@@ -191,8 +191,8 @@ public class FootprintOverlapDetectorTest {
         ObjectInputStream     ois = new ObjectInputStream(bis);
         FootprintOverlapDetector deserialized  = (FootprintOverlapDetector) ois.readObject();
 
-        Assert.assertEquals(detector.getZone().getSize(),         deserialized.getZone().getSize(),         4.0e-15);
-        Assert.assertEquals(detector.getZone().getBoundarySize(), deserialized.getZone().getBoundarySize(), 5.0e-15);
+        Assert.assertEquals(detector.getZone().getSize(),         deserialized.getZone().getSize(),         1.0e-14);
+        Assert.assertEquals(detector.getZone().getBoundarySize(), deserialized.getZone().getBoundarySize(), 1.0e-14);
         Assert.assertEquals(detector.getZone().getTolerance(),    deserialized.getZone().getTolerance(),    1.0e-15);
         Assert.assertEquals(detector.getMaxCheckInterval(),       deserialized.getMaxCheckInterval(),       1.0e-15);
         Assert.assertEquals(detector.getThreshold(),              deserialized.getThreshold(),              1.0e-15);
