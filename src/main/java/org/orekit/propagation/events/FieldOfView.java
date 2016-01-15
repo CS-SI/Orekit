@@ -31,7 +31,6 @@ import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.SphericalPolygonsSetTransferObject;
 
 /** Class representing a spacecraft sensor Field Of View.
@@ -201,21 +200,19 @@ public class FieldOfView implements Serializable {
      * detect Field Of View boundary crossings, which correspond to sign changes of
      * the offset.
      * </p>
-     * @param state current state of the spacecraft on which the Field Of View is defined
-     * @param target position of the target in the same frame as the state
+     * @param lineOfSight line of sight from the center of the Field Of View support
+     * unit sphere to the target in Field Of View canonical frame
      * @return an angular offset negative if the target is visible within the Field Of
      * View and positive if it is outside of the Field Of View, including the margin
      * (note that this cannot take into account interposing bodies)
      */
-    public double offsetFromBoundary(final SpacecraftState state, final Vector3D target) {
+    public double offsetFromBoundary(final Vector3D lineOfSight) {
 
-        // get line of sight in spacecraft frame
-        final Vector3D lineOfSightInert = target.subtract(state.getPVCoordinates().getPosition());
-        final S2Point lineOfSightSC     = new S2Point(state.toTransform().transformVector(lineOfSightInert));
+        final S2Point los = new S2Point(lineOfSight);
 
         // for faster computation, we start using only the surrounding cap, to filter out
         // far away points (which correspond to most of the points if the Field Of View is small)
-        final double crudeDistance = cap.getCenter().distance(lineOfSightSC) - cap.getRadius();
+        final double crudeDistance = cap.getCenter().distance(los) - cap.getRadius();
         if (crudeDistance - margin > FastMath.max(FastMath.abs(margin), 0.01)) {
             // we know we are strictly outside of the zone,
             // use the crude distance to compute the (positive) return value
@@ -224,7 +221,7 @@ public class FieldOfView implements Serializable {
 
         // we are close, we need to compute carefully the exact offset
         // project the point to the closest zone boundary
-        return zone.projectToBoundary(lineOfSightSC).getOffset() - margin;
+        return zone.projectToBoundary(los).getOffset() - margin;
 
     }
 

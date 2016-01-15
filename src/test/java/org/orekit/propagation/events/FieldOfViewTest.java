@@ -23,7 +23,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
 import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
@@ -33,16 +32,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 
 public class FieldOfViewTest {
 
@@ -92,18 +82,14 @@ public class FieldOfViewTest {
         Assert.assertEquals(square1.getZone().getBoundarySize(), square2.getZone().getBoundarySize(), 1.0e-15);
         UnitSphereRandomVectorGenerator random =
                         new UnitSphereRandomVectorGenerator(3, new Well1024a(0x17df21c7598b114bl));
-        SpacecraftState s = dummyState();
         for (int i = 0; i < 1000; ++i) {
-            Vector3D v = new Vector3D(random.nextVector()).scalarMultiply(1.0e6).add(s.getPVCoordinates().getPosition());
-            Assert.assertEquals(square1.offsetFromBoundary(s, v),
-                                square2.offsetFromBoundary(s, v),
-                                1.0e-15);
+            Vector3D v = new Vector3D(random.nextVector()).scalarMultiply(1.0e6);
+            Assert.assertEquals(square1.offsetFromBoundary(v), square2.offsetFromBoundary(v), 1.0e-15);
         }
     }
 
     @Test
     public void testRegularPolygon() throws OrekitException {
-        SpacecraftState s = dummyState();
         double delta          = 0.25;
         double margin         = 0.01;
         double maxAreaError   = 0;
@@ -115,9 +101,9 @@ public class FieldOfViewTest {
             double areaError = theoreticalArea - fov.getZone().getSize();
             maxAreaError = FastMath.max(FastMath.abs(areaError), maxAreaError);
             for (double lambda = -0.5 * FastMath.PI; lambda < 0.5 * FastMath.PI; lambda += 0.1) {
-                Vector3D v = new Vector3D(0.0, lambda).scalarMultiply(1.0e6).add(s.getPVCoordinates().getPosition());
+                Vector3D v = new Vector3D(0.0, lambda).scalarMultiply(1.0e6);
                 double theoreticalOffset = 0.5 * FastMath.PI - lambda - delta - margin;
-                double offset = fov.offsetFromBoundary(s, v);
+                double offset = fov.offsetFromBoundary(v);
                 if (theoreticalOffset > 0.01) {
                     // the offsetFromBoundary method may use the fast approximate
                     // method, so we cannot check the error accurately
@@ -160,17 +146,6 @@ public class FieldOfViewTest {
         Assert.assertEquals(1.5 * FastMath.PI, deserialized.getZone().getBoundarySize(), 1.0e-15);
         Assert.assertEquals(0.001,  deserialized.getMargin(), 1.0e-15);
         
-    }
-
-    SpacecraftState dummyState() throws OrekitException {
-        final Orbit orbit = new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                                                                   0.048363, PositionAngle.MEAN,
-                                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                                                   Constants.EIGEN5C_EARTH_MU);
-        final Attitude attitude = new InertialProvider(Rotation.IDENTITY).getAttitude(orbit,
-                                                                                      orbit.getDate(),
-                                                                                      orbit.getFrame());
-        return new SpacecraftState(orbit, attitude);
     }
 
 }

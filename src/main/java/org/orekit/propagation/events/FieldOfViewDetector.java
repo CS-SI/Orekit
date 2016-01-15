@@ -106,8 +106,8 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
     /** {@inheritDoc}
      * <p>
      * The g function value is the angular offset between the
-     * target and the {@link FieldOfView#offsetFromBoundary(SpacecraftState,
-     * Vector3D) Field Of View boundary}. It is negative if the target is
+     * target and the {@link FieldOfView#offsetFromBoundary(Vector3D)
+     * Field Of View boundary}. It is negative if the target is
      * visible within the Field Of View and positive if it is outside of the
      * Field Of View, including the margin.
      * </p>
@@ -119,13 +119,12 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      */
     public double g(final SpacecraftState s) throws OrekitException {
 
-        // Compute target position/velocity at date in spacecraft frame */
+        // get line of sight in spacecraft frame
         final Vector3D targetPosInert =
-                        new Vector3D( 1, targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition(),
-                                     -1, s.getPVCoordinates().getPosition());
-        final Vector3D targetPosSat = s.getAttitude().getRotation().applyTo(targetPosInert);
+                targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
+        final Vector3D lineOfSightSC  = s.toTransform().transformPosition(targetPosInert);
 
-        return fov.offsetFromBoundary(s, targetPosSat);
+        return fov.offsetFromBoundary(lineOfSightSC);
 
     }
 

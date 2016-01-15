@@ -270,11 +270,15 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
         }
 
         // the spacecraft may be visible from some points in the zone, check them all
-        final Transform bodyToInert = body.getFrame().getTransformTo(s.getFrame(), s.getDate());
+        final Transform bodyToSc = new Transform(s.getDate(),
+                                                 body.getBodyFrame().getTransformTo(s.getFrame(), s.getDate()),
+                                                 s.toTransform());
         for (final SamplingPoint point : sampledZone) {
             final Vector3D lineOfSightBody = point.getPosition().subtract(scBody);
             if (Vector3D.dotProduct(lineOfSightBody, point.getZenith()) <= 0) {
-                final double offset = fov.offsetFromBoundary(s, bodyToInert.transformPosition(point.getPosition()));
+                // spacecraft is above this sample point local horizon
+                // get line of sight in spacecraft frame
+                final double offset = fov.offsetFromBoundary(bodyToSc.transformVector(lineOfSightBody));
                 value = FastMath.min(value, offset);
             }
         }
