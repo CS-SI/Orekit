@@ -121,10 +121,9 @@ public class CircularFieldOfViewDetectorTest {
 
 
     /** Handler for visibility event. */
-    @Deprecated
-    private static class CircularSunVisiHandler implements EventHandler<CircularFieldOfViewDetector> {
+    private static class CircularSunVisiHandler implements EventHandler<EventDetector> {
 
-        public Action eventOccurred(final SpacecraftState s, final CircularFieldOfViewDetector detector,
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing)
             throws OrekitException {
             if (increasing) {
@@ -144,7 +143,7 @@ public class CircularFieldOfViewDetectorTest {
             }
         }
 
-        public SpacecraftState resetState(CircularFieldOfViewDetector detector, SpacecraftState oldState) {
+        public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
             return oldState;
         }
 

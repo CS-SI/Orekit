@@ -125,10 +125,9 @@ public class DihedralFieldOfViewDetectorTest {
 
 
     /** Handler for visibility event. */
-    @Deprecated
-    private static class DihedralSunVisiHandler implements EventHandler<DihedralFieldOfViewDetector> {
+    private static class DihedralSunVisiHandler implements EventHandler<EventDetector> {
 
-        public Action eventOccurred(final SpacecraftState s, final DihedralFieldOfViewDetector detector,
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing)
             throws OrekitException {
             if (increasing) {
@@ -149,7 +148,7 @@ public class DihedralFieldOfViewDetectorTest {
             }
         }
 
-        public SpacecraftState resetState(DihedralFieldOfViewDetector detector, SpacecraftState oldState) {
+        public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
             return oldState;
         }
 
