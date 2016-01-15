@@ -90,7 +90,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
     private EHModel initialModel;
 
     /** All models. */
-    private TimeSpanMap<EHModel> models;
+    private transient TimeSpanMap<EHModel> models;
 
     /** Reference radius of the central body attraction model (m). */
     private double referenceRadius;

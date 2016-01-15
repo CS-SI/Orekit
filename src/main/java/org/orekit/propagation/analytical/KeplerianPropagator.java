@@ -47,7 +47,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
     private SpacecraftState initialState;
 
     /** All states. */
-    private TimeSpanMap<SpacecraftState> states;
+    private transient TimeSpanMap<SpacecraftState> states;
 
     /** Build a propagator from orbit only.
      * <p>The central attraction coefficient μ is set to the same value used
