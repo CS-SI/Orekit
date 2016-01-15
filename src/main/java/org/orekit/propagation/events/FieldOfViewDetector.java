@@ -122,7 +122,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
         // get line of sight in spacecraft frame
         final Vector3D targetPosInert =
                 targetPVProvider.getPVCoordinates(s.getDate(), s.getFrame()).getPosition();
-        final Vector3D lineOfSightSC  = s.toTransform().transformPosition(targetPosInert);
+        final Vector3D lineOfSightSC = s.toTransform().transformPosition(targetPosInert);
 
         return fov.offsetFromBoundary(lineOfSightSC);
 
