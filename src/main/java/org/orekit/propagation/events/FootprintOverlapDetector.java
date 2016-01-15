@@ -28,6 +28,7 @@ import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
 import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
 import org.apache.commons.math3.geometry.spherical.twod.Vertex;
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -221,6 +222,13 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
      */
     public FieldOfView getFieldOfView() {
         return fov;
+    }
+
+    /** Get the body on which the geographic zone is defined.
+     * @return body on which the geographic zone is defined
+     */
+    public BodyShape getBody() {
+        return body;
     }
 
     /** {@inheritDoc}
