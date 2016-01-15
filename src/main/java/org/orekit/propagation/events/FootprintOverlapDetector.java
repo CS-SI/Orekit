@@ -37,7 +37,7 @@ import org.orekit.models.earth.tessellation.ConstantAzimuthAiming;
 import org.orekit.models.earth.tessellation.EllipsoidTessellator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.StopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.SphericalPolygonsSetTransferObject;
 
 /** Detector triggered by geographical region entering/leaving a spacecraft sensor
@@ -110,7 +110,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                     final double samplingStep)
         throws OrekitException {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnDecreasing<FootprintOverlapDetector>(),
+             new StopOnIncreasing<FootprintOverlapDetector>(),
              fov, body, zone, samplingStep, sample(body, zone, samplingStep));
     }
 
