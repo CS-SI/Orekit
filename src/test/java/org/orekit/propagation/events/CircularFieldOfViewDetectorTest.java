@@ -121,6 +121,7 @@ public class CircularFieldOfViewDetectorTest {
 
 
     /** Handler for visibility event. */
+    @Deprecated
     private static class CircularSunVisiHandler implements EventHandler<CircularFieldOfViewDetector> {
 
         public Action eventOccurred(final SpacecraftState s, final CircularFieldOfViewDetector detector,

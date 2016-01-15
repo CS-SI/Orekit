@@ -125,6 +125,7 @@ public class DihedralFieldOfViewDetectorTest {
 
 
     /** Handler for visibility event. */
+    @Deprecated
     private static class DihedralSunVisiHandler implements EventHandler<DihedralFieldOfViewDetector> {
 
         public Action eventOccurred(final SpacecraftState s, final DihedralFieldOfViewDetector detector,
