@@ -40,7 +40,8 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.SphericalPolygonsSetTransferObject;
 
-/** Detector triggered by geographical region entering/leaving a spacecraft sensor Field Of View.
+/** Detector triggered by geographical region entering/leaving a spacecraft sensor
+ * {@link FieldOfView Field Of View}.
  * <p>
  * This detector is a mix between to {@link FieldOfViewDetector} and {@link
  * GeographicZoneDetector}. Similar to the first detector above, it triggers events

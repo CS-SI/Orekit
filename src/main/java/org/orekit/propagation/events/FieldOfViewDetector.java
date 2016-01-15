@@ -23,7 +23,8 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** Finder for target entry/exit events with respect to a satellite sensor Field Of View.
+/** Finder for target entry/exit events with respect to a satellite sensor
+ * {@link FieldOfView Field Of View}.
  * <p>The default implementation behavior is to {@link
  * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
  * propagation at FOV entry and to {@link
