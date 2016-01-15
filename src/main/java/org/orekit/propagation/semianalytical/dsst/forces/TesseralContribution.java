@@ -558,12 +558,11 @@ class TesseralContribution implements DSSTForceModel {
 
                 if (!mDailiesOnly) {
                     // generate the other coefficients, if required
-                    for (int m: nonResOrders.keySet()) {
-                        final List<Integer> listJ = nonResOrders.get(m);
+                    for (final Map.Entry<Integer, List<Integer>> entry : nonResOrders.entrySet()) {
 
-                        for (int j: listJ) {
+                        for (int j : entry.getValue()) {
                             // build the coefficients
-                            buildCoefficients(meanState.getDate(), slot, m, j, tnota);
+                            buildCoefficients(meanState.getDate(), slot, entry.getKey(), j, tnota);
                         }
                     }
                 }
