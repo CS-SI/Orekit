@@ -80,10 +80,23 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** Maximum value for j index. */
     private static final int JMAX = 12;
-    // CHECKSTYLE: stop VisibilityModifierCheck
 
-    /** Retrograde factor. */
-    protected int I;
+    /** Retrograde factor I.
+     *  <p>
+     *  DSST model needs equinoctial orbit as internal representation.
+     *  Classical equinoctial elements have discontinuities when inclination
+     *  is close to zero. In this representation, I = +1. <br>
+     *  To avoid this discontinuity, another representation exists and equinoctial
+     *  elements can be expressed in a different way, called "retrograde" orbit.
+     *  This implies I = -1. <br>
+     *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
+     *  But for the sake of consistency with the theory, the retrograde factor
+     *  has been kept in the formulas.
+     *  </p>
+     */
+    private static final int I = 1;
+
+    // CHECKSTYLE: stop VisibilityModifierCheck
 
     /** a. */
     protected double a;
@@ -195,9 +208,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         h  = aux.getH();
         q  = aux.getQ();
         p  = aux.getP();
-
-        // Retrograde factor
-        I = aux.getRetrogradeFactor();
 
         // Eccentricity
         ecc = aux.getEcc();

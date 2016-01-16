@@ -260,4 +260,19 @@ public class OEMParserTest {
         }
     }
 
+    @Test
+    public void testLowerCaseValue() throws OrekitException {
+        //setup
+        String file = "/ccsds/oemLowerCaseValue.oem";
+        InputStream in = getClass().getResourceAsStream(file);
+
+        //action
+        OEMFile actual = new OEMParser().parse(in, file);
+
+        //verify
+        Assert.assertEquals(
+                CelestialBodyFactory.getEarth(),
+                actual.getEphemeridesBlocks().get(0).getMetaData().getCenterBody());
+    }
+
 }

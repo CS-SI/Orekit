@@ -33,8 +33,11 @@ import org.orekit.utils.PVCoordinatesProvider;
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see DihedralFieldOfViewDetector
+ * @see FootprintOverlapDetector
  * @author V&eacute;ronique Pommier-Maurussane
+ * @deprecated as of 7.1, replaced with {@link FieldOfViewDetector}
  */
+@Deprecated
 public class CircularFieldOfViewDetector extends AbstractDetector<CircularFieldOfViewDetector> {
 
     /** Serializable UID. */
