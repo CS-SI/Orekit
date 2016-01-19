@@ -4,6 +4,9 @@ INTERNAL_ERROR = error interno, contacte al soporte técnico en {0}
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitud ({0} m) inferior al umbral permitido {1} m
 
+# point is inside ellipsoid
+POINT_INSIDE_ELLIPSOID = <MISSING TRANSLATION>
+
 # trajectory inside the Brillouin sphere (r = {0})
 TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = trayectoria interior a la esfera de Brillouin (r = {0})
 

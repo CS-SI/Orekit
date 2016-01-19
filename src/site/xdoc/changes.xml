@@ -22,6 +22,10 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added a pointOnLimb method to Ellipsoid for computing points that lie
+        on the limb as seen from an external observer.
+      </action>
+      <action dev="luc" type="add">
         Added an isInside predicate method to Ellipsoid for checking points location.
       </action>
       <action dev="evan" type="fix">

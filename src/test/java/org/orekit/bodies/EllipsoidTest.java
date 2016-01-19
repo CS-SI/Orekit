@@ -21,11 +21,14 @@ import java.io.IOException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well1024a;
 import org.apache.commons.math3.random.Well19937a;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
@@ -150,6 +153,44 @@ public class EllipsoidTest {
             Assert.assertEquals(inside, ellipsoid.isInside(new Vector3D(f * ellipsoid.getA(), 0, 0)));
             Assert.assertEquals(inside, ellipsoid.isInside(new Vector3D(0, f * ellipsoid.getB(), 0)));
             Assert.assertEquals(inside, ellipsoid.isInside(new Vector3D(0, 0, f * ellipsoid.getC())));
+        }
+    }
+
+    @Test
+    public void testLimb() throws OrekitException {
+        final Ellipsoid ellipsoid =
+                        new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
+        RandomGenerator random = new Well1024a(0xa69c430a67475af7l);
+        for (int i = 0; i < 5000; ++i) {
+            Vector3D observer = new Vector3D((random.nextDouble() - 0.5) * 5,
+                                             (random.nextDouble() - 0.5) * 5,
+                                             (random.nextDouble() - 0.5) * 5);
+            Vector3D outside  = new Vector3D((random.nextDouble() - 0.5) * 5,
+                                             (random.nextDouble() - 0.5) * 5,
+                                             (random.nextDouble() - 0.5) * 5);
+            if (ellipsoid.isInside(observer)) {
+                try {
+                    ellipsoid.pointOnLimb(observer, outside);
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException oe) {
+                    Assert.assertEquals(OrekitMessages.POINT_INSIDE_ELLIPSOID, oe.getSpecifier());
+                }
+            } else {
+                final Vector3D onLimb = ellipsoid.pointOnLimb(observer, outside);
+                Assert.assertEquals(0,
+                                    FastMath.sin(Vector3D.angle(Vector3D.crossProduct(observer, outside),
+                                                                Vector3D.crossProduct(observer, onLimb))),
+                                    2e-14);
+                final double scaledX = onLimb.getX() / ellipsoid.getA();
+                final double scaledY = onLimb.getY() / ellipsoid.getB();
+                final double scaledZ = onLimb.getZ() / ellipsoid.getC();
+                Assert.assertEquals(1.0, scaledX * scaledX + scaledY * scaledY + scaledZ * scaledZ, 9e-11);
+                final Vector3D normal = new Vector3D(scaledX / ellipsoid.getA(),
+                                                     scaledY / ellipsoid.getB(),
+                                                     scaledZ / ellipsoid.getC()).normalize();
+                final Vector3D lineOfSight = onLimb.subtract(observer).normalize();
+                Assert.assertEquals(0.0, Vector3D.dotProduct(normal, lineOfSight), 5e-10);
+            }
         }
     }
 
