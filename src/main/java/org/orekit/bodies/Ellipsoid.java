@@ -87,6 +87,19 @@ public class Ellipsoid implements Serializable {
         return frame;
     }
 
+    /** Check if a point is inside the ellipsoid.
+     * @param point point to check, in the ellipsoid frame
+     * @return true if the point is inside the ellipsoid
+     * (or exactly on ellipsoid surface)
+     * @since 7.1
+     */
+    public boolean isInside(final Vector3D point) {
+        final double scaledX = point.getX() / a;
+        final double scaledY = point.getY() / b;
+        final double scaledZ = point.getZ() / c;
+        return scaledX * scaledX + scaledY * scaledY + scaledZ * scaledZ <= 1.0;
+    }
+
     /** Compute the 2D ellipse at the intersection of the 3D ellipsoid and a plane.
      * @param planePoint point belonging to the plane, in the ellipsoid frame
      * @param planeNormal normal of the plane, in the ellipsoid frame

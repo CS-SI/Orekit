@@ -141,6 +141,18 @@ public class EllipsoidTest {
         }
     }
 
+    @Test
+    public void testInside() {
+        final Ellipsoid ellipsoid =
+                        new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
+        for (double f = -2.0; f <= 2.0; f += 1.0 / 128.0) {
+            final boolean inside = FastMath.abs(f) <= 1.0;
+            Assert.assertEquals(inside, ellipsoid.isInside(new Vector3D(f * ellipsoid.getA(), 0, 0)));
+            Assert.assertEquals(inside, ellipsoid.isInside(new Vector3D(0, f * ellipsoid.getB(), 0)));
+            Assert.assertEquals(inside, ellipsoid.isInside(new Vector3D(0, 0, f * ellipsoid.getC())));
+        }
+    }
+
     private void checkPrincipalAxes(Ellipse ps, Vector3D expectedU, Vector3D expectedV) {
         if (Vector3D.dotProduct(expectedU, ps.getU()) >= 0) {
             Assert.assertEquals(0, Vector3D.distance(expectedU,  ps.getU()), 1.0e-15);
