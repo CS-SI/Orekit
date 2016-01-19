@@ -22,6 +22,11 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added a getFootprint method to FieldOfView for projecting Field Of View
+        to ground, taking limb of ellipsoid into account (including flatness) if
+        Field Of View skims over horizon.
+      </action>
+      <action dev="luc" type="add">
         Added a pointOnLimb method to Ellipsoid for computing points that lie
         on the limb as seen from an external observer.
       </action>
