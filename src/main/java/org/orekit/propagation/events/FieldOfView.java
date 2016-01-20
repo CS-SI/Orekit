@@ -328,6 +328,14 @@ public class FieldOfView implements Serializable {
                     final Line     lineOfSight = new Line(position, awayBody, 1.0e-3);
                     GeodeticPoint  gp          = body.getIntersectionPoint(lineOfSight, position,
                                                                            bodyFrame, null);
+                    if (gp != null &&
+                        Vector3D.dotProduct(awayBody.subtract(position),
+                                            body.transform(gp).subtract(position)) < 0) {
+                        // the intersection is in fact on the half-line pointing
+                        // towards the back side, it is a spurious intersection
+                        gp = null;
+                    }
+
                     if (gp != null) {
                         // the line of sight does intersect the body
                         intersectionsFound = true;

@@ -33,7 +33,6 @@ import org.apache.commons.math3.random.Well1024a;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
@@ -346,8 +345,6 @@ public class FieldOfViewTest {
         Assert.assertEquals(5347029.8, maxDist, 1.0);
     }
 
-    // TODO currently, the following test fails ...
-    @Ignore
     @Test
     public void testFOVAwayFromEarth() throws OrekitException {
         Utils.setDataRoot("regular-data");
