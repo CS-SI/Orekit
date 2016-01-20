@@ -53,8 +53,34 @@ public class EventShifterTest {
     @Test
     public void testNegNeg() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
-        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
-                                                                      true, -15, -20));
+        EclipseDetector raw = createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3);
+        final EventHandler<? super EclipseDetector> h = raw.getHandler();
+        raw = raw.withHandler(new EventHandler<EclipseDetector>() {
+
+            @Override
+            public Action eventOccurred(SpacecraftState s,
+                                        EclipseDetector detector,
+                                        boolean increasing)
+              throws OrekitException {
+                h.eventOccurred(s, detector, increasing);
+                return Action.RESET_STATE;
+            }
+
+            @Override
+            public SpacecraftState resetState(EclipseDetector detector,
+                                              SpacecraftState oldState)
+                                                  throws OrekitException {
+                return h.resetState(detector, oldState);
+            }
+            
+        });
+        EventShifter<EclipseDetector> shifter = new EventShifter<EclipseDetector>(raw, true, -15, -20).
+                                                withMaxIter(200);
+        Assert.assertEquals(-15, shifter.getIncreasingTimeShift(), 1.0e-15);
+        Assert.assertEquals(-20, shifter.getDecreasingTimeShift(), 1.0e-15);
+        Assert.assertEquals(200, shifter.getMaxIterationCount());
+        Assert.assertEquals(100, raw.getMaxIterationCount());
+        propagator.addEventDetector(shifter);
         propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
                                                                       false, -5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));

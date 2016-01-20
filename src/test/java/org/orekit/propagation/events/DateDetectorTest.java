@@ -51,7 +51,8 @@ public class DateDetectorTest {
 
     @Test
     public void testSimpleTimer() throws OrekitException {
-    	EventDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
+        DateDetector dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(2.0*dt));
+    	Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
         propagator.addEventDetector(dateDetector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
@@ -61,6 +62,7 @@ public class DateDetectorTest {
     @Test
     public void testEmbeddedTimer() throws OrekitException {
     	dateDetector = new DateDetector(maxCheck, threshold);
+        Assert.assertNull(dateDetector.getDate());
     	EventDetector nodeDetector = new NodeDetector(iniOrbit, iniOrbit.getFrame()).
     	        withHandler(new ContinueOnEvent<NodeDetector>() {
     	            public Action eventOccurred(SpacecraftState s, NodeDetector nd, boolean increasing)

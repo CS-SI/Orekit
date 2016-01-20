@@ -74,8 +74,11 @@ public class CircularFieldOfViewDetectorTest {
         final Vector3D center = Vector3D.PLUS_I;
         final double aperture = FastMath.toRadians(35);
 
-        final EventDetector sunVisi =
+        final CircularFieldOfViewDetector sunVisi =
             new CircularFieldOfViewDetector(maxCheck, sunPV, center, aperture).withHandler(new CircularSunVisiHandler());
+        Assert.assertEquals(0, Vector3D.distance(center, sunVisi.getCenter()), 1.0e-15);
+        Assert.assertEquals(aperture, sunVisi.getHalfAperture(), 1.0e-15);
+        Assert.assertSame(sunPV, sunVisi.getPVTarget());
 
         // Add event to be detected
         propagator.addEventDetector(sunVisi);

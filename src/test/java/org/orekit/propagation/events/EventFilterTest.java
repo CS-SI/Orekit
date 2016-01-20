@@ -34,6 +34,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -49,6 +50,93 @@ public class EventFilterTest {
 
     private double sunRadius = 696000000.;
     private double earthRadius = 6400000.;
+
+    @Test
+    public void testReplayForward() throws OrekitException {
+        EclipseDetector detector =
+                new EclipseDetector(60., 1.e-3,
+                                     CelestialBodyFactory.getSun(), sunRadius,
+                                     CelestialBodyFactory.getEarth(), earthRadius).
+                withPenumbra().withHandler(new Counter());
+        final EventFilter<EclipseDetector> filter =
+                new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS).
+                withMaxIter(200);
+        Assert.assertEquals(200, filter.getMaxIterationCount());
+
+        propagator.clearEventsDetectors();
+        propagator.addEventDetector(filter);
+        propagator.propagate(iniDate, iniDate.shiftedBy(7 * Constants.JULIAN_DAY));
+        Assert.assertEquals(102, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assert.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        ((Counter) detector.getHandler()).reset();
+
+        propagator.clearEventsDetectors();
+        propagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
+            
+            @Override
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+            }
+            
+            @Override
+            public void handleStep(SpacecraftState currentState, boolean isLast)
+                throws PropagationException {
+                try {
+                    // we exceed the events history in the past,
+                    // and in this example get stuck with Transformer.MAX
+                    // transformer, hence the g function is always positive
+                    // in the test range
+                    Assert.assertTrue(filter.g(currentState) > 0);
+                } catch (OrekitException oe) {
+                    throw new PropagationException(oe);
+                }
+            }
+        });
+        propagator.propagate(iniDate.shiftedBy(-3600), iniDate.shiftedBy(Constants.JULIAN_DAY + 3600));
+    }
+
+    @Test
+    public void testReplayBackward() throws OrekitException {   
+        EclipseDetector detector =
+                new EclipseDetector(60., 1.e-3,
+                                     CelestialBodyFactory.getSun(), sunRadius,
+                                     CelestialBodyFactory.getEarth(), earthRadius).
+                withPenumbra().withHandler(new Counter());
+        final EventFilter<EclipseDetector> filter =
+                new EventFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS).
+                withMaxIter(200);
+        Assert.assertEquals(200, filter.getMaxIterationCount());
+
+        propagator.clearEventsDetectors();
+        propagator.addEventDetector(filter);
+        propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY), iniDate);
+        Assert.assertEquals(  0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        Assert.assertEquals(102, ((Counter) detector.getHandler()).getDecreasingCounter());
+        ((Counter) detector.getHandler()).reset();
+
+        propagator.clearEventsDetectors();
+        propagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
+            
+            @Override
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+            }
+            
+            @Override
+            public void handleStep(SpacecraftState currentState, boolean isLast)
+                throws PropagationException {
+                try {
+                    // we exceed the events history in the past,
+                    // and in this example get stuck with Transformer.MIN
+                    // transformer, hence the g function is always negative
+                    // in the test range
+                    Assert.assertTrue(filter.g(currentState) < 0);
+                } catch (OrekitException oe) {
+                    throw new PropagationException(oe);
+                }
+            }
+        });
+        propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY + 3600),
+                             iniDate.shiftedBy(6 * Constants.JULIAN_DAY + 3600));
+    }
 
     @Test
     public void testUmbra() throws OrekitException {

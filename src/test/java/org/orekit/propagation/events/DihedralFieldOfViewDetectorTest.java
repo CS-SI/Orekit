@@ -77,9 +77,15 @@ public class DihedralFieldOfViewDetectorTest {
         final double aperture1 = FastMath.toRadians(28);
         final double aperture2 = FastMath.toRadians(120);
 
-        final EventDetector sunVisi =
+        final DihedralFieldOfViewDetector sunVisi =
                 new DihedralFieldOfViewDetector(maxCheck, sunPV, center, axis1, aperture1, axis2, aperture2).
                 withHandler(new DihedralSunVisiHandler());
+        Assert.assertEquals(0, Vector3D.distance(center, sunVisi.getCenter()), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(axis1,  sunVisi.getAxis1()),  1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(axis2,  sunVisi.getAxis2()),  1.0e-15);
+        Assert.assertEquals(aperture1, sunVisi.getHalfAperture1(), 1.0e-15);
+        Assert.assertEquals(aperture2, sunVisi.getHalfAperture2(), 1.0e-15);
+        Assert.assertSame(sunPV, sunVisi.getPVTarget());
 
         // Add event to be detected
         propagator.addEventDetector(sunVisi);

@@ -54,9 +54,9 @@ import org.orekit.time.AbsoluteDate;
  * EventDetector#g(SpacecraftState) g function} and to the {@link
  * EventDetector#eventOccurred(SpacecraftState, boolean)
  * eventOccurred} method in order to ignore uninteresting events. The
- * wrapped regular {@link EventDetector event detector} will the see only
+ * wrapped regular {@link EventDetector event detector} will then see only
  * the interesting events, i.e. either only {@code increasing} events or
- * {@code decreasing} events. the number of calls to the {@link
+ * only {@code decreasing} events. The number of calls to the {@link
  * EventDetector#g(SpacecraftState) g function} will also be reduced.</p>
  * @see EventEnablingPredicateFilter
  */
