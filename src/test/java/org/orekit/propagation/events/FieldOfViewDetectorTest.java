@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,6 +81,14 @@ public class FieldOfViewDetectorTest {
                 new FieldOfViewDetector(sunPV, new FieldOfView(center, axis1, aperture1, axis2, aperture2, 0.0)).
                 withMaxCheck(maxCheck).
                 withHandler(new DihedralSunVisiHandler());
+
+        Assert.assertSame(sunPV, ((FieldOfViewDetector) sunVisi).getPVTarget());
+        Assert.assertEquals(0, ((FieldOfViewDetector) sunVisi).getFieldOfView().getMargin(), 1.0e-15);
+        double eta = FastMath.acos(FastMath.sin(aperture1) * FastMath.sin(aperture2));
+        double theoreticalArea = MathUtils.TWO_PI - 4 * eta;
+        Assert.assertEquals(theoreticalArea,
+                            ((FieldOfViewDetector) sunVisi).getFieldOfView().getZone().getSize(),
+                            1.0e-15);
 
         // Add event to be detected
         propagator.addEventDetector(sunVisi);
