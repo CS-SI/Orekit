@@ -282,9 +282,9 @@ public class FieldOfView implements Serializable {
      * <pre>
      * Transform topoToBody = topocentricFrame.getTransformTo(body.getBodyFrame(), date);
      * Transform topoToDish = ...
-     * Transform fovToBody = new Transform(date,
-     *                                     topoToDish.getInverse(),
-     *                                     topoToBody);
+     * Transform fovToBody  = new Transform(date,
+     *                                      topoToDish.getInverse(),
+     *                                      topoToBody);
      * </pre>
      * <p>
      * Only the raw zone is used, the angular margin is ignored here.
@@ -315,12 +315,13 @@ public class FieldOfView implements Serializable {
         for (final Vertex loopStart : boundary) {
             int count = 0;
             final List<GeodeticPoint> loop  = new ArrayList<GeodeticPoint>();
-            boolean      intersectionsFound = false;
-            for (Vertex v = loopStart; count == 0 || v != loopStart; v = v.getOutgoing().getEnd()) {
+            boolean intersectionsFound      = false;
+            for (Edge edge = loopStart.getOutgoing();
+                 count == 0 || edge.getStart() != loopStart;
+                 edge = edge.getEnd().getOutgoing()) {
                 ++count;
-                final Edge   edge               = v.getOutgoing();
-                final int    n                  = (int) FastMath.ceil(edge.getLength() / angularStep);
-                final double delta              =  edge.getLength() / n;
+                final int    n     = (int) FastMath.ceil(edge.getLength() / angularStep);
+                final double delta =  edge.getLength() / n;
                 for (int i = 0; i < n; ++i) {
                     final Vector3D awaySC      = new Vector3D(r, edge.getPointAt(i * delta));
                     final Vector3D awayBody    = fovToBody.transformPosition(awaySC);
