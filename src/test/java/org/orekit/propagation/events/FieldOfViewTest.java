@@ -323,7 +323,7 @@ public class FieldOfViewTest {
                                                 state.getDate(), earth.getBodyFrame());
         Assert.assertEquals(1, footprint.size());
         List<GeodeticPoint> loop = footprint.get(0);
-        Assert.assertEquals(360, loop.size());
+        Assert.assertEquals(234, loop.size());
         double minEl   = Double.POSITIVE_INFINITY;
         double maxEl = 0;
         double minDist = Double.POSITIVE_INFINITY;
@@ -339,9 +339,9 @@ public class FieldOfViewTest {
             minDist = FastMath.min(minDist, dist);
             maxDist = FastMath.max(maxDist, dist);
         }
-        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 1.0e-12);
+        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 1.0e-13);
         Assert.assertEquals(0.0,       FastMath.toDegrees(maxEl), 1.0e-12);
-        Assert.assertEquals(5323041.2, minDist, 1.0);
+        Assert.assertEquals(5323036.6, minDist, 1.0);
         Assert.assertEquals(5347029.8, maxDist, 1.0);
     }
 

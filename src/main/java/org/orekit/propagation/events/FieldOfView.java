@@ -368,14 +368,17 @@ public class FieldOfView implements Serializable {
             if (zone.checkPoint(new S2Point(bodyCenter)) != Region.Location.OUTSIDE) {
                 // the body is fully contained in the Field Of View
                 // we use the full limb as the footprint
-                final Vector3D x     = bodyCenter.orthogonal();
-                final Vector3D y     = Vector3D.crossProduct(bodyCenter, x).normalize();
-                final int      n     = (int) FastMath.ceil(MathUtils.TWO_PI / angularStep);
-                final double   delta = MathUtils.TWO_PI / n;
+                final Vector3D x        = bodyCenter.orthogonal();
+                final Vector3D y        = Vector3D.crossProduct(bodyCenter, x).normalize();
+                final double   sinEta   = body.getEquatorialRadius() / r;
+                final double   sinEta2  = sinEta * sinEta;
+                final double   cosAlpha = (FastMath.cos(angularStep) + sinEta2 - 1) / sinEta2;
+                final int      n        = (int) FastMath.ceil(MathUtils.TWO_PI / FastMath.acos(cosAlpha));
+                final double   delta    = MathUtils.TWO_PI / n;
                 final List<GeodeticPoint> loop = new ArrayList<GeodeticPoint>(n);
                 for (int i = 0; i < n; ++i) {
                     final Vector3D outside = new Vector3D(r * FastMath.cos(i * delta), x,
-                                                        r * FastMath.sin(i * delta), y);
+                                                          r * FastMath.sin(i * delta), y);
                     loop.add(body.transform(body.pointOnLimb(position, outside), bodyFrame, null));
                 }
                 footprint.add(loop);
