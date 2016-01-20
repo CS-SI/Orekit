@@ -119,14 +119,14 @@ public class EventShifter<T extends EventDetector> extends AbstractDetector<Even
      * @return increasing events time shift
      */
     public double getIncreasingTimeShift() {
-        return increasingOffset;
+        return -increasingOffset;
     }
 
     /** Get the decreasing events time shift.
      * @return decreasing events time shift
      */
     public double getDecreasingTimeShift() {
-        return decreasingOffset;
+        return -decreasingOffset;
     }
 
     /** {@inheritDoc} */
