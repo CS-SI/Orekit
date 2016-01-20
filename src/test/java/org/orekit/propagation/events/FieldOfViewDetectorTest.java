@@ -23,15 +23,25 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
+import org.orekit.attitudes.NadirPointing;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -41,6 +51,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.util.List;
 
 public class FieldOfViewDetectorTest {
 
@@ -96,6 +108,46 @@ public class FieldOfViewDetectorTest {
         // Extrapolate from the initial to the final date
         propagator.propagate(initDate.shiftedBy(6000.));
 
+    }
+
+    /** check the default behavior to stop propagation on FoV exit. */
+    @Test
+    public void testStopOnExit() throws OrekitException {
+        //setup
+        double pi = FastMath.PI;
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH; //arbitrary date
+        AbsoluteDate endDate = date.shiftedBy(Constants.JULIAN_DAY);
+        Frame eci = FramesFactory.getGCRF();
+        Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        BodyShape earth = new OneAxisEllipsoid(
+                Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING,
+                ecef);
+        GeodeticPoint gp = new GeodeticPoint(
+                FastMath.toRadians(39), FastMath.toRadians(77), 0);
+        TopocentricFrame topo = new TopocentricFrame(earth, gp, "topo");
+        //iss like orbit
+        KeplerianOrbit orbit = new KeplerianOrbit(
+                6378137 + 400e3, 0, FastMath.toRadians(51.65), 0, 0, 0,
+                PositionAngle.TRUE, eci, date, Constants.EGM96_EARTH_MU);
+        AttitudeProvider attitude = new NadirPointing(eci, earth);
+
+        //action
+        FieldOfView fov =
+                new FieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I, pi / 3, 16, 0);
+        FieldOfViewDetector fovDetector =
+                new FieldOfViewDetector(topo, fov)
+                        .withMaxCheck(5.0);
+        EventsLogger logger = new EventsLogger();
+
+        Propagator prop = new KeplerianPropagator(orbit, attitude);
+        prop.addEventDetector(logger.monitorDetector(fovDetector));
+        prop.propagate(endDate);
+        List<LoggedEvent> actual = logger.getLoggedEvents();
+
+        //verify
+        // check we have an entry and an exit event.
+        Assert.assertEquals(2, actual.size());
     }
 
     @Before

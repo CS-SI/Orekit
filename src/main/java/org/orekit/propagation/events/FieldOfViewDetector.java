@@ -20,7 +20,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.StopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for target entry/exit events with respect to a satellite sensor
@@ -56,7 +56,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final FieldOfView fov) {
         this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnDecreasing<FieldOfViewDetector>(),
+             new StopOnIncreasing<FieldOfViewDetector>(),
              pvTarget, fov);
     }
 
