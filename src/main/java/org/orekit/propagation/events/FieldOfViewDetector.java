@@ -32,6 +32,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * at FOV exit. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
+ * @see CircularFieldOfViewDetector
  * @see FootprintOverlapDetector
  * @author Luc Maisonobe
  * @since 7.1

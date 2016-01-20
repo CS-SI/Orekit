@@ -41,9 +41,10 @@
         Fixes issue #230
       </action>
       <action dev="luc" type="add">
-        Replaced CircularFieldOfViewDetector and DihedralFieldOfViewDetector
-        with a more generic FieldOfViewDetector that can handle any
-        Field Of View shape.
+        Added a generic FieldOfViewDetector that can handle any Field Of View shape.
+        The DihedralFieldOfViewDetector is deprecated, but the CircularFieldOfViewDetector
+        which corresponds to a common case that can be computed more accurately and faster
+        than the new generic detector is preserved.
       </action>
       <action dev="luc" type="add">
         Added a FieldOfView class to model Fields Of View with any shape.
