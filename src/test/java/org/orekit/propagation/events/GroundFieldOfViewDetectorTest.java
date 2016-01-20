@@ -87,6 +87,8 @@ public class GroundFieldOfViewDetectorTest {
         GroundFieldOfViewDetector fovDetector =
                 new GroundFieldOfViewDetector(topo, fov)
                         .withMaxCheck(5.0);
+        Assert.assertSame(topo, fovDetector.getFrame());
+        Assert.assertSame(fov, fovDetector.getFieldOfView());
         logger = new EventsLogger();
 
         prop = new KeplerianPropagator(orbit);
