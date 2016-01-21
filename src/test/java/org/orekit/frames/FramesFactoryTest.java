@@ -47,6 +47,7 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 
 public class FramesFactoryTest {
 
@@ -95,6 +96,35 @@ public class FramesFactoryTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
             Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testEOPLoaderException() {
+        final boolean[] flags = new boolean[2];
+        try {
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+                @Override
+                public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history) {
+                    // don't really fill history here
+                    flags[0] = true;
+                }
+            });
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+                @Override
+                public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history)
+                    throws OrekitException {
+                    // generate exception
+                    flags[1] = true;
+                    throw new OrekitException(OrekitMessages.NO_DATA_GENERATED, AbsoluteDate.J2000_EPOCH);
+                }
+            });
+            FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertTrue(flags[0]);
+            Assert.assertTrue(flags[1]);
+            Assert.assertEquals(OrekitMessages.NO_DATA_GENERATED, oe.getSpecifier());
         }
     }
 

@@ -321,9 +321,7 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                 for (Map.Entry<Integer, double[]> entry : fieldsMap.entrySet()) {
                     final int mjd = entry.getKey();
                     final double[] array = entry.getValue();
-                    if (Double.isNaN(array[0]) || Double.isNaN(array[1]) ||
-                            Double.isNaN(array[2]) || Double.isNaN(array[3]) ||
-                            Double.isNaN(array[4]) || Double.isNaN(array[5])) {
+                    if (Double.isNaN(array[0] + array[1] + array[2] + array[3] + array[4] + array[5])) {
                         throw notifyUnexpectedErrorEncountered(name);
                     }
                     final AbsoluteDate mjdDate =
@@ -413,7 +411,8 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
             throws OrekitException, IOException {
 
             // read the data lines in the final values part inside section 2
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+            line = reader.readLine();
+            while (line != null) {
                 lineNumber++;
                 final Matcher matcher = SECTION_2_DATA_OLD_FORMAT.matcher(line);
                 if (matcher.matches()) {
@@ -443,11 +442,12 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                             nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
-                        if (mjd >= mjdMax) {
-                            // don't bother reading the rest of the file
-                            return;
-                        }
+                        line = mjd < mjdMax ? reader.readLine() : null;
+                    } else {
+                        line = reader.readLine();
                     }
+                } else {
+                    line = reader.readLine();
                 }
             }
 
@@ -463,12 +463,14 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
             throws OrekitException, IOException {
 
             boolean inFinalValuesPart = false;
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+            line = reader.readLine();
+            while (line != null) {
                 lineNumber++;
                 Matcher matcher = FINAL_VALUES_START.matcher(line);
                 if (matcher.matches()) {
                     // we are entering final values part (in section 1)
                     inFinalValuesPart = true;
+                    line = reader.readLine();
                 } else if (inFinalValuesPart) {
                     matcher = SECTION_1_DATA_NEW_FORMAT.matcher(line);
                     if (matcher.matches()) {
@@ -492,13 +494,13 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                                       new double[] {
                                           dtu1, Double.NaN, x, y, dx, dy
                                       });
+                        line = reader.readLine();
                     } else {
                         matcher = FINAL_VALUES_END.matcher(line);
-                        if (matcher.matches()) {
-                            // we leave final values part
-                            return;
-                        }
+                        line = matcher.matches() ? null : reader.readLine();
                     }
+                } else {
+                    line = reader.readLine();
                 }
             }
         }
@@ -511,7 +513,8 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
          */
         private void loadLODNewFormat(final BufferedReader reader, final String name)
             throws OrekitException, IOException {
-            for (line = reader.readLine(); line != null; line = reader.readLine()) {
+            line = reader.readLine();
+            while (line != null) {
                 lineNumber++;
                 final Matcher matcher = SECTION_3_DATA_NEW_FORMAT.matcher(line);
                 if (matcher.matches()) {
@@ -524,11 +527,12 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                             throw notifyUnexpectedErrorEncountered(name);
                         }
                         array[1] = lod;
-                        if (mjd >= mjdMax) {
-                            // don't bother reading the rest of the file
-                            return;
-                        }
+                        line = mjd >= mjdMax ? null : reader.readLine();
+                    } else {
+                        line = reader.readLine();
                     }
+                } else {
+                    line = reader.readLine();
                 }
             }
         }

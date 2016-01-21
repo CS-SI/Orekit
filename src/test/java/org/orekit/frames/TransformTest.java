@@ -20,6 +20,7 @@ package org.orekit.frames;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
@@ -28,6 +29,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937a;
+import org.apache.commons.math3.util.Decimal64;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +37,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TransformTest {
@@ -159,21 +163,26 @@ public class TransformTest {
             // check the composition
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = randomVector(1.0, random);
+                FieldVector3D<Decimal64> aF = new FieldVector3D<Decimal64>(Decimal64.ONE, a);
                 Vector3D b = randomVector(1.0e3, random);
                 PVCoordinates c = new PVCoordinates(randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random));
-                Vector3D      aRef = a;
-                Vector3D      bRef = b;
-                PVCoordinates cRef = c;
+                Vector3D                 aRef  = a;
+                FieldVector3D<Decimal64> aFRef = aF;
+                Vector3D                 bRef  = b;
+                PVCoordinates            cRef  = c;
                 for (int k = 0; k < n; ++k) {
-                    aRef = transforms[k].transformVector(aRef);
-                    bRef = transforms[k].transformPosition(bRef);
-                    cRef = transforms[k].transformPVCoordinates(cRef);
+                    aRef  = transforms[k].transformVector(aRef);
+                    aFRef = transforms[k].transformVector(aFRef);
+                    bRef  = transforms[k].transformPosition(bRef);
+                    cRef  = transforms[k].transformPVCoordinates(cRef);
                 }
 
                 Vector3D aCombined = combined.transformVector(a);
+                FieldVector3D<Decimal64> aFCombined = combined.transformVector(aF);
                 Vector3D bCombined = combined.transformPosition(b);
                 PVCoordinates cCombined = combined.transformPVCoordinates(c);
                 checkVector(aRef, aCombined, 3.0e-15);
+                checkVector(aFRef.toVector3D(), aFCombined.toVector3D(), 3.0e-15);
                 checkVector(bRef, bCombined, 5.0e-15);
                 checkVector(cRef.getPosition(),     cCombined.getPosition(),     1.0e-14);
                 checkVector(cRef.getVelocity(),     cCombined.getVelocity(),     1.0e-14);
@@ -391,6 +400,25 @@ public class TransformTest {
             PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);
             Vector3D result  = pvTwo.getPosition().add(new Vector3D(dt, pvTwo.getVelocity()));
             checkVector(good, result, 1.0e-15);
+
+            FieldPVCoordinates<Decimal64> fieldPVOne =
+                            new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getPosition()),
+                                                              new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getVelocity()),
+                                                              new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getAcceleration()));
+            FieldPVCoordinates<Decimal64> fieldPVTwo = tr.transformPVCoordinates(fieldPVOne);
+            FieldVector3D<Decimal64> fieldResult  =
+                            fieldPVTwo.getPosition().add(new FieldVector3D<Decimal64>(dt, fieldPVTwo.getVelocity()));
+            checkVector(good, fieldResult.toVector3D(), 1.0e-15);
+
+            TimeStampedFieldPVCoordinates<Decimal64> fieldTPVOne =
+                            new TimeStampedFieldPVCoordinates<Decimal64>(tr.getDate(),
+                                            new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getPosition()),
+                                            new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getVelocity()),
+                                            new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getAcceleration()));
+            TimeStampedFieldPVCoordinates<Decimal64> fieldTPVTwo = tr.transformPVCoordinates(fieldTPVOne);
+            FieldVector3D<Decimal64> fieldTResult  =
+                            fieldTPVTwo.getPosition().add(new FieldVector3D<Decimal64>(dt, fieldTPVTwo.getVelocity()));
+            checkVector(good, fieldTResult.toVector3D(), 1.0e-15);
 
             // test inverse
             Vector3D resultvel = tr.getInverse().

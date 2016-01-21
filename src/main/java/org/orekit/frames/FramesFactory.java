@@ -384,12 +384,13 @@ public class FramesFactory {
 
         synchronized (EOP_HISTORY_LOADERS) {
 
-            //TimeStamped based set needed to remove duplicates
             if (EOP_HISTORY_LOADERS.isEmpty()) {
+                // set up using default loaders
                 addDefaultEOP2000HistoryLoaders(null, null, null, null, null);
                 addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
             }
 
+            // TimeStamped based set needed to remove duplicates
             OrekitException pendingException = null;
             final SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
 
@@ -525,6 +526,7 @@ public class FramesFactory {
             case TEME :
                 return getTEME();
             default :
+                // this should never happen
                 throw new OrekitInternalError(null);
         }
     }
