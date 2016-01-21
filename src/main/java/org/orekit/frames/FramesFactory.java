@@ -911,12 +911,6 @@ public class FramesFactory {
                                                final boolean simpleEOP)
         throws OrekitException {
 
-        if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
-            // this should never happen as this method is private and called
-            // only above with controlled input
-            throw new OrekitInternalError(null);
-        }
-
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -1018,12 +1012,6 @@ public class FramesFactory {
                                               final boolean simpleEOP)
         throws OrekitException {
 
-        if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
-            // this should never happen as this method is private and called
-            // only above with controlled input
-            throw new OrekitInternalError(null);
-        }
-
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -1124,12 +1112,6 @@ public class FramesFactory {
      */
     private static FactoryManagedFrame getMOD(final IERSConventions conventions, final boolean applyEOPCorr)
         throws OrekitException {
-
-        if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
-            // this should never happen as this method is private and called
-            // only above with controlled input
-            throw new OrekitInternalError(null);
-        }
 
         synchronized (FramesFactory.class) {
 
