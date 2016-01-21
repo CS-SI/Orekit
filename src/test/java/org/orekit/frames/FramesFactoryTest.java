@@ -356,7 +356,7 @@ public class FramesFactoryTest {
         Frame tod  = FramesFactory.getTOD(conventions, false);
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 06, 21), TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
-        for (double dt = -30 * Constants.JULIAN_DAY; dt < 30 * Constants.JULIAN_DAY; dt += 3600) {
+        for (double dt = -10 * Constants.JULIAN_DAY; dt < 10 * Constants.JULIAN_DAY; dt += 7200) {
             // CIRF and TOD should both have the Celestial Intermediate Pole as their Z axis
             AbsoluteDate date = t0.shiftedBy(dt);
             Transform t = FramesFactory.getNonInterpolatingTransform(tod, cirf, date);
