@@ -76,6 +76,8 @@ public class OMMParserTest {
         Assert.assertEquals(file.getMetaData().getFrame(), FramesFactory.getTEME());
         Assert.assertEquals(file.getTimeSystem(), TimeSystem.UTC);
         Assert.assertEquals("SGP/SGP4", file.getMetaData().getMeanElementTheory());
+        Assert.assertEquals("TEME", file.getCoordinateSystem());
+        Assert.assertTrue(file.getTLERelatedParametersComment().isEmpty());
 
         // Check Mean Keplerian elements data block;
 
