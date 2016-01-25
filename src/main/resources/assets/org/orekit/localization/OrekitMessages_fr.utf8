@@ -41,7 +41,7 @@ FRAME_NO_NTH_ANCESTOR = le repère {0} est à une profondeur de {1}, il ne peut 
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local non supporté, repères supportés : {0} et {1}
 
 # non pseudo-inertial frame "{0}"
-NON_PSEUDO_INERTIAL_FRAME = le repère "{0}" n''est pas psuedo-inertiel
+NON_PSEUDO_INERTIAL_FRAME = le repère "{0}" n''est pas pseudo-inertiel
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = répertoire de données racine {0} inexistant
