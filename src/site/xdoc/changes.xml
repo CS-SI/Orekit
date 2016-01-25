@@ -22,6 +22,10 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Fixed blanks handling in CCSDS ODM files.
+        Fixes issue #232
+      </action>
+      <action dev="luc" type="fix">
         Fixed FramesFactory.getNonInterpolatingTransform working only
         in one direction.
         Fixes issue #231

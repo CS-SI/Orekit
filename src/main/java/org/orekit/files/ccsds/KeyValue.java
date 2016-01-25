@@ -44,7 +44,7 @@ class KeyValue {
 
     /** Regular expression for splitting lines. */
     private final Pattern PATTERN =
-            Pattern.compile("\\p{Space}*([A-Z][A-Z_0-9]*)\\p{Space}*=?\\p{Space}*(.*?)\\p{Space}*(?:\\[.*\\])?");
+            Pattern.compile("\\p{Space}*([A-Z][A-Z_0-9]*)\\p{Space}*=?\\p{Space}*(.*?)\\p{Space}*(?:\\[.*\\])?\\p{Space}*");
 
     /** Regular expression for user defined keywords. */
     private final Pattern USER_DEFINED_KEYWORDS =
@@ -105,7 +105,10 @@ class KeyValue {
             if (recognized == Keyword.COMMENT) {
                 value = rawValue;
             } else {
-                value = rawValue.toUpperCase(Locale.US);
+                value = rawValue.
+                        toUpperCase(Locale.US).
+                        replace('_', ' ').
+                        replaceAll("\\p{Space}+", " ");
             }
         } else {
             key     = "";

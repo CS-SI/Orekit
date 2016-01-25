@@ -71,4 +71,18 @@ public class KeyValueTest {
         Assert.assertEquals("", kv.getValue());
     }
 
+    @Test
+    public void testUnderscoreEqualsBlank() throws OrekitException {
+        KeyValue kv = new KeyValue("CENTER_NAME = EARTH_BARYCENTER", 1, "dummy");
+        Assert.assertEquals(Keyword.CENTER_NAME, kv.getKeyword());
+        Assert.assertEquals("EARTH BARYCENTER", kv.getValue());
+    }
+
+    @Test
+    public void testCoalescedBlanks() throws OrekitException {
+        KeyValue kv = new KeyValue("CENTER_NAME = EARTH    ___     BARYCENTER    ", 1, "dummy");
+        Assert.assertEquals(Keyword.CENTER_NAME, kv.getKeyword());
+        Assert.assertEquals("EARTH BARYCENTER", kv.getValue());
+    }
+
 }
