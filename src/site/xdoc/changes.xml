@@ -22,6 +22,9 @@
   <body>
     <release version="7.1" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Fixed wrong latitude normalization in FieldGeodeticPoint.
+      </action>
+      <action dev="luc" type="fix">
         Fixed blanks handling in CCSDS ODM files.
         Fixes issue #232
       </action>
