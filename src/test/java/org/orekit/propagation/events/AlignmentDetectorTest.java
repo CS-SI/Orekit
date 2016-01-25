@@ -49,7 +49,11 @@ public class AlignmentDetectorTest {
         double alignAngle = FastMath.toRadians(0.0);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         AlignmentDetector alignDetector =
-            new AlignmentDetector(initialState.getOrbit(), sun, alignAngle);
+            new AlignmentDetector(initialState.getOrbit(), sun, alignAngle).
+            withMaxCheck(60.0);
+        Assert.assertEquals(alignAngle, alignDetector.getAlignAngle(), 1.0e-15);
+        Assert.assertSame(sun, alignDetector.getPVCoordinatesProvider());
+        Assert.assertEquals(60.0, alignDetector.getMaxCheckInterval(), 1.0e-15);
         propagator.addEventDetector(alignDetector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(383.3662, finalState.getDate().durationFrom(iniDate), 1.0e-3);

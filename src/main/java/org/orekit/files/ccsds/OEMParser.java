@@ -130,6 +130,12 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public OEMFile parse(final InputStream stream) throws OrekitException {
+        return (OEMFile) super.parse(stream);
+    }
+
+    /** {@inheritDoc} */
     public OEMFile parse(final InputStream stream, final String fileName) throws OrekitException {
 
         try {
@@ -209,6 +215,9 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                         if (pi.lastEphemeridesBlock != null) {
                             parsed = parsed || parseMetaDataEntry(pi.keyValue,
                                                                   pi.lastEphemeridesBlock.getMetaData(), pi.commentTmp);
+                            if (parsed && pi.keyValue.getKeyword() == Keyword.REF_FRAME_EPOCH) {
+                                pi.lastEphemeridesBlock.setHasRefFrameEpoch(true);
+                            }
                         }
                         if (!parsed) {
                             throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);

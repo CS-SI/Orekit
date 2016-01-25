@@ -130,11 +130,15 @@ There are also several predefined events detectors already available, amongst wh
   and can be used to compute easily operational forecasts, 
 * a `FieldOfViewDetector` which is triggered when some target enters or exits a satellite
   sensor Field Of View (any shape), 
+* a `CircularFieldOfViewDetector` which is triggered when some target enters or exits a satellite
+  sensor Field Of View (circular shape), 
 * a `FootprintOverlapDetector` which is triggered when a sensor Field Of View (any shape,
   even split in non-connected parts or containing holes) overlaps a geographic zone, which
   can be non-convex, split in different sub-zones, have holes, contain the pole,
 * a `GeographicZoneDetector`, which is triggered when the spacecraft enters or leave a
   zone, which can be non-convex, split in different sub-zones, have holes, contain the pole, 
+* a `GroundFieldOfViewDetector`, which is triggered when the spacecraft enters or leave
+  a ground based Field Of View, which can be non-convex, split in different sub-zones, have holes, 
 * an `EclipseDetector`, which is triggered when some body enters or exits the umbra or the
   penumbra of another occulting body,
 * an `ApsideDetector`, which is triggered at apogee and perigee,

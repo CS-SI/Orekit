@@ -384,12 +384,13 @@ public class FramesFactory {
 
         synchronized (EOP_HISTORY_LOADERS) {
 
-            //TimeStamped based set needed to remove duplicates
             if (EOP_HISTORY_LOADERS.isEmpty()) {
+                // set up using default loaders
                 addDefaultEOP2000HistoryLoaders(null, null, null, null, null);
                 addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
             }
 
+            // TimeStamped based set needed to remove duplicates
             OrekitException pendingException = null;
             final SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
 
@@ -525,6 +526,7 @@ public class FramesFactory {
             case TEME :
                 return getTEME();
             default :
+                // this should never happen
                 throw new OrekitInternalError(null);
         }
     }
@@ -911,12 +913,6 @@ public class FramesFactory {
                                                final boolean simpleEOP)
         throws OrekitException {
 
-        if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
-            // this should never happen as this method is private and called
-            // only above with controlled input
-            throw new OrekitInternalError(null);
-        }
-
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -1018,12 +1014,6 @@ public class FramesFactory {
                                               final boolean simpleEOP)
         throws OrekitException {
 
-        if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
-            // this should never happen as this method is private and called
-            // only above with controlled input
-            throw new OrekitInternalError(null);
-        }
-
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
@@ -1124,12 +1114,6 @@ public class FramesFactory {
      */
     private static FactoryManagedFrame getMOD(final IERSConventions conventions, final boolean applyEOPCorr)
         throws OrekitException {
-
-        if (conventions != IERSConventions.IERS_1996 && !applyEOPCorr) {
-            // this should never happen as this method is private and called
-            // only above with controlled input
-            throw new OrekitInternalError(null);
-        }
 
         synchronized (FramesFactory.class) {
 
@@ -1244,36 +1228,52 @@ public class FramesFactory {
         }
         final Frame common = currentF;
 
-        // transform from common to instance
-        Transform commonToInstance = Transform.IDENTITY;
+        // transform from common to origin
+        Transform commonToOrigin = Transform.IDENTITY;
         for (Frame frame = from; frame != common; frame = frame.getParent()) {
-            TransformProvider provider = frame.getTransformProvider();
-            boolean peeling = true;
-            while (peeling) {
-                if (provider instanceof InterpolatingTransformProvider) {
-                    provider = ((InterpolatingTransformProvider) provider).getRawProvider();
-                } else if (provider instanceof ShiftingTransformProvider) {
-                    provider = ((ShiftingTransformProvider) provider).getRawProvider();
-                } else if (provider instanceof EOPBasedTransformProvider &&
-                           ((EOPBasedTransformProvider) provider).getEOPHistory().usesInterpolation()) {
-                    provider = ((EOPBasedTransformProvider) provider).getNonInterpolatingProvider();
-                } else {
-                    peeling = false;
-                }
-            }
-            commonToInstance =
-                    new Transform(date, provider.getTransform(date), commonToInstance);
+            commonToOrigin = new Transform(date,
+                                             peel(frame.getTransformProvider()).getTransform(date),
+                                             commonToOrigin);
         }
 
         // transform from destination up to common
         Transform commonToDestination = Transform.IDENTITY;
         for (Frame frame = to; frame != common; frame = frame.getParent()) {
-            commonToDestination =
-                    new Transform(date, frame.getTransformProvider().getTransform(date), commonToDestination);
+            commonToDestination = new Transform(date,
+                                                peel(frame.getTransformProvider()).getTransform(date),
+                                                commonToDestination);
         }
 
-        // transform from instance to destination via common
-        return new Transform(date, commonToInstance.getInverse(), commonToDestination);
+        // transform from origin to destination via common
+        return new Transform(date, commonToOrigin.getInverse(), commonToDestination);
+
+    }
+
+    /** Peel interpolation and shifting from a transform provider.
+     * @param provider transform provider to peel
+     * @return peeled transform provider
+     * @exception OrekitException if EOP cannot be retrieved
+     */
+    private static TransformProvider peel(final TransformProvider provider)
+        throws OrekitException {
+
+        TransformProvider peeled = provider;
+
+        boolean peeling = true;
+        while (peeling) {
+            if (peeled instanceof InterpolatingTransformProvider) {
+                peeled = ((InterpolatingTransformProvider) peeled).getRawProvider();
+            } else if (peeled instanceof ShiftingTransformProvider) {
+                peeled = ((ShiftingTransformProvider) peeled).getRawProvider();
+            } else if (peeled instanceof EOPBasedTransformProvider &&
+                       ((EOPBasedTransformProvider) peeled).getEOPHistory().usesInterpolation()) {
+                peeled = ((EOPBasedTransformProvider) peeled).getNonInterpolatingProvider();
+            } else {
+                peeling = false;
+            }
+        }
+
+        return peeled;
 
     }
 

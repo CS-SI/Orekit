@@ -1,12 +1,12 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+/* Copyright 2002-2016 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * CS licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,6 +44,10 @@
  *  <li>{@link org.orekit.propagation.events.ApsideDetector ApsideDetector}
  *  detects apside crossing (and by default stop at perigee)
  *  </li>
+ *  <li>{@link org.orekit.propagation.events.CircularFieldOfViewDetector CircularFieldOfViewDetector}
+ *  detects moving target entering/exiting satellite sensor Field Of View with a
+ *  circular shaped boundary (and by default continue on entry and stop on exit)
+ *  </li>
  *  <li>{@link org.orekit.propagation.events.DateDetector DateDetector}
  *  detects occurrence of a predefine instant (and by default stop there)
  *  </li>
@@ -57,7 +61,7 @@
  *  detects satellite maximum/minimum elevation (and by default stop at minimum)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.FieldOfViewDetector FieldOfViewDetector}
- *  detects target entry/exit a satellite sensor Field Of View with an arbitrarily
+ *  detects moving target entering/exiting satellite sensor Field Of View with an arbitrarily
  *  shaped boundary (and by default continue on entry and stop on exit)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.FootprintOverlapDetector FootprintOverlapDetector}
@@ -65,6 +69,10 @@
  *  </li>
  *  <li>{@link org.orekit.propagation.events.GeographicZoneDetector GeographicZoneDetector}
  *  detects geographic boundaries crossings (and by default stop at zone exit)
+ *  </li>
+ *  <li>{@link org.orekit.propagation.events.GroundFieldOfViewDetector GroundFieldOfViewDetector}
+ *  detects spacecraft entering/exiting ground based Field Of View with an arbitrarily
+ *  shaped boundary (and by default continue on entry and stop on exit)
  *  </li>
  *  <li>{@link org.orekit.propagation.events.LatitudeCrossingDetector LatitudeCrossingDetector}
  *  detects satellite crossing a parallel (and by default stop at northward crossing)

@@ -49,6 +49,7 @@ public enum OrekitMessages implements Localizable {
 
     INTERNAL_ERROR("internal error, contact maintenance at {0}"),
     ALTITUDE_BELOW_ALLOWED_THRESHOLD("altitude ({0} m) is below the {1} m allowed threshold"),
+    POINT_INSIDE_ELLIPSOID("point is inside ellipsoid"),
     TRAJECTORY_INSIDE_BRILLOUIN_SPHERE("trajectory inside the Brillouin sphere (r = {0})"),
     ALMOST_EQUATORIAL_ORBIT("almost equatorial orbit (i = {0} degrees)"),
     ALMOST_CRITICALLY_INCLINED_ORBIT("almost critically inclined orbit (i = {0} degrees)"),

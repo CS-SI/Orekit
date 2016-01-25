@@ -27,25 +27,185 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalStateException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 
 public class FramesFactoryTest {
 
     @Test
     public void testTreeRoot() throws OrekitException {
         Assert.assertNull(FramesFactory.getFrame(Predefined.GCRF).getParent());
+    }
+
+    @Test
+    public void testWrongSupportedFileNames1980() throws OrekitException {
+        FramesFactory.addDefaultEOP1980HistoryLoaders("wrong-rapidDataColumns-1980",
+                                                      "wrong-rapidDataXML-1980",
+                                                      "wrong-eopC04-1980",
+                                                      "wrong-bulletinB-1980",
+                                                      "wrong-bulletinA-1980");
+        try {
+            FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getStartDate();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalStateException oe) {
+            Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testWrongSupportedFileNames2000() throws OrekitException {
+        FramesFactory.addDefaultEOP2000HistoryLoaders("wrong-rapidDataColumns-2000",
+                                                      "wrong-rapidDataXML-2000",
+                                                      "wrong-eopC04-2000",
+                                                      "wrong-bulletinB-2000",
+                                                      "wrong-bulletinA-2000");
+        try {
+            FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalStateException oe) {
+            Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testWrongConventions() throws OrekitException {
+        // set up only 1980 conventions
+        FramesFactory.addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
+        try {
+            // attempt to retrieve 2000 conventions
+            FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true).getStartDate();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalStateException oe) {
+            Assert.assertEquals(OrekitMessages.NO_CACHED_ENTRIES, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testEOPLoaderException() {
+        final boolean[] flags = new boolean[2];
+        try {
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+                @Override
+                public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history) {
+                    // don't really fill history here
+                    flags[0] = true;
+                }
+            });
+            FramesFactory.addEOPHistoryLoader(IERSConventions.IERS_2010, new EOPHistoryLoader() {
+                @Override
+                public void fillHistory(NutationCorrectionConverter converter, SortedSet<EOPEntry> history)
+                    throws OrekitException {
+                    // generate exception
+                    flags[1] = true;
+                    throw new OrekitException(OrekitMessages.NO_DATA_GENERATED, AbsoluteDate.J2000_EPOCH);
+                }
+            });
+            FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertTrue(flags[0]);
+            Assert.assertTrue(flags[1]);
+            Assert.assertEquals(OrekitMessages.NO_DATA_GENERATED, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testUnwrapInterpolatingTransformProvider() throws OrekitException {
+        TransformProvider raw = new TransformProvider() {
+            private static final long serialVersionUID = 1L;
+            public Transform getTransform(final AbsoluteDate date) {
+                double dt = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+                double sin = FastMath.sin(dt * MathUtils.TWO_PI / Constants.JULIAN_DAY);
+                return new Transform(date,
+                                     new PVCoordinates(new Vector3D(sin, Vector3D.PLUS_I),
+                                                       Vector3D.ZERO));
+            }
+        };
+        Frame parent = FramesFactory.getGCRF();
+        Frame frame  = new Frame(parent,
+                                 new InterpolatingTransformProvider(raw,
+                                                                    CartesianDerivativesFilter.USE_P,
+                                                                    AngularDerivativesFilter.USE_R,
+                                                                    AbsoluteDate.PAST_INFINITY,
+                                                                    AbsoluteDate.FUTURE_INFINITY,
+                                                                    4, Constants.JULIAN_DAY, 10,
+                                                                    Constants.JULIAN_YEAR, 2 * Constants.JULIAN_DAY),
+                                 "sine");
+        double maxErrorNonInterpolating = 0;
+        double maxErrorInterpolating    = 0;
+        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60.0) {
+            AbsoluteDate date            = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+            Transform reference          = raw.getTransform(date);
+            Transform nonInterpolating   = FramesFactory.getNonInterpolatingTransform(parent, frame, date);
+            Transform interpolating      = parent.getTransformTo(frame, date);
+            double errorNonInterpolating = Vector3D.distance(reference.getTranslation(),
+                                                             nonInterpolating.getTranslation());
+            maxErrorNonInterpolating     = FastMath.max(maxErrorNonInterpolating, errorNonInterpolating);
+            double errorInterpolating    = Vector3D.distance(reference.getTranslation(),
+                                                             interpolating.getTranslation());
+            maxErrorInterpolating        = FastMath.max(maxErrorInterpolating, errorInterpolating);
+        }
+        Assert.assertEquals(0.0, maxErrorNonInterpolating, 1.0e-15);
+        Assert.assertEquals(1.0, maxErrorInterpolating,    1.0e-15);
+    }
+
+    @Test
+    public void testUnwrapShiftingTransformProvider() throws OrekitException {
+        TransformProvider raw = new TransformProvider() {
+            private static final long serialVersionUID = 1L;
+            public Transform getTransform(final AbsoluteDate date) {
+                double dt = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+                double sin = FastMath.sin(dt * MathUtils.TWO_PI / Constants.JULIAN_DAY);
+                return new Transform(date,
+                                     new PVCoordinates(new Vector3D(sin, Vector3D.PLUS_I),
+                                                       Vector3D.ZERO));
+            }
+        };
+        Frame parent = FramesFactory.getGCRF();
+        Frame frame  = new Frame(parent,
+                                 new ShiftingTransformProvider(raw,
+                                                               CartesianDerivativesFilter.USE_P,
+                                                               AngularDerivativesFilter.USE_R,
+                                                               AbsoluteDate.PAST_INFINITY,
+                                                               AbsoluteDate.FUTURE_INFINITY,
+                                                               4, Constants.JULIAN_DAY, 10,
+                                                               Constants.JULIAN_YEAR, 2 * Constants.JULIAN_DAY),
+                                 "sine");
+        double maxErrorNonShifting = 0;
+        double maxErrorShifting    = 0;
+        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60.0) {
+            AbsoluteDate date       = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+            Transform reference     = raw.getTransform(date);
+            Transform nonShifting   = FramesFactory.getNonInterpolatingTransform(parent, frame, date);
+            Transform shifting      = parent.getTransformTo(frame, date);
+            double errorNonShifting = Vector3D.distance(reference.getTranslation(),
+                                                        nonShifting.getTranslation());
+            maxErrorNonShifting     = FastMath.max(maxErrorNonShifting, errorNonShifting);
+            double errorShifting    = Vector3D.distance(reference.getTranslation(),
+                                                        shifting.getTranslation());
+            maxErrorShifting        = FastMath.max(maxErrorShifting, errorShifting);
+        }
+        Assert.assertEquals(0.0, maxErrorNonShifting, 1.0e-15);
+        Assert.assertEquals(1.0, maxErrorShifting,    1.0e-15);
     }
 
     @Test
@@ -196,7 +356,7 @@ public class FramesFactoryTest {
         Frame tod  = FramesFactory.getTOD(conventions, false);
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 06, 21), TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
-        for (double dt = -30 * Constants.JULIAN_DAY; dt < 30 * Constants.JULIAN_DAY; dt += 3600) {
+        for (double dt = -10 * Constants.JULIAN_DAY; dt < 10 * Constants.JULIAN_DAY; dt += 7200) {
             // CIRF and TOD should both have the Celestial Intermediate Pole as their Z axis
             AbsoluteDate date = t0.shiftedBy(dt);
             Transform t = FramesFactory.getNonInterpolatingTransform(tod, cirf, date);

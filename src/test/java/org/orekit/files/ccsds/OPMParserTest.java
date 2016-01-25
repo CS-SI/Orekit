@@ -61,6 +61,7 @@ public class OPMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
         final OPMFile file = parser.parse(inEntry, "OPMExample.txt");
+        Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
         final SatelliteTimeCoordinate coord = file.getSatelliteCoordinatesOPM();
 
         // Check Header Block;
@@ -125,6 +126,12 @@ public class OPMParserTest {
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
         final OPMFile file = parser.parse(inEntry, "OPMExample2.txt");
+        try {
+            file.getConventions();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
+        }
         final SatelliteTimeCoordinate coord = file.getSatelliteCoordinatesOPM();
 
         // Check Header Block;
@@ -246,6 +253,19 @@ public class OPMParserTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testMissingMu()
+            throws OrekitException, URISyntaxException {
+        final String name = getClass().getResource("/ccsds/OPM-unknown-mu.txt").toURI().getPath();
+        OPMFile opm = new OPMParser().withConventions(IERSConventions.IERS_2010).parse(name);
+        try {
+            opm.generateCartesianOrbit();
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_GM, oe.getSpecifier());
         }
     }
 

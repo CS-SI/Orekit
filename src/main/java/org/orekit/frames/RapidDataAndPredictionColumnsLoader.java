@@ -218,10 +218,11 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
                     final int yy = Integer.parseInt(dateMatcher.group(1).trim());
                     final int mm = Integer.parseInt(dateMatcher.group(2).trim());
                     final int dd = Integer.parseInt(dateMatcher.group(3).trim());
-                    final int yyyy = (yy > 70) ? yy + 1900 : yy + 2000;
                     mjd = Integer.parseInt(dateMatcher.group(4).trim());
-                    final int reconstructedDate = new DateComponents(yyyy, mm, dd).getMJD();
-                    if (reconstructedDate != mjd) {
+                    final DateComponents reconstructedDate = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
+                    if ((reconstructedDate.getYear() % 100) != yy ||
+                         reconstructedDate.getMonth()       != mm ||
+                         reconstructedDate.getDay()         != dd) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   lineNumber, name, line);
                     }

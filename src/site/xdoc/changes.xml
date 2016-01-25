@@ -21,14 +21,35 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed FramesFactory.getNonInterpolatingTransform working only
+        in one direction.
+        Fixes issue #231
+      </action>
+      <action dev="evan" type="add">
+        Added Field of View based event detector for ground based sensors.
+      </action>
+      <action dev="luc" type="add">
+        Added a getFootprint method to FieldOfView for projecting Field Of View
+        to ground, taking limb of ellipsoid into account (including flatness) if
+        Field Of View skims over horizon.
+      </action>
+      <action dev="luc" type="add">
+        Added a pointOnLimb method to Ellipsoid for computing points that lie
+        on the limb as seen from an external observer.
+      </action>
+      <action dev="luc" type="add">
+        Added an isInside predicate method to Ellipsoid for checking points location.
+      </action>
       <action dev="evan" type="fix">
         Support parsing lowercase values in CCSDS orbit data messages.
         Fixes issue #230
       </action>
       <action dev="luc" type="add">
-        Replaced CircularFieldOfViewDetector and DihedralFieldOfViewDetector
-        with a more generic FieldOfViewDetector that can handle any
-        Field Of View shape.
+        Added a generic FieldOfViewDetector that can handle any Field Of View shape.
+        The DihedralFieldOfViewDetector is deprecated, but the CircularFieldOfViewDetector
+        which corresponds to a common case that can be computed more accurately and faster
+        than the new generic detector is preserved.
       </action>
       <action dev="luc" type="add">
         Added a FieldOfView class to model Fields Of View with any shape.

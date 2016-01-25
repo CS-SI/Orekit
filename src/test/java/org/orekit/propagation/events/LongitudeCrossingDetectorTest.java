@@ -53,13 +53,16 @@ public class LongitudeCrossingDetectorTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
         LongitudeCrossingDetector d =
-                new LongitudeCrossingDetector(60.0, 1.e-6, earth, FastMath.toRadians(10.0)).
+                new LongitudeCrossingDetector(earth, FastMath.toRadians(10.0)).
+                withMaxCheck(60).
+                withThreshold(1.e-6).
                 withHandler(new ContinueOnEvent<LongitudeCrossingDetector>());
 
         Assert.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
         Assert.assertEquals(10.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
         Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assert.assertSame(earth, d.getBody());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);

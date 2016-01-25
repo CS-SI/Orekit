@@ -4,6 +4,9 @@ INTERNAL_ERROR = Εσωτερικό σφάλμα, επικοινωνήστε μ�
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = το υψόμετρο ({0} m) είναι κάτω του {1} επιτρεπόμενου ορίου m 
 
+# point is inside ellipsoid
+POINT_INSIDE_ELLIPSOID = <MISSING TRANSLATION>
+
 # trajectory inside the Brillouin sphere (r = {0})
 TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = τροχιά στο εσωτερικό της σφαίρας Brillouin (r = {0})
 

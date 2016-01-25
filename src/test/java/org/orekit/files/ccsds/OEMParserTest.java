@@ -147,7 +147,7 @@ public class OEMParserTest {
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
-        final OEMFile file = parser.parse(inEntry, "OEMExample.txt");
+        final OEMFile file = parser.parse(inEntry);
         Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
         Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
@@ -183,7 +183,13 @@ public class OEMParserTest {
             throws OrekitException, URISyntaxException {
 
         final String name = getClass().getResource("/ccsds/OEMExample2.txt").toURI().getPath();
-        OEMParser parser = new OEMParser().withConventions(IERSConventions.IERS_2010).withMu(CelestialBodyFactory.getMars().getGM());
+        OEMParser parser = new OEMParser().
+                withConventions(IERSConventions.IERS_2010).
+                withSimpleEOP(true).
+                withMu(CelestialBodyFactory.getMars().getGM()).
+                withInternationalDesignator(1996, 2, "A").
+                withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000",
+                                                          TimeScalesFactory.getUTC()));
 
         final OEMFile file = parser.parse(name);
         final List<String> headerComment = new ArrayList<String>();
@@ -193,6 +199,15 @@ public class OEMParserTest {
         metadataComment.add("comment 1");
         metadataComment.add("comment 2");
         Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetaData().getComment());
+        List<EphemeridesBlock> blocks = file.getEphemeridesBlocks();
+        Assert.assertEquals(2, blocks.size());
+        Assert.assertTrue(blocks.get(0).getHasRefFrameEpoch());
+        Assert.assertEquals(129600.331,
+                            blocks.get(0).getStartTime().durationFrom(file.getMissionReferenceDate()),
+                            1.0e-15);
+        Assert.assertEquals(941347.267,
+                            blocks.get(1).getStartTime().durationFrom(file.getMissionReferenceDate()),
+                            1.0e-15);
 
     }
 

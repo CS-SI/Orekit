@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 
-import java.text.ParseException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -26,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
@@ -36,7 +36,7 @@ import org.orekit.utils.IERSConventions;
 public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
-    public void testStartDateDaily1980() throws OrekitException, ParseException {
+    public void testStartDateDaily1980() throws OrekitException {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -47,7 +47,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testEndDateDaily1980() throws OrekitException, ParseException {
+    public void testEndDateDaily1980() throws OrekitException {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -58,7 +58,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testStartDateDaily2000() throws OrekitException, ParseException {
+    public void testStartDateDaily2000() throws OrekitException {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -69,7 +69,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testMissingColumnsPadding1980() throws OrekitException, ParseException {
+    public void testMissingColumnsPadding1980() throws OrekitException {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -117,7 +117,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testMissingColumnsPadding2000() throws OrekitException, ParseException {
+    public void testMissingColumnsPadding2000() throws OrekitException {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -153,13 +153,103 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     }
 
     @Test
-    public void testEndDateDaily2000() throws OrekitException, ParseException {
+    public void testEndDateDaily2000() throws OrekitException {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$").fillHistory(converter, history);
+        new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2003, history, true).getEndDate());
     }
+
+    @Test
+    public void testNoColumns() throws OrekitException {
+        setRoot("rapid-data-columns");
+        IERSConventions.NutationCorrectionConverter converter =
+                        IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-no-columns\\.daily$").fillHistory(converter, history);
+        EOPHistory eopH = new EOPHistory(IERSConventions.IERS_2010, history, true);
+        Assert.assertEquals(new AbsoluteDate(2011, 4, 16, TimeScalesFactory.getUTC()), eopH.getEndDate());
+        AbsoluteDate testDate = eopH.getEndDate().shiftedBy(-2 * Constants.JULIAN_DAY);
+        Assert.assertEquals(0.0, eopH.getPoleCorrection(testDate).getXp(),                1.0e-15);
+        Assert.assertEquals(0.0, eopH.getPoleCorrection(testDate).getYp(),                1.0e-15);
+        Assert.assertEquals(0.0, eopH.getUT1MinusUTC(testDate),                           1.0e-15);
+        Assert.assertEquals(0.0, eopH.getLOD(testDate),                                   1.0e-15);
+        Assert.assertEquals(0.0, eopH.getNonRotatinOriginNutationCorrection(testDate)[0], 1.0e-15);
+        Assert.assertEquals(0.0, eopH.getNonRotatinOriginNutationCorrection(testDate)[1], 1.0e-15);
+    }
+
+    @Test
+    public void testPost2070() throws OrekitException {
+        setRoot("rapid-data-columns");
+        IERSConventions.NutationCorrectionConverter converter =
+                        IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-post-2070\\.daily$").fillHistory(converter, history);
+        Assert.assertEquals(new AbsoluteDate(2075, 4, 16, TimeScalesFactory.getUTC()),
+                            new EOPHistory(IERSConventions.IERS_2010, history, true).getEndDate());
+        
+    }
+
+    @Test
+    public void testTruncatedLine() throws OrekitException {
+        doTestWrongFile("^finals2000A-truncated-line\\.daily$", 3);
+    }
+
+    @Test
+    public void testWrongDateFormat() throws OrekitException {
+        doTestWrongFile("^finals2000A-wrong-date-format\\.daily$", 3);
+    }
+
+    @Test
+    public void testWrongYear() throws OrekitException {
+        doTestWrongFile("^finals2000A-wrong-year\\.daily$", 6);
+    }
+
+    @Test
+    public void testWrongMonth() throws OrekitException {
+        doTestWrongFile("^finals2000A-wrong-month\\.daily$", 5);
+    }
+
+    @Test
+    public void testWrongDay() throws OrekitException {
+        doTestWrongFile("^finals2000A-wrong-day\\.daily$", 4);
+    }
+
+    @Test
+    public void testWrongPoleFormat() throws OrekitException {
+        doTestWrongFile("^finals2000A-wrong-pole-format\\.daily$", 7);
+    }
+
+    @Test
+    public void testWrongUT1UTCFormat() throws OrekitException {
+        doTestWrongFile("^finals2000A-wrong-ut1-utc-format\\.daily$", 7);
+    }
+
+    @Test
+    public void testWrongLODFormat() throws OrekitException {
+        doTestWrongFile("^finals2000A-wrong-lod-format\\.daily$", 7);
+    }
+
+    @Test
+    public void testWrongNutationFormat() throws OrekitException {
+        doTestWrongFile("^finals2000A-wrong-nutation-format\\.daily$", 7);
+    }
+
+    private void doTestWrongFile(String fileName, int lineNumber) throws OrekitException {
+        setRoot("rapid-data-columns");
+        IERSConventions.NutationCorrectionConverter converter =
+                        IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        try {
+            new RapidDataAndPredictionColumnsLoader(true, fileName).fillHistory(converter, history);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(lineNumber, ((Integer) oe.getParts()[0]).intValue());
+        }        
+    }
+
 }
