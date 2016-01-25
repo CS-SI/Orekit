@@ -58,7 +58,9 @@ public class OPMParserTest {
         // data.
         final String ex = "/ccsds/OPMExample.txt";
 
-        final OPMParser parser = new OPMParser().withMu(398600e9).withConventions(IERSConventions.IERS_2010);
+        final OPMParser parser = new OPMParser().withMu(398600e9).
+                withConventions(IERSConventions.IERS_2010).
+                withSimpleEOP(true);
         
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
@@ -525,6 +527,22 @@ public class OPMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
             Assert.assertEquals(wrongName, oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testWrongKeyword()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OPM-wrong-keyword.txt").toURI().getPath();
+        try {
+            new OPMParser().withConventions(IERSConventions.IERS_2010).parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
         }
     }
 
