@@ -37,6 +37,7 @@ import org.orekit.files.general.OrbitFile;
 import org.orekit.files.general.OrbitFile.TimeSystem;
 import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -137,8 +138,12 @@ public class OEMParserTest {
         }
         Assert.assertEquals(new AbsoluteDate("1996-12-28T21:29:07.267", TimeScalesFactory.getUTC()),
                             file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getEpoch());
+        Assert.assertEquals(LOFType.QSW,
+                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getLofType());
+        Assert.assertNull(file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getFrame());
         Assert.assertEquals(FramesFactory.getEME2000(),
                             file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getFrame());
+        Assert.assertNull(file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getLofType());
     }
 
     @Test
