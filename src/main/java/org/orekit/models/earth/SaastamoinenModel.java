@@ -103,7 +103,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
      * environmental conditions.
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [percent] (50% -> 0.5)
+     * @param r0 the humidity at the station [fraction] (50% -> 0.5)
      * @exception OrekitException if δR correction term table cannot be loaded
      * @deprecated since 7.1, replaced with {@link #SaastamoinenModel(double, double, double, String)}
      */
@@ -117,7 +117,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
      * environmental conditions.
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [percent] (50% -> 0.5)
+     * @param r0 the humidity at the station [fraction] (50% -> 0.5)
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
@@ -134,7 +134,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
     /** Create a new Saastamoinen model.
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [percent] (50% -> 0.5)
+     * @param r0 the humidity at the station [fraction] (50% -> 0.5)
      * @param deltaR δR correction term function
      * @since 7.1
      */
