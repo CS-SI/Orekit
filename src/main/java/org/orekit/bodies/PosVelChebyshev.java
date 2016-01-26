@@ -19,7 +19,6 @@ package org.orekit.bodies;
 import java.io.Serializable;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
@@ -79,25 +78,6 @@ class PosVelChebyshev implements TimeStamped, Serializable {
     /** {@inheritDoc} */
     public AbsoluteDate getDate() {
         return start;
-    }
-
-    /** Get model validity duration.
-     * @return model validity duration in seconds
-     */
-    public double getValidityDuration() {
-        return duration;
-    }
-
-    /** Check if the instance is the exact successor of another model.
-     * <p>The instance is the successor of another model if its start
-     * date is within a 1ms tolerance interval of the end date of the
-     * other model.</p>
-     * @param predecessor model to check instance against
-     * @return true if the instance is the successor of the predecessor model
-     */
-    public boolean isSuccessorOf(final PosVelChebyshev predecessor) {
-        final double gap = start.offsetFrom(predecessor.start, timeScale) - predecessor.duration;
-        return FastMath.abs(gap) < 0.001;
     }
 
     /** Check if a date is in validity range.
