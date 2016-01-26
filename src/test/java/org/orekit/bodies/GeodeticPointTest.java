@@ -17,7 +17,7 @@
 package org.orekit.bodies;
 
 import org.junit.Assert;
-
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
 
@@ -42,6 +42,14 @@ public class GeodeticPointTest {
         // verify
         Assert.assertEquals(FastMath.toRadians(45), point.getLatitude(), 0);
         Assert.assertEquals(FastMath.toRadians(-90), point.getLongitude(), 0);
+
+        Assert.assertEquals(0, Vector3D.distance(point.getEast(),   Vector3D.PLUS_I), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getNorth(),  new Vector3D( 0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getWest(),   Vector3D.MINUS_I), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getSouth(),  new Vector3D(-0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getZenith(), new Vector3D(-0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getNadir(),  new Vector3D( 0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+
     }
 
     /**
@@ -69,6 +77,12 @@ public class GeodeticPointTest {
         for (double[] point : points) {
             // action
             GeodeticPoint gp = new GeodeticPoint(point[0], point[1], 0);
+            Assert.assertEquals(0, gp.getEast().crossProduct(gp.getNorth()).distance(gp.getZenith()), 1.0e-15);
+            Assert.assertEquals(0, gp.getNorth().crossProduct(gp.getWest()).distance(gp.getZenith()), 1.0e-15);
+            Assert.assertEquals(0, gp.getSouth().crossProduct(gp.getWest()).distance(gp.getNadir()), 1.0e-15);
+            Assert.assertEquals(0, gp.getEast().crossProduct(gp.getSouth()).distance(gp.getNadir()), 1.0e-15);
+            Assert.assertEquals(0, gp.getZenith().crossProduct(gp.getSouth()).distance(gp.getEast()), 1.0e-15);
+            Assert.assertEquals(0, gp.getNadir().crossProduct(gp.getWest()).distance(gp.getNorth()), 1.0e-15);
 
             // verify to within 5 ulps
             Assert.assertEquals(point[2], gp.getLatitude(), 5 * FastMath.ulp(point[2]));
@@ -90,10 +104,12 @@ public class GeodeticPointTest {
         Assert.assertFalse(point.equals(new GeodeticPoint(1, 0, 3)));
         Assert.assertFalse(point.equals(new GeodeticPoint(1, 2, 0)));
         Assert.assertFalse(point.equals(new Object()));
+        Assert.assertEquals(point.hashCode(), new GeodeticPoint(1, 2, 3).hashCode());
+        Assert.assertNotEquals(point.hashCode(), new GeodeticPoint(1, FastMath.nextUp(2), 3).hashCode());
     }
 
     /**
-     * check {@link GeodeticPoint#hashCode()}.
+     * check {@link GeodeticPoint#toString()}.
      */
     @Test
     public void testToString() {

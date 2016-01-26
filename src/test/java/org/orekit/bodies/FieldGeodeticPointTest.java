@@ -16,9 +16,11 @@
  */
 package org.orekit.bodies;
 
-import org.junit.Assert;
+import org.apache.commons.math3.RealFieldElement;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Decimal64;
 import org.apache.commons.math3.util.FastMath;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -44,6 +46,14 @@ public class FieldGeodeticPointTest {
         // verify
         Assert.assertEquals(FastMath.toRadians(45), point.getLatitude().getReal(), 1.0e-15);
         Assert.assertEquals(FastMath.toRadians(-90), point.getLongitude().getReal(), 1.0e-15);
+
+        Assert.assertEquals(0, Vector3D.distance(point.getEast().toVector3D(),   Vector3D.PLUS_I), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getNorth().toVector3D(),  new Vector3D( 0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getWest().toVector3D(),   Vector3D.MINUS_I), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getSouth().toVector3D(),  new Vector3D(-0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getZenith().toVector3D(), new Vector3D(-0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(point.getNadir().toVector3D(),  new Vector3D( 0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+
     }
 
     /**
@@ -74,6 +84,12 @@ public class FieldGeodeticPointTest {
                     new FieldGeodeticPoint<Decimal64>(new Decimal64(point[0]),
                                                       new Decimal64(point[1]),
                                                       Decimal64.ZERO);
+            Assert.assertEquals(0, gp.getEast().crossProduct(gp.getNorth()).distance(gp.getZenith()).getReal(), 1.0e-15);
+            Assert.assertEquals(0, gp.getNorth().crossProduct(gp.getWest()).distance(gp.getZenith()).getReal(), 1.0e-15);
+            Assert.assertEquals(0, gp.getSouth().crossProduct(gp.getWest()).distance(gp.getNadir()).getReal(), 1.0e-15);
+            Assert.assertEquals(0, gp.getEast().crossProduct(gp.getSouth()).distance(gp.getNadir()).getReal(), 1.0e-15);
+            Assert.assertEquals(0, gp.getZenith().crossProduct(gp.getSouth()).distance(gp.getEast()).getReal(), 1.0e-15);
+            Assert.assertEquals(0, gp.getNadir().crossProduct(gp.getWest()).distance(gp.getNorth()).getReal(), 1.0e-15);
 
             // verify to within 5 ulps
             Assert.assertEquals(point[2], gp.getLatitude().getReal(), 5 * FastMath.ulp(point[2]));
@@ -106,6 +122,14 @@ public class FieldGeodeticPointTest {
                                                                           new Decimal64(2),
                                                                           new Decimal64(0))));
         Assert.assertFalse(point.equals(new Object()));
+        Assert.assertEquals(point.hashCode(),
+                            new FieldGeodeticPoint<Decimal64>(new Decimal64(1),
+                                                              new Decimal64(2),
+                                                              new Decimal64(3)).hashCode());
+        Assert.assertNotEquals(point.hashCode(),
+                               new FieldGeodeticPoint<Decimal64>(new Decimal64(1),
+                                                                 new Decimal64(FastMath.nextUp(2)),
+                                                                 new Decimal64(3)).hashCode());
     }
 
     /**
