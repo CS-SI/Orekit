@@ -27,9 +27,11 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.estimation.measurements.modifiers.AngularTroposphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateTroposphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
+import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -180,6 +182,52 @@ public class TropoModifierTest {
             // TODO: check threshold
             Assert.assertEquals(0.0, diffAz, 5.0e-5);
             Assert.assertEquals(0.0, diffEl, 5.0e-6);     
+        }
+    }
+    
+    @Test
+    public void testAngularRadioRefractionModifier() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect angular measurements
+        for (final GroundStation station : context.stations) {
+            station.setEstimated(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new AngularMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+ 
+        
+
+        for (final Measurement<?> measurement : measurements) {
+            final AbsoluteDate date = measurement.getDate();
+
+            final SpacecraftState refstate = propagator.propagate(date);
+            
+            Angular angular = (Angular) measurement;
+            Evaluation<Angular> evalNoMod = angular.evaluate(0, refstate);
+            
+            // get the altitude of the station (in kilometers)
+            final double altitude = angular.getStation().getBaseFrame().getPoint().getAltitude() / 1000.;
+            
+            final AngularRadioRefractionModifier modifier = new AngularRadioRefractionModifier(new EarthITU453AtmosphereRefraction(altitude));
+            // add modifier
+            angular.addModifier(modifier);
+            // 
+            Evaluation<Angular> eval = angular.evaluate(0, refstate);
+            
+            final double diffEl = MathUtils.normalizeAngle(eval.getValue()[1], evalNoMod.getValue()[1]) - evalNoMod.getValue()[1];
+            // TODO: check threshold
+            Assert.assertEquals(0.0, diffEl, 1.0e-3);     
         }
     }
 }
