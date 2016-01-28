@@ -13,6 +13,6 @@ jdk:
 #  - mvn install  
 #  - popd 
 
-matrix:
-    allow_failures:
-        - jdk: openjdk6
+#matrix:
+#    allow_failures:
+#        - jdk: openjdk6
