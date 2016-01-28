@@ -42,15 +42,18 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
+import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.HarrisPriester;
+import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
+import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -575,21 +578,16 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
             final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae, Constants.WGS84_EARTH_FLATTENING, earthFrame);
             final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
-            final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.DRAG_SF),
-                                                                    parser.getDouble(ParameterKey.DRAG_CD),
-                                                                    0., 0.);
+            final DragSensitive ssc = new IsotropicDrag(parser.getDouble(ParameterKey.DRAG_SF),
+                                                        parser.getDouble(ParameterKey.DRAG_CD));
             numProp.addForceModel(new DragForce(atm, ssc));
         }
 
         // Solar Radiation Pressure
         if (parser.containsKey(ParameterKey.SOLAR_RADIATION_PRESSURE) && parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE)) {
             final double cR = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR);
-            // cR being the DSST SRP coef and assuming a spherical spacecraft, the conversion is:
-            // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
-            // with kA arbitrary sets to 0
-            final double kR = 3.25 - 2.25 * cR;
-            final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
-                                                                    0., 0., kR);
+            final RadiationSensitive ssc = new IsotropicRadiationSingleCoefficient(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
+                                                                                   cR);
             numProp.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), ae, ssc));
         }
     }

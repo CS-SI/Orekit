@@ -32,6 +32,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 
+@Deprecated
 public class SphericalSpacecraftTest {
 
     @Test
