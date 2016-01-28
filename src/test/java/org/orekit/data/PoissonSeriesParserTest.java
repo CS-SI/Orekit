@@ -590,11 +590,11 @@ public class PoissonSeriesParserTest {
             zCoordinate.setDate(date);
             DerivativeStructure zFinite = dz.value(zero);
 
-            Assert.assertEquals(xFinite.getValue(),              xDirect.getValue(),              FastMath.abs(5.0e-15 * xFinite.getValue()));
+            Assert.assertEquals(xFinite.getValue(),              xDirect.getValue(),              FastMath.abs(7.0e-15 * xFinite.getValue()));
             Assert.assertEquals(xFinite.getPartialDerivative(1), xDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * xFinite.getPartialDerivative(1)));
-            Assert.assertEquals(yFinite.getValue(),              yDirect.getValue(),              FastMath.abs(5.0e-15 * yFinite.getValue()));
+            Assert.assertEquals(yFinite.getValue(),              yDirect.getValue(),              FastMath.abs(7.0e-15 * yFinite.getValue()));
             Assert.assertEquals(yFinite.getPartialDerivative(1), yDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * yFinite.getPartialDerivative(1)));
-            Assert.assertEquals(zFinite.getValue(),              zDirect.getValue(),              FastMath.abs(5.0e-15 * zFinite.getValue()));
+            Assert.assertEquals(zFinite.getValue(),              zDirect.getValue(),              FastMath.abs(7.0e-15 * zFinite.getValue()));
             Assert.assertEquals(zFinite.getPartialDerivative(1), zDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * zFinite.getPartialDerivative(1)));
 
         }
