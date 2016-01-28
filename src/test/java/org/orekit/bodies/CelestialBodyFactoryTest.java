@@ -73,6 +73,13 @@ public class CelestialBodyFactoryTest {
         CelestialBody sun2 = CelestialBodyFactory.getSun();
         Assert.assertNotNull(sun2);
         Assert.assertNotSame(sun, sun2);
+        CelestialBodyFactory.clearCelestialBodyLoaders(CelestialBodyFactory.SUN);
+        CelestialBodyFactory.clearCelestialBodyCache(CelestialBodyFactory.SUN);
+        CelestialBodyFactory.addDefaultCelestialBodyLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES);
+        CelestialBody sun3 = CelestialBodyFactory.getSun();
+        Assert.assertNotNull(sun3);
+        Assert.assertNotSame(sun,  sun3);
+        Assert.assertNotSame(sun2, sun3);
     }
 
     @Test

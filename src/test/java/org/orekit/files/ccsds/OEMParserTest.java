@@ -37,6 +37,7 @@ import org.orekit.files.general.OrbitFile;
 import org.orekit.files.general.OrbitFile.TimeSystem;
 import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -137,8 +138,12 @@ public class OEMParserTest {
         }
         Assert.assertEquals(new AbsoluteDate("1996-12-28T21:29:07.267", TimeScalesFactory.getUTC()),
                             file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getEpoch());
+        Assert.assertEquals(LOFType.QSW,
+                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getLofType());
+        Assert.assertNull(file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getFrame());
         Assert.assertEquals(FramesFactory.getEME2000(),
                             file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getFrame());
+        Assert.assertNull(file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getLofType());
     }
 
     @Test
@@ -199,6 +204,7 @@ public class OEMParserTest {
         metadataComment.add("comment 1");
         metadataComment.add("comment 2");
         Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetaData().getComment());
+        Assert.assertEquals("TOD/2010 simple EOP", file.getCoordinateSystem());
         List<EphemeridesBlock> blocks = file.getEphemeridesBlocks();
         Assert.assertEquals(2, blocks.size());
         Assert.assertTrue(blocks.get(0).getHasRefFrameEpoch());
@@ -288,6 +294,54 @@ public class OEMParserTest {
         Assert.assertEquals(
                 CelestialBodyFactory.getEarth(),
                 actual.getEphemeridesBlocks().get(0).getMetaData().getCenterBody());
+    }
+
+    @Test
+    public void testWrongKeyword()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OEM-wrong-keyword.txt").toURI().getPath();
+        try {
+            new OEMParser().parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(19, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
+        }
+    }
+
+    @Test
+    public void testKeywordWithinEphemeris()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OEM-keyword-within-ephemeris.txt").toURI().getPath();
+        try {
+            new OEMParser().withMu(CelestialBodyFactory.getMars().getGM()).parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(24, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("USER_DEFINED_TEST_KEY"));
+        }
+    }
+
+    @Test
+    public void testKeywordWithinCovariance()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OEM-keyword-within-covariance.txt").toURI().getPath();
+        try {
+            new OEMParser().withMu(CelestialBodyFactory.getMars().getGM()).parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(91, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("USER_DEFINED_TEST_KEY"));
+        }
     }
 
 }

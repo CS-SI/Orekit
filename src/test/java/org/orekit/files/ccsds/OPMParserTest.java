@@ -31,7 +31,9 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.general.OrbitFile;
 import org.orekit.files.general.OrbitFile.TimeSystem;
 import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.frames.FramesFactory;
@@ -56,7 +58,9 @@ public class OPMParserTest {
         // data.
         final String ex = "/ccsds/OPMExample.txt";
 
-        final OPMParser parser = new OPMParser().withMu(398600e9).withConventions(IERSConventions.IERS_2010);
+        final OPMParser parser = new OPMParser().withMu(398600e9).
+                withConventions(IERSConventions.IERS_2010).
+                withSimpleEOP(true);
         
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
@@ -83,6 +87,7 @@ public class OPMParserTest {
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetaData().getCenterBody());
         Assert.assertEquals(CCSDSFrame.ITRF97.toString(), file.getMetaData().getFrame().getName());
         Assert.assertEquals(TimeSystem.TAI, file.getTimeSystem());
+        Assert.assertFalse(file.hasCovarianceMatrix());
         
         // Check State Vector data Block;
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
@@ -92,25 +97,27 @@ public class OPMParserTest {
                                        new Vector3D(-873.160, 8740.420,
                                                     -4191.076)),
                      coord.getCoordinate());
-        
-        
+
         try {
             file.generateCartesianOrbit();
             Assert.fail("an exception should have been thrown");
-        } catch(IllegalArgumentException iae) {
-            // expected
+        } catch(OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
+            Assert.assertEquals("ITRF97", oiae.getParts()[0]);
         }
         try {
             file.generateKeplerianOrbit();
             Assert.fail("an exception should have been thrown");
-        } catch(IllegalArgumentException iae) {
-            // expected
+        } catch(OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
+            Assert.assertEquals("ITRF97", oiae.getParts()[0]);
         }
         try {
             file.generateSpacecraftState();
             Assert.fail("an exception should have been thrown");
-        } catch(IllegalArgumentException iae) {
-            // expected
+        } catch(OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
+            Assert.assertEquals("ITRF97", oiae.getParts()[0]);
         }
 
     }
@@ -154,6 +161,7 @@ public class OPMParserTest {
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetaData().getCenterBody());
         Assert.assertEquals(FramesFactory.getGCRF(), file.getMetaData().getFrame());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assert.assertEquals(0, file.getMetaDataComment().size());
 
         // Check Data State Vector block
         ArrayList<String> epochComment = new ArrayList<String>();
@@ -280,6 +288,11 @@ public class OPMParserTest {
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetaData().getFrameEpoch());
+        Assert.assertEquals(2, file.getMetaDataComment().size());
+        Assert.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetaDataComment().get(0));
+        Assert.assertEquals("titi", file.getMetaDataComment().get(1));
+        Assert.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
+        Assert.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
         ArrayList<String> dataCovMatrixComment = new ArrayList<String>();
         dataCovMatrixComment.add("toto");
@@ -388,6 +401,39 @@ public class OPMParserTest {
     }
 
     @Test
+    public void testCentersAndTimeScales() throws OrekitException {
+
+        final OPMParser parser = new OPMParser().withMissionReferenceDate(new AbsoluteDate())
+                                                .withConventions(IERSConventions.IERS_2010);
+
+        OPMFile file =
+                parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-solar-system-barycenter.txt"));
+        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getTimeSystem());
+        Assert.assertEquals("solar system barycenter", file.getMetaData().getCenterBody().getName());
+
+        file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-ssb.txt"));
+        Assert.assertEquals(OrbitFile.TimeSystem.TCB, file.getTimeSystem());
+        Assert.assertEquals("solar system barycenter", file.getMetaData().getCenterBody().getName());
+
+        file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-earth-barycenter.txt"));
+        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getTimeSystem());
+        Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
+
+        file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-earth-dash-moon-barycenter.txt"));
+        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getTimeSystem());
+        Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
+
+        file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-earth-moon-barycenter.txt"));
+        Assert.assertEquals(OrbitFile.TimeSystem.UT1, file.getTimeSystem());
+        Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
+
+        file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-emb.txt"));
+        Assert.assertEquals(OrbitFile.TimeSystem.TT, file.getTimeSystem());
+        Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
+
+    }
+
+    @Test
     public void testOrbitFileInterface() throws OrekitException {
         final String ex = "/ccsds/OPMExample4.txt";
 
@@ -481,6 +527,22 @@ public class OPMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
             Assert.assertEquals(wrongName, oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testWrongKeyword()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OPM-wrong-keyword.txt").toURI().getPath();
+        try {
+            new OPMParser().withConventions(IERSConventions.IERS_2010).parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
         }
     }
 
