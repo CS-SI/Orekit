@@ -37,6 +37,7 @@ import org.orekit.files.general.OrbitFile;
 import org.orekit.files.general.OrbitFile.TimeSystem;
 import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -137,8 +138,12 @@ public class OEMParserTest {
         }
         Assert.assertEquals(new AbsoluteDate("1996-12-28T21:29:07.267", TimeScalesFactory.getUTC()),
                             file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getEpoch());
+        Assert.assertEquals(LOFType.QSW,
+                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getLofType());
+        Assert.assertNull(file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getFrame());
         Assert.assertEquals(FramesFactory.getEME2000(),
                             file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getFrame());
+        Assert.assertNull(file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getLofType());
     }
 
     @Test
@@ -147,7 +152,7 @@ public class OEMParserTest {
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
-        final OEMFile file = parser.parse(inEntry, "OEMExample.txt");
+        final OEMFile file = parser.parse(inEntry);
         Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
         Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
@@ -183,7 +188,13 @@ public class OEMParserTest {
             throws OrekitException, URISyntaxException {
 
         final String name = getClass().getResource("/ccsds/OEMExample2.txt").toURI().getPath();
-        OEMParser parser = new OEMParser().withConventions(IERSConventions.IERS_2010).withMu(CelestialBodyFactory.getMars().getGM());
+        OEMParser parser = new OEMParser().
+                withConventions(IERSConventions.IERS_2010).
+                withSimpleEOP(true).
+                withMu(CelestialBodyFactory.getMars().getGM()).
+                withInternationalDesignator(1996, 2, "A").
+                withMissionReferenceDate(new AbsoluteDate("1996-12-17T00:00:00.000",
+                                                          TimeScalesFactory.getUTC()));
 
         final OEMFile file = parser.parse(name);
         final List<String> headerComment = new ArrayList<String>();
@@ -193,6 +204,16 @@ public class OEMParserTest {
         metadataComment.add("comment 1");
         metadataComment.add("comment 2");
         Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetaData().getComment());
+        Assert.assertEquals("TOD/2010 simple EOP", file.getCoordinateSystem());
+        List<EphemeridesBlock> blocks = file.getEphemeridesBlocks();
+        Assert.assertEquals(2, blocks.size());
+        Assert.assertTrue(blocks.get(0).getHasRefFrameEpoch());
+        Assert.assertEquals(129600.331,
+                            blocks.get(0).getStartTime().durationFrom(file.getMissionReferenceDate()),
+                            1.0e-15);
+        Assert.assertEquals(941347.267,
+                            blocks.get(1).getStartTime().durationFrom(file.getMissionReferenceDate()),
+                            1.0e-15);
 
     }
 
@@ -257,6 +278,69 @@ public class OEMParserTest {
             Assert.assertEquals(OrekitMessages.CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS, oe.getSpecifier());
             Assert.assertEquals(OrbitFile.TimeSystem.UTC, oe.getParts()[0]);
             Assert.assertEquals(OrbitFile.TimeSystem.TCG, oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testLowerCaseValue() throws OrekitException {
+        //setup
+        String file = "/ccsds/oemLowerCaseValue.oem";
+        InputStream in = getClass().getResourceAsStream(file);
+
+        //action
+        OEMFile actual = new OEMParser().parse(in, file);
+
+        //verify
+        Assert.assertEquals(
+                CelestialBodyFactory.getEarth(),
+                actual.getEphemeridesBlocks().get(0).getMetaData().getCenterBody());
+    }
+
+    @Test
+    public void testWrongKeyword()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OEM-wrong-keyword.txt").toURI().getPath();
+        try {
+            new OEMParser().parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(19, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
+        }
+    }
+
+    @Test
+    public void testKeywordWithinEphemeris()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OEM-keyword-within-ephemeris.txt").toURI().getPath();
+        try {
+            new OEMParser().withMu(CelestialBodyFactory.getMars().getGM()).parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(24, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("USER_DEFINED_TEST_KEY"));
+        }
+    }
+
+    @Test
+    public void testKeywordWithinCovariance()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OEM-keyword-within-covariance.txt").toURI().getPath();
+        try {
+            new OEMParser().withMu(CelestialBodyFactory.getMars().getGM()).parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(91, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("USER_DEFINED_TEST_KEY"));
         }
     }
 

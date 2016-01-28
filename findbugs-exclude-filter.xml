@@ -11,15 +11,20 @@
     <Or>
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper\$DataTransferObject$" />
       <Class name="~.*\.IntegratedEphemeris\$DataTransferObject$" />
+     <Class name="~.*\.KeplerianPropagator\$DataTransferObject$" />
+     <Class name="~.*\.EcksteinHechlerPropagator\$DataTransferObject$" />
     </Or>
     <Bug pattern="SE_BAD_FIELD" />
   </Match>
 
   <!-- the following classes are serialized using writeReplace/readResolve with proxy classes,
-       so the is no real problem about the base class not having a proper constructor.
-       This is tested in the IntegratedEphemerisTest for the ephemeris and both propagators. -->
+       so the is no real problem about the base class not having a proper constructor.  -->
   <Match>
     <Or>
+      <Class name="~.*\.AbstractAnalyticalPropagator\$BoundedPropagatorView$" />
+      <Class name="~.*\.KeplerianPropagator$" />
+      <Class name="~.*\.EcksteinHechlerPropagator$" />
+      <Class name="~.*\.Ephemeris$" />
       <Class name="~.*\.IntegratedEphemeris$" />
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
       <Class name="~.*\.NumericalPropagator\$OsculatingMapper$" />
@@ -27,18 +32,13 @@
     <Bug pattern="SE_NO_SUITABLE_CONSTRUCTOR" />
   </Match>
   <Match>
-    <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
+    <Or>
+      <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
+      <Class name="~.*\.FieldOfView$" />
+      <Class name="~.*\.FootprintOverlapDetector$" />
+      <Class name="~.*\.GeographicZoneDetector$" />
+    </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
-  </Match>
-  <Match>
-    <Class name="~.*\.GeographicZoneDetector$" />
-    <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
-  </Match>
-
-  <!-- The following is an intentional behaviour, to be removed when class is suppressed -->
-  <Match>
-    <Class name="~.*\.SpacecraftFrame\$LocalProvider$"/>
-    <Bug pattern="SE_NO_SUITABLE_CONSTRUCTOR_FOR_EXTERNALIZATION" />
   </Match>
 
   <!-- the following are in fact false positives from findbugs -->

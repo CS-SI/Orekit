@@ -16,6 +16,7 @@
  */
 package org.orekit.files.ccsds;
 
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +44,7 @@ class KeyValue {
 
     /** Regular expression for splitting lines. */
     private final Pattern PATTERN =
-            Pattern.compile("\\p{Space}*([A-Z][A-Z_0-9]*)\\p{Space}*=?\\p{Space}*(.*?)\\p{Space}*(?:\\[.*\\])?");
+            Pattern.compile("\\p{Space}*([A-Z][A-Z_0-9]*)\\p{Space}*=?\\p{Space}*(.*?)\\p{Space}*(?:\\[.*\\])?\\p{Space}*");
 
     /** Regular expression for user defined keywords. */
     private final Pattern USER_DEFINED_KEYWORDS =
@@ -74,6 +75,8 @@ class KeyValue {
      * is made to recognize the special keywords. The key and value parts
      * may be empty if not matched, and the keyword may be null.
      * </p>
+     * <p> The value part may be upper case or lower case. This constructor
+     * converts all lower case values to upper case.
      * @param line to split
      * @param lineNumber number of the line in the CCSDS data message
      * @param fileName name of the file
@@ -87,7 +90,7 @@ class KeyValue {
         final Matcher matcher = PATTERN.matcher(line);
         if (matcher.matches()) {
             key   = matcher.group(1);
-            value = matcher.group(2);
+            final String rawValue = matcher.group(2);
             Keyword recognized;
             try {
                 recognized = Keyword.valueOf(key);
@@ -99,6 +102,14 @@ class KeyValue {
                 }
             }
             keyword = recognized;
+            if (recognized == Keyword.COMMENT) {
+                value = rawValue;
+            } else {
+                value = rawValue.
+                        toUpperCase(Locale.US).
+                        replace('_', ' ').
+                        replaceAll("\\p{Space}+", " ");
+            }
         } else {
             key     = "";
             value   = key;

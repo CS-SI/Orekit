@@ -56,9 +56,11 @@ public class AltitudeDetectorTest {
                                                       initialDate,CelestialBodyFactory.getEarth().getGM());
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         final KeplerianPropagator kepPropagator = new KeplerianPropagator(initialOrbit);
-        final AltitudeDetector altDetector =
-                new AltitudeDetector(alt, new OneAxisEllipsoid(earthRadius, earthF, EME2000)).
-                withHandler(new StopOnEvent<AltitudeDetector>());
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(earthRadius, earthF, EME2000);
+        final AltitudeDetector altDetector = new AltitudeDetector(alt, earth).
+                                             withHandler(new StopOnEvent<AltitudeDetector>());
+        Assert.assertEquals(alt, altDetector.getAltitude(), 1.0e-15);
+        Assert.assertSame(earth, altDetector.getBodyShape());
 
         // altitudeDetector should stop propagation upon reaching required altitude
         kepPropagator.addEventDetector(altDetector);

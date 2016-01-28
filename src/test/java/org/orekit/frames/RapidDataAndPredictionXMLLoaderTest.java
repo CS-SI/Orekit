@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 
-import java.text.ParseException;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -37,7 +36,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     private static final ChronologicalComparator COMP = new ChronologicalComparator();
 
     @Test
-    public void testStartDateDaily1980() throws OrekitException, ParseException {
+    public void testStartDateDaily1980() throws OrekitException {
         setRoot("rapid-data-xml");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -48,7 +47,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testEndDateDaily1980() throws OrekitException, ParseException {
+    public void testEndDateDaily1980() throws OrekitException {
         setRoot("rapid-data-xml");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -59,7 +58,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testStartDateDaily2000() throws OrekitException, ParseException {
+    public void testStartDateDaily2000() throws OrekitException {
         setRoot("rapid-data-xml");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -70,7 +69,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testEndDateDaily2000() throws OrekitException, ParseException {
+    public void testEndDateDaily2000() throws OrekitException {
         setRoot("rapid-data-xml");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -81,7 +80,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testStartDateFinals1980() throws OrekitException, ParseException {
+    public void testStartDateFinals1980() throws OrekitException {
         setRoot("compressed-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -92,7 +91,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testEndDateFinals1980() throws OrekitException, ParseException {
+    public void testEndDateFinals1980() throws OrekitException {
         setRoot("compressed-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -103,7 +102,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testStartDateFinals2000() throws OrekitException, ParseException {
+    public void testStartDateFinals2000() throws OrekitException {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -114,7 +113,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testEndDateFinals2000() throws OrekitException, ParseException {
+    public void testEndDateFinals2000() throws OrekitException {
         setRoot("regular-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -125,7 +124,7 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     }
 
     @Test
-    public void testIssue139() throws OrekitException, ParseException {
+    public void testIssue139() throws OrekitException {
         setRoot("zipped-data");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();

@@ -90,6 +90,21 @@ class TesseralContribution implements DSSTForceModel {
     /** The maximum value for eccentricity power. */
     private static final int MAX_ECCPOWER_SP = 4;
 
+    /** Retrograde factor I.
+     *  <p>
+     *  DSST model needs equinoctial orbit as internal representation.
+     *  Classical equinoctial elements have discontinuities when inclination
+     *  is close to zero. In this representation, I = +1. <br>
+     *  To avoid this discontinuity, another representation exists and equinoctial
+     *  elements can be expressed in a different way, called "retrograde" orbit.
+     *  This implies I = -1. <br>
+     *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
+     *  But for the sake of consistency with the theory, the retrograde factor
+     *  has been kept in the formulas.
+     *  </p>
+     */
+    private static final int I = 1;
+
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
@@ -145,9 +160,6 @@ class TesseralContribution implements DSSTForceModel {
 
     /** Ratio of satellite period to central body rotation period. */
     private double ratio;
-
-    /** Retrograde factor. */
-    private int    I;
 
     // Equinoctial elements (according to DSST notation)
     /** a. */
@@ -427,9 +439,6 @@ class TesseralContribution implements DSSTForceModel {
         ecc = aux.getEcc();
         e2 = ecc * ecc;
 
-        // Retrograde factor
-        I = aux.getRetrogradeFactor();
-
         // Equinoctial frame vectors
         f = aux.getVectorF();
         g = aux.getVectorG();
@@ -549,12 +558,11 @@ class TesseralContribution implements DSSTForceModel {
 
                 if (!mDailiesOnly) {
                     // generate the other coefficients, if required
-                    for (int m: nonResOrders.keySet()) {
-                        final List<Integer> listJ = nonResOrders.get(m);
+                    for (final Map.Entry<Integer, List<Integer>> entry : nonResOrders.entrySet()) {
 
-                        for (int j: listJ) {
+                        for (int j : entry.getValue()) {
                             // build the coefficients
-                            buildCoefficients(meanState.getDate(), slot, m, j, tnota);
+                            buildCoefficients(meanState.getDate(), slot, entry.getKey(), j, tnota);
                         }
                     }
                 }
@@ -826,6 +834,7 @@ class TesseralContribution implements DSSTForceModel {
         double dUdGaSin = 0.;
 
         // I^m
+        @SuppressWarnings("unused")
         final int Im = I > 0 ? 1 : (m % 2 == 0 ? 1 : -1);
 
         // jacobi v, w, indices from 2.7.1-(15)

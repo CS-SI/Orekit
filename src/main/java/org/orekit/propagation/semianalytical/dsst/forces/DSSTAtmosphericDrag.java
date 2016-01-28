@@ -19,10 +19,10 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.utils.Constants;
@@ -60,8 +60,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      */
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd,
             final double area) {
-        this(atmosphere, new SphericalSpacecraft(
-                area, cd, 0.0, 0.0));
+        this(atmosphere, new IsotropicDrag(area, cd));
     }
 
     /** Simple constructor with custom spacecraft.

@@ -46,6 +46,7 @@ import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.Frame;
@@ -506,7 +507,7 @@ public class DSSTPropagatorTest {
         // the initial orbit is osculating the final orbit is a mean orbit
         // and they are not considered at the same epoch
         // we keep it only as is was an historical test
-        Assert.assertEquals(2145.9, orbit.getA() - finalState.getA(), 1.0);
+        Assert.assertEquals(2195.9, orbit.getA() - finalState.getA(), 1.0);
 
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
         finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
@@ -692,6 +693,37 @@ public class DSSTPropagatorTest {
         final SpacecraftState stateConfigNull = propagator.propagate(finalDate);
         Assert.assertEquals(0, stateConfigNull.getAdditionalStates().size());
         
+    }
+
+    @Test
+    public void testIssueMeanInclination() throws OrekitException {
+
+        final double earthAe = 6378137.0;
+        final double earthMu = 3.9860044E14;
+        final double earthJ2 = 0.0010826;
+
+        // Initialize the DSST propagator with only J2 perturbation
+        Orbit orb = new KeplerianOrbit(new TimeStampedPVCoordinates(new AbsoluteDate("1992-10-08T15:20:38.821",
+                                                                                     TimeScalesFactory.getUTC()),
+                                                                    new Vector3D(5392808.809823, -4187618.3357927715, -44206.638015847195),
+                                                                    new Vector3D(2337.4472786270794, 2474.0146611860464, 6778.507766114648)),
+                                       FramesFactory.getTOD(false), earthMu);
+        final SpacecraftState ss = new SpacecraftState(orb);
+        final UnnormalizedSphericalHarmonicsProvider provider =
+              GravityFieldFactory.getUnnormalizedProvider(earthAe, earthMu, TideSystem.UNKNOWN,
+                                                          new double[][] { { 0.0 }, { 0.0 }, { -earthJ2 } },
+                                                          new double[][] { { 0.0 }, { 0.0 }, { 0.0 } });
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final DSSTForceModel force = new DSSTCentralBody(earthFrame,
+                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                         provider);
+        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        forces.add(force);
+        // Computes J2 mean elements using the DSST osculating to mean converter
+        final Orbit meanOrb = DSSTPropagator.computeMeanState(ss, forces).getOrbit();
+        Assert.assertEquals(0.0164196, FastMath.toDegrees(orb.getI() - meanOrb.getI()), 1.0e-7);
+
+
     }
 
     private SpacecraftState getGEOrbit() throws IllegalArgumentException, OrekitException {

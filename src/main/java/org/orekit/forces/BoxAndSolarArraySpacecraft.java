@@ -55,9 +55,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>
  * This model does not take cast shadow between body and solar array into account.
  * </p>
- * <p>
- * Instances of this class are guaranteed to be immutable.
- * </p>
  *
  * @see SphericalSpacecraft
  * @author Luc Maisonobe

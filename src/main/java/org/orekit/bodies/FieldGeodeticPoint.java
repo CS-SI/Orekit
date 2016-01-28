@@ -78,7 +78,7 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> implements Serial
         double lon = MathUtils.normalizeAngle(longitude.getReal(), 0);
         if (lat > FastMath.PI / 2.0) {
             // latitude is beyond the pole -> add 180 to longitude
-            lat = FastMath.PI - latitude.getReal();
+            lat = FastMath.PI - lat;
             lon = MathUtils.normalizeAngle(longitude.getReal() + FastMath.PI, 0);
         }
         final double deltaLat = lat - latitude.getReal();
@@ -199,7 +199,7 @@ public class FieldGeodeticPoint<T extends RealFieldElement<T>> implements Serial
 
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof FieldGeodeticPoint) {
+        if (object instanceof FieldGeodeticPoint<?>) {
             @SuppressWarnings("unchecked")
             final FieldGeodeticPoint<T> other = (FieldGeodeticPoint<T>) object;
             return getLatitude().equals(other.getLatitude()) &&

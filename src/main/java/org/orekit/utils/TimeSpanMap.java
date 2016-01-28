@@ -40,7 +40,9 @@ public class TimeSpanMap<T> {
     /** Create a map containing a single object, initially valid throughout the timeline.
      * <p>
      * The real validity of this first entry will be truncated as other
-     * entries are {@link #add(Object, AbsoluteDate, boolean) added}.
+     * entries are either {@link #addValidBefore(Object, AbsoluteDate)
+     * added before} it or {@link #addValidAfter(Object, AbsoluteDate)
+     * added after} it.
      * </p>
      * @param entry entry (initially valid throughout the timeline)
      */

@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
@@ -39,6 +40,30 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
 public class IAUPoleFactoryTest {
+
+    @Test
+    public void testGCRFAligned() throws OrekitException, UnsupportedEncodingException, IOException {
+        IAUPole iauPole = IAUPoleFactory.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER);
+        Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
+        double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
+        Assert.assertEquals(0,   Vector3D.distance(pole, Vector3D.PLUS_K), 1.0e-15);
+        Assert.assertEquals(0.0, w, 1.0e-15);
+    }
+
+    @Test
+    public void testSun() throws OrekitException, UnsupportedEncodingException, IOException {
+        IAUPole iauPole = IAUPoleFactory.getIAUPole(EphemerisType.SUN);
+        Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
+        final double alphaRef    = FastMath.toRadians(286.13);
+        final double deltaRef    = FastMath.toRadians(63.87);
+        final double wRef        = FastMath.toRadians(84.176);
+        final double rateRef     = FastMath.toRadians(14.1844000);
+        double w = iauPole.getPrimeMeridianAngle(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 3600.0,
+                                                                  TimeScalesFactory.getTDB()));
+        Assert.assertEquals(alphaRef, MathUtils.normalizeAngle(pole.getAlpha(), alphaRef), 1.0e-15);
+        Assert.assertEquals(deltaRef, pole.getDelta(), 1.0e-15);
+        Assert.assertEquals(wRef + rateRef / 24.0, w, 1.0e-15);
+    }
 
     @Test
     public void testNaif() throws OrekitException, UnsupportedEncodingException, IOException {

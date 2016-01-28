@@ -277,14 +277,6 @@ public class ODMMetaData {
         this.frameEpoch = frameEpoch;
     }
 
-    /** Set epoch of reference frame for MET and MRT Time systems, if not intrinsic to the definition of the
-     * reference frame.
-     * @param offset the offset between the frame epoch and the initial date
-     * */
-    void setFrameEpoch(final double offset) {
-        this.frameEpoch = odmFile.getMissionReferenceDate().shiftedBy(offset);
-    }
-
     /** Get the meta-data comment.
      * @return meta-data comment
      */
