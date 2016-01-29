@@ -434,7 +434,7 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
         // check the name against predefined frames
         for (Predefined predefined : Predefined.values()) {
             if (frameName.equals(predefined.getName())) {
-                if (frameName.startsWith("ITRF")) {
+                if (predefined.toString().startsWith("ITRF")) {
                     return FramesFactory.getFrame(predefined);
                 } else {
                     throw new OrekitException(NOT_EARTH_FRAME, frameName);
