@@ -43,9 +43,11 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
+import org.orekit.estimation.leastsquares.BatchLSObserver;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Bias;
 import org.orekit.estimation.measurements.Evaluation;
@@ -100,15 +102,16 @@ public class OrbitDetermination {
     public static void main(String[] args) {
         try {
 
-            // configure Orekit data acces
-            Utils.setDataRoot("tutorial-orekit-data");
-
             // input in tutorial resources directory/output (in user's home directory)
             String inputPath = OrbitDetermination.class.getClassLoader().getResource("orbit-determination.in").toURI().getPath();
             File input  = new File(inputPath);
 
             // output in user's home directory
             File output = new File(new File(System.getProperty("user.home")), "orbit-determination.out");
+
+            // configure Orekit data acces
+            File orekitData = new File(input.getParent(), "tutorial-orekit-data");
+            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(orekitData));
 
             new OrbitDetermination().run(input, output);
 
@@ -119,6 +122,7 @@ public class OrbitDetermination {
             System.err.println(ioe.getLocalizedMessage());
             System.exit(1);
         } catch (IllegalArgumentException iae) {
+            iae.printStackTrace(System.err);
             System.err.println(iae.getLocalizedMessage());
             System.exit(1);
         } catch (OrekitException oe) {
@@ -175,6 +179,14 @@ public class OrbitDetermination {
         }
 
         // estimate orbit
+        estimator.setObserver(new BatchLSObserver() {
+            /** {@inheritDoc} */
+            @Override
+            public void iterationPerformed(final int iteration, final Orbit orbit,
+                                           final Map<Measurement<?>, Evaluation<?>> evaluations) {
+                System.out.println("iteration " + iteration + ", orbit " + orbit);
+            }
+        });
         Orbit estimated = estimator.estimate(initialGuess);
 
         // compute some statistics
@@ -404,7 +416,7 @@ public class OrbitDetermination {
         if (!parser.containsKey(ParameterKey.BODY_FRAME)) {
             bodyFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         } else {
-            bodyFrame = parser.getInertialFrame(ParameterKey.BODY_FRAME);
+            bodyFrame = parser.getEarthFrame(ParameterKey.BODY_FRAME);
         }
 
         final double equatorialRadius;
@@ -616,10 +628,10 @@ public class OrbitDetermination {
                 azELBias = null;
             }
 
-            stations.put(station.getName(), new StationData(station,
-                                                            rangeSigma,     rangeBias,
-                                                            rangeRateSigma, rangeRateBias,
-                                                            azELSigma,      azELBias));
+            stations.put(stationNames[i], new StationData(station,
+                                                          rangeSigma,     rangeBias,
+                                                          rangeRateSigma, rangeRateBias,
+                                                          azELSigma,      azELBias));
 
         }
 
@@ -715,14 +727,14 @@ public class OrbitDetermination {
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
                 line = line.trim();
-                if (!line.startsWith("#")) {
+                if (line.length() > 0 && !line.startsWith("#")) {
                     String[] fields = line.split("\\s+");
                     if (fields.length < 2) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   lineNumber, file.getName(), line);
                     }
                     try {
-                        final MeasurementsParser parser  = MeasurementsParser.valueOf(fields[2]);
+                        final MeasurementsParser parser  = MeasurementsParser.valueOf(fields[1]);
                         final Measurement<?> measurement = parser.parseFields(fields, stations, pvData,
                                                                               satRangeBias, weights,
                                                                               line, lineNumber, file.getName());
@@ -736,7 +748,7 @@ public class OrbitDetermination {
                         }
                     } catch (IllegalArgumentException iae) {
                         throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
-                                                  "unknown measurement type " + fields[2] +
+                                                  "unknown measurement type " + fields[1] +
                                                   " at line " + lineNumber +
                                                   " in file " + file.getName());
                     }
