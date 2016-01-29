@@ -82,7 +82,7 @@ orbit.cartesian.vy =  -1474.468
 orbit.cartesian.vz = 55.430
 
 ## Spacecraft mass (kg) [1000.]
-# mass = 5000.0
+# mass = 5370.0
 
 # IERS conventions [2010]
 iers.conventions = 2010
@@ -249,4 +249,4 @@ estimator.relative.convergence.threshold = 1.0e-14
 estimator.max.iterations                 = 20
 
 # comma-separated list of measurements files (in the same directory as this file)
-measurements.files = SEQ.dat
+measurements.files = W3B.aer
