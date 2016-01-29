@@ -31,7 +31,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.BoxAndSolarArraySpacecraft;
-import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -69,7 +68,7 @@ public class DragForceTest extends AbstractForceModelTest {
                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       Constants.WGS84_EARTH_FLATTENING,
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
-                              new SphericalSpacecraft(2.5, 1.2, 0.7, 0.2));
+                              new IsotropicDrag(2.5, 1.2));
 
         checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
 
@@ -101,7 +100,7 @@ public class DragForceTest extends AbstractForceModelTest {
                                                  new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       Constants.WGS84_EARTH_FLATTENING,
                                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
-                              new SphericalSpacecraft(2.5, 1.2, 0.7, 0.2));
+                              new IsotropicDrag(2.5, 1.2));
         propagator.addForceModel(forceModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
 
@@ -184,7 +183,7 @@ public class DragForceTest extends AbstractForceModelTest {
                                                   inc, aop, raan, mean, PositionAngle.MEAN,
                                                   frame, initialDate, Constants.EIGEN5C_EARTH_MU);
 
-        SphericalSpacecraft shape = new SphericalSpacecraft(10., 2.2, 0., 0.);
+        IsotropicDrag shape = new IsotropicDrag(10., 2.2);
 
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         BodyShape earthShape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, itrf);

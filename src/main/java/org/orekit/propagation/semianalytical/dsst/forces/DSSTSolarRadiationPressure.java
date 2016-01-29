@@ -21,7 +21,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.SphericalSpacecraft;
+import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.SpacecraftState;
@@ -131,8 +131,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         // the conversion is:
         // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
         // with kA arbitrary sets to 0
-        this(dRef, pRef, sun, equatorialRadius, new SphericalSpacecraft(
-                area, 0.0, 0.0, 3.25 - 2.25 * cr));
+        this(dRef, pRef, sun, equatorialRadius, new IsotropicRadiationSingleCoefficient(area, cr));
     }
 
     /**

@@ -21,6 +21,14 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Set up three different implementations of radiation pressure coefficients,
+        using either a single reflection coefficient, or a pair of absorption
+        and specular reflection coefficients using the classical convention about
+        specular reflection, or a pair of absorption and specular reflection
+        coefficients using the legacy convention from the 1995 CNES book.
+        Fixes issue #170
+      </action>
       <action dev="luc" type="fix">
         Fixed wrong latitude normalization in FieldGeodeticPoint.
       </action>
