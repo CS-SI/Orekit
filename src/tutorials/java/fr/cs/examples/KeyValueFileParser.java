@@ -102,7 +102,7 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      */
     public void parseInput(final InputStream input) throws IOException, IllegalArgumentException {
 
-        final Pattern        arrayPattern = Pattern.compile("(\\w+)\\s*\\[([0-9]+)\\]");
+        final Pattern        arrayPattern = Pattern.compile("([\\w\\.]+)\\s*\\[([0-9]+)\\]");
         final BufferedReader reader       = new BufferedReader(new InputStreamReader(input));
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
             line = line.trim();
