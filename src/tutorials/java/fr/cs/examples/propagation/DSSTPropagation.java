@@ -77,6 +77,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.KeyValueFileParser;
@@ -129,6 +130,8 @@ public class DSSTPropagation {
 
     /** Input parameter keys. */
     private static enum ParameterKey {
+        BODY_FRAME,
+        INERTIAL_FRAME,
         ORBIT_DATE,
         ORBIT_CIRCULAR_A,
         ORBIT_CIRCULAR_EX,
@@ -212,11 +215,16 @@ public class DSSTPropagation {
         // Central body attraction coefficient (m³/s²)
         final double mu = unnormalized.getMu();
 
-        // Earth frame definition (for faster computation)
-        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        // Earth frame definition
+        final Frame earthFrame;
+        if (!parser.containsKey(ParameterKey.BODY_FRAME)) {
+            earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        } else {
+            earthFrame = parser.getEarthFrame(ParameterKey.BODY_FRAME);
+        }
 
-        // Orbit definition (inertial frame is EME2000)
-        final Orbit orbit = createOrbit(parser, FramesFactory.getEME2000(), utc, mu);
+        // Orbit definition
+        final Orbit orbit = createOrbit(parser, utc, mu);
 
         // DSST propagator definition
         double mass = 1000.0;
@@ -356,15 +364,22 @@ public class DSSTPropagation {
 
     /** Create an orbit from input parameters
      * @param parser input file parser
-     * @param frame  inertial frame
      * @param scale  time scale
      * @param mu     central attraction coefficient
-     * @throws NoSuchElementException if input parameters are mising
+     * @throws OrekitException if inertial frame cannot be retrieved
+     * @throws NoSuchElementException if input parameters are missing
      * @throws IOException if input parameters are invalid
      */
     private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
-                              final Frame frame, final TimeScale scale, final double mu)
-        throws NoSuchElementException, IOException {
+                              final TimeScale scale, final double mu)
+        throws OrekitException, NoSuchElementException, IOException {
+
+        final Frame frame;
+        if (!parser.containsKey(ParameterKey.INERTIAL_FRAME)) {
+            frame = FramesFactory.getEME2000();
+        } else {
+            frame = parser.getInertialFrame(ParameterKey.INERTIAL_FRAME);
+        }
 
         // Orbit definition
         Orbit orbit;
@@ -596,19 +611,19 @@ public class DSSTPropagation {
     private static class OutputHandler implements OrekitFixedStepHandler {
 
         /** Format for delta T. */
-        private static final String DT_FORMAT                             = "%17.6f";
+        private static final String DT_FORMAT                             = "%20.9f";
 
         /** Format for Keplerian elements. */
-        private static final String KEPLERIAN_ELEMENTS_FORMAT             = " %13.6f %13.10f %14.6f %14.6f %14.6f %14.6f";
+        private static final String KEPLERIAN_ELEMENTS_FORMAT             = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";
 
         /** Format for equinoctial elements. */
-        private static final String EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT = " %13.10f %13.10f %13.10f %13.10f %14.6f";
+        private static final String EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT = " %23.16e %23.16e %23.16e %23.16e %23.16e";
 
         /** Format for equinoctial elements. */
-        private static final String EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT    = " %13.6f" + EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT;
+        private static final String EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT    = " %23.16e" + EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT;
 
         /** Format for Cartesian elements. */
-        private static final String CARTESIAN_ELEMENTS_FORMAT             = " %13.6f %13.6f %13.6f %13.9f %13.9f %13.9f";
+        private static final String CARTESIAN_ELEMENTS_FORMAT             = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";
 
         /** Format for short period coefficients. */
         private static final String SHORT_PERIOD_COEFFICIENTS_FORMAT      = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";
