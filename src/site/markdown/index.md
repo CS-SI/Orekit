@@ -63,7 +63,7 @@
 
     * analytical models for small maneuvers without propagation
     * impulse maneuvers for any propagator type
-    *continuous maneuvers for numerical propagator type
+    * continuous maneuvers for numerical propagator type
 
   * Propagation
 
@@ -167,6 +167,7 @@
   * Earth models
   
     * tropospheric delay (modified Saastamoinen)
+    * tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and Saemundssen's formula quoted by Meeus)
     * geomagnetic field (WMM, IGRF)
     * geoid model from any gravity field
     * tessellation of zones of interest as tiles
