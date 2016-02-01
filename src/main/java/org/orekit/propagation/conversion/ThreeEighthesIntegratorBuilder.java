@@ -19,6 +19,7 @@ package org.orekit.propagation.conversion;
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ThreeEighthesIntegrator;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 
 /** Builder for ThreeEighthesIntegrator.
  * @author Pascal Parraud
@@ -38,7 +39,7 @@ public class ThreeEighthesIntegratorBuilder implements FirstOrderIntegratorBuild
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit) {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
         return new ThreeEighthesIntegrator(step);
     }
 

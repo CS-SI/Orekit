@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed wrong orbit type in propagator conversion. The type specified by
+        user was ignored when computing variable stepsize integrator tolerances.
+      </action>
       <action dev="luc" type="add">
         Set up three different implementations of radiation pressure coefficients,
         using either a single reflection coefficient, or a pair of absorption
