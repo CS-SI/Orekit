@@ -107,7 +107,9 @@ public class PositionAngleDetectorTest {
         throws OrekitException {
 
         PositionAngleDetector d =
-                new PositionAngleDetector(60.0, 1.e-10, orbitType, positionAngle, angle).
+                new PositionAngleDetector(orbitType, positionAngle, angle).
+                withMaxCheck(60).
+                withThreshold(1.e-10).
                 withHandler(new ContinueOnEvent<PositionAngleDetector>());
 
         Assert.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);

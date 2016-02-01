@@ -45,12 +45,10 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  *  <li>the {@link #getMeanElementRate(SpacecraftState)} method.
  *  The force model instance will extract all the state data needed to compute
  *  the mean element rates that contribute to the mean state derivative.</li>
+ *  <li>the {@link #updateShortPeriodTerms(SpacecraftState...)} method,
+ *  if osculating parameters are desired, on a sample of points within the
+ *  last step.</li>
  *  </ol>
- *  </p>
- *  <p>
- *  The propagator will call the {@link #getShortPeriodicVariations(AbsoluteDate, double[])}
- *  method at the end of the propagation in order to compute the short periodic
- *  variations to be added to the mean elements to get the final state.
  *  </p>
  *
  * @author Romain Di Constanzo

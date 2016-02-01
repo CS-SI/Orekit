@@ -42,7 +42,7 @@ public class MaxGapInterpolationGrid implements InterpolationGrid {
     /** {@inheritDoc} */
     @Override
     public double[] getGridPoints(final double stepStart, final double stepEnd) {
-        final int pointsPerStep = (int) FastMath.ceil(FastMath.abs(stepEnd - stepStart) / maxGap);
+        final int pointsPerStep = FastMath.max(2, (int) FastMath.ceil(FastMath.abs(stepEnd - stepStart) / maxGap));
         final double[] grid = new double[pointsPerStep];
 
         final double stepSize = (stepEnd - stepStart) / (pointsPerStep - 1);

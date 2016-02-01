@@ -90,7 +90,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
     private EHModel initialModel;
 
     /** All models. */
-    private TimeSpanMap<EHModel> models;
+    private transient TimeSpanMap<EHModel> models;
 
     /** Reference radius of the central body attraction model (m). */
     private double referenceRadius;
@@ -368,7 +368,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         }
 
         // rough initialization of the mean parameters
-        EHModel current = new EHModel(osculating, mass);
+        EHModel current = new EHModel(osculating, mass, referenceRadius, mu, ck0);
 
         // threshold for each parameter
         final double epsilon         = 1.0e-13;
@@ -402,7 +402,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
                                                     PositionAngle.MEAN,
                                                     current.mean.getFrame(),
                                                     current.mean.getDate(), mu),
-                                  mass);
+                                  mass, referenceRadius, mu, ck0);
 
             // check convergence
             if ((FastMath.abs(deltaA)      < thresholdA) &&
@@ -431,7 +431,10 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
-    private class EHModel {
+    private static class EHModel implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20160115L;
 
         /** Mean orbit. */
         private final CircularOrbit mean;
@@ -500,12 +503,17 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         /** Create a model for specified mean orbit.
          * @param mean mean orbit
          * @param mass constant mass
+         * @param referenceRadius reference radius of the central body attraction model (m)
+         * @param mu central attraction coefficient (m³/s²)
+         * @param ck0 un-normalized zonal coefficients
          * @exception PropagationException if mean orbit is not within model supported domain
          */
-        EHModel(final CircularOrbit mean, final double mass) throws PropagationException {
+        EHModel(final CircularOrbit mean, final double mass,
+                final double referenceRadius, final double mu, final double[] ck0)
+            throws PropagationException {
 
-            this.mean = mean;
-            this.mass = mass;
+            this.mean            = mean;
+            this.mass            = mass;
 
             // preliminary processing
             double q = referenceRadius / mean.getA();
@@ -982,11 +990,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
                 }
                 if (transitionDates != null) {
                     // override the state transitions
-                    propagator.models = new TimeSpanMap<EHModel>(propagator.new EHModel(allOrbits[0],
-                                                                                        allMasses[0]));
+                    final double[] ck0 = new double[] {
+                        0, 0, g[3], g[4], g[5], g[6], g[7]
+                    };
+                    propagator.models = new TimeSpanMap<EHModel>(new EHModel(allOrbits[0], allMasses[0],
+                                                                             g[1], g[2], ck0));
                     for (int i = 0; i < transitionDates.length; ++i) {
-                        propagator.models.addValidAfter(propagator.new EHModel(allOrbits[i + 1],
-                                                                               allMasses[i + 1]),
+                        propagator.models.addValidAfter(new EHModel(allOrbits[i + 1], allMasses[i + 1],
+                                                                    g[1], g[2], ck0),
                                                         transitionDates[i]);
                     }
                 }

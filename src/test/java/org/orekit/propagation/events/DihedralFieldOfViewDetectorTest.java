@@ -1,3 +1,19 @@
+/* Copyright 2002-2016 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.events;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -25,8 +41,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-
-
+@Deprecated
 public class DihedralFieldOfViewDetectorTest {
 
     // Body mu
@@ -62,9 +77,15 @@ public class DihedralFieldOfViewDetectorTest {
         final double aperture1 = FastMath.toRadians(28);
         final double aperture2 = FastMath.toRadians(120);
 
-        final EventDetector sunVisi =
+        final DihedralFieldOfViewDetector sunVisi =
                 new DihedralFieldOfViewDetector(maxCheck, sunPV, center, axis1, aperture1, axis2, aperture2).
                 withHandler(new DihedralSunVisiHandler());
+        Assert.assertEquals(0, Vector3D.distance(center, sunVisi.getCenter()), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(axis1,  sunVisi.getAxis1()),  1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(axis2,  sunVisi.getAxis2()),  1.0e-15);
+        Assert.assertEquals(aperture1, sunVisi.getHalfAperture1(), 1.0e-15);
+        Assert.assertEquals(aperture2, sunVisi.getHalfAperture2(), 1.0e-15);
+        Assert.assertSame(sunPV, sunVisi.getPVTarget());
 
         // Add event to be detected
         propagator.addEventDetector(sunVisi);
@@ -110,9 +131,9 @@ public class DihedralFieldOfViewDetectorTest {
 
 
     /** Handler for visibility event. */
-    private static class DihedralSunVisiHandler implements EventHandler<DihedralFieldOfViewDetector> {
+    private static class DihedralSunVisiHandler implements EventHandler<EventDetector> {
 
-        public Action eventOccurred(final SpacecraftState s, final DihedralFieldOfViewDetector detector,
+        public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing)
             throws OrekitException {
             if (increasing) {
@@ -133,7 +154,7 @@ public class DihedralFieldOfViewDetectorTest {
             }
         }
 
-        public SpacecraftState resetState(DihedralFieldOfViewDetector detector, SpacecraftState oldState) {
+        public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
             return oldState;
         }
 

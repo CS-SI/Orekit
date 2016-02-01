@@ -65,7 +65,7 @@ public class ModelTest {
         // create model
         final Model model = new Model(propagatorBuilder, propagatorBuilder.getFreeParameters(),
                                       measurements, measurementsParameters,
-                                      context.initialOrbit.getDate());
+                                      context.initialOrbit.getDate(), null);
 
         // evaluate model on perfect start point
         RealVector point = startPoint(context, propagatorBuilder, measurementsParameters);

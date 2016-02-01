@@ -22,9 +22,10 @@ import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.radiation.RadiationSensitive;
+import org.orekit.forces.radiation.IsotropicRadiationCNES95Convention;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -32,26 +33,26 @@ import org.orekit.time.AbsoluteDate;
  * <p>The model of this spacecraft is a simple spherical model, this
  * means that all coefficients are constant and do not depend of
  * the direction.</p>
- * <p>Instances of this class are guaranteed to be immutable.</p>
  *
  * @see BoxAndSolarArraySpacecraft
+ * @see IsotropicDrag
+ * @see IsotropicRadiationCNES95Convention
  * @author &Eacute;douard Delente
  * @author Fabien Maussion
  * @author Pascal Parraud
+ * @deprecated as of 3.1, replaced with {@link IsotropicDrag}, and either
+ * {@link org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient},
+ * {@link org.orekit.forces.radiation.IsotropicRadiationClassicalConvention}
+ * or {@link IsotropicRadiationCNES95Convention}
  */
+@Deprecated
 public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
 
-    /** Cross section (m²). */
-    private final double crossSection;
+    /** Drag part. */
+    private IsotropicDrag drag;
 
-    /** Drag coefficient. */
-    private double dragCoeff;
-
-    /** Absorption coefficient. */
-    private double absorptionCoeff;
-
-    /** Specular reflection coefficient. */
-    private double specularReflectionCoeff;
+    /** Radiation part. */
+    private IsotropicRadiationCNES95Convention radiation;
 
     /** Simple constructor.
      * @param crossSection Surface (m²)
@@ -63,26 +64,22 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
      */
     public SphericalSpacecraft(final double crossSection, final double dragCoeff,
                                final double absorptionCoeff, final double reflectionCoeff) {
-        this.crossSection            = crossSection;
-        this.dragCoeff               = dragCoeff;
-        this.absorptionCoeff         = absorptionCoeff;
-        this.specularReflectionCoeff = reflectionCoeff;
+        this.drag      = new IsotropicDrag(crossSection, dragCoeff);
+        this.radiation = new IsotropicRadiationCNES95Convention(crossSection, absorptionCoeff, reflectionCoeff);
     }
 
     /** {@inheritDoc} */
     public Vector3D dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                      final Rotation rotation, final double mass,
                                      final double density, final Vector3D relativeVelocity) {
-        return new Vector3D(relativeVelocity.getNorm() * density * dragCoeff * crossSection / (2 * mass),
-                            relativeVelocity);
+        return drag.dragAcceleration(date, frame, position, rotation, mass, density, relativeVelocity);
     }
 
     /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
                                                                final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
                                                                final DerivativeStructure density, final FieldVector3D<DerivativeStructure> relativeVelocity) {
-        return new FieldVector3D<DerivativeStructure>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
-                              relativeVelocity);
+        return drag.dragAcceleration(date, frame, position, rotation, mass, density, relativeVelocity);
     }
 
     /** {@inheritDoc} */
@@ -91,86 +88,58 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
                                                                final  double density, final Vector3D relativeVelocity,
                                                                final String paramName)
         throws OrekitException {
-
-        if (!DRAG_COEFFICIENT.equals(paramName)) {
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName, DRAG_COEFFICIENT);
-        }
-
-        final DerivativeStructure dragCoeffDS = new DerivativeStructure(1, 1, 0, dragCoeff);
-
-        return new FieldVector3D<DerivativeStructure>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
-                              relativeVelocity);
-
+        return drag.dragAcceleration(date, frame, position, rotation, mass, density, relativeVelocity, paramName);
     }
 
     /** {@inheritDoc} */
     public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                   final Rotation rotation, final double mass, final Vector3D flux) {
-        final double kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9.0);
-        return new Vector3D(kP / mass, flux);
+        return radiation.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
     }
 
     /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
-                                                    final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
-                                                    final FieldVector3D<DerivativeStructure> flux) {
-        final double kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9.0);
-        return new FieldVector3D<DerivativeStructure>(mass.reciprocal().multiply(kP), flux);
+                                                                            final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
+                                                                            final FieldVector3D<DerivativeStructure> flux) {
+        return radiation.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
     }
 
     /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                                    final Rotation rotation, final double mass,
-                                                    final Vector3D flux, final String paramName)
+                                                                            final Rotation rotation, final double mass,
+                                                                            final Vector3D flux, final String paramName)
         throws OrekitException {
-
-        final DerivativeStructure absorptionCoeffDS;
-        final DerivativeStructure specularReflectionCoeffDS;
-        if (ABSORPTION_COEFFICIENT.equals(paramName)) {
-            absorptionCoeffDS         = new DerivativeStructure(1, 1, 0, absorptionCoeff);
-            specularReflectionCoeffDS = new DerivativeStructure(1, 1,    specularReflectionCoeff);
-        } else if (REFLECTION_COEFFICIENT.equals(paramName)) {
-            absorptionCoeffDS         = new DerivativeStructure(1, 1,    absorptionCoeff);
-            specularReflectionCoeffDS = new DerivativeStructure(1, 1, 0, specularReflectionCoeff);
-        } else {
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
-                                      ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);
-        }
-
-        final DerivativeStructure kP =
-                absorptionCoeffDS.subtract(1).multiply(specularReflectionCoeffDS.subtract(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
-        return new FieldVector3D<DerivativeStructure>(kP.divide(mass), flux);
-
+        return radiation.radiationPressureAcceleration(date, frame, position, rotation, mass, flux, paramName);
     }
 
     /** {@inheritDoc} */
     public void setDragCoefficient(final double value) {
-        dragCoeff = value;
+        drag.setDragCoefficient(value);
     }
 
     /** {@inheritDoc} */
     public double getDragCoefficient() {
-        return dragCoeff;
+        return drag.getDragCoefficient();
     }
 
     /** {@inheritDoc} */
     public void setAbsorptionCoefficient(final double value) {
-        absorptionCoeff = value;
+        radiation.setAbsorptionCoefficient(value);
     }
 
     /** {@inheritDoc} */
     public double getAbsorptionCoefficient() {
-        return absorptionCoeff;
+        return radiation.getAbsorptionCoefficient();
     }
 
     /** {@inheritDoc} */
     public void setReflectionCoefficient(final double value) {
-        specularReflectionCoeff = value;
+        radiation.setReflectionCoefficient(value);
     }
 
     /** {@inheritDoc} */
     public double getReflectionCoefficient() {
-        return specularReflectionCoeff;
+        return radiation.getReflectionCoefficient();
     }
 
 }

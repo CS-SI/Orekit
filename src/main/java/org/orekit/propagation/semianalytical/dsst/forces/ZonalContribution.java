@@ -59,6 +59,21 @@ class ZonalContribution implements DSSTForceModel {
     /** Highest possible degree taken into account in short periodics computation. */
     private static final int SHORT_PERIODICS_MAX_DEGREE = 12;
 
+    /** Retrograde factor I.
+     *  <p>
+     *  DSST model needs equinoctial orbit as internal representation.
+     *  Classical equinoctial elements have discontinuities when inclination
+     *  is close to zero. In this representation, I = +1. <br>
+     *  To avoid this discontinuity, another representation exists and equinoctial
+     *  elements can be expressed in a different way, called "retrograde" orbit.
+     *  This implies I = -1. <br>
+     *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
+     *  But for the sake of consistency with the theory, the retrograde factor
+     *  has been kept in the formulas.
+     *  </p>
+     */
+    private static final int I = 1;
+
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
@@ -100,8 +115,6 @@ class ZonalContribution implements DSSTForceModel {
     private double q;
     /** hy. */
     private double p;
-    /** Retrograde factor. */
-    private int I;
 
     /** Eccentricity. */
     private double ecc;
@@ -371,9 +384,6 @@ class ZonalContribution implements DSSTForceModel {
         h = aux.getH();
         q = aux.getQ();
         p = aux.getP();
-
-        // Retrograde factor
-        I = aux.getRetrogradeFactor();
 
         // Eccentricity
         ecc = aux.getEcc();

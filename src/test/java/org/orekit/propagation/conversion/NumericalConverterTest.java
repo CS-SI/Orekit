@@ -36,10 +36,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.SimpleExponentialAtmosphere;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -369,8 +369,7 @@ public class NumericalConverterTest {
         earth.setAngularThreshold(1.e-7);
         final Atmosphere atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
         final double dragCoef = 2.0;
-        final SphericalSpacecraft ss = new SphericalSpacecraft(10., dragCoef, 0., 0.);
-        drag = new DragForce(atmosphere, ss);
+        drag = new DragForce(atmosphere, new IsotropicDrag(10., dragCoef));
 
         propagator.addForceModel(gravity);
         propagator.addForceModel(drag);

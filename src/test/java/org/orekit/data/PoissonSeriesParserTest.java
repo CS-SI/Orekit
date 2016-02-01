@@ -22,14 +22,20 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -538,6 +544,79 @@ public class PoissonSeriesParserTest {
             Assert.assertEquals(s, xys[2], 1.0e-15 * FastMath.abs(s));
         }
 
+    }
+
+    @Test
+    public void testDerivatives() throws OrekitException {
+
+        Utils.setDataRoot("regular-data");
+        String directory = "/assets/org/orekit/IERS-conventions/";
+        PoissonSeriesParser<DerivativeStructure> parser =
+                new PoissonSeriesParser<DerivativeStructure>(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
+                    withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
+        PoissonSeries<DerivativeStructure> xSeries =
+                        parser.parse(getClass().getResourceAsStream(directory + "2010/tab5.2a.txt"), "2010/tab5.2a.txt");
+        PoissonSeries<DerivativeStructure> ySeries =
+                        parser.parse(getClass().getResourceAsStream(directory + "2010/tab5.2b.txt"), "2010/tab5.2b.txt");
+        PoissonSeries<DerivativeStructure> zSeries =
+                        parser.parse(getClass().getResourceAsStream(directory + "2010/tab5.2d.txt"), "2010/tab5.2d.txt");
+
+        TimeScale ut1 = TimeScalesFactory.getUT1(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+        FundamentalNutationArguments arguments = IERSConventions.IERS_2010.getNutationArguments(ut1);
+
+        Coordinate xCoordinate              = new Coordinate(xSeries, arguments);
+        Coordinate yCoordinate              = new Coordinate(ySeries, arguments);
+        Coordinate zCoordinate              = new Coordinate(zSeries, arguments);
+        UnivariateDifferentiableFunction dx = new FiniteDifferencesDifferentiator(4, 0.4).differentiate(xCoordinate);
+        UnivariateDifferentiableFunction dy = new FiniteDifferencesDifferentiator(4, 0.4).differentiate(yCoordinate);
+        UnivariateDifferentiableFunction dz = new FiniteDifferencesDifferentiator(4, 0.4).differentiate(zCoordinate);
+
+        for (double t = 0; t < Constants.JULIAN_DAY; t += 120) {
+
+            final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(t);
+
+            // direct computation of derivatives
+            FieldBodiesElements<DerivativeStructure> elements = arguments.evaluateDerivative(date);
+            DerivativeStructure xDirect = xSeries.value(elements);
+            DerivativeStructure yDirect = ySeries.value(elements);
+            DerivativeStructure zDirect = zSeries.value(elements);
+
+            // finite differences computation of derivatives
+            DerivativeStructure zero = new DerivativeStructure(1, 1, 0, 0.0);
+            xCoordinate.setDate(date);
+            DerivativeStructure xFinite = dx.value(zero);
+            yCoordinate.setDate(date);
+            DerivativeStructure yFinite = dy.value(zero);
+            zCoordinate.setDate(date);
+            DerivativeStructure zFinite = dz.value(zero);
+
+            Assert.assertEquals(xFinite.getValue(),              xDirect.getValue(),              FastMath.abs(7.0e-15 * xFinite.getValue()));
+            Assert.assertEquals(xFinite.getPartialDerivative(1), xDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * xFinite.getPartialDerivative(1)));
+            Assert.assertEquals(yFinite.getValue(),              yDirect.getValue(),              FastMath.abs(7.0e-15 * yFinite.getValue()));
+            Assert.assertEquals(yFinite.getPartialDerivative(1), yDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * yFinite.getPartialDerivative(1)));
+            Assert.assertEquals(zFinite.getValue(),              zDirect.getValue(),              FastMath.abs(7.0e-15 * zFinite.getValue()));
+            Assert.assertEquals(zFinite.getPartialDerivative(1), zDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * zFinite.getPartialDerivative(1)));
+
+        }
+
+    }
+
+    private static class Coordinate implements UnivariateFunction {
+        private final PoissonSeries<DerivativeStructure> series;
+        private final FundamentalNutationArguments arguments;
+        private AbsoluteDate date;
+        Coordinate(PoissonSeries<DerivativeStructure> series,
+                   FundamentalNutationArguments arguments) {
+            this.series    = series;
+            this.arguments = arguments;
+            this.date      = AbsoluteDate.J2000_EPOCH;
+        }
+        void setDate(AbsoluteDate date) {
+            this.date = date;
+        }
+        public double value(double x) {
+            return series.value(arguments.evaluateAll(date.shiftedBy(x)));
+        }
     }
 
 }

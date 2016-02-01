@@ -66,6 +66,21 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Maximum power for eccentricity used in short periodic computation. */
     private static final int        MAX_ECCPOWER_SP = 4;
 
+    /** Retrograde factor I.
+     *  <p>
+     *  DSST model needs equinoctial orbit as internal representation.
+     *  Classical equinoctial elements have discontinuities when inclination
+     *  is close to zero. In this representation, I = +1. <br>
+     *  To avoid this discontinuity, another representation exists and equinoctial
+     *  elements can be expressed in a different way, called "retrograde" orbit.
+     *  This implies I = -1. <br>
+     *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
+     *  But for the sake of consistency with the theory, the retrograde factor
+     *  has been kept in the formulas.
+     *  </p>
+     */
+    private static final int I = 1;
+
     /** The 3rd body to consider. */
     private final CelestialBody    body;
 
@@ -138,9 +153,6 @@ public class DSSTThirdBody implements DSSTForceModel {
     private double mCo2AB;
     /** B / A(1 + B). */
     private double BoABpo;
-
-    /** Retrograde factor. */
-    private int    I;
 
     /** Max power for a/R3 in the serie expansion. */
     private int    maxAR3Pow;
@@ -317,9 +329,6 @@ public class DSSTThirdBody implements DSSTForceModel {
         h = aux.getH();
         q = aux.getQ();
         p = aux.getP();
-
-        // Retrograde factor
-        I = aux.getRetrogradeFactor();
 
         // Eccentricity
         ecc = aux.getEcc();

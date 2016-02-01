@@ -76,6 +76,9 @@ class Model implements MultivariateJacobianFunction {
     /** Orbit date. */
     private final AbsoluteDate orbitDate;
 
+    /** Observer to be notified at the end of each iteration. */
+    private final BatchLSObserver observer;
+
     /** Iteration number. */
     private int iteration;
 
@@ -100,10 +103,11 @@ class Model implements MultivariateJacobianFunction {
      * @param measurements measurements
      * @param measurementsParameters measurements parameters
      * @param orbitDate orbit date
+     * @param observer observer to be notified at the end of each iteration (may be null)
      */
     Model(final NumericalPropagatorBuilder propagatorBuilder, final List<String> propagatorParameters,
           final List<Measurement<?>> measurements, final List<Parameter> measurementsParameters,
-          final AbsoluteDate orbitDate) {
+          final AbsoluteDate orbitDate, final BatchLSObserver observer) {
 
         this.propagatorBuilder      = propagatorBuilder;
         this.propagatorParameters   = propagatorParameters;
@@ -112,6 +116,7 @@ class Model implements MultivariateJacobianFunction {
         this.parameterColumns       = new HashMap<String, Integer>(measurementsParameters.size());
         this.evaluations            = new IdentityHashMap<Measurement<?>, Evaluation<?>>(measurements.size());
         this.orbitDate              = orbitDate;
+        this.observer               = observer;
         this.iteration              = 0;
 
         // allocate vector and matrix
@@ -159,6 +164,12 @@ class Model implements MultivariateJacobianFunction {
 
             // run the propagation, gathering residuals on the fly
             propagator.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
+
+            // notify the observer
+            if (observer != null) {
+                observer.iterationPerformed(iteration, orbit,
+                                            Collections.unmodifiableMap(evaluations));
+            }
 
             return new Pair<RealVector, RealMatrix>(value, jacobian);
 

@@ -1,0 +1,54 @@
+                                                              BULLETIN B 216
+                                                                (IAU 2000)
+                                                              31 january 2006     
+
+
+
+
+==============================================================================
+Following IAU Conventions 2000, IERS provides new products dX, dY, celestial 
+pole offsets with respect to the new IAU2000A Precession-Nutation theory                                                                                                                                                                                .
+
+The present Bulletin B version includes the celestial pole offsets dX, dY:
+
+dX = X_obs - X_IAU2000A and dY = Y_obs - Y_IAU2000A
+
+where
+
+X_obs, Y_obs are the observed coordinates of the Celestial Intermediate
+Pole (CIP) in the Geocentric Celestial Reference System, and
+
+X_IAU2000A, Y_IAU2000A are the celestial pole coordinates provided by using
+the IAU2000A Precession-Nutation theory.
+
+The current Bulletin B including (dpsi,deps)_1980 will be maintained 
+as long as necessary.
+
+For more details refer to IERS Messages 38, on IAU 2000 Resolution Compliancy
+Information.
+==============================================================================
+
+
+
+
+    Contents are described in the Explanatory Supplement available at
+    http://hpiers.obspm.fr/eop-pc/
+      
+ 1 - EARTH ORIENTATION PARAMETERS (IERS evaluation).
+     The values in this section are samplings of section 2 given at five-day 
+     intervals. 
+
+    Date    MJD       x       y    UT1R-UTC      UT1R-TAI     dX      dY
+  2005/06             "       "        s             s      0.001"   0.001"
+   (0h UTC)
+  
+ Final Bulletin B values.
+  
+  DEC   5  53709   0.06645  0.39063 -0.648796  -32.648796    0.42   -0.24
+  DEC  10  53714   0.06538  0.38970 -0.650520  -32.650520    0.17   -0.13
+  DEC  15  53719   0.06416  0.38751 -0.652800  -32.652800    0.27   -0.18
+  DEC  20  53724   0.06387  0.38904 -0.655712  -32.655712    0.45   -0.42
+  DEC  25  53729   0.06066  0.38697 -0.658743  -32.658743    0.24   -0.48
+  
+  DEC  30  53734   0.05491  0.38468 -0.661412  -32.661412    0.24   -0.33
+  JAN   4  53739   0.05018  0.38244  0.336786  -32.663214    0.28   -0.34

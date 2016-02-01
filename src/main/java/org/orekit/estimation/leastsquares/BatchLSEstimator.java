@@ -57,6 +57,9 @@ public class BatchLSEstimator {
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
 
+    /** Oberver for iterations. */
+    private BatchLSObserver observer;
+
     /** Last evaluations. */
     private final Map<Measurement<?>, Evaluation<?>> evaluations;
 
@@ -79,6 +82,7 @@ public class BatchLSEstimator {
         this.lsBuilder              = new LeastSquaresBuilder();
         this.evaluations            = new IdentityHashMap<Measurement<?>, Evaluation<?>>();
         this.iterations             = -1;
+        this.observer               = null;
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -89,6 +93,13 @@ public class BatchLSEstimator {
         // so the least squares problem should not see our weights
         lsBuilder.weight(null);
 
+    }
+
+    /** Set an observer for iterations.
+     * @param observer observer to be notified at the end of each iteration
+     */
+    public void setObserver(final BatchLSObserver observer) {
+        this.observer = observer;
     }
 
     /** Get the parameters supported by this estimator (including measurements and modifiers).
@@ -213,7 +224,7 @@ public class BatchLSEstimator {
         // set up the model
         final Model model = new Model(propagatorBuilder, propagatorParameters,
                                       measurements, measurementsParameters,
-                                      initialGuess.getDate());
+                                      initialGuess.getDate(), observer);
         lsBuilder.model(model);
 
         // add a validator for orbital parameters

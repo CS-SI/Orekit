@@ -52,12 +52,15 @@ public class LongitudeExtremumDetectorTest {
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
         LongitudeExtremumDetector d =
-                new LongitudeExtremumDetector(60.0, 1.e-6, earth).
+                new LongitudeExtremumDetector(earth).
+                withMaxCheck(60).
+                withThreshold(1.e-6).
                 withHandler(new ContinueOnEvent<LongitudeExtremumDetector>());
 
         Assert.assertEquals(60.0, d.getMaxCheckInterval(), 1.0e-15);
         Assert.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
         Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        Assert.assertSame(earth, d.getBody());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);

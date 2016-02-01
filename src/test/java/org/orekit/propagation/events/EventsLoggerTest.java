@@ -51,7 +51,12 @@ public class EventsLoggerTest {
     @Test
     public void testLogUmbra() throws OrekitException {
         EventsLogger logger = new EventsLogger();
-        propagator.addEventDetector(logger.monitorDetector(umbraDetector));
+        @SuppressWarnings("unchecked")
+        EventDetector monitored = ((AbstractDetector<EventDetector>) logger.monitorDetector(umbraDetector)).
+                withMaxIter(200);
+        Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
+        Assert.assertEquals(200, monitored.getMaxIterationCount());
+        propagator.addEventDetector(monitored);
         propagator.addEventDetector(penumbraDetector);
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();

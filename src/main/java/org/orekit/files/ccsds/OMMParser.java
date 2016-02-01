@@ -127,6 +127,12 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public OMMFile parse(final InputStream stream) throws OrekitException {
+        return (OMMFile) super.parse(stream);
+    }
+
+    /** {@inheritDoc} */
     public OMMFile parse(final InputStream stream, final String fileName) throws OrekitException {
 
         try {

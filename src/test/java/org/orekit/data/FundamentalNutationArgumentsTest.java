@@ -17,9 +17,12 @@
 package org.orekit.data;
 
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -28,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -35,6 +39,42 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 public class FundamentalNutationArgumentsTest {
+
+    @Test
+    public void testNoStream() {
+        try {
+            new FundamentalNutationArguments(IERSConventions.IERS_2010, TimeScalesFactory.getTT(), null, "dummy");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assert.assertEquals("dummy", oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testModifiedData() throws OrekitException, IOException {
+
+        String directory = "/assets/org/orekit/IERS-conventions/";
+        InputStream is = getClass().getResourceAsStream(directory + "2010/nutation-arguments.txt");
+        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        StringBuilder builder = new StringBuilder();
+        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            builder.append(line);
+            builder.append('\n');
+        }
+        reader.close();
+        try {
+            // remove the line:
+            // F5 ≡ Ω = 125.04455501◦ − 6962890.5431″t + 7.4722″t² + 0.007702″t³ − 0.00005939″t⁴
+            String modified = builder.toString().replaceAll("F5[^\\n]+", "");
+            new FundamentalNutationArguments(IERSConventions.IERS_2010, null,
+                                             new ByteArrayInputStream(modified.getBytes()),
+                                             "modified-data");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
+        }
+    }
 
     @Test
     public void testSerializationNoTidalCorrection() throws OrekitException, IOException, ClassNotFoundException {

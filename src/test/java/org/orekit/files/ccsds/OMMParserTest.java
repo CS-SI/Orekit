@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.OrbitFile.TimeSystem;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -56,7 +57,7 @@ public class OMMParserTest {
                 new OMMParser().withMu(398600e9).withInternationalDesignator(1998, 1, "a");
 
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OMMFile file = parser.parse(inEntry, "OMMExample.txt");
+        final OMMFile file = parser.parse(inEntry);
 
         // Check Header Block;
         Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
@@ -76,6 +77,8 @@ public class OMMParserTest {
         Assert.assertEquals(file.getMetaData().getFrame(), FramesFactory.getTEME());
         Assert.assertEquals(file.getTimeSystem(), TimeSystem.UTC);
         Assert.assertEquals("SGP/SGP4", file.getMetaData().getMeanElementTheory());
+        Assert.assertEquals("TEME", file.getCoordinateSystem());
+        Assert.assertTrue(file.getTLERelatedParametersComment().isEmpty());
 
         // Check Mean Keplerian elements data block;
 
@@ -130,6 +133,7 @@ public class OMMParserTest {
         final OMMParser parser = new OMMParser().
                                  withMissionReferenceDate(new AbsoluteDate()).
                                  withConventions(IERSConventions.IERS_1996).
+                                 withSimpleEOP(true).
                                  withInternationalDesignator(1998, 1, "a");
 
         final OMMFile file = parser.parse(name);
@@ -139,6 +143,7 @@ public class OMMParserTest {
         Assert.assertEquals(5, file.getSolarRadArea(), 1e-10);
         Assert.assertEquals(0.001, file.getSolarRadCoeff(), 1e-10);
         Assert.assertEquals(null, file.getCovRefFrame());
+        Assert.assertEquals(LOFType.TNW, file.getCovRefLofType());
         file.getCovarianceMatrix();
         HashMap<String, String> userDefinedParameters = new HashMap<String, String>();
         userDefinedParameters.put("USER_DEFINED_EARTH_MODEL", "WGS-84");
@@ -167,6 +172,25 @@ public class OMMParserTest {
         file.generateSpacecraftState();
         file.generateKeplerianOrbit();
 
+    }
+
+    @Test
+    public void testWrongKeyword()
+        throws OrekitException, URISyntaxException {
+        // simple test for OMM file, contains p/v entries and other mandatory
+        // data.
+        final String name = getClass().getResource("/ccsds/OMM-wrong-keyword.txt").toURI().getPath();
+        final OMMParser parser = new OMMParser().
+                                 withMissionReferenceDate(new AbsoluteDate()).
+                                 withConventions(IERSConventions.IERS_1996);
+        try {
+            parser.parse(name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(9, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
+        }
     }
 
     @Test

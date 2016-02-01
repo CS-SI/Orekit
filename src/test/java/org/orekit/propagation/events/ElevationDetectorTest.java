@@ -93,6 +93,10 @@ public class ElevationDetectorTest {
                 new ElevationDetector(topo).
                 withConstantElevation(FastMath.toRadians(5.0)).
                 withHandler(checking);
+        Assert.assertNull(detector.getElevationMask());
+        Assert.assertNull(detector.getRefractionModel());
+        Assert.assertSame(topo, detector.getTopocentricFrame());
+        Assert.assertEquals(FastMath.toRadians(5.0), detector.getMinElevation(), 1.0e-15);
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 12, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -186,6 +190,7 @@ public class ElevationDetectorTest {
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withElevationMask(mask)
                                             .withHandler(new StopOnIncreasing<ElevationDetector>());
+        Assert.assertSame(mask, detector.getElevationMask());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -223,6 +228,7 @@ public class ElevationDetectorTest {
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withRefraction(refractionModel)
                                             .withHandler(new StopOnIncreasing<ElevationDetector>());
+        Assert.assertSame(refractionModel, detector.getRefractionModel());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
