@@ -138,9 +138,6 @@ class TesseralContribution implements DSSTForceModel {
     /** List of resonant orders. */
     private final List<Integer> resOrders;
 
-    /** Factorial. */
-    private final double[] fact;
-
     /** Maximum power of the eccentricity to use in summation over s. */
     private int maxEccPow;
 
@@ -305,13 +302,6 @@ class TesseralContribution implements DSSTForceModel {
         this.maxEccPow = 0;
         this.maxHansen = 0;
 
-       // Factorials computation
-        final int maxFact = 2 * maxDegree + 1;
-        this.fact = new double[maxFact];
-        fact[0] = 1;
-        for (int i = 1; i < maxFact; i++) {
-            fact[i] = i * fact[i - 1];
-        }
     }
 
     /** {@inheritDoc} */
@@ -689,7 +679,7 @@ class TesseralContribution implements DSSTForceModel {
             final GHmsjPolynomials ghMSJ = new GHmsjPolynomials(k, h, alpha, beta, I);
 
             // GAMMAmns function
-            final GammaMnsFunction gammaMNS = new GammaMnsFunction(fact, gamma, I);
+            final GammaMnsFunction gammaMNS = new GammaMnsFunction(maxDegree, gamma, I);
 
             // R / a up to power degree
             final double[] roaPow = new double[maxDegree + 1];
@@ -855,8 +845,7 @@ class TesseralContribution implements DSSTForceModel {
             if ((n - s) % 2 == 0) {
 
                 // Vmns coefficient
-                final double fns    = fact[n + FastMath.abs(s)];
-                final double vMNS   = CoefficientsFactory.getVmns(m, n, s, fns, fact[n - m]);
+                final double vMNS   = CoefficientsFactory.getVmns(m, n, s);
 
                 // Inclination function Gamma and derivative
                 final double gaMNS  = gammaMNS.getValue(m, n, s);
@@ -1022,7 +1011,7 @@ class TesseralContribution implements DSSTForceModel {
                 ghMSJ = new GHmsjPolynomials(k, h, alpha, beta, I);
 
                 // GAMMAmns function
-                gammaMNS = new GammaMnsFunction(fact, gamma, I);
+                gammaMNS = new GammaMnsFunction(maxDegree, gamma, I);
 
                 final int maxRoaPower = FastMath.max(maxDegreeTesseralSP, maxDegreeMdailyTesseralSP);
 
