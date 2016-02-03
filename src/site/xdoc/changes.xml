@@ -21,6 +21,14 @@
   </properties>
   <body>
     <release version="7.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added a way to configure max degree/order for short periods separately
+        from the mean elements settings in DSST tutorial.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed limitation to degree 12 on zonal short periods, degree/order 8 on
+        tesseral short periods, and degree/order 12 for tesseral m-dailies in DSST.
+      </action>
       <action dev="luc" type="fix">
         Fixed wrong orbit type in propagator conversion. The type specified by
         user was ignored when computing variable stepsize integrator tolerances.

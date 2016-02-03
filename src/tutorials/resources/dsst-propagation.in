@@ -149,6 +149,12 @@ output.orbit.is.osculating = false
 central.body.degree = 36
 ## Central body gravity potential order
 central.body.order  =  0
+## short period limits
+max.degree.zonal.short.periods              = 12
+max.degree.tesseral.short.periods           =  8
+max.order.tesseral.short.periods            =  8
+max.degree.tesseral.m.dailies.short.periods = 12
+max.order.tesseral.m.dailies.short.periods  = 12
 
 ## 3rd body Moon (true/false) [false]
 third.body.moon = false

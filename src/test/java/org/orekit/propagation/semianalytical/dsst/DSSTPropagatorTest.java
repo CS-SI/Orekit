@@ -219,7 +219,8 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testPropagationWithCentralBody() throws Exception {
+    @Deprecated
+    public void testDeprecatedConstructor() throws Exception {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -227,6 +228,55 @@ public class DSSTPropagatorTest {
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         DSSTForceModel force = new DSSTCentralBody(earthFrame,
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+
+        // GPS Orbit
+        final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400,
+                                                       TimeScalesFactory.getUTC());
+        final Orbit orbit = new KeplerianOrbit(26559890.,
+                                               0.0041632,
+                                               FastMath.toRadians(55.2),
+                                               FastMath.toRadians(315.4985),
+                                               FastMath.toRadians(130.7562),
+                                               FastMath.toRadians(44.2377),
+                                               PositionAngle.MEAN,
+                                               FramesFactory.getEME2000(),
+                                               initDate,
+                                               provider.getMu());
+
+        // Set propagator with state and force model
+        setDSSTProp(new SpacecraftState(orbit));
+        dsstProp.addForceModel(force);
+
+        // 5 days propagation
+        final SpacecraftState state = dsstProp.propagate(initDate.shiftedBy(5. * 86400.));
+
+        // Ref GTDS_DSST:
+        // a    = 26559.92081 km
+        // h/ey =   0.2731622444E-03
+        // k/ex =   0.4164167597E-02
+        // p/hy =  -0.3399607878
+        // q/hx =   0.3971568634
+        // lM   = 140.6375352°
+        Assert.assertEquals(26559920.81, state.getA(), 1.e-1);
+        Assert.assertEquals(0.2731622444E-03, state.getEquinoctialEx(), 2.e-8);
+        Assert.assertEquals(0.4164167597E-02, state.getEquinoctialEy(), 2.e-8);
+        Assert.assertEquals(-0.3399607878, state.getHx(), 5.e-8);
+        Assert.assertEquals(0.3971568634, state.getHy(), 2.e-6);
+        Assert.assertEquals(140.6375352,
+                            FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), FastMath.PI)),
+                            5.e-3);
+    }
+
+    @Test
+    public void testPropagationWithCentralBody() throws Exception {
+
+        // Central Body geopotential 4x4
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(4, 4);
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        DSSTForceModel force = new DSSTCentralBody(earthFrame,
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                   12, 8, 8, 12, 12);
 
         // GPS Orbit
         final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400,
@@ -275,7 +325,8 @@ public class DSSTPropagatorTest {
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         DSSTForceModel centralBody = new DSSTCentralBody(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                         provider);
+                                                         provider,
+                                                         12, 8, 8, 12, 12);
 
         // Third Bodies Force Model (Moon + Sun) */
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
@@ -330,7 +381,8 @@ public class DSSTPropagatorTest {
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         DSSTForceModel centralBody = new DSSTCentralBody(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                         provider);
+                                                         provider,
+                                                         12, 8, 8, 12, 12);
 
         // Drag Force Model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(provider.getAe(),
@@ -393,7 +445,8 @@ public class DSSTPropagatorTest {
         // Central Body geopotential 2x0
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
         DSSTForceModel centralBody = new DSSTCentralBody(CelestialBodyFactory.getEarth().getBodyOrientedFrame(),
-                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                         12, 8, 8, 12, 12);
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
@@ -494,7 +547,8 @@ public class DSSTPropagatorTest {
                                                       FramesFactory.getGTOD(false));
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody moon = CelestialBodyFactory.getMoon();
-        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp));
+        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp,
+                                                     12, 8, 8, 12, 12));
         propagator.addForceModel(new DSSTThirdBody(sun));
         propagator.addForceModel(new DSSTThirdBody(moon));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
@@ -537,7 +591,8 @@ public class DSSTPropagatorTest {
                                                       FramesFactory.getGTOD(false));
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody moon = CelestialBodyFactory.getMoon();
-        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp));
+        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp,
+                                                     12, 8, 8, 12, 12));
         propagator.addForceModel(new DSSTThirdBody(sun));
         propagator.addForceModel(new DSSTThirdBody(moon));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
@@ -593,7 +648,8 @@ public class DSSTPropagatorTest {
                 GravityFieldFactory.getUnnormalizedProvider(4, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         DSSTForceModel force = new DSSTCentralBody(earthFrame,
-                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                   12, 8, 8, 12, 12);
         prop.addForceModel(force);
 
         prop.setInitialState(initialState, false);
@@ -609,7 +665,8 @@ public class DSSTPropagatorTest {
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
         final DSSTForceModel force = new DSSTCentralBody(earthFrame,
-                Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                         12, 8, 8, 12, 12);
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(force);
@@ -626,7 +683,8 @@ public class DSSTPropagatorTest {
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
         final DSSTForceModel force = new DSSTCentralBody(earthFrame,
-                Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+                                                         Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                                         12, 8, 8, 12, 12);
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(force);
@@ -664,7 +722,8 @@ public class DSSTPropagatorTest {
                                                       FramesFactory.getGTOD(false));
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody moon = CelestialBodyFactory.getMoon();
-        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp));
+        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp,
+                                                     12, 8, 8, 12, 12));
         propagator.addForceModel(new DSSTThirdBody(sun));
         propagator.addForceModel(new DSSTThirdBody(moon));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
@@ -716,7 +775,8 @@ public class DSSTPropagatorTest {
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         final DSSTForceModel force = new DSSTCentralBody(earthFrame,
                                                          Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                         provider);
+                                                         provider,
+                                                         12, 8, 8, 12, 12);
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(force);
         // Computes J2 mean elements using the DSST osculating to mean converter

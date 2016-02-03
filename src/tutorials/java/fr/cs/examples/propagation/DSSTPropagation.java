@@ -170,6 +170,11 @@ public class DSSTPropagation {
         NUMERICAL_COMPARISON,
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
+        MAX_DEGREE_ZONAL_SHORT_PERIODS,
+        MAX_DEGREE_TESSERAL_SHORT_PERIODS,
+        MAX_ORDER_TESSERAL_SHORT_PERIODS,
+        MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS,
+        MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS,
         THIRD_BODY_MOON,
         THIRD_BODY_SUN,
         MASS,
@@ -524,7 +529,13 @@ public class DSSTPropagation {
         }
 
         // Central Body Force Model with un-normalized coefficients
-        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, unnormalized));
+        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                   unnormalized,
+                                                   parser.getInt(ParameterKey.MAX_DEGREE_ZONAL_SHORT_PERIODS),
+                                                   parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_SHORT_PERIODS),
+                                                   parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_SHORT_PERIODS),
+                                                   parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS),
+                                                   parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS)));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
