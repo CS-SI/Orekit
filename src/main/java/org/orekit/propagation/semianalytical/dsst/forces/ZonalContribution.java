@@ -56,9 +56,6 @@ class ZonalContribution implements DSSTForceModel {
     /** Number of points for interpolation. */
     private static final int INTERPOLATION_POINTS = 3;
 
-    /** Highest possible degree taken into account in short periodics computation. */
-    private static final int SHORT_PERIODICS_MAX_DEGREE = 12;
-
     /** Retrograde factor I.
      *  <p>
      *  DSST model needs equinoctial orbit as internal representation.
@@ -189,12 +186,19 @@ class ZonalContribution implements DSSTForceModel {
 
     /** Simple constructor.
      * @param provider provider for spherical harmonics
+     * @param maxDegreeZonalSP maximal degree to consider for short periodics zonal harmonics potential
+     *  (the real degree used may be smaller if the provider does not provide enough terms)
+     * @since 7.1
      */
-    ZonalContribution(final UnnormalizedSphericalHarmonicsProvider provider) {
+    ZonalContribution(final UnnormalizedSphericalHarmonicsProvider provider,
+                      final int maxDegreeZonalSP) {
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
         this.maxOrder  = provider.getMaxOrder();
+
+        maxDegreeShortPeriodics = FastMath.min(maxDegree, maxDegreeZonalSP);
+        maxEccPowShortPeriodics = FastMath.min(maxDegreeShortPeriodics - 1, 4);
 
         // Vns coefficients
         this.Vns = CoefficientsFactory.computeVns(maxDegree + 1);
@@ -239,10 +243,8 @@ class ZonalContribution implements DSSTForceModel {
         computeMeanElementsTruncations(aux);
 
         if (!meanOnly) {
-            computeShortPeriodicsTruncations();
             maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
-        }
-        else {
+        } else {
             maxEccPow = maxEccPowMeanElements;
         }
 
@@ -358,20 +360,6 @@ class ZonalContribution implements DSSTForceModel {
 
             maxEccPowMeanElements = FastMath.min(maxDegree - 2, maxEccPowMeanElements);
         }
-    }
-
-    /** Compute indices truncations for short periodics computation.
-     * <p>
-     * Truncations are as follows:
-     * </p><p>
-     * maxDegree_SP = min(maxDegree, SHORT_PERIODICS_MAX_DEGREE)
-     * </p><p>
-     * maxEccPow_SP = min(maxDegree_SP - 1, 4)
-     * </p>
-     */
-    private void computeShortPeriodicsTruncations() {
-        maxDegreeShortPeriodics = FastMath.min(maxDegree, SHORT_PERIODICS_MAX_DEGREE);
-        maxEccPowShortPeriodics = FastMath.min(maxDegreeShortPeriodics - 1, 4);
     }
 
     /** {@inheritDoc} */

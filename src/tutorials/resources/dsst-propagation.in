@@ -149,6 +149,12 @@ output.orbit.is.osculating = false
 central.body.degree = 36
 ## Central body gravity potential order
 central.body.order  =  0
+## short period limits
+max.degree.zonal.short.periods              = 12
+max.degree.tesseral.short.periods           =  8
+max.order.tesseral.short.periods            =  8
+max.degree.tesseral.m.dailies.short.periods = 12
+max.order.tesseral.m.dailies.short.periods  = 12
 
 ## 3rd body Moon (true/false) [false]
 third.body.moon = false
@@ -201,6 +207,14 @@ output.short.period.coefficients = none
 ## will be used with the given value for the step size, otherwise
 ## the adaptative step size integrator DormandPrince853 will be used
 # fixed.integration.step = 43200.
+## If integration step is not fixed, three parameters are used to
+## configure the DormandPrince853 integrator, min and max steps in
+## seconds, and a position tolerance in meters (beware, it is not
+## really the global error, it correspond to a local estimated error,
+## at each step, often difficult to relate to final global error)
+min.variable.integration.step                =  6000.0
+max.variable.integration.step                = 86400.0
+position.tolerance.variable.integration.step =     1.0
 
 ## interpolation grid specification
 ## only one of the two following options can be set: either fixed number

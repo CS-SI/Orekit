@@ -165,11 +165,19 @@ public class DSSTPropagation {
         DURATION_IN_DAYS,
         OUTPUT_STEP,
         FIXED_INTEGRATION_STEP,
+        MIN_VARIABLE_INTEGRATION_STEP,
+        MAX_VARIABLE_INTEGRATION_STEP,
+        POSITION_TOLERANCE_VARIABLE_INTEGRATION_STEP,
         FIXED_NUMBER_OF_INTERPOLATION_POINTS,
         MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS,
         NUMERICAL_COMPARISON,
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
+        MAX_DEGREE_ZONAL_SHORT_PERIODS,
+        MAX_DEGREE_TESSERAL_SHORT_PERIODS,
+        MAX_ORDER_TESSERAL_SHORT_PERIODS,
+        MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS,
+        MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS,
         THIRD_BODY_MOON,
         THIRD_BODY_SUN,
         MASS,
@@ -260,12 +268,26 @@ public class DSSTPropagation {
             }
         }
         double fixedStepSize = -1.;
+        double minStep       =  6000.0;
+        double maxStep       = 86400.0;
+        double dP            =     1.0;
         if (parser.containsKey(ParameterKey.FIXED_INTEGRATION_STEP)) {
             fixedStepSize = parser.getDouble(ParameterKey.FIXED_INTEGRATION_STEP);
+        } else {
+            if (parser.containsKey(ParameterKey.MIN_VARIABLE_INTEGRATION_STEP)) {
+                minStep = parser.getDouble(ParameterKey.MIN_VARIABLE_INTEGRATION_STEP);
+            }
+            if (parser.containsKey(ParameterKey.MAX_VARIABLE_INTEGRATION_STEP)) {
+                maxStep = parser.getDouble(ParameterKey.MAX_VARIABLE_INTEGRATION_STEP);
+            }
+            if (parser.containsKey(ParameterKey.POSITION_TOLERANCE_VARIABLE_INTEGRATION_STEP)) {
+                dP = parser.getDouble(ParameterKey.POSITION_TOLERANCE_VARIABLE_INTEGRATION_STEP);
+            }
         }
         final DSSTPropagator dsstProp = createDSSTProp(orbit, mass,
                                                        initialIsOsculating, outputIsOsculating,
-                                                       fixedStepSize, shortPeriodCoefficients);
+                                                       fixedStepSize, minStep, maxStep, dP,
+                                                       shortPeriodCoefficients);
 
         if (parser.containsKey(ParameterKey.FIXED_NUMBER_OF_INTERPOLATION_POINTS)) {
             if (parser.containsKey(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS)) {
@@ -450,6 +472,9 @@ public class DSSTPropagation {
      *  @param initialIsOsculating if initial orbital elements are osculating
      *  @param outputIsOsculating if we want to output osculating parameters
      *  @param fixedStepSize step size for fixed step integrator (s)
+     *  @param minStep minimum step size, if step is not fixed (s)
+     *  @param maxStep maximum step size, if step is not fixed (s)
+     *  @param dP position tolerance for step size control, if step is not fixed (m)
      *  @param shortPeriodCoefficients list of short periodic coefficients
      *  to output (null means no coefficients at all, empty list means all
      *  possible coefficients)
@@ -460,15 +485,16 @@ public class DSSTPropagation {
                                           final boolean initialIsOsculating,
                                           final boolean outputIsOsculating,
                                           final double fixedStepSize,
+                                          final double minStep,
+                                          final double maxStep,
+                                          final double dP,
                                           final List<String> shortPeriodCoefficients)
         throws OrekitException {
         AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
         } else {
-            final double minStep = orbit.getKeplerianPeriod();
-            final double maxStep = minStep * 10.;
-            final double[][] tol = DSSTPropagator.tolerances(1.0, orbit);
+            final double[][] tol = DSSTPropagator.tolerances(dP, orbit);
             integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
             ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);
         }
@@ -524,7 +550,13 @@ public class DSSTPropagation {
         }
 
         // Central Body Force Model with un-normalized coefficients
-        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, unnormalized));
+        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                   unnormalized,
+                                                   parser.getInt(ParameterKey.MAX_DEGREE_ZONAL_SHORT_PERIODS),
+                                                   parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_SHORT_PERIODS),
+                                                   parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_SHORT_PERIODS),
+                                                   parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS),
+                                                   parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS)));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {

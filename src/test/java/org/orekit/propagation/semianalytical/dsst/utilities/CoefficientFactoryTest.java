@@ -76,23 +76,19 @@ public class CoefficientFactoryTest {
      */
     @Test
     public void testVmns() throws OrekitException {
-        Assert.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0,   1, 1), eps0);
-        Assert.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1,   2, 1), eps0);
-        Assert.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2,  24, 2), eps0);
-        Assert.assertEquals(getVmns2(0, 3, 1), CoefficientsFactory.getVmns(0, 3, 1,  24, 6), eps0);
-        Assert.assertEquals(getVmns2(0, 3, 3), CoefficientsFactory.getVmns(0, 3, 3, 720, 6), eps0);
-        Assert.assertEquals(getVmns2(2, 2, 2), CoefficientsFactory.getVmns(2, 2, 2,  24, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0), eps0);
+        Assert.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2), eps0);
+        Assert.assertEquals(getVmns2(0, 3, 1), CoefficientsFactory.getVmns(0, 3, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 3, 3), CoefficientsFactory.getVmns(0, 3, 3), eps0);
+        Assert.assertEquals(getVmns2(2, 2, 2), CoefficientsFactory.getVmns(2, 2, 2), eps0);
         final double vmnsp = getVmns2(12, 26, 20);
         Assert.assertEquals(vmnsp,
-                            CoefficientsFactory.getVmns(12, 26, 20,
-                                                        CombinatoricsUtils.factorialDouble(26 + 20),
-                                                        CombinatoricsUtils.factorialDouble(26 - 12)),
+                            CoefficientsFactory.getVmns(12, 26, 20),
                             Math.abs(eps12 * vmnsp));
         final double vmnsm = getVmns2(12, 27, -21);
         Assert.assertEquals(vmnsm,
-                            CoefficientsFactory.getVmns(12, 27, -21,
-                                                        CombinatoricsUtils.factorialDouble(27 + 21),
-                                                        CombinatoricsUtils.factorialDouble(27 - 12)),
+                            CoefficientsFactory.getVmns(12, 27, -21),
                             Math.abs(eps12 * vmnsm));
     }
 
@@ -100,7 +96,7 @@ public class CoefficientFactoryTest {
     @Test(expected = OrekitException.class)
     public void testVmnsError() throws OrekitException {
         // if m > n
-        CoefficientsFactory.getVmns(3, 2, 1, 0, 0);
+        CoefficientsFactory.getVmns(3, 2, 1);
     }
 
     /**
