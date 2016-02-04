@@ -225,7 +225,7 @@ UNABLE_TO_READ_JPL_HEADER = imposibil de citit antetul fișierului de efemeride 
 
 # inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
 INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = valori incoerente pentru unitățile astronomice din fișierele de efemeride JPL : ({0} și {1})
- 
+
 # inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
 INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = valori incoerente pentru raportul masei Pământ/Lună din fișierele de efemeride JPL : ({0} și {1})
 
@@ -313,8 +313,8 @@ CCSDS_UNKNOWN_CONVENTIONS = convențiile IERS nu au fost inițializate înainte 
 # frame {0} is not valid in this ODM file context
 CCSDS_INVALID_FRAME = sistemul de referință {0} nu este valid în contextul acestui fișier ODM
 
-# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sisteme temporale incoerente in blocurile de efemeride : {0} ≠ {1}
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sisteme temporale incoerente in blocurile de efemeride : {0} ≠ {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = numele "{0}" este deja folosit pentru o stare adițională

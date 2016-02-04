@@ -380,7 +380,7 @@ UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = unable to compute hyperbolic ec
 UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = unable to compute mean orbit from osculating orbit after {0} iterations
 
 # derivation order {0} is out of range
-OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>
+OUT_OF_RANGE_DERIVATION_ORDER = derivation order {0} is out of range
 
 # out of range latitude: {0}, [{1}, {2}]
 OUT_OF_RANGE_LATITUDE = out of range latitude: {0}, [{1}, {2}]
