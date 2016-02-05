@@ -72,9 +72,6 @@ class TesseralContribution implements DSSTForceModel {
     /** Number of points for interpolation. */
     private static final int INTERPOLATION_POINTS = 3;
 
-    /** Maximum possible (absolute) value for j index. */
-    private static final int MAXJ = 12;
-
     /** The maximum value for eccentricity power. */
     private static final int MAX_ECCPOWER_SP = 4;
 
@@ -285,7 +282,7 @@ class TesseralContribution implements DSSTForceModel {
         // set the maximum value for eccentricity power
         this.maxEccPowTesseralSP = MAX_ECCPOWER_SP;
         this.maxEccPowMdailyTesseralSP = FastMath.min(maxDegreeMdailyTesseralSP - 2, MAX_ECCPOWER_SP);
-        this.jMax = FastMath.min(MAXJ, maxDegreeTesseralSP + maxEccPowTesseralSP);
+        this.jMax = maxDegreeTesseralSP + maxEccPowTesseralSP;
 
         // Initialize default values
         this.resOrders = new ArrayList<Integer>();
@@ -325,7 +322,7 @@ class TesseralContribution implements DSSTForceModel {
 
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
         maxHansen = maxEccPow / 2;
-        jMax = FastMath.min(MAXJ, maxDegree + maxEccPow);
+        jMax = maxDegree + maxEccPow;
 
         // Ratio of satellite to central body periods to define resonant terms
         ratio = orbitPeriod / bodyPeriod;
