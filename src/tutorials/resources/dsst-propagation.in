@@ -145,6 +145,9 @@ output.orbit.is.osculating = false
 ## Spacecraft mass (kg) [1000.]
 # mass = 1000.
 
+## Central body rotation rate (beware, it is in rad/s because it is the traditional unit for this) [7.292115e-5]
+#  the default value (7.292115e-5 rad/s) corresponds to WGS84 standard
+central.body.rotation.rate = 7.292115e-5
 ## Central body gravity potential degree
 central.body.degree = 36
 ## Central body gravity potential order

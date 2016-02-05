@@ -171,6 +171,7 @@ public class DSSTPropagation {
         FIXED_NUMBER_OF_INTERPOLATION_POINTS,
         MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS,
         NUMERICAL_COMPARISON,
+        CENTRAL_BODY_ROTATION_RATE,
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
         MAX_DEGREE_ZONAL_SHORT_PERIODS,
@@ -211,6 +212,12 @@ public class DSSTPropagation {
         // All dates in UTC
         final TimeScale utc = TimeScalesFactory.getUTC();
 
+        final double rotationRate;
+        if (!parser.containsKey(ParameterKey.CENTRAL_BODY_ROTATION_RATE)) {
+            rotationRate = Constants.WGS84_EARTH_ANGULAR_VELOCITY;
+        } else {
+            rotationRate = parser.getDouble(ParameterKey.CENTRAL_BODY_ROTATION_RATE);
+        }
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
 
@@ -303,7 +310,7 @@ public class DSSTPropagation {
         }
 
         // Set Force models
-        setForceModel(parser, unnormalized, earthFrame, dsstProp);
+        setForceModel(parser, unnormalized, earthFrame, rotationRate, dsstProp);
 
         // Simulation properties
         AbsoluteDate start;
@@ -531,13 +538,14 @@ public class DSSTPropagation {
      *  @param parser input file parser
      *  @param unnormalized spherical harmonics provider
      *  @param earthFrame Earth rotating frame
+     *  @param rotationRate central body rotation rate (rad/s)
      *  @param dsstProp DSST propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final UnnormalizedSphericalHarmonicsProvider unnormalized,
-                               final Frame earthFrame,
+                               final Frame earthFrame, final double rotationRate,
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = unnormalized.getAe();
@@ -550,7 +558,7 @@ public class DSSTPropagation {
         }
 
         // Central Body Force Model with un-normalized coefficients
-        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, rotationRate,
                                                    unnormalized,
                                                    parser.getInt(ParameterKey.MAX_DEGREE_ZONAL_SHORT_PERIODS),
                                                    parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_SHORT_PERIODS),
