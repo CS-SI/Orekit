@@ -5,7 +5,7 @@ INTERNAL_ERROR = Interner Fehler, wenden Sie sich bitte an die Software-Wartung,
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = Höhe ({0} m) ist niedriger als der erlaubte Grenzwert von {1} m
 
 # point is inside ellipsoid
-POINT_INSIDE_ELLIPSOID = <MISSING TRANSLATION>
+POINT_INSIDE_ELLIPSOID = Punkt befindet sich innerhalb des Ellipsoids
 
 # trajectory inside the Brillouin sphere (r = {0})
 TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = Bewegungsbahn innerhalb der Brillouin-Sphäre (r = {0})
@@ -152,7 +152,7 @@ MISSING_SECOND_TLE_LINE = eine zweite TLE Zeile wird erwartet nach Zeile {0}:\n{
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = TLE Zeilen verweisen nicht auf das selbe Objekt:\n{0}\n{1}
 
 # invalid TLE parameter for object {0}: {1} = {2}
-TLE_INVALID_PARAMETER = <MISSING TRANSLATION>
+TLE_INVALID_PARAMETER = ungültiger TLE Parameter für Objekt {0}: {1} = {2}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = Falsche Checksummme der TLE Zeile {0}, erwartet {1} aber wird zu {2} ({3})
@@ -203,7 +203,7 @@ SATELLITE_COLLIDED_WITH_TARGET = Satellit kollidierte mit Ziel
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = Attitude Pointing Law zeigt nicht zur Erde
 
 # {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
-TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = <MISSING TRANSLATION>
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = {0} Sekunden Übergangszeit ist zu kurz für eine Fluglageänderung, sollte länger als {1} Sekunden sein
 
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = Datum der Umlaufbahn ({0}) stimmt nicht mit den Lagedatum überein ({1})
@@ -254,7 +254,7 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = unerwartet zwei Höhenwerte: {
 UNSUPPORTED_PARAMETER_NAME = nicht unterstützter Parametername {0}, unterstützte Namen {1}
 
 # duplicated parameter name {0}
-DUPLICATED_PARAMETER_NAME = <MISSING TRANSLATION>
+DUPLICATED_PARAMETER_NAME = duplizierter Parametername {0}
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = unbekannter zusätzlicher Zustand "{0}"
@@ -353,7 +353,7 @@ UNSUPPORTED_TIME_TRANSFORM = geo-magnetisches Feldmodell {0} mit Epoche {1} unte
 OUT_OF_RANGE_TIME_TRANSFORM = Zeittransformation des geo-magnetischen Feldmodells {0} mit Epoche {1} liegt ausserhalb des gültigen Bereichs: {2} != [{3}, {4}]
 
 # not enough data for interpolation (sample size = {0})
-NOT_ENOUGH_DATA_FOR_INTERPOLATION = <MISSING TRANSLATION>
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = nicht genügend Daten verfügbar zum Interpolieren (Datenmenge = {0})
 
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = nicht genug Nachbareinträge im Cache verfügbar: {0} (minimum {1})
@@ -377,13 +377,13 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = nicht möglich Daten nach {0} zu generieren
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = die hyperbolisch-exzentrische Anomalie kann nicht aus der mittleren Anomalie berechnet werden nach {0} Iterationen
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
-UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = <MISSING TRANSLATION>
+UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = die Durschnittsumlaufbahn kann auch nach {0} Iterationen nicht von der oskulierenden Umlaufbahn berechnet werden
 
 # derivation order {0} is out of range
-OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>
+OUT_OF_RANGE_DERIVATION_ORDER = Ableitungsgrad {0} ist ausserhalb des gültigen Bereichs
 
 # out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = <MISSING TRANSLATION>
+OUT_OF_RANGE_LATITUDE = Breitengrad ausserhalb des gültigen Bereichs: {0}, [{1}, {2}]
 
 # orbit type {0} not allowed here, allowed types: {1}
-ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
+ORBIT_TYPE_NOT_ALLOWED = Umlaufbahntyp {0} ist hier nicht erlaubt, gültige Typen: {1}
