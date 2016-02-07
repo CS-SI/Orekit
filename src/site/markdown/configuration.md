@@ -231,20 +231,18 @@ announced above.
 For convenience, a zip file containing some default data is available for
 download on orekit forge:
 [https://www.orekit.org/forge/projects/orekit/files](https://www.orekit.org/forge/projects/orekit/files).
-Setting the `orekit.data.path` property to the location of this file on a local computer is enough to
-use Orekit efficiently, but the preferred setup is to expand the zip file in the user
-home folder so that new IERS files can be added easily when they become available. In this
-case, data is loaded by putting the following code in the main application:
+For a start, the simplest configuration is to download the orekit-data.zip file from the download page,
+to unzip it anywhere you want, note the path of the orekit-data folder that will be created and add the
+following lines at the start of your program:
 
-    final File home = new File(System.getProperty("user.home"));
-    final File orekitDir = new File(home, "orekit-data");
-    final DataProvider provider = new DirectoryCrawler(orekitDir);
-    DataProvidersManager.getInstance().addProvider(provider);
+    File orekitData = new File("/path/to/the/folder/orekit-data");
+    DataProvidersManager manager = DataProvidersManager.getInstance();
+    manager.addProvider(new DirectoryCrawler(orekitData));
 
-This zip file contains JPL DE 406 ephemerides from 1962 to 2029, IERS Earth orientation
-parameters from 1973 to end 2012 with predicted date to mid-2013 (both IAU-1980
-and IAU-2000), UTC-TAI history from 1972 to end of 2013, Marshall Solar Activity Future
-Estimation from 1999 to 2013 and the Eigen 06S gravity field.
+This zip file contains JPL DE 406 ephemerides from 1962 to 2069, IERS Earth orientation
+parameters from 1973 to early 2016 with predicted date to mid-2016 (both IAU-1980
+and IAU-2000), UTC-TAI history from 1972 to end of 2015, Marshall Solar Activity Future
+Estimation from 1999 to 2016 and the Eigen 06S gravity field.
 
 ## Supported data types
 

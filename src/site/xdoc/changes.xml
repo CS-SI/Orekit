@@ -30,7 +30,9 @@
              or eccentric, latitude and longitude extremum detectors, latitude and longitude
              crossing detectors), new event filtering capability based on user-provided
              predicate function, ability to customize DSST interpolation grid for short period
-             elements, ability to retrieve DSS short periodic coefficients, vastly improved
+             elements, ability to retrieve DSS short periodic coefficients, removed some arbitrary
+             limitations in DSST tesseral and zonal contribution, ability to set short period
+             degree/order to smaller values than mean elements in DSST, vastly improved
              frames transforms efficiency for various Earth frames, three different types of
              solar radiation pressure coefficients, new tabulated attitudes related to Local
              Orbital Frame, smooth attitude transitions in attitudes sequences, with derivatives

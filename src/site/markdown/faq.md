@@ -110,6 +110,7 @@ with version 4.1, Orekit depends only on officially released versions of Apache 
   Orekit 6.0   | Apache Commons Math 3.2
   Orekit 6.1   | Apache Commons Math 3.2
   Orekit 7.0   | Apache Commons Math 3.4.1
+  Orekit 7.1   | Apache Commons Math 3.6
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 
@@ -118,7 +119,7 @@ Math versions, but development Orekit versions may depend on unreleased Apache
 Commons Math versions. Maven knows how to download the pre-built binary for
 released Apache Commons Math versions but it cannot download
 pre-built binaries for unreleased Apache Commons Math versions as none are
-publicly available. In this case the mavan command will end with an error message
+publicly available. In this case the maven command will end with an error message
 like:
 
     [ERROR] Failed to execute goal on project orekit: Could not resolve dependencies for project org.orekit:orekit:jar:7.1-SNAPSHOT: Could not find artifact org.apache.commons:commons-math3:jar:3.6-SNAPSHOT
@@ -152,7 +153,7 @@ data for the IERS convention 2003, they have switched to IERS conventions 2010. 
 (EOP 05 C08 file) are still published. We advise then that you update these files regularly as
 the IERS publish them.
 
-Concerning UTC leap seconds, as of end 2013, the last one was introduced at the end of June 2012.
+Concerning UTC leap seconds, as of early 2016, the last one was introduced at the end of June 2015.
 
 ## Runtime errors
 
@@ -172,17 +173,13 @@ USNO tai-utc.dat file. If either file is found in the Orekit configuration, it w
 and the message should not appear.
 
 Configuring data loading is explained in the configuration page For a start, the simplest configuration
-is to download the orekit-data.zip file from the download page and to either set the "orekit.data.path" Java
-property to this file or to manually configure the DataProvidersManager to use it. This example archive file
-contains the required UTC-TAI history file among others. Configuring Orekit to use this archive file can be done
-by keeping the file as a zip archive and pointing to this archive, or by unzipping it and pointing to the unzipped folder.
+is to download the orekit-data.zip file from the download page, to unzip it anywhere you want, note the
+path of the orekit-data folder that will be created and add the following lines at the start of
+your program:
 
-Here is an example using the file in zip format:
+    File orekitData = new File("/path/to/the/folder/orekit-data");
+    DataProvidersManager manager = DataProvidersManager.getInstance();
+    manager.addProvider(new DirectoryCrawler(orekitData));
 
-    DataProvidersManager.getInstance().addProvider(new ZipJarCrawler(new File("/path/to/the/zip/file/orekit-data.zip")));
-
-Here is an example using the folder resulting from expanding the archive:
-
-    DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(new File("/path/to/the/folder/orekit-data")));
-
-Using a folder allows one to change the data in it, e.g., adding new EOP files as they are published by IERS.
+Using a folder allows one to change the data in it after the initial download, e.g., adding new EOP files as they
+are published by IERS.
