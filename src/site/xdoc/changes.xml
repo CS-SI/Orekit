@@ -20,7 +20,45 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="7.1" date="TBD" description="TBD">
+    <release version="7.1" date="2016-02-07"
+             description="Version 7.1 is a minor release of Orekit. It introduces several new
+             features and bug fixes. The most important features introduced in version 7.1
+             are a lot of new event detectors (field of view based detectors supporting any FoV
+             shape, either on ground targetting spacecraft or on spacecraft and targetting
+             ground defined zones with any shape, extremum elevation detector, anomaly,
+             latitude argument, or longitude argument crossing detectors, either true, mean
+             or eccentric, latitude and longitude extremum detectors, latitude and longitude
+             crossing detectors), new event filtering capability based on user-provided
+             predicate function, ability to customize DSST interpolation grid for short period
+             elements, ability to retrieve DSS short periodic coefficients, removed some arbitrary
+             limitations in DSST tesseral and zonal contribution, ability to set short period
+             degree/order to smaller values than mean elements in DSST, vastly improved
+             frames transforms efficiency for various Earth frames, three different types of
+             solar radiation pressure coefficients, new tabulated attitudes related to Local
+             Orbital Frame, smooth attitude transitions in attitudes sequences, with derivatives
+             continuity at both endpoint, ground zone sampling either in tiles or grid with fixed
+             or track-based orientation, derivatives handling in geodetic points, parsing of TLE
+             with non-unclassified modifiers, support for officiel WMM coefficients from NOAA,
+             support for tai-utc.dat file from USNO, tropospheric refraction model following
+             Recommendation ITU-R P.834-7, geoid model based on gravity field, and use of the new
+             Apache Commons Math rotation API with either Frame transform convention or vector
+             operator convention. Numerous bugs were also fixed.
+             Version 7.1 depends on version 3.6 of Apache commons math.">
+      <action dev="thierry" type="add">
+        Added tropospheric refraction correction angle following Recommendation ITU-R P.834-7.
+      </action>
+      <action dev="luc" type="add">
+        Added a way to configure max degree/order for short periods separately
+        from the mean elements settings in DSST tutorial.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed limitation to degree 12 on zonal short periods, degree/order 8 on
+        tesseral short periods, and degree/order 12 for tesseral m-dailies in DSST.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed wrong orbit type in propagator conversion. The type specified by
+        user was ignored when computing variable stepsize integrator tolerances.
+      </action>
       <action dev="luc" type="add">
         Set up three different implementations of radiation pressure coefficients,
         using either a single reflection coefficient, or a pair of absorption

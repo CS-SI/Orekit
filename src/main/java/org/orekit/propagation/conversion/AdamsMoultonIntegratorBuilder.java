@@ -58,8 +58,9 @@ public class AdamsMoultonIntegratorBuilder implements FirstOrderIntegratorBuilde
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit) throws PropagationException {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
+        throws PropagationException {
+        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new AdamsMoultonIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
     }
 

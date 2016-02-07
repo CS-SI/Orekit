@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.TreeMap;
 
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -156,17 +157,16 @@ public class CoefficientsFactory {
      * @param m m
      * @param n n
      * @param s s
-     * @param fns (n + |s|)!
-     * @param fnm (n - m)!
      * @return The V<sub>n, s</sub> <sup>m</sup> coefficient
      * @throws OrekitException if m > n
      */
-    public static double getVmns(final int m, final int n, final int s,
-                                 final double fns, final double fnm)
+    public static double getVmns(final int m, final int n, final int s)
         throws OrekitException {
         if (m > n) {
             throw new OrekitException(OrekitMessages.DSST_VMNS_COEFFICIENT_ERROR_MS, m, n);
         }
+        final double fns = CombinatoricsUtils.factorialDouble(n + FastMath.abs(s));
+        final double fnm = CombinatoricsUtils.factorialDouble(n  - m);
 
         double result = 0;
         // If (n - s) is odd, the Vmsn coefficient is null
@@ -252,77 +252,6 @@ public class CoefficientsFactory {
         /** {@inheritDoc} */
         public int hashCode() {
             return 0x998493a6 ^ (n << 8) ^ s;
-        }
-
-    }
-
-    /** MNS couple's key. */
-    public static class MNSKey implements Comparable<MNSKey> {
-
-        /** m value. */
-        private final int m;
-
-        /** n value. */
-        private final int n;
-
-        /** s value. */
-        private final int s;
-
-        /** Simpleconstructor.
-         * @param m m
-         * @param n n
-         * @param s s
-         */
-        public MNSKey(final int m, final int n, final int s) {
-            this.m = m;
-            this.n = n;
-            this.s = s;
-        }
-
-        /** {@inheritDoc} */
-        public int compareTo(final MNSKey key) {
-            int result = 1;
-            if (m == key.m) {
-                if (n == key.n) {
-                    if (s < key.s) {
-                        result = -1;
-                    } else if (s == key.s) {
-                        result = 0;
-                    } else {
-                        result = 1;
-                    }
-                } else if (n < key.n) {
-                    result = -1;
-                } else {
-                    result = 1;
-                }
-            } else if (m < key.m) {
-                result = -1;
-            }
-            return result;
-        }
-
-        /** {@inheritDoc} */
-        public boolean equals(final Object key) {
-
-            if (key == this) {
-                // first fast check
-                return true;
-            }
-
-            if ((key != null) && (key instanceof MNSKey)) {
-                return (m == ((MNSKey) key).m) &&
-                       (n == ((MNSKey) key).n) &&
-                       (s == ((MNSKey) key).s);
-            }
-
-            return false;
-
-        }
-
-        /** {@inheritDoc} */
-        public int hashCode() {
-            return 0x25baa451 ^ (m << 16) ^ (n << 8) ^ s;
         }
 
     }
