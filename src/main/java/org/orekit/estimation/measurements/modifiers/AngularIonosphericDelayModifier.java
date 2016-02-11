@@ -41,7 +41,7 @@ import java.util.List;
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  *
  * @author Thierry Ceolin
- * @since 7.1
+ * @since 7.2
  */
 public class AngularIonosphericDelayModifier implements EvaluationModifier<Angular> {
     /** Ionospheric delay model. */

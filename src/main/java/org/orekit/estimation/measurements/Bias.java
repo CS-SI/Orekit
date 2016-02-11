@@ -25,7 +25,7 @@ import org.orekit.estimation.Parameter;
 /** Class modeling a measurement bias.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 

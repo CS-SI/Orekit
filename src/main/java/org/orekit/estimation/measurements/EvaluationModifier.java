@@ -39,7 +39,7 @@ import org.orekit.estimation.Parameter;
  * </p>
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public interface EvaluationModifier<T extends Measurement<T>> {
 

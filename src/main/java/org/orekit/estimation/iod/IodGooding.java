@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinates;
  *    Technical Report 93004, April 1993
  *
  * @author Joris Olympio
- * @since 7.1
+ * @since 7.2
  */
 public class IodGooding {
 

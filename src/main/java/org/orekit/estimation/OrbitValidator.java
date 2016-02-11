@@ -35,7 +35,7 @@ import org.orekit.orbits.OrbitType;
  * space flight dynamics code.
  * </p>
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public enum OrbitValidator implements ParameterValidator {
 

@@ -38,7 +38,7 @@ import org.orekit.propagation.SpacecraftState;
  *
  *
  * @author Thierry Ceolin
- * @since 7.1
+ * @since 7.2
  */
 public class AngularRadioRefractionModifier implements EvaluationModifier<Angular> {
     /** Tropospheric refraction model. */

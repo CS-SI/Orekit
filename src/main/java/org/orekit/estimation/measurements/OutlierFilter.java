@@ -25,7 +25,7 @@ import org.orekit.estimation.Parameter;
 /** Modifier that sets evaluation weight to 0 if residual is too far from expected domain.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public class OutlierFilter<T extends Measurement<T>> implements EvaluationModifier<T> {
 

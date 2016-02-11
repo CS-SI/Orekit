@@ -29,7 +29,7 @@ import org.orekit.orbits.Orbit;
  * the progress of the estimator during estimation.
  * </p>
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public interface BatchLSObserver {
 

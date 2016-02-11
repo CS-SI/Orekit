@@ -23,7 +23,7 @@ import org.orekit.propagation.SpacecraftState;
  * @see EstimationUtils#differentiate(StateFunction, int, org.orekit.orbits.OrbitType, org.orekit.orbits.PositionAngle, double, int)
  * @see StateFunction
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public interface StateJacobian {
 

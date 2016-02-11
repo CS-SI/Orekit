@@ -31,7 +31,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 
 /** Utility class for orbit determination.
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public class EstimationUtils {
 

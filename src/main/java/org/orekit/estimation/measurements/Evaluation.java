@@ -26,7 +26,7 @@ import org.orekit.propagation.SpacecraftState;
 /** Class holding a theoretical evaluation of one {@link Measurement measurement}.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public class Evaluation<T extends Measurement<T>> {
 

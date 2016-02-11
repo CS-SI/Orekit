@@ -31,7 +31,7 @@ import org.orekit.utils.AngularCoordinates;
  * ground of the reflected signal.
  *
  * @author Thierry Ceolin
- * @since 7.1
+ * @since 7.2
  */
 public class Angular extends AbstractMeasurement<Angular> {
 

@@ -42,7 +42,7 @@ import org.orekit.propagation.SpacecraftState;
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  *
  * @author Joris Olympio
- * @since 7.1
+ * @since 7.2
  */
 public class RangeRateIonosphericDelayModifier implements EvaluationModifier<RangeRate> {
 

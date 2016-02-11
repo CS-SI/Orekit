@@ -21,7 +21,7 @@ import org.orekit.errors.OrekitException;
 
 /** Class representing a single parameter that can be estimated.
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public abstract class Parameter {
 

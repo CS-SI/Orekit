@@ -41,7 +41,7 @@ import org.orekit.utils.Constants;
  * topocentric frame}.
  * </p>
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public class GroundStation extends Parameter {
 

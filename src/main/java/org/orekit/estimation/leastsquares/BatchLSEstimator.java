@@ -38,7 +38,7 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 
 /** Least squares estimator for orbit determination.
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public class BatchLSEstimator {
 

@@ -24,7 +24,7 @@
  * run the {@link org.orekit.estimation.leastsquares.BatchLSEstimator least
  * squares estimator}. At the end of the process, the orbital state and the
  * estimated parameters will be available.
- * @since 7.1
+ * @since 7.2
  * @author Luc Maisonobe
  * @author Thierry Ceolin
  */

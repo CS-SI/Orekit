@@ -37,7 +37,7 @@ import org.orekit.utils.PVCoordinates;
  *
  * @author Thierry Ceolin
  * @author Joris Olympio
- * @since 7.1
+ * @since 7.2
  */
 public class RangeRate extends AbstractMeasurement<RangeRate> {
 

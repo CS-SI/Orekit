@@ -47,7 +47,7 @@ import org.orekit.time.AbsoluteDate;
  * org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem
  * least squares problems}.
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 class Model implements MultivariateJacobianFunction {
 

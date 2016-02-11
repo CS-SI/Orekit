@@ -24,7 +24,7 @@ import org.orekit.utils.PVCoordinates;
 
 /** Class modeling a position-velocity state.
  * @author Luc Maisonobe
- * @since 7.1
+ * @since 7.2
  */
 public class PV extends AbstractMeasurement<PV> {
 

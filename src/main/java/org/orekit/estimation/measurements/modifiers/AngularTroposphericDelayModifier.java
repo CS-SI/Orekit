@@ -41,7 +41,7 @@ import org.orekit.utils.Constants;
  * For SLR techniques however, the frequency dependence is sensitive.
  *
  * @author Thierry Ceolin
- * @since 7.1
+ * @since 7.2
  */
 public class AngularTroposphericDelayModifier implements EvaluationModifier<Angular> {
     /** Tropospheric delay model. */

@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinates;
  *  Vallado, D., Fundamentals of Astrodynamics and Applications
  *
  * @author Joris Olympio
- * @since 7.1
+ * @since 7.2
  *
  */
 public class IodGibbs {

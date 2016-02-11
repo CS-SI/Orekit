@@ -16,7 +16,7 @@
  */
 /**
  * This package is the top level package for orbit determination.
- * @since 7.1
+ * @since 7.2
  * @author Luc Maisonobe
  * @author Thierry Ceolin
  *

@@ -42,7 +42,7 @@ import org.orekit.propagation.SpacecraftState;
  * For SLR techniques however, the frequency dependence is sensitive.
  *
  * @author Joris Olympio
- * @since 7.1
+ * @since 7.2
  */
 public class RangeTroposphericDelayModifier implements EvaluationModifier<Range> {
     /** Tropospheric delay model. */
