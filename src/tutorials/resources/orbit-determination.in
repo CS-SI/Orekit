@@ -90,7 +90,7 @@ iers.conventions = 2010
 # Inertial frame [EME2000]
 inertial.frame = EME2000
 
-# Propagator min step (s), mex step (s) and position error (m) [0.001, 300, 10.0]
+# Propagator min step (s), max step (s) and position error (m) [0.001, 300, 10.0]
 propagator.min.step       = 0.001
 propagator.max.step       = 300
 propagator.position.error = 10.0
@@ -244,9 +244,9 @@ PV.measurements.position.sigma       = 10.0
 PV.measurements.velocity.sigma       = 0.01
 
 ## Estimator
-estimator.absolute.convergence.threshold = 1.0e-12
-estimator.relative.convergence.threshold = 1.0e-14
-estimator.max.iterations                 = 20
+estimator.rms.absolute.convergence.threshold = 1.0e-7
+estimator.rms.relative.convergence.threshold = 1.0e-6
+estimator.max.iterations                     = 20
 
 # comma-separated list of measurements files (in the same directory as this file)
 measurements.files = W3B.aer

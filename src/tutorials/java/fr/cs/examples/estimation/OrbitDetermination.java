@@ -117,7 +117,7 @@ public class OrbitDetermination {
             long t0 = System.currentTimeMillis();
             new OrbitDetermination().run(input, output);
             long t1 = System.currentTimeMillis();
-            System.out.println((0.001 * (t1 - t0)));
+            System.out.println("wall clock run time (s): " + (0.001 * (t1 - t0)));
 
         } catch (URISyntaxException urise) {
             System.err.println(urise.getLocalizedMessage());
@@ -189,8 +189,8 @@ public class OrbitDetermination {
             public void iterationPerformed(final int iteration, final Orbit orbit,
                                            final Map<Measurement<?>, Evaluation<?>> evaluations,
                                            final LeastSquaresProblem.Evaluation lspEvaluation) {
-                System.out.println("iteration " + iteration + ", orbit " + orbit +
-                                   ", rms " + lspEvaluation.getRMS() + ", cost " + lspEvaluation.getCost());
+                System.out.println("iteration " + iteration + ", orbit " + orbit);
+                System.out.println("rms " + lspEvaluation.getRMS() + ", cost " + lspEvaluation.getCost());
 //                Map<String, List<Angular>> angles = new HashMap<String, List<Angular>>();
 //                for (Map.Entry<Measurement<?>, Evaluation<?>> entry : evaluations.entrySet()) {
 //                    if (entry.getKey() instanceof Angular) {
@@ -256,8 +256,6 @@ public class OrbitDetermination {
                     }
                     System.out.println();
                 }
-                System.out.println();
-                System.out.println();
                 System.out.println();
             }
         });
