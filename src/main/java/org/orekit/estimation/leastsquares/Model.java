@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -67,17 +66,14 @@ class Model implements MultivariateJacobianFunction {
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> parameterColumns;
 
-    /** Last orbit. */
-    private Orbit orbit;
-
     /** Last evaluations. */
     private final Map<Measurement<?>, Evaluation<?>> evaluations;
 
     /** Orbit date. */
     private final AbsoluteDate orbitDate;
 
-    /** Observer to be notified at the end of each iteration. */
-    private final BatchLSObserver observer;
+    /** Observer to be notified at orbit changes. */
+    private final ModelObserver observer;
 
     /** Iteration number. */
     private int iteration;
@@ -103,11 +99,11 @@ class Model implements MultivariateJacobianFunction {
      * @param measurements measurements
      * @param measurementsParameters measurements parameters
      * @param orbitDate orbit date
-     * @param observer observer to be notified at the end of each iteration (may be null)
+     * @param observer observer to be notified at model calls
      */
     Model(final NumericalPropagatorBuilder propagatorBuilder, final List<String> propagatorParameters,
           final List<Measurement<?>> measurements, final List<Parameter> measurementsParameters,
-          final AbsoluteDate orbitDate, final BatchLSObserver observer) {
+          final AbsoluteDate orbitDate, final ModelObserver observer) {
 
         this.propagatorBuilder      = propagatorBuilder;
         this.propagatorParameters   = propagatorParameters;
@@ -152,6 +148,7 @@ class Model implements MultivariateJacobianFunction {
             final NumericalPropagator propagator = createPropagator(point);
             configureDerivatives(propagator);
             configureMeasurements(propagator);
+            final Orbit orbit = propagator.getInitialState().getOrbit();
 
             // reset value and Jacobian
             evaluations.clear();
@@ -165,11 +162,7 @@ class Model implements MultivariateJacobianFunction {
             // run the propagation, gathering residuals on the fly
             propagator.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
 
-            // notify the observer
-            if (observer != null) {
-                observer.iterationPerformed(iteration, orbit,
-                                            Collections.unmodifiableMap(evaluations));
-            }
+            observer.modelCalled(iteration, orbit, evaluations);
 
             return new Pair<RealVector, RealMatrix>(value, jacobian);
 
@@ -183,20 +176,6 @@ class Model implements MultivariateJacobianFunction {
      */
     public int getIteration() {
         return iteration;
-    }
-
-    /** Get the last evaluated orbit.
-     * @return last evaluated orbit
-     */
-    public Orbit getLastOrbit() {
-        return orbit;
-    }
-
-    /** Get the last evaluations performed.
-     * @return last evaluations performed
-     */
-    public Map<Measurement<?>, Evaluation<?>> getLastEvaluations() {
-        return Collections.unmodifiableMap(evaluations);
     }
 
     /** Create the propagator and parameters corresponding to an evaluation point.
@@ -214,7 +193,6 @@ class Model implements MultivariateJacobianFunction {
         }
         final NumericalPropagator propagator =
                         propagatorBuilder.buildPropagator(orbitDate, propagatorArray);
-        orbit = propagator.getInitialState().getOrbit();
 
         // set up the measurement parameters
         int index = propagatorArray.length;

@@ -26,18 +26,19 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
-import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -113,7 +114,10 @@ public class OrbitDetermination {
             File orekitData = new File(input.getParent(), "tutorial-orekit-data");
             DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(orekitData));
 
+            long t0 = System.currentTimeMillis();
             new OrbitDetermination().run(input, output);
+            long t1 = System.currentTimeMillis();
+            System.out.println((0.001 * (t1 - t0)));
 
         } catch (URISyntaxException urise) {
             System.err.println(urise.getLocalizedMessage());
@@ -183,8 +187,78 @@ public class OrbitDetermination {
             /** {@inheritDoc} */
             @Override
             public void iterationPerformed(final int iteration, final Orbit orbit,
-                                           final Map<Measurement<?>, Evaluation<?>> evaluations) {
-                System.out.println("iteration " + iteration + ", orbit " + orbit);
+                                           final Map<Measurement<?>, Evaluation<?>> evaluations,
+                                           final LeastSquaresProblem.Evaluation lspEvaluation) {
+                System.out.println("iteration " + iteration + ", orbit " + orbit +
+                                   ", rms " + lspEvaluation.getRMS() + ", cost " + lspEvaluation.getCost());
+//                Map<String, List<Angular>> angles = new HashMap<String, List<Angular>>();
+//                for (Map.Entry<Measurement<?>, Evaluation<?>> entry : evaluations.entrySet()) {
+//                    if (entry.getKey() instanceof Angular) {
+//                        Angular angular = (Angular) entry.getKey();
+//                        List<Angular> list = angles.get(angular.getStation().getName());
+//                        if (list == null) {
+//                            list = new ArrayList<Angular>();
+//                            angles.put(angular.getStation().getName(), list);
+//                        }
+//                        list.add(angular);
+//                    }
+//                }
+//                for (Map.Entry<String, List<Angular>> entry : angles.entrySet()) {
+//                    List<Angular> list = entry.getValue();
+//                    list.sort(new Comparator<Angular>() {
+//                        @Override
+//                        public int compare(Angular o1, Angular o2) {
+//                            return o1.getDate().compareTo(o2.getDate());
+//                        }
+//                    });
+//                    int count = 0;
+//                    for (Angular a : list) {
+//                        if (++count < 11) {
+//                            @SuppressWarnings("unchecked")
+//                            Evaluation<Angular> ev = (Evaluation<Angular>) evaluations.get(a);
+//                            System.out.println(a.getDate() + " " + a.getStation().getName() + " " +
+//                                               FastMath.toDegrees(a.getObservedValue()[0]) + " " +
+//                                               FastMath.toDegrees(ev.getValue()[0]) + " " +
+//                                               FastMath.toDegrees(a.getObservedValue()[0] - ev.getValue()[0]));
+//                        }
+//                    }
+//                    System.out.println();
+//                }
+                Map<String, List<Range>> ranges = new HashMap<String, List<Range>>();
+                for (Map.Entry<Measurement<?>, Evaluation<?>> entry : evaluations.entrySet()) {
+                    if (entry.getKey() instanceof Range) {
+                        Range range = (Range) entry.getKey();
+                        List<Range> list = ranges.get(range.getStation().getName());
+                        if (list == null) {
+                            list = new ArrayList<Range>();
+                            ranges.put(range.getStation().getName(), list);
+                        }
+                        list.add(range);
+                    }
+                }
+                for (Map.Entry<String, List<Range>> entry : ranges.entrySet()) {
+                    List<Range> list = entry.getValue();
+                    list.sort(new Comparator<Range>() {
+                        @Override
+                        public int compare(Range o1, Range o2) {
+                            return o1.getDate().compareTo(o2.getDate());
+                        }
+                    });
+                    int count = 0;
+                    for (Range r : list) {
+                        if (++count < 11) {
+                            @SuppressWarnings("unchecked")
+                            Evaluation<Range> ev = (Evaluation<Range>) evaluations.get(r);
+                            System.out.println(r.getDate() + " " + r.getStation().getName() + " " +
+                                               r.getObservedValue()[0] + " " + ev.getValue()[0] + " " +
+                                               (r.getObservedValue()[0] - ev.getValue()[0]));
+                        }
+                    }
+                    System.out.println();
+                }
+                System.out.println();
+                System.out.println();
+                System.out.println();
             }
         });
         Orbit estimated = estimator.estimate(initialGuess);
@@ -677,16 +751,16 @@ public class OrbitDetermination {
                                              final NumericalPropagatorBuilder propagatorBuilder)
         throws NoSuchElementException, OrekitException {
         final double relativeConvergence;
-        if (! parser.containsKey(ParameterKey.ESTIMATOR_RELATIVE_CONVERGENCE_THRESHOLD)) {
+        if (! parser.containsKey(ParameterKey.ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD)) {
             relativeConvergence = 1.0e-14;
         } else {
-            relativeConvergence = parser.getDouble(ParameterKey.ESTIMATOR_RELATIVE_CONVERGENCE_THRESHOLD);
+            relativeConvergence = parser.getDouble(ParameterKey.ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD);
         }
         final double absoluteConvergence;
-        if (! parser.containsKey(ParameterKey.ESTIMATOR_ABSOLUTE_CONVERGENCE_THRESHOLD)) {
+        if (! parser.containsKey(ParameterKey.ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD)) {
             absoluteConvergence = 1.0e-12;
         } else {
-            absoluteConvergence = parser.getDouble(ParameterKey.ESTIMATOR_ABSOLUTE_CONVERGENCE_THRESHOLD);
+            absoluteConvergence = parser.getDouble(ParameterKey.ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD);
         }
         final int maxIterations;
         if (! parser.containsKey(ParameterKey.ESTIMATOR_MAX_ITERATIONS)) {
@@ -890,7 +964,7 @@ public class OrbitDetermination {
                 final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
                 final Range range = new Range(stationData.station,
                                               getDate(fields[0], line, lineNumber, fileName),
-                                              Double.parseDouble(fields[3]),
+                                              Double.parseDouble(fields[3]) * 1000.0,
                                               stationData.rangeSigma,
                                               weights.rangeBaseWeight);
                 if (stationData.rangeBias != null) {
@@ -920,7 +994,7 @@ public class OrbitDetermination {
                 final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
                 final RangeRate rangeRate = new RangeRate(stationData.station,
                                                           getDate(fields[0], line, lineNumber, fileName),
-                                                          Double.parseDouble(fields[3]),
+                                                          Double.parseDouble(fields[3]) * 1000.0,
                                                           stationData.rangeRateSigma,
                                                           weights.rangeRateBaseWeight,
                                                           true);
@@ -949,8 +1023,8 @@ public class OrbitDetermination {
                 final Angular azEl = new Angular(stationData.station,
                                                  getDate(fields[0], line, lineNumber, fileName),
                                                  new double[] {
-                                                     Double.parseDouble(fields[3]),
-                                                     Double.parseDouble(fields[4])
+                                                     FastMath.toRadians(Double.parseDouble(fields[3])),
+                                                     FastMath.toRadians(Double.parseDouble(fields[4]))
                                                  },
                                                  stationData.azElSigma,
                                                  weights.azElBaseWeight);
@@ -979,12 +1053,12 @@ public class OrbitDetermination {
                 // by inserting something like "----" instead of a station name
                 checkFields(9, fields, line, lineNumber, fileName);
                 return new org.orekit.estimation.measurements.PV(getDate(fields[0], line, lineNumber, fileName),
-                                                                 new Vector3D(Double.parseDouble(fields[3]),
-                                                                              Double.parseDouble(fields[4]),
-                                                                              Double.parseDouble(fields[5])),
-                                                                 new Vector3D(Double.parseDouble(fields[6]),
-                                                                              Double.parseDouble(fields[7]),
-                                                                              Double.parseDouble(fields[8])),
+                                                                 new Vector3D(Double.parseDouble(fields[3]) * 1000.0,
+                                                                              Double.parseDouble(fields[4]) * 1000.0,
+                                                                              Double.parseDouble(fields[5]) * 1000.0),
+                                                                 new Vector3D(Double.parseDouble(fields[6]) * 1000.0,
+                                                                              Double.parseDouble(fields[7]) * 1000.0,
+                                                                              Double.parseDouble(fields[8]) * 1000.0),
                                                                  pvData.positionSigma,
                                                                  pvData.velocitySigma,
                                                                  weights.pvBaseWeight);
@@ -1157,8 +1231,8 @@ public class OrbitDetermination {
         OUTLIER_REJECTION_MULTIPLIER,
         OUTLIER_REJECTION_STARTING_ITERATION,
         MEASUREMENTS_FILES,
-        ESTIMATOR_ABSOLUTE_CONVERGENCE_THRESHOLD,
-        ESTIMATOR_RELATIVE_CONVERGENCE_THRESHOLD,
+        ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD,
+        ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD,
         ESTIMATOR_MAX_ITERATIONS;
     }
 

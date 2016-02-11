@@ -18,32 +18,27 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.Map;
 
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.orbits.Orbit;
 
-/** Observer for {@link BatchLSEstimator batch least squares estimator} iterations.
+/** Observer for {@link Model model} calls.
  * <p>
- * This interface is intended to be implemented by users to monitor
- * the progress of the estimator during estimation.
+ * This interface is an internal one intended to pass the orbit
+ * back from {@link Model model} to {@link BatchLSEstimator estimator}.
  * </p>
  * @author Luc Maisonobe
  * @since 7.1
  */
-public interface BatchLSObserver {
+interface ModelObserver {
 
-    /** Notification callback for the end of each iteration.
+    /** Notification callback for orbit changes.
      * @param iteration iteration number
      * @param orbit current estimated orbit
      * @param evaluations map of measurements evaluations resulting from
      * the current estimated orbit (this is an unmodifiable view of the
      * current evaluations, its content is changed at each iteration)
-     * @param lspEvaluation current evaluation of the underlying {@link LeastSquaresProblem
-     * least squares problem}
      */
-    void iterationPerformed(int iteration, Orbit orbit,
-                            Map<Measurement<?>, Evaluation<?>> evaluations,
-                            LeastSquaresProblem.Evaluation lspEvaluation);
+    void modelCalled(int iteration, Orbit orbit, Map<Measurement<?>, Evaluation<?>> evaluations);
 
 }

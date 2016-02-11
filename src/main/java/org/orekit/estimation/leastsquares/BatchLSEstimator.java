@@ -18,13 +18,13 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -61,7 +61,13 @@ public class BatchLSEstimator {
     private BatchLSObserver observer;
 
     /** Last evaluations. */
-    private final Map<Measurement<?>, Evaluation<?>> evaluations;
+    private Map<Measurement<?>, Evaluation<?>> evaluations;
+
+    /** Last orbit. */
+    private Orbit orbit;
+
+    /** Last least squares problem evaluation. */
+    private LeastSquaresProblem.Evaluation lspEvaluation;
 
     /** Number of iterations used for last estimation. */
     private int iterations;
@@ -80,7 +86,7 @@ public class BatchLSEstimator {
         this.measurementsParameters = new ArrayList<Parameter>();
         this.optimizer              = optimizer;
         this.lsBuilder              = new LeastSquaresBuilder();
-        this.evaluations            = new IdentityHashMap<Measurement<?>, Evaluation<?>>();
+        this.evaluations            = null;
         this.iterations             = -1;
         this.observer               = null;
 
@@ -158,7 +164,7 @@ public class BatchLSEstimator {
      */
     public void setMaxIterations(final int maxIterations) {
         lsBuilder.maxIterations(maxIterations);
-        lsBuilder.maxEvaluations(maxIterations);
+        lsBuilder.maxEvaluations(2 * maxIterations);
     }
 
     /**
@@ -168,7 +174,26 @@ public class BatchLSEstimator {
      * @see EvaluationRmsChecker
      */
     public void setConvergenceThreshold(final double relTol, final double absTol) {
-        lsBuilder.checker(new EvaluationRmsChecker(relTol, absTol));
+        lsBuilder.checker(new EvaluationRmsChecker(relTol, absTol) {
+            /** {@inheritDoc} */
+            @Override
+            public boolean converged(final int iteration,
+                                     final LeastSquaresProblem.Evaluation previous,
+                                     final LeastSquaresProblem.Evaluation current) {
+
+                // save the last evaluations
+                lspEvaluation = current;
+
+                // notify the observer
+                if (observer != null) {
+                    observer.iterationPerformed(iteration, orbit,
+                                                Collections.unmodifiableMap(evaluations),
+                                                lspEvaluation);
+                }
+
+                return super.converged(iteration, previous, current);
+            }
+        });
     }
 
     /** Estimate the orbit and the parameters.
@@ -222,9 +247,19 @@ public class BatchLSEstimator {
         lsBuilder.target(target);
 
         // set up the model
+        final ModelObserver modelObserver = new ModelObserver() {
+            /** {@inheritDoc} */
+            @Override
+            public void modelCalled(final int newIteration, final Orbit newOrbit,
+                                    final Map<Measurement<?>, Evaluation<?>> newEvaluations) {
+                BatchLSEstimator.this.iterations  = newIteration;
+                BatchLSEstimator.this.orbit       = newOrbit;
+                BatchLSEstimator.this.evaluations = newEvaluations;
+            }
+        };
         final Model model = new Model(propagatorBuilder, propagatorParameters,
                                       measurements, measurementsParameters,
-                                      initialGuess.getDate(), observer);
+                                      initialGuess.getDate(), modelObserver);
         lsBuilder.model(model);
 
         // add a validator for orbital parameters
@@ -235,15 +270,8 @@ public class BatchLSEstimator {
             // solve the problem
             optimizer.optimize(lsBuilder.build());
 
-            // save the last evaluations
-            evaluations.clear();
-            evaluations.putAll(model.getLastEvaluations());
-
-            // save the number of iterations
-            iterations = model.getIteration();
-
             // extract the orbit
-            return model.getLastOrbit();
+            return orbit;
 
         } catch (OrekitExceptionWrapper oew) {
             throw oew.getException();
@@ -256,6 +284,13 @@ public class BatchLSEstimator {
      */
     public Map<Measurement<?>, Evaluation<?>> getLastEvaluations() {
         return Collections.unmodifiableMap(evaluations);
+    }
+
+    /** Get the last {@link LeastSquaresProblem.Evaluation least squares problem evaluation}.
+     * @return last least squares problem evaluation
+     */
+    public LeastSquaresProblem.Evaluation getLastLSPEvaluation() {
+        return lspEvaluation;
     }
 
     /** Get the number of iterations used for last estimation.
