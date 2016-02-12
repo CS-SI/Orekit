@@ -33,13 +33,18 @@
       Package forces #CEEBD8 {
         ZonalShortPeriodicCoefficients <--* ZonalContribution
         interface DSSTForceModel
+        interface ShortPeriodTerms
         DSSTForceModel <|-- DSSTCentralBody
+       ShortPeriodTerms <|-- ZonalShortPeriodicCoefficients
         DSSTCentralBody *--> "1" ZonalContribution
       }
 
       package utilities #CEEBD8 {
+        package hansen #EAECE6 {
+          class HansenZonalLinear
+        }
           ZonalShortPeriodicCoefficients *--> "*" ShortPeriodicsInterpolatedCoefficient
-          ZonalContribution *--> HansenThirdBodyLinear
+          ZonalContribution *--> HansenZonalLinear
        }
     }
 
