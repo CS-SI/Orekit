@@ -20,6 +20,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.estimation.measurements.GroundStation.OffsetDerivatives;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -80,12 +81,13 @@ public class Angular extends AbstractMeasurement<Angular> {
         final Transform iner2Body = state.getFrame().getTransformTo(station.getOffsetFrame().getParent(), getDate());
 
         // station topocentric frame (east-north-zenith) in station parent frame expressed as DerivativeStructures
-        final FieldVector3D<DerivativeStructure> east   = station.getOffsetDerivatives(6, 3, 4, 5).getEast();
-        final FieldVector3D<DerivativeStructure> north  = station.getOffsetDerivatives(6, 3, 4, 5).getNorth();
-        final FieldVector3D<DerivativeStructure> zenith = station.getOffsetDerivatives(6, 3, 4, 5).getZenith();
+        final OffsetDerivatives od = station.getOffsetDerivatives(6, 3, 4, 5);
+        final FieldVector3D<DerivativeStructure> east   = od.getEast();
+        final FieldVector3D<DerivativeStructure> north  = od.getNorth();
+        final FieldVector3D<DerivativeStructure> zenith = od.getZenith();
 
         // station origin in station parent frame
-        final FieldVector3D<DerivativeStructure> qP = station.getOffsetDerivatives(6, 3, 4, 5).getOrigin();
+        final FieldVector3D<DerivativeStructure> qP = od.getOrigin();
 
         // satellite vector expressed in station parent frame
         final Vector3D transitp = iner2Body.transformPosition(transitState.getPVCoordinates().getPosition());
