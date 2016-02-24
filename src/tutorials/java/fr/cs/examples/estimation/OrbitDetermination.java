@@ -191,71 +191,71 @@ public class OrbitDetermination {
                                            final LeastSquaresProblem.Evaluation lspEvaluation) {
                 System.out.println("iteration " + iteration + ", orbit " + orbit);
                 System.out.println("rms " + lspEvaluation.getRMS() + ", cost " + lspEvaluation.getCost());
-//                Map<String, List<Angular>> angles = new HashMap<String, List<Angular>>();
-//                for (Map.Entry<Measurement<?>, Evaluation<?>> entry : evaluations.entrySet()) {
-//                    if (entry.getKey() instanceof Angular) {
-//                        Angular angular = (Angular) entry.getKey();
-//                        List<Angular> list = angles.get(angular.getStation().getName());
-//                        if (list == null) {
-//                            list = new ArrayList<Angular>();
-//                            angles.put(angular.getStation().getName(), list);
-//                        }
-//                        list.add(angular);
-//                    }
-//                }
-//                for (Map.Entry<String, List<Angular>> entry : angles.entrySet()) {
-//                    List<Angular> list = entry.getValue();
-//                    list.sort(new Comparator<Angular>() {
-//                        @Override
-//                        public int compare(Angular o1, Angular o2) {
-//                            return o1.getDate().compareTo(o2.getDate());
-//                        }
-//                    });
-//                    int count = 0;
-//                    for (Angular a : list) {
-//                        if (++count < 11) {
-//                            @SuppressWarnings("unchecked")
-//                            Evaluation<Angular> ev = (Evaluation<Angular>) evaluations.get(a);
-//                            System.out.println(a.getDate() + " " + a.getStation().getName() + " " +
-//                                               FastMath.toDegrees(a.getObservedValue()[0]) + " " +
-//                                               FastMath.toDegrees(ev.getValue()[0]) + " " +
-//                                               FastMath.toDegrees(a.getObservedValue()[0] - ev.getValue()[0]));
-//                        }
-//                    }
-//                    System.out.println();
-//                }
-                Map<String, List<Range>> ranges = new HashMap<String, List<Range>>();
+                Map<String, List<Angular>> angles = new HashMap<String, List<Angular>>();
                 for (Map.Entry<Measurement<?>, Evaluation<?>> entry : evaluations.entrySet()) {
-                    if (entry.getKey() instanceof Range) {
-                        Range range = (Range) entry.getKey();
-                        List<Range> list = ranges.get(range.getStation().getName());
+                    if (entry.getKey() instanceof Angular) {
+                        Angular angular = (Angular) entry.getKey();
+                        List<Angular> list = angles.get(angular.getStation().getName());
                         if (list == null) {
-                            list = new ArrayList<Range>();
-                            ranges.put(range.getStation().getName(), list);
+                            list = new ArrayList<Angular>();
+                            angles.put(angular.getStation().getName(), list);
                         }
-                        list.add(range);
+                        list.add(angular);
                     }
                 }
-                for (Map.Entry<String, List<Range>> entry : ranges.entrySet()) {
-                    List<Range> list = entry.getValue();
-                    list.sort(new Comparator<Range>() {
+                for (Map.Entry<String, List<Angular>> entry : angles.entrySet()) {
+                    List<Angular> list = entry.getValue();
+                    list.sort(new Comparator<Angular>() {
                         @Override
-                        public int compare(Range o1, Range o2) {
+                        public int compare(Angular o1, Angular o2) {
                             return o1.getDate().compareTo(o2.getDate());
                         }
                     });
                     int count = 0;
-                    for (Range r : list) {
+                    for (Angular a : list) {
                         if (++count < 11) {
                             @SuppressWarnings("unchecked")
-                            Evaluation<Range> ev = (Evaluation<Range>) evaluations.get(r);
-                            System.out.println(r.getDate() + " " + r.getStation().getName() + " " +
-                                               r.getObservedValue()[0] + " " + ev.getValue()[0] + " " +
-                                               (r.getObservedValue()[0] - ev.getValue()[0]));
+                            Evaluation<Angular> ev = (Evaluation<Angular>) evaluations.get(a);
+                            System.out.println(a.getDate() + " " + a.getStation().getName() + " " +
+                                               FastMath.toDegrees(a.getObservedValue()[0]) + " " +
+                                               FastMath.toDegrees(ev.getValue()[0]) + " " +
+                                               FastMath.toDegrees(a.getObservedValue()[0] - ev.getValue()[0]));
                         }
                     }
                     System.out.println();
                 }
+//                Map<String, List<Range>> ranges = new HashMap<String, List<Range>>();
+//                for (Map.Entry<Measurement<?>, Evaluation<?>> entry : evaluations.entrySet()) {
+//                    if (entry.getKey() instanceof Range) {
+//                        Range range = (Range) entry.getKey();
+//                        List<Range> list = ranges.get(range.getStation().getName());
+//                        if (list == null) {
+//                            list = new ArrayList<Range>();
+//                            ranges.put(range.getStation().getName(), list);
+//                        }
+//                        list.add(range);
+//                    }
+//                }
+//                for (Map.Entry<String, List<Range>> entry : ranges.entrySet()) {
+//                    List<Range> list = entry.getValue();
+//                    list.sort(new Comparator<Range>() {
+//                        @Override
+//                        public int compare(Range o1, Range o2) {
+//                            return o1.getDate().compareTo(o2.getDate());
+//                        }
+//                    });
+//                    int count = 0;
+//                    for (Range r : list) {
+//                        if (++count < 11) {
+//                            @SuppressWarnings("unchecked")
+//                            Evaluation<Range> ev = (Evaluation<Range>) evaluations.get(r);
+//                            System.out.println(r.getDate() + " " + r.getStation().getName() + " " +
+//                                               r.getObservedValue()[0] + " " + ev.getValue()[0] + " " +
+//                                               (r.getObservedValue()[0] - ev.getValue()[0]));
+//                        }
+//                    }
+//                    System.out.println();
+//                }
                 System.out.println();
             }
         });
@@ -644,9 +644,9 @@ public class OrbitDetermination {
         final double[]  stationRangeRateSigma         = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_SIGMA);
         final double[]  stationRangeRateBias          = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS);
         final boolean[] stationRangeRateBiasEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED);
-        final double[]  stationAzimuthSigma           = parser.getDoubleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
+        final double[]  stationAzimuthSigma           = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
         final double[]  stationAzimuthBias            = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS);
-        final double[]  stationElevationSigma         = parser.getDoubleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
+        final double[]  stationElevationSigma         = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
         final double[]  stationElevationBias          = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
         final boolean[] stationAzElBiasesEstimated    = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
 
