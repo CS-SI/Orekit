@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation.OffsetDerivatives;
 import org.orekit.frames.Transform;
@@ -99,8 +100,11 @@ public class Angular extends AbstractMeasurement<Angular> {
         // station-satellite vector expressed in station parent frame
         final FieldVector3D<DerivativeStructure> staSat = pP.subtract(qP);
 
-        final DerivativeStructure azimuth   = DerivativeStructure.atan2(staSat.dotProduct(east), staSat.dotProduct(north));
-        final DerivativeStructure elevation = staSat.dotProduct(zenith).divide(staSat.getNorm()).asin();
+        final DerivativeStructure baseAzimuth = DerivativeStructure.atan2(staSat.dotProduct(east), staSat.dotProduct(north));
+        final double              twoPiWrap   = MathUtils.normalizeAngle(baseAzimuth.getReal(), getObservedValue()[0]) -
+                                                baseAzimuth.getReal();
+        final DerivativeStructure azimuth     = baseAzimuth.add(twoPiWrap);
+        final DerivativeStructure elevation   = staSat.dotProduct(zenith).divide(staSat.getNorm()).asin();
 
         // prepare the evaluation
         final Evaluation<Angular> evaluation = new Evaluation<Angular>(this, iteration, transitState);
