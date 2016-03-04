@@ -18,7 +18,9 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
@@ -29,8 +31,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.Parameter;
+import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
@@ -42,7 +46,7 @@ public class ModelTest {
     @Test
     public void testPerfectValue() throws OrekitException {
 
-        Context context = EstimationTestUtils.eccentricContext();
+        final Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
@@ -63,9 +67,25 @@ public class ModelTest {
         }
 
         // create model
+        final ModelObserver modelObserver = new ModelObserver() {
+            /** {@inheritDoc} */
+            @Override
+            public void modelCalled(final int newIteration, final Orbit newOrbit,
+                                    final Map<Measurement<?>, Evaluation<?>> newEvaluations) {
+                Assert.assertEquals(1, newIteration);
+                Assert.assertEquals(0,
+                                    context.initialOrbit.getDate().durationFrom(newOrbit.getDate()),
+                                    1.0e-15);
+                Assert.assertEquals(0,
+                                    Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(),
+                                                      newOrbit.getPVCoordinates().getPosition()),
+                                    1.0e-15);
+                Assert.assertEquals(measurements.size(), newEvaluations.size());
+            }
+        };
         final Model model = new Model(propagatorBuilder, propagatorBuilder.getFreeParameters(),
                                       measurements, measurementsParameters,
-                                      context.initialOrbit.getDate(), null);
+                                      context.initialOrbit.getDate(), modelObserver);
 
         // evaluate model on perfect start point
         RealVector point = startPoint(context, propagatorBuilder, measurementsParameters);
