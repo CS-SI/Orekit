@@ -56,7 +56,9 @@ class MeasurementHandler implements EventHandler<DateDetector> {
         throws OrekitException {
 
         // fetch the evaluated measurement to the estimator
-        model.fetchEvaluatedMeasurement(index, measurement.evaluate(model.getIteration(), s));
+        model.fetchEvaluatedMeasurement(index, measurement.evaluate(model.getIterationsCount(),
+                                                                    model.getEvaluationsCount(),
+                                                                    s));
 
         return Action.CONTINUE;
 
@@ -65,7 +67,7 @@ class MeasurementHandler implements EventHandler<DateDetector> {
     /** {@inheritDoc} */
     @Override
     public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState)
-                    throws OrekitException {
+        throws OrekitException {
         // never really called as eventOccurred always returns Action.CONTINUE
         return oldState;
     }

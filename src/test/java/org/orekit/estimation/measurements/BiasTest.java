@@ -85,14 +85,15 @@ public class BiasTest {
         }
 
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
-        estimator.setMaxIterations(20);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
 
         // we want to estimate the biases
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             stationsRangeBiases[i].getSupportedParameters().get(0).setEstimated(true);
         }
 
-        EstimationTestUtils.checkFit(context, estimator, 4,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0,  8.5e-7,
                                      0.0,  2.2e-6,
                                      0.0,  2.2e-7,

@@ -106,11 +106,12 @@ public class GroundStationTest {
         }
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(100);
+        estimator.setMaxEvaluations(200);
 
         // we want to estimate station offsets
         moved.setEstimated(true);
 
-        EstimationTestUtils.checkFit(context, estimator, 4,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 1.2e-6,
                                      0.0, 2.3e-6,
                                      0.0, 8.8e-7,

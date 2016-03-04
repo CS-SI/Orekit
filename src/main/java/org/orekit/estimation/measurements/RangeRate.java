@@ -78,7 +78,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation<RangeRate> theoreticalEvaluation(final int iteration, final SpacecraftState state)
+    protected Evaluation<RangeRate> theoreticalEvaluation(final int iteration, final int count,
+                                                          final SpacecraftState state)
         throws OrekitException {
 
         // one-way (downlink) light time correction
@@ -89,12 +90,14 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final double          offset           = getDate().durationFrom(state.getDate());
         final SpacecraftState compensatedState = state.shiftedBy(offset - downlinkDelay);
 
-        final Evaluation<RangeRate> evaluation = oneWayTheoreticalEvaluation(iteration, state.getDate(), compensatedState);
+        final Evaluation<RangeRate> evaluation = oneWayTheoreticalEvaluation(iteration, count,
+                                                                             state.getDate(), compensatedState);
         if (twoway) {
             // one-way (uplink) light time correction
             final double uplinkDelay = station.uplinkTimeOfFlight(compensatedState);
             final AbsoluteDate date = compensatedState.getDate().shiftedBy(uplinkDelay);
-            final Evaluation<RangeRate> evalOneWay2 = oneWayTheoreticalEvaluation(iteration, date, compensatedState);
+            final Evaluation<RangeRate> evalOneWay2 = oneWayTheoreticalEvaluation(iteration, count,
+                                                                                  date, compensatedState);
 
             //evaluation
             evaluation.setValue(0.5 * (evaluation.getValue()[0] + evalOneWay2.getValue()[0]));
@@ -126,19 +129,21 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
     /** Evaluate measurement in one-way.
      * @param iteration iteration number
+     * @param count evaluations counter
      * @param date date at which signal is on ground station
      * @param compensatedState orbital state used for measurement
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
-    private Evaluation<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final AbsoluteDate date,
+    private Evaluation<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int count, final AbsoluteDate date,
                                                               final SpacecraftState compensatedState)
         throws OrekitException {
         // prepare the evaluation
-        final Evaluation<RangeRate> evaluation = new Evaluation<RangeRate>(this, iteration, compensatedState);
+        final Evaluation<RangeRate> evaluation =
+                        new Evaluation<RangeRate>(this, iteration, count, compensatedState);
 
-        // station coordinates at date in EME2000
+        // station coordinates at date in state frame
         final PVCoordinates pvStation = station.getOffsetFrame().getPVCoordinates(date, compensatedState.getFrame());
 
         // range rate value

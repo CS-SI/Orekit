@@ -24,6 +24,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.util.Incrementor;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -70,9 +71,8 @@ public class ModelTest {
         final ModelObserver modelObserver = new ModelObserver() {
             /** {@inheritDoc} */
             @Override
-            public void modelCalled(final int newIteration, final Orbit newOrbit,
+            public void modelCalled(final Orbit newOrbit,
                                     final Map<Measurement<?>, Evaluation<?>> newEvaluations) {
-                Assert.assertEquals(1, newIteration);
                 Assert.assertEquals(0,
                                     context.initialOrbit.getDate().durationFrom(newOrbit.getDate()),
                                     1.0e-15);
@@ -86,6 +86,8 @@ public class ModelTest {
         final Model model = new Model(propagatorBuilder, propagatorBuilder.getFreeParameters(),
                                       measurements, measurementsParameters,
                                       context.initialOrbit.getDate(), modelObserver);
+        model.setIterationsCounter(new Incrementor(100));
+        model.setEvaluationsCounter(new Incrementor(100));
 
         // evaluate model on perfect start point
         RealVector point = startPoint(context, propagatorBuilder, measurementsParameters);

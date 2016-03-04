@@ -224,7 +224,7 @@ public class EstimationTestUtils {
     }
 
     public static void checkFit(final Context context, final BatchLSEstimator estimator,
-                                final int iterations,
+                                final int iterations, final int evaluations,
                                 final double expectedRMS,      final double rmsEps,
                                 final double expectedMax,      final double maxEps,
                                 final double expectedDeltaPos, final double posEps,
@@ -244,7 +244,8 @@ public class EstimationTestUtils {
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
-        Assert.assertEquals(iterations, estimator.getIterations());
+        Assert.assertEquals(iterations, estimator.getIterationsCount());
+        Assert.assertEquals(evaluations, estimator.getEvaluationsCount());
 
         int    k   = 0;
         double sum = 0;

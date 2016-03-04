@@ -85,13 +85,13 @@ public class AngularTest {
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
-            final double[][]   jacobian  = measurement.evaluate(0, state).getStateDerivatives();
+            final double[][]   jacobian  = measurement.evaluate(0, 0, state).getStateDerivatives();
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 EstimationUtils.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) throws OrekitException {
-                        return measurement.evaluate(0, state).getValue();
+                        return measurement.evaluate(0, 0, state).getValue();
                     }
                                                   }, measurement.getDimension(), OrbitType.CARTESIAN,
                                                   PositionAngle.TRUE, 250.0, 4).value(state);
@@ -183,7 +183,7 @@ public class AngularTest {
             
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
-            final double[][]      jacobian  = measurement.evaluate(0, state).getParameterDerivatives(stationParameter.getName());
+            final double[][]      jacobian  = measurement.evaluate(0, 0, state).getParameterDerivatives(stationParameter.getName());
 
             final double[][] finiteDifferencesJacobian =
                 EstimationUtils.differentiate(new MultivariateVectorFunction() {
@@ -194,7 +194,7 @@ public class AngularTest {
 
                                 // evaluate angular with a changed station position
                                 stationParameter.setValue(point);
-                                final double[] result = measurement.evaluate(0, state).getValue();
+                                final double[] result = measurement.evaluate(0, 0, state).getValue();
                                 stationParameter.setValue(savedParameter);
                                 return result;
 

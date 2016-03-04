@@ -36,6 +36,9 @@ public class Evaluation<T extends Measurement<T>> {
     /** Iteration number. */
     private final int iteration;
 
+    /** Evaluations counter. */
+    private final int count;
+
     /** State of the spacecraft. */
     private final SpacecraftState state;
 
@@ -54,12 +57,15 @@ public class Evaluation<T extends Measurement<T>> {
     /** Simple constructor.
      * @param measurement associated measurement
      * @param iteration iteration number
+     * @param count evaluations counter
      * @param state state of the spacecraft
      */
-    public Evaluation(final T measurement, final int iteration,
+    public Evaluation(final T measurement,
+                      final int iteration, final int count,
                       final SpacecraftState state) {
         this.measurement           = measurement;
         this.iteration             = iteration;
+        this.count                 = count;
         this.state                 = state;
         this.parametersDerivatives = new HashMap<String, double[][]>();
     }
@@ -76,6 +82,13 @@ public class Evaluation<T extends Measurement<T>> {
      */
     public int getIteration() {
         return iteration;
+    }
+
+    /** Get the evaluations counter.
+     * @return evaluations counter
+     */
+    public int getCount() {
+        return count;
     }
 
     /** Get the state of the spacecraft.

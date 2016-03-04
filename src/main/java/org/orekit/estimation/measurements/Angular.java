@@ -66,7 +66,8 @@ public class Angular extends AbstractMeasurement<Angular> {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation<Angular> theoreticalEvaluation(final int iteration, final SpacecraftState state)
+    protected Evaluation<Angular> theoreticalEvaluation(final int iteration, final int count,
+                                                        final SpacecraftState state)
         throws OrekitException {
 
         // take propagation time into account
@@ -107,7 +108,7 @@ public class Angular extends AbstractMeasurement<Angular> {
         final DerivativeStructure elevation   = staSat.dotProduct(zenith).divide(staSat.getNorm()).asin();
 
         // prepare the evaluation
-        final Evaluation<Angular> evaluation = new Evaluation<Angular>(this, iteration, transitState);
+        final Evaluation<Angular> evaluation = new Evaluation<Angular>(this, iteration, count, transitState);
 
         // azimuth - elevation values
         evaluation.setValue(azimuth.getValue(), elevation.getValue());
