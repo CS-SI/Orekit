@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
@@ -34,12 +35,13 @@ import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.MeasurementCreator;
-import org.orekit.forces.SphericalSpacecraft;
+import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.OceanLoadDeformationCoefficients;
+import org.orekit.forces.radiation.IsotropicRadiationClassicalConvention;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -69,7 +71,8 @@ public class EstimationTestUtils {
                                      FramesFactory.getITRF(context.conventions, true));
         context.sun = CelestialBodyFactory.getSun();
         context.moon = CelestialBodyFactory.getMoon();
-        context.spacecraft = new SphericalSpacecraft(2.0, 1.2, 0.2, 0.8);
+        context.radiationSensitive = new IsotropicRadiationClassicalConvention(2.0, 0.2, 0.8);
+        context.dragSensitive = new IsotropicDrag(2.0, 1.2);
         context.utc = TimeScalesFactory.getUTC();
         context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -107,15 +110,16 @@ public class EstimationTestUtils {
         context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
         String Myframename = "MyEarthFrame";
         final AbsoluteDate datedef = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc);
-        final Vector3D rotationRate = new Vector3D(0.0, 0.0, 2.0*FastMath.PI/86400.);
+        final Vector3D rotationRate = new Vector3D(0.0, 0.0, 2.0 * FastMath.PI / Constants.JULIAN_DAY);
 
         TransformProvider MyEarthFrame = new TransformProvider() {
             private static final long serialVersionUID = 1L;
             public Transform getTransform(final AbsoluteDate date) {
                 final double rotationduration = date.durationFrom(datedef);
                 final Vector3D alpharot = new Vector3D(rotationduration, rotationRate);
-
-                return new Transform(date, new Rotation(Vector3D.PLUS_K, -alpharot.getZ()), rotationRate);
+                final Rotation rotation = new Rotation(Vector3D.PLUS_K, -alpharot.getZ(),
+                                                       RotationConvention.VECTOR_OPERATOR); 
+                return new Transform(date, rotation, rotationRate);
             }
         };
         Frame FrameTest = new Frame(FramesFactory.getEME2000(), MyEarthFrame, Myframename, true);
@@ -124,7 +128,8 @@ public class EstimationTestUtils {
         context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0.0, FrameTest);
         context.sun = CelestialBodyFactory.getSun();
         context.moon = CelestialBodyFactory.getMoon();
-        context.spacecraft = new SphericalSpacecraft(2.0, 1.2, 0.2, 0.8);
+        context.radiationSensitive = new IsotropicRadiationClassicalConvention(2.0, 0.2, 0.8);
+        context.dragSensitive = new IsotropicDrag(2.0, 1.2);
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         AstronomicalAmplitudeReader aaReader =
                         new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
