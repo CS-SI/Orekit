@@ -110,7 +110,8 @@ public class EstimationTestUtils {
         context.ut1 = TimeScalesFactory.getUT1(context.conventions, true);
         String Myframename = "MyEarthFrame";
         final AbsoluteDate datedef = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc);
-        final Vector3D rotationRate = new Vector3D(0.0, 0.0, 2.0 * FastMath.PI / Constants.JULIAN_DAY);
+        final double omega = Constants.WGS84_EARTH_ANGULAR_VELOCITY;
+        final Vector3D rotationRate = new Vector3D(0.0, 0.0, omega);
 
         TransformProvider MyEarthFrame = new TransformProvider() {
             private static final long serialVersionUID = 1L;
@@ -141,8 +142,8 @@ public class EstimationTestUtils {
                                                                          map));
         context.gravity = GravityFieldFactory.getNormalizedProvider(20, 20);
 
-        // semimajor axis for a geostationnary  or polar satellite
-        double da = FastMath.cbrt( (0.25 * context.gravity.getMu() * 86400.0 * 86400.0 / FastMath.PI / FastMath.PI));
+        // semimajor axis for a geostationnary satellite
+        double da = FastMath.cbrt(context.gravity.getMu() / (omega * omega));
                                                               
         //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
         //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
