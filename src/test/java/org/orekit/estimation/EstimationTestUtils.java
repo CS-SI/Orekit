@@ -125,7 +125,7 @@ public class EstimationTestUtils {
         };
         Frame FrameTest = new Frame(FramesFactory.getEME2000(), MyEarthFrame, Myframename, true);
         
-        // Earth is spherical, rotating in 86400 seconds
+        // Earth is spherical, rotating in one sidereal day
         context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0.0, FrameTest);
         context.sun = CelestialBodyFactory.getSun();
         context.moon = CelestialBodyFactory.getMoon();
