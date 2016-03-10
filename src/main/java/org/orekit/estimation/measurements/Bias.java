@@ -44,7 +44,7 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
     public Bias(final String name, final double ... bias)
         throws OrekitException {
 
-        parameter = new Parameter(name) {
+        parameter = new Parameter(name, bias) {
             /** {@inheritDoc} */
             @Override
             public void valueChanged(final double[] newValue) {
@@ -55,8 +55,6 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
         for (int i = 0; i < bias.length; ++i) {
             derivatives[i][i] = 1.0;
         }
-
-        setBias(bias);
 
     }
 

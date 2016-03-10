@@ -222,10 +222,10 @@ public class BatchLSEstimatorTest {
             
             @Override
             public List<Parameter> getSupportedParameters() {
-                return Arrays.asList(new Parameter(duplicatedName) {
+                return Arrays.asList(new Parameter(duplicatedName, new double[1]) {
                                          protected void valueChanged(double[] newValue) {
                                          }
-                                     }, new Parameter(duplicatedName) {
+                                     }, new Parameter(duplicatedName, new double[1]) {
                                          protected void valueChanged(double[] newValue) {
                                          }
                                      });

@@ -28,6 +28,9 @@ public abstract class Parameter {
     /** Name of the parameter. */
     private final String name;
 
+    /** Initial value. */
+    private double[] initialValue;
+
     /** Current value. */
     private double[] value;
 
@@ -36,14 +39,16 @@ public abstract class Parameter {
 
     /** Simple constructor.
      * <p>
-     * At construction, the parameter is configured as <em>not</em> estimated
-     * and it is <em>not</em> initialized.
+     * At construction, the parameter is configured as <em>not</em> estimated.
      * </p>
      * @param name name of the parameter
+     * @param initialValue initial value of the parameter
      */
-    protected Parameter(final String name) {
-        this.name      = name;
-        this.estimated = false;
+    protected Parameter(final String name, final double[] initialValue) {
+        this.name         = name;
+        this.initialValue = initialValue.clone();
+        this.value        = this.initialValue.clone();
+        this.estimated    = false;
     }
 
     /** Get name.
@@ -57,7 +62,14 @@ public abstract class Parameter {
      * @return dimension of the parameter
      */
     public int getDimension() {
-        return value.length;
+        return initialValue.length;
+    }
+
+    /** Get initial parameter value.
+     * @return initial parameter value
+     */
+    public double[] getInitialValue() {
+        return initialValue.clone();
     }
 
     /** Get current parameter value.
@@ -71,12 +83,8 @@ public abstract class Parameter {
      * @param value new value
      * @exception OrekitException if value is invalid
      */
-    public void setValue(final double ... value) throws OrekitException {
-        if (this.value == null) {
-            this.value = value.clone();
-        } else {
-            System.arraycopy(value, 0, this.value, 0, value.length);
-        }
+    public void setValue(final double[] value) throws OrekitException {
+        System.arraycopy(value, 0, this.value, 0, value.length);
         valueChanged(this.value);
     }
 

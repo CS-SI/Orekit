@@ -26,7 +26,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -190,14 +189,6 @@ public class OrbitDetermination {
                 freeParametersNames.add(parameter.getName());
             }
         }
-        if (!freeParametersNames.isEmpty()) {
-            // display the parameters that will be estimated
-            Collections.sort(freeParametersNames);
-            System.out.println("free parameters:");
-            for (int i = 0; i < freeParametersNames.size(); ++i) {
-                System.out.format(Locale.US, "  %2d %s%n", i + 1, freeParametersNames.get(i));
-            }
-        }
 
         // estimate orbit
         estimator.setObserver(new BatchLSObserver() {
@@ -259,6 +250,25 @@ public class OrbitDetermination {
         }
 
         System.out.println("Estimated orbit: " + estimated);
+        System.out.println("Estimated parameters changes: ");
+        for (int i = 0; i < freeParametersNames.size(); ++i) {
+            final String name = freeParametersNames.get(i);
+            for (Parameter parameter : estimator.getSupportedParameters()) {
+                if (parameter.getName().equals(name)) {
+                    final double[] initial = parameter.getInitialValue();
+                    final double[] value   = parameter.getValue();
+                    System.out.format(Locale.US, "  %2d %s", i + 1, name);
+                    for (int k = 0; k < initial.length; ++k) {
+                        System.out.format(Locale.US, "  %+f", value[k] - initial[k]);
+                    }
+                    System.out.format(Locale.US, "  (final value:");
+                    for (double d : value) {
+                        System.out.format(Locale.US, "  %f", d);
+                    }
+                    System.out.format(Locale.US, ")%n");
+                }
+            }
+        }
         System.out.println("Number of iterations: " + estimator.getIterationsCount());
         System.out.println("Number of evaluations: " + estimator.getEvaluationsCount());
         displayStats("Range",      rangeStats);
