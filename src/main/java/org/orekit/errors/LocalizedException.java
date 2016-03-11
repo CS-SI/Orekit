@@ -27,7 +27,7 @@ import org.apache.commons.math3.exception.util.Localizable;
 
 public interface LocalizedException {
 
-/** Gets the message in a specified locale.
+    /** Gets the message in a specified locale.
      * @param locale Locale in which the message should be translated
      * @return localized message
      */
