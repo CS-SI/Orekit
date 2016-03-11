@@ -109,12 +109,25 @@ public abstract class ParameterDriver {
     }
 
     /** Set parameter value.
-     * @param value new value
-     * @exception OrekitException if value is invalid
+     * <p>
+     * Calling this method is equivalent to call {@link #setValue(double[], int)
+     * setValue(newValue, 0)}.
+     * </p>
+     * @param newValue new value
+     * @exception OrekitException if newValue is invalid
      */
-    public void setValue(final double[] value) throws OrekitException {
-        System.arraycopy(value, 0, this.value, 0, value.length);
-        valueChanged(this.value);
+    public void setValue(final double[] newValue) throws OrekitException {
+        setValue(newValue, 0);
+    }
+
+    /** Set parameter value.
+     * @param newValue new value (may have more elements than {@link #getDimension()})
+     * @param startIndex index of the first element of {@code newValue} to consider
+     * @exception OrekitException if newValue is invalid
+     */
+    public void setValue(final double[] newValue, final int startIndex) throws OrekitException {
+        System.arraycopy(newValue, startIndex, value, 0, value.length);
+        valueChanged(value);
     }
 
     /** Notify that the values has been changed.

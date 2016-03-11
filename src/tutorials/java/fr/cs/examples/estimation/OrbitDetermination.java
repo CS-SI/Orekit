@@ -339,7 +339,6 @@ public class OrbitDetermination {
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                        orbit.getType(),
                                                        PositionAngle.MEAN);
-        final List<String> freeParameters = new ArrayList<String>();
 
         // initial mass
         final double mass;
@@ -408,7 +407,11 @@ public class OrbitDetermination {
             Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
             propagatorBuilder.addForceModel(new DragForce(atmosphere, new IsotropicDrag(area, cd)));
             if (cdEstimated) {
-                freeParameters.add(DragSensitive.DRAG_COEFFICIENT);
+                for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers()) {
+                    if (driver.getName().equals(DragSensitive.DRAG_COEFFICIENT)) {
+                        driver.setEstimated(true);
+                    }
+                }
             }
         }
 
@@ -422,7 +425,11 @@ public class OrbitDetermination {
                                                                        body.getEquatorialRadius(),
                                                                        new IsotropicRadiationSingleCoefficient(area, cr)));
             if (cREstimated) {
-                freeParameters.add(RadiationSensitive.REFLECTION_COEFFICIENT);
+                for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers()) {
+                    if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
+                        driver.setEstimated(true);
+                    }
+                }
             }
         }
 
@@ -430,8 +437,6 @@ public class OrbitDetermination {
         if (parser.containsKey(ParameterKey.GENERAL_RELATIVITY) && parser.getBoolean(ParameterKey.GENERAL_RELATIVITY)) {
             propagatorBuilder.addForceModel(new Relativity(gravityField.getMu()));
         }
-
-        propagatorBuilder.setFreeParameters(freeParameters);
 
         return propagatorBuilder;
 

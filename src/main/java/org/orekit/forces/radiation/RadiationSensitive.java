@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.List;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
@@ -38,6 +40,11 @@ public interface RadiationSensitive {
 
     /** Parameter name for reflection coefficient. */
     String REFLECTION_COEFFICIENT = "reflection coefficient";
+
+    /** Get the names of the supported parameters.
+     * @return parameters names
+     */
+    List<String> getRadiationParametersNames();
 
     /** Compute the acceleration due to radiation pressure.
      * @param date current date

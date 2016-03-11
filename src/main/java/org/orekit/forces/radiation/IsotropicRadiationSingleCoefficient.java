@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
@@ -23,7 +26,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -53,6 +55,11 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     public IsotropicRadiationSingleCoefficient(final double crossSection, final double cr) {
         this.crossSection = crossSection;
         this.cr           = cr;
+    }
+
+    /** {@inheritDoc} */
+    public List<String> getRadiationParametersNames() {
+        return Arrays.asList(REFLECTION_COEFFICIENT);
     }
 
     /** {@inheritDoc} */

@@ -45,7 +45,8 @@ public class TLEConverterTest {
     private TLE leoTLE;
 
     @Test
-    public void testWrongParametersSize() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedWrongParametersSize() throws OrekitException {
         try {
             PropagatorBuilder builder =
                             new TLEPropagatorBuilder(leoTLE.getSatelliteNumber(),
@@ -68,7 +69,8 @@ public class TLEConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterFree() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterFree() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             PropagatorBuilder builder =
@@ -90,7 +92,8 @@ public class TLEConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterGet() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterGet() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             PropagatorBuilder builder =
@@ -111,7 +114,8 @@ public class TLEConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterSet() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterSet() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             PropagatorBuilder builder =
@@ -132,7 +136,8 @@ public class TLEConverterTest {
     }
 
     @Test
-    public void testSupportedParameters() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedSupportedParameters() throws OrekitException {
         PropagatorBuilder builder =
                         new TLEPropagatorBuilder(leoTLE.getSatelliteNumber(),
                                                  leoTLE.getClassification(),

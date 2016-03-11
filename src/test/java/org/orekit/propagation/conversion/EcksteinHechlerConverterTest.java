@@ -53,7 +53,8 @@ public class EcksteinHechlerConverterTest {
     private UnnormalizedSphericalHarmonicsProvider provider;
 
     @Test
-    public void testWrongParametersSize() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedWrongParametersSize() throws OrekitException {
         try {
             PropagatorBuilder builder =
                             new EcksteinHechlerPropagatorBuilder(orbit.getFrame(), provider,
@@ -70,7 +71,8 @@ public class EcksteinHechlerConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterFree() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterFree() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             PropagatorBuilder builder =
@@ -86,7 +88,8 @@ public class EcksteinHechlerConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterGet() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterGet() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             PropagatorBuilder builder =
@@ -101,7 +104,8 @@ public class EcksteinHechlerConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterSet() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterSet() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             PropagatorBuilder builder =
@@ -116,7 +120,8 @@ public class EcksteinHechlerConverterTest {
     }
 
     @Test
-    public void testSupportedParameters() {
+    @Deprecated
+    public void testDeprecatedSupportedParameters() {
         PropagatorBuilder builder =
                         new EcksteinHechlerPropagatorBuilder(orbit.getFrame(), provider,
                                                              OrbitType.CIRCULAR, PositionAngle.TRUE);

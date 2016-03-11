@@ -221,10 +221,15 @@ public class BatchLSEstimator {
 
         // compute problem dimension:
         // orbital parameters + propagator parameters + measurements parameters
-        final int          nbOrbitalParameters      = 6;
-        final List<String> propagatorParameters     = propagatorBuilder.getFreeParameters();
-        final int          nbPropagatorParameters   = propagatorParameters.size();
-        int                nbMeasurementsParameters = 0;
+        final int                   nbOrbitalParameters      = 6;
+        final List<ParameterDriver> propagatorParameters     = propagatorBuilder.getParametersDrivers();
+        int nbPropagatorParameters   = 0;
+        for (final ParameterDriver parameter : propagatorParameters) {
+            if (parameter.isEstimated()) {
+                nbPropagatorParameters += parameter.getDimension();
+            }
+        }
+        int nbMeasurementsParameters = 0;
         for (final ParameterDriver parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
                 nbMeasurementsParameters += parameter.getDimension();
@@ -238,8 +243,11 @@ public class BatchLSEstimator {
                                                          propagatorBuilder.getPositionAngle(),
                                                          start);
         int index = nbOrbitalParameters;
-        for (final String propagatorParameter : propagatorParameters) {
-            start[index++] = propagatorBuilder.getParameter(propagatorParameter);
+        for (final ParameterDriver propagatorParameter : propagatorParameters) {
+            if (propagatorParameter.isEstimated()) {
+                System.arraycopy(propagatorParameter.getValue(), 0, start, index, propagatorParameter.getDimension());
+                index += propagatorParameter.getDimension();
+            }
         }
         for (final ParameterDriver parameter : measurementsParameters) {
             if (parameter.isEstimated()) {

@@ -57,6 +57,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Utility class for orbit determination tests. */
 public class EstimationTestUtils {
@@ -186,18 +187,24 @@ public class EstimationTestUtils {
                                               final PropagatorBuilder propagatorBuilder)
         throws OrekitException {
 
-        final int          nbOrbitalParameters      = 6;
-        final List<String> propagatorParameters     = propagatorBuilder.getFreeParameters();
-        final int          nbPropagatorParameters   = propagatorParameters.size();
-        final int dimension = nbOrbitalParameters + nbPropagatorParameters;
+        final int nbOrbitalParameters = 6;
+        int dimension = nbOrbitalParameters;
+        for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers()) {
+            if (driver.isEstimated()) {
+                dimension += driver.getDimension();
+            }
+        }
 
         final double[] parameters = new double[dimension];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),
                                                          parameters);
         int index = nbOrbitalParameters;
-        for (final String propagatorParameter : propagatorParameters) {
-            parameters[index++] = propagatorBuilder.getParameter(propagatorParameter);
+        for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers()) {
+            if (driver.isEstimated()) {
+                System.arraycopy(driver.getValue(), 0, parameters, index, driver.getDimension());
+                index += driver.getDimension();
+            }
         }
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),

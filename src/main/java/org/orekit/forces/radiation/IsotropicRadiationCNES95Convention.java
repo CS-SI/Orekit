@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
@@ -75,6 +78,11 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
         this.crossSection = crossSection;
         this.alpha        = alpha;
         this.tau          = tau;
+    }
+
+    /** {@inheritDoc} */
+    public List<String> getRadiationParametersNames() {
+        return Arrays.asList(REFLECTION_COEFFICIENT, ABSORPTION_COEFFICIENT);
     }
 
     /** {@inheritDoc} */

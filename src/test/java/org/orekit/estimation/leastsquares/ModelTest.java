@@ -83,7 +83,7 @@ public class ModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final Model model = new Model(propagatorBuilder, propagatorBuilder.getFreeParameters(),
+        final Model model = new Model(propagatorBuilder, propagatorBuilder.getParametersDrivers(),
                                       measurements, measurementsParameters,
                                       context.initialOrbit.getDate(), modelObserver);
         model.setIterationsCounter(new Incrementor(100));
@@ -119,7 +119,12 @@ public class ModelTest {
         throws OrekitException {
 
         // allocate vector
-        int dimension = 6 + propagatorBuilder.getFreeParameters().size();
+        int dimension = 6;
+        for (final ParameterDriver parameter : propagatorBuilder.getParametersDrivers()) {
+            if (parameter.isEstimated()) {
+                dimension += parameter.getDimension();
+            }
+        }
         for (final ParameterDriver parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
                 dimension += parameter.getDimension();
@@ -139,8 +144,12 @@ public class ModelTest {
         }
 
         // propagator parameters
-        for (final String propagatorParameter : propagatorBuilder.getFreeParameters()) {
-            point.setEntry(index++, propagatorBuilder.getParameter(propagatorParameter));
+        for (final ParameterDriver propagatorParameter : propagatorBuilder.getParametersDrivers()) {
+            if (propagatorParameter.isEstimated()) {
+                for (final double v : propagatorParameter.getValue()) {
+                    point.setEntry(index++, v);
+                }
+            }
         }
 
         // measurements parameters

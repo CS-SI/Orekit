@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.List;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
@@ -35,6 +37,11 @@ public interface DragSensitive {
 
     /** Parameter name for drag coefficient enabling jacobian processing. */
     String DRAG_COEFFICIENT = "drag coefficient";
+
+    /** Get the names of the supported parameters.
+     * @return parameters names
+     */
+    List<String> getDragParametersNames();
 
     /** Compute the acceleration due to drag.
      * <p>

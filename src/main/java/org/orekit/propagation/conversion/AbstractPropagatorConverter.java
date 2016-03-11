@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
@@ -47,6 +46,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Common handling of {@link PropagatorConverter} methods for propagators conversions.
  * <p>
@@ -84,9 +84,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Adapted propagator. */
     private Propagator adapted;
 
-    /** List of the available free parameters names. */
-    private final Collection<String> availableParameters;
-
     /** Propagator builder. */
     private final PropagatorBuilder builder;
 
@@ -113,12 +110,11 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     protected AbstractPropagatorConverter(final PropagatorBuilder builder,
                                           final double threshold,
                                           final int maxIterations) {
-        this.builder             = builder;
-        this.frame               = builder.getFrame();
-        this.availableParameters = builder.getSupportedParameters();
-        this.optimizer           = new LevenbergMarquardtOptimizer();
-        this.maxIterations       = maxIterations;
-        this.sample              = new ArrayList<SpacecraftState>();
+        this.builder       = builder;
+        this.frame         = builder.getFrame();
+        this.optimizer     = new LevenbergMarquardtOptimizer();
+        this.maxIterations = maxIterations;
+        this.sample        = new ArrayList<SpacecraftState>();
 
         final SimpleVectorValueChecker svvc = new SimpleVectorValueChecker(-1.0, threshold);
         this.checker = LeastSquaresFactory.evaluationChecker(svvc);
@@ -139,8 +135,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                               final int nbPoints,
                               final List<String> freeParameters)
         throws OrekitException, IllegalArgumentException {
-
-        checkParameters(freeParameters);
+        setFreeParameters(freeParameters);
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
         return convert(states, false, freeParameters);
     }
@@ -159,8 +154,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                               final int nbPoints,
                               final String ... freeParameters)
         throws OrekitException, IllegalArgumentException {
-
-        checkParameters(freeParameters);
+        setFreeParameters(Arrays.asList(freeParameters));
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
         return convert(states, false, freeParameters);
     }
@@ -177,11 +171,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                               final boolean positionOnly,
                               final List<String> freeParameters)
         throws OrekitException, IllegalArgumentException {
-
-        checkParameters(freeParameters);
-
-        builder.setFreeParameters(freeParameters);
-
+        setFreeParameters(freeParameters);
         return adapt(states, positionOnly);
     }
 
@@ -197,33 +187,29 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                               final boolean positionOnly,
                               final String ... freeParameters)
         throws OrekitException, IllegalArgumentException {
-
-        checkParameters(freeParameters);
-
-        builder.setFreeParameters(Arrays.asList(freeParameters));
-
+        setFreeParameters(Arrays.asList(freeParameters));
         return adapt(states, positionOnly);
     }
 
-    /** Get the available free parameters.
-     * @return available free parameters
-     */
-    public Collection<String> getAvailableParameters() {
-        return availableParameters;
-    }
-
-    /** Check if a parameter can be free.
-     * @param name parameter name to check
-     * @return true if the parameter can be free
-     */
-    public boolean isAvailable(final String name) {
-        for (final String supportedName : availableParameters) {
-            if (supportedName.equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
+//    /** Get the available free parameters.
+//     * @return available free parameters
+//     */
+//    public Collection<String> getAvailableParameters() {
+//        return availableParameters;
+//    }
+//
+//    /** Check if a parameter can be free.
+//     * @param name parameter name to check
+//     * @return true if the parameter can be free
+//     */
+//    public boolean isAvailable(final String name) {
+//        for (final String supportedName : availableParameters) {
+//            if (supportedName.equals(name)) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
 
     /** Get the adapted propagator.
      * @return adapted propagator
@@ -291,13 +277,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         return sample;
     }
 
-    /** Get the free parameters.
-     * @return the free parameters
-     */
-    protected Collection<String>  getFreeParameters() {
-        return builder.getFreeParameters();
-    }
-
     /** Create a sample of {@link SpacecraftState}.
      * @param source initial propagator
      * @param timeSpan time span for the sample
@@ -324,48 +303,40 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         return states;
     }
 
-    /** Check if parameters can be free.
+    /** Free some parameters.
      * @param freeParameters names of the free parameters
      * @exception OrekitException if one of the parameters cannot be free
      */
-    private void checkParameters(final Collection<String> freeParameters) throws OrekitException {
-        for (String parameter : freeParameters) {
-            checkParameter(parameter);
+    private void setFreeParameters(final Iterable<String> freeParameters) throws OrekitException {
+
+        // start by setting all parameters as not estimated
+        for (final ParameterDriver driver : builder.getParametersDrivers()) {
+            driver.setEstimated(false);
         }
-    }
 
-    /** Check if parameters can be free.
-     * @param freeParameters names of the free parameters
-     * @exception OrekitException if one of the parameters cannot be free
-     */
-    private void checkParameters(final String ... freeParameters) throws OrekitException {
-        for (String parameter : freeParameters) {
-            checkParameter(parameter);
-        }
-    }
-
-    /** Check if parameter can be free.
-     * @param parameter name of the free parameter
-     * @exception OrekitException if the parameter cannot be free
-     */
-    private void checkParameter(final String parameter) throws OrekitException {
-
-        if ( !availableParameters.contains(parameter) ) {
-
-            // build the list of supported parameters
-            final StringBuilder sBuilder = new StringBuilder();
-            for (final String available : availableParameters) {
-                if (sBuilder.length() > 0) {
-                    sBuilder.append(", ");
+        // set only the selected parameters as estimated
+        for (final String parameter : freeParameters) {
+            boolean found = false;
+            for (final ParameterDriver driver : builder.getParametersDrivers()) {
+                if (driver.getName().equals(parameter)) {
+                    found = true;
+                    driver.setEstimated(true);
+                    break;
                 }
-                sBuilder.append(available);
             }
-
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      parameter, sBuilder.toString());
-
+            if (!found) {
+                // build the list of supported parameters
+                final StringBuilder sBuilder = new StringBuilder();
+                for (final ParameterDriver driver : builder.getParametersDrivers()) {
+                    if (sBuilder.length() > 0) {
+                        sBuilder.append(", ");
+                    }
+                    sBuilder.append(driver.getName());
+                }
+                throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                          parameter, sBuilder.toString());
+            }
         }
-
     }
 
     /** Adapt a propagator to minimize the mean square error for a set of {@link SpacecraftState states}.
@@ -381,14 +352,22 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         this.onlyPosition = positionOnly;
 
         // very rough first guess using osculating parameters of first sample point
-        final List<String> parameters = builder.getFreeParameters();
-        final double[] initial = new double[6 + parameters.size()];
+        int size = 6;
+        for (final ParameterDriver driver : builder.getParametersDrivers()) {
+            if (driver.isEstimated()) {
+                size += driver.getDimension();
+            }
+        }
+        final double[] initial = new double[size];
         builder.getOrbitType().mapOrbitToArray(states.get(0).getOrbit(),
                                                builder.getPositionAngle(),
                                                initial);
-        int i = 6;
-        for (String name : parameters) {
-            initial[i++] = builder.getParameter(name);
+        int index = 6;
+        for (final ParameterDriver driver : builder.getParametersDrivers()) {
+            if (driver.isEstimated()) {
+                System.arraycopy(driver.getValue(), 0, initial, index, driver.getDimension());
+                index += driver.getDimension();
+            }
         }
 
         // warm-up iterations, using only a few points

@@ -17,6 +17,7 @@
 package org.orekit.forces;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
@@ -260,6 +261,16 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         this.specularReflectionCoeff = reflectionCoeff;
         this.diffuseReflectionCoeff  = 1 - (absorptionCoeff + reflectionCoeff);
 
+    }
+
+    /** {@inheritDoc} */
+    public List<String> getDragParametersNames() {
+        return Arrays.asList(DRAG_COEFFICIENT);
+    }
+
+    /** {@inheritDoc} */
+    public List<String> getRadiationParametersNames() {
+        return Arrays.asList(REFLECTION_COEFFICIENT, ABSORPTION_COEFFICIENT);
     }
 
     /** Get solar array normal in spacecraft frame.

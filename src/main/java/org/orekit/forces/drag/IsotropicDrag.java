@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
@@ -52,6 +55,11 @@ public class IsotropicDrag implements DragSensitive {
     public IsotropicDrag(final double crossSection, final double dragCoeff) {
         this.crossSection = crossSection;
         this.dragCoeff    = dragCoeff;
+    }
+
+    /** {@inheritDoc} */
+    public List<String> getDragParametersNames() {
+        return Arrays.asList(DRAG_COEFFICIENT);
     }
 
     /** {@inheritDoc} */

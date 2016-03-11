@@ -52,7 +52,8 @@ public class KeplerianConverterTest {
     private final static double mu = 3.9860047e14;
 
     @Test
-    public void testWrongParametersSize() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedWrongParametersSize() throws OrekitException {
         try {
             PropagatorBuilder builder =
                             new KeplerianPropagatorBuilder(mu, orbit.getFrame(),
@@ -69,7 +70,8 @@ public class KeplerianConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterFree() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterFree() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             PropagatorBuilder builder =
@@ -85,7 +87,8 @@ public class KeplerianConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterGet() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterGet() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             PropagatorBuilder builder =
@@ -100,7 +103,8 @@ public class KeplerianConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterSet() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterSet() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             PropagatorBuilder builder =
@@ -115,7 +119,8 @@ public class KeplerianConverterTest {
     }
 
     @Test
-    public void testSupportedParameters() {
+    @Deprecated
+    public void testDeprecatedSupportedParameters() {
         PropagatorBuilder builder =
                         new KeplerianPropagatorBuilder(mu, orbit.getFrame(),
                                                        OrbitType.CIRCULAR, PositionAngle.TRUE);

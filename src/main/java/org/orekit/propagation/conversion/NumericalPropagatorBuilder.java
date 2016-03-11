@@ -17,14 +17,11 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
@@ -108,30 +105,34 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      * <p>If this method is not called at all, the integrated orbit will follow
      * a keplerian evolution only.</p>
      * @param model perturbing {@link ForceModel} to add
+     * @exception OrekitException if model parameters cannot be set
      */
-    public void addForceModel(final ForceModel model) {
+    public void addForceModel(final ForceModel model)
+        throws OrekitException {
         forceModels.add(model);
         for (final String name : model.getParametersNames()) {
             // add model parameters, taking care of
             // Newtonian central attraction which is already supported by base class
             if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
-                super.setParameter(name, model.getParameter(name));
-            } else {
-                try {
-                    addSupportedParameter(new ParameterDriver(name,
-                                                              new double[] {
-                                                                  model.getParameter(name)
-                                                              }) {
-                        /** {@inheritDoc} */
-                        @Override
-                        protected void valueChanged(final double[] newValue) {
-                            model.setParameter(name, newValue[0]);
-                        }
-                    });
-                } catch (OrekitException oe) {
-                    // this should never happen
-                    throw new OrekitInternalError(oe);
+                for (final ParameterDriver driver : getParametersDrivers()) {
+                    if (driver.getName().equals(name)) {
+                        driver.setValue(new double[] {
+                            model.getParameter(name)
+                        });
+                        break;
+                    }
                 }
+            } else {
+                addSupportedParameter(new ParameterDriver(name,
+                                                          new double[] {
+                                                              model.getParameter(name)
+                                                          }) {
+                    /** {@inheritDoc} */
+                    @Override
+                    protected void valueChanged(final double[] newValue) {
+                        model.setParameter(name, newValue[0]);
+                    }
+                });
             }
         }
     }
@@ -147,13 +148,11 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
         final SpacecraftState state = new SpacecraftState(orb, attitude, mass);
 
-        final Iterator<String> freeItr = getFreeParameters().iterator();
-        for (int i = 6; i < parameters.length; i++) {
-            final String free = freeItr.next();
-            for (String available : getSupportedParameters()) {
-                if (free.equals(available)) {
-                    setParameter(free, parameters[i]);
-                }
+        int index = 6;
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isEstimated()) {
+                driver.setValue(parameters, index);
+                index += driver.getDimension();
             }
         }
 
@@ -167,36 +166,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         propagator.resetInitialState(state);
 
         return propagator;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getParameter(final String name)
-        throws OrekitIllegalArgumentException {
-        for (ForceModel model : forceModels) {
-            if (model.isSupported(name)) {
-                return model.getParameter(name);
-            }
-        }
-        return super.getParameter(name);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setParameter(final String name, final double value)
-        throws OrekitIllegalArgumentException {
-        for (ForceModel model : forceModels) {
-            if (model.isSupported(name)) {
-                model.setParameter(name, value);
-                if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
-                    // the central attraction must be configured
-                    // in both the force model and the base class
-                    super.setParameter(name, value);
-                }
-                return;
-            }
-        }
-        super.setParameter(name, value);
     }
 
 }

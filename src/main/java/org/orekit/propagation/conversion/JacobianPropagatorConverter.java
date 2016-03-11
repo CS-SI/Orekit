@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.conversion;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.orekit.errors.OrekitException;
@@ -29,6 +32,7 @@ import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Propagator converter using the real jacobian.
  * @author Pascal Parraud
@@ -105,9 +109,15 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
 
                 final NumericalPropagator prop  = builder.buildPropagator(getDate(), arg);
                 final int stateSize = isOnlyPosition() ? 3 : 6;
-                final int paramSize = getFreeParameters().size();
+                final List<String> freeParameters = new ArrayList<String>();
+                for (final ParameterDriver driver : builder.getParametersDrivers()) {
+                    if (driver.isEstimated()) {
+                        freeParameters.add(driver.getName());
+                    }
+                }
+                final int paramSize = freeParameters.size();
                 final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
-                pde.selectParameters(getFreeParameters().toArray(new String[0]));
+                pde.selectParameters(freeParameters);
                 prop.setInitialState(pde.setInitialJacobians(prop.getInitialState(), stateSize, paramSize));
                 final JacobiansMapper mapper  = pde.getMapper();
                 final JacobianHandler handler = new JacobianHandler(mapper);

@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.Iterator;
-
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
@@ -148,13 +146,11 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
         // we really need a Keplerian orbit type
         final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orb);
 
-        final Iterator<String> freeItr = getFreeParameters().iterator();
-        for (int i = 6; i < parameters.length; i++) {
-            final String free = freeItr.next();
-            for (String available : getSupportedParameters()) {
-                if (free.equals(available)) {
-                    setParameter(free, parameters[i]);
-                }
+        int index = 6;
+        for (final ParameterDriver driver : getParametersDrivers()) {
+            if (driver.isEstimated()) {
+                driver.setValue(parameters, index);
+                index += driver.getDimension();
             }
         }
 

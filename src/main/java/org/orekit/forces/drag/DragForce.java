@@ -61,7 +61,7 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
      * @param spacecraft the object physical and geometrical information
      */
     public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
-        super(DragSensitive.DRAG_COEFFICIENT);
+        super(spacecraft.getDragParametersNames());
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
     }

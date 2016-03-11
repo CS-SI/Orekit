@@ -70,7 +70,8 @@ public class NumericalConverterTest {
     private ForceModel drag;
 
     @Test
-    public void testWrongParametersSize() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedWrongParametersSize() throws OrekitException {
         try {
             NumericalPropagatorBuilder builder =
                             new NumericalPropagatorBuilder(mu, orbit.getFrame(),
@@ -90,7 +91,8 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterFree() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterFree() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             NumericalPropagatorBuilder builder =
@@ -109,7 +111,8 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterGet() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterGet() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             NumericalPropagatorBuilder builder =
@@ -127,7 +130,8 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testNotSupportedParameterSet() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedNotSupportedParameterSet() throws OrekitException {
         final String name = "not-supported-parameter";
         try {
             NumericalPropagatorBuilder builder =
@@ -145,7 +149,8 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testMuWithoutGravityForceModel() throws OrekitException {
+    @Deprecated
+    public void testDeprecatedMuWithoutGravityForceModel() throws OrekitException {
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(Constants.JPL_SSD_JUPITER_SYSTEM_GM, orbit.getFrame(),
                                                        new LutherIntegratorBuilder(100.0),
@@ -162,7 +167,8 @@ public class NumericalConverterTest {
     }
 
     @Test
-    public void testSupportedParameters() {
+    @Deprecated
+    public void testDeprecatedSupportedParameters() throws OrekitException {
         NumericalPropagatorBuilder builder =
                         new NumericalPropagatorBuilder(mu, orbit.getFrame(),
                                                        new LutherIntegratorBuilder(100.0),

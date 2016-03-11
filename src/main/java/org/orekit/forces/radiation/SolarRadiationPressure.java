@@ -93,7 +93,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
                                   final PVCoordinatesProvider sun,
                                   final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
-        super(RadiationSensitive.ABSORPTION_COEFFICIENT, RadiationSensitive.REFLECTION_COEFFICIENT);
+        super(spacecraft.getRadiationParametersNames());
         this.kRef = pRef * dRef * dRef;
         this.sun  = sun;
         this.equatorialRadius = equatorialRadius;

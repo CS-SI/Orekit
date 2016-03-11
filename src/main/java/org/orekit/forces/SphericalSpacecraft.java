@@ -16,6 +16,9 @@
  */
 package org.orekit.forces;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
@@ -66,6 +69,16 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
                                final double absorptionCoeff, final double reflectionCoeff) {
         this.drag      = new IsotropicDrag(crossSection, dragCoeff);
         this.radiation = new IsotropicRadiationCNES95Convention(crossSection, absorptionCoeff, reflectionCoeff);
+    }
+
+    /** {@inheritDoc} */
+    public List<String> getDragParametersNames() {
+        return Arrays.asList(DRAG_COEFFICIENT);
+    }
+
+    /** {@inheritDoc} */
+    public List<String> getRadiationParametersNames() {
+        return Arrays.asList(REFLECTION_COEFFICIENT, ABSORPTION_COEFFICIENT);
     }
 
     /** {@inheritDoc} */
