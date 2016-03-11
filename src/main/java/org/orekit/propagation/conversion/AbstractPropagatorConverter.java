@@ -17,6 +17,7 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -82,9 +83,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
     /** Adapted propagator. */
     private Propagator adapted;
-
-    /** List of the desired free parameters names. */
-    private List<String> parameters;
 
     /** List of the available free parameters names. */
     private final Collection<String> availableParameters;
@@ -182,10 +180,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
         checkParameters(freeParameters);
 
-        parameters = new ArrayList<String>();
-        parameters.addAll(freeParameters);
-
-        builder.setFreeParameters(parameters);
+        builder.setFreeParameters(freeParameters);
 
         return adapt(states, positionOnly);
     }
@@ -205,12 +200,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
         checkParameters(freeParameters);
 
-        parameters = new ArrayList<String>();
-        for (final String name : freeParameters) {
-            parameters.add(name);
-        }
-
-        builder.setFreeParameters(parameters);
+        builder.setFreeParameters(Arrays.asList(freeParameters));
 
         return adapt(states, positionOnly);
     }
@@ -305,7 +295,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @return the free parameters
      */
     protected Collection<String>  getFreeParameters() {
-        return parameters;
+        return builder.getFreeParameters();
     }
 
     /** Create a sample of {@link SpacecraftState}.
@@ -391,6 +381,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         this.onlyPosition = positionOnly;
 
         // very rough first guess using osculating parameters of first sample point
+        final List<String> parameters = builder.getFreeParameters();
         final double[] initial = new double[6 + parameters.size()];
         builder.getOrbitType().mapOrbitToArray(states.get(0).getOrbit(),
                                                builder.getPositionAngle(),

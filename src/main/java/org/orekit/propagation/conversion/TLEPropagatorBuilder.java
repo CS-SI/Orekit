@@ -21,7 +21,7 @@ import java.util.Iterator;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -31,6 +31,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Builder for TLEPropagator.
  * @author Pascal Parraud
@@ -113,7 +114,6 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                                 final OrbitType orbitType, final PositionAngle positionAngle)
         throws OrekitException {
         super(FramesFactory.getTEME(), TLEPropagator.getMU(), orbitType, positionAngle);
-        addSupportedParameter(B_STAR);
         this.satelliteNumber         = satelliteNumber;
         this.classification          = classification;
         this.launchYear              = launchYear;
@@ -122,6 +122,19 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
         this.elementNumber           = elementNumber;
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
         this.bStar                   = 0.0;
+        try {
+            addSupportedParameter(new ParameterDriver(B_STAR, new double[1]) {
+                /** {@inheridDoc} */
+                @Override
+                protected void valueChanged(final double[] newValue) {
+                    TLEPropagatorBuilder.this.bStar = newValue[0];
+                }
+            });
+        } catch (OrekitException oe) {
+            // this should never happen
+            throw new OrekitInternalError(oe);
+        }
+
     }
 
     /** {@inheritDoc} */
@@ -155,28 +168,6 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
                                 revolutionNumberAtEpoch, bStar);
 
         return TLEPropagator.selectExtrapolator(tle);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getParameter(final String name)
-        throws OrekitIllegalArgumentException {
-        if (B_STAR.equals(name)) {
-            return bStar;
-        } else {
-            return super.getParameter(name);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setParameter(final String name, final double value)
-        throws OrekitIllegalArgumentException {
-        if (B_STAR.equals(name)) {
-            bStar = value;
-        } else {
-            super.setParameter(name, value);
-        }
     }
 
 }

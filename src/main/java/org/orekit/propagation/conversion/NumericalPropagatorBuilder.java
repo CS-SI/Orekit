@@ -24,6 +24,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
@@ -34,6 +35,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Builder for numerical propagator.
  * @author Pascal Parraud
@@ -115,7 +117,21 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
             if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
                 super.setParameter(name, model.getParameter(name));
             } else {
-                addSupportedParameter(name);
+                try {
+                    addSupportedParameter(new ParameterDriver(name,
+                                                              new double[] {
+                                                                  model.getParameter(name)
+                                                              }) {
+                        /** {@inheritDoc} */
+                        @Override
+                        protected void valueChanged(final double[] newValue) {
+                            model.setParameter(name, newValue[0]);
+                        }
+                    });
+                } catch (OrekitException oe) {
+                    // this should never happen
+                    throw new OrekitInternalError(oe);
+                }
             }
         }
     }

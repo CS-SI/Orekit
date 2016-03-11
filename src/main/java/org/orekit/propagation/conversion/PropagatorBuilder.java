@@ -26,6 +26,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** This interface is the top-level abstraction to build propagators for conversion.
  * @author Pascal Parraud
@@ -79,40 +80,60 @@ public interface PropagatorBuilder {
      */
     Frame getFrame();
 
+    /** Get the drivers for the configurable parameters.
+     * @return drivers for the configurable parameters
+     * @since 8.0
+     */
+    List<ParameterDriver> getParametersDrivers();
+
     /** Set the free parameters in order to build the propagator.
      * <p>
      * The parameters must belong to the list returned by {@link #getSupportedParameters()}
      * </p>
      * @param parameters free parameters to set when building the propagator
      * @exception OrekitIllegalArgumentException if one of the parameters is not supported
+     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
+     * {@link ParameterDriver#setEstimated(boolean)}
      */
+    @Deprecated
     void setFreeParameters(List<String> parameters)
         throws OrekitIllegalArgumentException;
 
     /** Get the names of the supported parameters.
      * @return parameters names
      * @since 7.1
+     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()}
      */
+    @Deprecated
     List<String> getSupportedParameters();
 
     /** Get the free parameters used to build the propagator.
      * @return free parameters used when building the propagator
      * @since 7.1
+     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
+     * {@link ParameterDriver#isEstimated()}
      */
+    @Deprecated
     List<String> getFreeParameters();
 
     /** Get parameter value from its name.
      * @param name parameter name
      * @return parameter value
      * @exception OrekitIllegalArgumentException if parameter is not supported
+     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
+     * {@link ParameterDriver#getValue()}
      */
+    @Deprecated
     double getParameter(String name) throws OrekitIllegalArgumentException;
 
     /** Set parameter value from its name.
      * @param name parameter name
      * @param value parameter value
      * @exception OrekitIllegalArgumentException if parameter is not supported
+     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
+     * {@link ParameterDriver#setValue(double[])}
      */
+    @Deprecated
     void setParameter(String name, double value) throws OrekitIllegalArgumentException;
 
 }
