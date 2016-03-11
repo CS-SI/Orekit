@@ -28,25 +28,30 @@
 
   package org.orekit #ECEBD8 {
 
-    package estimation #DDEBD8 {
+    package frames #DDEBD8 {
+      class TopocentricFrame
+    }
 
-      package leastsquares #CEEBD8 { 
-        class BatchLSEstimator
-      }
-
-      abstract class Parameter {
+    package utils #DDEBD8 {
+      abstract class ParametersDriver {
         +getName()
         +getDimension()
         +[is|set]Estimated()
         +[get|set]Value()
         #valueChanged()
       }
-    
-      BatchLSEstimator --> Parameter : change value
+    }
 
+    package estimation #DDEBD8 {
+
+      package leastsquares #CEEBD8 { 
+        class BatchLSEstimator
+      }
+
+      ParametersDriver <-- BatchLSEstimator : change value
       package measurement #CEEBD8 {
         interface Measurement {
-          +getSupportedParameters()
+          +getParametersDrivers()
         }
         class GroundStation {
           #valueChanged()
@@ -55,17 +60,12 @@
         RangeRate ..|> Measurement
         GroundStation "1" <--o Range
         GroundStation "1" <--o RangeRate
-        Parameter <|-- GroundStation : position offset
-      }
+        ParametersDriver <..* GroundStation : position offset
+        TopocentricFrame <--* GroundStation : updated on parameter change
+       }
 
     }
 
-    package frames #DDEBD8 {
-      class TopocentricFrame
-      GroundStation *--> TopocentricFrame : updated on parameter change
-    }
-
-    
   }
 
 

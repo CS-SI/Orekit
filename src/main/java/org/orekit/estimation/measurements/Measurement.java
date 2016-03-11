@@ -19,9 +19,9 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.Parameter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.ParameterDriver;
 
 
 /** Interface for measurements used for orbit determination.
@@ -124,10 +124,12 @@ public interface Measurement<T extends Measurement<T>> extends TimeStamped {
      */
     List<EvaluationModifier<T>> getModifiers();
 
-    /** Get the parameters supported by this measurement, including its modifiers.
-     * @return parameters supported by this measurement, including its modifiers
+    /** Get the drivers for this measurement parameters, including its modifiers parameters.
+     * @return drivers for this measurement parameters, including its modifiers parameters
+     * @exception OrekitException if there is a conflict between measurement and
+     * modifiers parameters
      */
-    List<Parameter> getSupportedParameters();
+    List<ParameterDriver> getParametersDrivers() throws OrekitException;
 
     /** Evaluate the measurement.
      * <p>

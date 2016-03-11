@@ -70,7 +70,7 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -114,7 +114,7 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -158,7 +158,7 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -202,7 +202,7 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);

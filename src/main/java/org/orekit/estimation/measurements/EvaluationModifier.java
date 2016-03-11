@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.Parameter;
+import org.orekit.utils.ParameterDriver;
 
 
 /** Interface for measurements evaluations modifiers used for orbit determination.
@@ -43,10 +43,10 @@ import org.orekit.estimation.Parameter;
  */
 public interface EvaluationModifier<T extends Measurement<T>> {
 
-    /** Get the parameters supported by this modifier.
-     * @return parameters supported by this modifier
+    /** Get the drivers for this modifier parameters.
+     * @return drivers for this modifier parameters
      */
-    List<Parameter> getSupportedParameters();
+    List<ParameterDriver> getParametersDrivers();
 
     /** Apply a modifier to an evaluated measurement.
      * @param evaluation measurement evaluation to modify

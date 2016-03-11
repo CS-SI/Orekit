@@ -26,6 +26,7 @@ import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modeling an Azimuth-Elevation measurement from a ground station.
  * The motion of the spacecraft during the signal flight time is taken into
@@ -46,15 +47,14 @@ public class Angular extends AbstractMeasurement<Angular> {
      * @param angular observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.estimation.Parameter}
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
      * name conflict occurs
      */
     public Angular(final GroundStation station, final AbsoluteDate date,
                    final double[] angular, final double[] sigma, final double[] baseWeight)
         throws OrekitException {
-        super(date, angular, sigma, baseWeight);
+        super(date, angular, sigma, baseWeight, station.getPositionOffsetDriver());
         this.station = station;
-        addSupportedParameter(station);
     }
 
     /** Get the ground station from which measurement is performed.
@@ -150,8 +150,8 @@ public class Angular extends AbstractMeasurement<Angular> {
 
         evaluation.setStateDerivatives(dAzOndP, dElOndP);
 
-
-        if (station.isEstimated()) {
+        final ParameterDriver positionOffsetDriver = station.getPositionOffsetDriver();
+        if (positionOffsetDriver.isEstimated()) {
 
             // partial derivatives with respect to parameters
             // Be aware: east; north and zenith are expressed in station parent frame but the derivatives are expressed
@@ -171,7 +171,7 @@ public class Angular extends AbstractMeasurement<Angular> {
                                                    elevation.getPartialDerivative(0, 0, 0, 0, 0, 1)
             };
 
-            evaluation.setParameterDerivatives(station.getName(), dAzOndQ, dElOndQ);
+            evaluation.setParameterDerivatives(positionOffsetDriver, dAzOndQ, dElOndQ);
         }
 
         return evaluation;

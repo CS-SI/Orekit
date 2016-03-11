@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
@@ -23,7 +24,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.Parameter;
 import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
@@ -33,6 +33,7 @@ import org.orekit.models.earth.IonosphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical range measurement with ionospheric delay.
  * The effect of ionospheric correction on the range is directly computed
@@ -178,13 +179,13 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
                         EstimationUtils.differentiate(new MultivariateVectorFunction() {
                                 public double[] value(final double[] point) throws OrekitExceptionWrapper {
                                     try {
-                                        final double[] savedParameter = stationParameter.getValue();
+                                        final double[] savedParameter = stationParameter.getPositionOffsetDriver().getValue();
 
-                                        stationParameter.setValue(point);
+                                        stationParameter.getPositionOffsetDriver().setValue(point);
 
                                         final double value = rangerateErrorIonosphericModel(stationParameter, state);
 
-                                        stationParameter.setValue(savedParameter);
+                                        stationParameter.getPositionOffsetDriver().setValue(savedParameter);
 
                                         return new double[]{value };
 
@@ -192,16 +193,18 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
                                         throw new OrekitExceptionWrapper(oe);
                                     }
                                 }
-                            }, 1, 3, 10.0, 10.0, 10.0).value(stationParameter.getValue());
+                            }, 1, 3, 10.0, 10.0, 10.0).value(stationParameter.getPositionOffsetDriver().getValue());
 
         return finiteDifferencesJacobian;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public List<Parameter> getSupportedParameters() {
-        return null;
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void modify(final Evaluation<RangeRate> evaluation)
         throws OrekitException {
@@ -231,18 +234,18 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
         evaluation.setStateDerivatives(stateDerivatives);
 
 
-        if (station.isEstimated()) {
+        if (station.getPositionOffsetDriver().isEstimated()) {
             // update measurement derivatives with jacobian of the measure wrt station parameters
             final double[][] djacdp = rangeErrorJacobianParameter(station,
                                                                   state,
                                                                   delay);
-            final double[][] parameterDerivatives = evaluation.getParameterDerivatives(station.getName());
+            final double[][] parameterDerivatives = evaluation.getParameterDerivatives(station.getPositionOffsetDriver());
             for (int irow = 0; irow < parameterDerivatives.length; ++irow) {
                 for (int jcol = 0; jcol < parameterDerivatives[0].length; ++jcol) {
                     parameterDerivatives[irow][jcol] += djacdp[irow][jcol];
                 }
             }
-            evaluation.setParameterDerivatives(station.getName(), parameterDerivatives);
+            evaluation.setParameterDerivatives(station.getPositionOffsetDriver(), parameterDerivatives);
         }
     }
 }

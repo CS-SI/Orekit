@@ -16,17 +16,18 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical angular measurement with ionospheric radio refractive index.
  * A radio ray passing through the lower (non-ionized) layer of the atmosphere undergoes bending
@@ -73,16 +74,15 @@ public class AngularRadioRefractionModifier implements EvaluationModifier<Angula
         return atmosModel.getRefraction(elevation);
     }
 
+    /** {@inheritDoc} */
     @Override
-    public List<Parameter> getSupportedParameters() {
-        // TODO Auto-generated method stub
-        return null;
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     @Override
     public void modify(final Evaluation<Angular> evaluation)
                     throws OrekitException {
-        // TODO Auto-generated method stub
         final Angular         measure = evaluation.getMeasurement();
         final GroundStation   station = measure.getStation();
         final SpacecraftState state   = evaluation.getState();

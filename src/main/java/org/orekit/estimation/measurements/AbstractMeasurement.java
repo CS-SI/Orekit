@@ -17,14 +17,14 @@
 package org.orekit.estimation.measurements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.Parameter;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Abstract class handling measurements boilerplate.
  * @param <T> the type of the measurement
@@ -34,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 public abstract class AbstractMeasurement<T extends Measurement<T>> implements Measurement<T> {
 
     /** List of the supported parameters. */
-    private final List<Parameter> supportedParameters;
+    private final List<ParameterDriver> supportedParameters;
 
     /** Date of the measurement. */
     private final AbsoluteDate date;
@@ -62,10 +62,12 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
      * @param observed observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param supportedParameters supported parameters
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double observed,
-                                  final double sigma, final double baseWeight) {
-        this.supportedParameters = new ArrayList<Parameter>();
+                                  final double sigma, final double baseWeight,
+                                  final ParameterDriver ... supportedParameters) {
+        this.supportedParameters = Arrays.asList(supportedParameters);
         this.date       = date;
         this.observed   = new double[] {
             observed
@@ -88,10 +90,12 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
      * @param observed observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
+     * @param supportedParameters supported parameters
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
-                                  final double[] sigma, final double[] baseWeight) {
-        this.supportedParameters = new ArrayList<Parameter>();
+                                  final double[] sigma, final double[] baseWeight,
+                                  final ParameterDriver ... supportedParameters) {
+        this.supportedParameters = Arrays.asList(supportedParameters);
         this.date       = date;
         this.observed   = observed.clone();
         this.sigma      = sigma.clone();
@@ -100,46 +104,22 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
         setEnabled(true);
     }
 
-    /** Add a supported parameter.
-     * @param parameter supported parameter
-     * @exception OrekitException if a parameter with the same name already exists
-     */
-    protected void addSupportedParameter(final Parameter parameter)
-        throws OrekitException {
-
-        // compare against existing parameters
-        for (final Parameter existing : supportedParameters) {
-            if (existing.getName().equals(parameter.getName())) {
-                if (existing == parameter) {
-                    // the parameter was already known
-                    return;
-                } else {
-                    // we have two different parameters sharing the same name
-                    throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
-                                              parameter.getName());
-                }
-            }
-        }
-
-        // it is a new parameter
-        supportedParameters.add(parameter);
-
-    }
-
     /** {@inheritDoc} */
     @Override
-    public List<Parameter> getSupportedParameters() {
+    public List<ParameterDriver> getParametersDrivers() throws OrekitException {
         if (modifiers.isEmpty()) {
             // no modifiers, we already know all the parameters
             return Collections.unmodifiableList(supportedParameters);
         } else {
             // we have to combine the measurement parameters and the modifiers parameters
-            final List<Parameter> parameters = new ArrayList<Parameter>();
-            parameters.addAll(supportedParameters);
+            final List<ParameterDriver> allParameters = new ArrayList<ParameterDriver>();
+            allParameters.addAll(supportedParameters);
             for (final EvaluationModifier<T> modifier : modifiers) {
-                parameters.addAll(modifier.getSupportedParameters());
+                for (final ParameterDriver parameterDriver : modifier.getParametersDrivers()) {
+                    parameterDriver.checkAndAddSelf(allParameters);
+                }
             }
-            return parameters;
+            return allParameters;
         }
     }
 

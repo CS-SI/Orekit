@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.estimation.Parameter;
+import org.orekit.utils.ParameterDriver;
 
 /** Modifier that sets evaluation weight to 0 if residual is too far from expected domain.
  * @param <T> the type of the measurement
@@ -46,7 +46,7 @@ public class OutlierFilter<T extends Measurement<T>> implements EvaluationModifi
 
     /** {@inheritDoc} */
     @Override
-    public List<Parameter> getSupportedParameters() {
+    public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
     }
 

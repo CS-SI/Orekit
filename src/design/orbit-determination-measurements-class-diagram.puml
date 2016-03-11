@@ -33,7 +33,7 @@
       +isEnabled()
       +setEnabled()
       +getObservedValue()
-      +getSupportedParameters()
+      +getParametersDrivers()
       +getTheoreticalStandardDeviation()
       +getBaseWeight()
       +addModifier(modifier)
@@ -53,7 +53,7 @@
     }
     
     interface EvaluationModifier {
-      +getSupportedParameters()
+      +getParametersDrivers()
       +modify(evaluation)
     }
     

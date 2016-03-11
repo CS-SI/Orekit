@@ -32,11 +32,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.OrbitValidator;
-import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.utils.ParameterDriver;
 
 
 /** Least squares estimator for orbit determination.
@@ -52,7 +52,7 @@ public class BatchLSEstimator {
     private final List<Measurement<?>> measurements;
 
     /** Measurements parameters. */
-    private final List<Parameter> measurementsParameters;
+    private final List<ParameterDriver> measurementsParameters;
 
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
@@ -89,7 +89,7 @@ public class BatchLSEstimator {
 
         this.propagatorBuilder      = propagatorBuilder;
         this.measurements           = new ArrayList<Measurement<?>>();
-        this.measurementsParameters = new ArrayList<Parameter>();
+        this.measurementsParameters = new ArrayList<ParameterDriver>();
         this.optimizer              = optimizer;
         this.lsBuilder              = new LeastSquaresBuilder();
         this.evaluations            = null;
@@ -116,7 +116,7 @@ public class BatchLSEstimator {
     /** Get the parameters supported by this estimator (including measurements and modifiers).
      * @return parameters supported by this estimator (including measurements and modifiers)
      */
-    public List<Parameter> getSupportedParameters() {
+    public List<ParameterDriver> getSupportedParameters() {
         return Collections.unmodifiableList(measurementsParameters);
     }
 
@@ -132,7 +132,7 @@ public class BatchLSEstimator {
         measurements.add(measurement);
 
         // add measurement parameters (including modifiers parameters)
-        for (final Parameter parameter : measurement.getSupportedParameters()) {
+        for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
             addMeasurementParameter(parameter);
         }
 
@@ -142,11 +142,11 @@ public class BatchLSEstimator {
      * @param parameter measurement parameter
      * @exception OrekitException if a parameter with the same name already exists
      */
-    private void addMeasurementParameter(final Parameter parameter)
+    private void addMeasurementParameter(final ParameterDriver parameter)
         throws OrekitException {
 
         // compare against existing parameters
-        for (final Parameter existing : measurementsParameters) {
+        for (final ParameterDriver existing : measurementsParameters) {
             if (existing.getName().equals(parameter.getName())) {
                 if (existing == parameter) {
                     // the parameter was already known
@@ -225,7 +225,7 @@ public class BatchLSEstimator {
         final List<String> propagatorParameters     = propagatorBuilder.getFreeParameters();
         final int          nbPropagatorParameters   = propagatorParameters.size();
         int                nbMeasurementsParameters = 0;
-        for (final Parameter parameter : measurementsParameters) {
+        for (final ParameterDriver parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
                 nbMeasurementsParameters += parameter.getDimension();
             }
@@ -241,7 +241,7 @@ public class BatchLSEstimator {
         for (final String propagatorParameter : propagatorParameters) {
             start[index++] = propagatorBuilder.getParameter(propagatorParameter);
         }
-        for (final Parameter parameter : measurementsParameters) {
+        for (final ParameterDriver parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
                 System.arraycopy(parameter.getValue(), 0, start, index, parameter.getDimension());
                 index += parameter.getDimension();

@@ -51,15 +51,14 @@ public class Range extends AbstractMeasurement<Range> {
      * @param range observed value
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
-     * @exception OrekitException if a {@link org.orekit.estimation.Parameter}
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
      * name conflict occurs
      */
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight)
         throws OrekitException {
-        super(date, range, sigma, baseWeight);
+        super(date, range, sigma, baseWeight, station.getPositionOffsetDriver());
         this.station = station;
-        addSupportedParameter(station);
     }
 
     /** Get the ground station from which measurement is performed.
@@ -159,7 +158,7 @@ public class Range extends AbstractMeasurement<Range> {
             dRdPx * dt, dRdPy * dt, dRdPz * dt
         });
 
-        if (station.isEstimated()) {
+        if (station.getPositionOffsetDriver().isEstimated()) {
 
             // donwlink partial derivatives
             // with respect to station position in inertial frame
@@ -191,7 +190,7 @@ public class Range extends AbstractMeasurement<Range> {
             // offset parameter is expressed in this frame
             final Vector3D dRdQT = ac.getRotation().applyTo(dRdQI);
 
-            evaluation.setParameterDerivatives(station.getName(), dRdQT.toArray());
+            evaluation.setParameterDerivatives(station.getPositionOffsetDriver(), dRdQT.toArray());
 
         }
 

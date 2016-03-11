@@ -47,7 +47,6 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.Parameter;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.leastsquares.BatchLSObserver;
 import org.orekit.estimation.measurements.Angular;
@@ -90,6 +89,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 import fr.cs.examples.KeyValueFileParser;
 
@@ -184,7 +184,7 @@ public class OrbitDetermination {
         }
 
         List<String> freeParametersNames = new ArrayList<String>();
-        for (final Parameter parameter : estimator.getSupportedParameters()) {
+        for (final ParameterDriver parameter : estimator.getSupportedParameters()) {
             if (parameter.isEstimated()) {
                 freeParametersNames.add(parameter.getName());
             }
@@ -253,7 +253,7 @@ public class OrbitDetermination {
         System.out.println("Estimated parameters changes: ");
         for (int i = 0; i < freeParametersNames.size(); ++i) {
             final String name = freeParametersNames.get(i);
-            for (Parameter parameter : estimator.getSupportedParameters()) {
+            for (ParameterDriver parameter : estimator.getSupportedParameters()) {
                 if (parameter.getName().equals(name)) {
                     final double[] initial = parameter.getInitialValue();
                     final double[] value   = parameter.getValue();
@@ -588,7 +588,7 @@ public class OrbitDetermination {
             // bias is either non-zero or will be estimated,
             // we really need to create a modifier for this
             final Bias<Range> bias = new Bias<Range>("transponder delay bias", transponderDelayBias);
-            bias.getSupportedParameters().get(0).setEstimated(transponderDelayBiasEstimated);
+            bias.getDriver().setEstimated(transponderDelayBiasEstimated);
             return bias;
         } else {
             // fixed zero bias, we don't need any modifier
@@ -635,7 +635,7 @@ public class OrbitDetermination {
                                                              stationAltitudes[i]);
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final GroundStation station = new GroundStation(topo);
-            station.setEstimated(stationPositionEstimated[i]);
+            station.getPositionOffsetDriver().setEstimated(stationPositionEstimated[i]);
 
             // range
             final double rangeSigma = stationRangeSigma[i];
@@ -643,7 +643,7 @@ public class OrbitDetermination {
             if (FastMath.abs(stationRangeBias[i])   >= Precision.SAFE_MIN || stationRangeBiasEstimated[i]) {
                  rangeBias = new Bias<Range>(stationNames[i] + "/range bias",
                                              stationRangeBias[i]);
-                 rangeBias.getSupportedParameters().get(0).setEstimated(stationRangeBiasEstimated[i]);
+                 rangeBias.getDriver().setEstimated(stationRangeBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 rangeBias = null;
@@ -655,7 +655,7 @@ public class OrbitDetermination {
             if (FastMath.abs(stationRangeRateBias[i])   >= Precision.SAFE_MIN || stationRangeRateBiasEstimated[i]) {
                 rangeRateBias = new Bias<RangeRate>(stationNames[i] + "/range rate bias",
                                                     stationRangeRateBias[i]);
-                rangeRateBias.getSupportedParameters().get(0).setEstimated(stationRangeRateBiasEstimated[i]);
+                rangeRateBias.getDriver().setEstimated(stationRangeRateBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 rangeRateBias = null;
@@ -671,7 +671,7 @@ public class OrbitDetermination {
                 stationAzElBiasesEstimated[i]) {
                 azELBias = new Bias<Angular>(stationNames[i] + "/az-el bias",
                                              stationAzimuthBias[i], stationElevationBias[i]);
-                azELBias.getSupportedParameters().get(0).setEstimated(stationAzElBiasesEstimated[i]);
+                azELBias.getDriver().setEstimated(stationAzElBiasesEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 azELBias = null;

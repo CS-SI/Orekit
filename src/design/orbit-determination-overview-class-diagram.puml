@@ -49,7 +49,7 @@
 
            class BatchLSEstimator {
               +addMeasurement(measurement)
-              +getSupportedParameters()
+              +getParametersDrivers()
               +estimate(initialGuess)
            }
            class ODProblem

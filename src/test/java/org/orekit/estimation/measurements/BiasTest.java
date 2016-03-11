@@ -90,7 +90,7 @@ public class BiasTest {
 
         // we want to estimate the biases
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
-            stationsRangeBiases[i].getSupportedParameters().get(0).setEstimated(true);
+            stationsRangeBiases[i].getDriver().setEstimated(true);
         }
 
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
@@ -100,7 +100,7 @@ public class BiasTest {
                                      0.0,  6.4e-11);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assert.assertEquals(realStationsBiases[i],
-                                stationsRangeBiases[i].getBias()[0],
+                                stationsRangeBiases[i].getDriver().getValue()[0],
                                 5.9e-8);
         }
 

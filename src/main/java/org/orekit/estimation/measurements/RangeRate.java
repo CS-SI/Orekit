@@ -24,6 +24,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modeling one-way or two-way range rate measurement between two vehicles.
  * One-way range rate (or Doppler) measurements generally apply to specific satellites
@@ -54,7 +55,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @param sigma theoretical standard deviation
      * @param baseWeight base weight
      * @param twoway if true, this is a two-way measurement
-     * @exception OrekitException if a {@link org.orekit.estimation.Parameter}
+     * @exception OrekitException if a {@link org.orekit.utils.ParameterDriver}
      * name conflict occurs
      */
     public RangeRate(final GroundStation station, final AbsoluteDate date,
@@ -63,10 +64,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                      final double baseWeight,
                      final boolean twoway)
         throws OrekitException {
-        super(date, rangeRate, sigma, baseWeight);
+        super(date, rangeRate, sigma, baseWeight, station.getPositionOffsetDriver());
         this.station = station;
-        this.twoway = twoway;
-        addSupportedParameter(station);
+        this.twoway  = twoway;
     }
 
     /** Get the ground station from which measurement is performed.
@@ -111,16 +111,17 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             }
             evaluation.setStateDerivatives(sd);
 
-            if (station.isEstimated()) {
-                final double[][] pd1 = evaluation.getParameterDerivatives(station.getName());
-                final double[][] pd2 = evalOneWay2.getParameterDerivatives(station.getName());
+            final ParameterDriver positionOffsetDriver = station.getPositionOffsetDriver();
+            if (station.getPositionOffsetDriver().isEstimated()) {
+                final double[][] pd1 = evaluation.getParameterDerivatives(positionOffsetDriver);
+                final double[][] pd2 = evalOneWay2.getParameterDerivatives(positionOffsetDriver);
                 final double[][] pd = pd1.clone();
                 for (int i = 0; i < pd.length; ++i) {
                     for (int j = 0; j < pd[0].length; ++j) {
                         sd[i][j] += 0.5 * (pd1[i][j] + pd2[i][j]);
                     }
                 }
-                evaluation.setParameterDerivatives(station.getName(), pd);
+                evaluation.setParameterDerivatives(positionOffsetDriver, pd);
             }
         }
 
@@ -177,7 +178,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
         // compute sensitivity wrt station position when station bias needs
         // to be estimated
-        if (station.isEstimated()) {
+        final ParameterDriver positionOffsetDriver = station.getPositionOffsetDriver();
+        if (positionOffsetDriver.isEstimated()) {
             // station position at signal arrival
             final Transform topoToInert =
                             station.getOffsetFrame().getTransformTo(compensatedState.getFrame(), getDate());
@@ -230,7 +232,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             // partial derivatives with respect to parameter
             // the parameter has 3 Cartesian coordinates for station offset position
             // at measure time
-            evaluation.setParameterDerivatives(station.getName(), dRdQT.toArray());
+            evaluation.setParameterDerivatives(positionOffsetDriver, dRdQT.toArray());
         }
         return evaluation;
     }

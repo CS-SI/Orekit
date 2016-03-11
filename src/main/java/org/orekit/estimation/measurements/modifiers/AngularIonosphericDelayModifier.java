@@ -16,9 +16,11 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
@@ -28,8 +30,7 @@ import org.orekit.models.earth.IonosphericModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-
-import java.util.List;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical angular measurement with ionospheric delay.
  * The effect of ionospheric correction on the angular measurement is computed
@@ -90,9 +91,10 @@ public class AngularIonosphericDelayModifier implements EvaluationModifier<Angul
         return 0;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public List<Parameter> getSupportedParameters() {
-        return null;
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     @Override

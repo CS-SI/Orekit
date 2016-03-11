@@ -27,13 +27,13 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.Parameter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modeling a ground station that can perform some measurements.
  * <p>
@@ -43,13 +43,16 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  * @since 7.2
  */
-public class GroundStation extends Parameter {
+public class GroundStation {
 
     /** Suffix for ground station position offset parameter name. */
     public static final String OFFSET_SUFFIX = "-offset";
 
     /** Base frame associated with the station. */
     private final TopocentricFrame baseFrame;
+
+    /** Driver for position offset. */
+    private final ParameterDriver positionOffsetDriver;
 
     /** Offset frame associated with the station, taking offset parameter into account. */
     private TopocentricFrame offsetFrame;
@@ -61,30 +64,33 @@ public class GroundStation extends Parameter {
     public GroundStation(final TopocentricFrame baseFrame)
         throws OrekitException {
 
-        super(baseFrame.getName() + OFFSET_SUFFIX, new double[3]);
         this.baseFrame = baseFrame;
 
-        // position offset parameter
-        valueChanged(getInitialValue());
+        this.positionOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX, new double[3]) {
+            @Override
+            /** {@inheritDoc} */
+            protected void valueChanged(final double[] positionOffset) throws OrekitException {
+                // estimate new origin for offset frame, in body frame
+                final Frame     bodyFrame    = baseFrame.getParent();
+                final Transform baseToBody   = baseFrame.getTransformTo(bodyFrame, null);
+                final Vector3D  origin       = baseToBody.transformPosition(new Vector3D(positionOffset[0],
+                                                                                         positionOffset[1],
+                                                                                         positionOffset[2]));
+                final GeodeticPoint originGP = baseFrame.getParentShape().transform(origin, bodyFrame, null);
+
+                // create a new topocentric frame at parameterized origin
+                offsetFrame = new TopocentricFrame(baseFrame.getParentShape(), originGP,
+                                                   baseFrame.getName() + OFFSET_SUFFIX);
+            }
+        };
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void valueChanged(final double[] newValue) throws OrekitException {
-
-        // estimate new origin for offset frame, in body frame
-        final Frame     bodyFrame    = baseFrame.getParent();
-        final Transform baseToBody   = baseFrame.getTransformTo(bodyFrame, null);
-        final Vector3D  origin       = baseToBody.transformPosition(new Vector3D(newValue[0],
-                                                                                 newValue[1],
-                                                                                 newValue[2]));
-        final GeodeticPoint originGP = baseFrame.getParentShape().transform(origin, bodyFrame, null);
-
-        // create a new topocentric frame at parameterized origin
-        offsetFrame = new TopocentricFrame(baseFrame.getParentShape(), originGP,
-                                           baseFrame.getName() + OFFSET_SUFFIX);
-
+    /** Get a driver allowing to change station position.
+     * @return driver for station position offset
+     */
+    public ParameterDriver getPositionOffsetDriver() {
+        return positionOffsetDriver;
     }
 
     /** Get the base frame associated with the station.

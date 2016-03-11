@@ -16,20 +16,21 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.Parameter;
+import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.estimation.measurements.Angular;
 import org.orekit.frames.Frame;
 import org.orekit.models.earth.TroposphericModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical angular measurement with tropospheric delay.
  * The effect of tropospheric correction on the angular is computed
@@ -98,9 +99,10 @@ public class AngularTroposphericDelayModifier implements EvaluationModifier<Angu
         return 0;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public List<Parameter> getSupportedParameters() {
-        return null;
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
     @Override

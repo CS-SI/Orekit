@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
@@ -41,6 +40,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
+import org.orekit.utils.ParameterDriver;
 
 public class ModelTest {
 
@@ -60,9 +60,9 @@ public class ModelTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
-        final List<Parameter> measurementsParameters = new ArrayList<Parameter>();
+        final List<ParameterDriver> measurementsParameters = new ArrayList<ParameterDriver>();
         for (Measurement<?> measurement : measurements) {
-            for (final Parameter parameter : measurement.getSupportedParameters()) {
+            for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
                 addMeasurementParameter(measurementsParameters, parameter);
             }
         }
@@ -103,9 +103,9 @@ public class ModelTest {
 
     }
 
-    private void addMeasurementParameter(final List<Parameter> measurementsParameters,
-                                         final Parameter parameter) {
-        for (final Parameter existing : measurementsParameters) {
+    private void addMeasurementParameter(final List<ParameterDriver> measurementsParameters,
+                                         final ParameterDriver parameter) {
+        for (final ParameterDriver existing : measurementsParameters) {
             if (existing.getName().equals(parameter.getName())) {
                 return;
             }
@@ -115,12 +115,12 @@ public class ModelTest {
 
     private RealVector startPoint(final Context context,
                                   final PropagatorBuilder propagatorBuilder,
-                                  final List<Parameter> measurementsParameters)
+                                  final List<ParameterDriver> measurementsParameters)
         throws OrekitException {
 
         // allocate vector
         int dimension = 6 + propagatorBuilder.getFreeParameters().size();
-        for (final Parameter parameter : measurementsParameters) {
+        for (final ParameterDriver parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
                 dimension += parameter.getDimension();
             }
@@ -144,7 +144,7 @@ public class ModelTest {
         }
 
         // measurements parameters
-        for (final Parameter parameter : measurementsParameters) {
+        for (final ParameterDriver parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
                 for (int i = 0; i < parameter.getDimension(); ++i) {
                     point.setEntry(index++, parameter.getValue()[i]);

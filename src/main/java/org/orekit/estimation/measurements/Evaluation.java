@@ -16,12 +16,13 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ParameterDriver;
 
 /** Class holding a theoretical evaluation of one {@link Measurement measurement}.
  * @param <T> the type of the measurement
@@ -52,7 +53,7 @@ public class Evaluation<T extends Measurement<T>> {
     private double[][] stateDerivatives;
 
     /** Partial derivatives with respect to parameters. */
-    private final Map<String, double[][]> parametersDerivatives;
+    private final Map<ParameterDriver, double[][]> parametersDerivatives;
 
     /** Simple constructor.
      * @param measurement associated measurement
@@ -67,7 +68,7 @@ public class Evaluation<T extends Measurement<T>> {
         this.iteration             = iteration;
         this.count                 = count;
         this.state                 = state;
-        this.parametersDerivatives = new HashMap<String, double[][]>();
+        this.parametersDerivatives = new IdentityHashMap<ParameterDriver, double[][]>();
     }
 
     /** Get the associated measurement.
@@ -163,23 +164,23 @@ public class Evaluation<T extends Measurement<T>> {
 
     /** Get the partial derivatives of the {@link #getValue()
      * simulated measurement} with respect to a parameter.
-     * @param name name of the parameter
+     * @param driver driver for the parameter
      * @return partial derivatives of the simulated value
      * @exception OrekitIllegalArgumentException if parameter is unknown
      */
-    public double[][] getParameterDerivatives(final String name)
+    public double[][] getParameterDerivatives(final ParameterDriver driver)
         throws OrekitIllegalArgumentException {
-        final double[][] p = parametersDerivatives.get(name);
+        final double[][] p = parametersDerivatives.get(driver);
         if (p == null) {
             final StringBuilder builder = new StringBuilder();
-            for (final Map.Entry<String, double[][]> entry : parametersDerivatives.entrySet()) {
+            for (final Map.Entry<ParameterDriver, double[][]> entry : parametersDerivatives.entrySet()) {
                 if (builder.length() > 0) {
                     builder.append(", ");
                 }
                 builder.append(entry.getKey());
             }
             throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                                     name,
+                                                     driver.getName(),
                                                      builder.length() > 0 ? builder.toString() : "<none>");
         }
         final double[][] sd = new double[measurement.getDimension()][];
@@ -191,15 +192,15 @@ public class Evaluation<T extends Measurement<T>> {
 
     /** Set the partial derivatives of the {@link #getValue()
      * simulated measurement} with respect to state Cartesian coordinates.
-     * @param name name of the parameter
+     * @param driver driver for the parameter
      * @param parameterDerivatives partial derivatives with respect to parameter
      */
-    public void setParameterDerivatives(final String name, final double[] ... parameterDerivatives) {
+    public void setParameterDerivatives(final ParameterDriver driver, final double[] ... parameterDerivatives) {
         final double[][] p = new double[measurement.getDimension()][];
         for (int i = 0; i < measurement.getDimension(); ++i) {
             p[i] = parameterDerivatives[i].clone();
         }
-        parametersDerivatives.put(name, p);
+        parametersDerivatives.put(driver, p);
     }
 
 }

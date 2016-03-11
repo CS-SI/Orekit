@@ -110,7 +110,7 @@ public class RangeRateTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -135,27 +135,27 @@ public class RangeRateTest {
             final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
-            final double[][]      jacobian  = measurement.evaluate(0, 0, state).getParameterDerivatives(stationParameter.getName());
+            final double[][]      jacobian  = measurement.evaluate(0, 0, state).getParameterDerivatives(stationParameter.getPositionOffsetDriver());
 
             final double[][] finiteDifferencesJacobian =
                 EstimationUtils.differentiate(new MultivariateVectorFunction() {
                         public double[] value(double[] point) throws OrekitExceptionWrapper {
                             try {
 
-                                final double[] savedParameter = stationParameter.getValue();
+                                final double[] savedParameter = stationParameter.getPositionOffsetDriver().getValue();
 
                                 // evaluate range with a changed station position
-                                stationParameter.setValue(point);
+                                stationParameter.getPositionOffsetDriver().setValue(point);
                                 final double[] result = measurement.evaluate(0, 0, state).getValue();
 
-                                stationParameter.setValue(savedParameter);
+                                stationParameter.getPositionOffsetDriver().setValue(savedParameter);
                                 return result;
 
                             } catch (OrekitException oe) {
                                 throw new OrekitExceptionWrapper(oe);
                             }
                         }
-                    }, measurement.getDimension(), 3, 20.0, 20.0, 20.0).value(stationParameter.getValue());
+                    }, measurement.getDimension(), 3, 20.0, 20.0, 20.0).value(stationParameter.getPositionOffsetDriver().getValue());
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -248,7 +248,7 @@ public class RangeRateTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -276,27 +276,27 @@ public class RangeRateTest {
             final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
-            final double[][]      jacobian  = measurement.evaluate(0, 0, state).getParameterDerivatives(stationParameter.getName());
+            final double[][]      jacobian  = measurement.evaluate(0, 0, state).getParameterDerivatives(stationParameter.getPositionOffsetDriver());
 
             final double[][] finiteDifferencesJacobian =
                 EstimationUtils.differentiate(new MultivariateVectorFunction() {
                         public double[] value(double[] point) throws OrekitExceptionWrapper {
                             try {
 
-                                final double[] savedParameter = stationParameter.getValue();
+                                final double[] savedParameter = stationParameter.getPositionOffsetDriver().getValue();
 
                                 // evaluate range with a changed station position
-                                stationParameter.setValue(point);
+                                stationParameter.getPositionOffsetDriver().setValue(point);
                                 final double[] result = measurement.evaluate(0, 0, state).getValue();
 
-                                stationParameter.setValue(savedParameter);
+                                stationParameter.getPositionOffsetDriver().setValue(savedParameter);
                                 return result;
 
                             } catch (OrekitException oe) {
                                 throw new OrekitExceptionWrapper(oe);
                             }
                         }
-                    }, measurement.getDimension(), 3, 20.0, 20.0, 20.0).value(stationParameter.getValue());
+                    }, measurement.getDimension(), 3, 20.0, 20.0, 20.0).value(stationParameter.getPositionOffsetDriver().getValue());
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);

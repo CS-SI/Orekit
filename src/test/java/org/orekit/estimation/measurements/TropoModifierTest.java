@@ -63,7 +63,7 @@ public class TropoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -107,7 +107,7 @@ public class TropoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -152,7 +152,7 @@ public class TropoModifierTest {
 
         // create perfect angular measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -196,7 +196,7 @@ public class TropoModifierTest {
 
         // create perfect angular measurements
         for (final GroundStation station : context.stations) {
-            station.setEstimated(true);
+            station.getPositionOffsetDriver().setEstimated(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);

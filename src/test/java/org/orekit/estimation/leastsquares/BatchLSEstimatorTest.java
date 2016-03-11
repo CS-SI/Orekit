@@ -17,22 +17,15 @@
 package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.Parameter;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationModifier;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
 import org.orekit.orbits.OrbitType;
@@ -198,47 +191,6 @@ public class BatchLSEstimatorTest {
                                      0.0, 1,
                                      0.0, 2e-4,
                                      0.0, 7e-8);
-    }
-
-    @Test
-    public void testDuplicatedMeasurementParameter() throws OrekitException {
-
-        Context context = EstimationTestUtils.eccentricContext();
-
-        final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
-                                              1.0e-6, 60.0, 0.001);
-
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
-        final Range measurement = new Range(context.stations.get(0),
-                                            context.initialOrbit.getDate(),
-                                            1.0e6, 10.0, 1.0);
-        final String duplicatedName = "duplicated";
-        measurement.addModifier(new EvaluationModifier<Range>() {            
-            @Override
-            public void modify(Evaluation<Range> evaluation) {
-            }
-            
-            @Override
-            public List<Parameter> getSupportedParameters() {
-                return Arrays.asList(new Parameter(duplicatedName, new double[1]) {
-                                         protected void valueChanged(double[] newValue) {
-                                         }
-                                     }, new Parameter(duplicatedName, new double[1]) {
-                                         protected void valueChanged(double[] newValue) {
-                                         }
-                                     });
-            }
-        });
-        try {
-            estimator.addMeasurement(measurement);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.DUPLICATED_PARAMETER_NAME, oe.getSpecifier());
-            Assert.assertEquals(duplicatedName, (String) oe.getParts()[0]);
-        }
-
     }
 
 }

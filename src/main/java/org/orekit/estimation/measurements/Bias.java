@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.Parameter;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modeling a measurement bias.
  * @param <T> the type of the measurement
@@ -30,7 +30,7 @@ import org.orekit.estimation.Parameter;
 public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
     /** Parameter holding the bias value. */
-    private final Parameter parameter;
+    private final ParameterDriver driver;
 
     /** Identity matrix, for partial derivatives. */
     private final double[][] derivatives;
@@ -44,7 +44,7 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
     public Bias(final String name, final double ... bias)
         throws OrekitException {
 
-        parameter = new Parameter(name, bias) {
+        driver = new ParameterDriver(name, bias) {
             /** {@inheritDoc} */
             @Override
             public void valueChanged(final double[] newValue) {
@@ -58,26 +58,17 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
     }
 
-    /** Get the bias.
-     * @return bias
+    /** Get the bias driver.
+     * @return driver for the bias
      */
-    public double[] getBias() {
-        return parameter.getValue();
-    }
-
-    /** Set the bias.
-     * @param bias new value for the bias
-     * @exception OrekitException if underlying {@link Parameter} cannot be set
-     */
-    public void setBias(final double ... bias)
-        throws OrekitException {
-        parameter.setValue(bias);
+    public ParameterDriver getDriver() {
+        return driver;
     }
 
     /** {@inheritDoc} */
     @Override
-    public List<Parameter> getSupportedParameters() {
-        return Arrays.asList(parameter);
+    public List<ParameterDriver> getParametersDrivers() {
+        return Arrays.asList(driver);
     }
 
     /** {@inheritDoc} */
@@ -86,15 +77,15 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
         // apply the bias to the measurement value
         final double[] measurementValue = evaluation.getValue();
-        final double[] biasValue        = parameter.getValue();
-        for (int i = 0; i < parameter.getDimension(); ++i) {
+        final double[] biasValue        = driver.getValue();
+        for (int i = 0; i < driver.getDimension(); ++i) {
             measurementValue[i] += biasValue[i];
         }
         evaluation.setValue(measurementValue);
 
-        if (parameter.isEstimated()) {
+        if (driver.isEstimated()) {
             // add the partial derivatives
-            evaluation.setParameterDerivatives(parameter.getName(), derivatives);
+            evaluation.setParameterDerivatives(driver, derivatives);
         }
 
     }

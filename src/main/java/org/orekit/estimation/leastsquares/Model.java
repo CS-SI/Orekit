@@ -31,7 +31,6 @@ import org.apache.commons.math3.util.Incrementor;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.estimation.Parameter;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.orbits.Orbit;
@@ -43,6 +42,7 @@ import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Bridge between {@link Measurement measurements} and {@link
  * org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem
@@ -62,7 +62,7 @@ class Model implements MultivariateJacobianFunction {
     private final List<Measurement<?>> measurements;
 
     /** Measurements parameters. */
-    private final List<Parameter> measurementsParameters;
+    private final List<ParameterDriver> measurementsParameters;
 
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> parameterColumns;
@@ -106,7 +106,7 @@ class Model implements MultivariateJacobianFunction {
      * @param observer observer to be notified at model calls
      */
     Model(final NumericalPropagatorBuilder propagatorBuilder, final List<String> propagatorParameters,
-          final List<Measurement<?>> measurements, final List<Parameter> measurementsParameters,
+          final List<Measurement<?>> measurements, final List<ParameterDriver> measurementsParameters,
           final AbsoluteDate orbitDate, final ModelObserver observer) {
 
         this.propagatorBuilder      = propagatorBuilder;
@@ -127,7 +127,7 @@ class Model implements MultivariateJacobianFunction {
         }
 
         int columns = 6 + propagatorParameters.size();
-        for (final Parameter parameter : measurementsParameters) {
+        for (final ParameterDriver parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
                 parameterColumns.put(parameter.getName(), columns);
                 columns += parameter.getDimension();
@@ -218,7 +218,7 @@ class Model implements MultivariateJacobianFunction {
 
         // set up the measurement parameters
         int index = propagatorArray.length;
-        for (final Parameter parameter : measurementsParameters) {
+        for (final ParameterDriver parameter : measurementsParameters) {
             if (parameter.isEstimated()) {
                 final double[] parameterValue = new double[parameter.getDimension()];
                 for (int i = 0; i < parameterValue.length; ++i) {
@@ -339,9 +339,9 @@ class Model implements MultivariateJacobianFunction {
 
         // Jacobian of the measurement with respect to measurements parameters
         final Measurement<?> measurement = evaluation.getMeasurement();
-        for (final Parameter parameter : measurement.getSupportedParameters()) {
+        for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
             if (parameter.isEstimated()) {
-                final double[][] aMPm = evaluation.getParameterDerivatives(parameter.getName());
+                final double[][] aMPm = evaluation.getParameterDerivatives(parameter);
                 for (int i = 0; i < aMPm.length; ++i) {
                     for (int j = 0; j < aMPm[i].length; ++j) {
                         jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()) + j,

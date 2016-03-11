@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
@@ -23,7 +24,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.Parameter;
 import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
@@ -33,6 +33,7 @@ import org.orekit.models.earth.TroposphericModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ParameterDriver;
 
 /** Class modifying theoretical range-rate measurements with tropospheric delay.
  * The effect of tropospheric correction on the range-rate is directly computed
@@ -46,10 +47,11 @@ import org.orekit.propagation.SpacecraftState;
  * @since 7.2
  */
 public class RangeRateTroposphericDelayModifier implements EvaluationModifier<RangeRate> {
+
     /** Tropospheric delay model. */
     private final TroposphericModel tropoModel;
 
-    /** */
+    /** Two-way measurement factor. */
     private final double fTwoWay;
 
     /** Constructor.
@@ -84,8 +86,8 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
      * @throws OrekitException  if frames transformations cannot be computed
      */
     public double rangeRateErrorTroposphericModel(final GroundStation station,
-                                                  final SpacecraftState state) throws OrekitException
-    {
+                                                  final SpacecraftState state)
+    throws OrekitException {
         // The effect of tropospheric correction on the range rate is
         // computed using finite differences.
 
@@ -137,9 +139,9 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeRateErrorJacobianState(final GroundStation station,
-                                               final SpacecraftState refstate,
-                                               final double delay) throws OrekitException
-    {
+                                                   final SpacecraftState refstate,
+                                                   final double delay)
+    throws OrekitException {
         final double[][] finiteDifferencesJacobian =
                         EstimationUtils.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {
@@ -168,22 +170,23 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double[][] rangeRateErrorJacobianParameter(final GroundStation station,
-                                                   final SpacecraftState state,
-                                                   final double delay) throws OrekitException
-    {
-        final GroundStation stationParameter = station;
+                                                       final SpacecraftState state,
+                                                       final double delay)
+    throws OrekitException {
+
+        final ParameterDriver positionOffsetFriver = station.getPositionOffsetDriver();
 
         final double[][] finiteDifferencesJacobian =
                         EstimationUtils.differentiate(new MultivariateVectorFunction() {
                                 public double[] value(final double[] point) throws OrekitExceptionWrapper {
                                     try {
-                                        final double[] savedParameter = stationParameter.getValue();
+                                        final double[] savedParameter = positionOffsetFriver.getValue();
 
-                                        stationParameter.setValue(point);
+                                        positionOffsetFriver.setValue(point);
 
-                                        final double value = rangeRateErrorTroposphericModel(stationParameter, state);
+                                        final double value = rangeRateErrorTroposphericModel(station, state);
 
-                                        stationParameter.setValue(savedParameter);
+                                        positionOffsetFriver.setValue(savedParameter);
 
                                         return new double[]{value };
 
@@ -191,19 +194,20 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
                                         throw new OrekitExceptionWrapper(oe);
                                     }
                                 }
-                            }, 1, 3, 10.0, 10.0, 10.0).value(stationParameter.getValue());
+                            }, 1, 3, 10.0, 10.0, 10.0).value(positionOffsetFriver.getValue());
 
         return finiteDifferencesJacobian;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public List<Parameter> getSupportedParameters() {
-        return null;
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.emptyList();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void modify(final Evaluation<RangeRate> evaluation)
-        throws OrekitException {
+    public void modify(final Evaluation<RangeRate> evaluation) throws OrekitException {
         final RangeRate measure = evaluation.getMeasurement();
         final GroundStation station = measure.getStation();
         final SpacecraftState state = evaluation.getState();
@@ -231,20 +235,22 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
         evaluation.setStateDerivatives(stateDerivatives);
 
 
-        if (station.isEstimated()) {
+        final ParameterDriver positionOffsetFriver = station.getPositionOffsetDriver();
+        if (positionOffsetFriver.isEstimated()) {
             // update measurement derivatives with jacobian of the measure wrt station parameters
             // by simply adding the jacobian the delay term.
             final double[][] djacdp = rangeRateErrorJacobianParameter(station,
                                                                   state,
                                                                   delay);
-            final double[][] parameterDerivatives = evaluation.getParameterDerivatives(station.getName());
+            final double[][] parameterDerivatives = evaluation.getParameterDerivatives(positionOffsetFriver);
             for (int irow = 0; irow < parameterDerivatives.length; ++irow) {
                 for (int jcol = 0; jcol < parameterDerivatives[0].length; ++jcol) {
                     parameterDerivatives[irow][jcol] += djacdp[irow][jcol];
                 }
             }
 
-            evaluation.setParameterDerivatives(station.getName(), parameterDerivatives);
+            evaluation.setParameterDerivatives(positionOffsetFriver, parameterDerivatives);
         }
     }
+
 }
