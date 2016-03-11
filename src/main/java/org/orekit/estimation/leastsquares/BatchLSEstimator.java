@@ -25,6 +25,9 @@ import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.optim.ConvergenceChecker;
+import org.apache.commons.math3.util.Incrementor;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -69,8 +72,11 @@ public class BatchLSEstimator {
     /** Last least squares problem evaluation. */
     private LeastSquaresProblem.Evaluation lspEvaluation;
 
-    /** Number of iterations used for last estimation. */
-    private int iterations;
+    /** Counter for the evaluations. */
+    private Incrementor evaluationsCounter;
+
+    /** Counter for the iterations. */
+    private Incrementor iterationsCounter;
 
     /** Simple constructor.
      * @param propagatorBuilder builder to user for propagation
@@ -87,7 +93,6 @@ public class BatchLSEstimator {
         this.optimizer              = optimizer;
         this.lsBuilder              = new LeastSquaresBuilder();
         this.evaluations            = null;
-        this.iterations             = -1;
         this.observer               = null;
 
         // our model computes value and Jacobian in one call,
@@ -164,7 +169,13 @@ public class BatchLSEstimator {
      */
     public void setMaxIterations(final int maxIterations) {
         lsBuilder.maxIterations(maxIterations);
-        lsBuilder.maxEvaluations(2 * maxIterations);
+    }
+
+    /** Set the maximum number of model evaluations.
+     * @param maxEvaluations maximum number of model evaluations
+     */
+    public void setMaxEvaluations(final int maxEvaluations) {
+        lsBuilder.maxEvaluations(maxEvaluations);
     }
 
     /**
@@ -186,7 +197,9 @@ public class BatchLSEstimator {
 
                 // notify the observer
                 if (observer != null) {
-                    observer.iterationPerformed(iteration, orbit,
+                    observer.iterationPerformed(iterationsCounter.getCount(),
+                                                evaluationsCounter.getCount(),
+                                                orbit,
                                                 Collections.unmodifiableMap(evaluations),
                                                 lspEvaluation);
                 }
@@ -250,9 +263,8 @@ public class BatchLSEstimator {
         final ModelObserver modelObserver = new ModelObserver() {
             /** {@inheritDoc} */
             @Override
-            public void modelCalled(final int newIteration, final Orbit newOrbit,
+            public void modelCalled(final Orbit newOrbit,
                                     final Map<Measurement<?>, Evaluation<?>> newEvaluations) {
-                BatchLSEstimator.this.iterations  = newIteration;
                 BatchLSEstimator.this.orbit       = newOrbit;
                 BatchLSEstimator.this.evaluations = newEvaluations;
             }
@@ -268,7 +280,7 @@ public class BatchLSEstimator {
         try {
 
             // solve the problem
-            optimizer.optimize(lsBuilder.build());
+            optimizer.optimize(new TappedLSProblem(lsBuilder.build(), model));
 
             // extract the orbit
             return orbit;
@@ -296,8 +308,84 @@ public class BatchLSEstimator {
     /** Get the number of iterations used for last estimation.
      * @return number of iterations used for last estimation
      */
-    public int getIterations() {
-        return iterations;
+    public int getIterationsCount() {
+        return iterationsCounter.getCount();
+    }
+
+    /** Get the number of evaluations used for last estimation.
+     * @return number of evaluations used for last estimation
+     */
+    public int getEvaluationsCount() {
+        return evaluationsCounter.getCount();
+    }
+
+    /** Wrapper used to tap the various counters. */
+    private class TappedLSProblem implements LeastSquaresProblem {
+
+        /** Underlying problem. */
+        private final LeastSquaresProblem problem;
+
+        /** Multivariate function model. */
+        private final Model model;
+
+        /** Simple constructor.
+         * @param problem underlying problem
+         * @param model multivariate function model
+         */
+        TappedLSProblem(final LeastSquaresProblem problem,
+                        final Model model) {
+            this.problem = problem;
+            this.model   = model;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Incrementor getEvaluationCounter() {
+            // tap the evaluations counter
+            BatchLSEstimator.this.evaluationsCounter = problem.getEvaluationCounter();
+            model.setEvaluationsCounter(BatchLSEstimator.this.evaluationsCounter);
+            return BatchLSEstimator.this.evaluationsCounter;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Incrementor getIterationCounter() {
+            // tap the iterations counter
+            BatchLSEstimator.this.iterationsCounter = problem.getIterationCounter();
+            model.setIterationsCounter(BatchLSEstimator.this.iterationsCounter);
+            return BatchLSEstimator.this.iterationsCounter;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public ConvergenceChecker<Evaluation> getConvergenceChecker() {
+            return problem.getConvergenceChecker();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public RealVector getStart() {
+            return problem.getStart();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int getObservationSize() {
+            return problem.getObservationSize();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public int getParameterSize() {
+            return problem.getParameterSize();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Evaluation evaluate(final RealVector point) {
+            return problem.evaluate(point);
+        }
+
     }
 
 }

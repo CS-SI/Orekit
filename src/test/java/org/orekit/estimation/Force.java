@@ -49,14 +49,14 @@ public enum Force {
 
     DRAG() {
         public ForceModel getForceModel(Context context) {
-            return new DragForce(new HarrisPriester(context.sun, context.earth), context.spacecraft);
+            return new DragForce(new HarrisPriester(context.sun, context.earth), context.dragSensitive);
         }
     },
 
     SOLAR_RADIATION_PRESSURE() {
         public ForceModel getForceModel(Context context) {
             return new SolarRadiationPressure(context.sun, context.earth.getEquatorialRadius(),
-                                              context.spacecraft);
+                                              context.radiationSensitive);
         }
     },
 

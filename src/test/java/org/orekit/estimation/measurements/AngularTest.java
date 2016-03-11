@@ -85,16 +85,16 @@ public class AngularTest {
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
-            final double[][]   jacobian  = measurement.evaluate(0, state).getStateDerivatives();
+            final double[][]   jacobian  = measurement.evaluate(0, 0, state).getStateDerivatives();
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 EstimationUtils.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) throws OrekitException {
-                        return measurement.evaluate(0, state).getValue();
+                        return measurement.evaluate(0, 0, state).getValue();
                     }
                                                   }, measurement.getDimension(), OrbitType.CARTESIAN,
-                                                  PositionAngle.TRUE, 250.0, 8).value(state);
+                                                  PositionAngle.TRUE, 250.0, 4).value(state);
 
             Assert.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
             Assert.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
@@ -135,13 +135,13 @@ public class AngularTest {
         //System.out.println("Ecart median Azimuth/dP : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(AzerrorsP) + "\n");
         Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 5.0e-6);
         //System.out.println("Ecart median Azimuth/dV : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(AzerrorsV) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 2.0e-5);
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.0e-5);
 
         // median errors on Elevation
         //System.out.println("Ecart median Elevation/dP : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(ElerrorsP) + "\n");
         Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 5.0e-6);
         //System.out.println("Ecart median Elevation/dV : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(ElerrorsV) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 3.0e-5);
+        Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 2.0e-5);
            }
     
     @Test
@@ -183,7 +183,7 @@ public class AngularTest {
             
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
-            final double[][]      jacobian  = measurement.evaluate(0, state).getParameterDerivatives(stationParameter.getName());
+            final double[][]      jacobian  = measurement.evaluate(0, 0, state).getParameterDerivatives(stationParameter.getName());
 
             final double[][] finiteDifferencesJacobian =
                 EstimationUtils.differentiate(new MultivariateVectorFunction() {
@@ -194,7 +194,7 @@ public class AngularTest {
 
                                 // evaluate angular with a changed station position
                                 stationParameter.setValue(point);
-                                final double[] result = measurement.evaluate(0, state).getValue();
+                                final double[] result = measurement.evaluate(0, 0, state).getValue();
                                 stationParameter.setValue(savedParameter);
                                 return result;
 

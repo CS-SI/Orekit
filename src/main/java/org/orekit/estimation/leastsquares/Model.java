@@ -27,6 +27,7 @@ import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.util.Incrementor;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
@@ -75,8 +76,11 @@ class Model implements MultivariateJacobianFunction {
     /** Observer to be notified at orbit changes. */
     private final ModelObserver observer;
 
-    /** Iteration number. */
-    private int iteration;
+    /** Counter for the evaluations. */
+    private Incrementor evaluationsCounter;
+
+    /** Counter for the iterations. */
+    private Incrementor iterationsCounter;
 
     /** Date of the first enabled measurement. */
     private AbsoluteDate firstDate;
@@ -113,7 +117,6 @@ class Model implements MultivariateJacobianFunction {
         this.evaluations            = new IdentityHashMap<Measurement<?>, Evaluation<?>>(measurements.size());
         this.orbitDate              = orbitDate;
         this.observer               = observer;
-        this.iteration              = 0;
 
         // allocate vector and matrix
         int rows = 0;
@@ -136,13 +139,25 @@ class Model implements MultivariateJacobianFunction {
 
     }
 
+    /** Set the counter for evaluations.
+     * @param evaluationsCounter counter for evaluations
+     */
+    void setEvaluationsCounter(final Incrementor evaluationsCounter) {
+        this.evaluationsCounter = evaluationsCounter;
+    }
+
+    /** Set the counter for iterations.
+     * @param iterationsCounter counter for iterations
+     */
+    void setIterationsCounter(final Incrementor iterationsCounter) {
+        this.iterationsCounter = iterationsCounter;
+    }
+
     /** {@inheritDoc} */
     @Override
     public Pair<RealVector, RealMatrix> value(final RealVector point)
         throws OrekitExceptionWrapper {
         try {
-
-            ++iteration;
 
             // set up the propagator
             final NumericalPropagator propagator = createPropagator(point);
@@ -162,7 +177,7 @@ class Model implements MultivariateJacobianFunction {
             // run the propagation, gathering residuals on the fly
             propagator.propagate(firstDate.shiftedBy(-1.0), lastDate.shiftedBy(+1.0));
 
-            observer.modelCalled(iteration, orbit, evaluations);
+            observer.modelCalled(orbit, evaluations);
 
             return new Pair<RealVector, RealMatrix>(value, jacobian);
 
@@ -171,11 +186,18 @@ class Model implements MultivariateJacobianFunction {
         }
     }
 
-    /** Get the iteration number.
-     * @return iteration number
+    /** Get the iterations count.
+     * @return iterations count
      */
-    public int getIteration() {
-        return iteration;
+    public int getIterationsCount() {
+        return iterationsCounter.getCount();
+    }
+
+    /** Get the evaluations count.
+     * @return evaluations count
+     */
+    public int getEvaluationsCount() {
+        return evaluationsCounter.getCount();
     }
 
     /** Create the propagator and parameters corresponding to an evaluation point.

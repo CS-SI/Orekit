@@ -61,11 +61,11 @@ public class GroundStation extends Parameter {
     public GroundStation(final TopocentricFrame baseFrame)
         throws OrekitException {
 
-        super(baseFrame.getName() + OFFSET_SUFFIX);
+        super(baseFrame.getName() + OFFSET_SUFFIX, new double[3]);
         this.baseFrame = baseFrame;
 
         // position offset parameter
-        setValue(0.0, 0.0, 0.0);
+        valueChanged(getInitialValue());
 
     }
 

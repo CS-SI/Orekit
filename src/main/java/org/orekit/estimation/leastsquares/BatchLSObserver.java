@@ -34,7 +34,8 @@ import org.orekit.orbits.Orbit;
 public interface BatchLSObserver {
 
     /** Notification callback for the end of each iteration.
-     * @param iteration iteration number
+     * @param iterationsCount iterations count
+     * @param evaluationscount evaluations count
      * @param orbit current estimated orbit
      * @param evaluations map of measurements evaluations resulting from
      * the current estimated orbit (this is an unmodifiable view of the
@@ -42,7 +43,7 @@ public interface BatchLSObserver {
      * @param lspEvaluation current evaluation of the underlying {@link LeastSquaresProblem
      * least squares problem}
      */
-    void iterationPerformed(int iteration, Orbit orbit,
+    void iterationPerformed(int iterationsCount, int evaluationscount, Orbit orbit,
                             Map<Measurement<?>, Evaluation<?>> evaluations,
                             LeastSquaresProblem.Evaluation lspEvaluation);
 

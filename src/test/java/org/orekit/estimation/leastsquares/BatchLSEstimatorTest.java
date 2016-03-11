@@ -66,9 +66,10 @@ public class BatchLSEstimatorTest {
             estimator.addMeasurement(measurement);
         }
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
-        estimator.setMaxIterations(20);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 4,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 1.1e-8,
                                      0.0, 6.7e-8,
                                      0.0, 3.0e-9,
@@ -100,9 +101,10 @@ public class BatchLSEstimatorTest {
             estimator.addMeasurement(range);
         }
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
-        estimator.setMaxIterations(20);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 4,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 1.0e-6,
                                      0.0, 2.0e-6,
                                      0.0, 3.8e-7,
@@ -143,9 +145,10 @@ public class BatchLSEstimatorTest {
             estimator.addMeasurement(rangerate);
         }
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
-        estimator.setMaxIterations(20);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 5,
+        EstimationTestUtils.checkFit(context, estimator, 4, 5,
                                      0.0, 2e-3,
                                      0.0, 4e-3,
                                      0.0, 100,  // we only have range rate...
@@ -186,10 +189,11 @@ public class BatchLSEstimatorTest {
             estimator.addMeasurement(meas);
         }
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
-        estimator.setMaxIterations(20);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
 
         // we have low correlation between the two types of measurement. We can expect a good estimate.
-        EstimationTestUtils.checkFit(context, estimator, 4,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 1,
                                      0.0, 1,
                                      0.0, 2e-4,
@@ -218,10 +222,10 @@ public class BatchLSEstimatorTest {
             
             @Override
             public List<Parameter> getSupportedParameters() {
-                return Arrays.asList(new Parameter(duplicatedName) {
+                return Arrays.asList(new Parameter(duplicatedName, new double[1]) {
                                          protected void valueChanged(double[] newValue) {
                                          }
-                                     }, new Parameter(duplicatedName) {
+                                     }, new Parameter(duplicatedName, new double[1]) {
                                          protected void valueChanged(double[] newValue) {
                                          }
                                      });

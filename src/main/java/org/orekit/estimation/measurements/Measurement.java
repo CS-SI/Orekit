@@ -135,11 +135,12 @@ public interface Measurement<T extends Measurement<T>> extends TimeStamped {
      * value and all the modifiers that apply to the measurement.
      * </p>
      * @param iteration iteration number
+     * @param count evaluations counter
      * @param state orbital state at measurement date
      * @return evaluated measurement
      * @exception OrekitException if value cannot be computed
      */
-    Evaluation<T> evaluate(int iteration, SpacecraftState state)
+    Evaluation<T> evaluate(int iteration, int count, SpacecraftState state)
         throws OrekitException;
 
 }

@@ -178,22 +178,24 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
      * The theoretical value does not have <em>any</em> modifiers applied.
      * </p>
      * @param iteration iteration number
+     * @param count evaluations counter
      * @param state orbital state at measurement date
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
-    protected abstract Evaluation<T> theoreticalEvaluation(final int iteration,
+    protected abstract Evaluation<T> theoreticalEvaluation(final int iteration, final int count,
                                                            final SpacecraftState state)
         throws OrekitException;
 
     /** {@inheritDoc} */
     @Override
-    public Evaluation<T> evaluate(final int iteration, final SpacecraftState state)
+    public Evaluation<T> evaluate(final int iteration, final int count,
+                                  final SpacecraftState state)
         throws OrekitException {
 
         // compute the theoretical value
-        final Evaluation<T> evaluation = theoreticalEvaluation(iteration, state);
+        final Evaluation<T> evaluation = theoreticalEvaluation(iteration, count, state);
 
         // apply the modifiers
         for (final EvaluationModifier<T> modifier : modifiers) {

@@ -106,11 +106,12 @@ public class GroundStationTest {
         }
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(100);
+        estimator.setMaxEvaluations(200);
 
         // we want to estimate station offsets
         moved.setEstimated(true);
 
-        EstimationTestUtils.checkFit(context, estimator, 4,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 1.2e-6,
                                      0.0, 2.3e-6,
                                      0.0, 8.8e-7,
@@ -310,8 +311,10 @@ public class GroundStationTest {
         double maxZDirDerivativeError  = 0;
         for (double dEast = -2; dEast <= 2; dEast += 0.5) { 
             for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) { 
-            for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) { 
-                    station.setValue(dEast, dNorth, dZenith);
+                for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) { 
+                    station.setValue(new double[] {
+                                         dEast, dNorth, dZenith         
+                                     });
                     OffsetDerivatives od = station.getOffsetDerivatives(parameters, eastIndex, northIndex, zenithIndex);
                     for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
                         DerivativeStructure[][] result = dF[k].value(new DerivativeStructure(1, 1, 0, 0.0));
