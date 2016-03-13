@@ -56,8 +56,8 @@ class Model implements MultivariateJacobianFunction {
     /** Builder for propagator. */
     private final NumericalPropagatorBuilder propagatorBuilder;
 
-    /** Propagator parameters. */
-    private final List<ParameterDriver> propagatorParameters;
+    /** Estimated propagator parameters. */
+    private final List<ParameterDriver> estimatedPropagatorParameters;
 
     /** Dimension of the propagator parameters. */
     private final int propagatorParametersDimension;
@@ -65,8 +65,8 @@ class Model implements MultivariateJacobianFunction {
     /** Measurements. */
     private final List<Measurement<?>> measurements;
 
-    /** Measurements parameters. */
-    private final List<ParameterDriver> measurementsParameters;
+    /** Estimated measurements parameters. */
+    private final List<ParameterDriver> estimatedMeasurementsParameters;
 
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> parameterColumns;
@@ -103,49 +103,43 @@ class Model implements MultivariateJacobianFunction {
 
     /** Simple constructor.
      * @param propagatorBuilder builder to user for propagation
-     * @param propagatorParameters propagator parameters
+     * @param estimatedPropagatorParameters estimated propagator parameters
      * @param measurements measurements
-     * @param measurementsParameters measurements parameters
+     * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param orbitDate orbit date
      * @param observer observer to be notified at model calls
      */
-    Model(final NumericalPropagatorBuilder propagatorBuilder, final List<ParameterDriver> propagatorParameters,
-          final List<Measurement<?>> measurements, final List<ParameterDriver> measurementsParameters,
+    Model(final NumericalPropagatorBuilder propagatorBuilder, final List<ParameterDriver> estimatedPropagatorParameters,
+          final List<Measurement<?>> measurements, final List<ParameterDriver> estimatedMeasurementsParameters,
           final AbsoluteDate orbitDate, final ModelObserver observer) {
 
-        this.propagatorBuilder      = propagatorBuilder;
-        this.propagatorParameters   = propagatorParameters;
-        this.measurements           = measurements;
-        this.measurementsParameters = measurementsParameters;
-        this.parameterColumns       = new HashMap<String, Integer>(measurementsParameters.size());
-        this.evaluations            = new IdentityHashMap<Measurement<?>, Evaluation<?>>(measurements.size());
-        this.orbitDate              = orbitDate;
-        this.observer               = observer;
+        this.propagatorBuilder               = propagatorBuilder;
+        this.estimatedPropagatorParameters   = estimatedPropagatorParameters;
+        this.measurements                    = measurements;
+        this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
+        this.parameterColumns                = new HashMap<String, Integer>(estimatedMeasurementsParameters.size());
+        this.evaluations                     = new IdentityHashMap<Measurement<?>, Evaluation<?>>(measurements.size());
+        this.orbitDate                       = orbitDate;
+        this.observer                        = observer;
 
         // allocate vector and matrix
         int rows = 0;
         for (final Measurement<?> measurement : measurements) {
-            if (measurement.isEnabled()) {
-                rows += measurement.getDimension();
-            }
+            rows += measurement.getDimension();
         }
 
         int columns = 6;
         int countP = 0;
-        for (final ParameterDriver parameter : propagatorParameters) {
-            if (parameter.isEstimated()) {
-                parameterColumns.put(parameter.getName(), columns);
-                columns += parameter.getDimension();
-                countP  += parameter.getDimension();
-            }
+        for (final ParameterDriver parameter : estimatedPropagatorParameters) {
+            parameterColumns.put(parameter.getName(), columns);
+            columns += parameter.getDimension();
+            countP  += parameter.getDimension();
         }
         propagatorParametersDimension = countP;
 
-        for (final ParameterDriver parameter : measurementsParameters) {
-            if (parameter.isEstimated()) {
-                parameterColumns.put(parameter.getName(), columns);
-                columns += parameter.getDimension();
-            }
+        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
+            parameterColumns.put(parameter.getName(), columns);
+            columns += parameter.getDimension();
         }
 
         value    = new ArrayRealVector(rows);
@@ -232,14 +226,12 @@ class Model implements MultivariateJacobianFunction {
 
         // set up the measurement parameters
         int index = propagatorArray.length;
-        for (final ParameterDriver parameter : measurementsParameters) {
-            if (parameter.isEstimated()) {
-                final double[] parameterValue = new double[parameter.getDimension()];
-                for (int i = 0; i < parameterValue.length; ++i) {
-                    parameterValue[i] = point.getEntry(index++);
-                }
-                parameter.setValue(parameterValue);
+        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
+            final double[] parameterValue = new double[parameter.getDimension()];
+            for (int i = 0; i < parameterValue.length; ++i) {
+                parameterValue[i] = point.getEntry(index++);
             }
+            parameter.setValue(parameterValue);
         }
 
         return propagator;
@@ -288,10 +280,8 @@ class Model implements MultivariateJacobianFunction {
         final String equationName = Model.class.getName() + "-derivatives";
         final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagator);
         final List<String> freeParameters = new ArrayList<String>();
-        for (final ParameterDriver driver : propagatorParameters) {
-            if (driver.isEstimated()) {
-                freeParameters.add(driver.getName());
-            }
+        for (final ParameterDriver driver : estimatedPropagatorParameters) {
+            freeParameters.add(driver.getName());
         }
         partials.selectParameters(freeParameters);
 

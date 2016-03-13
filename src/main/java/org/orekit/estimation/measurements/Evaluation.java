@@ -177,7 +177,7 @@ public class Evaluation<T extends Measurement<T>> {
                 if (builder.length() > 0) {
                     builder.append(", ");
                 }
-                builder.append(entry.getKey());
+                builder.append(entry.getKey().getName());
             }
             throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
                                                      driver.getName(),

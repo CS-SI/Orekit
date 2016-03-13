@@ -18,6 +18,7 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -220,17 +221,28 @@ public class BatchLSEstimator {
     public Orbit estimate(final Orbit initialGuess) throws OrekitException {
 
         // compute problem dimension:
-        // orbital parameters + propagator parameters + measurements parameters
+        // orbital parameters + estimated propagator parameters + estimated measurements parameters
         final int                   nbOrbitalParameters      = 6;
-        final List<ParameterDriver> propagatorParameters     = propagatorBuilder.getParametersDrivers();
+        final List<ParameterDriver> estimatedPropagatorParameters     = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
+        for (final Iterator<ParameterDriver> iter = estimatedPropagatorParameters.iterator(); iter.hasNext();) {
+            final ParameterDriver parameter = iter.next();
+            if (!parameter.isEstimated()) {
+                iter.remove();
+            }
+        }
         int nbPropagatorParameters   = 0;
-        for (final ParameterDriver parameter : propagatorParameters) {
-            if (parameter.isEstimated()) {
-                nbPropagatorParameters += parameter.getDimension();
+        for (final ParameterDriver parameter : estimatedPropagatorParameters) {
+            nbPropagatorParameters += parameter.getDimension();
+        }
+        final List<ParameterDriver> estimatedMeasurementsParameters = new ArrayList<ParameterDriver>(measurementsParameters);
+        for (final Iterator<ParameterDriver> iter = estimatedMeasurementsParameters.iterator(); iter.hasNext();) {
+            final ParameterDriver parameter = iter.next();
+            if (!parameter.isEstimated()) {
+                iter.remove();
             }
         }
         int nbMeasurementsParameters = 0;
-        for (final ParameterDriver parameter : measurementsParameters) {
+        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
             if (parameter.isEstimated()) {
                 nbMeasurementsParameters += parameter.getDimension();
             }
@@ -243,17 +255,13 @@ public class BatchLSEstimator {
                                                          propagatorBuilder.getPositionAngle(),
                                                          start);
         int index = nbOrbitalParameters;
-        for (final ParameterDriver propagatorParameter : propagatorParameters) {
-            if (propagatorParameter.isEstimated()) {
-                System.arraycopy(propagatorParameter.getValue(), 0, start, index, propagatorParameter.getDimension());
-                index += propagatorParameter.getDimension();
-            }
+        for (final ParameterDriver propagatorParameter : estimatedPropagatorParameters) {
+            System.arraycopy(propagatorParameter.getValue(), 0, start, index, propagatorParameter.getDimension());
+            index += propagatorParameter.getDimension();
         }
-        for (final ParameterDriver parameter : measurementsParameters) {
-            if (parameter.isEstimated()) {
-                System.arraycopy(parameter.getValue(), 0, start, index, parameter.getDimension());
-                index += parameter.getDimension();
-            }
+        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
+            System.arraycopy(parameter.getValue(), 0, start, index, parameter.getDimension());
+            index += parameter.getDimension();
         }
         lsBuilder.start(start);
 
@@ -277,8 +285,8 @@ public class BatchLSEstimator {
                 BatchLSEstimator.this.evaluations = newEvaluations;
             }
         };
-        final Model model = new Model(propagatorBuilder, propagatorParameters,
-                                      measurements, measurementsParameters,
+        final Model model = new Model(propagatorBuilder, estimatedPropagatorParameters,
+                                      measurements, estimatedMeasurementsParameters,
                                       initialGuess.getDate(), modelObserver);
         lsBuilder.model(model);
 
