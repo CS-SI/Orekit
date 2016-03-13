@@ -115,8 +115,10 @@ public interface Measurement<T extends Measurement<T>> extends TimeStamped {
      * </p>
      * @param modifier modifier to add
      * @see #getModifiers()
+     * @exception OrekitException if there is a conflict between measurement and
+     * modifiers parameters
      */
-    void addModifier(EvaluationModifier<T> modifier);
+    void addModifier(EvaluationModifier<T> modifier) throws OrekitException;
 
     /** Get the modifiers that apply to a measurement.
      * @return modifiers that apply to a measurement
@@ -126,10 +128,8 @@ public interface Measurement<T extends Measurement<T>> extends TimeStamped {
 
     /** Get the drivers for this measurement parameters, including its modifiers parameters.
      * @return drivers for this measurement parameters, including its modifiers parameters
-     * @exception OrekitException if there is a conflict between measurement and
-     * modifiers parameters
      */
-    List<ParameterDriver> getParametersDrivers() throws OrekitException;
+    List<ParameterDriver> getParametersDrivers();
 
     /** Evaluate the measurement.
      * <p>

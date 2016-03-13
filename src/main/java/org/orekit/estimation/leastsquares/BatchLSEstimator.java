@@ -57,6 +57,12 @@ public class BatchLSEstimator {
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
 
+    /** Relative tolerance. */
+    private double relativeTolerance;
+
+    /** Absolute tolerance. */
+    private double absoluteTolerance;
+
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
 
@@ -90,6 +96,8 @@ public class BatchLSEstimator {
         this.propagatorBuilder      = propagatorBuilder;
         this.measurements           = new ArrayList<Measurement<?>>();
         this.optimizer              = optimizer;
+        this.relativeTolerance      = Double.NaN;
+        this.absoluteTolerance      = Double.NaN;
         this.lsBuilder              = new LeastSquaresBuilder();
         this.evaluations            = null;
         this.observer               = null;
@@ -127,13 +135,12 @@ public class BatchLSEstimator {
      */
     public void setMaxIterations(final int maxIterations) {
         lsBuilder.maxIterations(maxIterations);
-    }    /** Get the propagator parameters supported by this estimator.
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return propagator parameters supported by this estimator
+    }
+
+    /** Check for parameteres names conflicts.
      * @exception OrekitException if different parameters have the same name
      */
-    public List<ParameterDriver> getPropagatorParameters(final boolean estimatedOnly)
-        throws OrekitException {
+    private void checkParameters() throws OrekitException {
 
         final Map<String, ParameterDriver> map = new HashMap<String, ParameterDriver>();
         for (final ParameterDriver parameter : propagatorBuilder.getParametersDrivers()) {
@@ -153,26 +160,6 @@ public class BatchLSEstimator {
 
         }
 
-        // put the parameters into a list
-        final List<ParameterDriver> parameters = new ArrayList<ParameterDriver>(map.size());
-        for (final Map.Entry<String, ParameterDriver> entry : map.entrySet()) {
-            if (!estimatedOnly || entry.getValue().isEstimated()) {
-                parameters.add(entry.getValue());
-            }
-        }
-        return parameters;
-
-    }
-
-    /** Get the measurements parameters supported by this estimator (including measurements and modifiers).
-     * @param estimatedOnly if true, only estimated parameters are returned
-     * @return measurements parameters supported by this estimator
-     * @exception OrekitException if different parameters have the same name
-     */
-    public List<ParameterDriver> getMeasurementsParameters(final boolean estimatedOnly)
-        throws OrekitException {
-
-        final Map<String, ParameterDriver> map = new HashMap<String, ParameterDriver>();
         for (final  Measurement<?> measurement : measurements) {
             for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
 
@@ -192,17 +179,57 @@ public class BatchLSEstimator {
             }
         }
 
-        final List<ParameterDriver> parameters = new ArrayList<ParameterDriver>(map.size());
-        for (final Map.Entry<String, ParameterDriver> entry : map.entrySet()) {
-            if (!estimatedOnly || entry.getValue().isEstimated()) {
-                parameters.add(entry.getValue());
+    }
+
+    /** Get the propagator parameters supported by this estimator.
+     * @param estimatedOnly if true, only estimated parameters are returned
+     * @return propagator parameters supported by this estimator
+     * @exception OrekitException if different parameters have the same name
+     */
+    public List<ParameterDriver> getPropagatorParameters(final boolean estimatedOnly)
+        throws OrekitException {
+
+        final List<ParameterDriver> parameters;
+        if (estimatedOnly) {
+            parameters = new ArrayList<ParameterDriver>();
+            for (final ParameterDriver parameterDriver : propagatorBuilder.getParametersDrivers()) {
+                if (parameterDriver.isEstimated()) {
+                    parameterDriver.checkAndAddSelf(parameters);
+                }
             }
+        } else {
+            parameters = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
         }
+
         return parameters;
 
     }
 
+    /** Get the measurements parameters supported by this estimator (including measurements and modifiers).
+     * @param estimatedOnly if true, only estimated parameters are returned
+     * @return measurements parameters supported by this estimator
+     * @exception OrekitException if different parameters have the same name
+     */
+    public List<ParameterDriver> getMeasurementsParameters(final boolean estimatedOnly)
+        throws OrekitException {
 
+        final List<ParameterDriver> parameters;
+        if (estimatedOnly) {
+            parameters = new ArrayList<ParameterDriver>();
+            for (final  Measurement<?> measurement : measurements) {
+                for (final ParameterDriver parameterDriver : measurement.getParametersDrivers()) {
+                    if (parameterDriver.isEstimated()) {
+                        parameterDriver.checkAndAddSelf(parameters);
+                    }
+                }
+            }
+        } else {
+            parameters = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
+        }
+
+        return parameters;
+
+    }
 
     /** Set the maximum number of model evaluations.
      * @param maxEvaluations maximum number of model evaluations
@@ -218,39 +245,23 @@ public class BatchLSEstimator {
      * @see EvaluationRmsChecker
      */
     public void setConvergenceThreshold(final double relTol, final double absTol) {
-        lsBuilder.checker(new EvaluationRmsChecker(relTol, absTol) {
-            /** {@inheritDoc} */
-            @Override
-            public boolean converged(final int iteration,
-                                     final LeastSquaresProblem.Evaluation previous,
-                                     final LeastSquaresProblem.Evaluation current) {
-
-                // save the last evaluations
-                lspEvaluation = current;
-
-                // notify the observer
-                if (observer != null) {
-                    observer.iterationPerformed(iterationsCounter.getCount(),
-                                                evaluationsCounter.getCount(),
-                                                orbit,
-                                                Collections.unmodifiableMap(evaluations),
-                                                lspEvaluation);
-                }
-
-                return super.converged(iteration, previous, current);
-            }
-        });
+        this.relativeTolerance = relTol;
+        this.absoluteTolerance = absTol;
     }
 
     /** Estimate the orbit and the parameters.
      * <p>
-     * The estimated parameters are available using {@link #getParameters()}
+     * The estimated parameters are available using {@link #getPropagatorParameters(boolean)}
+     * and {@link #getMeasurementsParameters(boolean)}.
      * </p>
      * @param initialGuess initial guess for the orbit
      * @return estimated orbit
-     * @exception OrekitException if orbit cannot be determined
+     * @exception OrekitException if there is a conflict in parameters names
+     * or if orbit cannot be determined
      */
     public Orbit estimate(final Orbit initialGuess) throws OrekitException {
+
+        checkParameters();
 
         // compute problem dimension:
         // orbital parameters + estimated propagator parameters + estimated measurements parameters
@@ -313,6 +324,30 @@ public class BatchLSEstimator {
         // add a validator for orbital parameters
         lsBuilder.parameterValidator(OrbitValidator.getValidator(propagatorBuilder.getOrbitType()));
 
+        lsBuilder.checker(new EvaluationRmsChecker(relativeTolerance, absoluteTolerance) {
+            /** {@inheritDoc} */
+            @Override
+            public boolean converged(final int iteration,
+                                     final LeastSquaresProblem.Evaluation previous,
+                                     final LeastSquaresProblem.Evaluation current) {
+
+                // save the last evaluations
+                lspEvaluation = current;
+
+                // notify the observer
+                if (observer != null) {
+                    observer.iterationPerformed(iterationsCounter.getCount(),
+                                                evaluationsCounter.getCount(),
+                                                orbit,
+                                                estimatedPropagatorParameters,
+                                                estimatedMeasurementsParameters,
+                                                Collections.unmodifiableMap(evaluations),
+                                                lspEvaluation);
+                }
+
+                return super.converged(iteration, previous, current);
+            }
+        });
         try {
 
             // solve the problem

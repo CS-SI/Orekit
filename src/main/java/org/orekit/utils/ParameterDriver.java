@@ -162,9 +162,9 @@ public abstract class ParameterDriver {
      *       with the same name is present, an exception is triggered</li>
      *   <li>otherwise the parameter is added to the collection</li>
      * </ul>
+     * </p>
      * @param collection collection to add the instance to
      * @exception OrekitException if a parameter with the same name already exists
-     * </p>
      */
     public void checkAndAddSelf(final Collection<ParameterDriver> collection)
         throws OrekitException {

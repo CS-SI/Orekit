@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -67,7 +66,12 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
     protected AbstractMeasurement(final AbsoluteDate date, final double observed,
                                   final double sigma, final double baseWeight,
                                   final ParameterDriver ... supportedParameters) {
-        this.supportedParameters = Arrays.asList(supportedParameters);
+
+        this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
+        for (final ParameterDriver parameterDriver : supportedParameters) {
+            this.supportedParameters.add(parameterDriver);
+        }
+
         this.date       = date;
         this.observed   = new double[] {
             observed
@@ -78,8 +82,10 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
         this.baseWeight = new double[] {
             baseWeight
         };
+
         this.modifiers = new ArrayList<EvaluationModifier<T>>();
         setEnabled(true);
+
     }
 
     /** Simple constructor, for multi-dimensional measurements.
@@ -95,32 +101,25 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
                                   final ParameterDriver ... supportedParameters) {
-        this.supportedParameters = Arrays.asList(supportedParameters);
+        this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
+        for (final ParameterDriver parameterDriver : supportedParameters) {
+            this.supportedParameters.add(parameterDriver);
+        }
+
         this.date       = date;
         this.observed   = observed.clone();
         this.sigma      = sigma.clone();
         this.baseWeight = baseWeight.clone();
+
         this.modifiers = new ArrayList<EvaluationModifier<T>>();
         setEnabled(true);
+
     }
 
     /** {@inheritDoc} */
     @Override
-    public List<ParameterDriver> getParametersDrivers() throws OrekitException {
-        if (modifiers.isEmpty()) {
-            // no modifiers, we already know all the parameters
-            return Collections.unmodifiableList(supportedParameters);
-        } else {
-            // we have to combine the measurement parameters and the modifiers parameters
-            final List<ParameterDriver> allParameters = new ArrayList<ParameterDriver>();
-            allParameters.addAll(supportedParameters);
-            for (final EvaluationModifier<T> modifier : modifiers) {
-                for (final ParameterDriver parameterDriver : modifier.getParametersDrivers()) {
-                    parameterDriver.checkAndAddSelf(allParameters);
-                }
-            }
-            return allParameters;
-        }
+    public List<ParameterDriver> getParametersDrivers() {
+        return Collections.unmodifiableList(supportedParameters);
     }
 
     /** {@inheritDoc} */
@@ -200,8 +199,16 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
 
     /** {@inheritDoc} */
     @Override
-    public void addModifier(final EvaluationModifier<T> modifier) {
+    public void addModifier(final EvaluationModifier<T> modifier)
+        throws OrekitException {
+
+        // combine the measurement parameters and the modifier parameters
+        for (final ParameterDriver parameterDriver : modifier.getParametersDrivers()) {
+            parameterDriver.checkAndAddSelf(supportedParameters);
+        }
+
         modifiers.add(modifier);
+
     }
 
     /** {@inheritDoc} */

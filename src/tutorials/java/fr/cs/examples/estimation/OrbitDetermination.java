@@ -198,6 +198,8 @@ public class OrbitDetermination {
             @Override
             public void iterationPerformed(final int iterationsCount, final int evaluationsCount,
                                            final Orbit orbit,
+                                           final List<ParameterDriver> estimatedPropagatorParameters,
+                                           final List<ParameterDriver> estimatedMeasurementsParameters,
                                            final Map<Measurement<?>, Evaluation<?>> evaluations,
                                            final LeastSquaresProblem.Evaluation lspEvaluation) {
                 PVCoordinates currentPV = orbit.getPVCoordinates(); 
