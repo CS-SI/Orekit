@@ -191,7 +191,7 @@ public class OrbitDetermination {
             private PVCoordinates previousPV;
             {
                 previousPV = initialGuess.getPVCoordinates();
-                System.out.format(Locale.US, "iteration evaluations      ΔP(m)        ΔV(m/s)         RMS           cost%n");
+                System.out.format(Locale.US, "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS%n");
             }
 
             /** {@inheritDoc} */
@@ -203,11 +203,11 @@ public class OrbitDetermination {
                                            final Map<Measurement<?>, Evaluation<?>> evaluations,
                                            final LeastSquaresProblem.Evaluation lspEvaluation) {
                 PVCoordinates currentPV = orbit.getPVCoordinates(); 
-                System.out.format(Locale.US, "    %2d         %2d      %13.6f %12.9f %13.9f %14.9f%n",
+                System.out.format(Locale.US, "    %2d         %2d      %13.6f %12.9f %16.12f%n",
                                   iterationsCount, evaluationsCount,
                                   Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
                                   Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
-                                  lspEvaluation.getRMS(), lspEvaluation.getCost());
+                                  lspEvaluation.getRMS());
                 previousPV = currentPV;
             }
         });
@@ -232,8 +232,8 @@ public class OrbitDetermination {
             } else if (entry.getKey() instanceof Angular) {
                 @SuppressWarnings("unchecked")
                 Evaluation<Angular> evaluation = (Evaluation<Angular>) entry.getValue();
-                azimuthStats.addValue(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]);
-                elevationStats.addValue(evaluation.getValue()[1] - evaluation.getMeasurement().getObservedValue()[1]);
+                azimuthStats.addValue(FastMath.toDegrees(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]));
+                elevationStats.addValue(FastMath.toDegrees(evaluation.getValue()[1] - evaluation.getMeasurement().getObservedValue()[1]));
             } else if (entry.getKey() instanceof PV) {
                 @SuppressWarnings("unchecked")
                 Evaluation<PV> evaluation = (Evaluation<PV>) entry.getValue();
@@ -247,16 +247,27 @@ public class OrbitDetermination {
         }
 
         System.out.println("Estimated orbit: " + estimated);
-        displayParametersChanges("Estimated propagator parameters changes: ", estimator.getPropagatorParameters(true));
-        displayParametersChanges("Estimated measurements parameters changes: ", estimator.getMeasurementsParameters(true));
+
+        final List<ParameterDriver> propagatorParameters   = estimator.getPropagatorParameters(true);
+        final List<ParameterDriver> measurementsParameters = estimator.getMeasurementsParameters(true);
+        int length = 0;
+        for (final ParameterDriver parameterDriver : propagatorParameters) {
+            length = FastMath.max(length, parameterDriver.getName().length());
+        }
+        for (final ParameterDriver parameterDriver : measurementsParameters) {
+            length = FastMath.max(length, parameterDriver.getName().length());
+        }
+        displayParametersChanges("Estimated propagator parameters changes: ", length, propagatorParameters);
+        displayParametersChanges("Estimated measurements parameters changes: ", length, measurementsParameters);
+
         System.out.println("Number of iterations: " + estimator.getIterationsCount());
         System.out.println("Number of evaluations: " + estimator.getEvaluationsCount());
-        displayStats("Range",      rangeStats);
-        displayStats("Range rate", rangeRateStats);
-        displayStats("Azimuth",    azimuthStats);
-        displayStats("Elevation",  elevationStats);
-        displayStats("Position",   posStats);
-        displayStats("Velocity",   velStats);
+        displayStats("Range (m)",           rangeStats);
+        displayStats("Range rate (m/s)",    rangeRateStats);
+        displayStats("Azimuth (degrees)",   azimuthStats);
+        displayStats("Elevation (degrees)", elevationStats);
+        displayStats("Position (m)",        posStats);
+        displayStats("Velocity (m/s)",      velStats);
 
     }
 
@@ -264,7 +275,8 @@ public class OrbitDetermination {
      * @param header header message
      * @param parameters parameters list
      */
-    private void displayParametersChanges(final String header, final List<ParameterDriver> parameters) {
+    private void displayParametersChanges(final String header, final int length,
+                                          final List<ParameterDriver> parameters) {
 
         // sort the parameters lexicographically
         Collections.sort(parameters, new Comparator<ParameterDriver>() {
@@ -280,15 +292,19 @@ public class OrbitDetermination {
         int index = 0;
         for (final ParameterDriver parameter : parameters) {
             if (parameter.isEstimated()) {
+                final double factor = parameter.getName().endsWith("/az-el bias") ? FastMath.toDegrees(1.0) : 1.0;
                 final double[] initial = parameter.getInitialValue();
                 final double[] value   = parameter.getValue();
                 System.out.format(Locale.US, "  %2d %s", ++index, parameter.getName());
+                for (int i = parameter.getName().length(); i < length; ++i) {
+                    System.out.format(Locale.US, " ");
+                }
                 for (int k = 0; k < initial.length; ++k) {
-                    System.out.format(Locale.US, "  %+f", value[k] - initial[k]);
+                    System.out.format(Locale.US, "  %+f", factor * (value[k] - initial[k]));
                 }
                 System.out.format(Locale.US, "  (final value:");
                 for (double d : value) {
-                    System.out.format(Locale.US, "  %f", d);
+                    System.out.format(Locale.US, "  %f", factor * d);
                 }
                 System.out.format(Locale.US, ")%n");
             }

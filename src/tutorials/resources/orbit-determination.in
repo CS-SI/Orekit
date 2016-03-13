@@ -244,8 +244,8 @@ PV.measurements.position.sigma       = 10.0
 PV.measurements.velocity.sigma       = 0.01
 
 ## Estimator
-estimator.rms.absolute.convergence.threshold = 1.0e-7
-estimator.rms.relative.convergence.threshold = 1.0e-6
+estimator.rms.absolute.convergence.threshold = 1.0e-15
+estimator.rms.relative.convergence.threshold = 1.0e-15
 estimator.max.iterations                     = 10
 estimator.max.evaluations                  = 20
 
