@@ -18,6 +18,7 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -170,7 +171,82 @@ public class BatchLSEstimator {
      */
     public void setMaxIterations(final int maxIterations) {
         lsBuilder.maxIterations(maxIterations);
+    }    /** Get the propagator parameters supported by this estimator.
+     * @param estimatedOnly if true, only estimated parameters are returned
+     * @return propagator parameters supported by this estimator
+     * @exception OrekitException if different parameters have the same name
+     */
+    public List<ParameterDriver> getPropagatorParameters(final boolean estimatedOnly)
+        throws OrekitException {
+
+        final Map<String, ParameterDriver> map = new HashMap<String, ParameterDriver>();
+        for (final ParameterDriver parameter : propagatorBuilder.getParametersDrivers()) {
+
+            final ParameterDriver existing = map.get(parameter.getName());
+            if (existing != null) {
+                // the name already exists
+                if (existing != parameter) {
+                    // it is a different parameter with the same name
+                    throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
+                                              parameter.getName());
+                }
+            } else {
+                // it is a new parameter
+                map.put(parameter.getName(), parameter);
+            }
+
+        }
+
+        // put the parameters into a list
+        final List<ParameterDriver> parameters = new ArrayList<ParameterDriver>(map.size());
+        for (final Map.Entry<String, ParameterDriver> entry : map.entrySet()) {
+            if (!estimatedOnly || entry.getValue().isEstimated()) {
+                parameters.add(entry.getValue());
+            }
+        }
+        return parameters;
+
     }
+
+    /** Get the measurements parameters supported by this estimator (including measurements and modifiers).
+     * @param estimatedOnly if true, only estimated parameters are returned
+     * @return measurements parameters supported by this estimator
+     * @exception OrekitException if different parameters have the same name
+     */
+    public List<ParameterDriver> getMeasurementsParameters(final boolean estimatedOnly)
+        throws OrekitException {
+
+        final Map<String, ParameterDriver> map = new HashMap<String, ParameterDriver>();
+        for (final  Measurement<?> measurement : measurements) {
+            for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
+
+                final ParameterDriver existing = map.get(parameter.getName());
+                if (existing != null) {
+                    // the name already exists
+                    if (existing != parameter) {
+                        // it is a different parameter with the same name
+                        throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
+                                                  parameter.getName());
+                    }
+                } else {
+                    // it is a new parameter
+                    map.put(parameter.getName(), parameter);
+                }
+
+            }
+        }
+
+        final List<ParameterDriver> parameters = new ArrayList<ParameterDriver>(map.size());
+        for (final Map.Entry<String, ParameterDriver> entry : map.entrySet()) {
+            if (!estimatedOnly || entry.getValue().isEstimated()) {
+                parameters.add(entry.getValue());
+            }
+        }
+        return parameters;
+
+    }
+
+
 
     /** Set the maximum number of model evaluations.
      * @param maxEvaluations maximum number of model evaluations
@@ -223,7 +299,7 @@ public class BatchLSEstimator {
         // compute problem dimension:
         // orbital parameters + estimated propagator parameters + estimated measurements parameters
         final int                   nbOrbitalParameters      = 6;
-        final List<ParameterDriver> estimatedPropagatorParameters     = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
+        final List<ParameterDriver> estimatedPropagatorParameters = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
         for (final Iterator<ParameterDriver> iter = estimatedPropagatorParameters.iterator(); iter.hasNext();) {
             final ParameterDriver parameter = iter.next();
             if (!parameter.isEstimated()) {

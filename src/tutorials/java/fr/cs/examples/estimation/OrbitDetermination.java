@@ -26,6 +26,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -183,13 +185,6 @@ public class OrbitDetermination {
             estimator.addMeasurement(measurement);
         }
 
-        List<String> freeParametersNames = new ArrayList<String>();
-        for (final ParameterDriver parameter : estimator.getSupportedParameters()) {
-            if (parameter.isEstimated()) {
-                freeParametersNames.add(parameter.getName());
-            }
-        }
-
         // estimate orbit
         estimator.setObserver(new BatchLSObserver() {
 
@@ -250,25 +245,8 @@ public class OrbitDetermination {
         }
 
         System.out.println("Estimated orbit: " + estimated);
-        System.out.println("Estimated parameters changes: ");
-        for (int i = 0; i < freeParametersNames.size(); ++i) {
-            final String name = freeParametersNames.get(i);
-            for (ParameterDriver parameter : estimator.getSupportedParameters()) {
-                if (parameter.getName().equals(name)) {
-                    final double[] initial = parameter.getInitialValue();
-                    final double[] value   = parameter.getValue();
-                    System.out.format(Locale.US, "  %2d %s", i + 1, name);
-                    for (int k = 0; k < initial.length; ++k) {
-                        System.out.format(Locale.US, "  %+f", value[k] - initial[k]);
-                    }
-                    System.out.format(Locale.US, "  (final value:");
-                    for (double d : value) {
-                        System.out.format(Locale.US, "  %f", d);
-                    }
-                    System.out.format(Locale.US, ")%n");
-                }
-            }
-        }
+        displayParametersChanges("Estimated propagator parameters changes: ", estimator.getPropagatorParameters(true));
+        displayParametersChanges("Estimated measurements parameters changes: ", estimator.getMeasurementsParameters(true));
         System.out.println("Number of iterations: " + estimator.getIterationsCount());
         System.out.println("Number of evaluations: " + estimator.getEvaluationsCount());
         displayStats("Range",      rangeStats);
@@ -277,6 +255,42 @@ public class OrbitDetermination {
         displayStats("Elevation",  elevationStats);
         displayStats("Position",   posStats);
         displayStats("Velocity",   velStats);
+
+    }
+
+    /** Display parameters changes.
+     * @param header header message
+     * @param parameters parameters list
+     */
+    private void displayParametersChanges(final String header, final List<ParameterDriver> parameters) {
+
+        // sort the parameters lexicographically
+        Collections.sort(parameters, new Comparator<ParameterDriver>() {
+            /** {@inheritDoc} */
+            @Override
+            public int compare(final ParameterDriver pd1, final ParameterDriver pd2) {
+                return pd1.getName().compareTo(pd2.getName());
+            }
+            
+        });
+
+        System.out.println(header);
+        int index = 0;
+        for (final ParameterDriver parameter : parameters) {
+            if (parameter.isEstimated()) {
+                final double[] initial = parameter.getInitialValue();
+                final double[] value   = parameter.getValue();
+                System.out.format(Locale.US, "  %2d %s", ++index, parameter.getName());
+                for (int k = 0; k < initial.length; ++k) {
+                    System.out.format(Locale.US, "  %+f", value[k] - initial[k]);
+                }
+                System.out.format(Locale.US, "  (final value:");
+                for (double d : value) {
+                    System.out.format(Locale.US, "  %f", d);
+                }
+                System.out.format(Locale.US, ")%n");
+            }
+        }
 
     }
 
