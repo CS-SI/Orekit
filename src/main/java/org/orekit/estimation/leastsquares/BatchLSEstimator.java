@@ -19,10 +19,11 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
+import org.apache.commons.math3.exception.TooManyIterationsException;
 import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
@@ -254,14 +255,7 @@ public class BatchLSEstimator {
         // compute problem dimension:
         // orbital parameters + estimated propagator parameters + estimated measurements parameters
         final int                   nbOrbitalParameters      = 6;
-        final List<ParameterDriver> estimatedPropagatorParameters = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
-        for (final Iterator<ParameterDriver> iter = estimatedPropagatorParameters.iterator(); iter.hasNext();) {
-            final ParameterDriver parameter = iter.next();
-            if (!parameter.isEstimated()) {
-                iter.remove();
-            }
-        }
-//        final List<ParameterDriver> estimatedPropagatorParameters = getPropagatorParameters(true);
+        final List<ParameterDriver> estimatedPropagatorParameters = getPropagatorParameters(true);
         int dimensionPropagator   = 0;
         for (final ParameterDriver parameter : estimatedPropagatorParameters) {
             dimensionPropagator += parameter.getDimension();
@@ -327,6 +321,10 @@ public class BatchLSEstimator {
             // extract the orbit
             return orbit;
 
+        } catch (TooManyIterationsException tmie) {
+            throw new OrekitException(tmie);
+        } catch (TooManyEvaluationsException tmie) {
+            throw new OrekitException(tmie);
         } catch (OrekitExceptionWrapper oew) {
             throw oew.getException();
         }
