@@ -53,9 +53,6 @@ public class BatchLSEstimator {
     /** Measurements. */
     private final List<Measurement<?>> measurements;
 
-    /** Measurements parameters. */
-    private final List<ParameterDriver> measurementsParameters;
-
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
 
@@ -91,7 +88,6 @@ public class BatchLSEstimator {
 
         this.propagatorBuilder      = propagatorBuilder;
         this.measurements           = new ArrayList<Measurement<?>>();
-        this.measurementsParameters = new ArrayList<ParameterDriver>();
         this.optimizer              = optimizer;
         this.lsBuilder              = new LeastSquaresBuilder();
         this.evaluations            = null;
@@ -115,13 +111,6 @@ public class BatchLSEstimator {
         this.observer = observer;
     }
 
-    /** Get the parameters supported by this estimator (including measurements and modifiers).
-     * @return parameters supported by this estimator (including measurements and modifiers)
-     */
-    public List<ParameterDriver> getSupportedParameters() {
-        return Collections.unmodifiableList(measurementsParameters);
-    }
-
     /** Add a measurement.
      * @param measurement measurement to add
      * @exception OrekitException if the measurement has a parameter
@@ -129,41 +118,7 @@ public class BatchLSEstimator {
      */
     public void addMeasurement(final Measurement<?> measurement)
       throws OrekitException {
-
-        // add the measurement
         measurements.add(measurement);
-
-        // add measurement parameters (including modifiers parameters)
-        for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
-            addMeasurementParameter(parameter);
-        }
-
-    }
-
-    /** Add a measurement parameter.
-     * @param parameter measurement parameter
-     * @exception OrekitException if a parameter with the same name already exists
-     */
-    private void addMeasurementParameter(final ParameterDriver parameter)
-        throws OrekitException {
-
-        // compare against existing parameters
-        for (final ParameterDriver existing : measurementsParameters) {
-            if (existing.getName().equals(parameter.getName())) {
-                if (existing == parameter) {
-                    // the parameter was already known
-                    return;
-                } else {
-                    // we have two different parameters sharing the same name
-                    throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
-                                              parameter.getName());
-                }
-            }
-        }
-
-        // it is a new parameter
-        measurementsParameters.add(parameter);
-
     }
 
     /** Set the maximum number of iterations.
@@ -306,24 +261,19 @@ public class BatchLSEstimator {
                 iter.remove();
             }
         }
-        int nbPropagatorParameters   = 0;
+//        final List<ParameterDriver> estimatedPropagatorParameters = getPropagatorParameters(true);
+        int dimensionPropagator   = 0;
         for (final ParameterDriver parameter : estimatedPropagatorParameters) {
-            nbPropagatorParameters += parameter.getDimension();
+            dimensionPropagator += parameter.getDimension();
         }
-        final List<ParameterDriver> estimatedMeasurementsParameters = new ArrayList<ParameterDriver>(measurementsParameters);
-        for (final Iterator<ParameterDriver> iter = estimatedMeasurementsParameters.iterator(); iter.hasNext();) {
-            final ParameterDriver parameter = iter.next();
-            if (!parameter.isEstimated()) {
-                iter.remove();
-            }
-        }
-        int nbMeasurementsParameters = 0;
+        final List<ParameterDriver> estimatedMeasurementsParameters = getMeasurementsParameters(true);
+        int dimensionMeasurements = 0;
         for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
             if (parameter.isEstimated()) {
-                nbMeasurementsParameters += parameter.getDimension();
+                dimensionMeasurements += parameter.getDimension();
             }
         }
-        final int dimension = nbOrbitalParameters + nbPropagatorParameters + nbMeasurementsParameters;
+        final int dimension = nbOrbitalParameters + dimensionPropagator + dimensionMeasurements;
 
         // create start point
         final double[] start = new double[dimension];
