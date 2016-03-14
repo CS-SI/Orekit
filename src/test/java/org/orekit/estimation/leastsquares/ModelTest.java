@@ -83,7 +83,13 @@ public class ModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final Model model = new Model(propagatorBuilder, propagatorBuilder.getParametersDrivers(),
+        final List<ParameterDriver> estimatedPropagatorParameters = new ArrayList<ParameterDriver>();
+        for (final ParameterDriver parameterDriver : propagatorBuilder.getParametersDrivers()) {
+            if (parameterDriver.isEstimated()) {
+                estimatedPropagatorParameters.add(parameterDriver);
+            }
+        }
+        final Model model = new Model(propagatorBuilder, estimatedPropagatorParameters,
                                       measurements, measurementsParameters,
                                       context.initialOrbit.getDate(), modelObserver);
         model.setIterationsCounter(new Incrementor(100));
