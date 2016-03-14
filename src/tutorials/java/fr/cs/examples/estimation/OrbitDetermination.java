@@ -205,7 +205,7 @@ public class OrbitDetermination {
                                            final List<ParameterDriver> estimatedMeasurementsParameters,
                                            final Map<Measurement<?>, Evaluation<?>> evaluations,
                                            final LeastSquaresProblem.Evaluation lspEvaluation) {
-                PVCoordinates currentPV = orbit.getPVCoordinates(); 
+                PVCoordinates currentPV = orbit.getPVCoordinates();
                 System.out.format(Locale.US, "    %2d         %2d      %13.6f %12.9f %16.12f%n",
                                   iterationsCount, evaluationsCount,
                                   Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
