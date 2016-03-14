@@ -721,7 +721,7 @@ public class OrbitDetermination {
             final AngularRadioRefractionModifier refractionCorrection;
             if (stationElevationRefraction[i]) {
                 final double                     altitude        = station.getBaseFrame().getPoint().getAltitude();
-                final AtmosphericRefractionModel refractionModel = new EarthITU453AtmosphereRefraction(1.0e-3 * altitude);
+                final AtmosphericRefractionModel refractionModel = new EarthITU453AtmosphereRefraction(altitude);
                 refractionCorrection = new AngularRadioRefractionModifier(refractionModel);
             } else {
                 refractionCorrection = null;

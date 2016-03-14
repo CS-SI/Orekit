@@ -95,8 +95,8 @@ public class EarthITU453AtmosphereRefractionTest {
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(2.0);
 
-        // Station altitude (km)
-        final double altitude = statione.getPoint().getAltitude() / 1000.;
+        // Station altitude
+        final double altitude = statione.getPoint().getAltitude();
         EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
@@ -110,8 +110,8 @@ public class EarthITU453AtmosphereRefractionTest {
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(2.0);
 
-        // Station altitude (km)
-        final double altitude = stationd.getPoint().getAltitude() / 1000.;
+        // Station altitude
+        final double altitude = stationd.getPoint().getAltitude();
         EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
@@ -125,8 +125,8 @@ public class EarthITU453AtmosphereRefractionTest {
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(2.0);
 
-        // Station altitude (km)
-        final double altitude = stationk.getPoint().getAltitude() / 1000.;
+        // Station altitude
+        final double altitude = stationk.getPoint().getAltitude();
         EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
@@ -146,8 +146,8 @@ public class EarthITU453AtmosphereRefractionTest {
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(4.0);
 
-        // Station altitude (km)
-        final double altitude = stationk.getPoint().getAltitude() / 1000.;
+        // Station altitude
+        final double altitude = stationk.getPoint().getAltitude();
         EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
@@ -161,8 +161,8 @@ public class EarthITU453AtmosphereRefractionTest {
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(10.0);
 
-        // Station altitude (km)
-        final double altitude = stationk.getPoint().getAltitude() / 1000.;
+        // Station altitude
+        final double altitude = stationk.getPoint().getAltitude();
         EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
@@ -176,8 +176,8 @@ public class EarthITU453AtmosphereRefractionTest {
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(30.0);
 
-        // Station altitude (km)
-        final double altitude = stationk.getPoint().getAltitude() / 1000.;
+        // Station altitude
+        final double altitude = stationk.getPoint().getAltitude();
         EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
@@ -191,8 +191,8 @@ public class EarthITU453AtmosphereRefractionTest {
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(90.0);
 
-        // Station altitude (km)
-        final double altitude = stationk.getPoint().getAltitude() / 1000.;
+        // Station altitude
+        final double altitude = stationk.getPoint().getAltitude();
         EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
@@ -206,8 +206,8 @@ public class EarthITU453AtmosphereRefractionTest {
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(-10.);
         
-        // Station altitude (km)
-        final double altitude = stationh.getPoint().getAltitude() / 1000.;
+        // Station altitude
+        final double altitude = stationh.getPoint().getAltitude();
         EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
@@ -218,8 +218,8 @@ public class EarthITU453AtmosphereRefractionTest {
     @Test
     public void testEarthITU453AtmosphereRefractiontable() throws OrekitException {
 
-        // Station altitude (km)
-        final double altitude = stationa.getPoint().getAltitude() / 1000.;
+        // Station altitude
+        final double altitude = stationa.getPoint().getAltitude();
         EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
 
         for (int itab=0; itab<40; itab++) {
