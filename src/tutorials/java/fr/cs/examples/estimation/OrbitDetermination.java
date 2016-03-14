@@ -59,6 +59,7 @@ import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
+import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DTM2000;
 import org.orekit.forces.drag.DragForce;
@@ -78,6 +79,8 @@ import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.models.AtmosphericRefractionModel;
+import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -663,6 +666,7 @@ public class OrbitDetermination {
         final double[]  stationElevationSigma         = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
         final double[]  stationElevationBias          = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
         final boolean[] stationAzElBiasesEstimated    = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
+        final boolean[] stationElevationRefraction    = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
 
         for (int i = 0; i < stationNames.length; ++i) {
 
@@ -714,10 +718,19 @@ public class OrbitDetermination {
                 azELBias = null;
             }
 
+            final AngularRadioRefractionModifier refractionCorrection;
+            if (stationElevationRefraction[i]) {
+                final double                     altitude        = station.getBaseFrame().getPoint().getAltitude();
+                final AtmosphericRefractionModel refractionModel = new EarthITU453AtmosphereRefraction(1.0e-3 * altitude);
+                refractionCorrection = new AngularRadioRefractionModifier(refractionModel);
+            } else {
+                refractionCorrection = null;
+            }
             stations.put(stationNames[i], new StationData(station,
                                                           rangeSigma,     rangeBias,
                                                           rangeRateSigma, rangeRateBias,
-                                                          azELSigma,      azELBias));
+                                                          azELSigma,      azELBias,
+                                                          refractionCorrection));
 
         }
 
@@ -877,35 +890,41 @@ public class OrbitDetermination {
         /** Range rate sigma. */
         private final double rangeRateSigma;
 
-        /** Range rate bias (may be if bias is fixed to zero). */
+        /** Range rate bias (may be null if bias is fixed to zero). */
         private final Bias<RangeRate> rangeRateBias;
 
         /** Azimuth-elevation sigma. */
         private final double[] azElSigma;
 
-        /** Azimuth-elevation bias (may be if bias is fixed to zero). */
+        /** Azimuth-elevation bias (may be null if bias is fixed to zero). */
         private final Bias<Angular> azELBias;
+
+        /** Elevation refraction correction (may be null). */
+        private final AngularRadioRefractionModifier refractionCorrection;
 
         /** Simple constructor.
          * @param station ground station
          * @param rangeSigma range sigma
-         * @param rangeBias range bias (may be if bias is fixed to zero)
+         * @param rangeBias range bias (may be null if bias is fixed to zero)
          * @param rangeRateSigma range rate sigma
-         * @param rangeRateBias range rate bias (may be if bias is fixed to zero)
+         * @param rangeRateBias range rate bias (may be null if bias is fixed to zero)
          * @param azElSigma azimuth-elevation sigma
-         * @param azELBias azimuth-elevation bias (may be if bias is fixed to zero)
+         * @param azELBias azimuth-elevation bias (may be null if bias is fixed to zero)
+         * @param refractionCorrection refraction correction for elevation (may be null)
          */
         public StationData(final GroundStation station,
                            final double rangeSigma, final Bias<Range> rangeBias,
                            final double rangeRateSigma, final Bias<RangeRate> rangeRateBias,
-                           final double[] azElSigma, final Bias<Angular> azELBias) {
-            this.station        = station;
-            this.rangeSigma     = rangeSigma;
-            this.rangeBias      = rangeBias;
-            this.rangeRateSigma = rangeRateSigma;
-            this.rangeRateBias  = rangeRateBias;
-            this.azElSigma      = azElSigma.clone();
-            this.azELBias       = azELBias;
+                           final double[] azElSigma, final Bias<Angular> azELBias,
+                           final AngularRadioRefractionModifier refractionCorrection) {
+            this.station              = station;
+            this.rangeSigma           = rangeSigma;
+            this.rangeBias            = rangeBias;
+            this.rangeRateSigma       = rangeRateSigma;
+            this.rangeRateBias        = rangeRateBias;
+            this.azElSigma            = azElSigma.clone();
+            this.azELBias             = azELBias;
+            this.refractionCorrection = refractionCorrection;
         }
 
     }
@@ -1047,6 +1066,9 @@ public class OrbitDetermination {
                                                  },
                                                  stationData.azElSigma,
                                                  weights.azElBaseWeight);
+                if (stationData.refractionCorrection != null) {
+                    azEl.addModifier(stationData.refractionCorrection);
+                }
                 if (stationData.azELBias != null) {
                     azEl.addModifier(stationData.azELBias);
                 }
@@ -1240,6 +1262,7 @@ public class OrbitDetermination {
         GROUND_STATION_ELEVATION_SIGMA,
         GROUND_STATION_ELEVATION_BIAS,
         GROUND_STATION_AZ_EL_BIASES_ESTIMATED,
+        GROUND_STATION_ELEVATION_REFRACTION_CORRECTION,
         RANGE_MEASUREMENTS_BASE_WEIGHT,
         RANGE_RATE_MEASUREMENTS_BASE_WEIGHT,
         AZIMUTH_MEASUREMENTS_BASE_WEIGHT,

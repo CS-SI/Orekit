@@ -163,6 +163,8 @@ ground.station.azimuth.bias              [0] = 0.01
 ground.station.elevation.sigma           [0] = 0.02
 ground.station.elevation.bias            [0] = 0.01
 ground.station.az.el.biases.estimated    [0] = true
+ground.station.az.el.biases.estimated    [0] = true
+ground.station.elevation.refraction.correction [0] = true
 
 ground.station.name                      [1] = Kumsan
 ground.station.latitude                  [1] =   36.1247623774
@@ -180,6 +182,7 @@ ground.station.azimuth.bias              [1] = 0.01
 ground.station.elevation.sigma           [1] = 0.02
 ground.station.elevation.bias            [1] = 0.01
 ground.station.az.el.biases.estimated    [1] = true
+ground.station.elevation.refraction.correction [1] = true
 
 ground.station.name                      [2] = Uralla
 ground.station.latitude                  [2] =  -30.632947613
@@ -197,6 +200,7 @@ ground.station.azimuth.bias              [2] = 0.01
 ground.station.elevation.sigma           [2] = 0.02
 ground.station.elevation.bias            [2] = 0.01
 ground.station.az.el.biases.estimated    [2] = true
+ground.station.elevation.refraction.correction [2] = true
 
 ground.station.name                      [3] = Pretoria
 ground.station.latitude                  [3] =  -25.8854896226
@@ -214,6 +218,7 @@ ground.station.azimuth.bias              [3] = 0.01
 ground.station.elevation.sigma           [3] = 0.02
 ground.station.elevation.bias            [3] = 0.01
 ground.station.az.el.biases.estimated    [3] = true
+ground.station.elevation.refraction.correction [3] = true
 
 ground.station.name                      [4] = CastleRock
 ground.station.latitude                  [4] =   39.2764477379
@@ -231,6 +236,7 @@ ground.station.azimuth.bias              [4] = 0.01
 ground.station.elevation.sigma           [4] = 0.02
 ground.station.elevation.bias            [4] = 0.01
 ground.station.az.el.biases.estimated    [4] = true
+ground.station.elevation.refraction.correction [4] = true
 
 ### Measurements parameters
 outlier.rejection.multiplier         = 6
