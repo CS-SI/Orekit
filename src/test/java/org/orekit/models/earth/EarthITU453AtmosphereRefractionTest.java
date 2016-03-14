@@ -101,7 +101,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assert.assertEquals(refraction, 0.11458177523385392, epsilon);
+        Assert.assertEquals(0.11458177523385392, refraction, epsilon);
     }
     
     @Test
@@ -116,7 +116,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assert.assertEquals(refraction, 0.3550620274090111, epsilon);
+        Assert.assertEquals(0.3550620274090111, refraction, epsilon);
     }
     
     @Test
@@ -134,9 +134,9 @@ public class EarthITU453AtmosphereRefractionTest {
         Assert.assertEquals(refraction, 0.32, onehundredth);
 
         final double thetamin = FastMath.toDegrees(modelTropo.getThetaMin());
-        Assert.assertEquals(thetamin, -0.5402509318003884, epsilon);
+        Assert.assertEquals(-0.5402509318003884, thetamin, epsilon);
         final double theta0 = FastMath.toDegrees(modelTropo.getTheta0());
-        Assert.assertEquals(theta0, -1.4959064751203384, epsilon);
+        Assert.assertEquals(-1.4959064751203384, theta0, epsilon);
         
     }
     
@@ -152,7 +152,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assert.assertEquals(refraction, 0.21, onehundredth);
+        Assert.assertEquals(0.21, refraction, onehundredth);
     }
     
     @Test
@@ -167,7 +167,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assert.assertEquals(refraction, 0.10, twohundredth);
+        Assert.assertEquals(0.10, refraction, twohundredth);
     }
     
     @Test
@@ -182,7 +182,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assert.assertEquals(refraction, 0.02, onehundredth);
+        Assert.assertEquals(0.02, refraction, onehundredth);
     }
 
     @Test
@@ -197,7 +197,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assert.assertEquals(refraction, 0.002, onethousandth);
+        Assert.assertEquals(0.002, refraction, onethousandth);
         
     }
     @Test
@@ -212,7 +212,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assert.assertEquals(refraction, 1.7367073234643113, onethousandth);
+        Assert.assertEquals(1.7367073234643113, refraction, onethousandth);
     }
 
     @Test
@@ -228,7 +228,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
             // refraction correction in arcminutes
             final double refraction = 60.0 * FastMath.toDegrees(modelTropo.getRefraction(elevation));
-            Assert.assertEquals(refraction, ref_refraction[itab], 2.1 );
+            Assert.assertEquals(ref_refraction[itab], refraction, 2.1);
         }
     }
 }
