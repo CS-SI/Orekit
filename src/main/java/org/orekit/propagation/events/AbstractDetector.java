@@ -178,6 +178,7 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward
+     * @since 7.2
      */
     public boolean isForward() {
         return forward;
