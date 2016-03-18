@@ -21,7 +21,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <orekit.findbugs-maven-plugin.version>3.0.1</orekit.findbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.7.4.201502262128</orekit.jacoco-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.7.6.201602180812</orekit.jacoco-maven-plugin.version>
     <orekit.maven-assembly-plugin.version>2.5.4</orekit.maven-assembly-plugin.version>
     <orekit.maven-bundle-plugin.version>2.5.4</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.11</orekit.maven-changes-plugin.version>
