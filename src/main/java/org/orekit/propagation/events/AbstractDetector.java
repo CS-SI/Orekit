@@ -51,6 +51,9 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
     /** Default handler for event overrides. */
     private final EventHandler<? super T> handler;
 
+    /** Propagation direction. */
+    private boolean forward;
+
     /** Build a new instance.
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
@@ -63,11 +66,12 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
         this.threshold = threshold;
         this.maxIter   = maxIter;
         this.handler   = handler;
+        this.forward   = true;
     }
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        // do nothing by default
+        forward = t.durationFrom(s0.getDate()) >= 0.0;
     }
 
     /** {@inheritDoc} */
@@ -171,5 +175,12 @@ public abstract class AbstractDetector<T extends EventDetector> implements Event
      */
     protected abstract T create(final double newMaxCheck, final double newThreshold,
                                 final int newMaxIter, final EventHandler<? super T> newHandler);
+
+    /** Check if the current propagation is forward or backward.
+     * @return true if the current propagation is forward
+     */
+    public boolean isForward() {
+        return forward;
+    }
 
 }

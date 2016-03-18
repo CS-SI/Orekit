@@ -34,12 +34,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** This class implements a simple maneuver with constant thrust.
- * <p>The maneuver is defined by a direction in satelliteframe.
+ * <p>The maneuver is defined by a direction in satellite frame.
  * The current attitude of the spacecraft, defined by the current
  * spacecraft state, will be used to compute the thrust direction in
  * inertial frame. A typical case for tangential maneuvers is to use a
- * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude provider for state propagation and a
- * velocity increment along the +X satellite axis.</p>
+ * {@link org.orekit.attitudes.LofOffset LOF aligned} attitude provider
+ * for state propagation and a velocity increment along the +X satellite axis.</p>
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
@@ -151,9 +151,8 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
             // constant (and null) acceleration when not firing
             final int parameters = mass.getFreeParameters();
             final int order      = mass.getOrder();
-            return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, 0.0),
-                    new DerivativeStructure(parameters, order, 0.0),
-                    new DerivativeStructure(parameters, order, 0.0));
+            final DerivativeStructure zero = new DerivativeStructure(parameters, order, 0.0);
+            return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
         }
     }
 
@@ -223,8 +222,15 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         public EventHandler.Action eventOccurred(final SpacecraftState s,
                                                  final DateDetector detector,
                                                  final boolean increasing) {
-            // start the maneuver
-            firing = true;
+            if (detector.isForward()) {
+                // we are in the forward direction,
+                // starting now, the maneuver is ON as it has just started
+                firing = true;
+            } else {
+                // we are in the backward direction,
+                // starting now, the maneuver is OFF as it has not started yet
+                firing = false;
+            }
             return EventHandler.Action.RESET_DERIVATIVES;
         }
 
@@ -244,7 +250,15 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
                                                  final DateDetector detector,
                                                  final boolean increasing) {
             // stop the maneuver
-            firing = false;
+            if (detector.isForward()) {
+                // we are in the forward direction,
+                // starting now, the maneuver is OFF as it has just ended
+                firing = false;
+            } else {
+                // we are in the backward direction,
+                // starting now, the maneuver is ON as it has not ended yet
+                firing = true;
+            }
             return EventHandler.Action.RESET_DERIVATIVES;
         }
 
