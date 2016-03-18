@@ -249,7 +249,6 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         public EventHandler.Action eventOccurred(final SpacecraftState s,
                                                  final DateDetector detector,
                                                  final boolean increasing) {
-            // stop the maneuver
             if (detector.isForward()) {
                 // we are in the forward direction,
                 // starting now, the maneuver is OFF as it has just ended
