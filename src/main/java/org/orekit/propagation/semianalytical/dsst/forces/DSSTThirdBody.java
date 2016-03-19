@@ -1120,11 +1120,11 @@ public class DSSTThirdBody implements DSSTForceModel {
             final int absJpS = FastMath.abs(j + s);
 
             //The lower index of P. Also the power of (1 - c²)
-            int l;
+            final int l;
             // the factorial ratio coefficient or 1. if |s| <= |j|
-            double factCoef;
+            final double factCoef;
             if (absS > absJ) {
-                factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact [n - j]);
+                factCoef = (fact[n + s] / fact[n + j]) * (fact[n - s] / fact[n - j]);
                 l = n - absS;
             } else {
                 factCoef = 1.;

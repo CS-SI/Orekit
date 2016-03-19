@@ -914,14 +914,12 @@ class ZonalContribution implements DSSTForceModel {
 
         final double[][] rhoSigma = new double[slot.cij.length][2];
         for (int j = 1; j < rhoSigma.length; j++) {
-            double rho;
-            double sigma;
 
             //Compute current rho and sigma;
             mbtj *= -b;
-            final double coef = (1 + j * B) * mbtj;
-            rho = coef * cjsjKH.getCj(j);
-            sigma = coef * cjsjKH.getSj(j);
+            final double coef  = (1 + j * B) * mbtj;
+            final double rho   = coef * cjsjKH.getCj(j);
+            final double sigma = coef * cjsjKH.getSj(j);
 
             // Add the coefficients to the interpolation grid
             rhoSigma[j][0] = rho;

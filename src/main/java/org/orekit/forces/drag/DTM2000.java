@@ -703,13 +703,12 @@ public class DTM2000 implements Atmosphere {
     private double semestrialCorrection(final double param) {
         final int debeq_pr = 59;
         final int debeq_au = 244;
-        double xmult;
-        double result;
+        final double result;
         if (cachedDay >= 100) {
-            xmult  = (cachedDay - debeq_au) / 40.0;
+            final double xmult  = (cachedDay - debeq_au) / 40.0;
             result = param - 2.0 * param * xmult;
         } else {
-            xmult  = (cachedDay - debeq_pr) / 40.0;
+            final double xmult  = (cachedDay - debeq_pr) / 40.0;
             result = 2.0 * param * xmult - param;
         }
         return result;

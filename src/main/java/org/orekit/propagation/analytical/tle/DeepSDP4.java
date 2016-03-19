@@ -372,12 +372,12 @@ public class DeepSDP4 extends SDP4 {
                                          6.56250012 * (1 + 2 * cosi0 - 3 * theta2));
             final double f542 = 29.53125 * sini0 * (2 - 8 * cosi0 + theta2 * (-12 + 8 * cosi0 + 10 * theta2));
             final double f543 = 29.53125 * sini0 * (-2 - 8 * cosi0 + theta2 * (12 + 8 * cosi0 - 10 * theta2));
-            double g211;
-            double g310;
-            double g322;
-            double g410;
-            double g422;
-            double g520;
+            final double g211;
+            final double g310;
+            final double g322;
+            final double g410;
+            final double g422;
+            final double g520;
 
             resonant = true;       // it is resonant...
             synchronous = false;     // but it's not synchronous
@@ -403,9 +403,9 @@ public class DeepSDP4 extends SDP4 {
                 }
             }
 
-            double g533;
-            double g521;
-            double g532;
+            final double g533;
+            final double g521;
+            final double g532;
             if (tle.getE() < 0.7) {
                 g533 = -919.2277  + 4988.61   * tle.getE() - 9064.77   * e0sq + 5542.21  * eoc;
                 g521 = -822.71072 + 4568.6173 * tle.getE() - 8491.4146 * e0sq + 5337.524 * eoc;

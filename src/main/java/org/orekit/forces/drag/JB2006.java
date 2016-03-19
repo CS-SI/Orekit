@@ -405,8 +405,8 @@ public class JB2006 implements Atmosphere {
                 }
                 SUM3 = SUM3 + DZ * SUM1;
             }
-            double ALTR;
-            double HSIGN;
+            final double ALTR;
+            final double HSIGN;
             if (scaledSatAlt <= 500.) {
                 temp[2] = TLOC3;
                 ALTR = FastMath.log(TLOC3 / TLOC2);
