@@ -16,11 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
@@ -310,8 +313,10 @@ public class DSSTThirdBody implements DSSTForceModel {
         maxEccPowShort = MAX_ECCPOWER_SP;
 
         Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
-        shortPeriods = new ThirdBodyShortPeriodicCoefficients(maxAR3Pow + 1, INTERPOLATION_POINTS,
-                                                              maxFreqF, body.getName());
+        final int jMax = maxAR3Pow + 1;
+        shortPeriods = new ThirdBodyShortPeriodicCoefficients(jMax, INTERPOLATION_POINTS,
+                                                              maxFreqF, body.getName(),
+                                                              new TimeSpanMap<Slot>(new Slot(jMax, INTERPOLATION_POINTS)));
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
         list.add(shortPeriods);
@@ -1856,7 +1861,7 @@ public class DSSTThirdBody implements DSSTForceModel {
         private final String prefix;
 
         /** All coefficients slots. */
-        private final TimeSpanMap<Slot> slots;
+        private final transient TimeSpanMap<Slot> slots;
 
         /**
          * Standard constructor.
@@ -1864,14 +1869,16 @@ public class DSSTThirdBody implements DSSTForceModel {
          * @param jMax maximal value for j
          * @param maxFreqF Max frequency of F
          * @param bodyName third body name
+         * @param slots all coefficients slots
          */
         ThirdBodyShortPeriodicCoefficients(final int jMax, final int interpolationPoints,
-                                           final int maxFreqF, final String bodyName) {
+                                           final int maxFreqF, final String bodyName,
+                                           final TimeSpanMap<Slot> slots) {
             this.jMax                = jMax;
             this.interpolationPoints = interpolationPoints;
             this.maxFreqF            = maxFreqF;
             this.prefix              = "DSST-3rd-body-" + bodyName + "-";
-            this.slots               = new TimeSpanMap<Slot>(new Slot(jMax, interpolationPoints));
+            this.slots               = slots;
         }
 
         /** Get the slot valid for some date.
@@ -1972,10 +1979,102 @@ public class DSSTThirdBody implements DSSTForceModel {
             }
         }
 
+        /** Replace the instance with a data transfer object for serialization.
+         * @return data transfer object that will be serialized
+         * @exception NotSerializableException if an additional state provider is not serializable
+         */
+        private Object writeReplace() throws NotSerializableException {
+
+            // slots transitions
+            final SortedSet<TimeSpanMap.Transition<Slot>> transitions     = slots.getTransitions();
+            final AbsoluteDate[]                          transitionDates = new AbsoluteDate[transitions.size()];
+            final Slot[]                                  allSlots        = new Slot[transitions.size() + 1];
+            int i = 0;
+            for (final TimeSpanMap.Transition<Slot> transition : transitions) {
+                if (i == 0) {
+                    // slot before the first transition
+                    allSlots[i] = transition.getBefore();
+                }
+                if (i < transitionDates.length) {
+                    transitionDates[i] = transition.getDate();
+                    allSlots[++i]      = transition.getAfter();
+                }
+            }
+
+            return new DataTransferObject(jMax, interpolationPoints, maxFreqF, prefix,
+                                          transitionDates, allSlots);
+
+        }
+
+
+        /** Internal class used only for serialization. */
+        private static class DataTransferObject implements Serializable {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = 20160319L;
+
+            /** Maximum value for j index. */
+            private final int jMax;
+
+            /** Number of points used in the interpolation process. */
+            private final int interpolationPoints;
+
+            /** Max frequency of F. */
+            private final int    maxFreqF;
+
+            /** Coefficients prefix. */
+            private final String prefix;
+
+            /** Transitions dates. */
+            private final AbsoluteDate[] transitionDates;
+
+            /** All slots. */
+            private final Slot[] allSlots;
+
+            /** Simple constructor.
+             * @param jMax maximum value for j index
+             * @param interpolationPoints number of points used in the interpolation process
+             * @param maxFreqF max frequency of F
+             * @param prefix prefix for coefficients keys
+             * @param transitionDates transitions dates
+             * @param allSlots all slots
+             */
+            DataTransferObject(final int jMax, final int interpolationPoints,
+                               final int maxFreqF, final String prefix,
+                               final AbsoluteDate[] transitionDates, final Slot[] allSlots) {
+                this.jMax                  = jMax;
+                this.interpolationPoints   = interpolationPoints;
+                this.maxFreqF              = maxFreqF;
+                this.prefix                = prefix;
+                this.transitionDates       = transitionDates;
+                this.allSlots              = allSlots;
+            }
+
+            /** Replace the deserialized data transfer object with a {@link GaussianShortPeriodicCoefficients}.
+             * @return replacement {@link GaussianShortPeriodicCoefficients}
+             */
+            private Object readResolve() {
+
+                final TimeSpanMap<Slot> slots = new TimeSpanMap<Slot>(allSlots[0]);
+                if (transitionDates != null) {
+                    for (int i = 0; i < transitionDates.length; ++i) {
+                        slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
+                    }
+                }
+
+                return new ThirdBodyShortPeriodicCoefficients(jMax, interpolationPoints, maxFreqF, prefix, slots);
+
+            }
+
+        }
+
     }
 
     /** Coefficients valid for one time slot. */
-    private static class Slot {
+    private static class Slot implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20160319L;
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>
