@@ -42,6 +42,7 @@
       <Class name="~.*\.FootprintOverlapDetector$" />
       <Class name="~.*\.GeographicZoneDetector$" />
       <Class name="~.*\.SaastamoinenModel$" />
+      <Class name="~.*\.EventEnablingPredicateFilter$" />
     </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>
