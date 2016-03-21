@@ -1498,8 +1498,8 @@ class TesseralContribution implements DSSTForceModel {
                 this.allSlots                 = allSlots;
             }
 
-            /** Replace the deserialized data transfer object with a {@link GaussianShortPeriodicCoefficients}.
-             * @return replacement {@link GaussianShortPeriodicCoefficients}
+            /** Replace the deserialized data transfer object with a {@link TesseralShortPeriodicCoefficients}.
+             * @return replacement {@link TesseralShortPeriodicCoefficients}
              */
             private Object readResolve() {
 
