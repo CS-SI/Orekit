@@ -1504,10 +1504,8 @@ class TesseralContribution implements DSSTForceModel {
             private Object readResolve() {
 
                 final TimeSpanMap<Slot> slots = new TimeSpanMap<Slot>(allSlots[0]);
-                if (transitionDates != null) {
-                    for (int i = 0; i < transitionDates.length; ++i) {
-                        slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
-                    }
+                for (int i = 0; i < transitionDates.length; ++i) {
+                    slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
                 }
 
                 return new TesseralShortPeriodicCoefficients(bodyFrame, maxOrderMdailyTesseralSP, mDailiesOnly,
