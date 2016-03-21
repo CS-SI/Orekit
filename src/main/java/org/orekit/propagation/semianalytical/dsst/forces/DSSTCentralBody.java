@@ -37,14 +37,16 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  *  </p>
  *
  *   @author Pascal Parraud
+ *   @deprecated as of 7.2, replaced by {@link DSSTZonal} and {@link DSSTTesseral}
  */
+@Deprecated
 public class DSSTCentralBody implements DSSTForceModel {
 
     /** Zonal harmonics contribution. */
-    private final ZonalContribution    zonal;
+    private final DSSTZonal    zonal;
 
     /** Tesseral harmonics contribution. */
-    private final TesseralContribution tesseral;
+    private final DSSTTesseral tesseral;
 
     /** DSST Central body constructor.
      * <p>
@@ -109,16 +111,16 @@ public class DSSTCentralBody implements DSSTForceModel {
                            final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP) {
 
         // Zonal harmonics contribution
-        this.zonal = new ZonalContribution(provider, maxDegreeZonalSP);
+        this.zonal = new DSSTZonal(provider, maxDegreeZonalSP);
 
         // Tesseral harmonics contribution (only if order > 0)
         this.tesseral = (provider.getMaxOrder() == 0) ?
-                        null : new TesseralContribution(centralBodyFrame,
-                                                        centralBodyRotationRate,
-                                                        provider,
-                                                        maxDegreeTesseralSP, maxOrderTesseralSP,
-                                                        maxDegreeMdailyTesseralSP,
-                                                        maxOrderMdailyTesseralSP);
+                        null : new DSSTTesseral(centralBodyFrame,
+                                                centralBodyRotationRate,
+                                                provider,
+                                                maxDegreeTesseralSP, maxOrderTesseralSP,
+                                                maxDegreeMdailyTesseralSP,
+                                                maxOrderMdailyTesseralSP);
 
     }
 

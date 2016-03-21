@@ -60,7 +60,7 @@ import org.orekit.utils.TimeSpanMap;
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
  */
-class TesseralContribution implements DSSTForceModel {
+public class DSSTTesseral implements DSSTForceModel {
 
     /** Minimum period for analytically averaged high-order resonant
      *  central body spherical harmonics in seconds.
@@ -256,11 +256,11 @@ class TesseralContribution implements DSSTForceModel {
      *  (the real order used may be smaller if the provider does not provide enough terms)
      * @since 7.1
      */
-    TesseralContribution(final Frame centralBodyFrame,
-                         final double centralBodyRotationRate,
-                         final UnnormalizedSphericalHarmonicsProvider provider,
-                         final int maxDegreeTesseralSP, final int maxOrderTesseralSP,
-                         final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP) {
+    public DSSTTesseral(final Frame centralBodyFrame,
+                        final double centralBodyRotationRate,
+                        final UnnormalizedSphericalHarmonicsProvider provider,
+                        final int maxDegreeTesseralSP, final int maxOrderTesseralSP,
+                        final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP) {
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;

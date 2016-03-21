@@ -51,7 +51,7 @@ import org.orekit.utils.TimeSpanMap;
  *   @author Romain Di Costanzo
  *   @author Pascal Parraud
  */
-class ZonalContribution implements DSSTForceModel {
+public class DSSTZonal implements DSSTForceModel {
 
     /** Truncation tolerance. */
     private static final double TRUNCATION_TOLERANCE = 1e-4;
@@ -81,7 +81,7 @@ class ZonalContribution implements DSSTForceModel {
     private final int maxDegree;
 
     /** Maximal degree to consider for harmonics potential. */
-    private int maxDegreeShortPeriodics;
+    private final int maxDegreeShortPeriodics;
 
     /** Maximal degree to consider for harmonics potential in short periodic computations. */
     private final int maxOrder;
@@ -190,8 +190,8 @@ class ZonalContribution implements DSSTForceModel {
      *  (the real degree used may be smaller if the provider does not provide enough terms)
      * @since 7.1
      */
-    ZonalContribution(final UnnormalizedSphericalHarmonicsProvider provider,
-                      final int maxDegreeZonalSP) {
+    public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
+                     final int maxDegreeZonalSP) {
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();

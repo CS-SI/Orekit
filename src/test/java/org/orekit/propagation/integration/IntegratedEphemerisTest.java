@@ -59,9 +59,10 @@ import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -237,8 +238,9 @@ public class IntegratedEphemerisTest {
         final CelestialBody sun  = CelestialBodyFactory.getSun();
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(20.0, 2.0);
-        dsstProp.addForceModel(new DSSTCentralBody(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                   gravity, 8, 8, 8, 8, 8));
+        dsstProp.addForceModel(new DSSTZonal(gravity, 8));
+        dsstProp.addForceModel(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                gravity, 8, 8, 8, 8));
         dsstProp.addForceModel(new DSSTThirdBody(sun));
         dsstProp.addForceModel(new DSSTThirdBody(moon));
         dsstProp.addForceModel(new DSSTSolarRadiationPressure(sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS, spacecraft));
