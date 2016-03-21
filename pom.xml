@@ -40,7 +40,7 @@
     <orekit.maven-surefire-plugin.version>2.19.1</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>2.19.1</orekit.maven-surefire-report-plugin.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
-    <orekit.apache-commons-math.version>3.6</orekit.apache-commons-math.version>
+    <orekit.apache-commons-math.version>3.6.1</orekit.apache-commons-math.version>
     <orekit.junit.version>4.12</orekit.junit.version>
     <orekit.compiler.source>1.6</orekit.compiler.source>
     <orekit.compiler.target>1.6</orekit.compiler.target>
