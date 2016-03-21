@@ -92,9 +92,6 @@ class ZonalContribution implements DSSTForceModel {
     /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
     private final TreeMap<NSKey, Double> Vns;
 
-    /** Highest power of the eccentricity to be used in series expansion. */
-    private int maxEccPow;
-
     /** Highest power of the eccentricity to be used in mean elements computations. */
     private int maxEccPowMeanElements;
 
@@ -215,8 +212,7 @@ class ZonalContribution implements DSSTForceModel {
         }
 
         // Initialize default values
-        this.maxEccPow = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
-        this.maxEccPowMeanElements = maxEccPow;
+        this.maxEccPowMeanElements   = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
         this.maxEccPowShortPeriodics = maxDegree - 1;
 
     }
@@ -245,6 +241,7 @@ class ZonalContribution implements DSSTForceModel {
 
         computeMeanElementsTruncations(aux);
 
+        final int maxEccPow;
         if (!meanOnly) {
             maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
         } else {
@@ -624,7 +621,8 @@ class ZonalContribution implements DSSTForceModel {
 
             // generate the Cij and Sij coefficients
             final FourierCjSjCoefficients cjsj = new FourierCjSjCoefficients(meanState.getDate(),
-                                                                             maxDegreeShortPeriodics, maxEccPow);
+                                                                             maxDegreeShortPeriodics,
+                                                                             maxEccPowShortPeriodics);
             computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma);
         }
 
