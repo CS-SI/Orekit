@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -96,7 +97,10 @@ public class DSSTZonal implements DSSTForceModel {
     private int maxEccPowMeanElements;
 
     /** Highest power of the eccentricity to be used in short periodic computations. */
-    private int maxEccPowShortPeriodics;
+    private final int maxEccPowShortPeriodics;
+
+    /** Maximum frequency in true longitude for short periodic computations. */
+    private final int maxFrequencyShortPeriodics;
 
     /** Short period terms. */
     private ZonalShortPeriodicCoefficients zonalSPCoefs;
@@ -186,19 +190,33 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** Simple constructor.
      * @param provider provider for spherical harmonics
-     * @param maxDegreeZonalSP maximal degree to consider for short periodics zonal harmonics potential
-     *  (the real degree used may be smaller if the provider does not provide enough terms)
-     * @since 7.1
+     * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
+     * (must be between 2 and {@code provider.getMaxDegree()})
+     * @param maxEccPowShortPeriodics maximum power of the eccentricity to be used in short periodic computations
+     * (must be between 0 and {@code maxDegreeShortPeriodics - 1})
+     * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
+     * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
+     * @exception OrekitException if degrees or powers are out of range
+     * @since 7.2
      */
     public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
-                     final int maxDegreeZonalSP) {
+                     final int maxDegreeShortPeriodics,
+                     final int maxEccPowShortPeriodics,
+                     final int maxFrequencyShortPeriodics)
+        throws OrekitException {
 
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
         this.maxOrder  = provider.getMaxOrder();
 
-        maxDegreeShortPeriodics = FastMath.min(maxDegree, maxDegreeZonalSP);
-        maxEccPowShortPeriodics = FastMath.min(maxDegreeShortPeriodics - 1, 4);
+        checkIndexRange(maxDegreeShortPeriodics, 2, maxDegree);
+        this.maxDegreeShortPeriodics = maxDegreeShortPeriodics;
+
+        checkIndexRange(maxEccPowShortPeriodics, 0, maxDegreeShortPeriodics - 1);
+        this.maxEccPowShortPeriodics = maxEccPowShortPeriodics;
+
+        checkIndexRange(maxFrequencyShortPeriodics, 1, 2 * maxDegreeShortPeriodics + 1);
+        this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
 
         // Vns coefficients
         this.Vns = CoefficientsFactory.computeVns(maxDegree + 1);
@@ -212,9 +230,24 @@ public class DSSTZonal implements DSSTForceModel {
         }
 
         // Initialize default values
-        this.maxEccPowMeanElements   = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
-        this.maxEccPowShortPeriodics = maxDegree - 1;
+        this.maxEccPowMeanElements = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
 
+    }
+
+    /** Check an index range.
+     * @param index index value
+     * @param min minimum value for index
+     * @param max maximum value for index
+     * @exception OrekitException if index is out of range
+     */
+    private void checkIndexRange(final int index, final int min, final int max)
+        throws OrekitException {
+        if (index < min) {
+            throw new OrekitException(LocalizedFormats.NUMBER_TOO_SMALL, index, min);
+        }
+        if (index > max) {
+            throw new OrekitException(LocalizedFormats.NUMBER_TOO_LARGE, index, max);
+        }
     }
 
     /** Get the spherical harmonics provider.
@@ -255,10 +288,11 @@ public class DSSTZonal implements DSSTForceModel {
             this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
         }
 
-        final int jMax = 2 * maxDegreeShortPeriodics + 1;
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
-        zonalSPCoefs = new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics, jMax, INTERPOLATION_POINTS,
-                                                          new TimeSpanMap<Slot>(new Slot(jMax, INTERPOLATION_POINTS)));
+        zonalSPCoefs = new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics, maxFrequencyShortPeriodics,
+                                                          INTERPOLATION_POINTS,
+                                                          new TimeSpanMap<Slot>(new Slot(maxFrequencyShortPeriodics,
+                                                                                         INTERPOLATION_POINTS)));
         list.add(zonalSPCoefs);
         return list;
 
@@ -354,7 +388,7 @@ public class DSSTZonal implements DSSTForceModel {
                     // Proceed to next order.
                     m++;
                 } while (m <= FastMath.min(n, maxOrder));
-                // Procced to next degree.
+                // Proceed to next degree.
                 xmuran *= ax2or;
                 n--;
             } while (n > maxEccPowMeanElements + 2);
@@ -622,7 +656,8 @@ public class DSSTZonal implements DSSTForceModel {
             // generate the Cij and Sij coefficients
             final FourierCjSjCoefficients cjsj = new FourierCjSjCoefficients(meanState.getDate(),
                                                                              maxDegreeShortPeriodics,
-                                                                             maxEccPowShortPeriodics);
+                                                                             maxEccPowShortPeriodics,
+                                                                             maxFrequencyShortPeriodics);
             computeCijSijCoefficients(meanState.getDate(), slot, cjsj, rhoSigma);
         }
 
@@ -955,7 +990,7 @@ public class DSSTZonal implements DSSTForceModel {
         private final int maxDegreeShortPeriodics;
 
         /** Maximum value for j index. */
-        private final int jMax;
+        private final int maxFrequencyShortPeriodics;
 
         /** Number of points used in the interpolation process. */
         private final int interpolationPoints;
@@ -965,19 +1000,19 @@ public class DSSTZonal implements DSSTForceModel {
 
         /** Constructor.
          * @param maxDegreeShortPeriodics maximal degree to consider for harmonics potential
-         * @param jMax maximum value for j index
+         * @param maxFrequencyShortPeriodics maximum value for j index
          * @param interpolationPoints number of points used in the interpolation process
          * @param slots all coefficients slots
          */
         ZonalShortPeriodicCoefficients(final int maxDegreeShortPeriodics,
-                                       final int jMax, final int interpolationPoints,
+                                       final int maxFrequencyShortPeriodics, final int interpolationPoints,
                                        final TimeSpanMap<Slot> slots) {
 
             // Save parameters
-            this.maxDegreeShortPeriodics = maxDegreeShortPeriodics;
-            this.jMax                    = jMax;
-            this.interpolationPoints     = interpolationPoints;
-            this.slots                   = slots;
+            this.maxDegreeShortPeriodics    = maxDegreeShortPeriodics;
+            this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
+            this.interpolationPoints        = interpolationPoints;
+            this.slots                      = slots;
 
         }
 
@@ -986,7 +1021,7 @@ public class DSSTZonal implements DSSTForceModel {
          * @return slot valid at the specified date
          */
         public Slot createSlot(final SpacecraftState ... meanStates) {
-            final Slot         slot  = new Slot(jMax, interpolationPoints);
+            final Slot         slot  = new Slot(maxFrequencyShortPeriodics, interpolationPoints);
             final AbsoluteDate first = meanStates[0].getDate();
             final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
             if (first.compareTo(last) <= 0) {
@@ -1113,7 +1148,7 @@ public class DSSTZonal implements DSSTForceModel {
             }
 
             return new DataTransferObject(maxDegreeShortPeriodics,
-                                          jMax, interpolationPoints,
+                                          maxFrequencyShortPeriodics, interpolationPoints,
                                           transitionDates, allSlots);
 
         }
@@ -1129,7 +1164,7 @@ public class DSSTZonal implements DSSTForceModel {
             private final int maxDegreeShortPeriodics;
 
             /** Maximum value for j index. */
-            private final int jMax;
+            private final int maxFrequencyShortPeriodics;
 
             /** Number of points used in the interpolation process. */
             private final int interpolationPoints;
@@ -1142,19 +1177,19 @@ public class DSSTZonal implements DSSTForceModel {
 
             /** Simple constructor.
              * @param maxDegreeShortPeriodics maximal degree to consider for harmonics potential
-             * @param jMax maximum value for j index
+             * @param maxFrequencyShortPeriodics maximum value for j index
              * @param interpolationPoints number of points used in the interpolation process
              * @param transitionDates transitions dates
              * @param allSlots all slots
              */
             DataTransferObject(final int maxDegreeShortPeriodics,
-                               final int jMax, final int interpolationPoints,
+                               final int maxFrequencyShortPeriodics, final int interpolationPoints,
                                final AbsoluteDate[] transitionDates, final Slot[] allSlots) {
-                this.maxDegreeShortPeriodics = maxDegreeShortPeriodics;
-                this.jMax                    = jMax;
-                this.interpolationPoints     = interpolationPoints;
-                this.transitionDates         = transitionDates;
-                this.allSlots                = allSlots;
+                this.maxDegreeShortPeriodics    = maxDegreeShortPeriodics;
+                this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
+                this.interpolationPoints        = interpolationPoints;
+                this.transitionDates            = transitionDates;
+                this.allSlots                   = allSlots;
             }
 
             /** Replace the deserialized data transfer object with a {@link ZonalShortPeriodicCoefficients}.
@@ -1167,7 +1202,10 @@ public class DSSTZonal implements DSSTForceModel {
                     slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
                 }
 
-                return new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics, jMax, interpolationPoints, slots);
+                return new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics,
+                                                          maxFrequencyShortPeriodics,
+                                                          interpolationPoints,
+                                                          slots);
 
             }
 
@@ -1234,9 +1272,11 @@ public class DSSTZonal implements DSSTForceModel {
          *  @param date the current date
          *  @param nMax maximum possible value for n
          *  @param sMax maximum possible value for s
+         *  @param jMax maximum possible value for j
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        FourierCjSjCoefficients(final AbsoluteDate date, final int nMax, final int sMax)
+        FourierCjSjCoefficients(final AbsoluteDate date,
+                                final int nMax, final int sMax, final int jMax)
                 throws OrekitException {
             this.ghijCoef = new GHIJjsPolynomials(k, h, alpha, beta);
             // Qns coefficients
@@ -1245,7 +1285,7 @@ public class DSSTZonal implements DSSTForceModel {
             this.lnsCoef = new LnsCoefficients(nMax, nMax, Qns, Vns, roa);
             this.nMax = nMax;
             this.sMax = sMax;
-            this.jMax = 2 * nMax - 1;
+            this.jMax = jMax;
 
             // compute the common factors that depends on the mean elements
             this.hXXX = h * XXX;
@@ -2022,18 +2062,18 @@ public class DSSTZonal implements DSSTForceModel {
         private final ShortPeriodicsInterpolatedCoefficient[] sij;
 
         /** Simple constructor.
-         *  @param jMax maximum value for j index
+         *  @param maxFrequencyShortPeriodics maximum value for j index
          *  @param interpolationPoints number of points used in the interpolation process
          */
-        Slot(final int jMax, final int interpolationPoints) {
+        Slot(final int maxFrequencyShortPeriodics, final int interpolationPoints) {
 
-            final int rows = jMax + 1;
+            final int rows = maxFrequencyShortPeriodics + 1;
             di  = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
             cij = new ShortPeriodicsInterpolatedCoefficient[rows];
             sij = new ShortPeriodicsInterpolatedCoefficient[rows];
 
             //Initialize the arrays
-            for (int j = 0; j <= jMax; j++) {
+            for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
                 cij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
                 sij[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
             }

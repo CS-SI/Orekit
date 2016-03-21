@@ -153,11 +153,13 @@ central.body.degree = 36
 ## Central body gravity potential order
 central.body.order  =  0
 ## short period limits
-max.degree.zonal.short.periods              = 12
-max.degree.tesseral.short.periods           =  8
-max.order.tesseral.short.periods            =  8
-max.degree.tesseral.m.dailies.short.periods = 12
-max.order.tesseral.m.dailies.short.periods  = 12
+max.degree.zonal.short.periods                    = 12
+max.eccentricity.power.zonal.short.periods        = 11
+max.frequency.true.longitude.zonal.short.periods  = 25
+max.degree.tesseral.short.periods                 =  8
+max.order.tesseral.short.periods                  =  8
+max.degree.tesseral.m.dailies.short.periods       = 12
+max.order.tesseral.m.dailies.short.periods        = 12
 
 ## 3rd body Moon (true/false) [false]
 third.body.moon = false

@@ -176,6 +176,8 @@ public class DSSTPropagation {
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
         MAX_DEGREE_ZONAL_SHORT_PERIODS,
+        MAX_ECCENTRICITY_POWER_ZONAL_SHORT_PERIODS,
+        MAX_FREQUENCY_TRUE_LONGITUDE_ZONAL_SHORT_PERIODS,
         MAX_DEGREE_TESSERAL_SHORT_PERIODS,
         MAX_ORDER_TESSERAL_SHORT_PERIODS,
         MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS,
@@ -560,9 +562,10 @@ public class DSSTPropagation {
 
         // Central Body Force Model with un-normalized coefficients
         dsstProp.addForceModel(new DSSTZonal(unnormalized,
-                                             parser.getInt(ParameterKey.MAX_DEGREE_ZONAL_SHORT_PERIODS)));
-        dsstProp.addForceModel(new DSSTTesseral(earthFrame, rotationRate,
-                                                unnormalized,
+                                             parser.getInt(ParameterKey.MAX_DEGREE_ZONAL_SHORT_PERIODS),
+                                             parser.getInt(ParameterKey.MAX_ECCENTRICITY_POWER_ZONAL_SHORT_PERIODS),
+                                             parser.getInt(ParameterKey.MAX_FREQUENCY_TRUE_LONGITUDE_ZONAL_SHORT_PERIODS)));
+        dsstProp.addForceModel(new DSSTTesseral(earthFrame, rotationRate, unnormalized,
                                                 parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_SHORT_PERIODS),
                                                 parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_SHORT_PERIODS),
                                                 parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS),

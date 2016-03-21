@@ -238,7 +238,7 @@ public class IntegratedEphemerisTest {
         final CelestialBody sun  = CelestialBodyFactory.getSun();
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(20.0, 2.0);
-        dsstProp.addForceModel(new DSSTZonal(gravity, 8));
+        dsstProp.addForceModel(new DSSTZonal(gravity, 8, 7, 17));
         dsstProp.addForceModel(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY,
                                                 gravity, 8, 8, 8, 8));
         dsstProp.addForceModel(new DSSTThirdBody(sun));

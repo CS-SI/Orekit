@@ -18,8 +18,10 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.List;
 
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -109,19 +111,28 @@ public class DSSTCentralBody implements DSSTForceModel {
                            final int maxDegreeZonalSP,
                            final int maxDegreeTesseralSP, final int maxOrderTesseralSP,
                            final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP) {
+        try {
 
-        // Zonal harmonics contribution
-        this.zonal = new DSSTZonal(provider, maxDegreeZonalSP);
+            // Zonal harmonics contribution
+            final int maxDegreeZonalShortPeriodics = FastMath.min(provider.getMaxDegree(), maxDegreeZonalSP);
+            final int maxEccPowZonalShortPeriodics = FastMath.min(maxDegreeZonalShortPeriodics - 1, 4);
+            this.zonal = new DSSTZonal(provider,
+                                       maxDegreeZonalShortPeriodics,
+                                       maxEccPowZonalShortPeriodics,
+                                       2 * maxDegreeZonalShortPeriodics + 1);
 
-        // Tesseral harmonics contribution (only if order > 0)
-        this.tesseral = (provider.getMaxOrder() == 0) ?
-                        null : new DSSTTesseral(centralBodyFrame,
-                                                centralBodyRotationRate,
-                                                provider,
-                                                maxDegreeTesseralSP, maxOrderTesseralSP,
-                                                maxDegreeMdailyTesseralSP,
-                                                maxOrderMdailyTesseralSP);
-
+            // Tesseral harmonics contribution (only if order > 0)
+            this.tesseral = (provider.getMaxOrder() == 0) ?
+                            null : new DSSTTesseral(centralBodyFrame,
+                                                    centralBodyRotationRate,
+                                                    provider,
+                                                    maxDegreeTesseralSP, maxOrderTesseralSP,
+                                                    maxDegreeMdailyTesseralSP,
+                                                    maxOrderMdailyTesseralSP);
+        } catch (OrekitException oe) {
+            // this should never happen
+            throw new OrekitInternalError(oe);
+        }
     }
 
     /** {@inheritDoc} */
