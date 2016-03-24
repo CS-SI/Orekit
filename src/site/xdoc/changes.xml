@@ -22,6 +22,10 @@
   <body>
     <release version="7.2" date="TBC"
              description="">
+      <action dev="luc" type="fix">
+        Fixed Newcomb operators generation in DSST for high degree gravity fields.
+        Fixes issue #237
+      </action>
       <action dev="luc" type="update">
         Improved tuning of DSST zonal force models. Users can now tune max degree,
         max eccentricity power and max frequency in true longitude for short

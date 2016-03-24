@@ -44,6 +44,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.HarrisPriester;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.TideSystem;
@@ -79,12 +80,42 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class DSSTPropagatorTest {
 
     private DSSTPropagator dsstProp;
+
+    @Test
+    public void testHighDegreesSetting() throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        int earthDegree = 36;
+        int earthOrder  = 36;
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                        GravityFieldFactory.getUnnormalizedProvider(earthDegree,
+                                                                    earthOrder);
+        final org.orekit.frames.Frame earthFrame
+        =FramesFactory.getITRF(IERSConventions.IERS_2010,true); // terrestrial frame
+        final DSSTForceModel force = new
+                        DSSTTesseral(earthFrame,Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
+                                     earthDegree, earthOrder, earthDegree, earthOrder);
+        final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
+        forces.add(force);
+        TimeScale tai = TimeScalesFactory.getTAI();
+        AbsoluteDate initialDate = new AbsoluteDate("2015-07-01", tai);
+        Frame eci = FramesFactory.getGCRF();
+        KeplerianOrbit orbit = new KeplerianOrbit(
+                7120000.0, 1.0e-3, FastMath.toRadians(60.0),
+                FastMath.toRadians(120.0), FastMath.toRadians(47.0),
+                FastMath.toRadians(12.0),
+                PositionAngle.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
+        SpacecraftState oscuState = DSSTPropagator.computeOsculatingState(new SpacecraftState(orbit), forces);
+        Assert.assertEquals(7119927.097122, oscuState.getA(), 0.001);
+    }
 
     @Test
     public void testEphemerisDates() throws OrekitException {
