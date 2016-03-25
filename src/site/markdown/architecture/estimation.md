@@ -64,8 +64,9 @@ needs, users are expected to implement their own implementations. This ensures t
 
 The `leastsquares` package provides an implementation of a batch least squares estimator engine to perform an orbit
 determination. Users will typically create one instance of this object, register all observation data as measurements
-with their included modifiers, and run the least squares filter. At the end of the process, the orbital state and the
-estimated parameters will be available.
+with their included modifiers, and run the least squares filter. At the end of the process, a fully configured propagator
+is returned, including the estimated orbit as the initial state and the estimated propagator parameters. The estimated
+measurement and propagator parameters can also be retrieved by themselves.
 
 The `BatchLSEstimator` class creates an internal implementation of Apache Commons Math `LeastSquaresProblem` interface
 to represent the orbit determination problem and passes it to one of the `LeastSquaresOptimizer` implementations to
@@ -79,7 +80,7 @@ and Jacobians from the propagator side, it calls the measurement methods to get 
 derivatives on the measurements side, and it fetches the least squares estimator with the combined values, to be
 provided back to the Apache Commons Math algorithm, thus closing the loop.
 
-The orbital state is always estimated. Users can also estimate some model or measurements parameters. These parameters
+The orbital state is always estimated. Users can also estimate some propagator  and measurements parameters. These parameters
 are modeled using the `Parameter` class, which is essentially  a key-value pair with multi-dimensional values. The
 parameters can be flagged as estimated or fixed, and the values can be modified. Each measurement or modifier that
 support some parameters will create one instance for each parameter. The `BatchLSEstimator` estimator will retrieve
@@ -93,5 +94,6 @@ The class diagram above depicts the parameter update mechanism for the case of g
 measurements using this station) that itself is a 3-dimensional parameter representing the adjustable
 offset for station position. When station position offset is flagged to be estimated, the `BatchLSEstimator` will
 change its value at each iteration. The `Range` and `RangeRate` measurements theoretical values will therefore
-be computed naturally using the updated station position.
+be computed naturally using the updated station position. Other parameters like biases or calibration factors
+are estimated using the same process.
 

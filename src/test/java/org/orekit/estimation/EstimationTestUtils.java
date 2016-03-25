@@ -247,7 +247,7 @@ public class EstimationTestUtils {
                                                             context.initialOrbit.getFrame(),
                                                             context.initialOrbit.getDate(),
                                                             context.initialOrbit.getMu());
-        final Orbit estimatedOrbit = estimator.estimate(wrongOrbit);
+        final Orbit estimatedOrbit = estimator.estimate(wrongOrbit).getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 

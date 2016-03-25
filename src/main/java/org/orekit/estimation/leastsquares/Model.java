@@ -170,7 +170,7 @@ class Model implements MultivariateJacobianFunction {
             // set up the propagator
             final NumericalPropagator propagator = createPropagator(point);
             configureDerivatives(propagator);
-            configureMeasurements(propagator);
+            configureMeasurements(propagator, point);
             final Orbit orbit = propagator.getInitialState().getOrbit();
 
             // reset value and Jacobian
@@ -213,7 +213,7 @@ class Model implements MultivariateJacobianFunction {
      * @return a new propagator
      * @exception OrekitException if orbit cannot be created with the current point
      */
-    private NumericalPropagator createPropagator(final RealVector point)
+    public NumericalPropagator createPropagator(final RealVector point)
         throws OrekitException {
 
         // set up the propagator
@@ -224,8 +224,23 @@ class Model implements MultivariateJacobianFunction {
         final NumericalPropagator propagator =
                         propagatorBuilder.buildPropagator(orbitDate, propagatorArray);
 
+        return propagator;
+
+    }
+
+    /** Configure the propagator to handle measurements.
+     * @param propagator {@link Propagator} to configure
+     * @param point evaluation point
+     * @exception OrekitException if measurements parameters cannot be set with the current point
+     */
+    private void configureMeasurements(final Propagator propagator, final RealVector point)
+        throws OrekitException {
+
+        firstDate = AbsoluteDate.FUTURE_INFINITY;
+        lastDate  = AbsoluteDate.PAST_INFINITY;
+
         // set up the measurement parameters
-        int index = propagatorArray.length;
+        int index = 6 + propagatorParametersDimension;
         for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
             final double[] parameterValue = new double[parameter.getDimension()];
             for (int i = 0; i < parameterValue.length; ++i) {
@@ -233,18 +248,6 @@ class Model implements MultivariateJacobianFunction {
             }
             parameter.setValue(parameterValue);
         }
-
-        return propagator;
-
-    }
-
-    /** Configure the propagator to handle measurements.
-     * @param propagator {@link Propagator} to configure
-     */
-    private void configureMeasurements(final Propagator propagator) {
-
-        firstDate = AbsoluteDate.FUTURE_INFINITY;
-        lastDate  = AbsoluteDate.PAST_INFINITY;
 
         // set up events to handle measurements
         int p = 0;

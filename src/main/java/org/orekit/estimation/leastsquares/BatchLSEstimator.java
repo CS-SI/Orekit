@@ -27,6 +27,7 @@ import org.apache.commons.math3.exception.TooManyIterationsException;
 import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
@@ -39,6 +40,7 @@ import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.utils.ParameterDriver;
 
 
@@ -255,11 +257,12 @@ public class BatchLSEstimator {
      * and {@link #getMeasurementsParameters(boolean)}.
      * </p>
      * @param initialGuess initial guess for the orbit
-     * @return estimated orbit
+     * @return propagator configured with estimated orbit as initial state, and all
+     * propagator estimated parameters also set
      * @exception OrekitException if there is a conflict in parameters names
      * or if orbit cannot be determined
      */
-    public Orbit estimate(final Orbit initialGuess) throws OrekitException {
+    public NumericalPropagator estimate(final Orbit initialGuess) throws OrekitException {
 
         checkParameters();
 
@@ -353,8 +356,8 @@ public class BatchLSEstimator {
             // solve the problem
             optimizer.optimize(new TappedLSProblem(lsBuilder.build(), model));
 
-            // extract the orbit
-            return orbit;
+            // create a new configured propagtor with all estimated parameters
+            return model.createPropagator(lspEvaluation.getPoint());
 
         } catch (TooManyIterationsException tmie) {
             throw new OrekitException(tmie);

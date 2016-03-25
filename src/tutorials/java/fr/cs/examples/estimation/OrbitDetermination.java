@@ -214,7 +214,7 @@ public class OrbitDetermination {
                 previousPV = currentPV;
             }
         });
-        Orbit estimated = estimator.estimate(initialGuess);
+        Orbit estimated = estimator.estimate(initialGuess).getInitialState().getOrbit();
 
         // compute some statistics
         SummaryStatistics rangeStats     = new SummaryStatistics();
