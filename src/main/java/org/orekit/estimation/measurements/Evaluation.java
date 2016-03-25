@@ -22,6 +22,8 @@ import java.util.Map;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
 /** Class holding a theoretical evaluation of one {@link Measurement measurement}.
@@ -29,7 +31,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 7.2
  */
-public class Evaluation<T extends Measurement<T>> {
+public class Evaluation<T extends Measurement<T>> implements TimeStamped {
 
     /** Associated measurement. */
     private final T measurement;
@@ -76,6 +78,12 @@ public class Evaluation<T extends Measurement<T>> {
      */
     public T getMeasurement() {
         return measurement;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return measurement.getDate();
     }
 
     /** Get the iteration number.
