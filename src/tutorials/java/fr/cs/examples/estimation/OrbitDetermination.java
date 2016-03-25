@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -33,6 +34,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
@@ -60,6 +63,7 @@ import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.AngularRadioRefractionModifier;
+import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DTM2000;
 import org.orekit.forces.drag.DragForce;
@@ -79,17 +83,23 @@ import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.frames.Transform;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
+import org.orekit.models.earth.SaastamoinenModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -110,18 +120,18 @@ public class OrbitDetermination {
         try {
 
             // input in tutorial resources directory/output (in user's home directory)
-            String inputPath = OrbitDetermination.class.getClassLoader().getResource("orbit-determination.in").toURI().getPath();
-            File input  = new File(inputPath);
+            final String inputPath = OrbitDetermination.class.getClassLoader().getResource("orbit-determination.in").toURI().getPath();
+            final File input  = new File(inputPath);
 
             // output in user's home directory
-            File output = new File(new File(System.getProperty("user.home")), "orbit-determination.out");
+            final File home = new File(System.getProperty("user.home"));
 
             // configure Orekit data acces
             File orekitData = new File(input.getParent(), "tutorial-orekit-data");
             DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(orekitData));
 
             long t0 = System.currentTimeMillis();
-            new OrbitDetermination().run(input, output);
+            new OrbitDetermination().run(input, home);
             long t1 = System.currentTimeMillis();
             System.out.println("wall clock run time (s): " + (0.001 * (t1 - t0)));
 
@@ -144,142 +154,210 @@ public class OrbitDetermination {
         }
     }
 
-    private void run(final File input, final File output)
+    private void run(final File input, final File home)
         throws IOException, IllegalArgumentException, OrekitException, ParseException {
 
         // read input parameters
         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
         parser.parseInput(new FileInputStream(input));
 
-        // gravity field
-        final NormalizedSphericalHarmonicsProvider gravityField = createGravityField(parser);
-
-        // Orbit initial guess
-        final Orbit initialGuess = createOrbit(parser, gravityField.getMu());
-
-        // IERS conventions
-        final IERSConventions conventions;
-        if (!parser.containsKey(ParameterKey.IERS_CONVENTIONS)) {
-            conventions = IERSConventions.IERS_2010;
+        // log file
+        final String baseName;
+        final PrintStream logStream;
+        if (parser.containsKey(ParameterKey.OUTPUT_BASE_NAME) &&
+            parser.getString(ParameterKey.OUTPUT_BASE_NAME).length() > 0) {
+            baseName  = parser.getString(ParameterKey.OUTPUT_BASE_NAME);
+            logStream = new PrintStream(new File(home, baseName + "-log.out"));
         } else {
-            conventions = IERSConventions.valueOf("IERS_" + parser.getInt(ParameterKey.IERS_CONVENTIONS));
+            baseName  = null;
+            logStream = null;
         }
 
-        // central body
-        final OneAxisEllipsoid body = createBody(parser);
+        final RangeLog     rangeLog     = new RangeLog(home, baseName);
+        final RangeRateLog rangeRateLog = new RangeRateLog(home, baseName);
+        final AzimuthLog   azimuthLog   = new AzimuthLog(home, baseName);
+        final ElevationLog elevationLog = new ElevationLog(home, baseName);
+        final PositionLog  positionLog  = new PositionLog(home, baseName);
+        final VelocityLog velocityLog   = new VelocityLog(home, baseName);
 
-        // propagator builder
-        final NumericalPropagatorBuilder propagatorBuilder =
-                        createPropagatorBuilder(parser, conventions, gravityField, body, initialGuess);
+        try {
+            // gravity field
+            final NormalizedSphericalHarmonicsProvider gravityField = createGravityField(parser);
 
-        // estimator
-        final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
+            // Orbit initial guess
+            final Orbit initialGuess = createOrbit(parser, gravityField.getMu());
 
-        // measurements
-        final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
-        for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
-            measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
-                                                 createStationsData(parser, body),
-                                                 createPVData(parser),
-                                                 createSatRangeBias(parser),
-                                                 createWeights(parser)));
-        }
-        for (Measurement<?> measurement : measurements) {
-            estimator.addMeasurement(measurement);
-        }
-
-        // estimate orbit
-        estimator.setObserver(new BatchLSObserver() {
-
-            private PVCoordinates previousPV;
-            {
-                previousPV = initialGuess.getPVCoordinates();
-                System.out.format(Locale.US, "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS%n");
+            // IERS conventions
+            final IERSConventions conventions;
+            if (!parser.containsKey(ParameterKey.IERS_CONVENTIONS)) {
+                conventions = IERSConventions.IERS_2010;
+            } else {
+                conventions = IERSConventions.valueOf("IERS_" + parser.getInt(ParameterKey.IERS_CONVENTIONS));
             }
 
-            /** {@inheritDoc} */
-            @Override
-            public void iterationPerformed(final int iterationsCount, final int evaluationsCount,
-                                           final Orbit orbit,
-                                           final List<ParameterDriver> estimatedPropagatorParameters,
-                                           final List<ParameterDriver> estimatedMeasurementsParameters,
-                                           final Map<Measurement<?>, Evaluation<?>> evaluations,
-                                           final LeastSquaresProblem.Evaluation lspEvaluation) {
-                PVCoordinates currentPV = orbit.getPVCoordinates();
-                System.out.format(Locale.US, "    %2d         %2d      %13.6f %12.9f %16.12f%n",
-                                  iterationsCount, evaluationsCount,
-                                  Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
-                                  Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
-                                  lspEvaluation.getRMS());
-                previousPV = currentPV;
+            // central body
+            final OneAxisEllipsoid body = createBody(parser);
+
+            // propagator builder
+            final NumericalPropagatorBuilder propagatorBuilder =
+                            createPropagatorBuilder(parser, conventions, gravityField, body, initialGuess);
+
+            // estimator
+            final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
+
+            // measurements
+            final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
+            for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
+                measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
+                                                     createStationsData(parser, body),
+                                                     createPVData(parser),
+                                                     createSatRangeBias(parser),
+                                                     createWeights(parser)));
             }
-        });
-        Orbit estimated = estimator.estimate(initialGuess).getInitialState().getOrbit();
-
-        // compute some statistics
-        SummaryStatistics rangeStats     = new SummaryStatistics();
-        SummaryStatistics rangeRateStats = new SummaryStatistics();
-        SummaryStatistics azimuthStats   = new SummaryStatistics();
-        SummaryStatistics elevationStats = new SummaryStatistics();
-        SummaryStatistics posStats       = new SummaryStatistics();
-        SummaryStatistics velStats       = new SummaryStatistics();
-        for (final Map.Entry<Measurement<?>, Evaluation<?>> entry : estimator.getLastEvaluations().entrySet()) {
-            if (entry.getKey() instanceof Range) {
-                @SuppressWarnings("unchecked")
-                Evaluation<Range> evaluation = (Evaluation<Range>) entry.getValue();
-                rangeStats.addValue(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]);
-            } else if (entry.getKey() instanceof RangeRate) {
-                @SuppressWarnings("unchecked")
-                Evaluation<RangeRate> evaluation = (Evaluation<RangeRate>) entry.getValue();
-                rangeRateStats.addValue(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]);
-            } else if (entry.getKey() instanceof Angular) {
-                @SuppressWarnings("unchecked")
-                Evaluation<Angular> evaluation = (Evaluation<Angular>) entry.getValue();
-                azimuthStats.addValue(FastMath.toDegrees(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]));
-                elevationStats.addValue(FastMath.toDegrees(evaluation.getValue()[1] - evaluation.getMeasurement().getObservedValue()[1]));
-            } else if (entry.getKey() instanceof PV) {
-                @SuppressWarnings("unchecked")
-                Evaluation<PV> evaluation = (Evaluation<PV>) entry.getValue();
-                double[] estV = evaluation.getValue();
-                double[] obsV = evaluation.getMeasurement().getObservedValue();
-                posStats.addValue(Vector3D.distance(new Vector3D(estV[0], estV[1], estV[2]),
-                                                    new Vector3D(obsV[0], obsV[1], obsV[2])));
-                velStats.addValue(Vector3D.distance(new Vector3D(estV[3], estV[4], estV[5]),
-                                                    new Vector3D(obsV[3], obsV[4], obsV[5])));
+            for (Measurement<?> measurement : measurements) {
+                estimator.addMeasurement(measurement);
             }
-        }
 
-        System.out.println("Estimated orbit: " + estimated);
+            // estimate orbit
+            estimator.setObserver(new BatchLSObserver() {
 
-        final List<ParameterDriver> propagatorParameters   = estimator.getPropagatorParameters(true);
-        final List<ParameterDriver> measurementsParameters = estimator.getMeasurementsParameters(true);
-        int length = 0;
-        for (final ParameterDriver parameterDriver : propagatorParameters) {
-            length = FastMath.max(length, parameterDriver.getName().length());
-        }
-        for (final ParameterDriver parameterDriver : measurementsParameters) {
-            length = FastMath.max(length, parameterDriver.getName().length());
-        }
-        displayParametersChanges("Estimated propagator parameters changes: ", length, propagatorParameters);
-        displayParametersChanges("Estimated measurements parameters changes: ", length, measurementsParameters);
+                private PVCoordinates previousPV;
+                {
+                    previousPV = initialGuess.getPVCoordinates();
+                    final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS%n";
+                    System.out.format(Locale.US, header);
+                    if (logStream != null) {
+                        logStream.format(Locale.US, header);
+                    }
+                }
 
-        System.out.println("Number of iterations: " + estimator.getIterationsCount());
-        System.out.println("Number of evaluations: " + estimator.getEvaluationsCount());
-        displayStats("Range (m)",           rangeStats);
-        displayStats("Range rate (m/s)",    rangeRateStats);
-        displayStats("Azimuth (degrees)",   azimuthStats);
-        displayStats("Elevation (degrees)", elevationStats);
-        displayStats("Position (m)",        posStats);
-        displayStats("Velocity (m/s)",      velStats);
+                /** {@inheritDoc} */
+                @Override
+                public void iterationPerformed(final int iterationsCount, final int evaluationsCount,
+                                               final Orbit orbit,
+                                               final List<ParameterDriver> estimatedPropagatorParameters,
+                                               final List<ParameterDriver> estimatedMeasurementsParameters,
+                                               final Map<Measurement<?>, Evaluation<?>> evaluations,
+                                               final LeastSquaresProblem.Evaluation lspEvaluation) {
+                    PVCoordinates currentPV = orbit.getPVCoordinates();
+                    final String format = "    %2d         %2d      %13.6f %12.9f %16.12f%n";
+                    System.out.format(Locale.US, format,
+                                      iterationsCount, evaluationsCount,
+                                      Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
+                                      Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
+                                      lspEvaluation.getRMS());
+                    if (logStream != null) {
+                        logStream.format(Locale.US, format,
+                                         iterationsCount, evaluationsCount,
+                                         Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
+                                         Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
+                                         lspEvaluation.getRMS());
+                    }
+                    previousPV = currentPV;
+                }
+            });
+            Orbit estimated = estimator.estimate(initialGuess).getInitialState().getOrbit();
+
+            // compute some statistics
+            for (final Map.Entry<Measurement<?>, Evaluation<?>> entry : estimator.getLastEvaluations().entrySet()) {
+                if (entry.getKey() instanceof Range) {
+                    @SuppressWarnings("unchecked")
+                    Evaluation<Range> evaluation = (Evaluation<Range>) entry.getValue();
+                    rangeLog.add(evaluation);
+                } else if (entry.getKey() instanceof RangeRate) {
+                    @SuppressWarnings("unchecked")
+                    Evaluation<RangeRate> evaluation = (Evaluation<RangeRate>) entry.getValue();
+                    rangeRateLog.add(evaluation);
+                } else if (entry.getKey() instanceof Angular) {
+                    @SuppressWarnings("unchecked")
+                    Evaluation<Angular> evaluation = (Evaluation<Angular>) entry.getValue();
+                    azimuthLog.add(evaluation);
+                    elevationLog.add(evaluation);
+                } else if (entry.getKey() instanceof PV) {
+                    @SuppressWarnings("unchecked")
+                    Evaluation<PV> evaluation = (Evaluation<PV>) entry.getValue();
+                    positionLog.add(evaluation);
+                    velocityLog.add(evaluation);
+                }
+            }
+            System.out.println("Estimated orbit: " + estimated);
+            if (logStream != null) {
+                logStream.println("Estimated orbit: " + estimated);
+            }
+
+            final List<ParameterDriver> propagatorParameters   = estimator.getPropagatorParameters(true);
+            final List<ParameterDriver> measurementsParameters = estimator.getMeasurementsParameters(true);
+            int length = 0;
+            for (final ParameterDriver parameterDriver : propagatorParameters) {
+                length = FastMath.max(length, parameterDriver.getName().length());
+            }
+            for (final ParameterDriver parameterDriver : measurementsParameters) {
+                length = FastMath.max(length, parameterDriver.getName().length());
+            }
+            displayParametersChanges(System.out,
+                                     "Estimated propagator parameters changes: ",
+                                     length, propagatorParameters);
+            if (logStream != null) {
+                displayParametersChanges(logStream,
+                                         "Estimated propagator parameters changes: ",
+                                         length, propagatorParameters);
+            }
+            displayParametersChanges(System.out,
+                                     "Estimated measurements parameters changes: ",
+                                     length, measurementsParameters);
+            if (logStream != null) {
+                displayParametersChanges(logStream,
+                                         "Estimated measurements parameters changes: ",
+                                         length, measurementsParameters);
+            }
+
+            System.out.println("Number of iterations: " + estimator.getIterationsCount());
+            System.out.println("Number of evaluations: " + estimator.getEvaluationsCount());
+            rangeLog.displaySummary(System.out);
+            rangeRateLog.displaySummary(System.out);
+            azimuthLog.displaySummary(System.out);
+            elevationLog.displaySummary(System.out);
+            positionLog.displaySummary(System.out);
+            velocityLog.displaySummary(System.out);
+            if (logStream != null) {
+                logStream.println("Number of iterations: " + estimator.getIterationsCount());
+                logStream.println("Number of evaluations: " + estimator.getEvaluationsCount());
+                rangeLog.displaySummary(logStream);
+                rangeRateLog.displaySummary(logStream);
+                azimuthLog.displaySummary(logStream);
+                elevationLog.displaySummary(logStream);
+                positionLog.displaySummary(logStream);
+                velocityLog.displaySummary(logStream);
+            }
+
+            rangeLog.displayResiduals();
+            rangeRateLog.displayResiduals();
+            azimuthLog.displayResiduals();
+            elevationLog.displayResiduals();
+            positionLog.displayResiduals();
+            velocityLog.displayResiduals();
+
+        } finally {
+            if (logStream != null) {
+                logStream.close();
+            }
+            rangeLog.close();
+            rangeRateLog.close();
+            azimuthLog.close();
+            elevationLog.close();
+            positionLog.close();
+            velocityLog.close();
+        }
 
     }
 
     /** Display parameters changes.
+     * @param stream output stream
      * @param header header message
      * @param parameters parameters list
      */
-    private void displayParametersChanges(final String header, final int length,
-                                          final List<ParameterDriver> parameters) {
+    private void displayParametersChanges(final PrintStream out, final String header,
+                                          final int length, final List<ParameterDriver> parameters) {
 
         // sort the parameters lexicographically
         Collections.sort(parameters, new Comparator<ParameterDriver>() {
@@ -288,46 +366,31 @@ public class OrbitDetermination {
             public int compare(final ParameterDriver pd1, final ParameterDriver pd2) {
                 return pd1.getName().compareTo(pd2.getName());
             }
-            
+
         });
 
-        System.out.println(header);
+        out.println(header);
         int index = 0;
         for (final ParameterDriver parameter : parameters) {
             if (parameter.isEstimated()) {
                 final double factor = parameter.getName().endsWith("/az-el bias") ? FastMath.toDegrees(1.0) : 1.0;
                 final double[] initial = parameter.getInitialValue();
                 final double[] value   = parameter.getValue();
-                System.out.format(Locale.US, "  %2d %s", ++index, parameter.getName());
+                out.format(Locale.US, "  %2d %s", ++index, parameter.getName());
                 for (int i = parameter.getName().length(); i < length; ++i) {
-                    System.out.format(Locale.US, " ");
+                    out.format(Locale.US, " ");
                 }
                 for (int k = 0; k < initial.length; ++k) {
-                    System.out.format(Locale.US, "  %+f", factor * (value[k] - initial[k]));
+                    out.format(Locale.US, "  %+f", factor * (value[k] - initial[k]));
                 }
                 System.out.format(Locale.US, "  (final value:");
                 for (double d : value) {
-                    System.out.format(Locale.US, "  %f", factor * d);
+                    out.format(Locale.US, "  %f", factor * d);
                 }
-                System.out.format(Locale.US, ")%n");
+                out.format(Locale.US, ")%n");
             }
         }
 
-    }
-
-    /** Display statistics.
-     * @param name name of the measurements type
-     * @param stats statistics
-     */
-    private void displayStats(final String name, final SummaryStatistics stats) {
-        if (stats.getN() > 0) {
-            System.out.println("Measurements type: " + name);
-            System.out.println("   number of measurements: " + stats.getN());
-            System.out.println("   residuals min  value  : " + stats.getMin());
-            System.out.println("   residuals max  value  : " + stats.getMax());
-            System.out.println("   residuals mean value  : " + stats.getMean());
-            System.out.println("   residuals σ           : " + stats.getStandardDeviation());
-        }
     }
 
     /** Create a propagator builder from input parameters
@@ -584,6 +647,26 @@ public class OrbitDetermination {
                                      parser.getDate(ParameterKey.ORBIT_DATE,
                                                     TimeScalesFactory.getUTC()),
                                      mu);
+        } else if (parser.containsKey(ParameterKey.ORBIT_TLE_LINE_1)) {
+            final String line1 = parser.getString(ParameterKey.ORBIT_TLE_LINE_1);
+            final String line2 = parser.getString(ParameterKey.ORBIT_TLE_LINE_2);
+            final TLE tle = new TLE(line1, line2);
+
+            TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+           // propagator.setEphemerisMode();
+
+            AbsoluteDate initDate = tle.getDate();
+            SpacecraftState initialState = propagator.getInitialState();
+
+
+            //Transformation from TEME to frame.
+            Transform t =FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), initDate.getDate());
+            return new CartesianOrbit( t.transformPVCoordinates(initialState.getPVCoordinates()) ,
+                                      frame,
+                                      initDate,
+                                       mu);
+
+
         } else {
             final double[] pos = {parser.getDouble(ParameterKey.ORBIT_CARTESIAN_PX),
                                   parser.getDouble(ParameterKey.ORBIT_CARTESIAN_PY),
@@ -591,6 +674,7 @@ public class OrbitDetermination {
             final double[] vel = {parser.getDouble(ParameterKey.ORBIT_CARTESIAN_VX),
                                   parser.getDouble(ParameterKey.ORBIT_CARTESIAN_VY),
                                   parser.getDouble(ParameterKey.ORBIT_CARTESIAN_VZ)};
+
             return new CartesianOrbit(new PVCoordinates(new Vector3D(pos), new Vector3D(vel)),
                                       frame,
                                       parser.getDate(ParameterKey.ORBIT_DATE,
@@ -607,7 +691,7 @@ public class OrbitDetermination {
      */
     private Bias<Range> createSatRangeBias(final KeyValueFileParser<ParameterKey> parser)
         throws OrekitException {
-        
+
         // transponder delay
         final double transponderDelayBias;
         if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS)) {
@@ -667,6 +751,8 @@ public class OrbitDetermination {
         final double[]  stationElevationBias          = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
         final boolean[] stationAzElBiasesEstimated    = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
         final boolean[] stationElevationRefraction    = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
+        final boolean[] stationRangeTropospheric      = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
+        //final boolean[] stationIonosphericCorrection    = parser.getBooleanArray(ParameterKey.GROUND_STATION_IONOSPHERIC_CORRECTION);
 
         for (int i = 0; i < stationNames.length; ++i) {
 
@@ -704,7 +790,7 @@ public class OrbitDetermination {
 
             // angular biases
             final double[] azELSigma = new double[] {
-                stationAzimuthSigma[i], stationElevationSigma[i]  
+                stationAzimuthSigma[i], stationElevationSigma[i]
             };
             final Bias<Angular> azELBias;
             if (FastMath.abs(stationAzimuthBias[i])   >= Precision.SAFE_MIN ||
@@ -718,6 +804,7 @@ public class OrbitDetermination {
                 azELBias = null;
             }
 
+            //Refraction correction
             final AngularRadioRefractionModifier refractionCorrection;
             if (stationElevationRefraction[i]) {
                 final double                     altitude        = station.getBaseFrame().getPoint().getAltitude();
@@ -726,14 +813,26 @@ public class OrbitDetermination {
             } else {
                 refractionCorrection = null;
             }
-            stations.put(stationNames[i], new StationData(station,
-                                                          rangeSigma,     rangeBias,
-                                                          rangeRateSigma, rangeRateBias,
-                                                          azELSigma,      azELBias,
-                                                          refractionCorrection));
 
+
+            //Tropospheric correction
+            final RangeTroposphericDelayModifier rangeTroposphericCorrection;
+            if (stationRangeTropospheric[i]) {
+
+                final SaastamoinenModel troposphericModel = SaastamoinenModel.getStandardModel();
+
+                rangeTroposphericCorrection = new  RangeTroposphericDelayModifier(troposphericModel);
+            } else {
+                rangeTroposphericCorrection = null;
+            }
+
+
+        stations.put(stationNames[i], new StationData(station,
+                                                      rangeSigma,     rangeBias,
+                                                      rangeRateSigma, rangeRateBias,
+                                                      azELSigma,      azELBias,
+                                                      refractionCorrection, rangeTroposphericCorrection));
         }
-
         return stations;
 
     }
@@ -902,6 +1001,9 @@ public class OrbitDetermination {
         /** Elevation refraction correction (may be null). */
         private final AngularRadioRefractionModifier refractionCorrection;
 
+        /** Tropospheric correction (may be null). */
+        private final RangeTroposphericDelayModifier rangeTroposphericCorrection;
+
         /** Simple constructor.
          * @param station ground station
          * @param rangeSigma range sigma
@@ -911,20 +1013,23 @@ public class OrbitDetermination {
          * @param azElSigma azimuth-elevation sigma
          * @param azELBias azimuth-elevation bias (may be null if bias is fixed to zero)
          * @param refractionCorrection refraction correction for elevation (may be null)
+         * @param rangeTroposphericCorrection tropospheric correction  for the range (may be null)
          */
         public StationData(final GroundStation station,
                            final double rangeSigma, final Bias<Range> rangeBias,
                            final double rangeRateSigma, final Bias<RangeRate> rangeRateBias,
                            final double[] azElSigma, final Bias<Angular> azELBias,
-                           final AngularRadioRefractionModifier refractionCorrection) {
-            this.station              = station;
-            this.rangeSigma           = rangeSigma;
-            this.rangeBias            = rangeBias;
-            this.rangeRateSigma       = rangeRateSigma;
-            this.rangeRateBias        = rangeRateBias;
-            this.azElSigma            = azElSigma.clone();
-            this.azELBias             = azELBias;
-            this.refractionCorrection = refractionCorrection;
+                           final AngularRadioRefractionModifier refractionCorrection,
+                           final RangeTroposphericDelayModifier rangeTroposphericCorrection) {
+            this.station                     = station;
+            this.rangeSigma                  = rangeSigma;
+            this.rangeBias                   = rangeBias;
+            this.rangeRateSigma              = rangeRateSigma;
+            this.rangeRateBias               = rangeRateBias;
+            this.azElSigma                   = azElSigma.clone();
+            this.azELBias                    = azELBias;
+            this.refractionCorrection        = refractionCorrection;
+            this.rangeTroposphericCorrection = rangeTroposphericCorrection;
         }
 
     }
@@ -1010,6 +1115,9 @@ public class OrbitDetermination {
                 }
                 if (satRangeBias != null) {
                     range.addModifier(satRangeBias);
+                }
+                if (stationData.rangeTroposphericCorrection != null) {
+                    range.addModifier(stationData.rangeTroposphericCorrection);
                 }
                 return range;
             }
@@ -1190,6 +1298,370 @@ public class OrbitDetermination {
 
     }
 
+    /** Local class for measurement-specific log.
+     * @param T type of mesurement
+     */
+    private static abstract class MeasurementLog<T extends Measurement<T>> {
+
+        /** Residuals. */
+        private final SortedSet<Evaluation<T>> evaluations;
+
+        /** Measurements name. */
+        private final String name;
+
+        /** Output file. */
+        private final File file;
+
+        /** Output stream. */
+        private final PrintStream stream;
+
+        /** Simple constructor.
+         * @param home home directory
+         * @param baseName output file base name (may be null)
+         * @param name measurement name
+         * @exception IOException if output file cannot be created
+         */
+        MeasurementLog(final File home, final String baseName, final String name) throws IOException {
+            this.evaluations = new TreeSet<Evaluation<T>>(new ChronologicalComparator());
+            this.name        = name;
+            if (baseName == null) {
+                this.file    = null;
+                this.stream  = null;
+            } else {
+                this.file    = new File(home, baseName + "-" + name + "-residuals.out");
+                this.stream  = new PrintStream(file);
+            }
+        }
+
+        /** Display a header.
+         * @param stream output stream
+         */
+        abstract void displayHeader(final PrintStream stream);
+
+        /** Display an evaluation residual.
+         * @param stream output stream
+         * @param evaluation evaluation to consider
+         */
+        abstract void displayResidual(final PrintStream stream, final Evaluation<T> evaluation);
+
+        /** Compute residual value.
+         * @param evaluation evaluation to consider
+         */
+        abstract double residual(final Evaluation<T> evaluation);
+
+        /** Add an evaluation.
+         * @param evaluation evaluation to add
+         */
+        void add(final Evaluation<T> evaluation) {
+            evaluations.add(evaluation);
+        }
+
+        /** Display summary statistics in the general log file.
+         * @param logStream log stream
+         */
+        public void displaySummary(final PrintStream logStream) {
+            if (!evaluations.isEmpty()) {
+
+                // compute statistics
+                final SummaryStatistics stats = new SummaryStatistics();
+                for (final Evaluation<T> evaluation : evaluations) {
+                    stats.addValue(residual(evaluation));
+                }
+
+                // display statistics
+                logStream.println("Measurements type: " + name);
+                logStream.println("   number of measurements: " + stats.getN());
+                logStream.println("   residuals min  value  : " + stats.getMin());
+                logStream.println("   residuals max  value  : " + stats.getMax());
+                logStream.println("   residuals mean value  : " + stats.getMean());
+                logStream.println("   residuals σ           : " + stats.getStandardDeviation());
+
+            }
+        }
+
+        /** Display detailed residuals.
+         */
+        public void displayResiduals() {
+            if (file != null && !evaluations.isEmpty()) {
+                displayHeader(stream);
+                for (final Evaluation<T> evaluation : evaluations) {
+                    displayResidual(stream, evaluation);
+                }
+            }
+        }
+
+        /** Close the measurement-specific log file.
+         * <p>
+         * The file is deleted if it contains no data.
+         * </p>
+         */
+        public void close() {
+            if (stream != null) {
+                stream.close();
+                if (evaluations.isEmpty()) {
+                    // delete unused file
+                    file.delete();
+                }
+            }
+        }
+
+    }
+
+    /** Logger for range measurements. */
+    class RangeLog extends MeasurementLog<Range> {
+
+        /** Simple constructor.
+         * @param home home directory
+         * @param baseName output file base name (may be null)
+         * @exception IOException if output file cannot be created
+         */
+        RangeLog(final File home, final String baseName) throws IOException {
+            super(home, baseName, "range");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayHeader(final PrintStream stream) {
+            stream.format(Locale.US,
+                          "# %s            %s     %s   %s   %s%n",
+                          "Epoch (UTC)", "Station",
+                          "Estimated range (m)", "Observed range (m)", "Residual (m)");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayResidual(final PrintStream stream, final Evaluation<Range> evaluation) {
+            final double[] theoretical = evaluation.getValue();
+            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+            stream.format(Locale.US, "%s  %s       %12.9f   %12.9f   %12.9f%n",
+                          evaluation.getDate().toString(),
+                          evaluation.getMeasurement().getStation().getBaseFrame().getName(),
+                          theoretical[0], observed[0], residual(evaluation));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double residual(final Evaluation<Range> evaluation) {
+            return evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0];
+        }
+
+    }
+
+    /** Logger for range rate measurements. */
+    class RangeRateLog extends MeasurementLog<RangeRate> {
+
+        /** Simple constructor.
+         * @param home home directory
+         * @param baseName output file base name (may be null)
+         * @exception IOException if output file cannot be created
+         */
+        RangeRateLog(final File home, final String baseName) throws IOException {
+            super(home, baseName, "range-rate");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayHeader(final PrintStream stream) {
+            stream.format(Locale.US,
+                          "# %s            %s     %s   %s   %s%n",
+                          "Epoch (UTC)", "Station",
+                          "Estimated range rate (m/s)", "Observed range rate (m/s)", "Residual (m/s)");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayResidual(final PrintStream stream, final Evaluation<RangeRate> evaluation) {
+            final double[] theoretical = evaluation.getValue();
+            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+            stream.format(Locale.US, "%s  %s          %12.9f         %12.9f     %12.9f%n",
+                          evaluation.getDate().toString(),
+                          evaluation.getMeasurement().getStation().getBaseFrame().getName(),
+                          theoretical[0], observed[0], residual(evaluation));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double residual(final Evaluation<RangeRate> evaluation) {
+            return evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0];
+        }
+
+    }
+
+    /** Logger for azimuth measurements. */
+    class AzimuthLog extends MeasurementLog<Angular> {
+
+        /** Simple constructor.
+         * @param home home directory
+         * @param baseName output file base name (may be null)
+         * @exception IOException if output file cannot be created
+         */
+        AzimuthLog(final File home, final String baseName) throws IOException {
+            super(home, baseName, "azimuth");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayHeader(final PrintStream stream) {
+            stream.format(Locale.US,
+                          "# %s            %s     %s   %s   %s%n",
+                          "Epoch (UTC)", "Station",
+                          "Estimated azimuth (deg)", "Observed azimuth (deg)", "Residual (deg)");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayResidual(final PrintStream stream, final Evaluation<Angular> evaluation) {
+            final double[] theoretical = evaluation.getValue();
+            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+            stream.format(Locale.US, "%s  %s           %12.9f            %12.9f        %12.9f%n",
+                          evaluation.getDate().toString(),
+                          evaluation.getMeasurement().getStation().getBaseFrame().getName(),
+                          FastMath.toDegrees(theoretical[0]),
+                          FastMath.toDegrees(observed[0]),
+                          residual(evaluation));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double residual(final Evaluation<Angular> evaluation) {
+            return FastMath.toDegrees(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]);
+        }
+
+    }
+
+    /** Logger for elevation measurements. */
+    class ElevationLog extends MeasurementLog<Angular> {
+
+        /** Simple constructor.
+         * @param home home directory
+         * @param baseName output file base name (may be null)
+         * @exception IOException if output file cannot be created
+         */
+        ElevationLog(final File home, final String baseName) throws IOException {
+            super(home, baseName, "elevation");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayHeader(final PrintStream stream) {
+            stream.format(Locale.US,
+                          "%s            %s     %s   %s   %s%n",
+                          "Epoch (UTC)", "Station",
+                          "Estimated elevation (deg)", "Observed elevation (deg)", "Residual (deg)");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayResidual(final PrintStream stream, final Evaluation<Angular> evaluation) {
+            final double[] theoretical = evaluation.getValue();
+            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+            stream.format(Locale.US, "%s  %s           %12.9f            %12.9f        %12.9f%n",
+                          evaluation.getDate().toString(),
+                          evaluation.getMeasurement().getStation().getBaseFrame().getName(),
+                          FastMath.toDegrees(theoretical[0]),
+                          FastMath.toDegrees(observed[0]),
+                          residual(evaluation));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double residual(final Evaluation<Angular> evaluation) {
+            return FastMath.toDegrees(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]);
+        }
+
+    }
+
+    /** Logger for position measurements. */
+    class PositionLog extends MeasurementLog<PV> {
+
+        /** Simple constructor.
+         * @param home home directory
+         * @param baseName output file base name (may be null)
+         * @exception IOException if output file cannot be created
+         */
+        PositionLog(final File home, final String baseName) throws IOException {
+            super(home, baseName, "position");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayHeader(final PrintStream stream) {
+            stream.format(Locale.US,
+                          "%s              %s     %s     %s     %s     %s     %s     %s%n",
+                          "Epoch (UTC)",
+                          "theoretical X", "theoretical Y", "theoretical Z",
+                          "observed X", "observed Y", "observed Z",
+                            "ΔP(m)");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayResidual(final PrintStream stream, final Evaluation<PV> evaluation) {
+            final double[] theoretical = evaluation.getValue();
+            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+            stream.format(Locale.US, "%s  %12.9f %12.9f %12.9f  %12.9f %12.9f %12.9f %12.9f%n",
+                          evaluation.getDate().toString(),
+                          theoretical[0], theoretical[1], theoretical[2],
+                          observed[0],    observed[1],    observed[2],
+                          residual(evaluation));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double residual(final Evaluation<PV> evaluation) {
+            final double[] theoretical = evaluation.getValue();
+            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+            return Vector3D.distance(new Vector3D(theoretical[0], theoretical[1], theoretical[2]),
+                                     new Vector3D(observed[0],    observed[1],    observed[2]));
+        }
+
+    }
+
+    /** Logger for velocity measurements. */
+    class VelocityLog extends MeasurementLog<PV> {
+
+        /** Simple constructor.
+         * @param home home directory
+         * @param baseName output file base name (may be null)
+         * @exception IOException if output file cannot be created
+         */
+        VelocityLog(final File home, final String baseName) throws IOException {
+            super(home, baseName, "velocity");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        void displayHeader(final PrintStream stream) {
+            stream.format(Locale.US,
+                          "%s              %s     %s     %s     %s     %s     %s     %s%n",
+                          "Epoch (UTC)",
+                          "theoretical VX", "theoretical VY", "theoretical VZ",
+                          "observed VX", "observed VY", "observed VZ",
+                            "ΔV(m/s)");
+        }
+        /** {@inheritDoc} */
+        @Override
+        void displayResidual(final PrintStream stream, final Evaluation<PV> evaluation) {
+            final double[] theoretical = evaluation.getValue();
+            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+            stream.format(Locale.US, "%s  %12.9f %12.9f %12.9f  %12.9f %12.9f %12.9f %12.9f%n",
+                          evaluation.getDate().toString(),
+                          theoretical[3], theoretical[4], theoretical[5],
+                          observed[3],    observed[4],    observed[5],
+                          residual(evaluation));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        double residual(final Evaluation<PV> evaluation) {
+            final double[] theoretical = evaluation.getValue();
+            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+            return Vector3D.distance(new Vector3D(theoretical[3], theoretical[4], theoretical[5]),
+                                     new Vector3D(observed[3],    observed[4],    observed[5]));
+        }
+
+    }
+
     /** Input parameter keys. */
     private static enum ParameterKey {
         ORBIT_DATE,
@@ -1212,6 +1684,8 @@ public class OrbitDetermination {
         ORBIT_KEPLERIAN_RAAN,
         ORBIT_KEPLERIAN_ANOMALY,
         ORBIT_ANGLE_TYPE,
+        ORBIT_TLE_LINE_1,
+        ORBIT_TLE_LINE_2,
         ORBIT_CARTESIAN_PX,
         ORBIT_CARTESIAN_PY,
         ORBIT_CARTESIAN_PZ,
@@ -1263,6 +1737,8 @@ public class OrbitDetermination {
         GROUND_STATION_ELEVATION_BIAS,
         GROUND_STATION_AZ_EL_BIASES_ESTIMATED,
         GROUND_STATION_ELEVATION_REFRACTION_CORRECTION,
+        GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION,
+        GROUND_STATION_IONOSPHERIC_CORRECTION,
         RANGE_MEASUREMENTS_BASE_WEIGHT,
         RANGE_RATE_MEASUREMENTS_BASE_WEIGHT,
         AZIMUTH_MEASUREMENTS_BASE_WEIGHT,
@@ -1273,6 +1749,7 @@ public class OrbitDetermination {
         OUTLIER_REJECTION_MULTIPLIER,
         OUTLIER_REJECTION_STARTING_ITERATION,
         MEASUREMENTS_FILES,
+        OUTPUT_BASE_NAME,
         ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD,
         ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD,
         ESTIMATOR_MAX_ITERATIONS,
