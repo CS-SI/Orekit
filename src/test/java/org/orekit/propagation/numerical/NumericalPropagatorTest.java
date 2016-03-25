@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -55,6 +52,7 @@ import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.events.handlers.StopOnEvent;
@@ -70,6 +68,9 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import java.io.IOException;
+import java.text.ParseException;
+
 
 public class NumericalPropagatorTest {
 
@@ -77,6 +78,28 @@ public class NumericalPropagatorTest {
     private AbsoluteDate         initDate;
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
+
+    /**
+     * check propagation succeeds when two events are within the tolerance of
+     * each other.
+     */
+    @Test
+    public void testCloseEventDates() throws PropagationException {
+        // setup
+        DateDetector d1 = new DateDetector(10, 1, initDate.shiftedBy(15))
+                .withHandler(new ContinueOnEvent<DateDetector>());
+        DateDetector d2 = new DateDetector(10, 1, initDate.shiftedBy(15.5))
+                .withHandler(new ContinueOnEvent<DateDetector>());
+        propagator.addEventDetector(d1);
+        propagator.addEventDetector(d2);
+
+        //action
+        AbsoluteDate end = initDate.shiftedBy(30);
+        SpacecraftState actual = propagator.propagate(end);
+
+        //verify
+        Assert.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
+    }
 
     @Test
     public void testEphemerisDates() throws OrekitException {

@@ -94,8 +94,8 @@ public class BiasTest {
         }
 
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                     0.0,  8.5e-7,
-                                     0.0,  2.2e-6,
+                                     0.0,  9.8e-7,
+                                     0.0,  2.3e-6,
                                      0.0,  2.2e-7,
                                      0.0,  6.4e-11);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {

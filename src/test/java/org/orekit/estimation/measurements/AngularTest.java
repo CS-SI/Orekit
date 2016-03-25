@@ -44,7 +44,7 @@ public class AngularTest {
         Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE,
                                               1.0e-6, 60.0, 0.001);
         
         // create perfect azimuth-elevation measurements
@@ -150,7 +150,7 @@ public class AngularTest {
         Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect azimuth-elevation measurements

@@ -52,8 +52,9 @@ public class DormandPrince54IntegratorBuilder implements FirstOrderIntegratorBui
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit) throws PropagationException {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
+        throws PropagationException {
+        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new DormandPrince54Integrator(minStep, maxStep, tol[0], tol[1]);
     }
 

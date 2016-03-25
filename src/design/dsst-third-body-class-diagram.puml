@@ -31,13 +31,17 @@
     package propagation.semianalytical.dsst #DDEBD8 {
 
       Package forces #CEEBD8 {
-        GeneratingFunctionCoefficients <-- ThirdBodyShortPeriodicCoefficients : computeCoefficients
         ThirdBodyShortPeriodicCoefficients <--* DSSTThirdBody
         interface DSSTForceModel
+        interface ShortPeriodTerms
+         ShortPeriodTerms <|-- ThirdBodyShortPeriodicCoefficients
         DSSTForceModel <|-- DSSTThirdBody
       }
 
       package utilities #CEEBD8 {
+        package hansen #EAECE6 {
+          class HansenThirdBodyLinear
+        }
           ThirdBodyShortPeriodicCoefficients *--> "*" ShortPeriodicsInterpolatedCoefficient
           DSSTThirdBody *--> HansenThirdBodyLinear
        }

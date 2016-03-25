@@ -156,7 +156,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
             }
         }
 
-        final NumericalPropagator propagator = new NumericalPropagator(builder.buildIntegrator(orb));
+        final NumericalPropagator propagator = new NumericalPropagator(builder.buildIntegrator(orb, getOrbitType()));
         propagator.setOrbitType(getOrbitType());
         propagator.setPositionAngleType(getPositionAngle());
         propagator.setAttitudeProvider(attProvider);

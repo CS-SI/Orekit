@@ -38,9 +38,8 @@
   participant Integrator
   participant MainStateEquations
   participant StateMapper
-  participant Orbit
-  participant "DSST Force Model 1" as F1
-  participant "DSST Force Model 2" as F2
+  participant "DSST Force Model i" as Fi
+  participant "Short Period Terms i" as SPi
 
   activate M
   M          -> DSSTPropagator : propagate
@@ -52,57 +51,46 @@
       activate StateMapper
       deactivate StateMapper
     DSSTPropagator -> Integrator : integrate
+      loop #DDEBD8 for n steps
       activate Integrator
+      loop #ECEBD8 for integrator internal stages
       Integrator -> MainStateEquations : computeDerivatives
         activate MainStateEquations
-        MainStateEquations -> StateMapper : mapArrayToOrbit(mean only)
+        MainStateEquations -> StateMapper : mapArrayToState(mean only)
           activate StateMapper
-          StateMapper -> Orbit : create
-            activate Orbit
-            deactivate Orbit
           deactivate StateMapper
-        MainStateEquations -> F1 : getMeanElementRate
-          activate F1
-          deactivate F1
-        MainStateEquations -> F2 : getMeanElementRate
-          activate F2
-          deactivate F2
-        MainStateEquations -> Orbit : addKeplerContribution
-          activate Orbit
-          deactivate Orbit
+        MainStateEquations -> Fi : getMeanElementRate
+          activate Fi
+          deactivate Fi
         MainStateEquations --> Integrator : state derivatives
         deactivate MainStateEquations
-      Integrator -> MainStateEquations : computeDerivatives
-        activate MainStateEquations
-        MainStateEquations -> Orbit : mapArrayToOrbit(mean only)
-          activate Orbit
-          deactivate Orbit
-        MainStateEquations -> F1 : getMeanElementRate
-          activate F1
-          deactivate F1
-        MainStateEquations -> F2 : getMeanElementRate
-          activate F2
-          deactivate F2
-        MainStateEquations -> Orbit : addKeplerContribution
-          activate Orbit
-          deactivate Orbit
-        MainStateEquations --> Integrator : state derivatives
-        deactivate MainStateEquations
-      Integrator --> DSSTPropagator : mean state
+      end
+      Integrator --> DSSTPropagator : mean state interpolator
       deactivate Integrator
-      DSSTPropagator -> StateMapper : mapArrayToOrbit(mean only or mean and short periodics)
+      DSSTPropagator -> Fi : updateShortPeriodTerms(mean state 1, mean state 2, ...)
+        activate Fi
+        loop #ECEBD8 for all intermediate states within step
+        Fi -> SPi : addGridPoint
+          activate SPi
+          deactivate SPi
+        end
+        deactivate Fi
+      DSSTPropagator -> M : handle step
+      activate M
+      M -> DSSTPropagator : get state
+      activate DSSTPropagator
+      DSSTPropagator -> StateMapper : mapArrayToState
         activate StateMapper
-        StateMapper -> F1 : getShortPeriodicVariations
-          activate F1
-          deactivate F1
-        StateMapper -> F2 : getShortPeriodicVariations
-          activate F2
-          deactivate F2
-        StateMapper -> Orbit : create
-          activate Orbit
-          deactivate Orbit
-        StateMapper --> DSSTPropagator : complete state
+        StateMapper -> SPi : value(mean state)
+          activate SPi
+          SPi --> StateMapper : short periods value
+          deactivate SPi
+        StateMapper --> DSSTPropagator : interpolated state
         deactivate StateMapper
+      DSSTPropagator --> M : state
+     deactivate DSSTPropagator
+     deactivate M
+     end
     DSSTPropagator --> M : final state
     deactivate DSSTPropagator
   deactivate M

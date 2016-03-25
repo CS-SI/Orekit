@@ -17,31 +17,31 @@ ALMOST_EQUATORIAL_ORBIT = orbita quasi equatoriale (i = {0} gradi)
 ALMOST_CRITICALLY_INCLINED_ORBIT = orbita con inclinazione quasi critica (i = {0} gradi)
 
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = impossibile calcolare i parametri media secondo Eckstein-Hechler dopo {0} iterazioni
+UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = impossibile calcolare i parametri medi secondo Eckstein-Hechler dopo {0} iterazioni
 
 # null parent for frame {0}
-NULL_PARENT_FOR_FRAME = riferimento padre nullo per il riferimento {0}
+NULL_PARENT_FOR_FRAME = padre del sistema di riferimento {0} nullo
 
 # frame {0} is already attached to frame {1}
-FRAME_ALREADY_ATTACHED = il riferimento {0} è già allegato al riferimento {1}
+FRAME_ALREADY_ATTACHED = il sistema di riferimento {0} è già allegato al sistema di riferimento {1}
 
 # frame {0} is not attached to the main frames tree
-FRAME_NOT_ATTACHED = il riferiment {0} non è ancora allegato all''albero dei riferimenti.
+FRAME_NOT_ATTACHED = il sistema di riferimento {0} non è ancora allegato all''albero dei sistemi di riferimento.
 
 # frame {0} is an ancestor of both frames {1} and {2}
-FRAME_ANCESTOR_OF_BOTH_FRAMES = il riferimento {0} è un antenato di entrambi i riferimenti {1} e {2}
+FRAME_ANCESTOR_OF_BOTH_FRAMES = il sistema di riferimento {0} è un antenato di entrambi i sistemi di riferimento {1} e {2}
 
 # frame {0} is an ancestor of neither frame {1} nor {2}
-FRAME_ANCESTOR_OF_NEITHER_FRAME = il riferimento {0} non è antenato del riferimento {1} né del riferimento {2}
+FRAME_ANCESTOR_OF_NEITHER_FRAME = il sistema di riferimento {0} non è antenato né del sistema di riferimento {1} né del sistema di riferimento {2}
 
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
-FRAME_NO_NTH_ANCESTOR = il riferimento {0} ha profondità {1}: non può avere un antenato {2} livelli più in alto
+FRAME_NO_NTH_ANCESTOR = il sistema di riferimento {0} ha profondità {1}: non può avere un antenato {2} livelli più in alto
 
 # unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = riferimento orbitale locale non supportato, riferimenti supportati : {0} e {1}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema di riferimento orbitale locale non supportato, sistemi di riferimento supportati: {0} e {1}
 
 # non pseudo-inertial frame "{0}"
-NON_PSEUDO_INERTIAL_FRAME = il riferimento non è pseudo-inerziale "{0}"
+NON_PSEUDO_INERTIAL_FRAME = il sistema di riferimento "{0}" non è pseudo-inerziale
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = cartella di dati radice {0} inesistente
@@ -68,7 +68,7 @@ NOT_A_SUPPORTED_IERS_DATA_FILE = il file {0} non è un file di dati IERS support
 INCONSISTENT_DATES_IN_IERS_FILE = date {1}-{2}-{3} e MJD {4} incoerenti nel file IERS {0}
 
 # unexpected data after line {0} in file {1}: {2}
-UNEXPECTED_DATA_AFTER_LINE_IN_FILE = dati inattesi dopo la linea {0} del file {1} : {2}
+UNEXPECTED_DATA_AFTER_LINE_IN_FILE = dati inattesi oltre la linea {0} del file {1}: {2}
 
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = date non cronologiche nel file {0} alla linea {1}
@@ -89,19 +89,19 @@ CANNOT_PARSE_BOTH_TAU_AND_GAMMA = impossibile leggere allo stesso tempo τ e γ 
 UNEXPECTED_END_OF_FILE_AFTER_LINE = fine inattesa del file {0} (dopo la linea {1})
 
 # unable to parse line {0} of file {1}:\n{2}
-UNABLE_TO_PARSE_LINE_IN_FILE = impossibile analizzare la linea {0} del file {1} :\n{2}
+UNABLE_TO_PARSE_LINE_IN_FILE = impossibile analizzare la linea {0} del file {1}:\n{2}
 
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = impossibile trovare il file {0}
 
 # spacecraft mass becomes negative: {0} kg
-SPACECRAFT_MASS_BECOMES_NEGATIVE = la massa del veicolo sta diventando negativa (m : {0})
+SPACECRAFT_MASS_BECOMES_NEGATIVE = la massa del veicolo sta diventando negativa: {0} kg
 
 # positive flow rate (q: {0})
-POSITIVE_FLOW_RATE = portata del flusso positiva (q : {0})
+POSITIVE_FLOW_RATE = portata del flusso positiva (q: {0})
 
 # no gravity field data loaded
-NO_GRAVITY_FIELD_DATA_LOADED = i dati del campo gravitazionale non sono caricati
+NO_GRAVITY_FIELD_DATA_LOADED = non è stato caricato nessun dato del campo gravitazionale
 
 # gravity field normalization underflow for degree {0} and order {1}
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = sottoflusso della normalizzazione del campo gravitazionale per il grado {0} e l''ordine {1}
@@ -119,7 +119,7 @@ OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = coefficienti di deformazione sotto carico l
 POLAR_TRAJECTORY = traiettoria polare (distanza dall''asse polare: {0})
 
 # unexpected format error for file {0} with loader {1}
-UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = errore di formato inatteso per il file {0} con il caricatore {1}
+UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = errore di formato inatteso per il file {0} con il lettore {1}
 
 # duplicated gravity field coefficient {0}({1}, {2}) in file {3}
 DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coefficiente {0}({1}, {2}) duplicato nel file di campo gravitazionale {3}
@@ -131,7 +131,7 @@ MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coefficiente {0}({1}, {2}) mancante 
 TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grado troppo elevato (n = {0}, il grado massimo per il potenziale è {1})
 
 # too large order (m = {0}, potential maximal order is {1})
-TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordine troppo elevato (n = {0}, l''ordine massimo per il potenziale è {1})
+TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = ordine troppo elevato (m = {0}, l''ordine massimo per il potenziale è {1})
 
 # several reference dates ({0} and {1}) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = diverse date di riferimento ({0} e {1}) trovate nel file di campo gravitazionale {2}
@@ -143,16 +143,16 @@ NO_TLE_FOR_OBJECT = dati TLE non disponibili per l''oggetto {0}
 NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = dati TLE non disponibili per l''anno di lancio {0}, il numero di lancio {1}, la componente lanciata {2}
 
 # lines {0} and {1} are not TLE lines:\n{0}: "{2}"\n{1}: "{3}"
-NOT_TLE_LINES = le linee {0} e {1} non sono linee TLE :\n{0}: "{2}"\n{1}: "{3}"
+NOT_TLE_LINES = le linee {0} e {1} non sono linee TLE:\n{0}: "{2}"\n{1}: "{3}"
 
 # expected a second TLE line after line {0}:\n{0}: "{1}"
 MISSING_SECOND_TLE_LINE = una seconda linea TLE attesa dopo la linea {0}:\n{0}: "{1}"
 
 # TLE lines do not refer to the same object:\n{0}\n{1}
-TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = le linee TLE non si riferiscono allo stesso oggetto :\n{0}\n{1}
+TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = le linee TLE non si riferiscono allo stesso oggetto:\n{0}\n{1}
 
 # invalid TLE parameter for object {0}: {1} = {2}
-TLE_INVALID_PARAMETER = <MISSING TRANSLATION>
+TLE_INVALID_PARAMETER = parametro TLE non valido per l''oggetto {0}: {1} = {2}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = somma di controllo incorretta per la linea TLE {0}, {2} invece del valore atteso {1} ({3})
@@ -164,10 +164,10 @@ NO_TLE_DATA_AVAILABLE = Nessun dato TLE disponibile
 NOT_POSITIVE_SPACECRAFT_MASS = La massa del veicolo spaziale non è positiva: {0} kg
 
 # too large eccentricity for propagation model: e = {0}
-TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = eccentricità eccessiva per il modello di propagazione (e : {0})
+TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = eccentricità eccessiva per il modello di propagazione: e = {0}
 
 # no solar activity available at {0}, data available only in range [{1}, {2}]
-NO_SOLAR_ACTIVITY_AT_DATE = attività solare non disponibile il {0}, dati disponibili unicamente per il periodo [{1}, {2}]
+NO_SOLAR_ACTIVITY_AT_DATE = attività solare non disponibile il {0}, dati disponibili unicamente per l''intervallo [{1}, {2}]
 
 # non-existent month {0}
 NON_EXISTENT_MONTH = mese inesistente {0}
@@ -191,10 +191,10 @@ NON_EXISTENT_HMS_TIME = ora inesistente {0}:{1}:{2}
 NON_EXISTENT_TIME = ora inesistente {0}
 
 # out of range seconds number: {0}
-OUT_OF_RANGE_SECONDS_NUMBER = numero di secondi fuori dell''intervallo : {0}
+OUT_OF_RANGE_SECONDS_NUMBER = numero di secondi fuori dell''intervallo: {0}
 
 # angle type not supported, supported angles: {0}, {1} and {2}
-ANGLE_TYPE_NOT_SUPPORTED = tipo d''angolo non supportato, angoli supportati : {0}, {1} e {2}
+ANGLE_TYPE_NOT_SUPPORTED = tipo d''angolo non supportato, angoli supportati: {0}, {1} e {2}
 
 # satellite collided with target
 SATELLITE_COLLIDED_WITH_TARGET = il satellite si è schiantato sull''obiettivo
@@ -203,31 +203,31 @@ SATELLITE_COLLIDED_WITH_TARGET = il satellite si è schiantato sull''obiettivo
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = la legge di puntamento dell''assetto non punta verso il suolo
 
 # {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
-TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = <MISSING TRANSLATION>
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = {0} secondi è una durata troppo breve per una transizione di assetto, servono almeno {1} secondi
 
 # orbit date ({0}) does not match attitude date ({1})
-ORBIT_AND_ATTITUDE_DATES_MISMATCH = la data d''orbita ({0}) non corrisponde alla data dell''assetto ({1})
+ORBIT_AND_ATTITUDE_DATES_MISMATCH = la data dell''orbita ({0}) non corrisponde alla data dell''assetto ({1})
 
 # frame ({0}) does not match frame ({1})
-FRAMES_MISMATCH = il riferimento ({0}) non corrisponde al riferimento ({1})
+FRAMES_MISMATCH = il sistema di riferimento ({0}) non corrisponde al sistema di riferimento ({1})
 
 # initial state not specified for orbit propagation
-INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = stato iniziale non specificato per l''estrapolazione dell''orbita
+INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = stato iniziale non specificato per la propagazione dell''orbita
 
 # propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = l''estrapolatore non è in modalità di generazione delle effemeridi
+PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = il propagatore non è in modalità di generazione delle effemeridi
 
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
-EVENT_DATE_TOO_CLOSE = la data evento {0}, superiore a {1} meno {3} secondi e inferiore a {2} più {3} secondi, non può esses aggiunta
+EVENT_DATE_TOO_CLOSE = la data dell''evento {0}, superiore a {1} meno {3} secondi e inferiore a {2} più {3} secondi, non può esses aggiunta
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = impossibile leggere l''intestazione del file di effemeridi del JPL {0}
 
 # inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
-INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = valori incoerenti per l''unità astronomica nei files d''effemeridi del JPL : ({0} e {1})
+INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = valori incoerenti per l''unità astronomica nei files d''effemeridi del JPL: ({0} e {1})
 
 # inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
-INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = valori incoerenti per il rapporto di massa Terra/Luna nei files di effemeridi del JPL : ({0} e {1})
+INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = valori incoerenti per il rapporto di massa Terra/Luna nei files di effemeridi del JPL: ({0} e {1})
 
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY = dati non caricati per il corpo celeste {0}
@@ -239,7 +239,7 @@ NOT_A_JPL_EPHEMERIDES_BINARY_FILE = il file {0} non è un file binario di effeme
 NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = il file {0} non è un Marshall Solar Activity Future Estimation (MSAFE) file
 
 # no JPL ephemerides binary files found
-NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = nessun file binario di effemeridi JPL trovato
+NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = nessun file binario di effemeridi del JPL trovato
 
 # out of range date for {0} ephemerides: {1}
 OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = data fuori dell''intervallo di validità per le effemeridi {0}: {1}
@@ -254,7 +254,7 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = due valori di elevazione inatt
 UNSUPPORTED_PARAMETER_NAME = nome del parametro {0} sconosciuto, parametri conosciuti: {1}
 
 # duplicated parameter name {0}
-DUPLICATED_PARAMETER_NAME = <MISSING TRANSLATION>
+DUPLICATED_PARAMETER_NAME = nome del parametro {0} duplicato
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = stato aggiuntivo "{0}" sconosciuto
@@ -272,10 +272,10 @@ STATE_JACOBIAN_NOT_INITIALIZED = lo stato Jacobiano non è stato ancora iniziali
 STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = lo stato Jacobiano è una matrice {0}x{1}, mentre dovrebbe essere una matrice 6x6 o 7x7
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
-STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = lo stao Jacobiano ha {0} righe ma i parametri Jacobiani hanno {1} righe
+STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = lo stato Jacobiano ha {0} righe ma i parametri Jacobiani hanno {1} righe
 
 # finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = passo non inizializzato per il calcolo delle derivate del modello di forza attraverso le differenze finite
+STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = passo delle differenze finite non inizializzato per il calcolo delle derivate del modello di forza
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
 INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = la matrice Jacobiana iniziale ha {0} colonne, mentre {1} parametri sono stati selezionati
@@ -284,7 +284,7 @@ INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = la matrice Jacobiana iniziale ha
 ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = l''orbita dovrebbe essere ellittica con a > 0 ed e < 1 o iperbolica con a < 0 ed e > 1, a = {0}, e = {1}
 
 # true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
-ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = l''anomalia vera {0} è fuori intervallo per l''orbita iperbolica (e = {1}, {2} < v <{3})
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = l''anomalia vera {0} è fuori dall''intervallo per un''orbita iperbolica (e = {1}, {2} < v <{3})
 
 # hyperbolic orbits cannot be handled as {0} instances
 HYPERBOLIC_ORBIT_NOT_HANDLED_AS = le orbite iperboliche non possono essere trattate come istanze di {0}
@@ -293,16 +293,16 @@ HYPERBOLIC_ORBIT_NOT_HANDLED_AS = le orbite iperboliche non possono essere tratt
 CCSDS_DATE_INVALID_PREAMBLE_FIELD = preambolo non valido nella data CCSDS: {0}
 
 # invalid time field length in CCSDS date: {0}, expected {1}
-CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lunghezza non valida per il campo del tempo nella data CCSDS : {0}, valore atteso {1}
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lunghezza non valida per il campo del tempo nella data CCSDS: {0}, valore atteso {1}
 
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = epoca di riferimento specifica dell''agenzia mancante nella data CCSDS
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
-CCSDS_UNEXPECTED_KEYWORD = parola-chiave inattesa alla linea {0} del file CCSDS {1} :\n{2}
+CCSDS_UNEXPECTED_KEYWORD = parola-chiave inattesa alla linea {0} del file CCSDS {1}:\n{2}
 
 # the central body gravitational coefficient cannot be retrieved from the ODM
-CCSDS_UNKNOWN_GM = il coefficiente d''attrazione gravitazionale non può essere recuperato nell''ODM
+CCSDS_UNKNOWN_GM = il coefficiente d''attrazione gravitazionale del corpo centrale non può essere recuperato nell''ODM
 
 # there is no spacecraft mass associated with this ODM file
 CCSDS_UNKNOWN_SPACECRAFT_MASS = nessuna massa associata al veicolo spaziale nel file ODM
@@ -311,16 +311,16 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = nessuna massa associata al veicolo spaziale nel 
 CCSDS_UNKNOWN_CONVENTIONS = le convenzioni IERS non sono state inizializzate prima della lettura
 
 # frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = il frame {0} non è valido in questo contesto del file ODM
+CCSDS_INVALID_FRAME = il sistema di riferimento {0} non è valido in questo contesto del file ODM
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemi temporali incoerenti nei blocchi di effemeridi : {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemi temporali incoerenti nei blocchi di effemeridi: {0} ≠ {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = il nome "{0}" è già utilizzato per uno stato aggiuntivo
 
 # reset state not allowed
-NON_RESETABLE_STATE = reinizializzazione dello stato non autorizzato
+NON_RESETABLE_STATE = reinizializzazione dello stato non autorizzata
 
 # Cannot compute Newcomb operators for sigma > rho ({0} > {1})
 DSST_NEWCOMB_OPERATORS_COMPUTATION = impossibile calcolare gli operatori di Newcomb per sigma > rho ({0} > {1})
@@ -332,19 +332,19 @@ DSST_VMNS_COEFFICIENT_ERROR_MS = impossibile calcolare i coefficienti Vmns con m
 DSST_SPR_SHADOW_INCONSISTENT = calcolo dell''ombra incoerente: ingresso = {0} mentre uscita = {1}
 
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
-DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = L''orbita attuale ha una eccentricità {0} > 0.5, che ha bisogno di un metodo di media non implementato.
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = l''orbita attuale ha un''eccentricità {0} > 0.5; il DSST ha bisogno di un metodo di calcolo della media dipendente dal tempo che non è implementato.
 
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = versione del file sp3 {0} non supportata
 
 # unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = versione di sistema di tempo {0} non supportato
+SP3_UNSUPPORTED_TIMESYSTEM = sistema temporale {0} non supportato
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = fine inattesa di un file sp3 (dopo la linea {0})
 
 # non-existent geomagnetic model {0} for year {1}
-NON_EXISTENT_GEOMAGNETIC_MODEL = file del modello geomagnetico {0} inesistente per l''anno {1}
+NON_EXISTENT_GEOMAGNETIC_MODEL = modello geomagnetico {0} inesistente per l''anno {1}
 
 # geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined
 UNSUPPORTED_TIME_TRANSFORM = il modello geomagnetico {0} all''epoca {1} non supporta le trasformazioni temporali, i coefficienti di variazione secolare non sono definiti
@@ -353,10 +353,10 @@ UNSUPPORTED_TIME_TRANSFORM = il modello geomagnetico {0} all''epoca {1} non supp
 OUT_OF_RANGE_TIME_TRANSFORM = la trasformazione temporale del modello geomagnetico {0} all''epoca {1} è al di fuori del suo intervallo di validità: {2} != [{3}, {4}]
 
 # not enough data for interpolation (sample size = {0})
-NOT_ENOUGH_DATA_FOR_INTERPOLATION = <MISSING TRANSLATION>
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = dati insufficienti per realizzare un''interpolazione (passo di campionamento = {0})
 
 # too small number of cached neighbors: {0} (must be at least {1})
-NOT_ENOUGH_CACHED_NEIGHBORS = numero di vicini in cache troppo piccolo: {0} (deve essere almeno {1})
+NOT_ENOUGH_CACHED_NEIGHBORS = numero di vicini in cache troppo piccolo: {0} (devono essere almeno {1})
 
 # no cached entries
 NO_CACHED_ENTRIES = nessun dato nella cache
@@ -377,16 +377,17 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossibile generare dati dopo il {0}
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossibile calcolare l''anomalia eccentrica iperbolica a partire dall''anomalia media dopo {0} iterazioni
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
-UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = <MISSING TRANSLATION>
+UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = impossibile calcolare l''orbita media a partire dall''orbita osculatrice dopo {0} iterazioni
 
 # derivation order {0} is out of range
-OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>
+OUT_OF_RANGE_DERIVATION_ORDER = l''ordine di derivazione {0} è al di fuori dell''intervallo
 
 # out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = <MISSING TRANSLATION>
+OUT_OF_RANGE_LATITUDE = latitudine {0} fuori dall''intervallo [{1}, {2}]
 
 # orbit type {0} not allowed here, allowed types: {1}
-ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
+ORBIT_TYPE_NOT_ALLOWED = tipo di orbita {0} non autorizzato in questo contesto, tipi autorizzati: {1}
 
 # body shape is not an ellipsoid
 BODY_SHAPE_IS_NOT_AN_ELLIPSOID = <MISSING TRANSLATION>
+

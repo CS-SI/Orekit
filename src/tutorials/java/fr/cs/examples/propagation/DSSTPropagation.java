@@ -70,13 +70,15 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.KeyValueFileParser;
@@ -129,6 +131,8 @@ public class DSSTPropagation {
 
     /** Input parameter keys. */
     private static enum ParameterKey {
+        BODY_FRAME,
+        INERTIAL_FRAME,
         ORBIT_DATE,
         ORBIT_CIRCULAR_A,
         ORBIT_CIRCULAR_EX,
@@ -162,11 +166,22 @@ public class DSSTPropagation {
         DURATION_IN_DAYS,
         OUTPUT_STEP,
         FIXED_INTEGRATION_STEP,
+        MIN_VARIABLE_INTEGRATION_STEP,
+        MAX_VARIABLE_INTEGRATION_STEP,
+        POSITION_TOLERANCE_VARIABLE_INTEGRATION_STEP,
         FIXED_NUMBER_OF_INTERPOLATION_POINTS,
         MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS,
         NUMERICAL_COMPARISON,
+        CENTRAL_BODY_ROTATION_RATE,
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
+        MAX_DEGREE_ZONAL_SHORT_PERIODS,
+        MAX_ECCENTRICITY_POWER_ZONAL_SHORT_PERIODS,
+        MAX_FREQUENCY_TRUE_LONGITUDE_ZONAL_SHORT_PERIODS,
+        MAX_DEGREE_TESSERAL_SHORT_PERIODS,
+        MAX_ORDER_TESSERAL_SHORT_PERIODS,
+        MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS,
+        MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS,
         THIRD_BODY_MOON,
         THIRD_BODY_SUN,
         MASS,
@@ -200,6 +215,12 @@ public class DSSTPropagation {
         // All dates in UTC
         final TimeScale utc = TimeScalesFactory.getUTC();
 
+        final double rotationRate;
+        if (!parser.containsKey(ParameterKey.CENTRAL_BODY_ROTATION_RATE)) {
+            rotationRate = Constants.WGS84_EARTH_ANGULAR_VELOCITY;
+        } else {
+            rotationRate = parser.getDouble(ParameterKey.CENTRAL_BODY_ROTATION_RATE);
+        }
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
 
@@ -212,11 +233,16 @@ public class DSSTPropagation {
         // Central body attraction coefficient (m³/s²)
         final double mu = unnormalized.getMu();
 
-        // Earth frame definition (for faster computation)
-        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        // Earth frame definition
+        final Frame earthFrame;
+        if (!parser.containsKey(ParameterKey.BODY_FRAME)) {
+            earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        } else {
+            earthFrame = parser.getEarthFrame(ParameterKey.BODY_FRAME);
+        }
 
-        // Orbit definition (inertial frame is EME2000)
-        final Orbit orbit = createOrbit(parser, FramesFactory.getEME2000(), utc, mu);
+        // Orbit definition
+        final Orbit orbit = createOrbit(parser, utc, mu);
 
         // DSST propagator definition
         double mass = 1000.0;
@@ -252,12 +278,26 @@ public class DSSTPropagation {
             }
         }
         double fixedStepSize = -1.;
+        double minStep       =  6000.0;
+        double maxStep       = 86400.0;
+        double dP            =     1.0;
         if (parser.containsKey(ParameterKey.FIXED_INTEGRATION_STEP)) {
             fixedStepSize = parser.getDouble(ParameterKey.FIXED_INTEGRATION_STEP);
+        } else {
+            if (parser.containsKey(ParameterKey.MIN_VARIABLE_INTEGRATION_STEP)) {
+                minStep = parser.getDouble(ParameterKey.MIN_VARIABLE_INTEGRATION_STEP);
+            }
+            if (parser.containsKey(ParameterKey.MAX_VARIABLE_INTEGRATION_STEP)) {
+                maxStep = parser.getDouble(ParameterKey.MAX_VARIABLE_INTEGRATION_STEP);
+            }
+            if (parser.containsKey(ParameterKey.POSITION_TOLERANCE_VARIABLE_INTEGRATION_STEP)) {
+                dP = parser.getDouble(ParameterKey.POSITION_TOLERANCE_VARIABLE_INTEGRATION_STEP);
+            }
         }
         final DSSTPropagator dsstProp = createDSSTProp(orbit, mass,
                                                        initialIsOsculating, outputIsOsculating,
-                                                       fixedStepSize, shortPeriodCoefficients);
+                                                       fixedStepSize, minStep, maxStep, dP,
+                                                       shortPeriodCoefficients);
 
         if (parser.containsKey(ParameterKey.FIXED_NUMBER_OF_INTERPOLATION_POINTS)) {
             if (parser.containsKey(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS)) {
@@ -273,7 +313,7 @@ public class DSSTPropagation {
         }
 
         // Set Force models
-        setForceModel(parser, unnormalized, earthFrame, dsstProp);
+        setForceModel(parser, unnormalized, earthFrame, rotationRate, dsstProp);
 
         // Simulation properties
         AbsoluteDate start;
@@ -356,15 +396,22 @@ public class DSSTPropagation {
 
     /** Create an orbit from input parameters
      * @param parser input file parser
-     * @param frame  inertial frame
      * @param scale  time scale
      * @param mu     central attraction coefficient
-     * @throws NoSuchElementException if input parameters are mising
+     * @throws OrekitException if inertial frame cannot be retrieved
+     * @throws NoSuchElementException if input parameters are missing
      * @throws IOException if input parameters are invalid
      */
     private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
-                              final Frame frame, final TimeScale scale, final double mu)
-        throws NoSuchElementException, IOException {
+                              final TimeScale scale, final double mu)
+        throws OrekitException, NoSuchElementException, IOException {
+
+        final Frame frame;
+        if (!parser.containsKey(ParameterKey.INERTIAL_FRAME)) {
+            frame = FramesFactory.getEME2000();
+        } else {
+            frame = parser.getInertialFrame(ParameterKey.INERTIAL_FRAME);
+        }
 
         // Orbit definition
         Orbit orbit;
@@ -435,6 +482,9 @@ public class DSSTPropagation {
      *  @param initialIsOsculating if initial orbital elements are osculating
      *  @param outputIsOsculating if we want to output osculating parameters
      *  @param fixedStepSize step size for fixed step integrator (s)
+     *  @param minStep minimum step size, if step is not fixed (s)
+     *  @param maxStep maximum step size, if step is not fixed (s)
+     *  @param dP position tolerance for step size control, if step is not fixed (m)
      *  @param shortPeriodCoefficients list of short periodic coefficients
      *  to output (null means no coefficients at all, empty list means all
      *  possible coefficients)
@@ -445,15 +495,16 @@ public class DSSTPropagation {
                                           final boolean initialIsOsculating,
                                           final boolean outputIsOsculating,
                                           final double fixedStepSize,
+                                          final double minStep,
+                                          final double maxStep,
+                                          final double dP,
                                           final List<String> shortPeriodCoefficients)
         throws OrekitException {
         AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
         } else {
-            final double minStep = orbit.getKeplerianPeriod();
-            final double maxStep = minStep * 10.;
-            final double[][] tol = DSSTPropagator.tolerances(1.0, orbit);
+            final double[][] tol = DSSTPropagator.tolerances(dP, orbit);
             integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
             ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);
         }
@@ -490,13 +541,14 @@ public class DSSTPropagation {
      *  @param parser input file parser
      *  @param unnormalized spherical harmonics provider
      *  @param earthFrame Earth rotating frame
+     *  @param rotationRate central body rotation rate (rad/s)
      *  @param dsstProp DSST propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final UnnormalizedSphericalHarmonicsProvider unnormalized,
-                               final Frame earthFrame,
+                               final Frame earthFrame, final double rotationRate,
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = unnormalized.getAe();
@@ -509,7 +561,15 @@ public class DSSTPropagation {
         }
 
         // Central Body Force Model with un-normalized coefficients
-        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, unnormalized));
+        dsstProp.addForceModel(new DSSTZonal(unnormalized,
+                                             parser.getInt(ParameterKey.MAX_DEGREE_ZONAL_SHORT_PERIODS),
+                                             parser.getInt(ParameterKey.MAX_ECCENTRICITY_POWER_ZONAL_SHORT_PERIODS),
+                                             parser.getInt(ParameterKey.MAX_FREQUENCY_TRUE_LONGITUDE_ZONAL_SHORT_PERIODS)));
+        dsstProp.addForceModel(new DSSTTesseral(earthFrame, rotationRate, unnormalized,
+                                                parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS)));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
@@ -596,19 +656,19 @@ public class DSSTPropagation {
     private static class OutputHandler implements OrekitFixedStepHandler {
 
         /** Format for delta T. */
-        private static final String DT_FORMAT                             = "%17.6f";
+        private static final String DT_FORMAT                             = "%20.9f";
 
         /** Format for Keplerian elements. */
-        private static final String KEPLERIAN_ELEMENTS_FORMAT             = " %13.6f %13.10f %14.6f %14.6f %14.6f %14.6f";
+        private static final String KEPLERIAN_ELEMENTS_FORMAT             = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";
 
         /** Format for equinoctial elements. */
-        private static final String EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT = " %13.10f %13.10f %13.10f %13.10f %14.6f";
+        private static final String EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT = " %23.16e %23.16e %23.16e %23.16e %23.16e";
 
         /** Format for equinoctial elements. */
-        private static final String EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT    = " %13.6f" + EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT;
+        private static final String EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT    = " %23.16e" + EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT;
 
         /** Format for Cartesian elements. */
-        private static final String CARTESIAN_ELEMENTS_FORMAT             = " %13.6f %13.6f %13.6f %13.9f %13.9f %13.9f";
+        private static final String CARTESIAN_ELEMENTS_FORMAT             = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";
 
         /** Format for short period coefficients. */
         private static final String SHORT_PERIOD_COEFFICIENTS_FORMAT      = " %23.16e %23.16e %23.16e %23.16e %23.16e %23.16e";

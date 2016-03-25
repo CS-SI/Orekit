@@ -115,8 +115,8 @@ public class GroundStationTest {
                                      0.0, 1.2e-6,
                                      0.0, 2.3e-6,
                                      0.0, 8.8e-7,
-                                     0.0, 4.3e-10);
-        Assert.assertEquals(deltaTopo.getX(), moved.getPositionOffsetDriver().getValue()[0], 2.5e-7);
+                                     0.0, 4.4e-10);
+        Assert.assertEquals(deltaTopo.getX(), moved.getPositionOffsetDriver().getValue()[0], 3.5e-7);
         Assert.assertEquals(deltaTopo.getY(), moved.getPositionOffsetDriver().getValue()[1], 2.8e-7);
         Assert.assertEquals(deltaTopo.getZ(), moved.getPositionOffsetDriver().getValue()[2], 1.1e-7);
 

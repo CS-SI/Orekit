@@ -52,8 +52,9 @@ public class GraggBulirschStoerIntegratorBuilder implements FirstOrderIntegrator
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit) throws PropagationException {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
+        throws PropagationException {
+        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new GraggBulirschStoerIntegrator(minStep, maxStep, tol[0], tol[1]);
     }
 

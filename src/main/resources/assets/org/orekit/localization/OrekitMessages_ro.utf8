@@ -1,11 +1,11 @@
 # internal error, contact maintenance at {0}
-INTERNAL_ERROR = eroare internă, contactați echipa de întrținere la {0}
+INTERNAL_ERROR = eroare internă, contactați suportul tehnic la {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitudinea ({0} m) este sub limita permisă de {1} m 
 
 # point is inside ellipsoid
-POINT_INSIDE_ELLIPSOID = <MISSING TRANSLATION>
+POINT_INSIDE_ELLIPSOID = punctul este în interiorul elipsoidului
 
 # trajectory inside the Brillouin sphere (r = {0})
 TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = traiectorie în interiorul sferei Brillouin (r = {0})
@@ -152,7 +152,7 @@ MISSING_SECOND_TLE_LINE = a doua linie TLE este așteptată după linia {0}:\n{0
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = liniile TLE nu se referă la același obiect:\n{0}\n{1}
 
 # invalid TLE parameter for object {0}: {1} = {2}
-TLE_INVALID_PARAMETER = <MISSING TRANSLATION>
+TLE_INVALID_PARAMETER = parametru TLE invalid pentru obiectul {0}: {1} = {2}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = sumă de control eronată pentru linia TLE {0}, {2} în loc de valoarea așteptata {1} ({3})
@@ -203,7 +203,7 @@ SATELLITE_COLLIDED_WITH_TARGET = satelitul s-a ciocnit de ținta sa
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = legea de indicare a atitudinii nu indică către pământ
 
 # {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
-TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = <MISSING TRANSLATION>
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = timpul de {0} secunde este prea mic pentru schimbarea atitudinilor, ar trebui sa fie mai mare decât {1} secunde
 
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = data orbitală ({0}) nu corespunde datei ({1}) corespunzătoare atitudinii
@@ -225,7 +225,7 @@ UNABLE_TO_READ_JPL_HEADER = imposibil de citit antetul fișierului de efemeride 
 
 # inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
 INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = valori incoerente pentru unitățile astronomice din fișierele de efemeride JPL : ({0} și {1})
- 
+
 # inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
 INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = valori incoerente pentru raportul masei Pământ/Lună din fișierele de efemeride JPL : ({0} și {1})
 
@@ -254,7 +254,7 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = date neașteptate, două valor
 UNSUPPORTED_PARAMETER_NAME = parametrul {0} necunoscut, parametrii cunoscuți: {1}
 
 # duplicated parameter name {0}
-DUPLICATED_PARAMETER_NAME = <MISSING TRANSLATION>
+DUPLICATED_PARAMETER_NAME = parametrul cu numele {0} este duplicat
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = starea adiționala "{0}" necunoscută
@@ -313,8 +313,8 @@ CCSDS_UNKNOWN_CONVENTIONS = convențiile IERS nu au fost inițializate înainte 
 # frame {0} is not valid in this ODM file context
 CCSDS_INVALID_FRAME = sistemul de referință {0} nu este valid în contextul acestui fișier ODM
 
-# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sisteme temporale incoerente in blocurile de efemeride : {0} ≠ {1}
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sisteme temporale incoerente in blocurile de efemeride : {0} ≠ {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = numele "{0}" este deja folosit pentru o stare adițională
@@ -383,10 +383,10 @@ UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = imposibil de calculat orbita medie din 
 OUT_OF_RANGE_DERIVATION_ORDER = ordinul de derivare {0} este in afara domeniului de definiție
 
 # out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = <MISSING TRANSLATION>
+OUT_OF_RANGE_LATITUDE = latitudine în afara domeniului de definiție: {0}, [{1}, {2}]
 
 # orbit type {0} not allowed here, allowed types: {1}
-ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
+ORBIT_TYPE_NOT_ALLOWED = tipul de orbită {0} nu este permis aici, tipuri permise: {1}
 
 # body shape is not an ellipsoid
 BODY_SHAPE_IS_NOT_AN_ELLIPSOID = <MISSING TRANSLATION>

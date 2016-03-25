@@ -43,6 +43,20 @@ as required.
 
 |  package |                                              link                                                         |
 |----------|-----------------------------------------------------------------------------------------------------------|
+|  source  | [orekit-7.1-sources.zip](https://www.orekit.org/forge/attachments/download/585/orekit-7.1-sources.zip)    |
+|  binary  | [orekit-7.1.jar](https://www.orekit.org/forge/attachments/download/586/orekit-7.1.jar)                    |
+|  javadoc | [orekit-7.1-javadoc.jar](https://www.orekit.org/forge/attachments/download/587/orekit-7.1-javadoc.jar)    |
+version 7.1 downloads (release date: 2016-02-07)
+
+|  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
+|  source  | [orekit-7.0-sources.zip](https://www.orekit.org/forge/attachments/download/531/orekit-7.0-sources.zip)    |
+|  binary  | [orekit-7.0.jar](https://www.orekit.org/forge/attachments/download/527/orekit-7.0.jar)                    |
+|  javadoc | [orekit-7.0-javadoc.jar](https://www.orekit.org/forge/attachments/download/529/orekit-7.0-javadoc.jar)    |
+version 7.0 downloads (release date: 2015-01-11)
+
+|  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-6.1-sources.zip](https://www.orekit.org/forge/attachments/download/401/orekit-6.1-sources.zip)    |
 |  binary  | [orekit-6.1.jar](https://www.orekit.org/forge/attachments/download/402/orekit-6.1.jar)                    |
 |  javadoc | [orekit-6.1-javadoc.jar](https://www.orekit.org/forge/attachments/download/403/orekit-6.1-javadoc.jar)    |
@@ -107,20 +121,26 @@ version 3.1 downloads (release date: 2008-07-16)
 ## Data
 
 For convenience, a zip archive containing some configuration data is
-available for download. Putting this zip archive in your disk and putting its
-location in the <orekit.data.path> property to the value is all that is needed
-to use it. Similar files can be custom made by users with updated data.
+available for download. Similar files can be custom made by users with updated data.
+Configuring data loading is explained in the configuration page For a start, the simplest configuration
+is to download the orekit-data.zip file from the download page, to unzip it anywhere you want, note the
+path of the orekit-data folder that will be created and add the following lines at the start of
+your program:
+
+    File orekitData = new File("/path/to/the/folder/orekit-data");
+    DataProvidersManager manager = DataProvidersManager.getInstance();
+    manager.addProvider(new DirectoryCrawler(orekitData));
 
 This file contents is:
 
-  * leap seconds data up to 2014,
+  * leap seconds data up to early 2016,
 
   * IERS Earth orientation parameters from 1973 to mid 2014
     with predicted date to end 2014 for some parameters (both IAU-1980 and IAU-2000),
 
   * Marshall Solar Activity Futur Estimation from 1999 to 2014,
 
-  * DE 406 planetary ephemerides from 1962 to 2029,
+  * DE 430 planetary ephemerides from 1990 to 2069,
 
   * Eigen 06S gravity field.
 
@@ -128,4 +148,4 @@ There are no guarantees that this file will be available indefinitely or that it
 content will be updated. It should be considered as a simple configuration example.
 Users are encouraged to set up their own configuration data.
 
-The file is available by following this link: [orekit-data.zip](https://www.orekit.org/forge/attachments/download/400/orekit-data.zip).
+The file is available by following this link: [orekit-data.zip](https://www.orekit.org/forge/attachments/download/584/orekit-data.zip).

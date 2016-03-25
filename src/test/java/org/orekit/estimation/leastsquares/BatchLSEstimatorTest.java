@@ -65,7 +65,7 @@ public class BatchLSEstimatorTest {
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 1.1e-8,
                                      0.0, 6.7e-8,
-                                     0.0, 3.0e-9,
+                                     0.0, 4.1e-9,
                                      0.0, 3.1e-12);
 
     }
@@ -98,8 +98,8 @@ public class BatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                     0.0, 1.0e-6,
-                                     0.0, 2.0e-6,
+                                     0.0, 1.3e-6,
+                                     0.0, 3.1e-6,
                                      0.0, 3.8e-7,
                                      0.0, 1.5e-10);
 
