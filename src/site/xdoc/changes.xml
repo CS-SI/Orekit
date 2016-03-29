@@ -20,6 +20,22 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="7.2" date="TBC"
+             description="">
+      <action dev="luc" type="fix">
+        Fixed Newcomb operators generation in DSST for high degree gravity fields.
+        Fixes issue #237
+      </action>
+      <action dev="luc" type="update">
+        Improved tuning of DSST zonal force models. Users can now tune max degree,
+        max eccentricity power and max frequency in true longitude for short
+        period terms.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed wrong continuous maneuver handling in backward propagation.
+        Fixes issue #236
+      </action>
+    </release>
     <release version="7.1" date="2016-02-07"
              description="Version 7.1 is a minor release of Orekit. It introduces several new
              features and bug fixes. The most important features introduced in version 7.1

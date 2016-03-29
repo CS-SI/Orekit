@@ -33,15 +33,19 @@
       Package forces #CEEBD8 {
         TesseralShortPeriodicCoefficients <--* TesseralContribution
         interface DSSTForceModel
+        interface ShortPeriodTerms
         DSSTForceModel <|-- DSSTCentralBody
+        ShortPeriodTerms <|-- TesseralShortPeriodicCoefficients
         DSSTCentralBody *--> "1" TesseralContribution
       }
 
       package utilities #CEEBD8 {
+        package hansen #EAECE6 {
+          class HansenTesseralLinear
+        }
           TesseralShortPeriodicCoefficients *--> "*" ShortPeriodicsInterpolatedCoefficient
-          TesseralContribution *--> HansenThirdBodyLinear
+          TesseralContribution *--> HansenTesseralLinear
        }
-    }
 
       package forces.gravity.potential #DDEBD8 {
           interface UnnormalizedSphericalHarmonicsProvider

@@ -393,7 +393,7 @@ public class KeplerianOrbit extends Orbit {
 
         // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
         for (int j = 0; j < 2; ++j) {
-            double f;
+            final double f;
             double fd;
             final double fdd  = e * FastMath.sin(E);
             final double fddd = e * FastMath.cos(E);

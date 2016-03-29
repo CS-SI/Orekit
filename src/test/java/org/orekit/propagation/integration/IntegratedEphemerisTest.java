@@ -31,8 +31,21 @@ import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.ThirdBodyAttraction;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
+import org.orekit.forces.radiation.RadiationSensitive;
+import org.orekit.forces.radiation.SolarRadiationPressure;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -46,8 +59,13 @@ import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -158,6 +176,20 @@ public class IntegratedEphemerisTest {
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         numericalPropagator.setEphemerisMode();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
+
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final NormalizedSphericalHarmonicsProvider gravity =
+                        GravityFieldFactory.getNormalizedProvider(8, 8);
+        final CelestialBody sun  = CelestialBodyFactory.getSun();
+        final CelestialBody moon = CelestialBodyFactory.getMoon();
+        final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(20.0, 2.0);
+        numericalPropagator.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, gravity));
+        numericalPropagator.addForceModel(new ThirdBodyAttraction(sun));
+        numericalPropagator.addForceModel(new ThirdBodyAttraction(moon));
+        numericalPropagator.addForceModel(new SolarRadiationPressure(sun,
+                                                                     Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                     spacecraft));
+
         numericalPropagator.propagate(finalDate);
         IntegratedEphemeris ephemeris = (IntegratedEphemeris) numericalPropagator.getGeneratedEphemeris();
         
@@ -165,8 +197,8 @@ public class IntegratedEphemerisTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ephemeris);
 
-        Assert.assertTrue(bos.size() > 192000);
-        Assert.assertTrue(bos.size() < 193000);
+        Assert.assertTrue(bos.size() > 218000);
+        Assert.assertTrue(bos.size() < 219000);
 
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
@@ -179,14 +211,40 @@ public class IntegratedEphemerisTest {
     }
 
     @Test
-    public void testSerializationDSST() throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+    public void testSerializationDSSTMean()
+        throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+        doTestSerializationDSST(true, 52000, 53000);
+    }
+
+    @Test
+    public void testSerializationDSSTOsculating()
+        throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+        doTestSerializationDSST(false, 1051500, 1052500);
+    }
+
+    private void doTestSerializationDSST(boolean meanOnly, int minSize, int maxSize)
+        throws PropagationException, OrekitException, IOException, ClassNotFoundException {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(10, Constants.JULIAN_DAY, tol[0], tol[1]);
-        DSSTPropagator dsstProp = new DSSTPropagator(integrator);
+        DSSTPropagator dsstProp = new DSSTPropagator(integrator, meanOnly);
         dsstProp.setInitialState(new SpacecraftState(initialOrbit), false);
         dsstProp.setEphemerisMode();
+
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        final UnnormalizedSphericalHarmonicsProvider gravity =
+                        GravityFieldFactory.getUnnormalizedProvider(8, 8);
+        final CelestialBody sun  = CelestialBodyFactory.getSun();
+        final CelestialBody moon = CelestialBodyFactory.getMoon();
+        final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(20.0, 2.0);
+        dsstProp.addForceModel(new DSSTZonal(gravity, 8, 7, 17));
+        dsstProp.addForceModel(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                gravity, 8, 8, 8, 8));
+        dsstProp.addForceModel(new DSSTThirdBody(sun));
+        dsstProp.addForceModel(new DSSTThirdBody(moon));
+        dsstProp.addForceModel(new DSSTSolarRadiationPressure(sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS, spacecraft));
+
         dsstProp.propagate(finalDate);
         IntegratedEphemeris ephemeris = (IntegratedEphemeris) dsstProp.getGeneratedEphemeris();
         
@@ -194,8 +252,8 @@ public class IntegratedEphemerisTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ephemeris);
 
-        Assert.assertTrue(bos.size() > 8000);
-        Assert.assertTrue(bos.size() < 9000);
+        Assert.assertTrue(bos.size() > minSize);
+        Assert.assertTrue(bos.size() < maxSize);
 
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), dsstProp.getFrame());
@@ -209,6 +267,10 @@ public class IntegratedEphemerisTest {
 
     @Before
     public void setUp() {
+
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
+
         // Definition of initial conditions with position and velocity
         Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);

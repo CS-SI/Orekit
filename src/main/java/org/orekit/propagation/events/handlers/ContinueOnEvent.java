@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events.handlers;
 
+import java.io.Serializable;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -28,7 +30,10 @@ import org.orekit.propagation.events.EventDetector;
  * @param <T> class type for the generic version
  * @since 6.1
  */
-public class ContinueOnEvent<T extends EventDetector> implements EventHandler<T> {
+public class ContinueOnEvent<T extends EventDetector> implements EventHandler<T>, Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20160321L;
 
     /**
      * Specific implementation of the eventOccurred interface.

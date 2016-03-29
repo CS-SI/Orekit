@@ -72,6 +72,7 @@ public class GammaMnsFunctionTest {
         throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         Field precomputedF = GammaMnsFunction.class.getDeclaredField("PRECOMPUTED_RATIOS");
         precomputedF.setAccessible(true);
+        precomputedF.set(null, new double[0]);
         new GammaMnsFunction(nMax, 0.5, +1);
         double[] orginalPrecomputed = (double[]) precomputedF.get(null);
         Assert.assertEquals((nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6, orginalPrecomputed.length);

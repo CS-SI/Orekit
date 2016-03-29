@@ -34,9 +34,15 @@
   <Match>
     <Or>
       <Class name="~.*\.DSSTPropagator\$MeanPlusShortPeriodicMapper$" />
+      <Class name="~.*\.AbstractGaussianContribution\$GaussianShortPeriodicCoefficients$" />
+      <Class name="~.*\.DSSTThirdBody\$ThirdBodyShortPeriodicCoefficients$" />
+      <Class name="~.*\.TesseralContributionContribution\$TesseralShortPeriodicCoefficients$" />
+      <Class name="~.*\.ZonalContribution\$ZonalShortPeriodicCoefficients$" />
       <Class name="~.*\.FieldOfView$" />
       <Class name="~.*\.FootprintOverlapDetector$" />
       <Class name="~.*\.GeographicZoneDetector$" />
+      <Class name="~.*\.SaastamoinenModel$" />
+      <Class name="~.*\.EventEnablingPredicateFilter$" />
     </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>
