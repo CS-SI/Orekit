@@ -388,8 +388,17 @@ OUT_OF_RANGE_LATITUDE = Breitengrad ausserhalb des gültigen Bereichs: {0}, [{1}
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = Umlaufbahntyp {0} ist hier nicht erlaubt, gültige Typen: {1}
 
+# no SEM almanac file found
+NO_SEM_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
+
 # file {0} is not a supported SEM almanac file
-NOT_A_SUPPORTED_SEM_ALMANAC_FILE = Datei {0} ist keine unterstützte SEM Almanach Datei
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE = <MISSING TRANSLATION>
+
+# no Yuma almanac file found
+NO_YUMA_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
 
 # file {0} is not a supported Yuma almanac file
-NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = Datei {0} ist keine unterstützte Yuma Almanach Datei
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = <MISSING TRANSLATION>
+
+# only {0} GNSS orbits are provided while {1} are needed to compute the DOP
+NOT_ENOUGH_GNSS_FOR_DOP = <MISSING TRANSLATION>

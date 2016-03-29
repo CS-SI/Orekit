@@ -387,3 +387,18 @@ OUT_OF_RANGE_LATITUDE = latitudine în afara domeniului de definiție: {0}, [{1}
 
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = tipul de orbită {0} nu este permis aici, tipuri permise: {1}
+
+# no SEM almanac file found
+NO_SEM_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
+
+# file {0} is not a supported SEM almanac file
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE = <MISSING TRANSLATION>
+
+# no Yuma almanac file found
+NO_YUMA_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
+
+# file {0} is not a supported Yuma almanac file
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = <MISSING TRANSLATION>
+
+# only {0} GNSS orbits are provided while {1} are needed to compute the DOP
+NOT_ENOUGH_GNSS_FOR_DOP = <MISSING TRANSLATION>
