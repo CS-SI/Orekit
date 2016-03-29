@@ -387,3 +387,9 @@ OUT_OF_RANGE_LATITUDE = Breitengrad ausserhalb des gültigen Bereichs: {0}, [{1}
 
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = Umlaufbahntyp {0} ist hier nicht erlaubt, gültige Typen: {1}
+
+# file {0} is not a supported SEM almanac file
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE = Datei {0} ist keine unterstützte SEM Almanach Datei
+
+# file {0} is not a supported Yuma almanac file
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = Datei {0} ist keine unterstützte Yuma Almanach Datei

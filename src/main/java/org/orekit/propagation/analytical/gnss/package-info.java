@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 /**
- *
  * This package provides classes to propagate GNSS orbits.
  *
- * @author P. Parraud
+ * @author Pascal Parraud
+ * @since 8.0
  *
  */
 package org.orekit.propagation.analytical.gnss;

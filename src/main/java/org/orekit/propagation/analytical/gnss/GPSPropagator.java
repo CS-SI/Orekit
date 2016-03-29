@@ -34,10 +34,11 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 /**
- * This class aims at computing GPS spacecraft position from a {@link GPSOrbitalElements GPS orbit}.
- * <p>The algorithm is defined at Table 20-IV from IS-GPS-200 document.</p>
+ * This class aims at propagating a GPS orbit from {@link GPSOrbitalElements}.
  *
- * @author CS
+ * @see <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>
+ * @author Pascal Parraud
+ * @since 8.0
  */
 public class GPSPropagator extends AbstractAnalyticalPropagator {
 
@@ -46,8 +47,10 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     private static final double GPS_AV = 7.2921151467e-5;
 
     /** Duration of the GPS cycle in seconds */
-    private static final double GPS_CYCLE_DURATION = GPSOrbitalElements.GPS_WEEK_IN_SECONDS * GPSOrbitalElements.GPS_WEEK_NB;
+    private static final double GPS_CYCLE_DURATION = GPSOrbitalElements.GPS_WEEK_IN_SECONDS
+                                                   * GPSOrbitalElements.GPS_WEEK_NB;
 
+    // Data used to solve Kepler's equation
     /** First coefficient to compute Kepler equation solver starter. */
     private static final double A;
 
@@ -63,100 +66,154 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     }
 
     // Fields
-    /** The GPS orbit used */
+    /** The GPS orbital elements used */
     private final GPSOrbitalElements gpsOrbit;
-
-    /** The frame used for GPS orbit propagation. */
-    private final Frame ecef;
 
     /** The spacecraft mass (kg). */
     private final double mass;
 
+    /** The ECI frame used for GPS propagation. */
+    private final Frame eci;
+
+    /** The ECEF frame used for GPS propagation. */
+    private final Frame ecef;
 
     /**
-     * Constructor.
+     * This nested class aims at building a GPSPropagator.
+     * <p>It implements the classical builder pattern.</p>
      *
-     * @param orb the GPS orbit to use for propagation
-     * @param attitudeProvider provider for attitude computation
-     * @param mass spacecraft mass (kg)
-     * @exception OrekitException if some specific error occurs
      */
-    public GPSPropagator(final GPSOrbitalElements orb, final AttitudeProvider attitudeProvider,
-                         final double mass) throws OrekitException {
-        super(attitudeProvider);
-        this.mass = mass;
-        this.ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        // Stores the GPS orbit
-        this.gpsOrbit = orb;
+    public static class Builder {
+
+        // Required parameter
+        private final GPSOrbitalElements orbit;
+
+        // Optional parameters
+        private AttitudeProvider attitudeProvider = DEFAULT_LAW;
+        private double mass = DEFAULT_MASS;
+        private Frame eci  = null;
+        private Frame ecef = null;
+
+        /** Initializes the builder.
+         * <p>The GPS orbital elements is the only requested parameter to build a GPSPropagator.</p>
+         * <p>The attitude provider is set by default to the
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.</br>
+         * The mass is set by default to the
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.</br>
+         * The ECI frame is set by default to the
+         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.</br>
+         * The ECEF frame is set by default to the
+         *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
+         * </p>
+         * 
+         * @param gpsOrbElt the GPS orbital elements to be used by the GPSpropagator.
+         * @throws OrekitException if data embedded in the library cannot be read
+         * @see #attitudeProvider(AttitudeProvider provider)
+         * @see #mass(double mass)
+         * @see #eci(Frame inertial)
+         * @see #ecef(Frame bodyFixed)
+         */
+        public Builder(final GPSOrbitalElements gpsOrbElt) throws OrekitException {
+            this.orbit = gpsOrbElt;
+            this.eci   = FramesFactory.getEME2000();
+            this.ecef  = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        }
+
+        /** Sets the attitude provider.
+         *
+         * @param provider the the attitude provider
+         * @return the updated builder
+         */
+        public Builder attitudeProvider(final AttitudeProvider provider) {
+            this.attitudeProvider = provider;
+            return this;
+        }
+
+        /** Sets the mass.
+         *
+         * @param mass the mass (in kg)
+         * @return the updated builder
+         */
+        public Builder mass(final double mass) {
+            this.mass = mass;
+            return this;
+        }
+
+        /** Sets the Earth Centered Inertial frame used for propagation.
+         *
+         * @param inertial the ECI frame
+         * @return the updated builder
+         */
+        public Builder eci(final Frame inertial) {
+            this.eci = inertial;
+            return this;
+        }
+
+        /** Sets the Earth Centered Earth Fixed frame assimilated to the WGS84 ECEF.
+         *
+         * @param bodyFixed the ECEF frame
+         * @return the updated builder
+         */
+        public Builder ecef(final Frame bodyFixed) {
+            this.ecef = bodyFixed;
+            return this;
+        }
+
+        /** Finalizes the build.
+         *
+         * @return the built GPSPropagator
+         */
+        public GPSPropagator build() {
+            return new GPSPropagator(this);
+        }
     }
 
     /**
-     * Constructor with default mass.
+     * Private constructor.
      *
-     * @param orb the GPS orbit to use for propagation
-     * @param attitudeProvider provider for attitude computation
-     * @exception OrekitException if some specific error occurs
+     * @param builder the builder
      */
-    public GPSPropagator(final GPSOrbitalElements orb, final AttitudeProvider attitudeProvider) throws OrekitException {
-        this(orb, attitudeProvider, DEFAULT_MASS);
+    private GPSPropagator(final Builder builder) {
+        super(builder.attitudeProvider);
+        // Stores the GPS orbital elements
+        this.gpsOrbit = builder.orbit;
+        // Sets the start date as the date of the orbital elements
+        setStartDate(gpsOrbit.getDate());
+        // Sets the mass
+        this.mass = builder.mass;
+        // Sets the Earth Centered Inertial frame
+        this.eci  = builder.eci;
+        // Sets the Earth Centered Earth Fixed frame
+        this.ecef = builder.ecef;
     }
 
     /**
-     * Constructor with default attitude law.
-     *
-     * @param orb the GPS orbit to use for propagation
-     * @param mass spacecraft mass (kg)
-     * @exception OrekitException if some specific error occurs
-     */
-    public GPSPropagator(final GPSOrbitalElements orb, final double mass) throws OrekitException {
-        this(orb, DEFAULT_LAW, mass);
-    }
-
-    /**
-     * Constructor with default mass and default attitude law.
-     *
-     * @param orb the GPS orbit to use for propagation
-     * @exception OrekitException if some specific error occurs
-     */
-    public GPSPropagator(final GPSOrbitalElements orb) throws OrekitException {
-        this(orb, DEFAULT_LAW, DEFAULT_MASS);
-    }
-
-    /** {@inheritDoc} */
-    public Frame getFrame() {
-        return ecef;
-    }
-
-    /**
-     * Gets the underlying GPS orbit.
-     *
-     * @return the underlying GPS orbit
-     */
-    public GPSOrbitalElements getGPSOrbit() {
-        return gpsOrbit;
-    }
-
-    /**
-     * Gets the position of the GPS SV at the requested date from the GPS orbit.
+     * Gets the PVCoordinates of the GPS SV at the requested date in
+     * the {@link #getECEF() ECEF frame} from the GPS orbital elements.
      *
      * @param date the computation date
-     * @return the position in GPS reference frame (WGS84 ECEF)
+     * @return the PVCoordinates in ECEF frame
+     * @see #getECEF()
      */
     public PVCoordinates getPVCoordinates(final AbsoluteDate date) {
         // Computes the position at the date
         final Vector3D pos = progate(date);
-        return new PVCoordinates(pos, Vector3D.NaN, Vector3D.NaN);
+        // TODO: computes the velocity ...
+        final Vector3D vel = Vector3D.NaN;
+        final Vector3D acc = Vector3D.NaN;
+        // Gets the transform
+        return new PVCoordinates(pos, vel, acc);
     }
 
     /**
-     * Gets the position of the GPS SV in ECEF.
+     * Gets the position of the GPS SV in WGS84 ECEF.
      *
      * <p>The algorithm is defined at Table 20-IV from IS-GPS-200 document.</p>
      *
      * @param date the computation date
-     * @return the GPS SV position in ECEF
+     * @return the GPS SV position in WGS84 ECEF
      */
-    private Vector3D progate(final AbsoluteDate date) {
+    public Vector3D progate(final AbsoluteDate date) {
         // Duration from GPS ephemeris Reference date
         final double tk = getTk(date);
         // Mean anomaly
@@ -206,10 +263,10 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
         // Time from ephemeris reference epoch
         double tk = date.durationFrom(gpsOrbit.getDate());
         // Adjusts the time to take roll over week into account
-        if (tk > 0.5 * GPS_CYCLE_DURATION) {
+        while (tk > 0.5 * GPS_CYCLE_DURATION) {
             tk -= GPS_CYCLE_DURATION;
         }
-        if (tk < -0.5 * GPS_CYCLE_DURATION) {
+        while (tk < -0.5 * GPS_CYCLE_DURATION) {
             tk += GPS_CYCLE_DURATION;
         }
         // Returns the time from ephemeris reference epoch
@@ -277,7 +334,6 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
 
     /**
      * Accurate computation of E - e sin(E).
-     * <p>This algorithm has been copied from the OREKIT library (KeplerianOrbit class).</p>
      *
      * @param E eccentric anomaly
      * @return E - e sin(E)
@@ -308,9 +364,50 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
         return FastMath.atan2(svk, cvk);
     }
 
+    /**
+     * Get the Earth gravity coefficient used for GPS propagation.
+     * @return the Earth gravity coefficient.
+     */
+    public static double getMU() {
+        return GPSOrbitalElements.GPS_MU;
+    }
+
+    /**
+     * Gets the underlying GPS orbital elements.
+     *
+     * @return the underlying GPS orbital elements
+     */
+    public GPSOrbitalElements getGPSOrbitalElements() {
+        return gpsOrbit;
+    }
+
+    /**
+     * Gets the Earth Centered Inertial frame used to propagate the orbit.
+     *
+     * @return the ECI frame
+     */
+    public Frame getECI() {
+        return eci;
+    }
+
+    /**
+     * Gets the Earth Centered Earth Fixed frame used to propagate GPS orbits according to the
+     * <a href="http://www.gps.gov/technical/icwg/IS-GPS-200H.pdf">GPS Interface Specification</a>.
+     * <p>This frame is assimilated to the WGS84 ECEF.</p>
+     *
+     * @return the ECEF frame
+     */
+    public Frame getECEF() {
+        return ecef;
+    }
+
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state)
-            throws PropagationException {
+    public Frame getFrame() {
+        return eci;
+    }
+
+    /** {@inheritDoc} */
+    public void resetInitialState(final SpacecraftState state) throws PropagationException {
         throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
@@ -326,8 +423,16 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date)
-            throws PropagationException {
-        return new CartesianOrbit(getPVCoordinates(date), ecef, date, GPSOrbitalElements.GPS_MU);
+    protected Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
+        try {
+            // Gets the PVCoordinates in ECEF frame
+            final PVCoordinates pvaInECEF = getPVCoordinates(date);
+            // Transforms the PVCoordinates to ECI frame
+            final PVCoordinates pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
+            // Returns the Cartesian orbit
+            return new CartesianOrbit(pvaInECI, eci, date, GPSOrbitalElements.GPS_MU);
+        } catch (OrekitException oe) {
+            throw new PropagationException(oe);
+        }
     }
 }

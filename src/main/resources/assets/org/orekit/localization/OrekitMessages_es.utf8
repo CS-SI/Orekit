@@ -387,3 +387,9 @@ OUT_OF_RANGE_LATITUDE = la latitud está fuera de rango: {0}, [{1}, {2}]
 
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = tipo de órbita {0} no permitida, los tipos permitidos son: {1}
+
+# file {0} is not a supported SEM almanac file
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE = el fichero {0} no es un fichero SEM almanaque reconocido
+
+# file {0} is not a supported Yuma almanac file
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = el fichero {0} no es un fichero Yuma almanaque reconocido

@@ -21,11 +21,12 @@ import org.orekit.time.AbsoluteDate;
 
 
 /**
- * This class is a container for the result of a DOP computation.
+ * This class is a container for the result of a single DOP computation.
  *
  * @see <a href="http://en.wikipedia.org/wiki/Dilution_of_precision_%28GPS%29">Dilution of precision</a>
- *
  * @author Pascal Parraud
+ * @since 8.0
+ *
  */
 public class DOP {
 
@@ -42,9 +43,9 @@ public class DOP {
     /**
      * Constructor.
      *
-     * @param location location on the surface of the Earth where DOP was calculated
+     * @param location location with respect to the Earth where DOP was calculated
      * @param date date when all DOP was calculated
-     * @param gnssNb number of GNSS spacecraft taken into account for DOP computation
+     * @param gnssNb number of GNSS satellites taken into account for DOP computation
      * @param gdop the geometric dilution of precision
      * @param pdop the position dilution of precision
      * @param hdop the horizontal dilution of precision
@@ -64,7 +65,7 @@ public class DOP {
     }
 
     /**
-     * @return the location on the surface of the Earth where DOP was calculated
+     * @return the location with respect to the Earth where DOP was calculated
      */
     public GeodeticPoint getLocation() {
         return location;
@@ -78,7 +79,7 @@ public class DOP {
     }
 
     /**
-     * @return the number of GNSS spacecraft taken into account for DOP computation
+     * @return the number of GNSS satellites taken into account for DOP computation
      */
     public int getGnssNb() {
         return gnssNb;

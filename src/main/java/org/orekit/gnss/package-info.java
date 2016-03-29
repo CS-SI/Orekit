@@ -18,7 +18,8 @@
  *
  * This package provides classes related to GNSS applications.
  *
- * @author P. Parraud
+ * @author Pascal Parraud
+ * @since 8.0
  *
  */
 package org.orekit.gnss;

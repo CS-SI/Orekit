@@ -16,33 +16,49 @@
  */
 package fr.cs.examples.gnss;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
+import org.apache.commons.math3.geometry.spherical.twod.S2Point;
+import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.DOP;
 import org.orekit.gnss.DOPComputer;
+import org.orekit.gnss.GPSAlmanac;
+import org.orekit.gnss.SEMParser;
+import org.orekit.models.earth.tessellation.ConstantAzimuthAiming;
+import org.orekit.models.earth.tessellation.EllipsoidTessellator;
+import org.orekit.models.earth.tessellation.TileAiming;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.tle.TLE;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.analytical.tle.TLESeries;
+import org.orekit.propagation.analytical.gnss.GPSPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import fr.cs.examples.Autoconfiguration;
 
 /**
  * Orekit tutorial for DOP computation.
- * <p>This tutorial shows a basic usage of the computation of the DOP for a geographic zone and a period.<p>
+ *
+ * <p>This tutorial shows a basic usage for computing the DOP over a
+ * geographic zone and for a period.</p>
+ * <p>It uses a SEM almanac file to get GPS orbital data in order to
+ * configure the GPS propagators used for the DOP computation.</p>
+ * <p>It uses the tessellation of the geographic zone to get the points
+ * on which DOP is computed.</p>
+ *
  * @author Pascal Parraud
  */
 public class DOPComputation {
@@ -51,85 +67,175 @@ public class DOPComputation {
      * Program entry point.
      * @param args program arguments (unused here)
      */
-    public static void main(String[] args) throws OrekitException, IOException {
+    public static void main(String[] args) {
 
-        // Configuration d'Orekit
-        Autoconfiguration.configureOrekit();
+        try {
+            // configure Orekit
+            final File orekitData = new File(DOPComputation.class.getResource("/tutorial-orekit-data").toURI().getPath());
+            final File gnssData = new File(DOPComputation.class.getResource("/tutorial-gnss").toURI().getPath());
+            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(orekitData));
+            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(gnssData));
 
-        // Periode de calcul
-        final AbsoluteDate dateDeb = new AbsoluteDate(2015, 4, 8, 0, 0, 00.000,
-                                                      TimeScalesFactory.getUTC());
-        final AbsoluteDate dateFin = dateDeb.shiftedBy(Constants.JULIAN_DAY);
-        final double tStep = 600.;
+            // The Earth body shape
+            final OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
-        // Build the Earth body shape
-        final OneAxisEllipsoid shape = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                            Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+            // The geographic zone to consider (clockwise defined for tessellation)
+            final double[][] area = new double[][] { {43.643820, 1.470092},
+                                                     {43.566007, 1.488974},
+                                                     {43.568246, 1.417906},
+                                                     {43.613503, 1.387351},
+                                                     {43.652515, 1.425460} };
+            final List<GeodeticPoint> zone = new ArrayList<GeodeticPoint>(area.length);
+            for (double[] point: area) {
+                zone.add(new GeodeticPoint(FastMath.toRadians(point[0]),
+                                           FastMath.toRadians(point[1]),
+                                           0.));
+            }
 
-        // Zone de calcul
+            // The size of the meshes in meters
+            final double meshSize = 1000.;
 
-        // Toulouse
-        // Nominal ordering (counterclockwise)
-//        final double[][] area = new double[][] { {43.652515, 1.425460},
-//                                                 {43.613503, 1.387351},
-//                                                 {43.568246, 1.417906},
-//                                                 {43.566007, 1.488974},
-//                                                 {43.643820, 1.470092} };
-        // Inverse ordering (clockwise)
-        final double[][] area = new double[][] { {43.643820, 1.470092},
-                                                 {43.566007, 1.488974},
-                                                 {43.568246, 1.417906},
-                                                 {43.613503, 1.387351},
-                                                 {43.652515, 1.425460} };
+            // The min elevation over the zone: 5°
+            final double minElevation = FastMath.toRadians(5.0);
+             
+            // Computation period and time step: 1 day, 10'
+            final AbsoluteDate tStart = new AbsoluteDate(2016, 3, 2, 20, 0, 0., TimeScalesFactory.getUTC());
+            final AbsoluteDate tStop  = tStart.shiftedBy(Constants.JULIAN_DAY);
+            final double tStep = 600.;
+
+            // Computes the DOP over the zone for the period
+            new DOPComputation().run(shape, zone, meshSize, minElevation, tStart, tStop, tStep);
+            
+        } catch (OrekitException oe) {
+            System.err.println(oe.getLocalizedMessage());
+            System.exit(1);
+        } catch (IOException ioe) {
+            System.err.println(ioe.getLocalizedMessage());
+            System.exit(1);
+        } catch (ParseException pe) {
+            System.err.println(pe.getLocalizedMessage());
+            System.exit(1);
+        } catch (URISyntaxException use) {
+            System.err.println(use.getLocalizedMessage());
+            System.exit(1);
+        }
+    }
+
+    private void run(final OneAxisEllipsoid shape, final List<GeodeticPoint> zone,
+                     final double meshSize, final double minElevation,
+                     final AbsoluteDate tStart, final AbsoluteDate tStop, final double tStep)
+            throws IOException, OrekitException, ParseException {
+
+        // Gets the GPS almanacs from the SEM file
+        final SEMParser reader = new SEMParser(null);
+        reader.loadData();
+        final List<GPSAlmanac> almanacs = reader.getAlmanacs();
         
-        final double cellSize  = 1000.;
+        // Creates the GPS propagators from the almanacs
+        final List<Propagator> propagators = new ArrayList<Propagator>();
+        for (GPSAlmanac almanac: almanacs) {
+            propagators.add(new GPSPropagator.Builder(almanac).build());
+        }
+        
+        // Meshes the area of interest into a grid of geodetic points.
+        final List<List<GeodeticPoint>> points = sample(shape, zone, meshSize);
 
-        // La Corse
-//        final double[][] points = new double[][] { { 42.15249,  9.56001 },
-//                                                 { 43.00998,  9.39000 },
-//                                                 { 42.62812,  8.74600 },
-//                                                 { 42.25651,  8.54421 },
-//                                                 { 41.58361,  8.77572 },
-//                                                 { 41.38000,  9.22975 } };
-//        final double cellSize  = 10000.;
-        final List<GeodeticPoint> zone = new ArrayList<GeodeticPoint>(area.length);
-        for (double[] point: area) {
-            zone.add(new GeodeticPoint(FastMath.toRadians(point[0]),
-                                       FastMath.toRadians(point[1]),
-                                       0.));
+        // Creates the DOP computers for all the locations of the sampled geographic zone
+        final List<DOPComputer> computers = new ArrayList<DOPComputer>();
+        for (List<GeodeticPoint> row: points) {
+            for (GeodeticPoint point: row) {
+                computers.add(DOPComputer.create(shape, point).withConstantElevation(minElevation));
+            }
         }
 
-        // Récuperation des TLE des GPS opérationnels (fichier gps-ops.txt)
-        final TLESeries tleFile = new TLESeries("^gps-ops\\.txt$", true);
-        final Set<Integer> scn = tleFile.getAvailableSatelliteNumbers();
-        final TLE[] tles = new TLE[scn.size()];
-        int i = 0;
-        for (int nb: scn) {
-            tleFile.loadTLEData(nb);
-            tles[i++] = tleFile.getLast();
+        // Computes the DOP for each point over the period
+        final List<List<DOP>> allDop = new ArrayList<List<DOP>>();
+        // Loops on the period
+        AbsoluteDate tc = tStart;
+        while (tc.compareTo(tStop) != 1) {
+            // Loops on the grid points
+            final List<DOP> dopAtDate = new ArrayList<DOP>();
+            for (DOPComputer computer: computers) {
+                final DOP dop = computer.compute(tc, propagators);
+                dopAtDate.add(dop);
+            }
+            allDop.add(dopAtDate);
+            tc = tc.shiftedBy(tStep);
         }
-        final List<Propagator> gnss = new ArrayList<Propagator>(tles.length);
-        for (TLE tle : tles) {
-            gnss.add(TLEPropagator.selectExtrapolator(tle));
-        }
 
-        // Creation du calculateur
-        final DOPComputer dop = DOPComputer.create(shape, zone, cellSize);
-
-        // Calcul des DOP sur la zone et sur la periode pour les GPS opérationnels
-        final List<List<DOP>> allDop = dop.compute(dateDeb, dateFin, tStep, gnss);
-
-        // Post-traitement
-        for (List<DOP> dopAtTime : allDop) {
+        // Post-processing: gets the statistics of PDOP over the zone at each time
+        for (List<DOP> dopAtDate : allDop) {
             final SummaryStatistics pDoP = new SummaryStatistics();
-            for (DOP dopAtLoc : dopAtTime) {
+            for (DOP dopAtLoc : dopAtDate) {
                 pDoP.addValue(dopAtLoc.getPdop());
             }
-            final AbsoluteDate date = dopAtTime.get(0).getDate();
+            final AbsoluteDate date = dopAtDate.get(0).getDate();
             System.out.println(date.toString() + " - PDOP min = " + pDoP.getMin()
                                                + " - PDOP max = " + pDoP.getMax());
         }
     }
 
+    /**
+     * Mesh an area of interest into a grid of geodetic points.
+     * 
+     * @param zone the area to mesh
+     * @param meshSize the size of the square meshes as a distance on the Earth surface (in meters)
+     * @return a list of geodetic points sampling the zone of interest
+     * @throws OrekitException if the area cannot be meshed
+     */
+    private List<List<GeodeticPoint>> sample(final OneAxisEllipsoid shape,
+                                             final List<GeodeticPoint> zone,
+                                             final double meshSize) throws OrekitException {
+        // Convert the area into a SphericalPolygonsSet
+        final SphericalPolygonsSet sps = computeSphericalPolygonsSet(zone);
+    
+        // Build the tesselator
+        final TileAiming aiming = new ConstantAzimuthAiming(shape, 0.);
+        final EllipsoidTessellator tessellator = new EllipsoidTessellator(shape, aiming, 4);
+
+        // Returns the sampled area as a grid of geodetic points
+        return tessellator.sample(sps, meshSize, meshSize);
+      }
+
+    /**
+     * Computes a spherical polygons set from a geographic zone.
+     *
+     * @param zone the geographic zone
+     * @return the spherical polygons set
+     */
+    private static SphericalPolygonsSet computeSphericalPolygonsSet(final List<GeodeticPoint> zone) {
+        // Convert the area into a SphericalPolygonsSet
+        final SphericalPolygonsSet sps = computeSPS(zone);
+        // If the zone is not defined counterclockwise
+        if (sps.getSize() > MathUtils.TWO_PI) {
+            // Inverts the order of the points
+            final List<GeodeticPoint> zone2 = new ArrayList<GeodeticPoint>(zone.size());
+            for (int j = zone.size() - 1; j > -1; j--) {
+                zone2.add(zone.get(j));
+            }
+            return computeSPS(zone2);
+        } else {
+            return sps;
+        }
+    }
+
+    /**
+     * Computes a spherical polygons set from a geographic zone.
+     *
+     * @param zone the geographic zone
+     * @return the spherical polygons set
+     */
+    private static SphericalPolygonsSet computeSPS(final List<GeodeticPoint> zone) {
+        // Convert the area into a SphericalPolygonsSet
+        final S2Point[] vertices = new S2Point[zone.size()];
+        int i = 0;
+        for (GeodeticPoint point : zone) {
+            final double theta = point.getLongitude();
+            final double phi   = 0.5 * FastMath.PI - point.getLatitude();
+            vertices[i++] = new S2Point(theta, phi);
+        }
+        return new SphericalPolygonsSet(1.0e-10, vertices);
+    }
 }
