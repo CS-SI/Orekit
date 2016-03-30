@@ -114,12 +114,10 @@ public class SP3Parser implements OrbitFileParser {
             boolean done = false;
             do {
                 line = reader.readLine();
-                if (line != null) {
-                    if ("EOF".equalsIgnoreCase(line)) {
-                        done = true;
-                    } else if (line.length() > 0) {
-                        parseContentLine(line, pi);
-                    }
+                if (line == null || "EOF".equalsIgnoreCase(line.trim())) {
+                    done = true;
+                } else if (line.length() > 0) {
+                    parseContentLine(line, pi);
                 }
             } while (!done);
         } finally {
