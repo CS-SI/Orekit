@@ -1,3 +1,19 @@
+/* Copyright 2002-2016 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.gnss;
 
 import org.apache.commons.math3.util.FastMath;
@@ -8,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
 /**
  * This class holds a GPS almanac as read from SEM or YUMA files.
  *
- * <p>Depending on the source (SEM or YUMA), some fields may be filled in or not.</br>
+ * <p>Depending on the source (SEM or YUMA), some fields may be filled in or not.<br/>
  * An almanac read from a YUMA file doesn't hold SVN number, average URA and satellite
  * configuration.</p>
  *
@@ -19,42 +35,41 @@ import org.orekit.time.AbsoluteDate;
 public class GPSAlmanac implements GPSOrbitalElements {
 
     // Fields
-    /** the source of the almanac */
+    /** Source of the almanac. */
     private final String src;
-    /** the PRN number */
+    /** PRN number. */
     private final int prn;
-    /** the SVN number */
+    /** SVN number. */
     private final int svn;
-    /** the health status */
+    /** Health status. */
     private final int health;
-    /** the average URA */
+    /** Average URA. */
     private final int ura;
-    /** the satellite configuration */
+    /** Satellite configuration. */
     private final int config;
-    /** the GPS week */
+    /** GPS week. */
     private final int week;
-    /** the time of applicability */
+    /** Time of applicability. */
     private final double toa;
-    /** the semi-major axis */
+    /** Semi-major axis. */
     private final double sma;
-    /** the eccentricity */
+    /** Eccentricity. */
     private final double ecc;
-    /** the inclination */
+    /** Inclination. */
     private final double inc;
-    /** the Longitude of Orbital Plane */
+    /** Longitude of Orbital Plane. */
     private final double om0;
-    /** the Rate of Right Ascension */
+    /** Rate of Right Ascension. */
     private final double dom;
-    /** the argument of perigee */
+    /** Argument of perigee. */
     private final double aop;
-    /** the mean anomaly */
+    /** Mean anomaly. */
     private final double anom;
-    /** the zeroth order clock correction */
+    /** Zeroth order clock correction. */
     private final double af0;
-    /** the first order clock correction */
+    /** First order clock correction. */
     private final double af1;
 
-    
     /**
      * Constructor.
      *
@@ -80,7 +95,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
                       final int week, final double toa,
                       final double sqa, final double ecc, final double inc,
                       final double om0, final double dom, final double aop,
-                      final double anom, final double af0, double af1,
+                      final double anom, final double af0, final double af1,
                       final int health, final int ura, final int config) {
         this.src = source;
         this.prn = prn;
@@ -214,7 +229,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
     public double getCis() {
         return 0;
     }
-   
+
     /**
      * Gets the Zeroth Order Clock Correction.
      *
@@ -223,7 +238,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
     public double getAf0() {
         return af0;
     }
-    
+
     /**
      * Gets the First Order Clock Correction.
      *
@@ -232,7 +247,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
     public double getAf1() {
         return af1;
     }
-    
+
     /**
      * Gets the Health status.
      *
@@ -241,7 +256,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
     public int getHealth() {
         return health;
     }
-    
+
     /**
      * Gets the average URA number.
      *
@@ -250,7 +265,7 @@ public class GPSAlmanac implements GPSOrbitalElements {
     public int getURA() {
         return ura;
     }
-    
+
     /**
      * Gets the satellite configuration.
      *

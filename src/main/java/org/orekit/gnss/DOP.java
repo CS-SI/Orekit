@@ -23,21 +23,29 @@ import org.orekit.time.AbsoluteDate;
 /**
  * This class is a container for the result of a single DOP computation.
  *
- * @see <a href="http://en.wikipedia.org/wiki/Dilution_of_precision_%28GPS%29">Dilution of precision</a>
  * @author Pascal Parraud
  * @since 8.0
+ * @see <a href="http://en.wikipedia.org/wiki/Dilution_of_precision_%28GPS%29">Dilution of precision</a>
  *
  */
 public class DOP {
 
     // Fields
+    /** Location with respect to the Earth where DOP was calculated. */
     private final GeodeticPoint location;
+    /** Date when all DOP was calculated. */
     private final AbsoluteDate date;
+    /** Number of GNSS satellites taken into account for DOP computation. */
     private final int gnssNb;
+    /** Geometric dilution of precision. */
     private final double gdop;
+    /** Position dilution of precision. */
     private final double pdop;
+    /** Horizontal dilution of precision. */
     private final double hdop;
+    /** Vertical dilution of precision. */
     private final double vdop;
+    /** Time dilution of precision. */
     private final double tdop;
 
     /**
@@ -64,57 +72,57 @@ public class DOP {
         this.tdop = tdop;
     }
 
-    /**
+    /** Gets the location with respect to the Earth where DOP was calculated.
      * @return the location with respect to the Earth where DOP was calculated
      */
     public GeodeticPoint getLocation() {
         return location;
     }
 
-    /**
+    /** Gets the calculation date of the DOP.
      * @return the calculation date of the DOP
      */
     public AbsoluteDate getDate() {
         return date;
     }
 
-    /**
+    /** Gets the number of GNSS satellites taken into account for DOP computation.
      * @return the number of GNSS satellites taken into account for DOP computation
      */
     public int getGnssNb() {
         return gnssNb;
     }
 
-    /**
-     * @return the geometric dilution of precision
+    /** Gets the geometric dilution of precision.
+     * @return the GDOP
      */
     public double getGdop() {
         return gdop;
     }
 
-    /**
-     * @return the position dilution of precision
+    /** Gets the position dilution of precision.
+     * @return the PDOP
      */
     public double getPdop() {
         return pdop;
     }
 
-    /**
-     * @return the horizontal dilution of precision
+    /** Gets the horizontal dilution of precision.
+     * @return the HDOP
      */
     public double getHdop() {
         return hdop;
     }
 
-    /**
-     * @return the vertical dilution of precision
+    /** Gets the vertical dilution of precision.
+     * @return the VDOP
      */
     public double getVdop() {
         return vdop;
     }
 
-    /**
-     * @return the time dilution of precision
+    /** Gets the time dilution of precision.
+     * @return the TDOP
      */
     public double getTdop() {
         return tdop;

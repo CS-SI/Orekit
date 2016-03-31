@@ -136,7 +136,10 @@ public class DOPComputation {
         // Creates the GPS propagators from the almanacs
         final List<Propagator> propagators = new ArrayList<Propagator>();
         for (GPSAlmanac almanac: almanacs) {
-            propagators.add(new GPSPropagator.Builder(almanac).build());
+            // Only keeps almanac with health status ok
+            if (almanac.getHealth() == 0) {
+                propagators.add(new GPSPropagator.Builder(almanac).build());
+            }
         }
         
         // Meshes the area of interest into a grid of geodetic points.
@@ -146,7 +149,7 @@ public class DOPComputation {
         final List<DOPComputer> computers = new ArrayList<DOPComputer>();
         for (List<GeodeticPoint> row: points) {
             for (GeodeticPoint point: row) {
-                computers.add(DOPComputer.create(shape, point).withConstantElevation(minElevation));
+                computers.add(DOPComputer.create(shape, point).withMinElevation(minElevation));
             }
         }
 

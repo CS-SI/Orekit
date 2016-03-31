@@ -33,23 +33,22 @@ import org.orekit.utils.ElevationMask;
 
 /**
  * This class aims at computing the dilution of precision.
- * 
- * @see <a href="http://en.wikipedia.org/wiki/Dilution_of_precision_%28GPS%29">Dilution of precision</a>
+ *
  * @author Pascal Parraud
  * @since 8.0
- *
+ * @see <a href="http://en.wikipedia.org/wiki/Dilution_of_precision_%28GPS%29">Dilution of precision</a>
  */
 public class DOPComputer {
 
     // Constants
-    /** Minimum elevation : 0° */
-    public final static double DOP_MIN_ELEVATION = 0.;
+    /** Minimum elevation : 0°. */
+    public static final double DOP_MIN_ELEVATION = 0.;
 
-    /** Minimum number of propagators for DOP computation */
-    private final static int DOP_MIN_PROPAGATORS = 4;
+    /** Minimum number of propagators for DOP computation. */
+    private static final int DOP_MIN_PROPAGATORS = 4;
 
     // Fields
-    /** The location as a topocentric frame */
+    /** The location as a topocentric frame. */
     private final TopocentricFrame frame;
 
     /** Elevation mask used for computation, if defined. */
@@ -61,7 +60,7 @@ public class DOPComputer {
     /**
      * Constructor for DOP computation.
      *
-     * @param frames the topocentric frame linked to the locations where DOP will be computed
+     * @param frame the topocentric frame linked to the locations where DOP will be computed
      * @param minElev the minimum elevation to consider (rad)
      * @param elevMask the elevation mask to consider
      */
@@ -89,7 +88,7 @@ public class DOPComputer {
     }
 
     /**
-     * Setup the minimum elevation for detection.
+     * Set the minimum elevation.
      *
      * <p>This will override an elevation mask if it has been configured as such previously.</p>
      *
@@ -98,27 +97,27 @@ public class DOPComputer {
      *
      * @see #getMinElevation()
      */
-    public DOPComputer withConstantElevation(final double newMinElevation) {
+    public DOPComputer withMinElevation(final double newMinElevation) {
         return new DOPComputer(frame, newMinElevation, null);
     }
 
     /**
-     * Setup the elevation mask for detection using the passed in mask object.
+     * Set the elevation mask.
      *
      * <p>This will override the min elevation if it has been configured as such previously.</p>
      *
-     * @param elevationMask elevation mask to use for the computation
+     * @param newElevationMask elevation mask to use for the computation
      * @return a new detector with updated configuration (the instance is not changed)
      *
      * @see #getElevationMask()
      */
-    public DOPComputer withElevationMask(final ElevationMask elevationMask) {
-        return new DOPComputer(frame, DOP_MIN_ELEVATION, elevationMask);
+    public DOPComputer withElevationMask(final ElevationMask newElevationMask) {
+        return new DOPComputer(frame, DOP_MIN_ELEVATION, newElevationMask);
     }
 
     /**
      * Compute the DOP at a given date for a set of GNSS spacecrafts.
-     * 
+     *
      * @param date the computation date
      * @param gnss the propagators for GNSS spacecraft involved in the DOP computation
      * @return the DOP at the location
@@ -136,9 +135,9 @@ public class DOPComputer {
         for (Propagator prop : gnss) {
             final Vector3D pos = prop.getPVCoordinates(date, frame).getPosition();
             final double elev  = frame.getElevation(pos, frame, date);
-            final double elMin = (elevationMask != null)
-                               ? elevationMask.getElevation(frame.getAzimuth(pos, frame, date))
-                               : minElevation;
+            final double elMin = (elevationMask != null) ?
+                                 elevationMask.getElevation(frame.getAzimuth(pos, frame, date)) :
+                                 minElevation;
             // Only visible satellites are considered
             if (elev > elMin) {
                 // Create the rows of the H matrix
@@ -157,7 +156,7 @@ public class DOPComputer {
             h.setRow(k, satDir[k]);
         }
 
-        // Compute the pseudo-inverse of H 
+        // Compute the pseudo-inverse of H
         final RealMatrix hInv = MatrixUtils.inverse(h.transpose().multiply(h));
         final double sx2 = hInv.getEntry(0, 0);
         final double sy2 = hInv.getEntry(1, 1);
@@ -165,7 +164,7 @@ public class DOPComputer {
         final double st2 = hInv.getEntry(3, 3);
 
         // Extract various DOP : GDOP, PDOP, HDOP, VDOP, TDOP
-        final double gdop = FastMath.sqrt(hInv.getTrace()); 
+        final double gdop = FastMath.sqrt(hInv.getTrace());
         final double pdop = FastMath.sqrt(sx2 + sy2 + sz2);
         final double hdop = FastMath.sqrt(sx2 + sy2);
         final double vdop = FastMath.sqrt(sz2);
@@ -173,5 +172,23 @@ public class DOPComputer {
 
         // Return all the DOP values
         return new DOP(frame.getPoint(), date, satNb, gdop, pdop, hdop, vdop, tdop);
+    }
+
+    /**
+     * Get the minimum elevation.
+     *
+     * @return the minimum elevation (rad)
+     */
+    public double getMinElevation() {
+        return minElevation;
+    }
+
+    /**
+     * Get the elevation mask.
+     *
+     * @return the elevation mask
+     */
+    public ElevationMask getElevationMask() {
+        return elevationMask;
     }
 }

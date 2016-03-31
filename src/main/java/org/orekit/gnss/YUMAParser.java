@@ -49,25 +49,25 @@ import org.orekit.errors.OrekitMessages;
 public class YUMAParser implements DataLoader {
 
     // Constants
-    /** The source of the almanacs */
+    /** The source of the almanacs. */
     private static final String SOURCE = "YUMA";
 
-    /** the useful keys in the YUMA file */
+    /** the useful keys in the YUMA file. */
     private static final String[] KEY = {
-                                          "id", // ID
-                                          "health", // Health
-                                          "eccentricity", // Eccentricity
-                                          "time", // Time of Applicability(s)
-                                          "orbital", // Orbital Inclination(rad)
-                                          "rate", // Rate of Right Ascen(r/s)
-                                          "sqrt", // SQRT(A)  (m 1/2)
-                                          "right", // Right Ascen at Week(rad)
-                                          "argument", // Argument of Perigee(rad)
-                                          "mean", // Mean Anom(rad)
-                                          "af0", // Af0(s)
-                                          "af1", // Af1(s/s)
-                                          "week" // week
-                                        };
+        "id", // ID
+        "health", // Health
+        "eccentricity", // Eccentricity
+        "time", // Time of Applicability(s)
+        "orbital", // Orbital Inclination(rad)
+        "rate", // Rate of Right Ascen(r/s)
+        "sqrt", // SQRT(A)  (m 1/2)
+        "right", // Right Ascen at Week(rad)
+        "argument", // Argument of Perigee(rad)
+        "mean", // Mean Anom(rad)
+        "af0", // Af0(s)
+        "af1", // Af1(s/s)
+        "week" // week
+    };
 
     /** Default supported files name pattern. */
     private static final String DEFAULT_SUPPORTED_NAMES = ".*\\.alm$";
@@ -76,10 +76,10 @@ public class YUMAParser implements DataLoader {
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
-    /** the list of all the almanacs read from the file */
+    /** the list of all the almanacs read from the file. */
     private final List<GPSAlmanac> almanacs;
 
-    /** the list of all the PRN numbers of all the almanacs read from the file */
+    /** the list of all the PRN numbers of all the almanacs read from the file. */
     private final List<Integer> prnList;
 
     /** Simple constructor.
@@ -125,7 +125,7 @@ public class YUMAParser implements DataLoader {
     }
 
     @Override
-    public void loadData(InputStream input, String name)
+    public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {
 
         // Clears the lists
@@ -135,29 +135,35 @@ public class YUMAParser implements DataLoader {
         // Creates the reader
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
 
-        // Gathers data to create one GPSAlmanac from 13 consecutive lines
-        List<Pair<String, String>> entries = new ArrayList<Pair<String,String>>(KEY.length);
+        try {
+            // Gathers data to create one GPSAlmanac from 13 consecutive lines
+            final List<Pair<String, String>> entries =
+                new ArrayList<Pair<String, String>>(KEY.length);
 
-        // Reads the data one line at a time
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            // Try to split the line into 2 tokens as key:value
-            final String[] token = line.trim().split(":");
-            // If the line is made of 2 tokens
-            if (token.length == 2) {
-                // Adds these tokens as an entry to the entries
-                entries.add(new Pair<String, String>(token[0].trim(), token[1].trim()));
+            // Reads the data one line at a time
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                // Try to split the line into 2 tokens as key:value
+                final String[] token = line.trim().split(":");
+                // If the line is made of 2 tokens
+                if (token.length == 2) {
+                    // Adds these tokens as an entry to the entries
+                    entries.add(new Pair<String, String>(token[0].trim(), token[1].trim()));
+                }
+                // If the number of entries equals the expected number
+                if (entries.size() == KEY.length) {
+                    // Gets a GPSAlmanac from the entries
+                    final GPSAlmanac almanac = getAlmanac(entries, name);
+                    // Adds the GPSAlmanac to the list
+                    almanacs.add(almanac);
+                    // Adds the PRN number of the GPSAlmanac to the list
+                    prnList.add(almanac.getPRN());
+                    // Clears the entries
+                    entries.clear();
+                }
             }
-            // If the number of entries equals the expected number
-            if (entries.size() == KEY.length) {
-                // Gets a GPSAlmanac from the entries
-                final GPSAlmanac almanac = getAlmanac(entries, name);
-                // Adds the GPSAlmanac to the list
-                almanacs.add(almanac);
-                // Adds the PRN number of the GPSAlmanac to the list
-                prnList.add(almanac.getPRN());
-                // Clears the entries
-                entries.clear();
-            }
+        } catch (IOException ioe) {
+            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
+                                      name);
         }
     }
 
@@ -195,10 +201,12 @@ public class YUMAParser implements DataLoader {
      * Builds a {@link GPSAlmanac GPS almanac} from data read in the file.
      *
      * @param entries the data read from the file
+     * @param name name of the file
      * @return a {@link GPSAlmanac GPS almanac}
      * @throws OrekitException if a GPSAlmanac can't be built from the gathered entries
      */
-    private GPSAlmanac getAlmanac(List<Pair<String, String>> entries, String name) throws OrekitException {
+    private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name)
+        throws OrekitException {
         int prn = 0;
         int health = 0;
         int week = 0;
@@ -272,7 +280,8 @@ public class YUMAParser implements DataLoader {
 
         if (readOK == KEY.length) {
             // Returns a GPSAlmanac built from the entries
-            return new GPSAlmanac(SOURCE, prn, -1, week, toa, sqa, ecc, inc, om0, dom, aop, anom, af0, af1, health, -1, -1);
+            return new GPSAlmanac(SOURCE, prn, -1, week, toa, sqa, ecc, inc, om0, dom,
+                                  aop, anom, af0, af1, health, -1, -1);
         } else {
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
                                       name);

@@ -43,12 +43,12 @@ import org.orekit.utils.PVCoordinates;
 public class GPSPropagator extends AbstractAnalyticalPropagator {
 
     // Constants
-    /** WGS 84 value of the earth's rotation rate in rad/s */
+    /** WGS 84 value of the earth's rotation rate in rad/s. */
     private static final double GPS_AV = 7.2921151467e-5;
 
-    /** Duration of the GPS cycle in seconds */
-    private static final double GPS_CYCLE_DURATION = GPSOrbitalElements.GPS_WEEK_IN_SECONDS
-                                                   * GPSOrbitalElements.GPS_WEEK_NB;
+    /** Duration of the GPS cycle in seconds. */
+    private static final double GPS_CYCLE_DURATION = GPSOrbitalElements.GPS_WEEK_IN_SECONDS *
+                                                     GPSOrbitalElements.GPS_WEEK_NB;
 
     // Data used to solve Kepler's equation
     /** First coefficient to compute Kepler equation solver starter. */
@@ -66,7 +66,7 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     }
 
     // Fields
-    /** The GPS orbital elements used */
+    /** The GPS orbital elements used. */
     private final GPSOrbitalElements gpsOrbit;
 
     /** The spacecraft mass (kg). */
@@ -86,26 +86,31 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     public static class Builder {
 
         // Required parameter
+        /** The GPS orbital elements. */
         private final GPSOrbitalElements orbit;
 
         // Optional parameters
+        /** The attitude provider. */
         private AttitudeProvider attitudeProvider = DEFAULT_LAW;
+        /** The mass. */
         private double mass = DEFAULT_MASS;
+        /** The ECI frame. */
         private Frame eci  = null;
+        /** The ECEF frame. */
         private Frame ecef = null;
 
         /** Initializes the builder.
          * <p>The GPS orbital elements is the only requested parameter to build a GPSPropagator.</p>
          * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.</br>
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br/>
          * The mass is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.</br>
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br/>
          * The ECI frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.</br>
+         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br/>
          * The ECEF frame is set by default to the
          *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
          * </p>
-         * 
+         *
          * @param gpsOrbElt the GPS orbital elements to be used by the GPSpropagator.
          * @throws OrekitException if data embedded in the library cannot be read
          * @see #attitudeProvider(AttitudeProvider provider)
@@ -121,21 +126,21 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
 
         /** Sets the attitude provider.
          *
-         * @param provider the the attitude provider
+         * @param userProvider the attitude provider
          * @return the updated builder
          */
-        public Builder attitudeProvider(final AttitudeProvider provider) {
-            this.attitudeProvider = provider;
+        public Builder attitudeProvider(final AttitudeProvider userProvider) {
+            this.attitudeProvider = userProvider;
             return this;
         }
 
         /** Sets the mass.
          *
-         * @param mass the mass (in kg)
+         * @param userMass the mass (in kg)
          * @return the updated builder
          */
-        public Builder mass(final double mass) {
-            this.mass = mass;
+        public Builder mass(final double userMass) {
+            this.mass = userMass;
             return this;
         }
 
@@ -305,7 +310,7 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
 
         // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
         for (int j = 0; j < 2; ++j) {
-            double f;
+            final double f;
             double fd;
             final double fdd  = gpsOrbit.getE() * FastMath.sin(ek);
             final double fddd = gpsOrbit.getE() * FastMath.cos(ek);

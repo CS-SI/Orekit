@@ -1,3 +1,19 @@
+/* Copyright 2002-2016 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.gnss;
 
 import java.io.BufferedReader;
@@ -33,23 +49,26 @@ import org.orekit.propagation.analytical.gnss.GPSOrbitalElements;
 public class SEMParser implements DataLoader {
 
     // Constants
-    /** The source of the almanacs */
+    /** The source of the almanacs. */
     private static final String SOURCE = "SEM";
 
-    /** the reference value for the inclination of GPS orbit: 0.30 semicircles */
+    /** the reference value for the inclination of GPS orbit: 0.30 semicircles. */
     private static final double INC_REF = 0.30;
 
     /** Default supported files name pattern. */
     private static final String DEFAULT_SUPPORTED_NAMES = ".*\\.al3$";
 
+    /** Separator for parsing. */
+    private static final String SEPARATOR = "\\s+";
+
     // Fields
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
-    /** the list of all the almanacs read from the file */
+    /** the list of all the almanacs read from the file. */
     private final List<GPSAlmanac> almanacs;
 
-    /** the list of all the PRN numbers of all the almanacs read from the file */
+    /** the list of all the PRN numbers of all the almanacs read from the file. */
     private final List<Integer> prnList;
 
     /** Simple constructor.
@@ -95,7 +114,7 @@ public class SEMParser implements DataLoader {
     }
 
     @Override
-    public void loadData(InputStream input, String name)
+    public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {
 
         // Clears the lists
@@ -105,19 +124,23 @@ public class SEMParser implements DataLoader {
         // Creates the reader
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
 
-        // Reads the number of almanacs in the file from the first line
-        String[] token = reader.readLine().trim().split("\\s+");
-        final int almanacNb = Integer.parseInt(token[0].trim());
+        try {
+            // Reads the number of almanacs in the file from the first line
+            String[] token = getTokens(reader);
+            final int almanacNb = Integer.parseInt(token[0].trim());
 
-        // Reads the week number and the time of applicability from the second line
-        token = reader.readLine().trim().split("\\s+");
-        final int week = Integer.parseInt(token[0].trim());
-        final double toa  = Double.parseDouble(token[1].trim());
+            // Reads the week number and the time of applicability from the second line
+            token = getTokens(reader);
+            final int week = Integer.parseInt(token[0].trim());
+            final double toa = Double.parseDouble(token[1].trim());
 
-        // Loop over data blocks
-        for (int i = 0; i < almanacNb; i++) {
-            // Reads the next lines to get one almanac from
-            readAlmanac(reader, name, week, toa);
+            // Loop over data blocks
+            for (int i = 0; i < almanacNb; i++) {
+                // Reads the next lines to get one almanac from
+                readAlmanac(reader, week, toa);
+            }
+        } catch (IOException ioe) {
+            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE, name);
         }
     }
 
@@ -155,66 +178,73 @@ public class SEMParser implements DataLoader {
      * Builds {@link GPSAlmanac GPS almanacs} from data read in the file.
      *
      * @param reader the reader
-     * @param name name of the file
      * @param week the GPS week
      * @param toa the Time of Applicability
-     * @throws OrekitException if GPSAlmanacs can't be built from the file
+     * @throws IOException if GPSAlmanacs can't be built from the file
      */
-    private void readAlmanac(final BufferedReader reader, String name,
-                             final int week, final double toa) throws OrekitException {
-        try {
-            // Skips the empty line
-            reader.readLine();
+    private void readAlmanac(final BufferedReader reader, final int week, final double toa)
+        throws IOException {
+        // Skips the empty line
+        reader.readLine();
 
-            // Reads the PRN number from the first line
-            String[] token = reader.readLine().trim().split("\\s+");
-            final int prn = Integer.parseInt(token[0].trim());
+        // Reads the PRN number from the first line
+        String[] token = getTokens(reader);
+        final int prn = Integer.parseInt(token[0].trim());
 
-            // Reads the SV number from the second line
-            token = reader.readLine().trim().split("\\s+");
-            final int svn = Integer.parseInt(token[0].trim());
+        // Reads the SV number from the second line
+        token = getTokens(reader);
+        final int svn = Integer.parseInt(token[0].trim());
 
-            // Reads the average URA number from the third line
-            token = reader.readLine().trim().split("\\s+");
-            final int ura = Integer.parseInt(token[0].trim());
+        // Reads the average URA number from the third line
+        token = getTokens(reader);
+        final int ura = Integer.parseInt(token[0].trim());
 
-            // Reads the fourth line to get ecc, inc and dom
-            token = reader.readLine().trim().split("\\s+");
-            final double ecc = Double.parseDouble(token[0].trim());
-            final double inc = getInclination(Double.parseDouble(token[1].trim()));
-            final double dom = toRadians(Double.parseDouble(token[2].trim()));
+        // Reads the fourth line to get ecc, inc and dom
+        token = getTokens(reader);
+        final double ecc = Double.parseDouble(token[0].trim());
+        final double inc = getInclination(Double.parseDouble(token[1].trim()));
+        final double dom = toRadians(Double.parseDouble(token[2].trim()));
 
-            // Reads the fifth line to get sqa, raan and aop
-            token = reader.readLine().trim().split("\\s+");
-            final double sqa  = Double.parseDouble(token[0].trim());
-            final double om0 = toRadians(Double.parseDouble(token[1].trim()));
-            final double aop  = toRadians(Double.parseDouble(token[2].trim()));
+        // Reads the fifth line to get sqa, raan and aop
+        token = getTokens(reader);
+        final double sqa  = Double.parseDouble(token[0].trim());
+        final double om0 = toRadians(Double.parseDouble(token[1].trim()));
+        final double aop  = toRadians(Double.parseDouble(token[2].trim()));
 
-            // Reads the sixth line to get anom, af0 and af1
-            token = reader.readLine().trim().split("\\s+");
-            final double anom = toRadians(Double.parseDouble(token[0].trim()));
-            final double af0 = Double.parseDouble(token[1].trim());
-            final double af1 = Double.parseDouble(token[2].trim());
+        // Reads the sixth line to get anom, af0 and af1
+        token = getTokens(reader);
+        final double anom = toRadians(Double.parseDouble(token[0].trim()));
+        final double af0 = Double.parseDouble(token[1].trim());
+        final double af1 = Double.parseDouble(token[2].trim());
 
-            // Reads the seventh line to get health
-            token = reader.readLine().trim().split("\\s+");
-            final int health = Integer.parseInt(token[0].trim());
+        // Reads the seventh line to get health
+        token = getTokens(reader);
+        final int health = Integer.parseInt(token[0].trim());
 
-            // Reads the eighth line to get Satellite Configuration
-            token = reader.readLine().trim().split("\\s+");
-            final int conf = Integer.parseInt(token[0].trim());
+        // Reads the eighth line to get Satellite Configuration
+        token = getTokens(reader);
+        final int conf = Integer.parseInt(token[0].trim());
 
-            // Adds the almanac to the list
-            almanacs.add(new GPSAlmanac(SOURCE, prn, svn, week, toa, sqa, ecc, inc, om0,
-                                        dom, aop, anom, af0, af1, health, ura, conf));
-            
-            // Adds the PRN to the list
-            prnList.add(prn);
-        } catch (IOException ioe) {
-            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE,
-                                      name);
+        // Adds the almanac to the list
+        almanacs.add(new GPSAlmanac(SOURCE, prn, svn, week, toa, sqa, ecc, inc, om0,
+                                    dom, aop, anom, af0, af1, health, ura, conf));
+
+        // Adds the PRN to the list
+        prnList.add(prn);
+    }
+
+    /** Read a line and get tokens from.
+     *  @param reader the reader
+     *  @return the tokens from the read line
+     *  @throws IOException if the line is null
+     */
+    private String[] getTokens(final BufferedReader reader) throws IOException {
+        final String line = reader.readLine();
+        if (line != null) {
+            return line.trim().split(SEPARATOR);
+        } else {
+            throw new IOException();
         }
-
     }
 
     /**
