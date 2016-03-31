@@ -23,6 +23,9 @@
     <release version="7.2" date="TBC"
              description="">
       <action dev="luc" type="add">
+        Added GLONASS and QZSS time scales. These time scales my be used in SP3-c files.
+      </action>
+      <action dev="luc" type="add">
         Added parsing and displaying of local time according to ISO-8601 standard.
       </action>
       <action dev="luc" type="fix">
