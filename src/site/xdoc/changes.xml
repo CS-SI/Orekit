@@ -23,6 +23,9 @@
     <release version="7.2" date="TBC"
              description="">
       <action dev="luc" type="fix">
+        Added some protections against malformed SP3 files.
+      </action>
+      <action dev="luc" type="fix">
         Fixed Newcomb operators generation in DSST for high degree gravity fields.
         Fixes issue #237
       </action>

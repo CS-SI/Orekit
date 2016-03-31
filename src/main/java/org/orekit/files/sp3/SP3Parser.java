@@ -114,12 +114,10 @@ public class SP3Parser implements OrbitFileParser {
             boolean done = false;
             do {
                 line = reader.readLine();
-                if (line != null) {
-                    if ("EOF".equalsIgnoreCase(line)) {
-                        done = true;
-                    } else if (line.length() > 0) {
-                        parseContentLine(line, pi);
-                    }
+                if (line == null || "EOF".equalsIgnoreCase(line.trim())) {
+                    done = true;
+                } else if (line.length() > 0) {
+                    parseContentLine(line, pi);
                 }
             } while (!done);
         } finally {
@@ -184,7 +182,7 @@ public class SP3Parser implements OrbitFileParser {
                     file.setDataUsed(scanner.next());
 
                     file.setCoordinateSystem(scanner.next());
-                    file.setOrbitType(SP3OrbitType.valueOf(scanner.next()));
+                    file.setOrbitType(SP3OrbitType.parseType(scanner.next()));
                     file.setAgency(scanner.next());
                     break;
                 }
@@ -252,9 +250,11 @@ public class SP3Parser implements OrbitFileParser {
 
                     // now identify the time system in use
                     final String tsStr = line.substring(9, 12).trim();
-                    final TimeSystem ts = TimeSystem.GPS;
-                    if (!tsStr.equalsIgnoreCase("ccc")) {
-                        TimeSystem.valueOf(tsStr);
+                    final TimeSystem ts;
+                    if (tsStr.equalsIgnoreCase("ccc")) {
+                        ts = TimeSystem.GPS;
+                    } else {
+                        ts = TimeSystem.valueOf(tsStr);
                     }
                     file.setTimeSystem(ts);
 
