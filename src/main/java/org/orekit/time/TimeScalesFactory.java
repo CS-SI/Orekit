@@ -64,6 +64,9 @@ public class TimeScalesFactory implements Serializable {
     /** GLObal NAvigation Satellite System scale. */
     private static GLONASSScale glonass = null;
 
+    /** Quasi-Zenith Satellite System scale. */
+    private static QZSSScale qzss = null;
+
     /** Global Positioning System scale. */
     private static GPSScale gps = null;
 
@@ -347,6 +350,21 @@ public class TimeScalesFactory implements Serializable {
             }
 
             return glonass;
+
+        }
+    }
+
+    /** Get the Quasi-Zenith Satellite System time scale.
+     * @return  Quasi-Zenith Satellite System time scale
+     */
+    public static QZSSScale getQZSS() {
+        synchronized (TimeScalesFactory.class) {
+
+            if (qzss == null) {
+                qzss = new QZSSScale();
+            }
+
+            return qzss;
 
         }
     }
