@@ -18,6 +18,7 @@ package org.orekit.time;
 
 
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
@@ -134,6 +135,23 @@ public class AbsoluteDateTest {
     }
 
     @Test
+    public void testLocaltime() throws OrekitException {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        Assert.assertEquals(new AbsoluteDate("2011-12-31T23:00:00",       utc),
+                            new AbsoluteDate("2012-01-01T03:30:00+04:30", utc));
+        Assert.assertEquals(new AbsoluteDate("2011-12-31T23:00:00",       utc),
+                            new AbsoluteDate("2012-01-01T03:30:00+0430",  utc));
+        Assert.assertEquals(new AbsoluteDate("2011-12-31T23:30:00",       utc),
+                            new AbsoluteDate("2012-01-01T03:30:00+04",    utc));
+        Assert.assertEquals(new AbsoluteDate("2012-01-01T05:17:00",       utc),
+                            new AbsoluteDate("2011-12-31T22:17:00-07:00", utc));
+        Assert.assertEquals(new AbsoluteDate("2012-01-01T05:17:00",       utc),
+                            new AbsoluteDate("2011-12-31T22:17:00-0700",  utc));
+        Assert.assertEquals(new AbsoluteDate("2012-01-01T05:17:00",       utc),
+                            new AbsoluteDate("2011-12-31T22:17:00-07",    utc));
+    }
+
+    @Test
     public void testParseLeap() throws OrekitException {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate beforeLeap = new AbsoluteDate("2012-06-30T23:59:59.8", utc);
@@ -149,6 +167,25 @@ public class AbsoluteDateTest {
                             AbsoluteDate.FIFTIES_EPOCH.shiftedBy(3661.0).toString(tt));
         Assert.assertEquals("2000-01-01T13:01:01.000",
                             AbsoluteDate.J2000_EPOCH.shiftedBy(3661.0).toString(tt));
+    }
+
+    @Test
+    public void testLocalTime() throws OrekitException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final AbsoluteDate date = new AbsoluteDate("2000-01-01T01:01:01.000", utc);
+        Assert.assertEquals("2000-01-01T01:01:01.000",       date.toString());
+        Assert.assertEquals("2000-01-01T11:01:01.000+10:00", date.toString( 600));
+        Assert.assertEquals("1999-12-31T23:01:01.000-02:00", date.toString(-120));
+
+        // winter time, Europe is one hour ahead of UTC
+        final TimeZone tz = TimeZone.getTimeZone("Europe/Paris");
+        Assert.assertEquals("2001-01-22T11:30:00.000+01:00",
+                            new AbsoluteDate("2001-01-22T10:30:00", utc).toString(tz));
+
+        // summer time, Europe is two hours ahead of UTC
+        Assert.assertEquals("2001-06-23T11:30:00.000+02:00",
+                            new AbsoluteDate("2001-06-23T09:30:00", utc).toString(tz));
+
     }
 
     @Test

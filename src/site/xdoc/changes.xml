@@ -22,6 +22,9 @@
   <body>
     <release version="7.2" date="TBC"
              description="">
+      <action dev="luc" type="add">
+        Added parsing and displaying of local time according to ISO-8601 standard.
+      </action>
       <action dev="luc" type="fix">
         Added some protections against malformed SP3 files.
       </action>

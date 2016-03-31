@@ -103,6 +103,11 @@ public class TimeComponentsTest {
         Assert.assertEquals("12:00:00.000", new TimeComponents(43200).toString());
         Assert.assertEquals("18:00:00.000", new TimeComponents(64800).toString());
         Assert.assertEquals("23:59:59.900", new TimeComponents(86399.9).toString());
+        Assert.assertEquals("00:00:00.000+10:00", new TimeComponents( 0,  0,  0,    600).toString());
+        Assert.assertEquals("06:00:00.000+10:00", new TimeComponents( 6,  0,  0,    600).toString());
+        Assert.assertEquals("12:00:00.000-04:30", new TimeComponents(12,  0,  0,   -270).toString());
+        Assert.assertEquals("18:00:00.000-04:30", new TimeComponents(18,  0,  0,   -270).toString());
+        Assert.assertEquals("23:59:59.900-04:30", new TimeComponents(23, 59, 59.9, -270).toString());
     }
 
     @Test
@@ -112,9 +117,9 @@ public class TimeComponentsTest {
         Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59,900").getSecondsInDay(), 1.0e-10);
         Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900Z").getSecondsInDay(), 1.0e-10);
         Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900Z").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900+00").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900+10").getSecondsInDay(), 1.0e-10);
         Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900+00").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900+00:00").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900-00:12").getSecondsInDay(), 1.0e-10);
         Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900+00:00").getSecondsInDay(), 1.0e-10);
     }
 
@@ -123,9 +128,9 @@ public class TimeComponentsTest {
         TimeComponents.parseTime("23h59m59s");
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testBadZone() {
-        TimeComponents.parseTime("23:59:59+01:00");
+    @Test
+    public void testLocalTime() {
+        Assert.assertEquals(60, TimeComponents.parseTime("23:59:59+01:00").getMinutesFromUTC());
     }
 
     @Test
