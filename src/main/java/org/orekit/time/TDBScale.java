@@ -59,6 +59,16 @@ public class TDBScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    public boolean insideLeap(final AbsoluteDate date) {
+        return false;
+    }
+
+    /** {@inheritDoc} */
+    public double getLeap(final AbsoluteDate date) {
+        return 0;
+    }
+
+    /** {@inheritDoc} */
     public String getName() {
         return "TDB";
     }

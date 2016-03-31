@@ -590,14 +590,14 @@ public abstract class ODMParser {
                 final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
                 final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
                         clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                        clock.getTime().getSecondsInDay();
+                        clock.getTime().getSecondsInUTCDay();
                 return missionReferenceDate.shiftedBy(offset);
             }
             case MRT: {
                 final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
                 final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
                         clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                        clock.getTime().getSecondsInDay();
+                        clock.getTime().getSecondsInUTCDay();
                 return missionReferenceDate.shiftedBy(offset);
             }
             default:

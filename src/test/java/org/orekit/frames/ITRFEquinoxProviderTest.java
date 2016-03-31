@@ -173,10 +173,10 @@ public class ITRFEquinoxProviderTest {
         // time scales checks
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2007, 4, 5), TimeComponents.H12, utc);
         Assert.assertEquals(0.50075444444444,
-                            date.getComponents(tt).getTime().getSecondsInDay() / Constants.JULIAN_DAY,
+                            date.getComponents(tt).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             5.0e-15);
         Assert.assertEquals(0.499999165813831,
-                            date.getComponents(ut1).getTime().getSecondsInDay() / Constants.JULIAN_DAY,
+                            date.getComponents(ut1).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             1.0e-15);
 
         // sidereal time check

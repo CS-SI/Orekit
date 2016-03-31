@@ -251,9 +251,31 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     /** Get the second number within the day.
      * @return second number from 0.0 to Constants.JULIAN_DAY
+     * @deprecated as of 7.2, replaced with either {@link #getSecondsInLocalDay()}
+     * or {@link #getSecondsInUTCDay()}
      */
+    @Deprecated
     public double getSecondsInDay() {
+        return getSecondsInLocalDay();
+    }
+
+    /** Get the second number within the local day, <em>without</em> applying the {@link #getMinutesFromUTC() offset from UTC}.
+     * @return second number from 0.0 to Constants.JULIAN_DAY
+     * @see #getSecondsInUTCDay()
+     * @since 7.2
+     */
+    public double getSecondsInLocalDay() {
         return second + 60 * minute + 3600 * hour;
+    }
+
+    /** Get the second number within the UTC day, applying the {@link #getMinutesFromUTC() offset from UTC}.
+     * @return second number from {@link #getMinutesFromUTC() -getMinutesFromUTC()}
+     * to Constants.JULIAN_DAY {@link #getMinutesFromUTC() + getMinutesFromUTC()}
+     * @see #getSecondsInLocalDay()
+     * @since 7.2
+     */
+    public double getSecondsInUTCDay() {
+        return second + 60 * (minute - minutesFromUTC) + 3600 * hour;
     }
 
     /** Get a string representation of the time.
@@ -275,7 +297,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     /** {@inheritDoc} */
     public int compareTo(final TimeComponents other) {
-        return Double.compare(getSecondsInDay(), other.getSecondsInDay());
+        return Double.compare(getSecondsInUTCDay(), other.getSecondsInUTCDay());
     }
 
     /** {@inheritDoc} */

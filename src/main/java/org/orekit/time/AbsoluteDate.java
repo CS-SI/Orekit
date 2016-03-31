@@ -825,13 +825,10 @@ public class AbsoluteDate
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
         TimeComponents timeComponents = new TimeComponents((int) time, offset2000B);
 
-        if (timeScale instanceof UTCScale) {
-            final UTCScale utc = (UTCScale) timeScale;
-            if (utc.insideLeap(this)) {
-                // fix the seconds number to take the leap into account
-                timeComponents = new TimeComponents(timeComponents.getHour(), timeComponents.getMinute(),
-                                                    timeComponents.getSecond() + utc.getLeap(this));
-            }
+        if (timeScale.insideLeap(this)) {
+            // fix the seconds number to take the leap into account
+            timeComponents = new TimeComponents(timeComponents.getHour(), timeComponents.getMinute(),
+                                                timeComponents.getSecond() + timeScale.getLeap(this));
         }
 
         // build the components
@@ -932,13 +929,7 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
      */
     public String toString(final TimeScale timeScale) {
-        final boolean inLeap;
-        if (timeScale instanceof UTCScale) {
-            inLeap = ((UTCScale) timeScale).insideLeap(this);
-        } else {
-            inLeap = false;
-        }
-        return getComponents(timeScale).toString(inLeap);
+        return getComponents(timeScale).toString(timeScale.insideLeap(this));
     }
 
     /** Get a String representation of the instant location for a local time.

@@ -61,6 +61,9 @@ public class TimeScalesFactory implements Serializable {
     /** Galileo System Time scale. */
     private static GalileoScale gst = null;
 
+    /** GLObal NAvigation Satellite System scale. */
+    private static GLONASSScale glonass = null;
+
     /** Global Positioning System scale. */
     private static GPSScale gps = null;
 
@@ -328,6 +331,22 @@ public class TimeScalesFactory implements Serializable {
             }
 
             return gst;
+
+        }
+    }
+
+    /** Get the GLObal NAvigation Satellite System time scale.
+     * @return  GLObal NAvigation Satellite System time scale
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     */
+    public static GLONASSScale getGLONASS() throws OrekitException {
+        synchronized (TimeScalesFactory.class) {
+
+            if (glonass == null) {
+                glonass = new GLONASSScale(getUTC());
+            }
+
+            return glonass;
 
         }
     }

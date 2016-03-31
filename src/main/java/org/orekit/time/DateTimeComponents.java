@@ -125,7 +125,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
 
         // extract linear data from reference date/time
         int    day     = reference.getDate().getJ2000Day();
-        double seconds = reference.getTime().getSecondsInDay();
+        double seconds = reference.getTime().getSecondsInLocalDay();
 
         // apply offset
         seconds += offset;
@@ -134,10 +134,12 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         final int dayShift = (int) FastMath.floor(seconds / Constants.JULIAN_DAY);
         seconds -= Constants.JULIAN_DAY * dayShift;
         day     += dayShift;
+        final TimeComponents tmpTime = new TimeComponents(seconds);
 
         // set up components
         this.date = new DateComponents(day);
-        this.time = new TimeComponents(seconds);
+        this.time = new TimeComponents(tmpTime.getHour(), tmpTime.getMinute(), tmpTime.getSecond(),
+                                       reference.getTime().getMinutesFromUTC());
 
     }
 
@@ -172,7 +174,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      */
     public double offsetFrom(final DateTimeComponents dateTime) {
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
-        final double timeOffset = time.getSecondsInDay() - dateTime.time.getSecondsInDay();
+        final double timeOffset = time.getSecondsInUTCDay() - dateTime.time.getSecondsInUTCDay();
         return Constants.JULIAN_DAY * dateOffset + timeOffset;
     }
 

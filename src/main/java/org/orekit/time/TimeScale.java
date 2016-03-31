@@ -45,6 +45,27 @@ public interface TimeScale extends Serializable {
      */
     double offsetToTAI(final DateComponents date, final TimeComponents time);
 
+    /** Check if date is within a leap second introduction <em>in this time scale</em>.
+     * <p>
+     * This method will return false for all time scales that do <em>not</em>
+     * implement leap seconds, even if the date corresponds to a leap second
+     * in {@link UTCScale UTC scale}.
+     * </p>
+     * @param date date to check
+     * @return true if time is within a leap second introduction
+     */
+    boolean insideLeap(final AbsoluteDate date);
+
+    /** Get the value of the previous leap.
+     * <p>
+     * This method will return 0.0 for all time scales that do <em>not</em>
+     * implement leap seconds.
+     * </p>
+     * @param date date to check
+     * @return value of the previous leap
+     */
+    double getLeap(final AbsoluteDate date);
+
     /** Get the name time scale.
      * @return name of the time scale
      */
