@@ -97,6 +97,8 @@
       +TDBScale getTDB()
       +TCBScale getTCB()
       +GMSTScale getGMST()
+      +GLONASSScale getGLONASS()
+      +QZSSScale getQZSS()
     }
 
     class TAIScale
@@ -109,6 +111,8 @@
     class TDBScale
     class TCBScale
     class GMSTScale
+    class GLONASSScale
+    class QZSSScale
 
     TimeStamped               <|.left. AbsoluteDate
     TimeShiftable_T_          <|.left. AbsoluteDate
@@ -135,6 +139,10 @@
     TimeScale  <|-- TDBScale
     TimeScale  <|-- TCBScale
     TimeScale  <|-- GMSTScale
+    TimeScale  <|-- GLONASSScale
+    TimeScale  <|-- QZSSScale
+
+    UTCScale <--* GLONASSScale
 
   }
   }

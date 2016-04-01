@@ -337,9 +337,6 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Η τρέχουσα τροχιά έχε
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = μη υποστηριζόμενη έκδοση του αρχείου sp3 {0}
 
-# unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = μη υποστηριζόμενη ώρα συστήματος {0}
-
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = μη αναμενόμενο τέλος αρχείου στο αρχείο sp3 (μετά από τη γραμμή {0})
 

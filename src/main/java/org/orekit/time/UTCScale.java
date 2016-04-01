@@ -159,10 +159,17 @@ public class UTCScale implements TimeScale {
         } else {
             // the date is nominally bracketed by two leaps
             try {
+                // take offset from local time into account, but ignoring seconds,
+                // so when we parse an hour like 23:59:60.5 during leap seconds introduction,
+                // we do not jump to next day
+                final int minuteInDay = time.getHour() * 60 + time.getMinute() - time.getMinutesFromUTC();
+                final int correction  = minuteInDay < 0 ? (minuteInDay - 1439) / 1440 : minuteInDay / 1440;
+
                 // find close neighbors, assuming date in TAI, i.e a date earlier than real UTC date
+                final int mjd = date.getMJD() + correction;
                 final List<UTCTAIOffset> neighbors =
                         cache.getNeighbors(new AbsoluteDate(date, time, TimeScalesFactory.getTAI()));
-                if (neighbors.get(1).getMJD() <= date.getMJD()) {
+                if (neighbors.get(1).getMJD() <= mjd) {
                     // the date is in fact just after a leap second!
                     return neighbors.get(1).getOffset(date, time);
                 } else {
@@ -200,10 +207,7 @@ public class UTCScale implements TimeScale {
         return cache.getLatest().getDate();
     }
 
-    /** Check if date is within a leap second introduction.
-     * @param date date to check
-     * @return true if time is within a leap second introduction
-     */
+    /** {@inheritDoc} */
     public boolean insideLeap(final AbsoluteDate date) {
         if (cache.getEarliest().getDate().compareTo(date) > 0) {
             // the date is before the first known leap

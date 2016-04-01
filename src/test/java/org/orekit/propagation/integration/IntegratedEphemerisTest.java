@@ -213,13 +213,13 @@ public class IntegratedEphemerisTest {
     @Test
     public void testSerializationDSSTMean()
         throws PropagationException, OrekitException, IOException, ClassNotFoundException {
-        doTestSerializationDSST(true, 52000, 53000);
+        doTestSerializationDSST(true, 35000, 36000);
     }
 
     @Test
     public void testSerializationDSSTOsculating()
         throws PropagationException, OrekitException, IOException, ClassNotFoundException {
-        doTestSerializationDSST(false, 1051500, 1052500);
+        doTestSerializationDSST(false, 616000, 617000);
     }
 
     private void doTestSerializationDSST(boolean meanOnly, int minSize, int maxSize)
@@ -240,7 +240,7 @@ public class IntegratedEphemerisTest {
         final RadiationSensitive spacecraft = new IsotropicRadiationSingleCoefficient(20.0, 2.0);
         dsstProp.addForceModel(new DSSTZonal(gravity, 8, 7, 17));
         dsstProp.addForceModel(new DSSTTesseral(itrf, Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                gravity, 8, 8, 8, 8));
+                                                gravity, 8, 8, 4, 12, 8, 8, 4));
         dsstProp.addForceModel(new DSSTThirdBody(sun));
         dsstProp.addForceModel(new DSSTThirdBody(moon));
         dsstProp.addForceModel(new DSSTSolarRadiationPressure(sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS, spacecraft));

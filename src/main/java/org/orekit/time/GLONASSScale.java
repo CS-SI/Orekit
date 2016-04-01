@@ -16,72 +16,59 @@
  */
 package org.orekit.time;
 
-/** Barycentric Coordinate Time.
- * <p>Coordinate time at the center of mass of the Solar System.
- * This time scale depends linearly from {@link TDBScale Barycentric Dynamical Time}.</p>
+/** GLONASS time scale.
+ * <p>By convention, TGLONASS = UTC + 3 hours.</p>
  * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
+ * @see <a href="http://www.spacecorp.ru/upload/iblock/1c4/cgs-aaixymyt%205.1%20ENG%20v%202014.02.18w.pdf">
+ * Global Navigation Sattelite System GLONASS - Interface Control document</a>, version 5.1 2008
+ * (the typo in the title is in the original document title)
  */
-public class TCBScale implements TimeScale {
+public class GLONASSScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
+    private static final long serialVersionUID = 20160331L;
 
-    /** LG rate. */
-    private static final double LB_RATE = 1.550519768e-8;
+    /** Constant offset with respect to UTC (3 hours). */
+    private static final double OFFSET = 10800;
 
-    /** Reference date for TCB.
-     * <p>The reference date is such that the four following instants are equal:</p>
-     * <ul>
-     *   <li>1977-01-01T00:00:32.184 TT</li>
-     *   <li>1977-01-01T00:00:32.184 TCG</li>
-     *   <li>1977-01-01T00:00:32.184 TCB</li>
-     *   <li>1977-01-01T00:00:00.000 TAI</li>
-     * </ul>
-     */
-    private static final AbsoluteDate REFERENCE_DATE =
-        new AbsoluteDate(1977, 01, 01, TimeScalesFactory.getTAI());
-
-    /** Barycentric dynamic time scale. */
-    private final TDBScale tdb;
+    /** UTC time scale. */
+    private final UTCScale utc;
 
     /** Package private constructor for the factory.
-     * @param tdb Barycentric dynamic time scale
+     * @param utc underlying UTC scale
      */
-    TCBScale(final TDBScale tdb) {
-        this.tdb = tdb;
+    GLONASSScale(final UTCScale utc) {
+        this.utc = utc;
     }
 
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-        return tdb.offsetFromTAI(date) + LB_RATE * date.durationFrom(REFERENCE_DATE);
+        return OFFSET + utc.offsetFromTAI(date);
     }
 
     /** {@inheritDoc} */
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-        double offset = 0;
-        for (int i = 0; i < 3; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
-        }
-        return offset;
+        final DateTimeComponents utcComponents =
+                        new DateTimeComponents(new DateTimeComponents(date, time), -OFFSET);
+        return utc.offsetToTAI(utcComponents.getDate(), utcComponents.getTime()) - OFFSET;
     }
 
     /** {@inheritDoc} */
     public boolean insideLeap(final AbsoluteDate date) {
-        return false;
+        return utc.insideLeap(date);
     }
 
     /** {@inheritDoc} */
     public double getLeap(final AbsoluteDate date) {
-        return 0;
+        return utc.getLeap(date);
     }
 
     /** {@inheritDoc} */
     public String getName() {
-        return "TCB";
+        return "GLONASS";
     }
 
     /** {@inheritDoc} */

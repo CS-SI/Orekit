@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
@@ -220,7 +221,8 @@ public class AbsoluteDate
         final long   dl       = (long) FastMath.floor(sum);
 
         offset = (sum - dl) + residual;
-        epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l + time.getMinute() - 720l) + dl;
+        epoch  = 60l * ((date.getJ2000Day() * 24l + time.getHour()) * 60l +
+                        time.getMinute() - time.getMinutesFromUTC() - 720l) + dl;
 
     }
 
@@ -823,18 +825,71 @@ public class AbsoluteDate
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
         TimeComponents timeComponents = new TimeComponents((int) time, offset2000B);
 
-        if (timeScale instanceof UTCScale) {
-            final UTCScale utc = (UTCScale) timeScale;
-            if (utc.insideLeap(this)) {
-                // fix the seconds number to take the leap into account
-                timeComponents = new TimeComponents(timeComponents.getHour(), timeComponents.getMinute(),
-                                                    timeComponents.getSecond() + utc.getLeap(this));
-            }
+        if (timeScale.insideLeap(this)) {
+            // fix the seconds number to take the leap into account
+            timeComponents = new TimeComponents(timeComponents.getHour(), timeComponents.getMinute(),
+                                                timeComponents.getSecond() + timeScale.getLeap(this));
         }
 
         // build the components
         return new DateTimeComponents(dateComponents, timeComponents);
 
+    }
+
+    /** Split the instance into date/time components for a local time.
+     * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
+     * negative Westward UTC)
+     * @return date/time components
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     * @since 7.2
+     */
+    public DateTimeComponents getComponents(final int minutesFromUTC)
+        throws OrekitException {
+
+        final DateTimeComponents utcComponents = getComponents(TimeScalesFactory.getUTC());
+
+        // shift the date according to UTC offset, but WITHOUT touching the seconds,
+        // as they may exceed 60.0 during a leap seconds introduction,
+        // and we want to preserve these special cases
+        final double seconds = utcComponents.getTime().getSecond();
+
+        int minute = utcComponents.getTime().getMinute() + minutesFromUTC;
+        final int hourShift;
+        if (minute < 0) {
+            hourShift = (minute - 59) / 60;
+        } else if (minute > 59) {
+            hourShift = minute / 60;
+        } else {
+            hourShift = 0;
+        }
+        minute -= 60 * hourShift;
+
+        int hour = utcComponents.getTime().getHour() + hourShift;
+        final int dayShift;
+        if (hour < 0) {
+            dayShift = (hour - 23) / 24;
+        } else if (hour > 23) {
+            dayShift = hour / 24;
+        } else {
+            dayShift = 0;
+        }
+        hour -= 24 * dayShift;
+
+        return new DateTimeComponents(new DateComponents(utcComponents.getDate(), dayShift),
+                                      new TimeComponents(hour, minute, seconds, minutesFromUTC));
+
+    }
+
+    /** Split the instance into date/time components for a time zone.
+     * @param timeZone time zone
+     * @return date/time components
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     * @since 7.2
+     */
+    public DateTimeComponents getComponents(final TimeZone timeZone)
+        throws OrekitException {
+        final long milliseconds = FastMath.round(1000 * offsetFrom(JAVA_EPOCH, TimeScalesFactory.getUTC()));
+        return getComponents(timeZone.getOffset(milliseconds) / 60000);
     }
 
     /** Compare the instance with another date.
@@ -896,13 +951,34 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
      */
     public String toString(final TimeScale timeScale) {
-        final boolean inLeap;
-        if (timeScale instanceof UTCScale) {
-            inLeap = ((UTCScale) timeScale).insideLeap(this);
-        } else {
-            inLeap = false;
-        }
-        return getComponents(timeScale).toString(inLeap);
+        return getComponents(timeScale).toString(timeScale.insideLeap(this));
+    }
+
+    /** Get a String representation of the instant location for a local time.
+     * @param minutesFromUTC offset in <em>minutes</em> from UTC (positive Eastwards UTC,
+     * negative Westward UTC).
+     * @return string representation of the instance,
+     * in ISO-8601 format with milliseconds accuracy
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     * @since 7.2
+     */
+    public String toString(final int minutesFromUTC)
+        throws OrekitException {
+        final boolean inLeap = TimeScalesFactory.getUTC().insideLeap(this);
+        return getComponents(minutesFromUTC).toString(inLeap);
+    }
+
+    /** Get a String representation of the instant location for a time zone.
+     * @param timeZone time zone
+     * @return string representation of the instance,
+     * in ISO-8601 format with milliseconds accuracy
+     * @exception OrekitException if UTC time scale cannot be retrieved
+     * @since 7.2
+     */
+    public String toString(final TimeZone timeZone)
+        throws OrekitException {
+        final boolean inLeap = TimeScalesFactory.getUTC().insideLeap(this);
+        return getComponents(timeZone).toString(inLeap);
     }
 
 }

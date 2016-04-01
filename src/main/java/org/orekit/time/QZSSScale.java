@@ -16,46 +16,33 @@
  */
 package org.orekit.time;
 
-import org.apache.commons.math3.util.FastMath;
-import org.orekit.utils.Constants;
-
-/** Barycentric Dynamic Time.
- * <p>Time used to take account of time dilation when calculating orbits of planets,
- * asteroids, comets and interplanetary spacecraft in the Solar system. It was based
- * on a Dynamical time scale but was not well defined and not rigorously correct as
- * a relativistic time scale. It was subsequently deprecated in favour of
- * Barycentric Coordinate Time (TCB), but at the 2006 General Assembly of the
- * International Astronomical Union TDB was rehabilitated by making it a specific
- * fixed linear transformation of TCB.</p>
- * <p>By convention, TDB = TT + 0.001658 sin(g) + 0.000014 sin(2g)seconds
- * where g = 357.53 + 0.9856003 (JD - 2451545) degrees.</p>
- * @author Aude Privat
+/** QZSS time scale.
+ * <p>By convention, TQZSS = TAI - 19 s.</p>
+ * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
+ * so there is no public constructor.</p>
+ * @author Luc Maisonobe
+ * @see AbsoluteDate
+ * @see <a href="http://qz-vision.jaxa.jp/USE/is-qzss/DOCS/IS-QZSS_16_E.pdf">Quasi-Zenith
+ * Satellite System Navigation Service - Interface Specification for QZSS</a> version 1.6, 2014
  */
-public class TDBScale implements TimeScale {
+public class QZSSScale implements TimeScale {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131209L;
 
     /** Package private constructor for the factory.
      */
-    TDBScale() {
+    QZSSScale() {
     }
 
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-        final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
-        final double g = FastMath.toRadians(357.53 + 0.9856003 * dtDays);
-        return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * FastMath.sin(g) + 0.000014 * FastMath.sin(2 * g));
+        return -19;
     }
 
     /** {@inheritDoc} */
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-        double offset = 0;
-        for (int i = 0; i < 3; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
-        }
-        return offset;
+        return 19;
     }
 
     /** {@inheritDoc} */
@@ -70,7 +57,7 @@ public class TDBScale implements TimeScale {
 
     /** {@inheritDoc} */
     public String getName() {
-        return "TDB";
+        return "QZSS";
     }
 
     /** {@inheritDoc} */

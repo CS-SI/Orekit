@@ -95,6 +95,7 @@ public class DSSTPropagatorTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
         int earthDegree = 36;
         int earthOrder  = 36;
+        int eccPower    = 4;
         final UnnormalizedSphericalHarmonicsProvider provider =
                         GravityFieldFactory.getUnnormalizedProvider(earthDegree,
                                                                     earthOrder);
@@ -102,7 +103,8 @@ public class DSSTPropagatorTest {
         =FramesFactory.getITRF(IERSConventions.IERS_2010,true); // terrestrial frame
         final DSSTForceModel force = new
                         DSSTTesseral(earthFrame,Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
-                                     earthDegree, earthOrder, earthDegree, earthOrder);
+                                     earthDegree, earthOrder, eccPower, earthDegree + eccPower,
+                                     earthDegree, earthOrder, eccPower);
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(force);
         TimeScale tai = TimeScalesFactory.getTAI();
@@ -377,7 +379,7 @@ public class DSSTPropagatorTest {
         dsstProp.addForceModel(new DSSTZonal(provider, 4, 3, 9));
         dsstProp.addForceModel(new DSSTTesseral(earthFrame,
                                                 Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
-                                                4, 4, 4, 4));
+                                                4, 4, 4, 8, 4, 4, 2));
 
         // 5 days propagation
         final SpacecraftState state = dsstProp.propagate(initDate.shiftedBy(5. * 86400.));
@@ -409,7 +411,7 @@ public class DSSTPropagatorTest {
         DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                   provider, 2, 0, 2, 0);
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
 
         // Third Bodies Force Model (Moon + Sun) */
         DSSTForceModel moon = new DSSTThirdBody(CelestialBodyFactory.getMoon());
@@ -481,7 +483,7 @@ public class DSSTPropagatorTest {
             DSSTForceModel zonal    = new DSSTZonal(provider, 2, 0, 5);
             DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                        Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                       provider, 2, 0, 2, 0);
+                                                       provider, 2, 0, 0, 2, 2, 0, 0);
 
         // Drag Force Model
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(provider.getAe(),
@@ -547,7 +549,7 @@ public class DSSTPropagatorTest {
         DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
         DSSTForceModel tesseral = new DSSTTesseral(CelestialBodyFactory.getEarth().getBodyOrientedFrame(),
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                   provider, 2, 0, 2, 0);
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
 
         // SRP Force Model
         DSSTForceModel srp = new DSSTSolarRadiationPressure(1.2, 100., CelestialBodyFactory.getSun(),
@@ -652,7 +654,7 @@ public class DSSTPropagatorTest {
         propagator.addForceModel(new DSSTZonal(nshp, 8, 7, 17));
         propagator.addForceModel(new DSSTTesseral(earth.getBodyFrame(),
                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                  nshp, 8, 8, 8, 8));
+                                                  nshp, 8, 8, 4, 12, 8, 8, 4));
         propagator.addForceModel(new DSSTThirdBody(sun));
         propagator.addForceModel(new DSSTThirdBody(moon));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
@@ -698,7 +700,7 @@ public class DSSTPropagatorTest {
         propagator.addForceModel(new DSSTZonal(nshp, 8, 7, 17));
         propagator.addForceModel(new DSSTTesseral(earth.getBodyFrame(),
                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                  nshp, 8, 8, 8, 8));
+                                                  nshp, 8, 8, 4, 12, 8, 8, 4));
         propagator.addForceModel(new DSSTThirdBody(sun));
         propagator.addForceModel(new DSSTThirdBody(moon));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
@@ -756,7 +758,7 @@ public class DSSTPropagatorTest {
         DSSTForceModel zonal    = new DSSTZonal(provider, 4, 3, 9);
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                   provider, 4, 4, 4, 4);
+                                                   provider, 4, 0, 4, 8, 4, 0, 2);
         prop.addForceModel(zonal);
         prop.addForceModel(tesseral);
 
@@ -775,7 +777,7 @@ public class DSSTPropagatorTest {
         DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                   provider, 2, 0, 2, 0);
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(zonal);
@@ -795,7 +797,7 @@ public class DSSTPropagatorTest {
         DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                   provider, 2, 0, 2, 0);
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(zonal);
@@ -837,7 +839,7 @@ public class DSSTPropagatorTest {
         propagator.addForceModel(new DSSTZonal(nshp, 4, 3, 9));
         propagator.addForceModel(new DSSTTesseral(earth.getBodyFrame(),
                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                  nshp, 4, 4, 4, 4));
+                                                  nshp, 4, 4, 4, 8, 4, 4, 2));
         propagator.addForceModel(new DSSTThirdBody(sun));
         propagator.addForceModel(new DSSTThirdBody(moon));
         propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
@@ -851,7 +853,7 @@ public class DSSTPropagatorTest {
         propagator.setSelectedCoefficients(new HashSet<String>());
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigEmpty = propagator.propagate(finalDate);
-        Assert.assertEquals(282, stateConfigEmpty.getAdditionalStates().size());
+        Assert.assertEquals(234, stateConfigEmpty.getAdditionalStates().size());
 
         final Set<String> selected = new HashSet<String>();
         selected.add("DSST-3rd-body-Moon-s[7]");
@@ -890,7 +892,7 @@ public class DSSTPropagatorTest {
         DSSTForceModel zonal    = new DSSTZonal(provider, 2, 1, 5);
         DSSTForceModel tesseral = new DSSTTesseral(earthFrame,
                                                    Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                   provider, 2, 0, 2, 0);
+                                                   provider, 2, 0, 0, 2, 2, 0, 0);
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(zonal);
         forces.add(tesseral);

@@ -313,7 +313,7 @@ public class TLE implements TimeStamped, Serializable {
         buffer.append(addPadding("day",  dtc.getDate().getDayOfYear(),  '0', 3, true));
         buffer.append('.');
         // nota: 31250/27 == 100000000/86400
-        final int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInDay() / 27.0);
+        final int fraction = (int) FastMath.rint(31250 * dtc.getTime().getSecondsInUTCDay() / 27.0);
         buffer.append(addPadding("fraction", fraction,  '0', 8, true));
 
         buffer.append(' ');
