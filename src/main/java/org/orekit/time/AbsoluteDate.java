@@ -846,16 +846,38 @@ public class AbsoluteDate
     public DateTimeComponents getComponents(final int minutesFromUTC)
         throws OrekitException {
 
-        // shift the date according to UTC offset
-        final AbsoluteDate shifted = shiftedBy(60 * minutesFromUTC);
-        final DateTimeComponents localComponents = shifted.getComponents(TimeScalesFactory.getUTC());
+        final DateTimeComponents utcComponents = getComponents(TimeScalesFactory.getUTC());
 
-        // register the offset that was applied
-        return new DateTimeComponents(localComponents.getDate(),
-                                      new TimeComponents(localComponents.getTime().getHour(),
-                                                         localComponents.getTime().getMinute(),
-                                                         localComponents.getTime().getSecond(),
-                                                         minutesFromUTC));
+        // shift the date according to UTC offset, but WITHOUT touching the seconds,
+        // as they may exceed 60.0 during a leap seconds introduction,
+        // and we want to preserve these special cases
+        final double seconds = utcComponents.getTime().getSecond();
+
+        int minute = utcComponents.getTime().getMinute() + minutesFromUTC;
+        final int hourShift;
+        if (minute < 0) {
+            hourShift = (minute - 59) / 60;
+        } else if (minute > 59) {
+            hourShift = minute / 60;
+        } else {
+            hourShift = 0;
+        }
+        minute -= 60 * hourShift;
+
+        int hour = utcComponents.getTime().getHour() + hourShift;
+        final int dayShift;
+        if (hour < 0) {
+            dayShift = (hour - 23) / 24;
+        } else if (hour > 23) {
+            dayShift = hour / 24;
+        } else {
+            dayShift = 0;
+        }
+        hour -= 24 * dayShift;
+
+        return new DateTimeComponents(new DateComponents(utcComponents.getDate(), dayShift),
+                                      new TimeComponents(hour, minute, seconds, minutesFromUTC));
+
     }
 
     /** Split the instance into date/time components for a time zone.
@@ -866,7 +888,7 @@ public class AbsoluteDate
      */
     public DateTimeComponents getComponents(final TimeZone timeZone)
         throws OrekitException {
-        final long milliseconds = FastMath.round(1000 * durationFrom(JAVA_EPOCH));
+        final long milliseconds = FastMath.round(1000 * offsetFrom(JAVA_EPOCH, TimeScalesFactory.getUTC()));
         return getComponents(timeZone.getOffset(milliseconds) / 60000);
     }
 
