@@ -139,6 +139,8 @@ public class SEMParser implements DataLoader {
                 // Reads the next lines to get one almanac from
                 readAlmanac(reader, week, toa);
             }
+        } catch (IndexOutOfBoundsException ioobe) {
+            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE, name);
         } catch (IOException ioe) {
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_SEM_ALMANAC_FILE, name);
         }
@@ -187,50 +189,54 @@ public class SEMParser implements DataLoader {
         // Skips the empty line
         reader.readLine();
 
-        // Reads the PRN number from the first line
-        String[] token = getTokens(reader);
-        final int prn = Integer.parseInt(token[0].trim());
+        try {
+            // Reads the PRN number from the first line
+            String[] token = getTokens(reader);
+            final int prn = Integer.parseInt(token[0].trim());
 
-        // Reads the SV number from the second line
-        token = getTokens(reader);
-        final int svn = Integer.parseInt(token[0].trim());
+            // Reads the SV number from the second line
+            token = getTokens(reader);
+            final int svn = Integer.parseInt(token[0].trim());
 
-        // Reads the average URA number from the third line
-        token = getTokens(reader);
-        final int ura = Integer.parseInt(token[0].trim());
+            // Reads the average URA number from the third line
+            token = getTokens(reader);
+            final int ura = Integer.parseInt(token[0].trim());
 
-        // Reads the fourth line to get ecc, inc and dom
-        token = getTokens(reader);
-        final double ecc = Double.parseDouble(token[0].trim());
-        final double inc = getInclination(Double.parseDouble(token[1].trim()));
-        final double dom = toRadians(Double.parseDouble(token[2].trim()));
+            // Reads the fourth line to get ecc, inc and dom
+            token = getTokens(reader);
+            final double ecc = Double.parseDouble(token[0].trim());
+            final double inc = getInclination(Double.parseDouble(token[1].trim()));
+            final double dom = toRadians(Double.parseDouble(token[2].trim()));
 
-        // Reads the fifth line to get sqa, raan and aop
-        token = getTokens(reader);
-        final double sqa  = Double.parseDouble(token[0].trim());
-        final double om0 = toRadians(Double.parseDouble(token[1].trim()));
-        final double aop  = toRadians(Double.parseDouble(token[2].trim()));
+            // Reads the fifth line to get sqa, raan and aop
+            token = getTokens(reader);
+            final double sqa  = Double.parseDouble(token[0].trim());
+            final double om0 = toRadians(Double.parseDouble(token[1].trim()));
+            final double aop  = toRadians(Double.parseDouble(token[2].trim()));
 
-        // Reads the sixth line to get anom, af0 and af1
-        token = getTokens(reader);
-        final double anom = toRadians(Double.parseDouble(token[0].trim()));
-        final double af0 = Double.parseDouble(token[1].trim());
-        final double af1 = Double.parseDouble(token[2].trim());
+            // Reads the sixth line to get anom, af0 and af1
+            token = getTokens(reader);
+            final double anom = toRadians(Double.parseDouble(token[0].trim()));
+            final double af0 = Double.parseDouble(token[1].trim());
+            final double af1 = Double.parseDouble(token[2].trim());
 
-        // Reads the seventh line to get health
-        token = getTokens(reader);
-        final int health = Integer.parseInt(token[0].trim());
+            // Reads the seventh line to get health
+            token = getTokens(reader);
+            final int health = Integer.parseInt(token[0].trim());
 
-        // Reads the eighth line to get Satellite Configuration
-        token = getTokens(reader);
-        final int conf = Integer.parseInt(token[0].trim());
+            // Reads the eighth line to get Satellite Configuration
+            token = getTokens(reader);
+            final int conf = Integer.parseInt(token[0].trim());
 
-        // Adds the almanac to the list
-        almanacs.add(new GPSAlmanac(SOURCE, prn, svn, week, toa, sqa, ecc, inc, om0,
-                                    dom, aop, anom, af0, af1, health, ura, conf));
+            // Adds the almanac to the list
+            almanacs.add(new GPSAlmanac(SOURCE, prn, svn, week, toa, sqa, ecc, inc, om0,
+                                        dom, aop, anom, af0, af1, health, ura, conf));
 
-        // Adds the PRN to the list
-        prnList.add(prn);
+            // Adds the PRN to the list
+            prnList.add(prn);
+        } catch (IndexOutOfBoundsException aioobe) {
+            throw new IOException();
+        }
     }
 
     /** Read a line and get tokens from.

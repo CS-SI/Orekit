@@ -207,84 +207,110 @@ public class YUMAParser implements DataLoader {
      */
     private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name)
         throws OrekitException {
-        int prn = 0;
-        int health = 0;
-        int week = 0;
-        double ecc = 0;
-        double toa = 0;
-        double inc = 0;
-        double dom = 0;
-        double sqa = 0;
-        double om0 = 0;
-        double aop = 0;
-        double anom = 0;
-        double af0 = 0;
-        double af1 = 0;
-        // Loop over entries
-        int readOK = 0;
-        for (Pair<String, String> entry: entries) {
-            if (entry.getKey().toLowerCase().startsWith(KEY[0])) {
-                // Gets the PRN of the SVN
-                prn = Integer.parseInt(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[1])) {
-                // Gets the Health status
-                health = Integer.parseInt(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[2])) {
-                // Gets the eccentricity
-                ecc = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[3])) {
-                // Gets the Time of Applicability
-                toa = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[4])) {
-                // Gets the Inclination
-                inc = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[5])) {
-                // Gets the Rate of Right Ascension
-                dom = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[6])) {
-                // Gets the square root of the semi-major axis
-                sqa = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[7])) {
-                // Gets the Right Ascension of Ascending Node
-                om0 = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[8])) {
-                // Gets the Argument of Perigee
-                aop = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[9])) {
-                // Gets the Mean Anomalie
-                anom = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[10])) {
-                // Gets the SV clock bias
-                af0 = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[11])) {
-                // Gets the SV clock Drift
-                af1 = Double.parseDouble(entry.getValue());
-                readOK++;
-            } else if (entry.getKey().toLowerCase().startsWith(KEY[12])) {
-                // Gets the week number
-                week = Integer.parseInt(entry.getValue());
-                readOK++;
+        try {
+            // Initializes fields
+            int prn = 0;
+            int health = 0;
+            int week = 0;
+            double ecc = 0;
+            double toa = 0;
+            double inc = 0;
+            double dom = 0;
+            double sqa = 0;
+            double om0 = 0;
+            double aop = 0;
+            double anom = 0;
+            double af0 = 0;
+            double af1 = 0;
+            // Initializes checks
+            final boolean[] checks = new boolean[KEY.length];
+            // Loop over entries
+            for (Pair<String, String> entry: entries) {
+                if (entry.getKey().toLowerCase().startsWith(KEY[0])) {
+                    // Gets the PRN of the SVN
+                    prn = Integer.parseInt(entry.getValue());
+                    checks[0] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[1])) {
+                    // Gets the Health status
+                    health = Integer.parseInt(entry.getValue());
+                    checks[1] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[2])) {
+                    // Gets the eccentricity
+                    ecc = Double.parseDouble(entry.getValue());
+                    checks[2] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[3])) {
+                    // Gets the Time of Applicability
+                    toa = Double.parseDouble(entry.getValue());
+                    checks[3] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[4])) {
+                    // Gets the Inclination
+                    inc = Double.parseDouble(entry.getValue());
+                    checks[4] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[5])) {
+                    // Gets the Rate of Right Ascension
+                    dom = Double.parseDouble(entry.getValue());
+                    checks[5] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[6])) {
+                    // Gets the square root of the semi-major axis
+                    sqa = Double.parseDouble(entry.getValue());
+                    checks[6] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[7])) {
+                    // Gets the Right Ascension of Ascending Node
+                    om0 = Double.parseDouble(entry.getValue());
+                    checks[7] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[8])) {
+                    // Gets the Argument of Perigee
+                    aop = Double.parseDouble(entry.getValue());
+                    checks[8] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[9])) {
+                    // Gets the Mean Anomalie
+                    anom = Double.parseDouble(entry.getValue());
+                    checks[9] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[10])) {
+                    // Gets the SV clock bias
+                    af0 = Double.parseDouble(entry.getValue());
+                    checks[10] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[11])) {
+                    // Gets the SV clock Drift
+                    af1 = Double.parseDouble(entry.getValue());
+                    checks[11] = true;
+                } else if (entry.getKey().toLowerCase().startsWith(KEY[12])) {
+                    // Gets the week number
+                    week = Integer.parseInt(entry.getValue());
+                    checks[12] = true;
+                } else {
+                    // Unknown entry: the file is not a YUMA file
+                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
+                                              name);
+                }
             }
-        }
 
-        if (readOK == KEY.length) {
-            // Returns a GPSAlmanac built from the entries
-            return new GPSAlmanac(SOURCE, prn, -1, week, toa, sqa, ecc, inc, om0, dom,
-                                  aop, anom, af0, af1, health, -1, -1);
-        } else {
+            // If all expected fields have been read
+            if (readOK(checks)) {
+                // Returns a GPSAlmanac built from the entries
+                return new GPSAlmanac(SOURCE, prn, -1, week, toa, sqa, ecc, inc, om0, dom,
+                                      aop, anom, af0, af1, health, -1, -1);
+            } else {
+                // The file is not a YUMA file
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
+                                          name);
+            }
+        } catch (NumberFormatException nfe) {
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
                                       name);
         }
+    }
+
+    /** Checks if all expected fields have been read.
+     * @param checks flags for read fields
+     * @return true if all expected fields have been read, false if not
+     */
+    private boolean readOK(final boolean[] checks) {
+        for (boolean check: checks) {
+            if (!check) {
+                return false;
+            }
+        };
+        return true;
     }
 }

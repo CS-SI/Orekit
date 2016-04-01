@@ -40,7 +40,7 @@ public class YUMAParserTest {
     @Test
     public void testNoFile() throws IOException, ParseException {
         // the parser for reading Yuma files with a pattern
-        YUMAParser reader = new YUMAParser(".*\\.yuma$");
+        YUMAParser reader = new YUMAParser(".*\\.yum$");
         // No such YUMA file, should throw an exception
         try {
             reader.loadData();
@@ -50,14 +50,33 @@ public class YUMAParserTest {
     }
 
     @Test
+    public void testWrongFile() throws IOException, ParseException {
+        // the parser for reading Yuma files with a pattern
+        YUMAParser reader = new YUMAParser(".*\\.yum$");
+        // the SEM file to read
+        final String fileName = "/gnss/wrong_yuma.txt";
+        final InputStream in = getClass().getResourceAsStream(fileName);
+        // Reads the YUMA file, should throw an exception
+        try {
+            reader.loadData(in, fileName);
+        } catch (OrekitException oe) {
+            Assert.assertEquals("le fichier /gnss/wrong_yuma.txt n'est pas un fichier d'almanach Yuma supporté",
+                                oe.getMessage(Locale.FRANCE));
+        }
+    }
+
+    @Test
     public void testLoadData() throws IOException, ParseException, OrekitException {
         // the parser for reading Yuma files with a pattern
-        YUMAParser reader = new YUMAParser(".*\\.yuma$");
+        YUMAParser reader = new YUMAParser(".*\\.yum$");
         // the YUMA file to read
-        final String fileName = "/gnss/current.alm";
+        final String fileName = "/gnss/yuma.txt";
         final InputStream in = getClass().getResourceAsStream(fileName);
         reader.loadData(in, fileName);
 
+        Assert.assertEquals(".*\\.yum$", reader.getSupportedNames());
+
+        // Checks the whole file read
         Assert.assertEquals(31, reader.getAlmanacs().size());
         Assert.assertEquals(31, reader.getPRNNumbers().size());
 
@@ -97,6 +116,8 @@ public class YUMAParserTest {
         YUMAParser reader = new YUMAParser(null);
         reader.loadData();
 
+        Assert.assertEquals(".*\\.alm$", reader.getSupportedNames());
+
         Assert.assertEquals(31, reader.getAlmanacs().size());
         Assert.assertEquals(31, reader.getPRNNumbers().size());
 
@@ -104,30 +125,30 @@ public class YUMAParserTest {
         final GPSAlmanac alm = reader.getAlmanacs().get(0);
         Assert.assertEquals(1, alm.getPRN());
         Assert.assertEquals(-1, alm.getSVN());
-        Assert.assertEquals(862, alm.getWeek());
-        Assert.assertEquals(319488.0, alm.getTime(), 0.);
-        Assert.assertEquals(5153.602539, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
-        Assert.assertEquals(0.5100727081E-02, alm.getE(), 0.);
-        Assert.assertEquals(0.9639834877,  alm.getI0(), 0.);
+        Assert.assertEquals(866, alm.getWeek());
+        Assert.assertEquals(589824.0, alm.getTime(), 0.);
+        Assert.assertEquals(5153.602051, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
+        Assert.assertEquals(0.5221366882E-02, alm.getE(), 0.);
+        Assert.assertEquals(0.963785748,  alm.getI0(), 0.);
         Assert.assertEquals(0., alm.getIDot(), 0.);
-        Assert.assertEquals(-0.6558977526E+000, alm.getOmega0(), 1.e-10);
-        Assert.assertEquals(-0.7817468486E-008, alm.getOmegaDot(), FastMath.ulp(-8E-09));
-        Assert.assertEquals(0.458945255, alm.getPa(), 1.e-9);
-        Assert.assertEquals(0.1430319489E+001, alm.getM0(), 1.e-9);
-        Assert.assertEquals(0.1335144043E-004, alm.getAf0(), 1.e-14);
+        Assert.assertEquals(-1.159458779E+000, alm.getOmega0(), 1.e-9);
+        Assert.assertEquals(-0.7897471819E-008, alm.getOmegaDot(), FastMath.ulp(-8E-09));
+        Assert.assertEquals(0.451712027, alm.getPa(), 1.e-9);
+        Assert.assertEquals(-0.2105941778E+001, alm.getM0(), 1.e-9);
+        Assert.assertEquals(0.1621246338E-004, alm.getAf0(), 1.e-14);
         Assert.assertEquals(0.0, alm.getAf1(), 0.);
         Assert.assertEquals(0, alm.getHealth());
         Assert.assertEquals(-1, alm.getURA());
         Assert.assertEquals(-1, alm.getSatConfiguration());
         Assert.assertEquals("YUMA", alm.getSource());
-        Assert.assertTrue(alm.getDate().durationFrom(AbsoluteDate.createGPSDate(862, 319488 * 1000.)) == 0);
+        Assert.assertTrue(alm.getDate().durationFrom(AbsoluteDate.createGPSDate(866, 589824 * 1000.)) == 0);
         Assert.assertEquals(0., alm.getCic(), 0.);
         Assert.assertEquals(0., alm.getCis(), 0.);
         Assert.assertEquals(0., alm.getCrc(), 0.);
         Assert.assertEquals(0., alm.getCrs(), 0.);
         Assert.assertEquals(0., alm.getCuc(), 0.);
         Assert.assertEquals(0., alm.getCus(), 0.);
-        Assert.assertEquals(1.4585998187400734E-4, alm.getMeanMotion(), 0.);
+        Assert.assertEquals(1.45860023309E-4, alm.getMeanMotion(), 1.e-15);
     }
 
 }

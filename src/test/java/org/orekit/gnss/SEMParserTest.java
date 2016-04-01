@@ -51,6 +51,23 @@ public class SEMParserTest {
     }
 
     @Test
+    public void testWrongFile() throws IOException, ParseException {
+        // the parser for reading SEM files with default supported name *.al3 for SEM files
+        SEMParser reader = new SEMParser(null);
+        // the SEM file to read
+        final String fileName = "/gnss/wrong_sem.txt";
+        final InputStream in = getClass().getResourceAsStream(fileName);
+        // Reads the SEM file
+        // No such YUMA file, should throw an exception
+        try {
+            reader.loadData(in, fileName);
+        } catch (OrekitException oe) {
+            Assert.assertEquals("le fichier /gnss/wrong_sem.txt n'est pas un fichier d'almanach SEM supporté",
+                                oe.getMessage(Locale.FRANCE));
+        }
+    }
+
+    @Test
     public void testLoadData() throws IOException, ParseException, OrekitException {
         // the parser for reading SEM files with *.sem as supported name for SEM files
         SEMParser reader = new SEMParser(".*\\.sem$");
@@ -59,6 +76,8 @@ public class SEMParserTest {
         final InputStream in = getClass().getResourceAsStream(fileName);
         // Reads the SEM file
         reader.loadData(in, fileName);
+
+        Assert.assertEquals(".*\\.sem$", reader.getSupportedNames());
 
         // Checks the number of almanacs read
         Assert.assertEquals(31, reader.getAlmanacs().size());
@@ -100,6 +119,8 @@ public class SEMParserTest {
         SEMParser reader = new SEMParser(null);
         // Reads the SEM file
         reader.loadData();
+
+        Assert.assertEquals(".*\\.al3$", reader.getSupportedNames());
 
         // Checks the number of almanacs read
         Assert.assertEquals(31, reader.getAlmanacs().size());

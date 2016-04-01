@@ -116,18 +116,30 @@ public class DOPComputer {
     }
 
     /**
-     * Compute the DOP at a given date for a set of GNSS spacecrafts.
+     * Compute the {@link DOP} at a given date for a set of GNSS spacecrafts.
+     * <p>Four GNSS spacecraft at least are needed to compute the DOP.<br/>
+     * If less than 4 propagators are provided, an exception will be thrown.<br/>
+     * If less than 4 spacecrafts are visible at the date, all DOP values will be
+     * set to {@link java.lang.Double#NaN NaN}.</p>
      *
      * @param date the computation date
      * @param gnss the propagators for GNSS spacecraft involved in the DOP computation
-     * @return the DOP at the location
+     * @return the {@link DOP} at the location
      * @throws OrekitException if something wrong occurs
      */
     public DOP compute(final AbsoluteDate date, final List<Propagator> gnss) throws OrekitException {
+
         // Checks the number of provided propagators
         if (gnss.size() < DOP_MIN_PROPAGATORS) {
             throw new OrekitException(OrekitMessages.NOT_ENOUGH_GNSS_FOR_DOP, gnss.size(), DOP_MIN_PROPAGATORS);
         }
+
+        // Initializes DOP values
+        double gdop = Double.NaN;
+        double pdop = Double.NaN;
+        double hdop = Double.NaN;
+        double vdop = Double.NaN;
+        double tdop = Double.NaN;
 
         // Loop over the propagators of GNSS orbits
         final double[][] satDir = new double[gnss.size()][4];
@@ -150,25 +162,28 @@ public class DOPComputer {
             }
         }
 
-        // Construct matrix H
-        final RealMatrix h = MatrixUtils.createRealMatrix(satNb, 4);
-        for (int k = 0; k < satNb; k++) {
-            h.setRow(k, satDir[k]);
+        // DOP values are computed only if at least 4 SV are visible from the location
+        if (satNb > 3) {
+            // Construct matrix H
+            final RealMatrix h = MatrixUtils.createRealMatrix(satNb, 4);
+            for (int k = 0; k < satNb; k++) {
+                h.setRow(k, satDir[k]);
+            }
+
+            // Compute the pseudo-inverse of H
+            final RealMatrix hInv = MatrixUtils.inverse(h.transpose().multiply(h));
+            final double sx2 = hInv.getEntry(0, 0);
+            final double sy2 = hInv.getEntry(1, 1);
+            final double sz2 = hInv.getEntry(2, 2);
+            final double st2 = hInv.getEntry(3, 3);
+
+            // Extract various DOP : GDOP, PDOP, HDOP, VDOP, TDOP
+            gdop = FastMath.sqrt(hInv.getTrace());
+            pdop = FastMath.sqrt(sx2 + sy2 + sz2);
+            hdop = FastMath.sqrt(sx2 + sy2);
+            vdop = FastMath.sqrt(sz2);
+            tdop = FastMath.sqrt(st2);
         }
-
-        // Compute the pseudo-inverse of H
-        final RealMatrix hInv = MatrixUtils.inverse(h.transpose().multiply(h));
-        final double sx2 = hInv.getEntry(0, 0);
-        final double sy2 = hInv.getEntry(1, 1);
-        final double sz2 = hInv.getEntry(2, 2);
-        final double st2 = hInv.getEntry(3, 3);
-
-        // Extract various DOP : GDOP, PDOP, HDOP, VDOP, TDOP
-        final double gdop = FastMath.sqrt(hInv.getTrace());
-        final double pdop = FastMath.sqrt(sx2 + sy2 + sz2);
-        final double hdop = FastMath.sqrt(sx2 + sy2);
-        final double vdop = FastMath.sqrt(sz2);
-        final double tdop = FastMath.sqrt(st2);
 
         // Return all the DOP values
         return new DOP(frame.getPoint(), date, satNb, gdop, pdop, hdop, vdop, tdop);

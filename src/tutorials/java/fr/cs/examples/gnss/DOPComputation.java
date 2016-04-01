@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
 import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
@@ -97,11 +98,12 @@ public class DOPComputation {
             // The size of the meshes in meters
             final double meshSize = 1000.;
 
-            // The min elevation over the zone: 5°
-            final double minElevation = FastMath.toRadians(5.0);
+            // The min elevation over the zone: 10°
+            final double minElevation = FastMath.toRadians(10.0);
              
             // Computation period and time step: 1 day, 10'
-            final AbsoluteDate tStart = new AbsoluteDate(2016, 3, 2, 20, 0, 0., TimeScalesFactory.getUTC());
+            final AbsoluteDate tStart = new AbsoluteDate(2016, 3, 2, 20, 0, 0.,
+                                                         TimeScalesFactory.getUTC());
             final AbsoluteDate tStop  = tStart.shiftedBy(Constants.JULIAN_DAY);
             final double tStep = 600.;
 
@@ -139,6 +141,9 @@ public class DOPComputation {
             // Only keeps almanac with health status ok
             if (almanac.getHealth() == 0) {
                 propagators.add(new GPSPropagator.Builder(almanac).build());
+            } else {
+                System.out.println("GPS PRN " + almanac.getPRN() +
+                                   " is not OK (Health status = " + almanac.getHealth() + ").");
             }
         }
         
@@ -161,22 +166,27 @@ public class DOPComputation {
             // Loops on the grid points
             final List<DOP> dopAtDate = new ArrayList<DOP>();
             for (DOPComputer computer: computers) {
-                final DOP dop = computer.compute(tc, propagators);
-                dopAtDate.add(dop);
+                try {
+                    final DOP dop = computer.compute(tc, propagators);
+                    dopAtDate.add(dop);
+                } catch (OrekitException oe) {
+                    System.out.println(oe.getLocalizedMessage());
+                }
             }
             allDop.add(dopAtDate);
             tc = tc.shiftedBy(tStep);
         }
 
         // Post-processing: gets the statistics of PDOP over the zone at each time
+        System.out.println("                           PDOP");
+        System.out.println("          Date           min  max");
         for (List<DOP> dopAtDate : allDop) {
             final SummaryStatistics pDoP = new SummaryStatistics();
             for (DOP dopAtLoc : dopAtDate) {
                 pDoP.addValue(dopAtLoc.getPdop());
             }
             final AbsoluteDate date = dopAtDate.get(0).getDate();
-            System.out.println(date.toString() + " - PDOP min = " + pDoP.getMin()
-                                               + " - PDOP max = " + pDoP.getMax());
+            System.out.format(Locale.ENGLISH, "%s %.2f %.2f%n", date.toString(), pDoP.getMin(), pDoP.getMax());
         }
     }
 
