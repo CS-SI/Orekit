@@ -68,7 +68,6 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
@@ -261,8 +260,10 @@ public class DSSTPropagatorTest {
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(4, 4);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        DSSTForceModel force = new DSSTCentralBody(earthFrame,
-                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        DSSTForceModel force =
+                        new org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody(earthFrame,
+                                                                                              Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                                                              provider);
 
         // GPS Orbit
         final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400,
@@ -310,9 +311,11 @@ public class DSSTPropagatorTest {
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(4, 4);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
-        DSSTForceModel force = new DSSTCentralBody(earthFrame,
-                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider,
-                                                   12, 8, 8, 12, 12);
+        DSSTForceModel force =
+                        new org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody(earthFrame,
+                                                                                              Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                                                              provider,
+                                                                                              12, 8, 8, 12, 12);
 
         // GPS Orbit
         final AbsoluteDate initDate = new AbsoluteDate(2007, 4, 16, 0, 46, 42.400,
