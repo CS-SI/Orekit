@@ -125,6 +125,9 @@ public class DSSTCentralBody implements DSSTForceModel {
             final int maxDegreeTesseralShortPeriodics       = FastMath.min(provider.getMaxDegree(), maxDegreeTesseralSP);
             final int maxOrderTesseralShortPeriodics        = FastMath.min(provider.getMaxOrder(), maxOrderTesseralSP);
             final int maxEccPowTesseralShortPeriodics       = FastMath.min(maxDegreeTesseralShortPeriodics - 1, 4);
+            final int maxFrequencyShortPeriodics            = FastMath.min(maxDegreeTesseralShortPeriodics +
+                                                                           maxEccPowTesseralShortPeriodics,
+                                                                           12);
             final int maxDegreeMdailyTesseralShortPeriodics = FastMath.min(provider.getMaxDegree(), maxDegreeMdailyTesseralSP);
             final int maxOrderMdailyTesseralShortPeriodics  = FastMath.min(provider.getMaxOrder(), maxOrderMdailyTesseralSP);
             final int maxEccPowMdailyTesseralShortPeriodics = FastMath.min(maxDegreeMdailyTesseralShortPeriodics - 2, 4);
@@ -133,8 +136,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                                                     centralBodyRotationRate,
                                                     provider,
                                                     maxDegreeTesseralShortPeriodics, maxOrderTesseralShortPeriodics,
-                                                    maxEccPowTesseralShortPeriodics,
-                                                    maxDegreeTesseralShortPeriodics + maxEccPowTesseralShortPeriodics,
+                                                    maxEccPowTesseralShortPeriodics, maxFrequencyShortPeriodics,
                                                     maxDegreeMdailyTesseralShortPeriodics,
                                                     maxOrderMdailyTesseralShortPeriodics,
                                                     maxEccPowMdailyTesseralShortPeriodics);

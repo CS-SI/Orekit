@@ -245,15 +245,17 @@ public class DSSTTesseral implements DSSTForceModel {
      * @param maxOrderTesseralSP maximal order to consider for short periodics tesseral harmonics potential
      *  (must be between 0 and {@code provider.getMaxOrder()})
      * @param maxEccPowTesseralSP maximum power of the eccentricity to use in summation over s for
-     * short periodic tesseral harmonics (without m-daily)
+     * short periodic tesseral harmonics (without m-daily), should typically not exceed 4 as higher
+     * values will exceed computer capacity
      * @param maxFrequencyShortPeriodics maximum frequency in mean longitude for short periodic computations
+     * (typically {@code maxDegreeTesseralSP} + {@code maxEccPowTesseralSP and no more than 12})
      * @param maxDegreeMdailyTesseralSP maximal degree to consider for short periodics m-daily tesseral harmonics potential
      *  (must be between 2 and {@code provider.getMaxDegree()})
      * @param maxOrderMdailyTesseralSP maximal order to consider for short periodics m-daily tesseral harmonics potential
      *  (must be between 0 and {@code provider.getMaxOrder()})
      * @param maxEccPowMdailyTesseralSP maximum power of the eccentricity to use in summation over s for
-     * m-daily tesseral harmonics.
-     *  (must be between 0 and {@code maxDegreeMdailyTesseralSP - 2})
+     * m-daily tesseral harmonics, (must be between 0 and {@code maxDegreeMdailyTesseralSP - 2},
+     * but should typically not exceed 4 as higher values will exceed computer capacity)
      * @exception OrekitException if degrees or powers are out of range
      * @since 7.2
      */
