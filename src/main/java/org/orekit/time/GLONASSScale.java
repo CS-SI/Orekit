@@ -18,13 +18,15 @@ package org.orekit.time;
 
 /** GLONASS time scale.
  * <p>By convention, TGLONASS = UTC + 3 hours.</p>
+ * <p>The time scale is defined in <a
+ * href="http://www.spacecorp.ru/upload/iblock/1c4/cgs-aaixymyt%205.1%20ENG%20v%202014.02.18w.pdf">
+ * Global Navigation Sattelite System GLONASS - Interface Control document</a>, version 5.1 2008
+ * (the typo in the title is in the original document title).
+ * </p>
  * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
- * @see <a href="http://www.spacecorp.ru/upload/iblock/1c4/cgs-aaixymyt%205.1%20ENG%20v%202014.02.18w.pdf">
- * Global Navigation Sattelite System GLONASS - Interface Control document</a>, version 5.1 2008
- * (the typo in the title is in the original document title)
  */
 public class GLONASSScale implements TimeScale {
 
