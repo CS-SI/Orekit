@@ -97,21 +97,7 @@ The simplest way to use Orekit with Eclipse is to follow these steps:
 
   * unpack the distribution inside your Eclipse workspace
 
-  * create a new java project from existing sources and direct Eclipse to the
-     directory where you unpacked Orekit
+  * import the project as an "Existing Maven Project"
 
-  * set the source folders to
-    * orekit/src/main/java
-    * orekit/src/test/java
-    * orekit/src/tutorials/java
-	* orekit/src/main/resources
-    * orekit/src/test/resources
-    * orekit/src/tutorials/resources
-
-    in the source tab of the Configure Build Path dialog
-
-  * set the external libraries to JRE system library (provided by Eclipse),
-    Junit 4.x (provided by Eclipse) and Apache Commons Math (available at
-    Apache Software Foundation Commons Math
-    [downloads page](http://commons.apache.org/proper/commons-math/download_math.cgi))
-    in the libraries tab of the Configure Build Path dialog
+Everything should be configured automatically, including the dependency
+to the underlying mathematical library.
