@@ -165,7 +165,7 @@ public class Phasing {
         // read input parameters
         KeyValueFileParser<ParameterKey> parser =
                 new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(new FileInputStream(input));
+        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
         TimeScale utc = TimeScalesFactory.getUTC();
 
        // simulation properties
