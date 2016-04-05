@@ -31,12 +31,11 @@
     package propagation.semianalytical.dsst #DDEBD8 {
 
       Package forces #CEEBD8 {
-        TesseralShortPeriodicCoefficients <--* TesseralContribution
         interface DSSTForceModel
         interface ShortPeriodTerms
-        DSSTForceModel <|-- DSSTCentralBody
+        DSSTForceModel <|-- DSSTTesseral
+        DSSTTesseral --> TesseralShortPeriodicCoefficients
         ShortPeriodTerms <|-- TesseralShortPeriodicCoefficients
-        DSSTCentralBody *--> "1" TesseralContribution
       }
 
       package utilities #CEEBD8 {
@@ -44,12 +43,12 @@
           class HansenTesseralLinear
         }
           TesseralShortPeriodicCoefficients *--> "*" ShortPeriodicsInterpolatedCoefficient
-          TesseralContribution *--> HansenTesseralLinear
+          DSSTTesseral *--> HansenTesseralLinear
        }
 
       package forces.gravity.potential #DDEBD8 {
           interface UnnormalizedSphericalHarmonicsProvider
-          UnnormalizedSphericalHarmonicsProvider "1" <--* TesseralContribution
+          UnnormalizedSphericalHarmonicsProvider "1" <--* DSSTTesseral
       }
   }
 
