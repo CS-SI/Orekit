@@ -178,7 +178,7 @@ public class OrbitDetermination {
         final AzimuthLog   azimuthLog   = new AzimuthLog(home, baseName);
         final ElevationLog elevationLog = new ElevationLog(home, baseName);
         final PositionLog  positionLog  = new PositionLog(home, baseName);
-        final VelocityLog velocityLog   = new VelocityLog(home, baseName);
+        final VelocityLog  velocityLog  = new VelocityLog(home, baseName);
 
         try {
             // gravity field
