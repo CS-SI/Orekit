@@ -165,7 +165,7 @@ public class Phasing {
         // read input parameters
         KeyValueFileParser<ParameterKey> parser =
                 new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(new FileInputStream(input));
+        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
         TimeScale utc = TimeScalesFactory.getUTC();
 
        // simulation properties
@@ -174,7 +174,7 @@ public class Phasing {
         int          nbDays     = parser.getInt(ParameterKey.PHASING_DAYS_NUMBER);
         double       latitude   = parser.getAngle(ParameterKey.SUN_SYNCHRONOUS_REFERENCE_LATITUDE);
         boolean      ascending  = parser.getBoolean(ParameterKey.SUN_SYNCHRONOUS_REFERENCE_ASCENDING);
-        double       mst        = parser.getTime(ParameterKey.SUN_SYNCHRONOUS_MEAN_SOLAR_TIME).getSecondsInDay() / 3600;
+        double       mst        = parser.getTime(ParameterKey.SUN_SYNCHRONOUS_MEAN_SOLAR_TIME).getSecondsInUTCDay() / 3600;
         int          degree     = parser.getInt(ParameterKey.GRAVITY_FIELD_DEGREE);
         int          order      = parser.getInt(ParameterKey.GRAVITY_FIELD_ORDER);
         String       gridOutput = parser.getString(ParameterKey.GRID_OUTPUT);
@@ -568,7 +568,7 @@ public class Phasing {
 
         // compute angle between Sun and spacecraft in the equatorial plane
         final Vector3D position = orbit.getPVCoordinates().getPosition();
-        final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInDay();
+        final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInUTCDay();
         final double theta      = gmst.value(orbit.getDate()).getValue();
         final double sunAlpha   = theta + FastMath.PI * (1 - time / (Constants.JULIAN_DAY * 0.5));
         final double dAlpha     = MathUtils.normalizeAngle(position.getAlpha() - sunAlpha, 0);

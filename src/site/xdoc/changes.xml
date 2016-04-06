@@ -21,13 +21,29 @@
   </properties>
   <body>
     <release version="7.2" date="TBC"
-             description="">
+             description="Version 7.2 is a minor release of Orekit. It introduces several new
+             features and bug fixes. The most important features introduced in version 7.2
+             are handling of GLONASS and QZSS time scales, support for local time zones
+             according to ISO-8601 standard, and finer tuning of short period terms in
+             DSST propagator. Version 7.2 depends on version 3.6.1 of Apache Commons Math,
+             which also fixes a bug related to close events detection.">
+      <action dev="luc" type="add">
+        Added GLONASS and QZSS time scales. These time scales my be used in SP3-c files.
+      </action>
+      <action dev="luc" type="add">
+        Added parsing and displaying of local time according to ISO-8601 standard.
+      </action>
       <action dev="luc" type="fix">
         Added some protections against malformed SP3 files.
       </action>
       <action dev="luc" type="fix">
         Fixed Newcomb operators generation in DSST for high degree gravity fields.
         Fixes issue #237
+      </action>
+      <action dev="luc" type="update">
+        Improved tuning of DSST tesseral force models. Users can now tune max degree,
+        max eccentricity power and max frequency in mean longitude for short
+        period terms, as well as for m-daily terms.
       </action>
       <action dev="luc" type="update">
         Improved tuning of DSST zonal force models. Users can now tune max degree,
@@ -62,7 +78,7 @@
              Recommendation ITU-R P.834-7, geoid model based on gravity field, and use of the new
              Apache Commons Math rotation API with either Frame transform convention or vector
              operator convention. Numerous bugs were also fixed.
-             Version 7.1 depends on version 3.6 of Apache commons math.">
+             Version 7.1 depends on version 3.6 of Apache Commons Math.">
       <action dev="thierry" type="add">
         Added tropospheric refraction correction angle following Recommendation ITU-R P.834-7.
       </action>

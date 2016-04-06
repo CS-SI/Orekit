@@ -98,19 +98,23 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * </p>
      * @param input input stream
      * @exception IOException if input file cannot be read
-     * @exception IllegalArgumentException if a line cannot be read properly
+     * @exception OrekitException if a line cannot be read properly
      */
-    public void parseInput(final InputStream input) throws IOException, IllegalArgumentException {
+    public void parseInput(final String name, final InputStream input)
+        throws IOException, OrekitException {
 
         final Pattern        arrayPattern = Pattern.compile("([\\w\\.]+)\\s*\\[([0-9]+)\\]");
         final BufferedReader reader       = new BufferedReader(new InputStreamReader(input));
+        int lineNumber = 0;
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+            ++lineNumber;
             line = line.trim();
             // we ignore blank lines and line starting with '#'
             if ((line.length() > 0) && !line.startsWith("#")) {
                 String[] fields = line.split("\\s*=\\s*");
                 if (fields.length != 2) {
-                    throw new IllegalArgumentException(line);
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                              lineNumber, name, line);
                 }
                 final Matcher matcher = arrayPattern.matcher(fields[0]);
                 if (matcher.matches()) {
@@ -434,7 +438,8 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
         // check the name against predefined frames
         for (Predefined predefined : Predefined.values()) {
             if (frameName.equals(predefined.getName())) {
-                if (predefined.toString().startsWith("ITRF")) {
+                if (predefined.toString().startsWith("ITRF") ||
+                    predefined.toString().startsWith("GTOD")) {
                     return FramesFactory.getFrame(predefined);
                 } else {
                     throw new OrekitException(NOT_EARTH_FRAME, frameName);

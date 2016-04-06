@@ -149,17 +149,32 @@ output.orbit.is.osculating = false
 #  the default value (7.292115e-5 rad/s) corresponds to WGS84 standard
 central.body.rotation.rate = 7.292115e-5
 ## Central body gravity potential degree
-central.body.degree = 36
+central.body.degree = 6
 ## Central body gravity potential order
-central.body.order  =  0
+central.body.order  =  6
 ## short period limits
-max.degree.zonal.short.periods                    = 12
-max.eccentricity.power.zonal.short.periods        = 11
-max.frequency.true.longitude.zonal.short.periods  = 25
-max.degree.tesseral.short.periods                 =  8
-max.order.tesseral.short.periods                  =  8
-max.degree.tesseral.m.dailies.short.periods       = 12
-max.order.tesseral.m.dailies.short.periods        = 12
+max.degree.zonal.short.periods                          =  6
+
+# typically min(max.degree.zonal.short.periods - 1, 4)
+max.eccentricity.power.zonal.short.periods              =  4
+
+# typically 2 * max.degree.zonal.short.periods + 1
+max.frequency.true.longitude.zonal.short.periods        = 13
+
+max.degree.tesseral.short.periods                       =  6
+max.order.tesseral.short.periods                        =  6
+
+# typically min(max.degree.tesseral.short.periods - 1, 4)
+max.eccentricity.power.tesseral.short.periods           =  4
+
+# typically min(max.degree.tesseral.short.periods + max.eccentricity.power.tesseral.short.periods, 12)
+max.frequency.mean.longitude.tesseral.short.periods     = 10
+
+max.degree.tesseral.m.dailies.short.periods             =  6
+max.order.tesseral.m.dailies.short.periods              =  6
+
+# typically min(max.degree.tesseral.short.periods - 2, 4)
+max.eccentricity.power.tesseral.m.dailies.short.periods =  4
 
 ## 3rd body Moon (true/false) [false]
 third.body.moon = false

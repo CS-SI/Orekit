@@ -337,9 +337,6 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = a órbita corrente ten unha excentricid
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = versión de formato sp3 {0} non incluída
 
-# unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = versión de sistema temporal {0} non incluída
-
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = final inesperado dun ficheiro sp3 (despois da liña {0})
 

@@ -269,8 +269,11 @@ public class SP3Parser implements OrbitFileParser {
                             break;
 
                         case GLO:
+                            pi.timeScale = TimeScalesFactory.getGLONASS();
+                            break;
+
                         case QZS:
-                            throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_TIMESYSTEM, ts.name());
+                            pi.timeScale = TimeScalesFactory.getQZSS();
 
                         case TAI:
                             pi.timeScale = TimeScalesFactory.getTAI();

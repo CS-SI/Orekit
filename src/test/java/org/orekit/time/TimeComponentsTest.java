@@ -72,7 +72,7 @@ public class TimeComponentsTest {
         Assert.assertEquals(10.0, time.getSecond(), 1.0e-10);
 
         time = new TimeComponents(0.0);
-        Assert.assertEquals(0.0, time.getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(0.0, time.getSecondsInUTCDay(), 1.0e-10);
 
         time = new TimeComponents(10, 10, 60.999);
         Assert.assertEquals(10,   time.getHour());
@@ -80,20 +80,23 @@ public class TimeComponentsTest {
         Assert.assertEquals(60.999, time.getSecond(), 1.0e-10);
 
         time = new TimeComponents(43200.0);
-        Assert.assertEquals(43200.0, time.getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(43200.0, time.getSecondsInUTCDay(), 1.0e-10);
 
         time = new TimeComponents(86399.999);
-        Assert.assertEquals(86399.999, time.getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.999, time.getSecondsInUTCDay(), 1.0e-10);
 
+        time = new TimeComponents(2, 30, 0, 180);
+        Assert.assertEquals(+9000.0, time.getSecondsInLocalDay(), 1.0e-5);
+        Assert.assertEquals(-1800.0, time.getSecondsInUTCDay(),   1.0e-5);
     }
 
     @Test
     public void testValues() {
-        Assert.assertEquals(    0.0, new TimeComponents( 0, 0, 0).getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(21600.0, new TimeComponents( 6, 0, 0).getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(43200.0, new TimeComponents(12, 0, 0).getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(64800.0, new TimeComponents(18, 0, 0).getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, new TimeComponents(23, 59, 59.9).getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(    0.0, new TimeComponents( 0, 0, 0).getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(21600.0, new TimeComponents( 6, 0, 0).getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(43200.0, new TimeComponents(12, 0, 0).getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(64800.0, new TimeComponents(18, 0, 0).getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, new TimeComponents(23, 59, 59.9).getSecondsInLocalDay(), 1.0e-10);
     }
 
     @Test
@@ -103,19 +106,24 @@ public class TimeComponentsTest {
         Assert.assertEquals("12:00:00.000", new TimeComponents(43200).toString());
         Assert.assertEquals("18:00:00.000", new TimeComponents(64800).toString());
         Assert.assertEquals("23:59:59.900", new TimeComponents(86399.9).toString());
+        Assert.assertEquals("00:00:00.000+10:00", new TimeComponents( 0,  0,  0,    600).toString());
+        Assert.assertEquals("06:00:00.000+10:00", new TimeComponents( 6,  0,  0,    600).toString());
+        Assert.assertEquals("12:00:00.000-04:30", new TimeComponents(12,  0,  0,   -270).toString());
+        Assert.assertEquals("18:00:00.000-04:30", new TimeComponents(18,  0,  0,   -270).toString());
+        Assert.assertEquals("23:59:59.900-04:30", new TimeComponents(23, 59, 59.9, -270).toString());
     }
 
     @Test
     public void testParse() {
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59,900").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900Z").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900Z").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900+00").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900+00").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900+00:00").getSecondsInDay(), 1.0e-10);
-        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900+00:00").getSecondsInDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900").getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900").getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59,900").getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900Z").getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900Z").getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900+10").getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900+00").getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("235959.900-00:12").getSecondsInLocalDay(), 1.0e-10);
+        Assert.assertEquals(86399.9, TimeComponents.parseTime("23:59:59.900+00:00").getSecondsInLocalDay(), 1.0e-10);
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -123,9 +131,9 @@ public class TimeComponentsTest {
         TimeComponents.parseTime("23h59m59s");
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testBadZone() {
-        TimeComponents.parseTime("23:59:59+01:00");
+    @Test
+    public void testLocalTime() {
+        Assert.assertEquals(60, TimeComponents.parseTime("23:59:59+01:00").getMinutesFromUTC());
     }
 
     @Test

@@ -26,7 +26,7 @@
   * Time
 
     * high accuracy absolute dates
-    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST ...)
+    * time scales (TAI, UTC, UT1, GPS, TT, TCG, TDB, TCB, GMST, GST, GLONASS, QZSS ...)
     * transparent handling of leap seconds
 
   * Geometry

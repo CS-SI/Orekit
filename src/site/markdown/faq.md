@@ -111,6 +111,7 @@ with version 4.1, Orekit depends only on officially released versions of Apache 
   Orekit 6.1   | Apache Commons Math 3.2
   Orekit 7.0   | Apache Commons Math 3.4.1
   Orekit 7.1   | Apache Commons Math 3.6
+  Orekit 7.2   | Apache Commons Math 3.6.1
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 

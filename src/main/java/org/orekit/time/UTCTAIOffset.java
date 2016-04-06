@@ -170,7 +170,7 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      */
     public double getOffset(final DateComponents date, final TimeComponents time) {
         final int    days     = date.getMJD() - mjdRef;
-        final double fraction = time.getSecondsInDay();
+        final double fraction = time.getSecondsInUTCDay();
         return offset + days * (slopeUTC * Constants.JULIAN_DAY) + fraction * slopeUTC;
     }
 

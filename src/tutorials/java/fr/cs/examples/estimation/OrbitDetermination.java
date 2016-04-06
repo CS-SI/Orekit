@@ -159,7 +159,7 @@ public class OrbitDetermination {
 
         // read input parameters
         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(new FileInputStream(input));
+        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
 
         // log file
         final String baseName;

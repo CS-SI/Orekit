@@ -337,9 +337,6 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle banen har en eksentrisitet
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = ustøttet version for sp3 filen {0}
 
-# unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = ustøttet tidssystem {0}
-
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = uventet slutt på fil for sp3 fil (etter linje {0})
 

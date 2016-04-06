@@ -122,13 +122,24 @@ public class DSSTCentralBody implements DSSTForceModel {
                                        2 * maxDegreeZonalShortPeriodics + 1);
 
             // Tesseral harmonics contribution (only if order > 0)
+            final int maxDegreeTesseralShortPeriodics       = FastMath.min(provider.getMaxDegree(), maxDegreeTesseralSP);
+            final int maxOrderTesseralShortPeriodics        = FastMath.min(provider.getMaxOrder(), maxOrderTesseralSP);
+            final int maxEccPowTesseralShortPeriodics       = FastMath.min(maxDegreeTesseralShortPeriodics - 1, 4);
+            final int maxFrequencyShortPeriodics            = FastMath.min(maxDegreeTesseralShortPeriodics +
+                                                                           maxEccPowTesseralShortPeriodics,
+                                                                           12);
+            final int maxDegreeMdailyTesseralShortPeriodics = FastMath.min(provider.getMaxDegree(), maxDegreeMdailyTesseralSP);
+            final int maxOrderMdailyTesseralShortPeriodics  = FastMath.min(provider.getMaxOrder(), maxOrderMdailyTesseralSP);
+            final int maxEccPowMdailyTesseralShortPeriodics = FastMath.min(maxDegreeMdailyTesseralShortPeriodics - 2, 4);
             this.tesseral = (provider.getMaxOrder() == 0) ?
                             null : new DSSTTesseral(centralBodyFrame,
                                                     centralBodyRotationRate,
                                                     provider,
-                                                    maxDegreeTesseralSP, maxOrderTesseralSP,
-                                                    maxDegreeMdailyTesseralSP,
-                                                    maxOrderMdailyTesseralSP);
+                                                    maxDegreeTesseralShortPeriodics, maxOrderTesseralShortPeriodics,
+                                                    maxEccPowTesseralShortPeriodics, maxFrequencyShortPeriodics,
+                                                    maxDegreeMdailyTesseralShortPeriodics,
+                                                    maxOrderMdailyTesseralShortPeriodics,
+                                                    maxEccPowMdailyTesseralShortPeriodics);
         } catch (OrekitException oe) {
             // this should never happen
             throw new OrekitInternalError(oe);

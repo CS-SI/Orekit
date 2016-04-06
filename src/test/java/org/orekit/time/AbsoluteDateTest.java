@@ -17,7 +17,9 @@
 package org.orekit.time;
 
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
@@ -131,6 +133,82 @@ public class AbsoluteDateTest {
                             new AbsoluteDate("1950-01-01", TimeScalesFactory.getTT()));
         Assert.assertEquals(AbsoluteDate.CCSDS_EPOCH,
                             new AbsoluteDate("1958-001", TimeScalesFactory.getTAI()));
+    }
+
+    @Test
+    public void testLocalTimeParsing() throws OrekitException {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        Assert.assertEquals(new AbsoluteDate("2011-12-31T23:00:00",       utc),
+                            new AbsoluteDate("2012-01-01T03:30:00+04:30", utc));
+        Assert.assertEquals(new AbsoluteDate("2011-12-31T23:00:00",       utc),
+                            new AbsoluteDate("2012-01-01T03:30:00+0430",  utc));
+        Assert.assertEquals(new AbsoluteDate("2011-12-31T23:30:00",       utc),
+                            new AbsoluteDate("2012-01-01T03:30:00+04",    utc));
+        Assert.assertEquals(new AbsoluteDate("2012-01-01T05:17:00",       utc),
+                            new AbsoluteDate("2011-12-31T22:17:00-07:00", utc));
+        Assert.assertEquals(new AbsoluteDate("2012-01-01T05:17:00",       utc),
+                            new AbsoluteDate("2011-12-31T22:17:00-0700",  utc));
+        Assert.assertEquals(new AbsoluteDate("2012-01-01T05:17:00",       utc),
+                            new AbsoluteDate("2011-12-31T22:17:00-07",    utc));
+    }
+
+    @Test
+    public void testTimeZoneDisplay() throws OrekitException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final AbsoluteDate date = new AbsoluteDate("2000-01-01T01:01:01.000", utc);
+        Assert.assertEquals("2000-01-01T01:01:01.000",       date.toString());
+        Assert.assertEquals("2000-01-01T11:01:01.000+10:00", date.toString( 600));
+        Assert.assertEquals("1999-12-31T23:01:01.000-02:00", date.toString(-120));
+
+        // winter time, Europe is one hour ahead of UTC
+        final TimeZone tz = TimeZone.getTimeZone("Europe/Paris");
+        Assert.assertEquals("2001-01-22T11:30:00.000+01:00",
+                            new AbsoluteDate("2001-01-22T10:30:00", utc).toString(tz));
+
+        // summer time, Europe is two hours ahead of UTC
+        Assert.assertEquals("2001-06-23T11:30:00.000+02:00",
+                            new AbsoluteDate("2001-06-23T09:30:00", utc).toString(tz));
+
+    }
+
+    @Test
+    public void testLocalTimeLeapSecond() throws OrekitException, IOException {
+
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate beforeLeap = new AbsoluteDate("2012-06-30T23:59:59.8", utc);
+        AbsoluteDate inLeap     = new AbsoluteDate("2012-06-30T23:59:60.5", utc);
+        Assert.assertEquals(0.7, inLeap.durationFrom(beforeLeap), 1.0e-12);
+        for (int minutesFromUTC = -1500; minutesFromUTC < 1500; ++minutesFromUTC) {
+            DateTimeComponents dtcBeforeLeap = beforeLeap.getComponents(minutesFromUTC);
+            DateTimeComponents dtcInsideLeap = inLeap.getComponents(minutesFromUTC);
+            Assert.assertEquals(dtcBeforeLeap.getDate(), dtcInsideLeap.getDate());
+            Assert.assertEquals(dtcBeforeLeap.getTime().getHour(), dtcInsideLeap.getTime().getHour());
+            Assert.assertEquals(dtcBeforeLeap.getTime().getMinute(), dtcInsideLeap.getTime().getMinute());
+            Assert.assertEquals(minutesFromUTC, dtcBeforeLeap.getTime().getMinutesFromUTC());
+            Assert.assertEquals(minutesFromUTC, dtcInsideLeap.getTime().getMinutesFromUTC());
+            Assert.assertEquals(59.8, dtcBeforeLeap.getTime().getSecond(), 1.0e-10);
+            Assert.assertEquals(60.5, dtcInsideLeap.getTime().getSecond(), 1.0e-10);
+        }
+
+    }
+
+    @Test
+    public void testTimeZoneLeapSecond() throws OrekitException {
+
+        TimeScale utc = TimeScalesFactory.getUTC();
+        final TimeZone tz = TimeZone.getTimeZone("Europe/Paris");
+        AbsoluteDate localBeforeMidnight = new AbsoluteDate("2012-06-30T21:59:59.800", utc);
+        Assert.assertEquals("2012-06-30T23:59:59.800+02:00",
+                            localBeforeMidnight.toString(tz));
+        Assert.assertEquals("2012-07-01T00:00:00.800+02:00",
+                            localBeforeMidnight.shiftedBy(1.0).toString(tz));
+
+        AbsoluteDate beforeLeap = new AbsoluteDate("2012-06-30T23:59:59.8", utc);
+        AbsoluteDate inLeap     = new AbsoluteDate("2012-06-30T23:59:60.5", utc);
+        Assert.assertEquals(0.7, inLeap.durationFrom(beforeLeap), 1.0e-12);
+        Assert.assertEquals("2012-07-01T01:59:59.800+02:00", beforeLeap.toString(tz));
+        Assert.assertEquals("2012-07-01T01:59:60.500+02:00", inLeap.toString(tz));
+
     }
 
     @Test
