@@ -34,6 +34,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -147,6 +148,63 @@ public class ConstantThrustManeuverTest {
         Assert.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
         Assert.assertEquals(28970, finalorb.getA()/1000, 1);
 
+    }
+
+    @Test
+    public void testForwardAndBackward() throws OrekitException {
+        final double isp = 318;
+        final double mass = 2500;
+        final double a = 24396159;
+        final double e = 0.72831215;
+        final double i = FastMath.toRadians(7);
+        final double omega = FastMath.toRadians(180);
+        final double OMEGA = FastMath.toRadians(261);
+        final double lv = 0;
+
+        final double duration = 3653.99;
+        final double f = 420;
+        final double delta = FastMath.toRadians(-7.4978);
+        final double alpha = FastMath.toRadians(351);
+        final AttitudeProvider law = new InertialProvider(new Rotation(new Vector3D(alpha, delta), Vector3D.PLUS_I));
+
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                       new TimeComponents(23, 30, 00.000),
+                                                       TimeScalesFactory.getUTC());
+        final Orbit orbit =
+            new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
+                               FramesFactory.getEME2000(), initDate, mu);
+        final SpacecraftState initialState =
+            new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
+
+        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+                                                       new TimeComponents(04, 15, 34.080),
+                                                       TimeScalesFactory.getUTC());
+        final ConstantThrustManeuver maneuver =
+            new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
+        Assert.assertEquals(f,   maneuver.getThrust(), 1.0e-10);
+        Assert.assertEquals(isp, maneuver.getISP(),    1.0e-10);
+
+        double[][] tol = NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
+        AdaptiveStepsizeIntegrator integrator1 =
+            new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
+        integrator1.setInitialStepSize(60);
+        final NumericalPropagator propagator1 = new NumericalPropagator(integrator1);
+        propagator1.setInitialState(initialState);
+        propagator1.setAttitudeProvider(law);
+        propagator1.addForceModel(maneuver);
+        final SpacecraftState finalState = propagator1.propagate(fireDate.shiftedBy(3800));
+        AdaptiveStepsizeIntegrator integrator2 =
+                        new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
+        integrator2.setInitialStepSize(60);
+        final NumericalPropagator propagator2 = new NumericalPropagator(integrator2);
+        propagator2.setInitialState(finalState);
+        propagator2.setAttitudeProvider(law);
+        propagator2.addForceModel(maneuver);
+        final SpacecraftState recoveredState = propagator2.propagate(orbit.getDate());
+        final Vector3D refPosition = initialState.getPVCoordinates().getPosition();
+        final Vector3D recoveredPosition = recoveredState.getPVCoordinates().getPosition();
+        Assert.assertEquals(0.0, Vector3D.distance(refPosition, recoveredPosition), 30.0);
+        Assert.assertEquals(initialState.getMass(), recoveredState.getMass(), 1.5e-10);
     }
 
     @Before

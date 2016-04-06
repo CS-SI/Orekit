@@ -63,6 +63,20 @@ public class TCBScaleTest {
     }
 
     @Test
+    public void testDuringLeap() throws OrekitException {
+        final TimeScale utc   = TimeScalesFactory.getUTC();
+        final TimeScale scale = TimeScalesFactory.getTCB();
+        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
+                                                     new TimeComponents(23, 59, 59),
+                                                     utc);
+        final AbsoluteDate during = before.shiftedBy(1.25);
+        Assert.assertTrue(utc.insideLeap(during));
+        Assert.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assert.assertFalse(scale.insideLeap(during));
+        Assert.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+    }
+
+    @Test
     public void testAAS06134() throws OrekitException {
 
         // this reference test has been extracted from the following paper:

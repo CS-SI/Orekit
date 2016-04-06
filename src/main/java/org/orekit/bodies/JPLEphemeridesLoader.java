@@ -734,7 +734,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final long l3 = ((long) record[offset + 5]) & 0xffl;
         final long l2 = ((long) record[offset + 6]) & 0xffl;
         final long l1 = ((long) record[offset + 7]) & 0xffl;
-        long l;
+        final long l;
         if (bigEndian) {
             l = (l8 << 56) | (l7 << 48) | (l6 << 40) | (l5 << 32) |
                 (l4 << 24) | (l3 << 16) | (l2 <<  8) | l1;

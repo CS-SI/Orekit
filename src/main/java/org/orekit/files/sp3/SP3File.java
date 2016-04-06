@@ -67,7 +67,22 @@ public class SP3File implements OrbitFile, Serializable {
         /** broadcast. */
         BCT,
         /** fitted after applying a Helmert transformation. */
-        HLM
+        HLM;
+
+        /** Parse a string to get the type.
+         * @param s string to parse
+         * @return the type corresponding to the string
+         * @exception IllegalArgumentException if the string does not correspond to a type
+         */
+        public static SP3OrbitType parseType(final String s) {
+            final String normalizedString = s.trim().toUpperCase();
+            if ("EST".equals(normalizedString)) {
+                return FIT;
+            } else {
+                return valueOf(normalizedString);
+            }
+        }
+
     }
 
     /** File type. */

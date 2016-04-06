@@ -31,21 +31,25 @@
     package propagation.semianalytical.dsst #DDEBD8 {
 
       Package forces #CEEBD8 {
-        ZonalShortPeriodicCoefficients <--* ZonalContribution
         interface DSSTForceModel
-        DSSTForceModel <|-- DSSTCentralBody
-        DSSTCentralBody *--> "1" ZonalContribution
+        interface ShortPeriodTerms
+        DSSTForceModel <|-- DSSTZonal
+        DSSTZonal --> ZonalShortPeriodicCoefficients
+        ShortPeriodTerms <|-- ZonalShortPeriodicCoefficients
       }
 
       package utilities #CEEBD8 {
+        package hansen #EAECE6 {
+          class HansenZonalLinear
+        }
           ZonalShortPeriodicCoefficients *--> "*" ShortPeriodicsInterpolatedCoefficient
-          ZonalContribution *--> HansenThirdBodyLinear
+          DSSTZonal *--> HansenZonalLinear
        }
     }
 
       package forces.gravity.potential #DDEBD8 {
           interface UnnormalizedSphericalHarmonicsProvider
-          UnnormalizedSphericalHarmonicsProvider "1" <--* ZonalContribution
+          UnnormalizedSphericalHarmonicsProvider "1" <--* DSSTZonal
       }
   }
 

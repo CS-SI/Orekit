@@ -92,6 +92,18 @@ the various available time scales definitions to avoid mistakes. The
   realize the time scales. It is of the order of a few tens nanoseconds. This class
   does not implement this offset,
 
+* _GLONASS System reference scale_
+
+  this scale is equal to UTC + 3h at any time. GLONASS System Time does include leap
+  seconds just as UTC scale (and they occur at the same instant, which is 3h00 at
+  GLONASS clock time since it is 3h ahead of UTC),
+
+* _Quasi-Zenith reference scale_
+
+  Quasi Zenith System Time and GPS time are very close scales. Without any errors,
+  they should be identical. The offset between these two scales is the GGTO, it depends
+  on the clocks used to realize the time scales. This class does not implement this offset,
+
 * _Greenwich Mean Sidereal Time scale_
 
   the Greenwich Mean Sidereal Time is the hour angle between the meridian of Greenwich

@@ -23,7 +23,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math3.util.FastMath;
 
 /** Implementation of the Modified Newcomb Operators.
@@ -312,8 +311,7 @@ public class NewcombOperators {
             }
         }
 
-        /** Shift a list of {@link PolynomialFunction}, from the
-         *  {@link PolynomialsUtils#shift(double[], double)} method.
+        /** Shift a list of {@link PolynomialFunction}.
          *
          *  @param polynomialList list of {@link PolynomialFunction}
          *  @param shift shift value
@@ -323,9 +321,68 @@ public class NewcombOperators {
                                                           final int shift) {
             final List<PolynomialFunction> shiftedList = new ArrayList<PolynomialFunction>();
             for (PolynomialFunction function : polynomialList) {
-                shiftedList.add(new PolynomialFunction(PolynomialsUtils.shift(function.getCoefficients(), shift)));
+                shiftedList.add(new PolynomialFunction(shift(function.getCoefficients(), shift)));
             }
             return shiftedList;
+        }
+
+        /**
+         * Compute the coefficients of the polynomial \(P_s(x)\)
+         * whose values at point {@code x} will be the same as the those from the
+         * original polynomial \(P(x)\) when computed at {@code x + shift}.
+         * <p>
+         * More precisely, let \(\Delta = \) {@code shift} and let
+         * \(P_s(x) = P(x + \Delta)\).  The returned array
+         * consists of the coefficients of \(P_s\).  So if \(a_0, ..., a_{n-1}\)
+         * are the coefficients of \(P\), then the returned array
+         * \(b_0, ..., b_{n-1}\) satisfies the identity
+         * \(\sum_{i=0}^{n-1} b_i x^i = \sum_{i=0}^{n-1} a_i (x + \Delta)^i\) for all \(x\).
+         * </p>
+         * <p>
+         * This method is a modified version of the method with the same name
+         * in Apache Commons Math {@code PolynomialsUtils} class, simply changing
+         * computation of binomial coefficients so degrees higher than 66 can be used.
+         * </p>
+         *
+         * @param coefficients Coefficients of the original polynomial.
+         * @param shift Shift value.
+         * @return the coefficients \(b_i\) of the shifted
+         * polynomial.
+         */
+        public static double[] shift(final double[] coefficients,
+                                     final double shift) {
+            final int dp1 = coefficients.length;
+            final double[] newCoefficients = new double[dp1];
+
+            // Pascal triangle.
+            final double[][] coeff = new double[dp1][dp1];
+            coeff[0][0] = 1;
+            for (int i = 1; i < dp1; i++) {
+                coeff[i][0] = 1;
+                for (int j = 1; j < i; j++) {
+                    coeff[i][j] = coeff[i - 1][j - 1] + coeff[i - 1][j];
+                }
+                coeff[i][i] = 1;
+            }
+
+            // First polynomial coefficient.
+            double shiftI = 1;
+            for (int i = 0; i < dp1; i++) {
+                newCoefficients[0] += coefficients[i] * shiftI;
+                shiftI *= shift;
+            }
+
+            // Superior order.
+            final int d = dp1 - 1;
+            for (int i = 0; i < d; i++) {
+                double shiftJmI = 1;
+                for (int j = i; j < d; j++) {
+                    newCoefficients[i + 1] += coeff[j + 1][j - i] * coefficients[j + 1] * shiftJmI;
+                    shiftJmI *= shift;
+                }
+            }
+
+            return newCoefficients;
         }
 
         /** Generate recurrence coefficients.

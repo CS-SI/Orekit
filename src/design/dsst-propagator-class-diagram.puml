@@ -56,7 +56,7 @@
         +void initialize(AuxiliaryElements auxiliary)
         +void initializeStep(AuxiliaryElements auxiliary)
         +double[] getMeanElementRate(SpacecraftState state)
-        +double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
+        +void updateShortPeriodTerms(SpacecraftState ... meanStates)
       }
 
       DSSTForceModel -right->  AuxiliaryElements

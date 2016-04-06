@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,9 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -57,7 +61,7 @@ import org.orekit.utils.TimeSpanMap;
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
  */
-class TesseralContribution implements DSSTForceModel {
+public class DSSTTesseral implements DSSTForceModel {
 
     /** Minimum period for analytically averaged high-order resonant
      *  central body spherical harmonics in seconds.
@@ -71,9 +75,6 @@ class TesseralContribution implements DSSTForceModel {
 
     /** Number of points for interpolation. */
     private static final int INTERPOLATION_POINTS = 3;
-
-    /** The maximum value for eccentricity power. */
-    private static final int MAX_ECCPOWER_SP = 4;
 
     /** Retrograde factor I.
      *  <p>
@@ -128,11 +129,14 @@ class TesseralContribution implements DSSTForceModel {
 
     /** Maximum power of the eccentricity to use in summation over s for
      * short periodic tesseral harmonics (without m-daily). */
-    private int maxEccPowTesseralSP;
+    private final int maxEccPowTesseralSP;
 
     /** Maximum power of the eccentricity to use in summation over s for
      * m-daily tesseral harmonics. */
-    private int maxEccPowMdailyTesseralSP;
+    private final int maxEccPowMdailyTesseralSP;
+
+    /** Maximum value for j. */
+    private final int maxFrequencyShortPeriodics;
 
     /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
     private int maxHansen;
@@ -219,13 +223,6 @@ class TesseralContribution implements DSSTForceModel {
     /** The satellite mean motion. */
     private double meanMotion;
 
-    /** Maximum value for j.
-     * <p>
-     * jmax = maxDegreeTesseralSP + maxEccPowTesseralSP, no more than 12
-     * </p>
-     * */
-    private int jMax;
-
     /** List of non resonant orders with j != 0. */
     private final SortedMap<Integer, List<Integer> > nonResOrders;
 
@@ -244,20 +241,32 @@ class TesseralContribution implements DSSTForceModel {
      * @param centralBodyRotationRate central body rotation rate (rad/s)
      * @param provider provider for spherical harmonics
      * @param maxDegreeTesseralSP maximal degree to consider for short periodics tesseral harmonics potential
-     *  (the real degree used may be smaller if the provider does not provide enough terms)
+     *  (must be between 2 and {@code provider.getMaxDegree()})
      * @param maxOrderTesseralSP maximal order to consider for short periodics tesseral harmonics potential
-     *  (the real order used may be smaller if the provider does not provide enough terms)
+     *  (must be between 0 and {@code provider.getMaxOrder()})
+     * @param maxEccPowTesseralSP maximum power of the eccentricity to use in summation over s for
+     * short periodic tesseral harmonics (without m-daily), should typically not exceed 4 as higher
+     * values will exceed computer capacity
+     * @param maxFrequencyShortPeriodics maximum frequency in mean longitude for short periodic computations
+     * (typically {@code maxDegreeTesseralSP} + {@code maxEccPowTesseralSP and no more than 12})
      * @param maxDegreeMdailyTesseralSP maximal degree to consider for short periodics m-daily tesseral harmonics potential
-     *  (the real degree used may be smaller if the provider does not provide enough terms)
+     *  (must be between 2 and {@code provider.getMaxDegree()})
      * @param maxOrderMdailyTesseralSP maximal order to consider for short periodics m-daily tesseral harmonics potential
-     *  (the real order used may be smaller if the provider does not provide enough terms)
-     * @since 7.1
+     *  (must be between 0 and {@code provider.getMaxOrder()})
+     * @param maxEccPowMdailyTesseralSP maximum power of the eccentricity to use in summation over s for
+     * m-daily tesseral harmonics, (must be between 0 and {@code maxDegreeMdailyTesseralSP - 2},
+     * but should typically not exceed 4 as higher values will exceed computer capacity)
+     * @exception OrekitException if degrees or powers are out of range
+     * @since 7.2
      */
-    TesseralContribution(final Frame centralBodyFrame,
-                         final double centralBodyRotationRate,
-                         final UnnormalizedSphericalHarmonicsProvider provider,
-                         final int maxDegreeTesseralSP, final int maxOrderTesseralSP,
-                         final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP) {
+    public DSSTTesseral(final Frame centralBodyFrame,
+                        final double centralBodyRotationRate,
+                        final UnnormalizedSphericalHarmonicsProvider provider,
+                        final int maxDegreeTesseralSP, final int maxOrderTesseralSP,
+                        final int maxEccPowTesseralSP, final int maxFrequencyShortPeriodics,
+                        final int maxDegreeMdailyTesseralSP, final int maxOrderMdailyTesseralSP,
+                        final int maxEccPowMdailyTesseralSP)
+        throws OrekitException {
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;
@@ -274,15 +283,26 @@ class TesseralContribution implements DSSTForceModel {
         this.maxOrder  = provider.getMaxOrder();
 
         //set the maximum degree order for short periodics
-        this.maxDegreeTesseralSP       = FastMath.min(maxDegree, maxDegreeTesseralSP);
-        this.maxDegreeMdailyTesseralSP = FastMath.min(maxDegree, maxDegreeMdailyTesseralSP);
-        this.maxOrderTesseralSP        = FastMath.min(maxOrder,  maxOrderTesseralSP);
-        this.maxOrderMdailyTesseralSP  = FastMath.min(maxOrder,  maxOrderMdailyTesseralSP);
+        checkIndexRange(maxDegreeTesseralSP, 2, maxDegree);
+        this.maxDegreeTesseralSP       = maxDegreeTesseralSP;
+
+        checkIndexRange(maxDegreeMdailyTesseralSP, 2, maxDegree);
+        this.maxDegreeMdailyTesseralSP = maxDegreeMdailyTesseralSP;
+
+        checkIndexRange(maxOrderTesseralSP, 0, maxOrder);
+        this.maxOrderTesseralSP        = maxOrderTesseralSP;
+
+        checkIndexRange(maxOrderMdailyTesseralSP, 0, maxOrder);
+        this.maxOrderMdailyTesseralSP  = maxOrderMdailyTesseralSP;
 
         // set the maximum value for eccentricity power
-        this.maxEccPowTesseralSP = MAX_ECCPOWER_SP;
-        this.maxEccPowMdailyTesseralSP = FastMath.min(maxDegreeMdailyTesseralSP - 2, MAX_ECCPOWER_SP);
-        this.jMax = maxDegreeTesseralSP + maxEccPowTesseralSP;
+        this.maxEccPowTesseralSP       = maxEccPowTesseralSP;
+
+        checkIndexRange(maxEccPowMdailyTesseralSP, 0, maxDegreeMdailyTesseralSP - 2);
+        this.maxEccPowMdailyTesseralSP = maxEccPowMdailyTesseralSP;
+
+        // set the maximum value for frequency
+        this.maxFrequencyShortPeriodics = maxFrequencyShortPeriodics;
 
         // Initialize default values
         this.resOrders = new ArrayList<Integer>();
@@ -290,6 +310,22 @@ class TesseralContribution implements DSSTForceModel {
         this.maxEccPow = 0;
         this.maxHansen = 0;
 
+    }
+
+    /** Check an index range.
+     * @param index index value
+     * @param min minimum value for index
+     * @param max maximum value for index
+     * @exception OrekitException if index is out of range
+     */
+    private void checkIndexRange(final int index, final int min, final int max)
+        throws OrekitException {
+        if (index < min) {
+            throw new OrekitException(LocalizedFormats.NUMBER_TOO_SMALL, index, min);
+        }
+        if (index > max) {
+            throw new OrekitException(LocalizedFormats.NUMBER_TOO_LARGE, index, max);
+        }
     }
 
     /** {@inheritDoc} */
@@ -322,7 +358,6 @@ class TesseralContribution implements DSSTForceModel {
 
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
         maxHansen = maxEccPow / 2;
-        jMax = maxDegree + maxEccPow;
 
         // Ratio of satellite to central body periods to define resonant terms
         ratio = orbitPeriod / bodyPeriod;
@@ -334,11 +369,13 @@ class TesseralContribution implements DSSTForceModel {
         createHansenObjects(meanOnly);
 
         final int mMax = FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP);
-        cjsjFourier = new FourierCjSjCoefficients(jMax, mMax);
+        cjsjFourier = new FourierCjSjCoefficients(maxFrequencyShortPeriodics, mMax);
 
         shortPeriodTerms = new TesseralShortPeriodicCoefficients(bodyFrame, maxOrderMdailyTesseralSP,
                                                                  maxDegreeTesseralSP < 0, nonResOrders,
-                                                                 mMax, jMax, INTERPOLATION_POINTS);
+                                                                 mMax, maxFrequencyShortPeriodics, INTERPOLATION_POINTS,
+                                                                 new TimeSpanMap<Slot>(new Slot(mMax, maxFrequencyShortPeriodics,
+                                                                                                INTERPOLATION_POINTS)));
 
         final List<ShortPeriodTerms> list = new ArrayList<ShortPeriodTerms>();
         list.add(shortPeriodTerms);
@@ -361,7 +398,7 @@ class TesseralContribution implements DSSTForceModel {
     private void createHansenObjects(final boolean meanOnly) {
         //Allocate the two dimensional array
         final int rows     = 2 * maxDegree + 1;
-        final int columns  = jMax + 1;
+        final int columns  = maxFrequencyShortPeriodics + 1;
         this.hansenObjects = new HansenTesseralLinear[rows][columns];
 
         if (meanOnly) {
@@ -390,7 +427,7 @@ class TesseralContribution implements DSSTForceModel {
             }
         } else {
             // create all objects
-            for (int j = 0; j <= jMax; j++) {
+            for (int j = 0; j <= maxFrequencyShortPeriodics; j++) {
                 for (int s = -maxDegree; s <= maxDegree; s++) {
                     //Compute the n0 value
                     final int n0 = FastMath.max(2, FastMath.abs(s));
@@ -513,7 +550,7 @@ class TesseralContribution implements DSSTForceModel {
                 this.hansenObjects[s + maxDegree][0].computeInitValues(e2, chi, chi2);
                 if (maxDegreeTesseralSP >= 0) {
                     // initialize other objects only if required
-                    for (int j = 1; j <= jMax; j++) {
+                    for (int j = 1; j <= maxFrequencyShortPeriodics; j++) {
                         this.hansenObjects[s + maxDegree][j].computeInitValues(e2, chi, chi2);
                     }
                 }
@@ -583,8 +620,8 @@ class TesseralContribution implements DSSTForceModel {
         }
 
         // Add the coefficients to the interpolation grid
-        slot.cijm[m][j + jMax].addGridPoint(date, currentCijm);
-        slot.sijm[m][j + jMax].addGridPoint(date, currentSijm);
+        slot.cijm[m][j + maxFrequencyShortPeriodics].addGridPoint(date, currentCijm);
+        slot.sijm[m][j + maxFrequencyShortPeriodics].addGridPoint(date, currentSijm);
 
     }
 
@@ -612,7 +649,7 @@ class TesseralContribution implements DSSTForceModel {
             final double resonance = ratio * m;
             int jRes = 0;
             final int jComputedRes = (int) FastMath.round(resonance);
-            if (jComputedRes > 0 && jComputedRes <= jMax && FastMath.abs(resonance - jComputedRes) <= tolerance) {
+            if (jComputedRes > 0 && jComputedRes <= maxFrequencyShortPeriodics && FastMath.abs(resonance - jComputedRes) <= tolerance) {
                 // Store each resonant index and order
                 resOrders.add(m);
                 jRes = jComputedRes;
@@ -622,7 +659,7 @@ class TesseralContribution implements DSSTForceModel {
                 //compute non resonant orders in the tesseral harmonic field
                 final List<Integer> listJofM = new ArrayList<Integer>();
                 //for the moment we take only the pairs (j,m) with |j| <= maxDegree + maxEccPow (from |s-j| <= maxEccPow and |s| <= maxDegree)
-                for (int j = -jMax; j <= jMax; j++) {
+                for (int j = -maxFrequencyShortPeriodics; j <= maxFrequencyShortPeriodics; j++) {
                     if (j != 0 && j != jRes) {
                         listJofM.add(j);
                     }
@@ -1221,20 +1258,22 @@ class TesseralContribution implements DSSTForceModel {
         private final int interpolationPoints;
 
         /** All coefficients slots. */
-        private final TimeSpanMap<Slot> slots;
+        private final transient TimeSpanMap<Slot> slots;
 
         /** Constructor.
          * @param bodyFrame central body rotating frame
          * @param maxOrderMdailyTesseralSP maximal order to consider for short periodics m-daily tesseral harmonics potential
          * @param mDailiesOnly flag to take into account only M-dailies harmonic tesserals for short periodic perturbations
          * @param nonResOrders lst of non resonant orders with j != 0
-         *  @param mMax maximum value for m index
-         *  @param jMax maximum value for j index
-         *  @param interpolationPoints number of points used in the interpolation process
+         * @param mMax maximum value for m index
+         * @param jMax maximum value for j index
+         * @param interpolationPoints number of points used in the interpolation process
+         * @param slots all coefficients slots
          */
         TesseralShortPeriodicCoefficients(final Frame bodyFrame, final int maxOrderMdailyTesseralSP,
                                           final boolean mDailiesOnly, final SortedMap<Integer, List<Integer> > nonResOrders,
-                                          final int mMax, final int jMax, final int interpolationPoints) {
+                                          final int mMax, final int jMax, final int interpolationPoints,
+                                          final TimeSpanMap<Slot> slots) {
             this.bodyFrame                = bodyFrame;
             this.maxOrderMdailyTesseralSP = maxOrderMdailyTesseralSP;
             this.mDailiesOnly             = mDailiesOnly;
@@ -1242,7 +1281,7 @@ class TesseralContribution implements DSSTForceModel {
             this.mMax                     = mMax;
             this.jMax                     = jMax;
             this.interpolationPoints      = interpolationPoints;
-            this.slots                    = new TimeSpanMap<Slot>(new Slot(mMax, jMax, interpolationPoints));
+            this.slots                    = slots;
         }
 
         /** Get the slot valid for some date.
@@ -1402,10 +1441,120 @@ class TesseralContribution implements DSSTForceModel {
             }
         }
 
+        /** Replace the instance with a data transfer object for serialization.
+         * @return data transfer object that will be serialized
+         * @exception NotSerializableException if an additional state provider is not serializable
+         */
+        private Object writeReplace() throws NotSerializableException {
+
+            // slots transitions
+            final SortedSet<TimeSpanMap.Transition<Slot>> transitions     = slots.getTransitions();
+            final AbsoluteDate[]                          transitionDates = new AbsoluteDate[transitions.size()];
+            final Slot[]                                  allSlots        = new Slot[transitions.size() + 1];
+            int i = 0;
+            for (final TimeSpanMap.Transition<Slot> transition : transitions) {
+                if (i == 0) {
+                    // slot before the first transition
+                    allSlots[i] = transition.getBefore();
+                }
+                if (i < transitionDates.length) {
+                    transitionDates[i] = transition.getDate();
+                    allSlots[++i]      = transition.getAfter();
+                }
+            }
+
+            return new DataTransferObject(bodyFrame, maxOrderMdailyTesseralSP,
+                                          mDailiesOnly, nonResOrders,
+                                          mMax, jMax, interpolationPoints,
+                                          transitionDates, allSlots);
+
+        }
+
+
+        /** Internal class used only for serialization. */
+        private static class DataTransferObject implements Serializable {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = 20160319L;
+
+            /** Central body rotating frame. */
+            private final Frame bodyFrame;
+
+            /** Maximal order to consider for short periodics m-daily tesseral harmonics potential. */
+            private final int maxOrderMdailyTesseralSP;
+
+            /** Flag to take into account only M-dailies harmonic tesserals for short periodic perturbations.  */
+            private final boolean mDailiesOnly;
+
+            /** List of non resonant orders with j != 0. */
+            private final SortedMap<Integer, List<Integer> > nonResOrders;
+
+            /** Maximum value for m index. */
+            private final int mMax;
+
+            /** Maximum value for j index. */
+            private final int jMax;
+
+            /** Number of points used in the interpolation process. */
+            private final int interpolationPoints;
+
+            /** Transitions dates. */
+            private final AbsoluteDate[] transitionDates;
+
+            /** All slots. */
+            private final Slot[] allSlots;
+
+            /** Simple constructor.
+             * @param bodyFrame central body rotating frame
+             * @param maxOrderMdailyTesseralSP maximal order to consider for short periodics m-daily tesseral harmonics potential
+             * @param mDailiesOnly flag to take into account only M-dailies harmonic tesserals for short periodic perturbations
+             * @param nonResOrders lst of non resonant orders with j != 0
+             * @param mMax maximum value for m index
+             * @param jMax maximum value for j index
+             * @param interpolationPoints number of points used in the interpolation process
+             * @param transitionDates transitions dates
+             * @param allSlots all slots
+             */
+            DataTransferObject(final Frame bodyFrame, final int maxOrderMdailyTesseralSP,
+                               final boolean mDailiesOnly, final SortedMap<Integer, List<Integer> > nonResOrders,
+                               final int mMax, final int jMax, final int interpolationPoints,
+                               final AbsoluteDate[] transitionDates, final Slot[] allSlots) {
+                this.bodyFrame                = bodyFrame;
+                this.maxOrderMdailyTesseralSP = maxOrderMdailyTesseralSP;
+                this.mDailiesOnly             = mDailiesOnly;
+                this.nonResOrders             = nonResOrders;
+                this.mMax                     = mMax;
+                this.jMax                     = jMax;
+                this.interpolationPoints      = interpolationPoints;
+                this.transitionDates          = transitionDates;
+                this.allSlots                 = allSlots;
+            }
+
+            /** Replace the deserialized data transfer object with a {@link TesseralShortPeriodicCoefficients}.
+             * @return replacement {@link TesseralShortPeriodicCoefficients}
+             */
+            private Object readResolve() {
+
+                final TimeSpanMap<Slot> slots = new TimeSpanMap<Slot>(allSlots[0]);
+                for (int i = 0; i < transitionDates.length; ++i) {
+                    slots.addValidAfter(allSlots[i + 1], transitionDates[i]);
+                }
+
+                return new TesseralShortPeriodicCoefficients(bodyFrame, maxOrderMdailyTesseralSP, mDailiesOnly,
+                                                             nonResOrders, mMax, jMax, interpolationPoints,
+                                                             slots);
+
+            }
+
+        }
+
     }
 
     /** Coefficients valid for one time slot. */
-    private static class Slot {
+    private static class Slot implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20160319L;
 
         /** The coefficients C<sub>i</sub><sup>j</sup><sup>m</sup>.
          * <p>

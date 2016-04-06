@@ -70,9 +70,10 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -175,10 +176,15 @@ public class DSSTPropagation {
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
         MAX_DEGREE_ZONAL_SHORT_PERIODS,
+        MAX_ECCENTRICITY_POWER_ZONAL_SHORT_PERIODS,
+        MAX_FREQUENCY_TRUE_LONGITUDE_ZONAL_SHORT_PERIODS,
         MAX_DEGREE_TESSERAL_SHORT_PERIODS,
         MAX_ORDER_TESSERAL_SHORT_PERIODS,
+        MAX_ECCENTRICITY_POWER_TESSERAL_SHORT_PERIODS,
+        MAX_FREQUENCY_MEAN_LONGITUDE_TESSERAL_SHORT_PERIODS,
         MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS,
         MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS,
+        MAX_ECCENTRICITY_POWER_TESSERAL_M_DAILIES_SHORT_PERIODS,
         THIRD_BODY_MOON,
         THIRD_BODY_SUN,
         MASS,
@@ -199,7 +205,7 @@ public class DSSTPropagation {
 
         // read input parameters
         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(new FileInputStream(input));
+        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
 
         // check mandatory input parameters
         if (!parser.containsKey(ParameterKey.ORBIT_DATE)) {
@@ -558,13 +564,18 @@ public class DSSTPropagation {
         }
 
         // Central Body Force Model with un-normalized coefficients
-        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, rotationRate,
-                                                   unnormalized,
-                                                   parser.getInt(ParameterKey.MAX_DEGREE_ZONAL_SHORT_PERIODS),
-                                                   parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_SHORT_PERIODS),
-                                                   parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_SHORT_PERIODS),
-                                                   parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS),
-                                                   parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS)));
+        dsstProp.addForceModel(new DSSTZonal(unnormalized,
+                                             parser.getInt(ParameterKey.MAX_DEGREE_ZONAL_SHORT_PERIODS),
+                                             parser.getInt(ParameterKey.MAX_ECCENTRICITY_POWER_ZONAL_SHORT_PERIODS),
+                                             parser.getInt(ParameterKey.MAX_FREQUENCY_TRUE_LONGITUDE_ZONAL_SHORT_PERIODS)));
+        dsstProp.addForceModel(new DSSTTesseral(earthFrame, rotationRate, unnormalized,
+                                                parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ECCENTRICITY_POWER_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_FREQUENCY_MEAN_LONGITUDE_TESSERAL_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_DEGREE_TESSERAL_M_DAILIES_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ORDER_TESSERAL_M_DAILIES_SHORT_PERIODS),
+                                                parser.getInt(ParameterKey.MAX_ECCENTRICITY_POWER_TESSERAL_M_DAILIES_SHORT_PERIODS)));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {

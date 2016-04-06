@@ -5,7 +5,7 @@ INTERNAL_ERROR = intern feil. Kontakt vedlikeholdsansvarlig på {0}
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = høyde ({0} m) er under den tillate terskelen {1} m
 
 # point is inside ellipsoid
-POINT_INSIDE_ELLIPSOID = <MISSING TRANSLATION>
+POINT_INSIDE_ELLIPSOID = punkt er innenfor ellipsoiden
 
 # trajectory inside the Brillouin sphere (r = {0})
 TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = bane innenfor Brillouins sfære (r = {0})
@@ -152,7 +152,7 @@ MISSING_SECOND_TLE_LINE = forventet en annen TLE linje etter linje {0}:\n{0}: "{
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = TLE linjene refererer ikke til det samme objektet:\n{0}\n{1}
 
 # invalid TLE parameter for object {0}: {1} = {2}
-TLE_INVALID_PARAMETER = <MISSING TRANSLATION>
+TLE_INVALID_PARAMETER = ugyldig TLE parameter for objekt {0}: {1} = {2}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
 TLE_CHECKSUM_ERROR = gal sjekksum for TLE linje {0}, verdien {1} var ventet men fant {2} ({3})
@@ -203,7 +203,7 @@ SATELLITE_COLLIDED_WITH_TARGET = satellitten kræsjet med målet
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = attitydesikteloven bommer på baken
 
 # {0} seconds transition time for attitudes switch is too short, should be longer than {1} seconds
-TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = <MISSING TRANSLATION>
+TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH = {0} sekunders overgangstid for attitydebytte er for kort, burde være lenger enn {1} sekunder
 
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = banedatoen ({0}) passer ikke med attitydedatoen ({1})
@@ -254,7 +254,7 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = uventete to høydeverdier: {0}
 UNSUPPORTED_PARAMETER_NAME = ustøttet parameter navn {0}, støttete navn: {1}
 
 # duplicated parameter name {0}
-DUPLICATED_PARAMETER_NAME = <MISSING TRANSLATION>
+DUPLICATED_PARAMETER_NAME = like parameternavn {0}
 
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = ukjent ytterligere tilstand "{0}"
@@ -337,9 +337,6 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle banen har en eksentrisitet
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = ustøttet version for sp3 filen {0}
 
-# unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = ustøttet tidssystem {0}
-
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = uventet slutt på fil for sp3 fil (etter linje {0})
 
@@ -353,7 +350,7 @@ UNSUPPORTED_TIME_TRANSFORM = geomagnetisk model {0} med epoke {1} støtter ikke 
 OUT_OF_RANGE_TIME_TRANSFORM = tidstransformasjonen av den geomagnetiske modelen {0} med epoke {1} er utenfor sitt gyldighetsområde: {2} != [{3}, {4}]
 
 # not enough data for interpolation (sample size = {0})
-NOT_ENOUGH_DATA_FOR_INTERPOLATION = <MISSING TRANSLATION>
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = ikke nok data for interpolasjon (intervall størrelse = {0})
 
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = for få bufrete naboer: {0} (må i allefall være {1})
@@ -377,13 +374,13 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = kan ikke generere ny data etter {0}
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = kan ikke beregne hyperbolsk eksentrisk anomali fra hovedanomalien etter {0} iterasjoner
 
 # unable to compute mean orbit from osculating orbit after {0} iterations
-UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = <MISSING TRANSLATION>
+UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = kan ikke beregne hovedbane utfra osculærbane etter {0} gjentakelser
 
 # derivation order {0} is out of range
-OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>
+OUT_OF_RANGE_DERIVATION_ORDER = derivert rekkefølgen {0} er utenfor gyldig intervall
 
 # out of range latitude: {0}, [{1}, {2}]
-OUT_OF_RANGE_LATITUDE = <MISSING TRANSLATION>
+OUT_OF_RANGE_LATITUDE = breddegrad utenfor gyldig område: {0}, [{1}, {2}]
 
 # orbit type {0} not allowed here, allowed types: {1}
-ORBIT_TYPE_NOT_ALLOWED = <MISSING TRANSLATION>
+ORBIT_TYPE_NOT_ALLOWED = banetype {0} er ikke tillatt her, gyldige typer: {1}
