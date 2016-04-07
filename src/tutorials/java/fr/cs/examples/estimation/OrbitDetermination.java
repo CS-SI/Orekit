@@ -1558,15 +1558,15 @@ public class OrbitDetermination {
             stream.format(Locale.US, "%s  %s           %12.9f            %12.9f        %12.9f%n",
                           evaluation.getDate().toString(),
                           evaluation.getMeasurement().getStation().getBaseFrame().getName(),
-                          FastMath.toDegrees(theoretical[0]),
-                          FastMath.toDegrees(observed[0]),
+                          FastMath.toDegrees(theoretical[1]),
+                          FastMath.toDegrees(observed[1]),
                           residual(evaluation));
         }
 
         /** {@inheritDoc} */
         @Override
         double residual(final Evaluation<Angular> evaluation) {
-            return FastMath.toDegrees(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]);
+            return FastMath.toDegrees(evaluation.getValue()[1] - evaluation.getMeasurement().getObservedValue()[1]);
         }
 
     }
