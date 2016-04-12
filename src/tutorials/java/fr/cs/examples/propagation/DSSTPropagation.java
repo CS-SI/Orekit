@@ -205,7 +205,7 @@ public class DSSTPropagation {
 
         // read input parameters
         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(new FileInputStream(input));
+        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
 
         // check mandatory input parameters
         if (!parser.containsKey(ParameterKey.ORBIT_DATE)) {

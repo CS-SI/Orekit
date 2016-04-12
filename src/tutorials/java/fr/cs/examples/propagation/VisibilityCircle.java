@@ -97,7 +97,7 @@ public class VisibilityCircle {
         // read input parameters
         KeyValueFileParser<ParameterKey> parser =
                 new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(new FileInputStream(input));
+        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
 
         double minElevation = parser.getAngle(ParameterKey.MIN_ELEVATION);
         double radius       = Constants.WGS84_EARTH_EQUATORIAL_RADIUS +

@@ -193,7 +193,8 @@ public class DSSTZonal implements DSSTForceModel {
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
      * (must be between 2 and {@code provider.getMaxDegree()})
      * @param maxEccPowShortPeriodics maximum power of the eccentricity to be used in short periodic computations
-     * (must be between 0 and {@code maxDegreeShortPeriodics - 1})
+     * (must be between 0 and {@code maxDegreeShortPeriodics - 1}, but should typically not exceed 4 as higher
+     * values will exceed computer capacity)
      * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
      * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
      * @exception OrekitException if degrees or powers are out of range
