@@ -256,7 +256,7 @@ public class DEFile {
                                  first, HEADER_LABEL_1_OFFSET,
                                  HEADER_LABEL_SIZE);
                 System.arraycopy(padString(String.format(Locale.US,
-                                                         "Start Epoch: JED=  %.1f %4d-%s-%2d %2d:%2d%2.0f",
+                                                         "Start Epoch: JED=  %.1f %4d-%s-%02d %02d:%02d:%02.0f",
                                                          (start.durationFrom(AbsoluteDate.JULIAN_EPOCH)) /
                                                          Constants.JULIAN_DAY,
                                                          sc.getDate().getYear(),
@@ -269,7 +269,7 @@ public class DEFile {
                                  first, HEADER_LABEL_2_OFFSET,
                                  HEADER_LABEL_SIZE);
                 System.arraycopy(padString(String.format(Locale.US,
-                                                         "Final Epoch: JED=  %.1f %4d-%s-%2d %2d:%2d%2.0f",
+                                                         "Final Epoch: JED=  %.1f %4d-%s-%02d %02d:%02d:%02.0f",
                                                          (end.durationFrom(AbsoluteDate.JULIAN_EPOCH)) /
                                                          Constants.JULIAN_DAY,
                                                          ec.getDate().getYear(),
