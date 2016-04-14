@@ -57,6 +57,7 @@ import org.orekit.estimation.leastsquares.BatchLSObserver;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Bias;
 import org.orekit.estimation.measurements.Evaluation;
+import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PV;
@@ -237,7 +238,7 @@ public class OrbitDetermination {
                                                final Orbit orbit,
                                                final List<ParameterDriver> estimatedPropagatorParameters,
                                                final List<ParameterDriver> estimatedMeasurementsParameters,
-                                               final Map<Measurement<?>, Evaluation<?>> evaluations,
+                                               final EvaluationsProvider   evaluationsProvider,
                                                final LeastSquaresProblem.Evaluation lspEvaluation) {
                     PVCoordinates currentPV = orbit.getPVCoordinates();
                     final String format = "    %2d         %2d      %13.6f %12.9f %16.12f%n";

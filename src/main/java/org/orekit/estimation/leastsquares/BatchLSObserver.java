@@ -17,11 +17,9 @@
 package org.orekit.estimation.leastsquares;
 
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.ParameterDriver;
 
@@ -41,8 +39,8 @@ public interface BatchLSObserver {
      * @param orbit current estimated orbit
      * @param estimatedPropagatorParameters estimated propagator parameters
      * @param estimatedMeasurementsParameters estimated measurements parameters
-     * @param evaluations map of measurements evaluations resulting from
-     * the current estimated orbit (this is an unmodifiable view of the
+     * @param evaluationsProvider provider for measurements evaluations resulting
+     * from the current estimated orbit (this is an unmodifiable view of the
      * current evaluations, its content is changed at each iteration)
      * @param lspEvaluation current evaluation of the underlying {@link LeastSquaresProblem
      * least squares problem}
@@ -50,7 +48,7 @@ public interface BatchLSObserver {
     void iterationPerformed(int iterationsCount, int evaluationscount, Orbit orbit,
                             List<ParameterDriver> estimatedPropagatorParameters,
                             List<ParameterDriver> estimatedMeasurementsParameters,
-                            Map<Measurement<?>, Evaluation<?>> evaluations,
+                            EvaluationsProvider evaluationsProvider,
                             LeastSquaresProblem.Evaluation lspEvaluation);
 
 }

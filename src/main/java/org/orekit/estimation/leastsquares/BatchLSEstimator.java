@@ -17,6 +17,7 @@
 package org.orekit.estimation.leastsquares;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.exception.TooManyIterationsException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
@@ -36,10 +38,12 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.OrbitValidator;
 import org.orekit.estimation.measurements.Evaluation;
+import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 
 
@@ -343,7 +347,7 @@ public class BatchLSEstimator {
                                                 orbit,
                                                 estimatedPropagatorParameters,
                                                 estimatedMeasurementsParameters,
-                                                Collections.unmodifiableMap(evaluations),
+                                                new Provider(),
                                                 lspEvaluation);
                 }
 
@@ -461,6 +465,50 @@ public class BatchLSEstimator {
         @Override
         public Evaluation evaluate(final RealVector point) {
             return problem.evaluate(point);
+        }
+
+    }
+
+    /** Provider for evaluations. */
+    private class Provider implements EvaluationsProvider {
+
+        /** Sorted evaluations. */
+        private Evaluation<?>[] sortedEvaluations;
+
+        /** {@inheritDoc} */
+        @Override
+        public int getNumber() {
+            return evaluations.size();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Evaluation<?> getEvaluation(final int index)
+            throws OrekitException {
+
+            // safety checks
+            if (index < 0 || index > evaluations.size()) {
+                throw new OrekitException(LocalizedFormats.INDEX_OUT_OF_RANGE,
+                                          index, 0, evaluations.size());
+            }
+
+            if (sortedEvaluations == null) {
+
+                // lazy evaluation of the sorted array
+                sortedEvaluations = new Evaluation<?>[evaluations.size()];
+                int i = 0;
+                for (final Map.Entry<Measurement<?>, Evaluation<?>> entry : evaluations.entrySet()) {
+                    sortedEvaluations[i++] = entry.getValue();
+                }
+
+                // sort the array chronologically
+                Arrays.sort(sortedEvaluations, 0, sortedEvaluations.length,
+                            new ChronologicalComparator());
+
+            }
+
+            return sortedEvaluations[index];
+
         }
 
     }
