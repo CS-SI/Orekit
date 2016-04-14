@@ -169,7 +169,7 @@ public class FramesFactory {
     public static final String EOPC04_1980_FILENAME = "^eopc04_08\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
-    public static final String BULLETINB_1980_FILENAME = "^bulletinb((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
+    public static final String BULLETINB_1980_FILENAME = "^bulletinb(_IAU1980)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
     /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU2000 compatibles). */
     public static final String RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME = "^finals2000A\\.[^.]*$";
@@ -181,7 +181,7 @@ public class FramesFactory {
     public static final String EOPC04_2000_FILENAME = "^eopc04_08_IAU2000\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
-    public static final String BULLETINB_2000_FILENAME = "^bulletinb_IAU2000((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
+    public static final String BULLETINB_2000_FILENAME = "^bulletinb(_IAU2000)?((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
     /** Default regular expression for the BulletinA files (IAU1980 and IAU2000 compatibles). */
     public static final String BULLETINA_FILENAME = "^bulletina-[ivxlcdm]+-\\d\\d\\d\\.txt$";
