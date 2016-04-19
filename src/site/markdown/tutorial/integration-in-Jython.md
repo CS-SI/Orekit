@@ -53,6 +53,7 @@ Keplerian propagation.
     from org.orekit.frames import FramesFactory
     from org.orekit.orbits import KeplerianOrbit
     from org.orekit.orbits import Orbit
+    from org.orekit.orbits import PositionAngle
     from org.orekit.propagation import SpacecraftState
     from org.orekit.propagation.analytical import KeplerianPropagator
     from org.orekit.data import DataProvidersManager
@@ -88,7 +89,7 @@ Keplerian propagation.
 
     #Orbit construction as Keplerian
     initialOrbit = KeplerianOrbit(a, e, i, omega, raan, lM,
-                                  KeplerianOrbit.MEAN_ANOMALY,
+                                  PositionAngle.MEAN,
                                   inertialFrame, initialDate, mu)
 
     #Simple extrapolation with Keplerian motion
