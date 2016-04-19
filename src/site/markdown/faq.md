@@ -34,6 +34,9 @@ systems, study systems and mission analysis systems.
 Orekit is used at Eumetsat for very long term mission analysis (up to
 the full lifetime of a satellite) for both LEO and GEO missions.
 
+Orekit is used underneath the [Rugged](https://www.orekit.org/rugged/) sensor-to-terrain mapping library in the
+Sentinel-2 Image Processing Facility to process terabytes of data each day.
+
 As Orekit is open-source, we cannot know about all uses as people are
 not require to notify us of anything.
 
