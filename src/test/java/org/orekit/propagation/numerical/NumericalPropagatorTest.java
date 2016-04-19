@@ -79,6 +79,83 @@ public class NumericalPropagatorTest {
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
 
+    /** test for issue #238 */
+    @Test
+    public void testEventAtEndOfEphemeris() throws PropagationException {
+        // setup
+        // choose duration that will round up when expressed as a double
+        AbsoluteDate end = initDate.shiftedBy(100)
+                .shiftedBy(3 * FastMath.ulp(100.0) / 4);
+        propagator.setEphemerisMode();
+        propagator.propagate(end);
+        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        CountingHandler handler = new CountingHandler();
+        DateDetector detector = new DateDetector(10, 1e-9, end)
+                .withHandler(handler);
+        // propagation works fine w/o event detector, but breaks with it
+        ephemeris.addEventDetector(detector);
+
+        //action
+        // fails when this trows an "out of rand date for ephemerides"
+        SpacecraftState actual = ephemeris.propagate(end);
+
+        //verify
+        Assert.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
+        Assert.assertEquals(1, handler.eventCount);
+    }
+
+    /** test for issue #238 */
+    @Test
+    public void testEventAtBeginningOfEphemeris() throws PropagationException {
+        // setup
+        // choose duration that will round up when expressed as a double
+        AbsoluteDate end = initDate.shiftedBy(100)
+                .shiftedBy(3 * FastMath.ulp(100.0) / 4);
+        propagator.setEphemerisMode();
+        propagator.propagate(end);
+        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        CountingHandler handler = new CountingHandler();
+        // events directly on propagation start date are not triggered,
+        // so move the event date slightly after
+        AbsoluteDate eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
+        DateDetector detector = new DateDetector(10, 1e-9, eventDate)
+                .withHandler(handler);
+        // propagation works fine w/o event detector, but breaks with it
+        ephemeris.addEventDetector(detector);
+
+        // action + verify
+        // propagate forward
+        Assert.assertEquals(ephemeris.propagate(end).getDate().durationFrom(end), 0.0, 0.0);
+        // propagate backward
+        Assert.assertEquals(ephemeris.propagate(initDate).getDate().durationFrom(initDate), 0.0, 0.0);
+        Assert.assertEquals(2, handler.eventCount);
+    }
+
+    /** Counts the number of events that have occurred. */
+    private static class CountingHandler
+            implements EventHandler<EventDetector> {
+
+        /**
+         * number of calls to {@link #eventOccurred(SpacecraftState,
+         * EventDetector, boolean)}.
+         */
+        private int eventCount = 0;
+
+        @Override
+        public Action eventOccurred(SpacecraftState s,
+                                    EventDetector detector,
+                                    boolean increasing) {
+            eventCount++;
+            return Action.CONTINUE;
+        }
+
+        @Override
+        public SpacecraftState resetState(EventDetector detector,
+                                          SpacecraftState oldState) {
+            return null;
+        }
+    }
+
     /**
      * check propagation succeeds when two events are within the tolerance of
      * each other.

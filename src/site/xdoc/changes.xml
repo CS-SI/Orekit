@@ -20,6 +20,17 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="7.3" date="TBD" description="TBD" >
+      <action dev="evan" type="add">
+        Add EventHandler to record all events.
+      </action>
+      <action dev="evan" type="fix">
+        Fix exception during event detection using
+        NumericalPropagator.getGeneratedEphemeris() near the start/end date of
+        the generated ephemeris.
+        Fixes issue #238
+      </action>
+    </release>
     <release version="7.2" date="TBC"
              description="Version 7.2 is a minor release of Orekit. It introduces several new
              features and bug fixes. The most important features introduced in version 7.2

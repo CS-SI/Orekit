@@ -161,7 +161,10 @@ public class IntegratedEphemeris
             return;
         }
 
-        if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
+        // compare using double precision instead of AbsoluteDate.compareTo(...)
+        // because time is expressed as a double when searching for events
+        if (date.durationFrom(maxDate) < minDate.durationFrom(maxDate) ||
+                date.durationFrom(minDate) >  maxDate.durationFrom(minDate)) {
             // date is outside of supported range
             throw new PropagationException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
                                            date, minDate, maxDate);
