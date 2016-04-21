@@ -42,6 +42,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.KeyValueFileParser;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -104,10 +105,6 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-import fr.cs.examples.KeyValueFileParser;
-import fr.cs.examples.estimation.OrbitDetermination;
-
-
 
 public class OrbitDeterminationTest {
 
@@ -118,7 +115,7 @@ public class OrbitDeterminationTest {
                OrekitException, ParseException {
 
         // input in tutorial resources directory/output
-        final String inputPath = OrbitDetermination.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
@@ -174,7 +171,7 @@ public class OrbitDeterminationTest {
               OrekitException, ParseException {
 
         // input in tutorial resources directory/output
-        final String inputPath = OrbitDetermination.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
+        final String inputPath = OrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data access
