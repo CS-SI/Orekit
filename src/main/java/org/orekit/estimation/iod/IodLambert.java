@@ -163,8 +163,8 @@ public class IodLambert {
         //  -1 < x < 1  =>  Elliptical orbits
         //  x = 1           Parabolic orbit
         //  x > 1           Hyperbolic orbits
-        double in1;
-        double in2;
+        final double in1;
+        final double in2;
         double x1;
         double x2;
         if (m == 0) {
@@ -212,7 +212,7 @@ public class IodLambert {
             xnew = (x1 * y2 - y1 * x2) / (y2 - y1);
 
             // evaluate new time of flight
-            double x;
+            final double x;
             if (m == 0) {
                 x = FastMath.exp(xnew) - 1;
             } else {
@@ -222,7 +222,7 @@ public class IodLambert {
             final double tof = timeOfFlight(x, longway, m, minSma, speri, chord);
 
             // new value of y
-            double ynew;
+            final double ynew;
             if (m == 0) {
                 ynew = FastMath.log(tof) - logt;
             } else {
@@ -248,7 +248,7 @@ public class IodLambert {
         }
 
         // convert converged value of x
-        double x;
+        final double x;
         if (m == 0) {
             x = FastMath.exp(xnew) - 1;
         } else {
@@ -259,7 +259,7 @@ public class IodLambert {
         final double sma = minSma / (1 - x * x);
 
         // compute velocities
-        double eta;
+        final double eta;
         if (x < 1) {
             // ellipse, Eqs. 7.7, 7.17
             final double alfa = 2 * FastMath.acos(x);
@@ -303,7 +303,7 @@ public class IodLambert {
 
         final double a = minSma / (1 - x * x);
 
-        double tof;
+        final double tof;
         if (FastMath.abs(x) < 1) {
             // Lagrange form of the time of flight equation Eq. (7.9)
             // elliptical orbit (note: mu = 1)
