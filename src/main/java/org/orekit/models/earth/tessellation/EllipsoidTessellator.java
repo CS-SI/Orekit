@@ -26,19 +26,19 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.partitioning.BSPTree;
-import org.apache.commons.math3.geometry.partitioning.Hyperplane;
-import org.apache.commons.math3.geometry.partitioning.RegionFactory;
-import org.apache.commons.math3.geometry.partitioning.SubHyperplane;
-import org.apache.commons.math3.geometry.spherical.oned.ArcsSet;
-import org.apache.commons.math3.geometry.spherical.twod.Circle;
-import org.apache.commons.math3.geometry.spherical.twod.S2Point;
-import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
-import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
-import org.apache.commons.math3.geometry.spherical.twod.SubCircle;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.partitioning.BSPTree;
+import org.hipparchus.geometry.partitioning.Hyperplane;
+import org.hipparchus.geometry.partitioning.RegionFactory;
+import org.hipparchus.geometry.partitioning.SubHyperplane;
+import org.hipparchus.geometry.spherical.oned.ArcsSet;
+import org.hipparchus.geometry.spherical.twod.Circle;
+import org.hipparchus.geometry.spherical.twod.S2Point;
+import org.hipparchus.geometry.spherical.twod.Sphere2D;
+import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.geometry.spherical.twod.SubCircle;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -631,8 +631,8 @@ public class EllipsoidTessellator {
     /** Build a simple zone (connected zone without holes).
      * <p>
      * In order to build more complex zones (not connected or with
-     * holes), the user should directly call Apache Commons
-     * Math {@link SphericalPolygonsSet} constructors and
+     * holes), the user should directly call Hipparchus
+     * {@link SphericalPolygonsSet} constructors and
      * {@link RegionFactory region factory} if set operations
      * are needed (union, intersection, difference ...).
      * </p>
@@ -661,8 +661,8 @@ public class EllipsoidTessellator {
     /** Build a simple zone (connected zone without holes).
      * <p>
      * In order to build more complex zones (not connected or with
-     * holes), the user should directly call Apache Commons
-     * Math {@link SphericalPolygonsSet} constructors and
+     * holes), the user should directly call Hipparchus
+     * {@link SphericalPolygonsSet} constructors and
      * {@link RegionFactory region factory} if set operations
      * are needed (union, intersection, difference ...).
      * </p>
@@ -727,7 +727,7 @@ public class EllipsoidTessellator {
     /** Check if an arc meets the inside of a zone.
      * <p>
      * This method is heavily based on the Characterization class from
-     * Apache Commons Math library, also distributed under the terms
+     * Hipparchus library, also distributed under the terms
      * of the Apache Software License V2.
      * </p>
      * @param node spherical zone node

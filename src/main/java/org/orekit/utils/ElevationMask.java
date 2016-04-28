@@ -20,8 +20,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 

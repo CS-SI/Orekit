@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.util.FastMath;
 
 /**
  * Hansen coefficients K(t,n,s) for t=0 and n > 0.

@@ -28,7 +28,7 @@ import org.orekit.orbits.Orbit;
  * back from {@link Model model} to {@link BatchLSEstimator estimator}.
  * </p>
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 interface ModelObserver {
 

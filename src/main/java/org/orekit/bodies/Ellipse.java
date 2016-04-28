@@ -18,10 +18,10 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.frames.Frame;
 import org.orekit.utils.TimeStampedPVCoordinates;
 

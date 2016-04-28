@@ -18,8 +18,8 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.apache.commons.math3.util.MathUtils;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

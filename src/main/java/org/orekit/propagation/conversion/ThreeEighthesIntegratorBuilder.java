@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ThreeEighthesIntegrator;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.ThreeEighthesIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 
@@ -25,7 +25,7 @@ import org.orekit.orbits.OrbitType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class ThreeEighthesIntegratorBuilder implements FirstOrderIntegratorBuilder {
+public class ThreeEighthesIntegratorBuilder implements ODEIntegratorBuilder {
 
     /** Step size (s). */
     private final double step;

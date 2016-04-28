@@ -18,7 +18,7 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.List;
 
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
+import org.hipparchus.fitting.leastsquares.LeastSquaresProblem;
 import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.ParameterDriver;
@@ -29,7 +29,7 @@ import org.orekit.utils.ParameterDriver;
  * the progress of the estimator during estimation.
  * </p>
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public interface BatchLSObserver {
 

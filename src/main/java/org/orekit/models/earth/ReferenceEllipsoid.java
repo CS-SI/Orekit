@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.utils.Constants;

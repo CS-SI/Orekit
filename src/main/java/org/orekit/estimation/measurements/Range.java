@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -38,7 +38,7 @@ import org.orekit.utils.PVCoordinates;
  * </p>
  * @author Thierry Ceolin
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public class Range extends AbstractMeasurement<Range> {
 

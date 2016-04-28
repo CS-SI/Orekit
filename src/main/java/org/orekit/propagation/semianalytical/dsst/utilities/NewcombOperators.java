@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.util.FastMath;
 
 /** Implementation of the Modified Newcomb Operators.
  *  <p>
@@ -340,7 +340,7 @@ public class NewcombOperators {
          * </p>
          * <p>
          * This method is a modified version of the method with the same name
-         * in Apache Commons Math {@code PolynomialsUtils} class, simply changing
+         * in Hipparchus {@code PolynomialsUtils} class, simply changing
          * computation of binomial coefficients so degrees higher than 66 can be used.
          * </p>
          *

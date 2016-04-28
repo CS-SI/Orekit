@@ -23,8 +23,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.OrbitFileParser;

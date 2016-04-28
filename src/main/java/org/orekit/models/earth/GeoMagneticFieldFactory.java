@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;

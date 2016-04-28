@@ -16,8 +16,8 @@
  */
 package org.orekit.estimation.iod;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinates;
  *  Vallado, D., Fundamentals of Astrodynamics and Applications
  *
  * @author Joris Olympio
- * @since 7.2
+ * @since 8.0
  *
  */
 public class IodGibbs {

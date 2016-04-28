@@ -30,3 +30,6 @@ The Apache Software Foundation (http://www.apache.org/)
 
 This product depends on software developed by
 The Apache Software Foundation (http://www.apache.org/)
+
+This product depends on software developed by
+The Hipparchus project (https://hipparchus.org/)

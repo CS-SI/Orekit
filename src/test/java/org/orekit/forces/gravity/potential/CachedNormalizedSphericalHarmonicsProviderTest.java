@@ -17,7 +17,7 @@
 package org.orekit.forces.gravity.potential;
 
 import org.junit.Assert;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.util.Precision;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;

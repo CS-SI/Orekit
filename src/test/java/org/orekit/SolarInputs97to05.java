@@ -27,7 +27,7 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.hipparchus.exception.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DTM2000InputParameters;

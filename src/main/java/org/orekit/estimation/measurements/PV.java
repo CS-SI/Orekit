@@ -16,7 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -24,7 +24,7 @@ import org.orekit.utils.PVCoordinates;
 
 /** Class modeling a position-velocity state.
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public class PV extends AbstractMeasurement<PV> {
 

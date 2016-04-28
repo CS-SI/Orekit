@@ -19,8 +19,8 @@ package org.orekit.propagation.conversion;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
+import org.hipparchus.analysis.MultivariateMatrixFunction;
+import org.hipparchus.analysis.MultivariateVectorFunction;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;

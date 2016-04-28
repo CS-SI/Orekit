@@ -18,8 +18,8 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.TreeMap;
 
-import org.apache.commons.math3.util.CombinatoricsUtils;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 

@@ -23,16 +23,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
-import org.apache.commons.math3.exception.TooManyIterationsException;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.fitting.leastsquares.EvaluationRmsChecker;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.optim.ConvergenceChecker;
-import org.apache.commons.math3.util.Incrementor;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.fitting.leastsquares.EvaluationRmsChecker;
+import org.hipparchus.fitting.leastsquares.LeastSquaresBuilder;
+import org.hipparchus.fitting.leastsquares.LeastSquaresOptimizer;
+import org.hipparchus.fitting.leastsquares.LeastSquaresProblem;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.optim.ConvergenceChecker;
+import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -49,7 +48,7 @@ import org.orekit.utils.ParameterDriver;
 
 /** Least squares estimator for orbit determination.
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public class BatchLSEstimator {
 
@@ -362,10 +361,8 @@ public class BatchLSEstimator {
             // create a new configured propagtor with all estimated parameters
             return model.createPropagator(lspEvaluation.getPoint());
 
-        } catch (TooManyIterationsException tmie) {
-            throw new OrekitException(tmie);
-        } catch (TooManyEvaluationsException tmie) {
-            throw new OrekitException(tmie);
+        } catch (MathRuntimeException mrte) {
+            throw new OrekitException(mrte);
         } catch (OrekitExceptionWrapper oew) {
             throw oew.getException();
         }
@@ -488,7 +485,7 @@ public class BatchLSEstimator {
 
             // safety checks
             if (index < 0 || index > evaluations.size()) {
-                throw new OrekitException(LocalizedFormats.INDEX_OUT_OF_RANGE,
+                throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE,
                                           index, 0, evaluations.size());
             }
 

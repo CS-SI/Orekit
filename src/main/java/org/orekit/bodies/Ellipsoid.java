@@ -18,12 +18,12 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.exception.MathArithmeticException;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -108,8 +108,10 @@ public class Ellipsoid implements Serializable {
      * @param planePoint point belonging to the plane, in the ellipsoid frame
      * @param planeNormal normal of the plane, in the ellipsoid frame
      * @return plane section or null if there are no intersections
+     * @exception MathRuntimeException if the norm of planeNormal is null
      */
-    public Ellipse getPlaneSection(final Vector3D planePoint, final Vector3D planeNormal) {
+    public Ellipse getPlaneSection(final Vector3D planePoint, final Vector3D planeNormal)
+        throws MathRuntimeException {
 
         // we define the points Q in the plane using two free variables τ and υ as:
         // Q = P + τ u + υ v
@@ -238,12 +240,12 @@ public class Ellipsoid implements Serializable {
      * @param outside point outside ellipsoid in ellipsoid frame, defining the phase around limb
      * @return point on ellipsoid limb
      * @exception OrekitException if the observer is inside the ellipsoid
-     * @exception MathArithmeticException if ellipsoid center, observer and outside
+     * @exception MathRuntimeException if ellipsoid center, observer and outside
      * points are aligned
      * @since 7.1
      */
     public Vector3D pointOnLimb(final Vector3D observer, final Vector3D outside)
-        throws OrekitException, MathArithmeticException {
+        throws OrekitException, MathRuntimeException {
 
         // there is no limb if we are inside the ellipsoid
         if (isInside(observer)) {

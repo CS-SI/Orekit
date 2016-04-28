@@ -16,9 +16,9 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -69,11 +69,11 @@ public class LofOffset implements AttitudeProvider {
      * An important thing to note is that the rotation order and angles signs used here
      * are compliant with an <em>attitude</em> definition, i.e. they correspond to
      * a frame that rotate in a field of fixed vectors. The underlying definitions used
-     * in commons-math {@link org.apache.commons.math3.geometry.euclidean.threed.Rotation#Rotation(RotationOrder,
+     * in Hipparchus {@link org.hipparchus.geometry.euclidean.threed.Rotation#Rotation(RotationOrder,
      * double, double, double) Rotation(RotationOrder, double, double, double)} use
      * <em>reversed</em> definition, i.e. they correspond to a vectors field rotating
      * with respect to a fixed frame. So to retrieve the angles provided here from the
-     * commons-math underlying rotation, one has to <em>revert</em> the rotation, as in
+     * Hipparchus underlying rotation, one has to <em>revert</em> the rotation, as in
      * the following code snippet:
      * </p>
      * <pre>

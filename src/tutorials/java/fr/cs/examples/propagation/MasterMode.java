@@ -19,9 +19,9 @@ package fr.cs.examples.propagation;
 
 import java.util.Locale;
 
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;

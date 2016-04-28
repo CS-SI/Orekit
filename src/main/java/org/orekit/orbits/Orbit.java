@@ -18,12 +18,12 @@ package org.orekit.orbits;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.QRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;

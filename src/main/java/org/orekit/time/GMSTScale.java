@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Greenwich Mean Sidereal Time.

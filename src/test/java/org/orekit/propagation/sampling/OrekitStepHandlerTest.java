@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;

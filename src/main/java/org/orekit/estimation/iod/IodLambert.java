@@ -16,8 +16,8 @@
  */
 package org.orekit.estimation.iod;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -32,7 +32,7 @@ import org.orekit.utils.PVCoordinates;
  *  Lancaster, E.R. and Blanchard, R.C., A Unified Form of Lambert’s Theorem, Goddard Space Flight Center, 1968.
  *
  * @author Joris Olympio
- * @since 7.2
+ * @since 8.0
  */
 public class IodLambert {
 

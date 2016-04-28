@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.sampling.StepHandler;
-import org.apache.commons.math3.ode.sampling.StepInterpolator;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.sampling.ODEStateInterpolator;
+import org.hipparchus.ode.sampling.ODEStepHandler;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -52,9 +52,9 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
 import org.orekit.propagation.semianalytical.dsst.utilities.MaxGapInterpolationGrid;
-import org.orekit.propagation.semianalytical.dsst.utilities.FixedNumberInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -430,16 +430,16 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // if required, insert the special short periodics step handler
         if (!meanOnly) {
             final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(forceModels);
-            final Collection<StepHandler> stepHandlers = new ArrayList<StepHandler>();
+            final Collection<ODEStepHandler> stepHandlers = new ArrayList<ODEStepHandler>();
             stepHandlers.add(spHandler);
             final AbstractIntegrator integrator = getIntegrator();
-            final Collection<StepHandler> existing = integrator.getStepHandlers();
+            final Collection<ODEStepHandler> existing = integrator.getStepHandlers();
             stepHandlers.addAll(existing);
 
             integrator.clearStepHandlers();
 
             // add back the existing handlers after the short periodics one
-            for (final StepHandler sp : stepHandlers) {
+            for (final ODEStepHandler sp : stepHandlers) {
                 integrator.addStepHandler(sp);
             }
         }
@@ -450,9 +450,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     protected void afterIntegration() throws OrekitException {
         // remove the special short periodics step handler if added before
         if (!isMeanOrbit()) {
-            final List<StepHandler> preserved = new ArrayList<StepHandler>();
+            final List<ODEStepHandler> preserved = new ArrayList<ODEStepHandler>();
             final AbstractIntegrator integrator = getIntegrator();
-            for (final StepHandler sp : integrator.getStepHandlers()) {
+            for (final ODEStepHandler sp : integrator.getStepHandlers()) {
                 if (!(sp instanceof ShortPeriodicsHandler)) {
                     preserved.add(sp);
                 }
@@ -462,7 +462,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             integrator.clearStepHandlers();
 
             // add back the step handlers that were important for the user
-            for (final StepHandler sp : preserved) {
+            for (final ODEStepHandler sp : preserved) {
                 integrator.addStepHandler(sp);
             }
         }
@@ -926,7 +926,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Step handler used to compute the parameters for the short periodic contributions.
      * @author Lucian Barbulescu
      */
-    private class ShortPeriodicsHandler implements StepHandler {
+    private class ShortPeriodicsHandler implements ODEStepHandler {
 
         /** Force models used to compute short periodic terms. */
         private final List<DSSTForceModel> forceModels;
@@ -938,28 +938,25 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             this.forceModels = forceModels;
         }
 
-        @Override
-        public void init(final double t0, final double[] y0, final double t) {
-        }
-
         /** {@inheritDoc} */
         @Override
-        public void handleStep(final StepInterpolator interpolator, final boolean isLast)
+        public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast)
             throws OrekitExceptionWrapper {
 
             try {
                 // Get the grid points to compute
                 final double[] interpolationPoints =
-                        interpolationgrid.getGridPoints(interpolator.getPreviousTime(),
-                                                        interpolator.getCurrentTime());
+                        interpolationgrid.getGridPoints(interpolator.getPreviousState().getTime(),
+                                                        interpolator.getCurrentState().getTime());
 
                 final SpacecraftState[] meanStates = new SpacecraftState[interpolationPoints.length];
                 for (int i = 0; i < interpolationPoints.length; ++i) {
 
                     // Build the mean state interpolated at grid point
                     final double time = interpolationPoints[i];
-                    interpolator.setInterpolatedTime(time);
-                    meanStates[i] = mapper.mapArrayToState(time, interpolator.getInterpolatedState(), true);
+                    meanStates[i] = mapper.mapArrayToState(time,
+                                                           interpolator.getInterpolatedState(time).getPrimaryState(),
+                                                           true);
 
                 }
 

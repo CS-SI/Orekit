@@ -22,12 +22,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -197,8 +197,9 @@ public class IntegratedEphemerisTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ephemeris);
 
-        Assert.assertTrue(bos.size() > 218000);
-        Assert.assertTrue(bos.size() < 219000);
+        int expectedSize = 258223;
+        Assert.assertTrue("size = " + bos.size (), bos.size () >  9 * expectedSize / 10);
+        Assert.assertTrue("size = " + bos.size (), bos.size () < 11 * expectedSize / 10);
 
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
@@ -213,16 +214,16 @@ public class IntegratedEphemerisTest {
     @Test
     public void testSerializationDSSTMean()
         throws PropagationException, OrekitException, IOException, ClassNotFoundException {
-        doTestSerializationDSST(true, 35000, 36000);
+        doTestSerializationDSST(true, 36703);
     }
 
     @Test
     public void testSerializationDSSTOsculating()
         throws PropagationException, OrekitException, IOException, ClassNotFoundException {
-        doTestSerializationDSST(false, 616000, 617000);
+        doTestSerializationDSST(false, 618025);
     }
 
-    private void doTestSerializationDSST(boolean meanOnly, int minSize, int maxSize)
+    private void doTestSerializationDSST(boolean meanOnly, int expectedSize)
         throws PropagationException, OrekitException, IOException, ClassNotFoundException {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
@@ -252,8 +253,9 @@ public class IntegratedEphemerisTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ephemeris);
 
-        Assert.assertTrue(bos.size() > minSize);
-        Assert.assertTrue(bos.size() < maxSize);
+        Assert.assertTrue("size = " + bos.size (), bos.size () >  9 * expectedSize / 10);
+        Assert.assertTrue("size = " + bos.size (), bos.size () < 11 * expectedSize / 10);
+
 
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), dsstProp.getFrame());

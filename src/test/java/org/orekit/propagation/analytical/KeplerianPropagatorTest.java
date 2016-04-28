@@ -26,11 +26,11 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -594,7 +594,7 @@ public class KeplerianPropagatorTest {
 
             protected SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
                 if (date.compareTo(lastDate) < 0) {
-                    throw new PropagationException(LocalizedFormats.SIMPLE_MESSAGE,
+                    throw new PropagationException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                    "no backward propagation allowed");
                 }
                 lastDate = date;
@@ -665,8 +665,8 @@ public class KeplerianPropagatorTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ephemeris);
 
-        Assert.assertTrue(bos.size() > 2300);
-        Assert.assertTrue(bos.size() < 2400);
+        Assert.assertTrue(bos.size() > 2250);
+        Assert.assertTrue(bos.size() < 2350);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

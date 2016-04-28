@@ -42,15 +42,20 @@ from the script to the Matlab prompt.
     %
     % Translated from SlaveMode.java to Matlab by Petrus Hyvönen 2011 as an
     % example of how to access orekit from matlab
-    % the jars orekit-5.0.jar and commons-math-2.2.jar and orekit-data.zip is
-    % in current matlab dir.
+    % the jars orekit-8.0.jar, hipparchus-core-1.0.jar, hipparchus-geometry-1.0.jar,
+    % hipparchus-ode-1.0.jar, hipparchus-fitting-1.0.jar, hipparchus-optim-1.0.jar
+    % and orekit-data.zip is in current matlab dir.
 
 
     ______
     % These seems to work if pasted to prompt.
     javaaddpath 'C:\ ... enter your path here ...\MATLAB'
-    javaaddpath 'C:\.. enter your path here ...\MATLAB\orekit-5.0.jar'
-    javaaddpath 'C:\.. enter your path here ...\\MATLAB\commons-math-2.2.jar
+    javaaddpath 'C:\.. enter your path here ...\MATLAB\orekit-8.0.jar'
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-core-1.0.jar
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-geometry-1.0.jar
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-ode-1.0.jar
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-fitting-1.0.jar
+    javaaddpath 'C:\.. enter your path here ...\\MATLAB\hipparchus-optim-1.0.jar
 
 
     %% do the imports

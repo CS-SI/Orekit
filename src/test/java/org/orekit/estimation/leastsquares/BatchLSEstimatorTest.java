@@ -19,7 +19,7 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
@@ -98,7 +98,7 @@ public class BatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                     0.0, 1.3e-6,
+                                     0.0, 1.5e-6,
                                      0.0, 3.1e-6,
                                      0.0, 3.8e-7,
                                      0.0, 1.5e-10);

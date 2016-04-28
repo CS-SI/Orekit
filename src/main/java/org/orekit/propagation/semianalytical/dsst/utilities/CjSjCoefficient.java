@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.complex.Complex;
+import org.hipparchus.complex.Complex;
 
 /** Compute the S<sub>j</sub>(k, h) and the C<sub>j</sub>(k, h) series
  *  and their partial derivatives with respect to k and h.

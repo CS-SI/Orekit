@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
@@ -88,7 +88,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
                                                      data.size(), neighborsSize);
         }
         if (neighborsSize < 1) {
-            throw new OrekitIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL,
+            throw new OrekitIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL,
                                                      neighborsSize, 0);
         }
 

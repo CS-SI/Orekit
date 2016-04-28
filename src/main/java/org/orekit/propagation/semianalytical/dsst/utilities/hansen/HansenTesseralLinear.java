@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 
 /**

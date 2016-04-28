@@ -16,8 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -38,7 +38,7 @@ import org.orekit.utils.ParameterDriver;
  *
  * @author Thierry Ceolin
  * @author Joris Olympio
- * @since 7.2
+ * @since 8.0
  */
 public class RangeRate extends AbstractMeasurement<RangeRate> {
 

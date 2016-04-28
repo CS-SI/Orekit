@@ -20,7 +20,7 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
 
 /** Extension of {@link java.text.ParseException} with localized message.
  * @since 7.1

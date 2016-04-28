@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.apache.commons.math3.RealFieldElement;
+import org.hipparchus.RealFieldElement;
 
 /** Class for general terms.
  * @param <T> the type of the field elements

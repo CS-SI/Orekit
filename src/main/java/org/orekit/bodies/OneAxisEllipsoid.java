@@ -18,14 +18,14 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.oned.Vector1D;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;

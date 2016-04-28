@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -113,7 +113,7 @@ public class KlobucharIonoModel implements IonosphericModel {
         // Note: Sunday=0, Monday=1, Tuesday=2, Wednesday=3, Thursday=4, Friday=5, Saturday=6
         final DateTimeComponents dtc = date.getComponents(TimeScalesFactory.getGPS());
         final int dofweek = dtc.getDate().getDayOfWeek();
-        final double secday = dtc.getTime().getSecondsInDay();
+        final double secday = dtc.getTime().getSecondsInLocalDay();
         final double tow = dofweek * 86400. + secday;
 
         final double t = 43200. * lonIono + tow;

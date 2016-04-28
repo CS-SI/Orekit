@@ -28,7 +28,7 @@ import org.orekit.utils.ParameterDriver;
 /** Abstract class handling measurements boilerplate.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public abstract class AbstractMeasurement<T extends Measurement<T>> implements Measurement<T> {
 

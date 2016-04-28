@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.util.Pair;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 

@@ -16,10 +16,10 @@
  */
 package org.orekit.estimation;
 
-import org.apache.commons.math3.fitting.leastsquares.ParameterValidator;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.fitting.leastsquares.ParameterValidator;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.orbits.OrbitType;
 
@@ -35,7 +35,7 @@ import org.orekit.orbits.OrbitType;
  * space flight dynamics code.
  * </p>
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public enum OrbitValidator implements ParameterValidator {
 

@@ -26,15 +26,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.CardanEulerSingularityException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well19937a;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -83,7 +82,7 @@ public class TabulatedLofOffsetTest {
     PVCoordinates pvSatEME2000;
 
     @Test
-    public void testConstantOffset() throws OrekitException, CardanEulerSingularityException {
+    public void testConstantOffset() throws OrekitException {
 
         RandomGenerator random = new Well19937a(0x1199d4bb8f53d2b6l);
         for (LOFType type : LOFType.values()) {

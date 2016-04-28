@@ -76,7 +76,7 @@ At the end of this session, trainees will know the syntax of the Java language a
 gained an initial development experience that equips them to read and understand existing
 Java source and to develop small standalone Java applications.
 
-### Developing numerical applications in the Java language - using Apache Commons Math and Orekit
+### Developing numerical applications in the Java language - using Hipparchus and Orekit
 
 This session is also oriented towards trainees who are not computer science experts
 but rather space flight dynamics engineers and numerical analysts. It adds the necessary
@@ -85,8 +85,8 @@ development, especially in mathematics and space flight dynamics fields. The fol
 topics are covered:
 
    * Setting up the Eclipse integrated development environment
-   * Setting up the free software libraries Apache Commons Math and Orekit
-   * Tour of all high level packages of Apache Commons Math and Orekit
+   * Setting up the free software libraries Hipparchus and Orekit
+   * Tour of all high level packages of Hipparchus and Orekit
    * Design patterns for development of robust and high performance numerical computation applications
    * Development of a complete standalone space flight dynamics application using existing Orekit
      library objects
@@ -100,7 +100,7 @@ session 3
 At the end of this session, trainees will have a pragmatic knowledge of the benefits of
 object-oriented paradigm for the development of scientific algorithms. They will understand
 some common pitfalls and know how to avoid them in developing robust and high performance code.
-They will know the available concepts and algorithms in the Apache Commons Math and Orekit
+They will know the available concepts and algorithms in the Hipparchus and Orekit
 libraries. They have their first development experience of space flight dynamics applications
 in an integrated development environment with these libraries.
 
@@ -110,11 +110,11 @@ The training sessions can be organized both at your premises anywhere in the wor
 premises in Toulouse (France). All sessions are limited to 8 students. Prices for the training
 sessions at CS premises are shown in the following table:
 
-|                                    session                                                               | industry, commercial companies | academics, research laboratories |  students  |
-|----------------------------------------------------------------------------------------------------------|--------------------------------|----------------------------------|------------|
-|  Object oriented technology for numerical computing (session 1)                                          |      600 €                     |      300 €                       | 150 €      |
-|  Object oriented concepts and the Java language (session 2)                                              |     2400 €                     |     1200 €                       | 600 €      |
-|  Developing numerical applications in the Java language using Apache commons-math and Orekit (session 3) |     1800 €                     |      900 €                       | 450 €      |
+|                                    session                                                      | industry, commercial companies | academics, research laboratories |  students  |
+|-------------------------------------------------------------------------------------------------|--------------------------------|----------------------------------|------------|
+|  Object oriented technology for numerical computing (session 1)                                 |      600 €                     |      300 €                       | 150 €      |
+|  Object oriented concepts and the Java language (session 2)                                     |     2400 €                     |     1200 €                       | 600 €      |
+|  Developing numerical applications in the Java language using Hipparchus and Orekit (session 3) |     1800 €                     |      900 €                       | 450 €      |
 prices for training sessions at CS premises
 
 The prices above include training fees, a USB stick containing lecture material and exercises,

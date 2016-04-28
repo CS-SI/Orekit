@@ -20,14 +20,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
-import org.apache.commons.math3.fitting.AbstractCurveFitter;
-import org.apache.commons.math3.fitting.PolynomialCurveFitter;
-import org.apache.commons.math3.fitting.WeightedObservedPoint;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math3.linear.DiagonalMatrix;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.ParametricUnivariateFunction;
+import org.hipparchus.fitting.AbstractCurveFitter;
+import org.hipparchus.fitting.PolynomialCurveFitter;
+import org.hipparchus.fitting.WeightedObservedPoint;
+import org.hipparchus.fitting.leastsquares.LeastSquaresBuilder;
+import org.hipparchus.fitting.leastsquares.LeastSquaresProblem;
+import org.hipparchus.linear.DiagonalMatrix;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
 /** Class for fitting evolution of osculating orbital parameters.

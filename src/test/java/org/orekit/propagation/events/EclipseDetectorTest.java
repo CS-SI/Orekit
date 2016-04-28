@@ -16,11 +16,11 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -82,7 +82,7 @@ public class EclipseDetectorTest {
         Assert.assertFalse(e.getTotalEclipse());
         propagator.addEventDetector(e);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
-        Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 1.0e-6);
+        Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 2.0e-6);
     }
 
     @Test
@@ -144,7 +144,7 @@ public class EclipseDetectorTest {
             propagator.propagate(iniDate.shiftedBy(6000));
             Assert.fail("an exception should have been thrown");
         } catch (PropagationException pe) {
-            Assert.assertEquals(n, ((TooManyEvaluationsException) pe.getCause()).getMax());
+            Assert.assertEquals(n, ((Integer) ((MathRuntimeException) pe.getCause()).getParts()[0]).intValue());
         }
     }
 

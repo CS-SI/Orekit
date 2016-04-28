@@ -18,20 +18,20 @@ package org.orekit.models.earth.tessellation;
 
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.partitioning.BSPTree;
-import org.apache.commons.math3.geometry.partitioning.BSPTreeVisitor;
-import org.apache.commons.math3.geometry.partitioning.Region.Location;
-import org.apache.commons.math3.geometry.spherical.twod.Edge;
-import org.apache.commons.math3.geometry.spherical.twod.S2Point;
-import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
-import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
-import org.apache.commons.math3.geometry.spherical.twod.Vertex;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.partitioning.BSPTree;
+import org.hipparchus.geometry.partitioning.BSPTreeVisitor;
+import org.hipparchus.geometry.partitioning.Region.Location;
+import org.hipparchus.geometry.spherical.twod.Edge;
+import org.hipparchus.geometry.spherical.twod.S2Point;
+import org.hipparchus.geometry.spherical.twod.Sphere2D;
+import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.geometry.spherical.twod.Vertex;
 
 /** BSP Tree visitor aimed at finding a point strictly inside a spherical zone.
  * <p>
  * This class is heavily based on the class PropertiesComputer from the
- * Apache Commons Math library, also distributed under the terms of
+ * Hipparchus library, also distributed under the terms of
  * the Apache Software License V2.
  * </p>
  * @author Luc Maisonobe

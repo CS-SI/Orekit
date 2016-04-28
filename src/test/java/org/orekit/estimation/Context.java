@@ -18,7 +18,7 @@ package org.orekit.estimation;
 
 import java.util.List;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;

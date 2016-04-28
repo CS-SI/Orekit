@@ -26,7 +26,7 @@ import java.util.SortedSet;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -122,9 +122,9 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                 if ((se.getCause() != null) && (se.getCause() instanceof OrekitException)) {
                     throw (OrekitException) se.getCause();
                 }
-                throw new OrekitException(se, LocalizedFormats.SIMPLE_MESSAGE, se.getMessage());
+                throw new OrekitException(se, LocalizedCoreFormats.SIMPLE_MESSAGE, se.getMessage());
             } catch (ParserConfigurationException pce) {
-                throw new OrekitException(pce, LocalizedFormats.SIMPLE_MESSAGE, pce.getMessage());
+                throw new OrekitException(pce, LocalizedCoreFormats.SIMPLE_MESSAGE, pce.getMessage());
             }
         }
 

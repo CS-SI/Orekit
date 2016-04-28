@@ -16,13 +16,16 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import java.io.IOException;
+import java.text.ParseException;
+
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -67,9 +70,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.IOException;
-import java.text.ParseException;
 
 
 public class NumericalPropagatorTest {
@@ -397,7 +397,7 @@ public class NumericalPropagatorTest {
                     Assert.assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
                 }
                 if (--countDown == 0) {
-                    throw new PropagationException(LocalizedFormats.SIMPLE_MESSAGE, "dummy error");
+                    throw new PropagationException(LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy error");
                 }
             }
         });

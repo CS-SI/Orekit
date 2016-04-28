@@ -37,13 +37,13 @@ import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.fitting.leastsquares.LeastSquaresProblem;
+import org.hipparchus.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.stat.descriptive.SummaryStatistics;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
@@ -953,7 +953,7 @@ public class OrbitDetermination {
                             measurements.add(measurement);
                         }
                     } catch (IllegalArgumentException iae) {
-                        throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+                        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                   "unknown measurement type " + fields[1] +
                                                   " at line " + lineNumber +
                                                   " in file " + file.getName());
@@ -967,7 +967,7 @@ public class OrbitDetermination {
         }
 
         if (measurements.isEmpty()) {
-            throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+            throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                       "not measurements read from file " + file.getAbsolutePath());
         }
 
@@ -1265,7 +1265,7 @@ public class OrbitDetermination {
             try {
                 return new AbsoluteDate(date, TimeScalesFactory.getUTC());
             } catch (OrekitException oe) {
-                throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                           "wrong date " + date +
                                           " at line " + lineNumber +
                                           " in file " + fileName +
@@ -1288,7 +1288,7 @@ public class OrbitDetermination {
             throws OrekitException {
             final StationData stationData = stations.get(stationName);
             if (stationData == null) {
-                throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                           "unknown station " + stationName +
                                           " at line " + lineNumber +
                                           " in file " + fileName +
@@ -1364,7 +1364,7 @@ public class OrbitDetermination {
             if (!evaluations.isEmpty()) {
 
                 // compute statistics
-                final SummaryStatistics stats = new SummaryStatistics();
+                final SummaryStatistics stats = SummaryStatistics.create();
                 for (final Evaluation<T> evaluation : evaluations) {
                     stats.addValue(residual(evaluation));
                 }

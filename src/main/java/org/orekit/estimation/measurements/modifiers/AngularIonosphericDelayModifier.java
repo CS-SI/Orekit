@@ -19,7 +19,7 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Evaluation;
@@ -42,7 +42,7 @@ import org.orekit.utils.ParameterDriver;
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  *
  * @author Thierry Ceolin
- * @since 7.2
+ * @since 8.0
  */
 public class AngularIonosphericDelayModifier implements EvaluationModifier<Angular> {
     /** Ionospheric delay model. */

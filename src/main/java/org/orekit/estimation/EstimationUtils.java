@@ -16,12 +16,12 @@
  */
 package org.orekit.estimation;
 
-import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-import org.apache.commons.math3.analysis.UnivariateVectorFunction;
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableVectorFunction;
+import org.hipparchus.analysis.MultivariateMatrixFunction;
+import org.hipparchus.analysis.MultivariateVectorFunction;
+import org.hipparchus.analysis.UnivariateVectorFunction;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.orbits.OrbitType;
@@ -31,7 +31,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 
 /** Utility class for orbit determination.
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public class EstimationUtils {
 

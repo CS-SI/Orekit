@@ -23,10 +23,10 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FieldBodiesElements;

@@ -19,7 +19,7 @@ package org.orekit.propagation.conversion;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -238,7 +238,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         }
 
         if (parameters.length != size) {
-            throw new OrekitIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH_SIMPLE,
+            throw new OrekitIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
                                                      parameters.length, size);
         }
     }

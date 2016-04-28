@@ -25,9 +25,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.apache.commons.math3.analysis.UnivariateVectorFunction;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.UnivariateVectorFunction;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -654,7 +654,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     }
 
     /** Class used to {@link #integrate(UnivariateVectorFunction, double, double) integrate}
-     *  a {@link org.apache.commons.math3.analysis.UnivariateVectorFunction function}
+     *  a {@link org.hipparchus.analysis.UnivariateVectorFunction function}
      *  of the orbital elements using the Gaussian quadrature rule to get the acceleration.
      */
     private static class GaussQuadrature {

@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.dfp.Dfp;
-import org.apache.commons.math3.dfp.DfpField;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.dfp.Dfp;
+import org.hipparchus.dfp.DfpField;
 
 /** Implementation of associated Legendre functions from defining formulas.
  * <p>

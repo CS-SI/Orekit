@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.QRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;

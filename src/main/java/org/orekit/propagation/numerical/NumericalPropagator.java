@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -262,7 +262,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         if (newtonianAttraction == null) {
             setMu(state.getMu());
         }
-        setStartDate(null);
+        setStartDate(state.getDate());
     }
 
     /** {@inheritDoc} */

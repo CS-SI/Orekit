@@ -20,24 +20,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem.Evaluation;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
-import org.apache.commons.math3.linear.DiagonalMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.optim.ConvergenceChecker;
-import org.apache.commons.math3.optim.SimpleVectorValueChecker;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.analysis.MultivariateMatrixFunction;
+import org.hipparchus.analysis.MultivariateVectorFunction;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.fitting.leastsquares.LeastSquaresBuilder;
+import org.hipparchus.fitting.leastsquares.LeastSquaresFactory;
+import org.hipparchus.fitting.leastsquares.LeastSquaresOptimizer;
+import org.hipparchus.fitting.leastsquares.LeastSquaresProblem;
+import org.hipparchus.fitting.leastsquares.LeastSquaresProblem.Evaluation;
+import org.hipparchus.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.fitting.leastsquares.MultivariateJacobianFunction;
+import org.hipparchus.linear.DiagonalMatrix;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.optim.ConvergenceChecker;
+import org.hipparchus.optim.SimpleVectorValueChecker;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -50,13 +50,13 @@ import org.orekit.utils.ParameterDriver;
 
 /** Common handling of {@link PropagatorConverter} methods for propagators conversions.
  * <p>
- * This abstract class factorizes the common code for propagators conversion.
+ * This abstract class factors the common code for propagators conversion.
  * Only one method must be implemented by derived classes: {@link #getObjectiveFunction()}.
  * </p>
  * <p>
  * The converter uses the LevenbergMarquardtOptimizer from the <a
- * href="http://commons.apache.org/math/">commons math</a> library.
- * Different implementations correspond to different methods for computing the jacobian.
+ * href="https://hipparchus.org/">Hipparchus</a> library.
+ * Different implementations correspond to different methods for computing the Jacobian.
  * </p>
  * @author Pascal Parraud
  * @since 6.0
@@ -388,10 +388,10 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param initial initial estimation parameters (position, velocity, free parameters)
      * @return fitted parameters
      * @exception OrekitException if propagator cannot be adapted
-     * @exception MaxCountExceededException if maximal number of iterations is exceeded
+     * @exception MathRuntimeException if maximal number of iterations is exceeded
      */
     private double[] fit(final double[] initial)
-        throws OrekitException, MaxCountExceededException {
+        throws OrekitException, MathRuntimeException {
 
         final MultivariateVectorFunction f = getObjectiveFunction();
         final MultivariateMatrixFunction jac = getObjectiveFunctionJacobian();

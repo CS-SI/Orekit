@@ -20,7 +20,7 @@ package org.orekit.frames;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;

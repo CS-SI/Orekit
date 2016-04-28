@@ -16,10 +16,10 @@
  */
 package org.orekit.forces;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.ode.ParameterizedODE;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.ode.ParametersController;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -56,7 +56,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface ForceModel extends ParameterizedODE {
+public interface ForceModel extends ParametersController {
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.

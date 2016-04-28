@@ -16,9 +16,9 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.analysis.BivariateFunction;
-import org.apache.commons.math3.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.BivariateFunction;
+import org.hipparchus.analysis.interpolation.PiecewiseBicubicSplineInterpolator;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;

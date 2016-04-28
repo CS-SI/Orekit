@@ -21,9 +21,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.stat.descriptive.SummaryStatistics;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -278,7 +278,7 @@ public class SolidTidesFieldTest {
         // the following time range is located around the maximal observed error
         AbsoluteDate start = new AbsoluteDate(2003, 6, 12, utc);
         AbsoluteDate end   = start.shiftedBy(3 * Constants.JULIAN_DAY);
-        SummaryStatistics stat = new SummaryStatistics();
+        SummaryStatistics stat = SummaryStatistics.create();
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
             NormalizedSphericalHarmonics rawHarmonics = raw.onDate(date);
             NormalizedSphericalHarmonics interpolatedHarmonics = interpolated.onDate(date);

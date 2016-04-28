@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth.tessellation;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 

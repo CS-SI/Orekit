@@ -16,14 +16,14 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math3.analysis.solvers.UnivariateSolver;
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolver;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -281,8 +281,8 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
             // return the limit point
             return pointAtDistance(azimuth, elevation, distance);
 
-        } catch (TooManyEvaluationsException tmee) {
-            throw new OrekitException(tmee);
+        } catch (MathRuntimeException mrte) {
+            throw new OrekitException(mrte);
         } catch (OrekitExceptionWrapper lwe) {
             throw lwe.getException();
         }

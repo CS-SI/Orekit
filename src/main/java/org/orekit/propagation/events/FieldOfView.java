@@ -20,21 +20,21 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.enclosing.EnclosingBall;
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.partitioning.Region;
-import org.apache.commons.math3.geometry.partitioning.RegionFactory;
-import org.apache.commons.math3.geometry.spherical.twod.Edge;
-import org.apache.commons.math3.geometry.spherical.twod.S2Point;
-import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
-import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
-import org.apache.commons.math3.geometry.spherical.twod.Vertex;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.enclosing.EnclosingBall;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.partitioning.Region;
+import org.hipparchus.geometry.partitioning.RegionFactory;
+import org.hipparchus.geometry.spherical.twod.Edge;
+import org.hipparchus.geometry.spherical.twod.S2Point;
+import org.hipparchus.geometry.spherical.twod.Sphere2D;
+import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.geometry.spherical.twod.Vertex;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -124,7 +124,7 @@ public class FieldOfView implements Serializable {
                        final double insideRadius, final int n, final double margin) {
 
         // convert the representation based on middle edge points
-        // to Apache Commons Math convention based on vertices
+        // to Hipparchus convention based on vertices
         final Rotation r                = new Rotation(center, MathUtils.TWO_PI / n,
                                                        RotationConvention.VECTOR_OPERATOR);
         final Vector3D orthogonal       = Vector3D.crossProduct(Vector3D.crossProduct(center, meridian), center);
@@ -162,8 +162,8 @@ public class FieldOfView implements Serializable {
                                           final Vector3D axis, final double halfAperture)
         throws OrekitException {
         if (halfAperture > 0.5 * FastMath.PI) {
-            throw new OrekitException(LocalizedFormats.NUMBER_TOO_LARGE,
-                                      halfAperture, 0.5 * FastMath.PI);
+            throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE,
+                                      halfAperture, 0.0, 0.5 * FastMath.PI);
         }
 
         final Rotation r = new Rotation(axis, halfAperture, RotationConvention.VECTOR_OPERATOR);

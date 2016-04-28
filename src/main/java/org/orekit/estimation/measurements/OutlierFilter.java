@@ -19,13 +19,13 @@ package org.orekit.estimation.measurements;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.ParameterDriver;
 
 /** Modifier that sets evaluation weight to 0 if residual is too far from expected domain.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public class OutlierFilter<T extends Measurement<T>> implements EvaluationModifier<T> {
 

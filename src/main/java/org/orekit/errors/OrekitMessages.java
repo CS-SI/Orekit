@@ -26,7 +26,7 @@ import java.util.MissingResourceException;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
 
 /**
  * Enumeration for localized messages formats.

@@ -22,10 +22,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,7 +84,7 @@ public class NumericalConverterTest {
             builder.buildPropagator(orbit.getDate(), new double[3]);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(LocalizedFormats.DIMENSIONS_MISMATCH_SIMPLE, oiae.getSpecifier());
+            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, oiae.getSpecifier());
             Assert.assertEquals(3, ((Integer) oiae.getParts()[0]).intValue());
             Assert.assertEquals(6, ((Integer) oiae.getParts()[1]).intValue());
         }
@@ -207,37 +207,37 @@ public class NumericalConverterTest {
 
         final double stepSize = 100.;
 
-        FirstOrderIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
+        ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
         checkFit(abBuilder);
 
-        FirstOrderIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
+        ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
         checkFit(amBuilder);
 
-        FirstOrderIntegratorBuilder crkBuilder = new ClassicalRungeKuttaIntegratorBuilder(stepSize);
+        ODEIntegratorBuilder crkBuilder = new ClassicalRungeKuttaIntegratorBuilder(stepSize);
         checkFit(crkBuilder);
 
-        FirstOrderIntegratorBuilder lBuilder = new LutherIntegratorBuilder(stepSize);
+        ODEIntegratorBuilder lBuilder = new LutherIntegratorBuilder(stepSize);
         checkFit(lBuilder);
 
-        FirstOrderIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         checkFit(dp54Builder);
 
-        FirstOrderIntegratorBuilder eBuilder = new EulerIntegratorBuilder(stepSize);
+        ODEIntegratorBuilder eBuilder = new EulerIntegratorBuilder(stepSize);
         checkFit(eBuilder);
 
-        FirstOrderIntegratorBuilder gBuilder = new GillIntegratorBuilder(stepSize);
+        ODEIntegratorBuilder gBuilder = new GillIntegratorBuilder(stepSize);
         checkFit(gBuilder);
 
-        FirstOrderIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
         checkFit(gbsBuilder);
 
-        FirstOrderIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
         checkFit(hh54Builder);
 
-        FirstOrderIntegratorBuilder mBuilder = new MidpointIntegratorBuilder(stepSize);
+        ODEIntegratorBuilder mBuilder = new MidpointIntegratorBuilder(stepSize);
         checkFit(mBuilder);
 
-        FirstOrderIntegratorBuilder teBuilder = new ThreeEighthesIntegratorBuilder(stepSize);
+        ODEIntegratorBuilder teBuilder = new ThreeEighthesIntegratorBuilder(stepSize);
         checkFit(teBuilder);
     }
 
@@ -301,7 +301,7 @@ public class NumericalConverterTest {
                             eps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getZ()));
     }
 
-    protected void checkFit(final FirstOrderIntegratorBuilder foiBuilder) throws OrekitException {
+    protected void checkFit(final ODEIntegratorBuilder foiBuilder) throws OrekitException {
 
         NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(mu,
                                                                             propagator.getFrame(),

@@ -29,14 +29,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -71,8 +71,8 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
-import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -304,7 +304,7 @@ public class DSSTPropagation {
 
         if (parser.containsKey(ParameterKey.FIXED_NUMBER_OF_INTERPOLATION_POINTS)) {
             if (parser.containsKey(ParameterKey.MAX_TIME_GAP_BETWEEN_INTERPOLATION_POINTS)) {
-                throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                           "cannot specify both fixed.number.of.interpolation.points" +
                                           " and max.time.gap.between.interpolation.points");
             }
@@ -761,7 +761,7 @@ public class DSSTPropagation {
                 start   = s0.getDate();
                 isFirst = true;
             } catch (IOException ioe) {
-                throw new PropagationException(ioe, LocalizedFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
+                throw new PropagationException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
             }
         }
 

@@ -18,11 +18,12 @@ package org.orekit.forces.gravity;
 
 import java.util.Map;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.UnknownParameterException;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.LocalizedODEFormats;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -151,7 +152,7 @@ public class OceanTidesTest {
 
     }
 
-    @Test(expected=UnknownParameterException.class)
+    @Test
     public void testNoGetParameter() throws OrekitException {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
@@ -167,10 +168,15 @@ public class OceanTidesTest {
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
         Assert.assertEquals(0, fm.getParametersNames().size());
-        fm.getParameter("unknown");
+        try {
+            fm.getParameter("unknown");
+            Assert.fail("an exception should have been thrown");
+        } catch (MathIllegalArgumentException miae) {
+            Assert.assertEquals(LocalizedODEFormats.UNKNOWN_PARAMETER, miae.getSpecifier());
+        }
     }
 
-    @Test(expected=UnknownParameterException.class)
+    @Test
     public void testNoSetParameter() throws OrekitException {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
@@ -186,7 +192,12 @@ public class OceanTidesTest {
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
         Assert.assertEquals(0, fm.getParametersNames().size());
-        fm.setParameter("unknown", 0.0);
+        try {
+            fm.setParameter("unknown", 0.0);
+            Assert.fail("an exception should have been thrown");
+        } catch (MathIllegalArgumentException miae) {
+            Assert.assertEquals(LocalizedODEFormats.UNKNOWN_PARAMETER, miae.getSpecifier());
+        }
     }
 
     private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel ... forceModels)

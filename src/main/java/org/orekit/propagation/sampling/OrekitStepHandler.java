@@ -23,7 +23,7 @@ import org.orekit.time.AbsoluteDate;
 /** This interface is a space-dynamics aware step handler.
  *
  * <p>It mirrors the <code>StepHandler</code> interface from <a
- * href="http://commons.apache.org/math/"> commons-math</a> but
+ * href="https://hipparchus.org/">Hipparchus</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */

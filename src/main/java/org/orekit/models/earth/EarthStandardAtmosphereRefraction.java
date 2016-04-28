@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.models.AtmosphericRefractionModel;
 
 /** Implementation of refraction model for Earth standard atmosphere.

@@ -51,7 +51,7 @@
  * </p>
  * <p>
  * <h5> Numerical propagation </h5>
- * It is the most important part of the OREKIT project. Based on commons-math
+ * It is the most important part of the OREKIT project. Based on Hipparchus
  * integrators, the {@link org.orekit.propagation.numerical.NumericalPropagator}
  * class realizes the interface between space mechanics and mathematical
  * resolutions. If its utilization seems difficult on first sight, it is in
@@ -69,8 +69,8 @@
  * the perturbing acceleration.
  * </p>
  * <p>
- * The {@link org.apache.commons.math3.ode.FirstOrderIntegrator integrators}
- * provided by commons-math need the state vector at t0, the state vector first
+ * The {@link org.hipparchus.ode.ODEIntegrator integrators}
+ * provided by Hipparchus need the state vector at t0, the state vector first
  * time derivate at t0, and then calculates the next step state vector, and ask
  * for the next first time derivative, etc. until it reaches the final asked date.
  * </p>

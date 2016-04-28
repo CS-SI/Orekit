@@ -68,9 +68,9 @@ with their included modifiers, and run the least squares filter. At the end of t
 is returned, including the estimated orbit as the initial state and the estimated propagator parameters. The estimated
 measurement and propagator parameters can also be retrieved by themselves.
 
-The `BatchLSEstimator` class creates an internal implementation of Apache Commons Math `LeastSquaresProblem` interface
+The `BatchLSEstimator` class creates an internal implementation of Hipparchus `LeastSquaresProblem` interface
 to represent the orbit determination problem and passes it to one of the `LeastSquaresOptimizer` implementations to
-solve it. During the resolution, the selected Apache Commons Math algorithm will call the `value` method of the
+solve it. During the resolution, the selected Hipparchus algorithm will call the `value` method of the
 local `LeastSquaresProblem` model at each algorithm test point. This will trigger one orbit propagation with
 some test values for the orbit state and the parameters (for example biases from the measurements modifiers parameters
 or drag coefficients from the force models parameters). During the propagation, the Orekit event mechanism is used to
@@ -78,7 +78,7 @@ collect the state and its Jacobians at measurements dates. A `MeasurementsHandle
 generic events handling mechanism and the orbit determination framework. At each measurement date, it gets the state
 and Jacobians from the propagator side, it calls the measurement methods to get the residuals and the partial
 derivatives on the measurements side, and it fetches the least squares estimator with the combined values, to be
-provided back to the Apache Commons Math algorithm, thus closing the loop.
+provided back to the Hipparchus algorithm, thus closing the loop.
 
 The orbital state is always estimated. Users can also estimate some propagator  and measurements parameters. These parameters
 are modeled using the `Parameter` class, which is essentially  a key-value pair with multi-dimensional values. The

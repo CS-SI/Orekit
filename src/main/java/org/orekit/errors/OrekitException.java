@@ -19,19 +19,18 @@ package org.orekit.errors;
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import org.apache.commons.math3.exception.util.ExceptionContext;
-import org.apache.commons.math3.exception.util.ExceptionContextProvider;
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
+import org.hipparchus.exception.MathRuntimeException;
 
 /** This class is the base class for all specific exceptions thrown by
- * the orekit classes.
+ * the Orekit classes.
 
- * <p>When the orekit classes throw exceptions that are specific to
+ * <p>When the Orekit classes throw exceptions that are specific to
  * the package, these exceptions are always subclasses of
  * OrekitException. When exceptions that are already covered by the
  * standard java API should be thrown, like
  * ArrayIndexOutOfBoundsException or InvalidParameterException, these
- * standard exceptions are thrown rather than the commons-math specific
+ * standard exceptions are thrown rather than the Hipparchus specific
  * ones.</p>
  * <p>This class also provides utility methods to throw some standard
  * java exceptions with localized messages.</p>
@@ -45,9 +44,6 @@ public class OrekitException extends Exception implements LocalizedException {
     /** Serializable UID. */
     private static final long serialVersionUID = 20150611L;
 
-    /** Exception context (may be null). */
-    private final ExceptionContext context;
-
     /** Format specifier (to be translated). */
     private final Localizable specifier;
 
@@ -60,7 +56,6 @@ public class OrekitException extends Exception implements LocalizedException {
      * @param parts parts to insert in the format (no translation)
      */
     public OrekitException(final Localizable specifier, final Object ... parts) {
-        this.context   = null;
         this.specifier = specifier;
         this.parts     = (parts == null) ? new Object[0] : parts.clone();
     }
@@ -71,7 +66,6 @@ public class OrekitException extends Exception implements LocalizedException {
      */
     public OrekitException(final OrekitException exception) {
         super(exception);
-        this.context   = exception.context;
         this.specifier = exception.specifier;
         this.parts     = exception.parts.clone();
     }
@@ -83,7 +77,6 @@ public class OrekitException extends Exception implements LocalizedException {
      */
     public OrekitException(final Localizable message, final Throwable cause) {
         super(cause);
-        this.context   = null;
         this.specifier = message;
         this.parts     = new Object[0];
     }
@@ -97,29 +90,25 @@ public class OrekitException extends Exception implements LocalizedException {
     public OrekitException(final Throwable cause, final Localizable specifier,
                            final Object ... parts) {
         super(cause);
-        this.context   = null;
         this.specifier = specifier;
         this.parts     = (parts == null) ? new Object[0] : parts.clone();
     }
 
     /** Simple constructor.
-     * Build an exception from an Apache Commons Math exception context context
-     * @param provider underlying exception context provider
+     * Build an exception from an Hipparchus exception
+     * @param exception underlying Hipparchus exception
      * @since 6.0
      */
-    public OrekitException(final ExceptionContextProvider provider) {
-        super(provider.getContext().getThrowable());
-        this.context   = provider.getContext();
-        this.specifier = null;
-        this.parts     = new Object[0];
+    public OrekitException(final MathRuntimeException exception) {
+        super(exception);
+        this.specifier = exception.getSpecifier();
+        this.parts     = exception.getParts();
     }
 
     /** {@inheritDoc} */
     @Override
     public String getMessage(final Locale locale) {
-        return (context != null) ?
-                context.getMessage(locale) :
-                buildMessage(locale, specifier, parts);
+        return buildMessage(locale, specifier, parts);
     }
 
     /** {@inheritDoc} */

@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

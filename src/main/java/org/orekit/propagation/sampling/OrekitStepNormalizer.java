@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * into a {@link OrekitStepHandler}.
 
  * <p>It mirrors the <code>StepNormalizer</code> interface from <a
- * href="http://commons.apache.org/math/">commons-math</a> but
+ * href="https://hipparchus.org/">Hipparchus</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */

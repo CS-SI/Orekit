@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
 /** Wrapper used to detect only increasing or decreasing events.
  *
  * <p>This class is heavily based on the class EventFilter from the
- * Apache Commons Math library. The changes performed consist in replacing
+ * Hipparchus library. The changes performed consist in replacing
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
  *

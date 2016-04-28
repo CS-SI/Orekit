@@ -19,8 +19,8 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
 /** Interpolated short periodics coefficients.

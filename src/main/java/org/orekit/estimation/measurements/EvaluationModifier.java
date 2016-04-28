@@ -39,7 +39,7 @@ import org.orekit.utils.ParameterDriver;
  * </p>
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public interface EvaluationModifier<T extends Measurement<T>> {
 

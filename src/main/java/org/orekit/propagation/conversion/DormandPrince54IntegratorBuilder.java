@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -27,7 +27,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class DormandPrince54IntegratorBuilder implements FirstOrderIntegratorBuilder {
+public class DormandPrince54IntegratorBuilder implements ODEIntegratorBuilder {
 
     /** Minimum step size (s). */
     private final double minStep;

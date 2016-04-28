@@ -16,14 +16,13 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math3.analysis.solvers.UnivariateSolver;
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolver;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -430,14 +429,10 @@ public class Geoid implements EarthShape {
         // solve line search problem to find the intersection
         final UnivariateSolver solver = new BracketingNthOrderBrentSolver();
         try {
-            final double abscissa = solver.solve(
-                    MAX_EVALUATIONS, heightFunction, lowPoint, highPoint);
+            final double abscissa = solver.solve(MAX_EVALUATIONS, heightFunction, lowPoint, highPoint);
             // return intersection point
             return this.transform(line.pointAt(abscissa), bodyFrame, date);
-        } catch (TooManyEvaluationsException e) {
-            // no intersection
-            return null;
-        } catch (MathIllegalArgumentException e) {
+        } catch (MathRuntimeException e) {
             // no intersection
             return null;
         }

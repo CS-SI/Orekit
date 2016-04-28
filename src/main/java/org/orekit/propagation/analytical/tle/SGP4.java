@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 

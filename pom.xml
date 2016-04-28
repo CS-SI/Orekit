@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>7.3-SNAPSHOT</version>
+  <version>8.0-SNAPSHOT</version>
   <name>ORbit Extrapolation KIT</name>
   <url>http://www.orekit.org/</url>
 
@@ -40,10 +40,10 @@
     <orekit.maven-surefire-plugin.version>2.19.1</orekit.maven-surefire-plugin.version>
     <orekit.maven-surefire-report-plugin.version>2.19.1</orekit.maven-surefire-report-plugin.version>
     <orekit.jgit.buildnumber.version>1.2.10</orekit.jgit.buildnumber.version>
-    <orekit.apache-commons-math.version>3.6.1</orekit.apache-commons-math.version>
+    <orekit.hipparchus.version>1.0-SNAPSHOT</orekit.hipparchus.version>
     <orekit.junit.version>4.12</orekit.junit.version>
-    <orekit.compiler.source>1.6</orekit.compiler.source>
-    <orekit.compiler.target>1.6</orekit.compiler.target>
+    <orekit.compiler.source>1.8</orekit.compiler.source>
+    <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
   </properties>
 
@@ -244,13 +244,41 @@
   </mailingLists>
 
   <dependencies>
-  	<dependency>
-  		<groupId>org.apache.commons</groupId>
-  		<artifactId>commons-math3</artifactId>
-  		<version>${orekit.apache-commons-math.version}</version>
-  		<type>jar</type>
-  		<optional>false</optional>
-  	</dependency>
+    <dependency>
+        <groupId>org.hipparchus</groupId>
+        <artifactId>hipparchus-core</artifactId>
+        <version>${orekit.hipparchus.version}</version>
+        <type>jar</type>
+        <optional>false</optional>
+    </dependency>
+    <dependency>
+        <groupId>org.hipparchus</groupId>
+        <artifactId>hipparchus-geometry</artifactId>
+        <version>${orekit.hipparchus.version}</version>
+        <type>jar</type>
+        <optional>false</optional>
+    </dependency>
+    <dependency>
+        <groupId>org.hipparchus</groupId>
+        <artifactId>hipparchus-ode</artifactId>
+        <version>${orekit.hipparchus.version}</version>
+        <type>jar</type>
+        <optional>false</optional>
+    </dependency>
+    <dependency>
+        <groupId>org.hipparchus</groupId>
+        <artifactId>hipparchus-fitting</artifactId>
+        <version>${orekit.hipparchus.version}</version>
+        <type>jar</type>
+        <optional>false</optional>
+    </dependency>
+    <dependency>
+        <groupId>org.hipparchus</groupId>
+        <artifactId>hipparchus-optim</artifactId>
+        <version>${orekit.hipparchus.version}</version>
+        <type>jar</type>
+        <optional>false</optional>
+    </dependency>
   	<dependency>
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
@@ -588,7 +616,7 @@
           <bottom><![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://www.c-s.fr">CS Syst&egrave;mes d&apos;information</a>. All rights reserved.]]></bottom>
           <links>
             <link>http://docs.oracle.com/javase/6/docs/api/</link>
-            <link>http://commons.apache.org/math/javadocs/api-${orekit.apache-commons-math.version}</link>
+            <link>https://hipparchus.org/version-${orekit.hipparchus.version}/apidoc/</link>
           </links>
         </configuration>
         <reportSets>

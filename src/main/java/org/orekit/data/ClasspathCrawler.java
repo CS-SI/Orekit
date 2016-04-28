@@ -27,8 +27,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -163,7 +163,7 @@ public class ClasspathCrawler implements DataProvider {
                     delayedException = oe;
                 } catch (URISyntaxException use) {
                     // this should bever happen
-                    throw new OrekitException(use, LocalizedFormats.SIMPLE_MESSAGE, use.getMessage());
+                    throw new OrekitException(use, LocalizedCoreFormats.SIMPLE_MESSAGE, use.getMessage());
                 }
             }
 

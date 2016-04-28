@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -256,7 +256,7 @@ public class DetectorTest {
                 public double g(final SpacecraftState s) throws OrekitException {
                     final double dt = s.getDate().durationFrom(exceptionDate);
                     if (FastMath.abs(dt) < 1.0) {
-                        throw new OrekitException(dummyCause, LocalizedFormats.SIMPLE_MESSAGE, "dummy");
+                        throw new OrekitException(dummyCause, LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy");
                     }
                     return dt;
                 }

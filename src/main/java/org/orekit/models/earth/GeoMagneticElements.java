@@ -19,8 +19,8 @@ package org.orekit.models.earth;
 import java.io.Serializable;
 import java.text.NumberFormat;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 
 /** Contains the elements to represent a magnetic field at a single point.
  * @author Thomas Neidhart

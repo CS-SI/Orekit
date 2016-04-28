@@ -18,7 +18,7 @@ package org.orekit.forces.gravity;
 
 import java.util.List;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;

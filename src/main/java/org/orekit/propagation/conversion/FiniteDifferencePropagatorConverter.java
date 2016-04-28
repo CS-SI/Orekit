@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.analysis.MultivariateMatrixFunction;
+import org.hipparchus.analysis.MultivariateVectorFunction;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.propagation.Propagator;

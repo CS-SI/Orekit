@@ -28,7 +28,7 @@
  * <p>
  * The low level interfaces and classes (<code>OrekitXxx</code>)
  * are heavily based on classes with similar names in the ode package from the <a
- * href="http://commons.apache.org/math/">commons math</a> library. The changes are mainly
+ * href="https://hipparchus.org/">Hipparchus</a> library. The changes are mainly
  * adaptations of the signatures to space dynamics:
  * </p>
  * <ul>

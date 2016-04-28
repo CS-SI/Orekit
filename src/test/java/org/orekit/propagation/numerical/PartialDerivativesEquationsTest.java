@@ -16,12 +16,16 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.UnknownParameterException;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.util.List;
+
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -34,11 +38,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.Collection;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 /** Unit tests for {@link PartialDerivativesEquations}. */
 public class PartialDerivativesEquationsTest {
@@ -138,17 +137,16 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public double getParameter(String name) throws UnknownParameterException {
+        public double getParameter(String name) {
             return 0;
         }
 
         @Override
-        public void setParameter(String name, double value) throws UnknownParameterException {
-
+        public void setParameter(String name, double value) {
         }
 
         @Override
-        public Collection<String> getParametersNames() {
+        public List<String> getParametersNames() {
             return null;
         }
 

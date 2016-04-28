@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitException;
  * the orbit determination process.
  * </p>
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 public interface EvaluationsProvider {
 

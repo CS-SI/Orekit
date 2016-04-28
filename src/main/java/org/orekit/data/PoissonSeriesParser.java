@@ -26,10 +26,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 

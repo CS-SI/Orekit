@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.ode.AbstractIntegrator;
+import org.hipparchus.ode.AbstractIntegrator;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -25,7 +25,7 @@ import org.orekit.orbits.OrbitType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public interface FirstOrderIntegratorBuilder {
+public interface ODEIntegratorBuilder {
 
     /** Build a first order integrator.
      * @param orbit reference orbit

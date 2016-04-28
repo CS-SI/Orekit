@@ -21,8 +21,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +64,7 @@ public class EcksteinHechlerConverterTest {
             builder.buildPropagator(orbit.getDate(), new double[3]);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(LocalizedFormats.DIMENSIONS_MISMATCH_SIMPLE, oiae.getSpecifier());
+            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, oiae.getSpecifier());
             Assert.assertEquals(3, ((Integer) oiae.getParts()[0]).intValue());
             Assert.assertEquals(6, ((Integer) oiae.getParts()[1]).intValue());
         }

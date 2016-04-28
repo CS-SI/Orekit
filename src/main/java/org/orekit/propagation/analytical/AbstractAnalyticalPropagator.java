@@ -25,9 +25,8 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.math3.exception.NoBracketingException;
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -181,10 +180,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             throw pe;
         } catch (OrekitException oe) {
             throw PropagationException.unwrap(oe);
-        } catch (TooManyEvaluationsException tmee) {
-            throw PropagationException.unwrap(tmee);
-        } catch (NoBracketingException nbe) {
-            throw PropagationException.unwrap(nbe);
+        } catch (MathRuntimeException mrte) {
+            throw PropagationException.unwrap(mrte);
         }
     }
 
@@ -193,11 +190,10 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param epsilon threshold for end date detection
      * @return state at the end of the step
      * @exception OrekitException if the switching function cannot be evaluated
-     * @exception TooManyEvaluationsException if an event cannot be located
-     * @exception NoBracketingException if bracketing cannot be performed
+     * @exception MathRuntimeException if an event cannot be located
      */
     protected SpacecraftState acceptStep(final AbsoluteDate target, final double epsilon)
-        throws OrekitException, TooManyEvaluationsException, NoBracketingException {
+        throws OrekitException, MathRuntimeException {
 
         AbsoluteDate previousT = interpolator.getGlobalPreviousDate();
         AbsoluteDate currentT  = interpolator.getGlobalCurrentDate();

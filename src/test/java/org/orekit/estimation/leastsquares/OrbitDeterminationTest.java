@@ -34,12 +34,12 @@ import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.stat.descriptive.SummaryStatistics;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.KeyValueFileParser;
@@ -51,7 +51,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Bias;
 import org.orekit.estimation.measurements.Evaluation;
@@ -1014,7 +1013,7 @@ public class OrbitDeterminationTest {
                             measurements.add(measurement);
                         }
                     } catch (IllegalArgumentException iae) {
-                        throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+                        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                   "unknown measurement type " + fields[1] +
                                                   " at line " + lineNumber +
                                                   " in file " + file.getName());
@@ -1028,7 +1027,7 @@ public class OrbitDeterminationTest {
         }
 
         if (measurements.isEmpty()) {
-            throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+            throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                       "not measurements read from file " + file.getAbsolutePath());
         }
 
@@ -1326,7 +1325,7 @@ public class OrbitDeterminationTest {
             try {
                 return new AbsoluteDate(date, TimeScalesFactory.getUTC());
             } catch (OrekitException oe) {
-                throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                           "wrong date " + date +
                                           " at line " + lineNumber +
                                           " in file " + fileName +
@@ -1349,7 +1348,7 @@ public class OrbitDeterminationTest {
             throws OrekitException {
             final StationData stationData = stations.get(stationName);
             if (stationData == null) {
-                throw new OrekitException(LocalizedFormats.SIMPLE_MESSAGE,
+                throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                           "unknown station " + stationName +
                                           " at line " + lineNumber +
                                           " in file " + fileName +
@@ -1406,7 +1405,7 @@ public class OrbitDeterminationTest {
         public SummaryStatistics createStatisticsSummary() {
             if (!evaluations.isEmpty()) {
                 // compute statistics
-                final SummaryStatistics stats = new SummaryStatistics();
+                final SummaryStatistics stats = SummaryStatistics.create();
                 for (final Evaluation<T> evaluation : evaluations) {
                     stats.addValue(residual(evaluation));
                 }

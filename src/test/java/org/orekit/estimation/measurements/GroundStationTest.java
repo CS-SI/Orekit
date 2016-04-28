@@ -18,16 +18,16 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.apache.commons.math3.analysis.UnivariateMatrixFunction;
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableMatrixFunction;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well19937a;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.UnivariateMatrixFunction;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableMatrixFunction;
+import org.hipparchus.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;

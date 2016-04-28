@@ -20,9 +20,9 @@ business friendly free licenses.
 
 compile-time/run-time dependency:
 
-  - Apache Commons Math from the Apache Software Foundation
-    http://commons.apache.org/math/
-    released under the Apache license, version 2
+  - Hipparchus from the Hipparchus project
+    https://hipparchus.org/
+    released under the Apache Software License, version 2
 
 test-time dependency:
 

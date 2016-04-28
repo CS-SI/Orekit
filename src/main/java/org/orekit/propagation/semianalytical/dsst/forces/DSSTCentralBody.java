@@ -18,7 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.List;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;

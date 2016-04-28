@@ -28,11 +28,11 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -320,11 +320,8 @@ public class DSSTTesseral implements DSSTForceModel {
      */
     private void checkIndexRange(final int index, final int min, final int max)
         throws OrekitException {
-        if (index < min) {
-            throw new OrekitException(LocalizedFormats.NUMBER_TOO_SMALL, index, min);
-        }
-        if (index > max) {
-            throw new OrekitException(LocalizedFormats.NUMBER_TOO_LARGE, index, max);
+        if (index < min || index > max) {
+            throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
     }
 

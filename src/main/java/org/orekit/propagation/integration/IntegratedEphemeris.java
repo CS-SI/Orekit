@@ -24,7 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.ode.ContinuousOutputModel;
+import org.hipparchus.ode.DenseOutputModel;
+import org.hipparchus.ode.ODEStateAndDerivative;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
@@ -100,7 +101,7 @@ public class IntegratedEphemeris
     private final AbsoluteDate maxDate;
 
     /** Underlying raw mathematical model. */
-    private ContinuousOutputModel model;
+    private DenseOutputModel model;
 
     /** Unmanaged additional states that must be simply copied. */
     private final Map<String, double[]> unmanaged;
@@ -120,7 +121,7 @@ public class IntegratedEphemeris
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                final StateMapper mapper, final boolean meanOrbit,
-                               final ContinuousOutputModel model,
+                               final DenseOutputModel model,
                                final Map<String, double[]> unmanaged,
                                final List<AdditionalStateProvider> providers,
                                final String[] equations)
@@ -148,18 +149,14 @@ public class IntegratedEphemeris
 
     }
 
-    /** Set up the model at some interpolation date.
+    /** Interpolate the model at some date.
      * @param date desired interpolation date
+     * @return state interpolated at date
      * @exception PropagationException if specified date is outside
      * of supported range
      */
-    private void setInterpolationDate(final AbsoluteDate date)
+    private ODEStateAndDerivative getInterpolatedState(final AbsoluteDate date)
         throws PropagationException {
-
-        if (date.equals(startDate.shiftedBy(model.getInterpolatedTime()))) {
-            // the current model date is already the desired one
-            return;
-        }
 
         if ((date.compareTo(minDate) < 0) || (date.compareTo(maxDate) > 0)) {
             // date is outside of supported range
@@ -167,8 +164,7 @@ public class IntegratedEphemeris
                                            date, minDate, maxDate);
         }
 
-        // reset interpolation model to the desired date
-        model.setInterpolatedTime(date.durationFrom(startDate));
+        return model.getInterpolatedState(date.durationFrom(startDate));
 
     }
 
@@ -177,11 +173,10 @@ public class IntegratedEphemeris
     protected SpacecraftState basicPropagate(final AbsoluteDate date)
         throws PropagationException {
         try {
-            setInterpolationDate(date);
-            SpacecraftState state = mapper.mapArrayToState(
-                    mapper.mapDoubleToDate(model.getInterpolatedTime(), date),
-                    model.getInterpolatedState(),
-                    meanOrbit);
+            final ODEStateAndDerivative os = getInterpolatedState(date);
+            SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
+                                                           os.getPrimaryState(),
+                                                           meanOrbit);
             for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
                 state = state.addAdditionalState(initial.getKey(), initial.getValue());
             }
@@ -315,11 +310,8 @@ public class IntegratedEphemeris
         public double[] getAdditionalState(final SpacecraftState state)
             throws PropagationException {
 
-            // set the model date
-            setInterpolationDate(state.getDate());
-
             // extract the part of the interpolated array corresponding to the additional state
-            return model.getInterpolatedSecondaryState(index);
+            return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);
 
         }
 
@@ -347,7 +339,7 @@ public class IntegratedEphemeris
         private final AbsoluteDate maxDate;
 
         /** Underlying raw mathematical model. */
-        private final ContinuousOutputModel model;
+        private final DenseOutputModel model;
 
         /** Names of unmanaged additional states that must be simply copied. */
         private final String[] unmanagedNames;
@@ -376,7 +368,7 @@ public class IntegratedEphemeris
         DataTransferObject(final AbsoluteDate startDate,
                                   final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                   final StateMapper mapper, final boolean meanOrbit,
-                                  final ContinuousOutputModel model,
+                                  final DenseOutputModel model,
                                   final String[] unmanagedNames, final double[][] unmanagedValues,
                                   final AdditionalStateProvider[] providers,
                                   final String[] equations) {

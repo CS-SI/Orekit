@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.random.MersenneTwister;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 

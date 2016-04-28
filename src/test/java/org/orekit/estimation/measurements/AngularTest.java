@@ -18,9 +18,9 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-import org.apache.commons.math3.stat.descriptive.rank.Median;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.MultivariateVectorFunction;
+import org.hipparchus.stat.descriptive.rank.Median;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;

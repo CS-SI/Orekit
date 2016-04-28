@@ -16,13 +16,13 @@
  */
 package org.orekit.forces.gravity;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractParameterizable;
-import org.apache.commons.math3.ode.UnknownParameterException;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractParameterizable;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -139,13 +139,13 @@ public class Relativity extends AbstractParameterizable implements ForceModel {
     }
 
     @Override
-    public double getParameter(final String name) throws UnknownParameterException {
+    public double getParameter(final String name) throws MathIllegalArgumentException {
         complainIfNotSupported(name);
         return this.gm;
     }
 
     @Override
-    public void setParameter(final String name, final double value) throws UnknownParameterException {
+    public void setParameter(final String name, final double value) throws MathIllegalArgumentException {
         complainIfNotSupported(name);
         this.gm = value;
     }

@@ -20,12 +20,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.util.Incrementor;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.ArrayRealVector;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.Incrementor;
+import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;

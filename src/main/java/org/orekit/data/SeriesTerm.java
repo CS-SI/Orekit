@@ -18,9 +18,9 @@ package org.orekit.data;
 
 import java.util.Arrays;
 
-import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitInternalError;
 
 /** Base class for nutation series terms.

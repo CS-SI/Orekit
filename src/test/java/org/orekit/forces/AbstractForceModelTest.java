@@ -17,10 +17,11 @@
 package org.orekit.forces;
 
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.UnknownParameterException;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.LocalizedODEFormats;
 import org.junit.Assert;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -76,8 +77,9 @@ public abstract class AbstractForceModelTest {
         try {
             forceModel.accelerationDerivatives(state, "not a parameter");
             Assert.fail("an exception should have been thrown");
-        } catch (UnknownParameterException upe) {
+        } catch (MathIllegalArgumentException miae) {
             // expected
+            Assert.assertEquals(LocalizedODEFormats.UNKNOWN_PARAMETER, miae.getSpecifier());
         } catch (OrekitException oe) {
             // expected
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());

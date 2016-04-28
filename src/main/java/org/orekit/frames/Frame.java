@@ -37,7 +37,7 @@ import org.orekit.time.AbsoluteDate;
  * vector (say the direction of a distant star for example) has coordinates
  * u<sub>A</sub> in frame<sub>A</sub> and u<sub>B</sub> in frame<sub>B</sub>,
  * then u<sub>B</sub>={@link
- * Transform#transformVector(org.apache.commons.math3.geometry.euclidean.threed.Vector3D)
+ * Transform#transformVector(org.hipparchus.geometry.euclidean.threed.Vector3D)
  * t.transformVector(u<sub>A</sub>)}.
  * <p>The transforms may be constant or varying, depending on the implementation of
  * the {@link TransformProvider transform provider} used to define the frame. For simple

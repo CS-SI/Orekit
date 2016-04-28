@@ -16,11 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
 
 /**
  * A quadratic matrix of
- * {@link org.apache.commons.math3.analysis.polynomials.PolynomialFunction}.
+ * {@link org.hipparchus.analysis.polynomials.PolynomialFunction}.
  *
  * @author Petre Bazavan
  * @author Lucian Barbulescu

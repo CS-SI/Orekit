@@ -20,8 +20,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.apache.commons.math3.util.CombinatoricsUtils;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class GammaMnsFunctionTest {
                 for (int s = -n; s <= n; ++s) {
                     // compare against naive implementation
                     double r = naiveRatio(m, n, s);
-                    Assert.assertEquals(r, precomputed[i++], 8.0e-15 * r);
+                    Assert.assertEquals(r, precomputed[i++], 2.0e-14 * r);
                 }
             }
         }
@@ -100,7 +100,7 @@ public class GammaMnsFunctionTest {
                                 Assert.assertTrue(Double.isInfinite(g));
                                 Assert.assertTrue(v * g > 0);
                             } else {
-                                Assert.assertEquals(v, g, 8.0e-15 * FastMath.abs(v));
+                                Assert.assertEquals(v, g, 2.0e-14 * FastMath.abs(v));
                             }
                         }
                     }

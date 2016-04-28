@@ -20,8 +20,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;

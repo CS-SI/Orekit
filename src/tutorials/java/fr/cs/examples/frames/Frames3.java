@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Locale;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.NadirPointing;
 import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.BodyShape;
@@ -128,7 +128,7 @@ public class Frames3 {
                         out.println("#time X Y Z Wx Wy Wz");
                     } catch (IOException ioe) {
                         throw new PropagationException(ioe,
-                                                       LocalizedFormats.SIMPLE_MESSAGE,
+                                                       LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                        ioe.getLocalizedMessage());
                     }
                 }

@@ -20,12 +20,12 @@ package org.orekit.frames;
 
 import java.io.IOException;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well1024a;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well1024a;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;

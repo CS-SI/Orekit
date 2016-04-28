@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 
 /** The Marini-Murray tropospheric delay model for laser ranging.
  *

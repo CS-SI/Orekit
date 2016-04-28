@@ -18,10 +18,10 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Precision;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;

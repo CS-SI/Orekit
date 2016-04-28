@@ -18,12 +18,11 @@ package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.solvers.AllowedSolution;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math3.exception.NoBracketingException;
-import org.apache.commons.math3.exception.TooManyEvaluationsException;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.AllowedSolution;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -34,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
  * event detector} during integration steps.
  *
  * <p>This class is heavily based on the class with the same name from the
- * Apache Commons Math library. The changes performed consist in replacing
+ * Hipparchus library. The changes performed consist in replacing
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
  * <p>Each time the propagator proposes a step, the event detector
@@ -170,11 +169,10 @@ public class EventState<T extends EventDetector> implements Serializable {
      * rejected)
      * @exception OrekitException if the switching function
      * cannot be evaluated
-     * @exception TooManyEvaluationsException if an event cannot be located
-     * @exception NoBracketingException if bracketing cannot be performed
+     * @exception MathRuntimeException if an event cannot be located
      */
     public boolean evaluateStep(final OrekitStepInterpolator interpolator)
-        throws OrekitException, TooManyEvaluationsException, NoBracketingException {
+        throws OrekitException, MathRuntimeException {
 
         try {
 

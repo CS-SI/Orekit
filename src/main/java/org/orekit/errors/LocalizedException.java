@@ -18,7 +18,7 @@ package org.orekit.errors;
 
 import java.util.Locale;
 
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
 
 /** This interface specified methods implemented by localized exception classes.
  * @author Luc Maisonobe

@@ -16,11 +16,12 @@
  */
 package org.orekit.forces.gravity;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.ode.AbstractParameterizable;
-import org.apache.commons.math3.ode.UnknownParameterException;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.ode.AbstractParameterizable;
+import org.hipparchus.ode.LocalizedODEFormats;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
@@ -122,17 +123,17 @@ public class SolidTides extends AbstractParameterizable implements ForceModel {
     /** {@inheritDoc} */
     @Override
     public double getParameter(final String name)
-        throws UnknownParameterException {
+        throws MathIllegalArgumentException {
         // there are no tunable parameters at all in this force model
-        throw new UnknownParameterException(name);
+        throw new MathIllegalArgumentException(LocalizedODEFormats.UNKNOWN_PARAMETER, name);
     }
 
     /** {@inheritDoc} */
     @Override
     public void setParameter(final String name, final double value)
-        throws UnknownParameterException {
+        throws MathIllegalArgumentException {
         // there are no tunable parameters at all in this force model
-        throw new UnknownParameterException(name);
+        throw new MathIllegalArgumentException(LocalizedODEFormats.UNKNOWN_PARAMETER, name);
     }
 
     /** {@inheritDoc} */

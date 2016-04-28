@@ -26,8 +26,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
@@ -102,7 +102,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         // safety check
         if (maxSlots < 1) {
-            throw new OrekitIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL, maxSlots, 1);
+            throw new OrekitIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL, maxSlots, 1);
         }
         if (neighborsSize < 2) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,

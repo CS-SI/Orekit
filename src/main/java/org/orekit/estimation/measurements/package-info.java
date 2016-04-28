@@ -24,7 +24,7 @@
  * theoretical values can be modified by registering one or several {@link
  * org.orekit.estimation.measurements.EvaluationModifier} objects. These
  * objects will manage notions like tropospheric delays, biases, ...
- * @since 7.2
+ * @since 8.0
  * @author Luc Maisonobe
  * @author Thierry Ceolin
  */

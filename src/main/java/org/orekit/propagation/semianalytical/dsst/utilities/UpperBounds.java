@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 
 
 /** Utility class to compute upper bounds for truncation algorithms.

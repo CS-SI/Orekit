@@ -41,7 +41,7 @@ import org.orekit.utils.ParameterDriver;
 public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** First order integrator builder for propagation. */
-    private final FirstOrderIntegratorBuilder builder;
+    private final ODEIntegratorBuilder builder;
 
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
@@ -58,12 +58,12 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param builder first order integrator builder
      * @deprecated as of 7.1, replaced with {@link #NumericalPropagatorBuilder(double,
-     * Frame, FirstOrderIntegratorBuilder, OrbitType, PositionAngle)}
+     * Frame, ODEIntegratorBuilder, OrbitType, PositionAngle)}
      */
     @Deprecated
     public NumericalPropagatorBuilder(final double mu,
                                       final Frame frame,
-                                      final FirstOrderIntegratorBuilder builder) {
+                                      final ODEIntegratorBuilder builder) {
         this(mu, frame, builder, OrbitType.CARTESIAN, PositionAngle.TRUE);
     }
 
@@ -78,7 +78,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      */
     public NumericalPropagatorBuilder(final double mu,
                                       final Frame frame,
-                                      final FirstOrderIntegratorBuilder builder,
+                                      final ODEIntegratorBuilder builder,
                                       final OrbitType orbitType, final PositionAngle positionAngle) {
         super(frame, mu, orbitType, positionAngle);
         this.builder     = builder;

@@ -22,13 +22,13 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -135,7 +135,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      * @see ForceModel
-     * @see org.apache.commons.math3.ode.Parameterizable
+     * @see org.hipparchus.ode.Parameterizable
 
      */
     public void selectParameters(final Iterable<String> parameters) {
@@ -156,7 +156,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      * @see ForceModel
-     * @see org.apache.commons.math3.ode.Parameterizable
+     * @see org.hipparchus.ode.Parameterizable
 
      */
     public void selectParameters(final String ... parameters) {
@@ -178,7 +178,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      * @see ForceModel
-     * @see org.apache.commons.math3.ode.Parameterizable
+     * @see org.hipparchus.ode.Parameterizable
      */
     public void selectParamAndStep(final String parameter, final double hP) {
         selectedParameters.add(new ParameterConfiguration(parameter, hP));

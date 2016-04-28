@@ -109,7 +109,7 @@
  * <p>
  * The low level interfaces and classes are heavily based on similar classes
  * from the ode.events package from the <a
- * href="http://commons.apache.org/math/">commons math</a> library. The changes are mainly
+ * href="https://hipparchus.org/">Hipparchus</a> library. The changes are mainly
  * adaptations of the signatures to space dynamics.
  * </p>
  * <ul>

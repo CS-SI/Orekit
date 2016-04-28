@@ -18,9 +18,9 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well19937a;
+import org.hipparchus.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well19937a;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;

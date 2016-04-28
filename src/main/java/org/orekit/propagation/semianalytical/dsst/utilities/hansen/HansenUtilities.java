@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
 
 /**
  * Utilities class.

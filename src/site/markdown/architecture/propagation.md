@@ -257,7 +257,7 @@ a maneuver changed inclination or semi-major axis of a Sun-Synchronous satellite
 ## Numerical propagation
 
 Numerical propagation is one of the most important parts of the Orekit project.
-Based on Apache Commons Math ordinary differential equations integrators, the
+Based on Hipparchus ordinary differential equations integrators, the
 `NumericalPropagator` class realizes the interface between  space mechanics and
 mathematical resolutions. Despite its utilization seems daunting on first sight,
 it is in fact quite straigthforward to use.
@@ -277,7 +277,7 @@ during maneuvers. The user only needs to register the various force models neede
 the simulation. Various force models are already available in the library and specialized
 ones can be added by users easily for specific needs.
  
-The integrators (_first order integrators_) provided by Apache Commons Math need 
+The integrators (_first order integrators_) provided by Hipparchus need 
 the state vector at t0, the state vector first time derivative at t0,
 and then calculates the next step state vector, and asks for the next first 
 time derivative, etc. until it reaches the final asked date. These underlying numerical

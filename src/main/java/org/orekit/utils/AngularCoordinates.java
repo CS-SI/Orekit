@@ -21,23 +21,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.exception.MathArithmeticException;
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.exception.NumberIsTooLargeException;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.QRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -157,10 +156,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             final Vector3D c2        = new Vector3D(1, ru2DotDot, -2, oDotv2, -1, oov2, -1, v2.getAcceleration());
             rotationAcceleration     = inverseCrossProducts(v1.getPosition(), c1, v2.getPosition(), c2, tolerance);
 
-        } catch (MathIllegalArgumentException miae) {
-            throw new OrekitException(miae);
-        } catch (MathArithmeticException mae) {
-            throw new OrekitException(mae);
+        } catch (MathRuntimeException mrte) {
+            throw new OrekitException(mrte);
         }
 
     }
@@ -283,29 +280,33 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             final RealVector v = solver.solve(rhs);
             omega = new Vector3D(v.getEntry(0), v.getEntry(1), v.getEntry(2));
 
-        } catch (SingularMatrixException sme) {
+        } catch (MathIllegalArgumentException miae) {
+            if (miae.getSpecifier() == LocalizedCoreFormats.SINGULAR_MATRIX) {
 
-            // handle some special cases for which we can compute a solution
-            final double c12 = c1.getNormSq();
-            final double c1n = FastMath.sqrt(c12);
-            final double c22 = c2.getNormSq();
-            final double c2n = FastMath.sqrt(c22);
+                // handle some special cases for which we can compute a solution
+                final double c12 = c1.getNormSq();
+                final double c1n = FastMath.sqrt(c12);
+                final double c22 = c2.getNormSq();
+                final double c2n = FastMath.sqrt(c22);
 
-            if (c1n <= threshold && c2n <= threshold) {
-                // simple special case, velocities are cancelled
-                return Vector3D.ZERO;
-            } else if (v1n <= threshold && c1n >= threshold) {
-                // this is inconsistent, if v₁ is zero, c₁ must be 0 too
-                throw new NumberIsTooLargeException(c1n, 0, true);
-            } else if (v2n <= threshold && c2n >= threshold) {
-                // this is inconsistent, if v₂ is zero, c₂ must be 0 too
-                throw new NumberIsTooLargeException(c2n, 0, true);
-            } else if (Vector3D.crossProduct(v1, v2).getNorm() <= threshold && v12 > threshold) {
-                // simple special case, v₂ is redundant with v₁, we just ignore it
-                // use the simplest Ω: orthogonal to both v₁ and c₁
-                omega = new Vector3D(1.0 / v12, Vector3D.crossProduct(v1, c1));
+                if (c1n <= threshold && c2n <= threshold) {
+                    // simple special case, velocities are cancelled
+                    return Vector3D.ZERO;
+                } else if (v1n <= threshold && c1n >= threshold) {
+                    // this is inconsistent, if v₁ is zero, c₁ must be 0 too
+                    throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, c1n, 0, true);
+                } else if (v2n <= threshold && c2n >= threshold) {
+                    // this is inconsistent, if v₂ is zero, c₂ must be 0 too
+                    throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, c2n, 0, true);
+                } else if (Vector3D.crossProduct(v1, v2).getNorm() <= threshold && v12 > threshold) {
+                    // simple special case, v₂ is redundant with v₁, we just ignore it
+                    // use the simplest Ω: orthogonal to both v₁ and c₁
+                    omega = new Vector3D(1.0 / v12, Vector3D.crossProduct(v1, c1));
+                } else {
+                    throw miae;
+                }
             } else {
-                throw sme;
+                throw miae;
             }
 
         }
@@ -313,12 +314,12 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         // check results
         final double d1 = Vector3D.distance(Vector3D.crossProduct(omega, v1), c1);
         if (d1 > threshold) {
-            throw new NumberIsTooLargeException(d1, 0, true);
+            throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, d1, 0, true);
         }
 
         final double d2 = Vector3D.distance(Vector3D.crossProduct(omega, v2), c2);
         if (d2 > threshold) {
-            throw new NumberIsTooLargeException(d2, 0, true);
+            throw new MathIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_LARGE, d2, 0, true);
         }
 
         return omega;

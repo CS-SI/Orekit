@@ -20,8 +20,8 @@ import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.util.MathArrays;
 
 /**
  * Class representing a Poisson series for nutation or ephemeris computations.
@@ -148,6 +148,7 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
      * @param <S> the type of the field elements
      * @since 6.1
      */
+    @SafeVarargs
     public static <S extends RealFieldElement<S>> CompiledSeries<S> compile(final PoissonSeries<S> ... poissonSeries) {
 
         // store all polynomials

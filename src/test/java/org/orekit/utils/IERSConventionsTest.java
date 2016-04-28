@@ -17,11 +17,11 @@
 package org.orekit.utils;
 
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

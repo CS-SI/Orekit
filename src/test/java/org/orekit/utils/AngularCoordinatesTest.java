@@ -22,21 +22,23 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.ode.sampling.FixedStepHandler;
-import org.apache.commons.math3.ode.sampling.StepNormalizer;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well1024a;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.Pair;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.ode.ODEState;
+import org.hipparchus.ode.ODEStateAndDerivative;
+import org.hipparchus.ode.OrdinaryDifferentialEquation;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.ode.sampling.StepNormalizer;
+import org.hipparchus.ode.sampling.ODEFixedStepHandler;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well1024a;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Pair;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -167,25 +169,27 @@ public class AngularCoordinatesTest {
         final AngularCoordinates linear =
                 new AngularCoordinates(quadratic.getRotation(), quadratic.getRotationRate(), Vector3D.ZERO);
 
-        final FirstOrderDifferentialEquations ode = new FirstOrderDifferentialEquations() {
+        final OrdinaryDifferentialEquation ode = new OrdinaryDifferentialEquation() {
             public int getDimension() {
                 return 4;
             }
-            public void computeDerivatives(final double t, final double[] q, final double[] qDot) {
+            public double[] computeDerivatives(final double t, final double[] q) {
                 final double omegaX = quadratic.getRotationRate().getX() + t * quadratic.getRotationAcceleration().getX();
                 final double omegaY = quadratic.getRotationRate().getY() + t * quadratic.getRotationAcceleration().getY();
                 final double omegaZ = quadratic.getRotationRate().getZ() + t * quadratic.getRotationAcceleration().getZ();
-                qDot[0] = 0.5 * MathArrays.linearCombination(-q[1], omegaX, -q[2], omegaY, -q[3], omegaZ);
-                qDot[1] = 0.5 * MathArrays.linearCombination( q[0], omegaX, -q[3], omegaY,  q[2], omegaZ);
-                qDot[2] = 0.5 * MathArrays.linearCombination( q[3], omegaX,  q[0], omegaY, -q[1], omegaZ);
-                qDot[3] = 0.5 * MathArrays.linearCombination(-q[2], omegaX,  q[1], omegaY,  q[0], omegaZ);
+                return new double[] {
+                    0.5 * MathArrays.linearCombination(-q[1], omegaX, -q[2], omegaY, -q[3], omegaZ),
+                    0.5 * MathArrays.linearCombination( q[0], omegaX, -q[3], omegaY,  q[2], omegaZ),
+                    0.5 * MathArrays.linearCombination( q[3], omegaX,  q[0], omegaY, -q[1], omegaZ),
+                    0.5 * MathArrays.linearCombination(-q[2], omegaX,  q[1], omegaY,  q[0], omegaZ)
+                };
             }
         };
-        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
-        integrator.addStepHandler(new StepNormalizer(dt / n, new FixedStepHandler() {
-            public void init(double t0, double[] y0, double t) {
-            }
-            public void handleStep(double t, double[] y, double[] yDot, boolean isLast) {
+        ODEIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
+        integrator.addStepHandler(new StepNormalizer(dt / n, new ODEFixedStepHandler() {
+            public void handleStep(ODEStateAndDerivative s, boolean isLast) {
+                final double   t = s.getTime();
+                final double[] y = s.getPrimaryState();
                 Rotation reference = new Rotation(y[0], y[1], y[2], y[3], true);
 
                 // the error in shiftedBy taking acceleration into account is cubic
@@ -209,7 +213,7 @@ public class AngularCoordinatesTest {
             quadratic.getRotation().getQ2(), 
             quadratic.getRotation().getQ3()
         };
-        integrator.integrate(ode, 0, y, dt, y);
+        integrator.integrate(ode, new ODEState(0, y), dt);
 
     }
 

@@ -17,12 +17,11 @@
 package org.orekit.attitudes;
 
 
-import org.apache.commons.math3.geometry.euclidean.threed.CardanEulerSingularityException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -71,7 +70,7 @@ public class LofOffsetTest {
     /** Test is the lof offset is the one expected
      */
     @Test
-    public void testZero() throws OrekitException, CardanEulerSingularityException {
+    public void testZero() throws OrekitException {
 
         //  Satellite position
 
@@ -89,7 +88,7 @@ public class LofOffsetTest {
     /** Test if the lof offset is the one expected
      */
     @Test
-    public void testOffset() throws OrekitException, CardanEulerSingularityException {
+    public void testOffset() throws OrekitException {
 
         //  Satellite position
         final CircularOrbit circ =
@@ -134,7 +133,7 @@ public class LofOffsetTest {
      */
     @Test
     public void testTarget()
-        throws OrekitException, CardanEulerSingularityException {
+        throws OrekitException {
 
         // Create target point and target pointing law towards that point
         final GeodeticPoint targetDef  = new GeodeticPoint(FastMath.toRadians(5.), FastMath.toRadians(-40.), 0.);
@@ -242,7 +241,7 @@ public class LofOffsetTest {
     }
 
     @Test
-    public void testRetrieveAngles() throws OrekitException, CardanEulerSingularityException {
+    public void testRetrieveAngles() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());

@@ -19,12 +19,12 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.util.CombinatoricsUtils;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialsUtils;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.random.MersenneTwister;
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -186,7 +186,7 @@ public class CoefficientFactoryTest {
             final PolynomialFunction legendre = PolynomialsUtils.createLegendrePolynomial(n);
             derivative = legendre;
             for (int i = 0; i < s; i++) {
-                derivative = (PolynomialFunction) derivative.derivative();
+                derivative = (PolynomialFunction) derivative.polynomialDerivative();
             }
             QNS_MAP.put(new NSKey(n, s), derivative);
         }

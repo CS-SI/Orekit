@@ -16,13 +16,13 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.optim.MaxEval;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
-import org.apache.commons.math3.optim.univariate.BrentOptimizer;
-import org.apache.commons.math3.optim.univariate.SearchInterval;
-import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.optim.MaxEval;
+import org.hipparchus.optim.nonlinear.scalar.GoalType;
+import org.hipparchus.optim.univariate.BrentOptimizer;
+import org.hipparchus.optim.univariate.SearchInterval;
+import org.hipparchus.optim.univariate.UnivariateObjectiveFunction;
+import org.hipparchus.util.FastMath;
 import org.orekit.models.AtmosphericRefractionModel;
 
 /** Implementation of refraction model for Earth exponential atmosphere based on ITU-R P.834-7 recommendation.

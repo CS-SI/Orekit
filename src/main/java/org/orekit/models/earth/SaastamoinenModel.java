@@ -19,17 +19,14 @@ package org.orekit.models.earth;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.apache.commons.math3.analysis.BivariateFunction;
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.exception.InsufficientDataException;
-import org.apache.commons.math3.exception.NoDataException;
-import org.apache.commons.math3.exception.NonMonotonicSequenceException;
-import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.analysis.BivariateFunction;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.interpolation.LinearInterpolator;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -361,16 +358,13 @@ public class SaastamoinenModel implements TroposphericModel, TroposphericDelayMo
          * @param y Sample values of the y-coordinate, in increasing order.
          * @param f Values of the function on every grid point. the expected
          *        number of elements.
-         * @throws DimensionMismatchException if the length of x and y don't
-         *         match the row, column height of f
-         * @throws IllegalArgumentException if any of the arguments are null
-         * @throws NoDataException if any of the arrays has zero length.
-         * @throws NonMonotonicSequenceException if {@code x} or {@code y}
-         *         are not strictly increasing.
+         * @throws MathIllegalArgumentException if the length of x and y don't
+         *         match the row, column height of f, or if any of the arguments
+         *         are null, or if any of the arrays has zero length, or if
+         *         {@code x} or {@code y} are not strictly increasing.
          */
         BilinearInterpolatingFunction(final double[] x, final double[] y, final double[][] f)
-                        throws DimensionMismatchException, IllegalArgumentException, NoDataException,
-                        NonMonotonicSequenceException {
+                        throws MathIllegalArgumentException {
 
             if (x == null || y == null || f == null || f[0] == null) {
                 throw new IllegalArgumentException("All arguments must be non-null");
@@ -380,20 +374,22 @@ public class SaastamoinenModel implements TroposphericModel, TroposphericDelayMo
             final int yLen = y.length;
 
             if (xLen == 0 || yLen == 0 || f.length == 0 || f[0].length == 0) {
-                throw new NoDataException();
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.NO_DATA);
             }
 
             if (xLen < MIN_NUM_POINTS || yLen < MIN_NUM_POINTS || f.length < MIN_NUM_POINTS ||
                             f[0].length < MIN_NUM_POINTS) {
-                throw new InsufficientDataException();
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.INSUFFICIENT_DATA);
             }
 
             if (xLen != f.length) {
-                throw new DimensionMismatchException(xLen, f.length);
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                                       xLen, f.length);
             }
 
             if (yLen != f[0].length) {
-                throw new DimensionMismatchException(yLen, f[0].length);
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                                       yLen, f[0].length);
             }
 
             MathArrays.checkOrder(x);
@@ -438,14 +434,15 @@ public class SaastamoinenModel implements TroposphericModel, TroposphericDelayMo
          *        will be queried
          * @return the index in {@code val} corresponding to the interval
          *         containing {@code c}.
-         * @throws OutOfRangeException if {@code c} is out of the range
+         * @throws MathIllegalArgumentException if {@code c} is out of the range
          *         defined by the boundary values of {@code val}.
          */
         private int searchIndex(final double c, final double[] val, final int offset, final int count) {
             int r = Arrays.binarySearch(val, c);
 
             if (r == -1 || r == -val.length - 1) {
-                throw new OutOfRangeException(c, val[0], val[val.length - 1]);
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE,
+                                                       c, val[0], val[val.length - 1]);
             }
 
             if (r < 0) {

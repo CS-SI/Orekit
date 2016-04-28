@@ -25,7 +25,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 /** Bridge between {@link org.orekit.propagation.events.EventDetector events} and
  * {@link Measurement measurements}.
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 class MeasurementHandler implements EventHandler<DateDetector> {
 

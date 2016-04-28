@@ -23,15 +23,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.geometry.spherical.twod.S2Point;
-import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
-import org.apache.commons.math3.random.UnitSphereRandomVectorGenerator;
-import org.apache.commons.math3.random.Well1024a;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.spherical.twod.S2Point;
+import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
+import org.hipparchus.random.UnitSphereRandomVectorGenerator;
+import org.hipparchus.random.Well1024a;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -85,9 +85,10 @@ public class FieldOfViewTest {
                             0.125);
             Assert.fail("an exception should have been thrown");
         } catch(OrekitException oe) {
-            Assert.assertEquals(LocalizedFormats.NUMBER_TOO_LARGE, oe.getSpecifier());
-            Assert.assertEquals(tooLarge, (Double) oe.getParts()[0], 1.0e-15);
-            Assert.assertEquals(0.5 * FastMath.PI, (Double) oe.getParts()[1], 1.0e-15);
+            Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+            Assert.assertEquals(tooLarge,          (Double) oe.getParts()[0], 1.0e-15);
+            Assert.assertEquals(0,                 (Double) oe.getParts()[1], 1.0e-15);
+            Assert.assertEquals(0.5 * FastMath.PI, (Double) oe.getParts()[2], 1.0e-15);
         }
     }
 

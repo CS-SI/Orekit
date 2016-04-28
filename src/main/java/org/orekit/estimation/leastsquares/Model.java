@@ -22,14 +22,14 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.ArrayRealVector;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.util.Incrementor;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.fitting.leastsquares.MultivariateJacobianFunction;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.ArrayRealVector;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.util.Incrementor;
+import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.measurements.Evaluation;
@@ -46,10 +46,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Bridge between {@link Measurement measurements} and {@link
- * org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem
+ * org.hipparchus.fitting.leastsquares.LeastSquaresProblem
  * least squares problems}.
  * @author Luc Maisonobe
- * @since 7.2
+ * @since 8.0
  */
 class Model implements MultivariateJacobianFunction {
 
