@@ -277,7 +277,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
                                final int j,
                                final double value) {
         if (array.length > i && array[i].length > j &&
-                (Double.isNaN(array[i][j]) || Precision.equals(array[i][j], 0.0, 1))) {
+                (Double.isNaN(array[i][j]) || Precision.equals(array[i][j], 0.0, 0))) {
             // the coefficient was not already initialized
             array[i][j] = value;
             return true;
@@ -444,7 +444,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         throws OrekitException {
         final double value    = parseDouble(field);
         final double oldValue = list.get(i).get(j);
-        if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 1)) {
+        if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 0)) {
             // the coefficient was not already initialized
             list.get(i).set(j, value);
         } else {
@@ -468,7 +468,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         throws OrekitException {
         final double value    = parseDouble(field);
         final double oldValue = array[i][j];
-        if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 1)) {
+        if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 0)) {
             // the coefficient was not already initialized
             array[i][j] = value;
         } else {

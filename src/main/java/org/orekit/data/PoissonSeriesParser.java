@@ -638,7 +638,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                                 parseCoefficient(regularMatcher, sinCosColumns[2 * d],     sinCosFactors[2 * d]);
                         final double cosCoeff =
                                 parseCoefficient(regularMatcher, sinCosColumns[2 * d + 1], sinCosFactors[2 * d + 1]);
-                        if (!Precision.equals(sinCoeff, 0.0, 1) || !Precision.equals(cosCoeff, 0.0, 1)) {
+                        if (!Precision.equals(sinCoeff, 0.0, 0) || !Precision.equals(cosCoeff, 0.0, 0)) {
                             nonZero = true;
                             term.add(0, degree + d, sinCoeff, cosCoeff);
                             ++count;

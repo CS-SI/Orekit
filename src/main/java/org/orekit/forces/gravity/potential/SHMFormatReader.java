@@ -170,7 +170,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
 
         if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {
             // ensure at least the (0, 0) element is properly set
-            if (Precision.equals(c[0][0], 0.0, 1)) {
+            if (Precision.equals(c[0][0], 0.0, 0)) {
                 c[0][0] = 1.0;
             }
         }

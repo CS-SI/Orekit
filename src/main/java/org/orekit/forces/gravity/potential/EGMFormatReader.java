@@ -127,7 +127,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
             // ensure at least the (0, 0) element is properly set
             extendListOfLists(c, 0, 0, 0.0);
             extendListOfLists(s, 0, 0, 0.0);
-            if (Precision.equals(c.get(0).get(0), 0.0, 1)) {
+            if (Precision.equals(c.get(0).get(0), 0.0, 0)) {
                 c.get(0).set(0, 1.0);
             }
         }
