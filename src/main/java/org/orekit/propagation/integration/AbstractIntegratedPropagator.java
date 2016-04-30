@@ -772,7 +772,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public double g(final ODEStateAndDerivative s) {
             try {
-                if (!Precision.equals(lastT, s.getTime(), 1)) {
+                if (!Precision.equals(lastT, s.getTime(), 0)) {
                     lastT = s.getTime();
                     lastG = detector.g(getCompleteState(s.getTime(), s.getCompleteState()));
                 }
