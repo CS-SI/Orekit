@@ -23,6 +23,12 @@
     <release version="8.0" date="TBC"
              description="TBC">
       <action dev="luc" type="update">
+        Ported the new Hipparchus event handling algorithm to Orekit.
+        This improves robustness in corner cases, typically when different
+        event detectors triggers at very close times and one of them
+        resets the state such that it affects the other detectors.
+      </action>
+      <action dev="luc" type="update">
         Simplified step handlers API, replacing the setDate/getState
         pair with an interpolated state getter taking a date argument.
       </action>

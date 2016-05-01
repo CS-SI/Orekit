@@ -340,7 +340,6 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
         throws PropagationException {
-        super.resetIntermediateState(state, forward);
         final EHModel newModel = computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                        state.getMass());
         if (forward) {

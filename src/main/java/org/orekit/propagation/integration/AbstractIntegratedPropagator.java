@@ -845,12 +845,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Flag for handler . */
         private boolean activate;
 
-        /** Interpolated state.
-         * @deprecated, only temporary
-         */
-        @Deprecated
-        private SpacecraftState interpolated;
-
         /** Build an instance.
          * @param handler underlying handler to wrap
          */
@@ -878,7 +872,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void handleStep(final ODEStateInterpolator interpolator, final boolean isLast) {
             try {
                 mathInterpolator = interpolator;
-                interpolated = getState(mathInterpolator.getCurrentState().getTime());
                 if (activate) {
                     handler.handleStep(this, isLast);
                 }
@@ -887,44 +880,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
         }
 
-        /** Get the current grid date.
-         * @return current grid date
-         */
-        public AbsoluteDate getCurrentDate() {
-            return stateMapper.mapDoubleToDate(mathInterpolator.getCurrentState().getTime());
-        }
-
-        /** Get the previous grid date.
-         * @return previous grid date
-         */
-        public AbsoluteDate getPreviousDate() {
-            return stateMapper.mapDoubleToDate(mathInterpolator.getPreviousState().getTime());
-        }
-
-        /** Get the interpolated date.
-         * <p>If {@link #setInterpolatedDate(AbsoluteDate) setInterpolatedDate}
-         * has not been called, the date returned is the same as  {@link
-         * #getCurrentDate() getCurrentDate}.</p>
-         * @return interpolated date
-         * @see #setInterpolatedDate(AbsoluteDate)
-         * @see #getInterpolatedState()
-         */
-        public AbsoluteDate getInterpolatedDate() {
-            return interpolated.getDate();
-        }
-
-        /** Set the interpolated date.
-         * <p>It is possible to set the interpolation date outside of the current
-         * step range, but accuracy will decrease as date is farther.</p>
-         * @param date interpolated date to set
-         * @see #getInterpolatedDate()
-         * @see #getInterpolatedState()
-         * @exception PropagationException if underlying interpolator cannot handle
-         * the date
-         */
-        public void setInterpolatedDate(final AbsoluteDate date)
+        /** {@inheritDoc}} */
+        @Override
+        public SpacecraftState getPreviousState()
             throws PropagationException {
-            interpolated = getState(date.durationFrom(getStartDate()));
+            return convert(mathInterpolator.getPreviousState());
+        }
+
+        /** {@inheritDoc}} */
+        @Override
+        public SpacecraftState getCurrentState()
+            throws PropagationException {
+            return convert(mathInterpolator.getCurrentState());
         }
 
         /** Get the interpolated state.
@@ -933,12 +900,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @see #getInterpolatedDate()
          * @see #setInterpolatedDate(AbsoluteDate)
          */
-        public SpacecraftState getInterpolatedState() throws OrekitException {
-            return interpolated;
+        public SpacecraftState getInterpolatedState(final AbsoluteDate date) throws PropagationException {
+            return convert(mathInterpolator.getInterpolatedState(date.durationFrom(getStartDate())));
         }
 
         /** Get the interpolated state.
-         * @param dt mathematical time
+         * @param os mathematical state
          * @return interpolated state at the current interpolation date
          * @exception OrekitException if state cannot be interpolated or converted
          * @exception PropagationException if underlying interpolator cannot handle
@@ -946,10 +913,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @see #getInterpolatedDate()
          * @see #setInterpolatedDate(AbsoluteDate)
          */
-        private SpacecraftState getState(final double dt) throws PropagationException {
+        private SpacecraftState convert(final ODEStateAndDerivative os) throws PropagationException {
             try {
 
-                final ODEStateAndDerivative os = mathInterpolator.getInterpolatedState(dt);
                 SpacecraftState s =
                         stateMapper.mapArrayToState(os.getTime(),
                                                     os.getPrimaryState(),

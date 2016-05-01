@@ -84,7 +84,7 @@ public class LatitudeCrossingDetectorTest {
             SpacecraftState state = e.getState();
             double latitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
                                               earth.getBodyFrame(), null).getLatitude();
-            Assert.assertEquals(60.0, FastMath.toDegrees(latitude), 2.0e-10);
+            Assert.assertEquals(60.0, FastMath.toDegrees(latitude), 3.0e-10);
             if (previous != null) {
                 if (e.isIncreasing()) {
                     // crossing northward

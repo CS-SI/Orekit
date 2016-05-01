@@ -204,7 +204,7 @@ public class DetectorTest {
                                                       k1));
         k2.addEventDetector(new DateDetector(Constants.JULIAN_DAY, 1.0e-6, interruptDate));
         SpacecraftState s = k2.propagate(startDate, targetDate);
-        Assert.assertEquals(interruptDate, s.getDate());
+        Assert.assertEquals(0.0, interruptDate.durationFrom(s.getDate()), 1.1e-6);
     }
 
     private static class CloseApproachDetector extends AbstractDetector<CloseApproachDetector> {

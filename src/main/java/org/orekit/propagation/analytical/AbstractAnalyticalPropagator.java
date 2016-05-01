@@ -22,8 +22,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
@@ -40,6 +41,8 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventState;
+import org.orekit.propagation.events.EventState.EventOccurrence;
+import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -57,9 +60,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  */
 public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
-
-    /** Internal steps interpolator. */
-    private final BasicStepInterpolator interpolator;
 
     /** Provider for attitude computation. */
     private PVCoordinatesProvider pvProvider;
@@ -84,7 +84,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      */
     protected AbstractAnalyticalPropagator(final AttitudeProvider attitudeProvider) {
         setAttitudeProvider(attitudeProvider);
-        interpolator             = new BasicStepInterpolator();
         pvProvider               = new LocalPVProvider();
         lastPropagationStart     = AbsoluteDate.PAST_INFINITY;
         lastPropagationEnd       = AbsoluteDate.FUTURE_INFINITY;
@@ -123,10 +122,9 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             lastPropagationStart = start;
 
-            final double dt      = target.durationFrom(start);
-            final double epsilon = FastMath.ulp(dt);
-            interpolator.storeDate(start);
-            SpacecraftState state = interpolator.getInterpolatedState();
+            final double dt       = target.durationFrom(start);
+            final double epsilon  = FastMath.ulp(dt);
+            SpacecraftState state = updateAdditionalStates(basicPropagate(start));
 
             // evaluate step size
             final double stepSize;
@@ -156,18 +154,18 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             do {
 
                 // go ahead one step size
-                interpolator.shift();
-                final AbsoluteDate t = interpolator.getCurrentDate().shiftedBy(stepSize);
+                final SpacecraftState previous = state;
+                AbsoluteDate t = previous.getDate().shiftedBy(stepSize);
                 if ((dt == 0) || ((dt > 0) ^ (t.compareTo(target) <= 0))) {
                     // current step exceeds target
-                    interpolator.storeDate(target);
-                } else {
-                    // current step is within range
-                    interpolator.storeDate(t);
+                    t = target;
                 }
+                final SpacecraftState current = updateAdditionalStates(basicPropagate(t));
+                final BasicStepInterpolator interpolator = new BasicStepInterpolator(dt >= 0, previous, current);
+
 
                 // accept the step, trigger events and step handlers
-                state = acceptStep(target, epsilon);
+                state = acceptStep(interpolator, target, epsilon);
 
             } while (!isLastStep);
 
@@ -186,28 +184,27 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     }
 
     /** Accept a step, triggering events and step handlers.
+     * @param interpolator interpolator for the current step
      * @param target final propagation time
      * @param epsilon threshold for end date detection
      * @return state at the end of the step
      * @exception OrekitException if the switching function cannot be evaluated
      * @exception MathRuntimeException if an event cannot be located
      */
-    protected SpacecraftState acceptStep(final AbsoluteDate target, final double epsilon)
+    protected SpacecraftState acceptStep(final BasicStepInterpolator interpolator,
+                                         final AbsoluteDate target, final double epsilon)
         throws OrekitException, MathRuntimeException {
 
-        AbsoluteDate previousT = interpolator.getGlobalPreviousDate();
-        AbsoluteDate currentT  = interpolator.getGlobalCurrentDate();
+        SpacecraftState       previous = interpolator.getPreviousState();
+        final SpacecraftState current  = interpolator.getCurrentState();
 
         // initialize the events states if needed
         if (!statesInitialized) {
 
             if (!eventsStates.isEmpty()) {
                 // initialize the events states
-                final AbsoluteDate t0 = interpolator.getPreviousDate();
-                interpolator.setInterpolatedDate(t0);
-                final SpacecraftState y = interpolator.getInterpolatedState();
                 for (final EventState<?> state : eventsStates) {
-                    state.reinitializeBegin(y, interpolator.isForward());
+                    state.reinitializeBegin(interpolator);
                 }
             }
 
@@ -216,7 +213,15 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         // search for next events that may occur during the step
-        final List<EventState<?>> occurringEvents = new ArrayList<EventState<?>>();
+        final int orderingSign = interpolator.isForward() ? +1 : -1;
+        final Queue<EventState<?>> occurringEvents = new PriorityQueue<>(new Comparator<EventState<?>>() {
+            /** {@inheritDoc} */
+            @Override
+            public int compare(final EventState<?> es0, final EventState<?> es1) {
+                return orderingSign * es0.getEventDate().compareTo(es1.getEventDate());
+            }
+        });
+
         for (final EventState<?> state : eventsStates) {
             if (state.evaluateStep(interpolator)) {
                 // the event occurs during the current step
@@ -224,80 +229,92 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             }
         }
 
-        // chronological or reverse chronological sorter, according to propagation direction
-        final int orderingSign = interpolator.isForward() ? +1 : -1;
-        final Comparator<EventState<?>> sorter = new Comparator<EventState<?>>() {
+        BasicStepInterpolator restricted = interpolator;
 
-            /** {@inheritDoc} */
-            public int compare(final EventState<?> es0, final EventState<?> es1) {
-                return orderingSign * es0.getEventTime().compareTo(es1.getEventTime());
+        do {
+
+            eventLoop:
+            while (!occurringEvents.isEmpty()) {
+
+                // handle the chronologically first event
+                final EventState<?> currentEvent = occurringEvents.poll();
+
+                // get state at event time
+                SpacecraftState eventState = restricted.getInterpolatedState(currentEvent.getEventDate());
+
+                // try to advance all event states to current time
+                for (final EventState<?> state : eventsStates) {
+                    if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
+                        // we need to handle another event first
+                        occurringEvents.add(currentEvent);
+                        occurringEvents.remove(state); // remove if already has pending event
+                        occurringEvents.add(state);
+                        continue eventLoop;
+                    }
+                }
+                // all event detectors agree we can advance to the current event time
+
+                final EventOccurrence occurrence = currentEvent.doEvent(eventState);
+                final Action action = occurrence.getAction();
+                isLastStep = action == Action.STOP;
+
+                if (isLastStep) {
+                    // ensure the event is after the root if it is returned STOP
+                    // this lets the user integrate to a STOP event and then restart
+                    // integration from the same time.
+                    eventState = interpolator.getInterpolatedState(occurrence.getStopDate());
+                    restricted = new BasicStepInterpolator(restricted.isForward(), previous, eventState);
+                }
+
+                // handle the first part of the step, up to the event
+                if (getStepHandler() != null) {
+                    getStepHandler().handleStep(restricted, isLastStep);
+                }
+
+                if (isLastStep) {
+                    // the event asked to stop integration
+                    return eventState;
+                }
+
+                if (action == Action.RESET_DERIVATIVES || action == Action.RESET_STATE) {
+                    // some event handler has triggered changes that
+                    // invalidate the derivatives, we need to recompute them
+                    final SpacecraftState resetState = occurrence.getNewState();
+                    if (resetState != null) {
+                        resetIntermediateState(resetState, interpolator.isForward());
+                        return resetState;
+                    }
+                }
+                // at this point we know action == Action.CONTINUE
+
+                // prepare handling of the remaining part of the step
+                previous = eventState;
+                restricted         = new BasicStepInterpolator(restricted.isForward(), eventState, current);
+
+                // check if the same event occurs again in the remaining part of the step
+                if (currentEvent.evaluateStep(restricted)) {
+                    // the event occurs during the current step
+                    occurringEvents.add(currentEvent);
+                }
+
             }
 
-        };
-
-        while (!occurringEvents.isEmpty()) {
-
-            // handle the chronologically first event
-            Collections.sort(occurringEvents, sorter);
-            final Iterator<EventState<?>> iterator = occurringEvents.iterator();
-            final EventState<?> currentEvent = iterator.next();
-            iterator.remove();
-
-            // restrict the interpolator to the first part of the step, up to the event
-            final AbsoluteDate eventT = currentEvent.getEventTime();
-            interpolator.setSoftPreviousDate(previousT);
-            interpolator.setSoftCurrentDate(eventT);
-
-            // trigger the event
-            interpolator.setInterpolatedDate(eventT);
-            final SpacecraftState eventY = interpolator.getInterpolatedState();
-            currentEvent.stepAccepted(eventY);
-            isLastStep = currentEvent.stop();
-
-            // handle the first part of the step, up to the event
-            if (getStepHandler() != null) {
-                getStepHandler().handleStep(interpolator, isLastStep);
+            // last part of the step, after the last event
+            // may be a new event here if the last event modified the g function of
+            // another event detector.
+            for (final EventState<?> state : eventsStates) {
+                if (state.tryAdvance(current, interpolator)) {
+                    occurringEvents.add(state);
+                }
             }
 
-            if (isLastStep) {
-                // the event asked to stop integration
-                return eventY;
-            }
+        } while (!occurringEvents.isEmpty());
 
-            final SpacecraftState resetState = currentEvent.reset(eventY);
-            if (resetState != null) {
-                resetIntermediateState(resetState, interpolator.isForward());
-                return resetState;
-            }
-
-            // prepare handling of the remaining part of the step
-            previousT = eventT;
-            interpolator.setSoftPreviousDate(eventT);
-            interpolator.setSoftCurrentDate(currentT);
-
-            // check if the same event occurs again in the remaining part of the step
-            if (currentEvent.evaluateStep(interpolator)) {
-                // the event occurs during the current step
-                occurringEvents.add(currentEvent);
-            }
-
-        }
-
-        final double remaining = target.durationFrom(currentT);
+        final double remaining = target.durationFrom(current.getDate());
         if (interpolator.isForward()) {
             isLastStep = remaining <  epsilon;
         } else {
             isLastStep = remaining > -epsilon;
-        }
-        if (isLastStep) {
-            currentT = target;
-        }
-
-        interpolator.setInterpolatedDate(currentT);
-        final SpacecraftState currentY = interpolator.getInterpolatedState();
-        for (final EventState<?> state : eventsStates) {
-            state.stepAccepted(currentY);
-            isLastStep = isLastStep || state.stop();
         }
 
         // handle the remaining part of the step, after all events if any
@@ -305,7 +322,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             getStepHandler().handleStep(interpolator, isLastStep);
         }
 
-        return currentY;
+        return current;
 
     }
 
@@ -324,25 +341,14 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         return pvProvider;
     }
 
-    /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state)
-        throws PropagationException {
-        super.resetInitialState(state);
-        interpolator.globalCurrentDate = state.getDate();
-        interpolator.softCurrentDate   = interpolator.globalCurrentDate;
-    }
-
     /** Reset an intermediate state.
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
      * propagations after itself
      * @exception PropagationException if initial state cannot be reset
      */
-    protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws PropagationException {
-        interpolator.globalCurrentDate = state.getDate();
-        interpolator.softCurrentDate   = interpolator.globalCurrentDate;
-    }
+    protected abstract void resetIntermediateState(final SpacecraftState state, final boolean forward)
+        throws PropagationException;
 
     /** Extrapolate an orbit up to a specific target date.
      * @param date target date for the orbit
@@ -531,131 +537,53 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Internal class for local propagation. */
     private class BasicStepInterpolator implements OrekitStepInterpolator {
 
-        /** Global previous date. */
-        private AbsoluteDate globalPreviousDate;
+        /** Previous state. */
+        private final SpacecraftState previousState;
 
-        /** Global current date. */
-        private AbsoluteDate globalCurrentDate;
-
-        /** Soft previous date. */
-        private AbsoluteDate softPreviousDate;
-
-        /** Soft current date. */
-        private AbsoluteDate softCurrentDate;
-
-        /** Interpolated state. */
-        private SpacecraftState interpolatedState;
+        /** Current state. */
+        private final SpacecraftState currentState;
 
         /** Forward propagation indicator. */
-        private boolean forward;
+        private final boolean forward;
 
-        /** Build a new instance from a basic propagator.
+        /** Simple constructor.
+         * @param isForward integration direction indicator
+         * @param previousState start of the step
+         * @param currentState end of the step
          */
-        BasicStepInterpolator() {
-            globalPreviousDate = AbsoluteDate.PAST_INFINITY;
-            globalCurrentDate  = AbsoluteDate.PAST_INFINITY;
-            softPreviousDate   = AbsoluteDate.PAST_INFINITY;
-            softCurrentDate    = AbsoluteDate.PAST_INFINITY;
-        }
-
-        /** Restrict step range to a limited part of the global step.
-         * <p>
-         * This method can be used to restrict a step and make it appear
-         * as if the original step was smaller. Calling this method
-         * <em>only</em> changes the value returned by {@link #getPreviousDate()},
-         * it does not change any other property
-         * </p>
-         * @param softPreviousDate start of the restricted step
-         */
-        public void setSoftPreviousDate(final AbsoluteDate softPreviousDate) {
-            this.softPreviousDate = softPreviousDate;
-        }
-
-        /** Restrict step range to a limited part of the global step.
-         * <p>
-         * This method can be used to restrict a step and make it appear
-         * as if the original step was smaller. Calling this method
-         * <em>only</em> changes the value returned by {@link #getCurrentDate()},
-         * it does not change any other property
-         * </p>
-         * @param softCurrentDate end of the restricted step
-         */
-        public void setSoftCurrentDate(final AbsoluteDate softCurrentDate) {
-            this.softCurrentDate  = softCurrentDate;
-        }
-
-        /**
-         * Get the previous global grid point time.
-         * @return previous global grid point time
-         */
-        public AbsoluteDate getGlobalPreviousDate() {
-            return globalPreviousDate;
-        }
-
-        /**
-         * Get the current global grid point time.
-         * @return current global grid point time
-         */
-        public AbsoluteDate getGlobalCurrentDate() {
-            return globalCurrentDate;
+        BasicStepInterpolator(final boolean isForward,
+                              final SpacecraftState previousState,
+                              final SpacecraftState currentState) {
+            this.forward             = isForward;
+            this.previousState   = previousState;
+            this.currentState    = currentState;
         }
 
         /** {@inheritDoc} */
-        public AbsoluteDate getCurrentDate() {
-            return softCurrentDate;
+        public SpacecraftState getPreviousState() {
+            return previousState;
         }
 
         /** {@inheritDoc} */
-        public AbsoluteDate getInterpolatedDate() {
-            return interpolatedState.getDate();
+        public SpacecraftState getCurrentState() {
+            return currentState;
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState getInterpolatedState() throws OrekitException {
-            return interpolatedState;
-        }
-
-        /** {@inheritDoc} */
-        public AbsoluteDate getPreviousDate() {
-            return softPreviousDate;
-        }
-
-        /** {@inheritDoc} */
-        public boolean isForward() {
-            return forward;
-        }
-
-        /** {@inheritDoc} */
-        public void setInterpolatedDate(final AbsoluteDate date) throws PropagationException {
+        public SpacecraftState getInterpolatedState(final AbsoluteDate date)
+            throws PropagationException {
 
             // compute the basic spacecraft state
             final SpacecraftState basicState = basicPropagate(date);
 
             // add the additional states
-            interpolatedState = updateAdditionalStates(basicState);
+            return updateAdditionalStates(basicState);
 
         }
 
-        /** Shift one step forward.
-         * Copy the current date into the previous date, hence preparing the
-         * interpolator for future calls to {@link #storeDate storeDate}
-         */
-        public void shift() {
-            globalPreviousDate = globalCurrentDate;
-            softPreviousDate   = globalPreviousDate;
-            softCurrentDate    = globalCurrentDate;
-        }
-
-        /** Store the current step date.
-         * @param date current date
-         * @exception PropagationException if the state cannot be propagated at specified date
-         */
-        public void storeDate(final AbsoluteDate date)
-            throws PropagationException {
-            globalCurrentDate = date;
-            softCurrentDate   = globalCurrentDate;
-            forward           = globalCurrentDate.compareTo(globalPreviousDate) >= 0;
-            setInterpolatedDate(globalCurrentDate);
+        /** {@inheritDoc} */
+        public boolean isForward() {
+            return forward;
         }
 
     }

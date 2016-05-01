@@ -534,9 +534,9 @@ public class KeplerianPropagatorTest {
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
                 if ((previous != null) && !isLast) {
-                    Assert.assertEquals(step, interpolator.getCurrentDate().durationFrom(previous), 1.0e-10);
+                    Assert.assertEquals(step, interpolator.getCurrentState().getDate().durationFrom(previous), 1.0e-10);
                 }
-                previous = interpolator.getCurrentDate();
+                previous = interpolator.getCurrentState().getDate();
             }
         });
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);

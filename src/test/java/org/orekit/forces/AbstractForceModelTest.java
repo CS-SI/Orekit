@@ -144,8 +144,7 @@ public abstract class AbstractForceModelTest {
                 if (isLast) {
                     try {
                         // pick up final Jacobian
-                        interpolator.setInterpolatedDate(interpolator.getCurrentDate());
-                        mapper.getStateJacobian(interpolator.getInterpolatedState(), dYdY0);
+                        mapper.getStateJacobian(interpolator.getCurrentState(), dYdY0);
                     } catch (OrekitException oe) {
                         throw new PropagationException(oe);
                     }

@@ -499,7 +499,7 @@ public class ElevationDetectorTest {
 
         // Event definition
         final double maxcheck  = 60.0;
-        final double threshold =  1.0; // 0.001;
+        final double threshold =  2.0; // 0.001;
         final EventDetector sta1Visi =
                 new ElevationDetector(maxcheck, threshold, sta1Frame).
                 withElevationMask(mask).
@@ -530,7 +530,7 @@ public class ElevationDetectorTest {
         // the second one is not merged into the first one
         AbsoluteDate d2 = events.get(2).getState().getDate();
         AbsoluteDate d3 = events.get(3).getState().getDate();
-        Assert.assertEquals(0.6501, d3.durationFrom(d2), 0.01);
+        Assert.assertEquals(1.529, d3.durationFrom(d2), 0.01);
 
     }
 

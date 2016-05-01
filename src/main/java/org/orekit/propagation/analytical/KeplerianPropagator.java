@@ -146,7 +146,6 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
         throws PropagationException {
-        super.resetIntermediateState(state, forward);
         if (forward) {
             states.addValidAfter(state, state.getDate());
         } else {

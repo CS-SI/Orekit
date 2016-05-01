@@ -190,8 +190,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
             try {
                 // we want the Jacobians at the end of last step
                 if (isLast) {
-                    interpolator.setInterpolatedDate(interpolator.getCurrentDate());
-                    final SpacecraftState state = interpolator.getInterpolatedState();
+                    final SpacecraftState state = interpolator.getCurrentState();
                     mapper.getStateJacobian(state, dYdY0);
                     mapper.getParametersJacobian(state, dYdP);
                 }
