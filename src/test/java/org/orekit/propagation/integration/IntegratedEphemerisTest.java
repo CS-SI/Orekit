@@ -136,7 +136,7 @@ public class IntegratedEphemerisTest {
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
             throws PropagationException {
                 try {
-                    SpacecraftState state = interpolator.getInterpolatedState();
+                    SpacecraftState state = interpolator.getCurrentState();
                     Assert.assertEquals(mapper.getAdditionalStateDimension(),
                                         state.getAdditionalState(eqName).length);
                     mapper.getStateJacobian(state, dYdY0.getDataRef());

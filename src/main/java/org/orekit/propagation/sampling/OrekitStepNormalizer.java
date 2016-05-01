@@ -39,9 +39,6 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
     /** Underlying step handler. */
     private OrekitFixedStepHandler handler;
 
-    /** Last step date. */
-    private AbsoluteDate lastDate;
-
     /** Last State vector. */
     private SpacecraftState lastState;
 
@@ -53,11 +50,10 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
      * @param handler fixed time step handler to wrap
      */
     public OrekitStepNormalizer(final double h, final OrekitFixedStepHandler handler) {
-        this.h       = FastMath.abs(h);
-        this.handler = handler;
-        lastDate  = null;
-        lastState = null;
-        forward   = true;
+        this.h         = FastMath.abs(h);
+        this.handler   = handler;
+        this.lastState = null;
+        this.forward   = true;
     }
 
     /** Determines whether this handler needs dense output.
@@ -73,7 +69,6 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t)
         throws PropagationException {
-        lastDate  = null;
         lastState = null;
         forward   = true;
         handler.init(s0, t);
@@ -98,36 +93,31 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
 
             if (lastState == null) {
                 // initialize lastState in the first step case
-
-                lastDate = interpolator.getPreviousDate();
-                interpolator.setInterpolatedDate(lastDate);
-                lastState = interpolator.getInterpolatedState();
+                lastState = interpolator.getPreviousState();
             }
 
             // take the propagation direction into account
             double step = h;
-            forward = interpolator.getCurrentDate().compareTo(lastDate) >= 0;
+            forward = interpolator.isForward();
             if (!forward) {
                 step = -h;
             }
 
 
             // use the interpolator to push fixed steps events to the underlying handler
-            AbsoluteDate nextTime = lastDate.shiftedBy(step);
-            boolean nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentDate()) > 0);
+            AbsoluteDate nextTime = lastState.getDate().shiftedBy(step);
+            boolean nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
             while (nextInStep) {
 
                 // output the stored previous step
                 handler.handleStep(lastState, false);
 
                 // store the next step
-                lastDate = nextTime;
-                interpolator.setInterpolatedDate(lastDate);
-                lastState = interpolator.getInterpolatedState();
+                lastState = interpolator.getInterpolatedState(nextTime);
 
                 // prepare next iteration
                 nextTime = nextTime.shiftedBy(step);
-                nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentDate()) > 0);
+                nextInStep = forward ^ (nextTime.compareTo(interpolator.getCurrentState().getDate()) > 0);
 
             }
 

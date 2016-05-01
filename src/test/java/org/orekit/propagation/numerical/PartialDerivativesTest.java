@@ -536,28 +536,30 @@ public class PartialDerivativesTest {
         public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
         throws PropagationException {
             try {
+                final SpacecraftState interpolated;
                 if (pickUpDate == null) {
                     // we want to pick up the Jacobians at the end of last step
                     if (isLast) {
-                        interpolator.setInterpolatedDate(interpolator.getCurrentDate());
+                        interpolated = interpolator.getCurrentState();
+                    } else {
+                        return;
                     }
                 } else {
                     // we want to pick up some intermediate Jacobians
-                    double dt0 = pickUpDate.durationFrom(interpolator.getPreviousDate());
-                    double dt1 = pickUpDate.durationFrom(interpolator.getCurrentDate());
+                    double dt0 = pickUpDate.durationFrom(interpolator.getPreviousState().getDate());
+                    double dt1 = pickUpDate.durationFrom(interpolator.getCurrentState().getDate());
                     if (dt0 * dt1 > 0) {
                         // the current step does not cover the pickup date
                         return;
                     } else {
-                        interpolator.setInterpolatedDate(pickUpDate);
+                        interpolated = interpolator.getInterpolatedState(pickUpDate);
                     }
                 }
 
-                Assert.assertEquals(1, interpolator.getInterpolatedState().getAdditionalStates().size());
-                Assert.assertTrue(interpolator.getInterpolatedState().getAdditionalStates().containsKey(mapper.getName()));
-                SpacecraftState state = interpolator.getInterpolatedState();
-                mapper.getStateJacobian(state, dYdY0);
-                mapper.getParametersJacobian(state, dYdP);
+                Assert.assertEquals(1, interpolated.getAdditionalStates().size());
+                Assert.assertTrue(interpolated.getAdditionalStates().containsKey(mapper.getName()));
+                mapper.getStateJacobian(interpolated, dYdY0);
+                mapper.getParametersJacobian(interpolated, dYdP);
 
             } catch (PropagationException pe) {
                 throw pe;

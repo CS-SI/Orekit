@@ -394,7 +394,7 @@ public class NumericalPropagatorTest {
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
                 if (previousCall != null) {
-                    Assert.assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
+                    Assert.assertTrue(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
                 }
                 if (--countDown == 0) {
                     throw new PropagationException(LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy error");

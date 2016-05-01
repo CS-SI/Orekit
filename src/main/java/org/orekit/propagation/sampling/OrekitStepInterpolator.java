@@ -16,59 +16,41 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface is a space-dynamics aware step interpolator.
  *
- * <p>It mirrors the <code>StepInterpolator</code> interface from <a
+ * <p>It mirrors the <code>ODEStateInterpolator</code> interface from <a
  * href="https://hipparchus.org/">Hipparchus</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
 public interface OrekitStepInterpolator {
 
-    /** Get the current grid date.
-     * @return current grid date
+    /**
+     * Get the state at previous grid point date.
+     * @return state at previous grid point date
+     * @exception PropagationException if state cannot be retrieved
      */
-    AbsoluteDate getCurrentDate();
+    SpacecraftState getPreviousState() throws PropagationException;
 
-    /** Get the previous grid date.
-     * @return previous grid date
+    /**
+     * Get the state at previous grid point date.
+     * @return state at previous grid point date
+     * @exception PropagationException if state cannot be retrieved
      */
-    AbsoluteDate getPreviousDate();
+    SpacecraftState getCurrentState() throws PropagationException;
 
-    /** Get the interpolated date.
-     * <p>If {@link #setInterpolatedDate(AbsoluteDate) setInterpolatedDate}
-     * has not been called, the date returned is the same as  {@link
-     * #getCurrentDate() getCurrentDate}.</p>
-     * @return interpolated date
-     * @see #setInterpolatedDate(AbsoluteDate)
-     * @see #getInterpolatedState()
-     */
-    AbsoluteDate getInterpolatedDate();
-
-    /** Set the interpolated date.
-     * <p>It is possible to set the interpolation date outside of the current
-     * step range, but accuracy will decrease as date is farther.</p>
-     * @param date interpolated date to set
+    /** Get the state at interpolated date.
+     * @param date date of the interpolated state
+     * @return state at interpolated date
      * @exception PropagationException if underlying interpolator cannot handle
      * the date
-     * @see #getInterpolatedDate()
-     * @see #getInterpolatedState()
      */
-    void setInterpolatedDate(final AbsoluteDate date)
+    SpacecraftState getInterpolatedState(final AbsoluteDate date)
         throws PropagationException;
-
-    /** Get the interpolated state.
-     * @return interpolated state at the current interpolation date
-     * @exception OrekitException if state cannot be interpolated or converted
-     * @see #getInterpolatedDate()
-     * @see #setInterpolatedDate(AbsoluteDate)
-     */
-    SpacecraftState getInterpolatedState() throws OrekitException;
 
     /** Check is integration direction is forward in date.
      * @return true if integration is forward in date

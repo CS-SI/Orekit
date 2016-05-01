@@ -23,6 +23,10 @@
     <release version="8.0" date="TBC"
              description="TBC">
       <action dev="luc" type="update">
+        Simplified step handlers API, replacing the setDate/getState
+        pair with an interpolated state getter taking a date argument.
+      </action>
+      <action dev="luc" type="update">
         Switched from Apache Commons Math to Hipparchus library.
       </action>
       <action dev="luc" type="add">
