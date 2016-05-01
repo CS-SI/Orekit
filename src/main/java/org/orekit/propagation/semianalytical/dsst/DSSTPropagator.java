@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.sampling.ODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.hipparchus.util.FastMath;
@@ -159,7 +159,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @param integrator numerical integrator to use for propagation.
      *  @param meanOnly output only the mean orbits.
      */
-    public DSSTPropagator(final AbstractIntegrator integrator, final boolean meanOnly) {
+    public DSSTPropagator(final ODEIntegrator integrator, final boolean meanOnly) {
         super(integrator, meanOnly);
         forceModels = new ArrayList<DSSTForceModel>();
         initMapper();
@@ -181,7 +181,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  </p>
      *  @param integrator numerical integrator to use for propagation.
      */
-    public DSSTPropagator(final AbstractIntegrator integrator) {
+    public DSSTPropagator(final ODEIntegrator integrator) {
         super(integrator, true);
         forceModels = new ArrayList<DSSTForceModel>();
         initMapper();
@@ -432,7 +432,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(forceModels);
             final Collection<ODEStepHandler> stepHandlers = new ArrayList<ODEStepHandler>();
             stepHandlers.add(spHandler);
-            final AbstractIntegrator integrator = getIntegrator();
+            final ODEIntegrator integrator = getIntegrator();
             final Collection<ODEStepHandler> existing = integrator.getStepHandlers();
             stepHandlers.addAll(existing);
 
@@ -451,7 +451,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // remove the special short periodics step handler if added before
         if (!isMeanOrbit()) {
             final List<ODEStepHandler> preserved = new ArrayList<ODEStepHandler>();
-            final AbstractIntegrator integrator = getIntegrator();
+            final ODEIntegrator integrator = getIntegrator();
             for (final ODEStepHandler sp : integrator.getStepHandlers()) {
                 if (!(sp instanceof ShortPeriodicsHandler)) {
                     preserved.add(sp);
@@ -831,7 +831,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected MainStateEquations getMainStateEquations(final AbstractIntegrator integrator) {
+    protected MainStateEquations getMainStateEquations(final ODEIntegrator integrator) {
         return new Main(integrator);
     }
 
@@ -844,7 +844,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
-        Main(final AbstractIntegrator integrator) {
+        Main(final ODEIntegrator integrator) {
             yDot = new double[7];
 
             for (final DSSTForceModel forceModel : forceModels) {

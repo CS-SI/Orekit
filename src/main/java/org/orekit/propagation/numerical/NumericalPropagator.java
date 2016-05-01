@@ -23,12 +23,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
@@ -155,7 +155,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * #setPositionAngleType(PositionAngle) position angle type}.
      * @param integrator numerical integrator to use for propagation.
      */
-    public NumericalPropagator(final AbstractIntegrator integrator) {
+    public NumericalPropagator(final ODEIntegrator integrator) {
         super(integrator, true);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
@@ -390,7 +390,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
-    protected MainStateEquations getMainStateEquations(final AbstractIntegrator integrator) {
+    protected MainStateEquations getMainStateEquations(final ODEIntegrator integrator) {
         return new Main(integrator);
     }
 
@@ -409,7 +409,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
-        Main(final AbstractIntegrator integrator) {
+        Main(final ODEIntegrator integrator) {
 
             this.yDot     = new double[7];
             this.jacobian = new double[6][6];

@@ -29,6 +29,7 @@ import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.EquationsMapper;
 import org.hipparchus.ode.ExpandableODE;
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
@@ -68,7 +69,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     private final List<EventDetector> detectors;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
-    private final AbstractIntegrator integrator;
+    private final ODEIntegrator integrator;
 
     /** Mode handler. */
     private ModeHandler modeHandler;
@@ -100,7 +101,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param integrator numerical integrator to use for propagation.
      * @param meanOrbit output only the mean orbit.
      */
-    protected AbstractIntegratedPropagator(final AbstractIntegrator integrator, final boolean meanOrbit) {
+    protected AbstractIntegratedPropagator(final ODEIntegrator integrator, final boolean meanOrbit) {
         detectors           = new ArrayList<EventDetector>();
         additionalEquations = new ArrayList<AdditionalEquations>();
         this.integrator     = integrator;
@@ -268,7 +269,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param integ integrator into which event detector should be registered
      * @param detector event detector to wrap
      */
-    protected void setUpEventDetector(final AbstractIntegrator integ, final EventDetector detector) {
+    protected void setUpEventDetector(final ODEIntegrator integ, final EventDetector detector) {
         integ.addEventHandler(new AdaptedEventDetector(detector),
                               detector.getMaxCheckInterval(),
                               detector.getThreshold(),
@@ -350,7 +351,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param integ numerical integrator to use for propagation.
      * @return differential equations for main state
      */
-    protected abstract MainStateEquations getMainStateEquations(final AbstractIntegrator integ);
+    protected abstract MainStateEquations getMainStateEquations(final ODEIntegrator integ);
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
@@ -530,7 +531,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @return a new ode
      * @exception OrekitException if initial state cannot be mapped
      */
-    private ExpandableODE createODE(final AbstractIntegrator integ,
+    private ExpandableODE createODE(final ODEIntegrator integ,
                                     final ODEState mathInitialState)
         throws OrekitException {
 
@@ -586,7 +587,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Get the integrator used by the propagator.
      * @return the integrator.
      */
-    protected AbstractIntegrator getIntegrator() {
+    protected ODEIntegrator getIntegrator() {
         return integrator;
     }
 
