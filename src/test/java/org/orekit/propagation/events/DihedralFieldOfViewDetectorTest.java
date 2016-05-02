@@ -154,10 +154,6 @@ public class DihedralFieldOfViewDetectorTest {
             }
         }
 
-        public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-
     }
 
 }

@@ -105,9 +105,6 @@ public class BackAndForthDetectorTest {
             return Action.CONTINUE;
         }
 
-        public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
     }
 
     @Before

@@ -209,10 +209,6 @@ public class FieldOfViewDetectorTest {
             }
         }
 
-        public SpacecraftState resetState(FieldOfViewDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-
     }
 
 }

@@ -83,11 +83,4 @@ class HalfTrackSpanHandler implements EventHandler<LatitudeExtremumDetector> {
         }
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public SpacecraftState resetState(final LatitudeExtremumDetector detector,
-                                      final SpacecraftState oldState) {
-        return oldState;
-    }
-
 }

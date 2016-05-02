@@ -35,11 +35,17 @@ public interface OrekitFixedStepHandler {
      * may be used by the step handler to initialize some internal data
      * if needed.
      * </p>
+     * <p>
+     * The default implementation does nothing
+     * </p>
      * @param s0 initial state
      * @param t target time for the integration
      * @exception PropagationException if step handler cannot be initialized
      */
-    void init(SpacecraftState s0, AbsoluteDate t) throws PropagationException;
+    default void init(SpacecraftState s0, AbsoluteDate t)
+        throws PropagationException {
+        // nothing by default
+    }
 
     /** Handle the current step.
      * @param currentState current state at step time

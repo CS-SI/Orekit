@@ -964,12 +964,6 @@ public class DSSTPropagatorTest {
             return actionOnEvent;
         }
 
-        @Override
-        public SpacecraftState resetState(T detector, SpacecraftState oldState)
-            throws OrekitException {
-            return oldState;
-        }
-
     }
 
     @Before

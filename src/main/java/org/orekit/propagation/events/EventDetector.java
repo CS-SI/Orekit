@@ -54,10 +54,15 @@ public interface EventDetector extends Serializable {
      * may be used by the event handler to initialize some internal data
      * if needed.
      * </p>
+     * <p>
+     * The default implementation does nothing
+     * </p>
      * @param s0 initial state
      * @param t target time for the integration
      */
-    void init(SpacecraftState s0, AbsoluteDate t);
+    default void init(SpacecraftState s0, AbsoluteDate t) {
+        // nothing by default
+    }
 
     /** Compute the value of the switching function.
      * This function must be continuous (at least in its roots neighborhood),
@@ -100,11 +105,16 @@ public interface EventDetector extends Serializable {
      * without perturbing the step handler of the finishing step. If the
      * {@link #eventOccurred} never returns the {@link Action#RESET_STATE}
      * indicator, this function will never be called, and it is safe to simply return null.</p>
+     * <p>
+     * The default implementation simply returns its argument.
+     * </p>
      * @param oldState old state
      * @return new state
      * @exception OrekitException if the state cannot be reseted
      * @since 7.0
      */
-    SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;
+    default SpacecraftState resetState(SpacecraftState oldState) throws OrekitException {
+        return oldState;
+    }
 
 }

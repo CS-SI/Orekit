@@ -64,12 +64,4 @@ class MeasurementHandler implements EventHandler<DateDetector> {
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState)
-        throws OrekitException {
-        // never really called as eventOccurred always returns Action.CONTINUE
-        return oldState;
-    }
-
 }

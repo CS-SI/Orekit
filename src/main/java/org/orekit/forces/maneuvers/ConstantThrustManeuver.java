@@ -234,12 +234,6 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
             return EventHandler.Action.RESET_DERIVATIVES;
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState) {
-            return oldState;
-        }
-
     }
 
     /** Handler for end of maneuver. */
@@ -259,12 +253,6 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
                 firing = true;
             }
             return EventHandler.Action.RESET_DERIVATIVES;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState) {
-            return oldState;
         }
 
     }

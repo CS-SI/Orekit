@@ -192,9 +192,6 @@ public class EventShifterTest {
                                                                   increasing ? nameIncreasing : nameDecreasing));
                                            return Action.CONTINUE;
                                        }
-                                       public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
-                                           return oldState;
-                                       }
                                    });
     }
 

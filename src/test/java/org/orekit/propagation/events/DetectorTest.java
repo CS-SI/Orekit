@@ -87,13 +87,6 @@ public class DetectorTest {
             return Action.CONTINUE;
         }
 
-        public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
-
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             // step handling and event occurrences may be out of order up to one step
             // with variable steps, and two steps with fixed steps (due to the delay
@@ -109,6 +102,12 @@ public class DetectorTest {
 
         public boolean outOfOrderCallDetected() {
             return outOfOrderCallDetected;
+        }
+
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate target) {
+            // TODO Auto-generated method stub
+            EventHandler.super.init(initialState, target);
         }
 
     }

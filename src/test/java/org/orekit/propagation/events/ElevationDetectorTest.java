@@ -121,13 +121,6 @@ public class ElevationDetectorTest {
             return Action.CONTINUE;
         }
 
-        public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
-
         public void handleStep(SpacecraftState currentState, boolean isLast)
         throws PropagationException {
             try {
@@ -148,6 +141,11 @@ public class ElevationDetectorTest {
                 throw new PropagationException(e);
             }
 
+        }
+
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate target) {
+            EventHandler.super.init(initialState, target);
         }
 
     }
@@ -511,10 +509,7 @@ public class ElevationDetectorTest {
                         return (--count > 0) ? Action.CONTINUE : Action.STOP;
                     }
 
-                    @Override
-                    public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
-                        return oldState;
-                    }});
+                });
 
         // Add event to be detected
         EventsLogger logger = new EventsLogger();

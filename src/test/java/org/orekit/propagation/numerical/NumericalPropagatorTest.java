@@ -789,11 +789,6 @@ public class NumericalPropagatorTest {
             return actionOnEvent;
         }
 
-        public SpacecraftState resetState(T detector, SpacecraftState oldState)
-            throws OrekitException {
-            return oldState;
-        }
-
     }
 
     @Before

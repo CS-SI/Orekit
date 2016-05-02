@@ -50,11 +50,4 @@ public class ContinueOnEvent<T extends EventDetector> implements EventHandler<T>
         return Action.CONTINUE;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public SpacecraftState resetState(final T detector, final SpacecraftState oldState)
-        throws OrekitException {
-        return oldState;
-    }
-
 }

@@ -145,10 +145,6 @@ public class CircularFieldOfViewDetectorTest {
             }
         }
 
-        public SpacecraftState resetState(EventDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-
     }
 
 }

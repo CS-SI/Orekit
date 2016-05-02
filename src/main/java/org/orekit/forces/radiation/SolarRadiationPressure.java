@@ -304,12 +304,6 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
                     return Action.RESET_DERIVATIVES;
                 }
 
-                /** {@inheritDoc} */
-                @Override
-                public SpacecraftState resetState(final UmbraDetector detector, final SpacecraftState oldState) {
-                    return oldState;
-                }
-
             });
         }
 
@@ -365,12 +359,6 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
                 public Action eventOccurred(final SpacecraftState s, final PenumbraDetector detector,
                                             final boolean increasing) {
                     return Action.RESET_DERIVATIVES;
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public SpacecraftState resetState(final PenumbraDetector detector, final SpacecraftState oldState) {
-                    return oldState;
                 }
 
             });

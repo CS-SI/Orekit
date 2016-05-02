@@ -19,6 +19,7 @@ package org.orekit.propagation.events.handlers;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.time.AbsoluteDate;
 
 
 /**
@@ -71,6 +72,22 @@ public interface EventHandler<T extends EventDetector> {
 
     }
 
+    /** Initialize event handler at the start of a propagation.
+     * <p>
+     * This method is called once at the start of the propagation. It
+     * may be used by the event handler to initialize some internal data
+     * if needed.
+     * </p>
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param initialState initial state
+     * @param target target date for the propagation
+     */
+    default void init(SpacecraftState initialState, AbsoluteDate target) {
+        // nothing by default
+    }
+
     /**
      * eventOccurred method mirrors the same interface method as in {@link EventDetector}
      * and its subclasses, but with an additional parameter that allows the calling
@@ -95,11 +112,17 @@ public interface EventHandler<T extends EventDetector> {
      * without perturbing the step handler of the finishing step. If the
      * {@link #eventOccurred} never returns the {@link Action#RESET_STATE}
      * indicator, this function will never be called, and it is safe to simply return null.</p>
+     * <p>
+     * The default implementation simply return its argument.
+     * </p>
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param oldState old state
      * @return new state
      * @exception OrekitException if the state cannot be reseted
      */
-    SpacecraftState resetState(T detector, SpacecraftState oldState) throws OrekitException;
+    default SpacecraftState resetState(T detector, SpacecraftState oldState)
+        throws OrekitException {
+        return oldState;
+    }
 
 }

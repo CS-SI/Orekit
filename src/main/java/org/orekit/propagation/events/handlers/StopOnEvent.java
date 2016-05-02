@@ -50,11 +50,4 @@ public class StopOnEvent <T extends EventDetector> implements EventHandler<T>, S
         return Action.STOP;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public SpacecraftState resetState(final T detector, final SpacecraftState oldState)
-        throws OrekitException {
-        return oldState;
-    }
-
 }

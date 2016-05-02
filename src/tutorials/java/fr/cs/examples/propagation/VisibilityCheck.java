@@ -120,10 +120,6 @@ public class VisibilityCheck {
             }
         }
 
-        public SpacecraftState resetState(final ElevationDetector detector, final SpacecraftState oldState) {
-            return oldState;
-        }
-
     }
 
 }

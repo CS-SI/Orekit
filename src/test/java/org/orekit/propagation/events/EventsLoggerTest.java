@@ -178,10 +178,6 @@ public class EventsLoggerTest {
                 return Action.CONTINUE;
             }
 
-            public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
-                return oldState;
-            }
-
         });
 
         return detector;

@@ -413,10 +413,6 @@ public class EventSlopeFilterTest {
             return Action.CONTINUE;
         }
 
-        public SpacecraftState resetState(EclipseDetector ed, SpacecraftState oldState) {
-            return oldState;
-        }
-
         public int getIncreasingCounter() {
             return increasingCounter;
         }
