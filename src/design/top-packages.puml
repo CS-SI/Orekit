@@ -46,6 +46,8 @@
     }
     package propagation #DDEBD8 {
     }
+    package estimation #DDEBD8 {
+    }
     package time #DDEBD8 {
     }
     package utils #DDEBD8 {
@@ -53,6 +55,7 @@
     package models #DDEBD8 {
     }
 
+    estimation  -->      propagation
     propagation -->      attitude
     propagation -->      forces
     forces      -->      bodies
