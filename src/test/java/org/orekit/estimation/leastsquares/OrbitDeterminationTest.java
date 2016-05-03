@@ -35,8 +35,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.optim.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.stat.descriptive.SummaryStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;

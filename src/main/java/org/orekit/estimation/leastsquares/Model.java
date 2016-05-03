@@ -22,12 +22,12 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.fitting.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.hipparchus.optim.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;

@@ -19,7 +19,7 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hipparchus.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.optim.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;

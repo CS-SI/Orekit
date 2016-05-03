@@ -25,12 +25,12 @@ import java.util.Map;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathRuntimeException;
-import org.hipparchus.fitting.leastsquares.EvaluationRmsChecker;
-import org.hipparchus.fitting.leastsquares.LeastSquaresBuilder;
-import org.hipparchus.fitting.leastsquares.LeastSquaresOptimizer;
-import org.hipparchus.fitting.leastsquares.LeastSquaresProblem;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.ConvergenceChecker;
+import org.hipparchus.optim.leastsquares.EvaluationRmsChecker;
+import org.hipparchus.optim.leastsquares.LeastSquaresBuilder;
+import org.hipparchus.optim.leastsquares.LeastSquaresOptimizer;
+import org.hipparchus.optim.leastsquares.LeastSquaresProblem;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;

@@ -18,7 +18,7 @@ package org.orekit.estimation.leastsquares;
 
 import java.util.List;
 
-import org.hipparchus.fitting.leastsquares.LeastSquaresProblem;
+import org.hipparchus.optim.leastsquares.LeastSquaresProblem;
 import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.ParameterDriver;
