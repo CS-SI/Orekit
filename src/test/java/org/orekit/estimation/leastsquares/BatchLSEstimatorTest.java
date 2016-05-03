@@ -99,7 +99,7 @@ public class BatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 1.5e-6,
-                                     0.0, 3.1e-6,
+                                     0.0, 3.2e-6,
                                      0.0, 3.8e-7,
                                      0.0, 1.5e-10);
 
