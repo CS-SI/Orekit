@@ -523,7 +523,6 @@ public class PoissonSeriesParserTest {
         InputStream zStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
         PoissonSeries<DerivativeStructure> sSeries = parser.parse(zStream, "2010/tab5.2d.txt");
-        @SuppressWarnings("unchecked")
         PoissonSeries.CompiledSeries<DerivativeStructure> xysSeries =
                 PoissonSeries.compile(xSeries, ySeries, sSeries);
 
