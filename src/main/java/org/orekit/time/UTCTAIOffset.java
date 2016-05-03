@@ -48,9 +48,6 @@ class UTCTAIOffset implements TimeStamped, Serializable {
     /** Offset start of validity date. */
     private final AbsoluteDate validityStart;
 
-    /** Offset end of validity date. */
-    private AbsoluteDate validityEnd;
-
     /** Reference date for the slope multiplication as Modified Julian Day. */
     private final int mjdRef;
 
@@ -94,7 +91,6 @@ class UTCTAIOffset implements TimeStamped, Serializable {
         this.leapDate      = leapDate;
         this.leapDateMJD   = leapDateMJD;
         this.validityStart = leapDate.shiftedBy(leap);
-        this.validityEnd   = AbsoluteDate.FUTURE_INFINITY;
         this.mjdRef        = mjdRef;
         this.reference     = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjdRef),
                                               TimeScalesFactory.getTAI()).shiftedBy(offset);
@@ -124,28 +120,9 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      * seconds after the start of the leap itself.</p>
      * @return start of validity date
      * @see #getDate()
-     * @see #getValidityEnd()
      */
     public AbsoluteDate getValidityStart() {
         return validityStart;
-    }
-
-    /** Get the end time of validity for this offset.
-     * <p>The end of the validity of the offset is the date of the
-     * start of the leap leading to the next offset.</p>
-     * @return end of validity date
-     * @see #getValidityStart()
-     */
-    public AbsoluteDate getValidityEnd() {
-        return validityEnd;
-    }
-
-    /** Set the end time of validity for this offset.
-     * @param validityEnd end of validity date
-     * @see #getValidityEnd()
-     */
-    void setValidityEnd(final AbsoluteDate validityEnd) {
-        this.validityEnd = validityEnd;
     }
 
     /** Get the value of the leap at offset validity start (in seconds).
