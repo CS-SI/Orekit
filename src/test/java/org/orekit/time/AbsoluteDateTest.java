@@ -744,6 +744,15 @@ public class AbsoluteDateTest {
         Assert.assertEquals("2008-03-01T00:00:00.000", stillBeforeMidnight.toString(utc));
     }
 
+    @Test
+    public void testLastLeapOutput() throws OrekitException {
+        UTCScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate t = utc.getLastKnownLeapSecond();
+        Assert.assertEquals("23:59:59.500", t.shiftedBy(-0.5).toString(utc).substring(11));
+        Assert.assertEquals("23:59:60.000", t.shiftedBy( 0.0).toString(utc).substring(11));
+        Assert.assertEquals("23:59:60.500", t.shiftedBy(+0.5).toString(utc).substring(11));
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
