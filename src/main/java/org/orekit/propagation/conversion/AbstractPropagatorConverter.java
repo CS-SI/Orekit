@@ -29,13 +29,12 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.ConvergenceChecker;
 import org.hipparchus.optim.SimpleVectorValueChecker;
-import org.hipparchus.optim.leastsquares.LeastSquaresBuilder;
-import org.hipparchus.optim.leastsquares.LeastSquaresFactory;
-import org.hipparchus.optim.leastsquares.LeastSquaresOptimizer;
-import org.hipparchus.optim.leastsquares.LeastSquaresProblem;
-import org.hipparchus.optim.leastsquares.LeastSquaresProblem.Evaluation;
-import org.hipparchus.optim.leastsquares.LevenbergMarquardtOptimizer;
-import org.hipparchus.optim.leastsquares.MultivariateJacobianFunction;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresFactory;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
@@ -97,7 +96,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private LeastSquaresOptimizer.Optimum optimum;
 
     /** Convergence checker for optimization algorithm. */
-    private final ConvergenceChecker<Evaluation> checker;
+    private final ConvergenceChecker<LeastSquaresProblem.Evaluation> checker;
 
     /** Maximum number of iterations for optimization. */
     private final int maxIterations;

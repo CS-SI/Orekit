@@ -25,8 +25,8 @@ import org.hipparchus.fitting.AbstractCurveFitter;
 import org.hipparchus.fitting.PolynomialCurveFitter;
 import org.hipparchus.fitting.WeightedObservedPoint;
 import org.hipparchus.linear.DiagonalMatrix;
-import org.hipparchus.optim.leastsquares.LeastSquaresBuilder;
-import org.hipparchus.optim.leastsquares.LeastSquaresProblem;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 

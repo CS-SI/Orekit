@@ -17,7 +17,7 @@
 package org.orekit.estimation;
 
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.optim.leastsquares.ParameterValidator;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.ParameterValidator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitInternalError;

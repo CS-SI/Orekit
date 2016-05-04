@@ -18,7 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
-import org.hipparchus.optim.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.junit.Assert;
