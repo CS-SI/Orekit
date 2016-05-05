@@ -64,6 +64,7 @@ from the script to the Matlab prompt.
     import org.orekit.frames.FramesFactory
     import org.orekit.orbits.KeplerianOrbit
     import org.orekit.orbits.Orbit
+    import org.orekit.orbits.PositionAngle
     import org.orekit.propagation.SpacecraftState
     import org.orekit.propagation.analytical.KeplerianPropagator
     import org.orekit.data.DataProvidersManager
@@ -97,7 +98,7 @@ from the script to the Matlab prompt.
     mu =  3.986004415e+14
 
     %Orbit construction as Keplerian
-    initialOrbit = KeplerianOrbit(a, e, i, omega, raan, lM, KeplerianOrbit.MEAN_ANOMALY, inertialFrame, initialDate, mu)
+    initialOrbit = KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, inertialFrame, initialDate, mu)
 
     %Simple extrapolation with Keplerian motion
     kepler = KeplerianPropagator(initialOrbit);
