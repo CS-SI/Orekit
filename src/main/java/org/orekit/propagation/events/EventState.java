@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketedUnivariateSolver.Interval;
@@ -32,6 +30,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+
+import java.io.Serializable;
 
 /** This class handles the state for one {@link EventDetector
  * event detector} during integration steps.
@@ -79,6 +79,12 @@ public class EventState<T extends EventDetector> implements Serializable {
     /** Occurrence time of the pending event. */
     private AbsoluteDate pendingEventTime;
 
+    /**
+     * Time to stop propagation if the event is a stop event. Used to enable stopping at
+     * an event and then restarting after that event.
+     */
+    private AbsoluteDate stopTime;
+
     /** Time after the current event. */
     private AbsoluteDate afterEvent;
 
@@ -110,6 +116,7 @@ public class EventState<T extends EventDetector> implements Serializable {
         g0Positive             = true;
         pendingEvent           = false;
         pendingEventTime       = null;
+        stopTime               = null;
         increasing             = true;
         earliestTimeConsidered = null;
         afterEvent             = null;
@@ -161,17 +168,24 @@ public class EventState<T extends EventDetector> implements Serializable {
      */
     public void reinitializeBegin(final OrekitStepInterpolator interpolator)
         throws OrekitException {
+        forward = interpolator.isForward();
         final SpacecraftState s0 = interpolator.getPreviousState();
         this.t0 = s0.getDate();
         g0 = g(s0);
-        if (g0 == 0) {
+        while (g0 == 0) {
             // extremely rare case: there is a zero EXACTLY at interval start
             // we will use the sign slightly after step beginning to force ignoring this zero
-            t0 = t0.shiftedBy((interpolator.isForward() ? 0.5 : -0.5) * detector.getThreshold());
+            // try moving forward by half a convergence interval
+            final double dt = (forward ? 0.5 : -0.5) * detector.getThreshold();
+            AbsoluteDate startDate = t0.shiftedBy(dt);
+            // if convergence is too small move an ulp
+            if (t0.equals(startDate)) {
+                startDate = nextAfter(startDate);
+            }
+            t0 = startDate;
             g0 = g(interpolator.getInterpolatedState(t0));
         }
-        g0Positive = g0 >= 0;
-
+        g0Positive = g0 > 0;
         // "last" event was increasing
         increasing = g0Positive;
     }
@@ -242,74 +256,96 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @param tb           latest possible time for root.
      * @param gb           g(tb).
      * @return if a zero crossing was found.
-     * @exception OrekitException if the event detector throws one
+     * @throws OrekitException if the event detector throws one
      */
     private boolean findRoot(final OrekitStepInterpolator interpolator,
                              final AbsoluteDate ta, final double ga,
                              final AbsoluteDate tb, final double gb)
-        throws OrekitException {
+            throws OrekitException {
         // check there appears to be a root in [ta, tb]
         check(ga == 0.0 || gb == 0.0 || (ga > 0.0 && gb < 0.0) || (ga < 0.0 && gb > 0.0));
 
+        final double convergence = detector.getThreshold();
+        final int maxIterationCount = detector.getMaxIterationCount();
+        final BracketedUnivariateSolver<UnivariateFunction> solver =
+                new BracketingNthOrderBrentSolver(0, convergence, 0, 5);
+
+        // event time, just at or before the actual root.
+        AbsoluteDate beforeRootT = null;
+        double beforeRootG = Double.NaN;
+        // time on the other side of the root.
+        // Initialized the the loop below executes once.
+        AbsoluteDate afterRootT = ta;
+        double afterRootG = 0.0;
+
+        // check for some conditions that the root finders don't like
+        // these conditions cannot not happen in the loop below
+        // the ga == 0.0 case is handled by the loop below
+        if (ta.equals(tb)) {
+            // both non-zero but times are the same. Probably due to reset state
+            beforeRootT = ta;
+            beforeRootG = ga;
+            afterRootT = shiftedBy(beforeRootT, convergence);
+            afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+        } else if (ga != 0.0 && gb == 0.0) {
+            // hard: ga != 0.0 and gb == 0.0
+            // look past gb by up to convergence to find next sign
+            // throw an exception if g(t) = 0.0 in [tb, tb + convergence]
+            beforeRootT = tb;
+            beforeRootG = gb;
+            afterRootT = shiftedBy(beforeRootT, convergence);
+            afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+        } else if (ga != 0.0) {
+            final double newGa = g(interpolator.getInterpolatedState(ta));
+            if (ga > 0 != newGa > 0) {
+                // both non-zero, step sign change at ta, possibly due to reset state
+                beforeRootT = ta;
+                beforeRootG = newGa;
+                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
+                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
+            }
+        }
+
         // loop to skip through "fake" roots, i.e. where g(t) = g'(t) = 0.0
-        AbsoluteDate currentTa = ta;
-        double       currentGa = ga;
-        while (true) {
-            // event time, just at or before the actual root.
-            final AbsoluteDate beforeRoot;
-            // time on the other side of the root
-            AbsoluteDate afterRoot;
-            double afterRootG;
-            if (currentGa == 0.0) {
+        // executed once if we didn't hit a special case above
+        AbsoluteDate loopT = ta;
+        double loopG = ga;
+        while ((afterRootG == 0.0 || afterRootG > 0.0 == g0Positive)
+                && strictlyAfter(afterRootT, tb)) {
+            if (loopG == 0.0) {
                 // ga == 0.0 and gb may or may not be 0.0
                 // handle the root at ta first
-                beforeRoot = currentTa;
-                afterRoot  = minTime(shiftedBy(beforeRoot, detector.getThreshold()), tb);
-                afterRootG = g(interpolator.getInterpolatedState(afterRoot));
-            } else if (gb == 0.0) {
-                // hard: ga != 0.0 and gb == 0.0
-                // look past gb by up to convergence to find next sign
-                // throw an exception if g(t) = 0.0 in [tb, tb + convergence]
-                beforeRoot = tb;
-                afterRoot  = shiftedBy(beforeRoot, detector.getThreshold());
-                afterRootG = g(interpolator.getInterpolatedState(afterRoot));
-            } else if (currentTa.equals(tb)) {
-                // both non-zero but times are the same. Probably due to reset state
-                beforeRoot = currentTa;
-                afterRoot  = shiftedBy(beforeRoot, detector.getThreshold());
-                afterRootG = g(interpolator.getInterpolatedState(afterRoot));
-            } else if (currentGa > 0 != g(interpolator.getInterpolatedState(currentTa)) > 0) {
-                // both non-zero, step sign change at ta, possibly due to reset state
-                // this should only be able to happen the first time through the loop
-                beforeRoot = currentTa;
-                afterRoot  = minTime(shiftedBy(beforeRoot, detector.getThreshold()), tb);
-                afterRootG = g(interpolator.getInterpolatedState(afterRoot));
+                beforeRootT = loopT;
+                beforeRootG = loopG;
+                afterRootT = minTime(shiftedBy(beforeRootT, convergence), tb);
+                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             } else {
                 // both non-zero, the usual case, use a root finder.
                 try {
+                    // time zero for evaluating the function f. Needs to be final
+                    final AbsoluteDate fT0 = loopT;
                     final UnivariateFunction f = dt -> {
                         try {
-                            return g(interpolator.getInterpolatedState(t0.shiftedBy(dt)));
+                            return g(interpolator.getInterpolatedState(fT0.shiftedBy(dt)));
                         } catch (OrekitException oe) {
                             throw new OrekitExceptionWrapper(oe);
                         }
                     };
-                    final BracketedUnivariateSolver<UnivariateFunction> solver =
-                                    new BracketingNthOrderBrentSolver(detector.getThreshold(), 5);
-
+                    // tb as a double for use in f
+                    final double tbDouble = tb.durationFrom(fT0);
                     if (forward) {
                         final Interval interval =
-                                        solver.solveInterval(detector.getMaxIterationCount(), f,
-                                                             currentTa.durationFrom(t0), tb.durationFrom(t0));
-                        beforeRoot = t0.shiftedBy(interval.getLeftAbscissa());
-                        afterRoot  = t0.shiftedBy(interval.getRightAbscissa());
+                                solver.solveInterval(maxIterationCount, f, 0, tbDouble);
+                        beforeRootT = fT0.shiftedBy(interval.getLeftAbscissa());
+                        beforeRootG = interval.getLeftValue();
+                        afterRootT = fT0.shiftedBy(interval.getRightAbscissa());
                         afterRootG = interval.getRightValue();
                     } else {
                         final Interval interval =
-                                        solver.solveInterval(detector.getMaxIterationCount(), f,
-                                                             tb.durationFrom(t0), currentTa.durationFrom(t0));
-                        beforeRoot = t0.shiftedBy(interval.getRightAbscissa());
-                        afterRoot  = t0.shiftedBy(interval.getLeftAbscissa());
+                                solver.solveInterval(maxIterationCount, f, tbDouble, 0);
+                        beforeRootT = fT0.shiftedBy(interval.getRightAbscissa());
+                        beforeRootG = interval.getRightValue();
+                        afterRootT = fT0.shiftedBy(interval.getLeftAbscissa());
                         afterRootG = interval.getLeftValue();
                     }
                 } catch (OrekitExceptionWrapper oew) {
@@ -318,41 +354,40 @@ public class EventState<T extends EventDetector> implements Serializable {
             }
             // tolerance is set to less than 1 ulp
             // assume tolerance is 1 ulp
-            if (beforeRoot.equals(afterRoot)) {
-                afterRoot  = nextAfter(afterRoot);
-                afterRootG = g(interpolator.getInterpolatedState(afterRoot));
+            if (beforeRootT.equals(afterRootT)) {
+                afterRootT = nextAfter(afterRootT);
+                afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
             // check loop is making some progress
-            check((forward && afterRoot.compareTo(beforeRoot) > 0) ||
-                  (!forward && afterRoot.compareTo(beforeRoot) < 0));
-
-            if (afterRootG == 0.0 || afterRootG > 0.0 == g0Positive) {
-                // didn't see expected sign change, skip this root,
-                // likely an extrema at g = 0.0
-                if (tb.equals(afterRoot) || strictlyAfter(tb, afterRoot)) {
-                    // can't try again within this step.
-                    return false;
-                } else {
-                    // try again within these bounds
-                    currentTa = afterRoot;
-                    currentGa = afterRootG;
-                }
-            } else {
-                // real crossing
-                // variation direction, with respect to the integration direction
-                increasing = !g0Positive;
-                pendingEventTime = beforeRoot;
-                pendingEvent = true;
-                afterEvent = afterRoot;
-                afterG = afterRootG;
-
-                // check increasing set correctly
-                check(afterG > 0 == increasing);
-                check(increasing == gb >= currentGa);
-
-                return true;
-            }
+            check((forward && afterRootT.compareTo(beforeRootT) > 0)
+                    || (!forward && afterRootT.compareTo(beforeRootT) < 0));
+            // setup next iteration
+            loopT = afterRootT;
+            loopG = afterRootG;
         }
+
+        // figure out the result of root finding, and return accordingly
+        if (afterRootG == 0.0 || afterRootG > 0.0 == g0Positive) {
+            // loop gave up and didn't find any crossing within this step
+            return false;
+        } else {
+            // real crossing
+            check(beforeRootT != null && !Double.isNaN(beforeRootG));
+            // variation direction, with respect to the integration direction
+            increasing = !g0Positive;
+            pendingEventTime = beforeRootT;
+            stopTime = beforeRootG == 0.0 ? beforeRootT : afterRootT;
+            pendingEvent = true;
+            afterEvent = afterRootT;
+            afterG = afterRootG;
+
+            // check increasing set correctly
+            check(afterG > 0 == increasing);
+            check(increasing == gb >= ga);
+
+            return true;
+        }
+
     }
 
     /**
@@ -405,7 +440,8 @@ public class EventState<T extends EventDetector> implements Serializable {
         final double g = g(state);
         final boolean positive = g > 0;
 
-        if ((g == 0.0 && pendingEventTime.equals(t)) || positive == g0Positive) {
+        // check for new root, pendingEventTime may be null if there is not pending event
+        if ((g == 0.0 && t.equals(pendingEventTime)) || positive == g0Positive) {
             // at a root we already found, or g function has expected sign
             t0 = t;
             g0 = g; // g0Positive is the same
@@ -453,7 +489,7 @@ public class EventState<T extends EventDetector> implements Serializable {
         g0Positive = increasing;
         // check g0Positive set correctly
         check(g0 == 0.0 || g0Positive == (g0 > 0));
-        return new EventOccurrence(action, newState, earliestTimeConsidered);
+        return new EventOccurrence(action, newState, stopTime);
     }
 
     /**

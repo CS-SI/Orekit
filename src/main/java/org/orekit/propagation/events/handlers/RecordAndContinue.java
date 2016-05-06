@@ -100,7 +100,21 @@ public class RecordAndContinue<T extends EventDetector>
     }
 
     /** Observed events. */
-    private final List<Event<T>> events = new ArrayList<Event<T>>();
+    private final List<Event<T>> events;
+
+    /** Create a new handler using an {@link ArrayList} to store events. */
+    public RecordAndContinue() {
+        this(new ArrayList<>());
+    }
+
+    /**
+     * Create a handler using the given collection to store events.
+     *
+     * @param events collection.
+     */
+    public RecordAndContinue(final List<Event<T>> events) {
+        this.events = events;
+    }
 
     /**
      * Get the events passed to this handler.
