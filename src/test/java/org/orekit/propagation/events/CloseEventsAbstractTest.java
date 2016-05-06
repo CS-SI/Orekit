@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.events;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -36,10 +40,6 @@ import org.orekit.propagation.events.handlers.RecordAndContinue.Event;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Check events are detected correctly when the event times are close.
@@ -724,6 +724,68 @@ public abstract class CloseEventsAbstractTest {
         Assert.assertEquals(30.0, finalState.getDate().durationFrom(epoch), 0.0);
     }
 
+    /**
+     * The root finder requires the start point to be in the interval (a, b) which is hard
+     * when there aren't many numbers between a and b. This test uses a second event
+     * detector to force a very small window for the first event detector.
+     */
+    @Test
+    public void testShortBracketingInterval() throws OrekitException {
+        // setup
+        double maxCheck = 10;
+        double tolerance = 1e-6;
+        final double t1 = FastMath.nextUp(10.0), t2 = 10.5;
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        // never zero so there is no easy way out
+        EventDetector detectorA = new AbstractDetector<EventDetector>
+                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
+            @Override
+            public double g(SpacecraftState state) {
+                final AbsoluteDate t = state.getDate();
+                if (t.compareTo(epoch.shiftedBy(t1)) < 0) {
+                    return -1;
+                } else if (t.compareTo(epoch.shiftedBy(t2)) < 0) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
+
+            @Override
+            protected EventDetector create(
+                    double newMaxCheck,
+                    double newThreshold,
+                    int newMaxIter,
+                    EventHandler<? super EventDetector> newHandler) {
+                return null;
+            }
+        };
+        TimeDetector detectorB = new TimeDetector(t1)
+                .withHandler(new RecordAndContinue<>(events))
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance);
+        Propagator propagator = getPropagator(10, 10);
+        propagator.addEventDetector(detectorA);
+        propagator.addEventDetector(detectorB);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(30.0));
+
+        // verify
+        Assert.assertEquals(3, events.size());
+        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assert.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(1).isIncreasing());
+        Assert.assertSame(detectorB, events.get(1).getDetector());
+        Assert.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(false, events.get(2).isIncreasing());
+        Assert.assertSame(detectorA, events.get(2).getDetector());
+    }
+
+
 
 
     /* The following tests are copies of the above tests, except that they propagate in
@@ -1387,6 +1449,67 @@ public abstract class CloseEventsAbstractTest {
 
         // verify it got to the end
         Assert.assertEquals(-30.0, finalState.getDate().durationFrom(epoch), 0.0);
+    }
+
+    /**
+     * The root finder requires the start point to be in the interval (a, b) which is hard
+     * when there aren't many numbers between a and b. This test uses a second event
+     * detector to force a very small window for the first event detector.
+     */
+    @Test
+    public void testShortBracketingIntervalReverse() throws OrekitException {
+        // setup
+        double maxCheck = 10;
+        double tolerance = 1e-6;
+        final double t1 = FastMath.nextDown(-10.0), t2 = -10.5;
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        // never zero so there is no easy way out
+        EventDetector detectorA = new AbstractDetector<EventDetector>
+                (maxCheck, tolerance, 100, new RecordAndContinue<>(events)) {
+            @Override
+            public double g(SpacecraftState state) {
+                final AbsoluteDate t = state.getDate();
+                if (t.compareTo(epoch.shiftedBy(t1)) > 0) {
+                    return -1;
+                } else if (t.compareTo(epoch.shiftedBy(t2)) > 0) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
+
+            @Override
+            protected EventDetector create(
+                    double newMaxCheck,
+                    double newThreshold,
+                    int newMaxIter,
+                    EventHandler<? super EventDetector> newHandler) {
+                return null;
+            }
+        };
+        TimeDetector detectorB = new TimeDetector(t1)
+                .withHandler(new RecordAndContinue<>(events))
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance);
+        Propagator propagator = getPropagator(10, 10);
+        propagator.addEventDetector(detectorA);
+        propagator.addEventDetector(detectorB);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-30.0));
+
+        // verify
+        Assert.assertEquals(3, events.size());
+        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(false, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+        Assert.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(1).isIncreasing());
+        Assert.assertSame(detectorB, events.get(1).getDetector());
+        Assert.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(2).isIncreasing());
+        Assert.assertSame(detectorA, events.get(2).getDetector());
     }
 
 
