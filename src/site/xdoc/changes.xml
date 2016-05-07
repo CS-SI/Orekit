@@ -38,6 +38,15 @@
       <action dev="luc" type="add">
         Added an orbit determination feature!
       </action>
+      <action dev="evan" type="add">
+        Add EventHandler to record all events.
+      </action>
+      <action dev="evan" type="fix">
+        Fix exception during event detection using
+        NumericalPropagator.getGeneratedEphemeris() near the start/end date of
+        the generated ephemeris.
+        Fixes issue #238
+      </action>
     </release>
     <release version="7.2" date="TBC"
              description="Version 7.2 is a minor release of Orekit. It introduces several new
