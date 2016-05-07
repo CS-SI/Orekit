@@ -310,8 +310,8 @@ public class EventState<T extends EventDetector> implements Serializable {
         // executed once if we didn't hit a special case above
         AbsoluteDate loopT = ta;
         double loopG = ga;
-        while ((afterRootG == 0.0 || afterRootG > 0.0 == g0Positive)
-                && strictlyAfter(afterRootT, tb)) {
+        while ((afterRootG == 0.0 || afterRootG > 0.0 == g0Positive) &&
+                strictlyAfter(afterRootT, tb)) {
             if (loopG == 0.0) {
                 // ga == 0.0 and gb may or may not be 0.0
                 // handle the root at ta first
@@ -359,8 +359,8 @@ public class EventState<T extends EventDetector> implements Serializable {
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
             // check loop is making some progress
-            check((forward && afterRootT.compareTo(beforeRootT) > 0)
-                    || (!forward && afterRootT.compareTo(beforeRootT) < 0));
+            check((forward && afterRootT.compareTo(beforeRootT) > 0) ||
+                  (!forward && afterRootT.compareTo(beforeRootT) < 0));
             // setup next iteration
             loopT = afterRootT;
             loopG = afterRootG;
