@@ -47,7 +47,7 @@ public class DOPComputerTest {
     @BeforeClass
     public static void setUpBeforeClass() throws OrekitException {
         // Sets the root of data to read
-        Utils.setDataRoot("regular-data:gnss");
+        Utils.setDataRoot("gnss");
         // Defines the Earth shape
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
@@ -184,7 +184,7 @@ public class DOPComputerTest {
         Assert.assertEquals(0.81, dop.getHdop(), 0.01);
         Assert.assertEquals(1.28, dop.getPdop(), 0.01);
         Assert.assertEquals(0.56, dop.getTdop(), 0.01);
-        Assert.assertEquals(0.99, dop.getVdop(), 0.01);
+        Assert.assertEquals(1.00, dop.getVdop(), 0.01);
     }
 
     @Test(expected=OrekitException.class)
@@ -226,7 +226,7 @@ public class DOPComputerTest {
 
     private List<Propagator> getTlePropagators() throws OrekitException {
         // Reads the TLEs for all the SV from the GPS constellation ...
-        TLESeries series = new TLESeries("^gps-ops\\.txt$", true);
+        TLESeries series = new TLESeries("^gps-week-862\\.txt$", true);
         // .. and gets a list of TLEPropagators from each TLE read
         List<Propagator> propagators = new ArrayList<Propagator>();
         for (int i: series.getAvailableSatelliteNumbers()) {

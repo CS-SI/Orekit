@@ -16,7 +16,8 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -193,68 +194,56 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     }
 
     /**
-     * Gets the PVCoordinates of the GPS SV at the requested date in
-     * the {@link #getECEF() ECEF frame} from the GPS orbital elements.
+     * Gets the PVCoordinates of the GPS SV in {@link #getECEF() ECEF frame}.
+     *
+     * <p>The algorithm is defined at Table 20-IV from IS-GPS-200 document,
+     * with automatic differentiation added to compute velocity and
+     * acceleration.</p>
      *
      * @param date the computation date
-     * @return the PVCoordinates in ECEF frame
-     * @see #getECEF()
+     * @return the GPS SV PVCoordinates in {@link #getECEF() ECEF frame}
      */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date) {
-        // Computes the position at the date
-        final Vector3D pos = progate(date);
-        // TODO: computes the velocity ...
-        final Vector3D vel = Vector3D.NaN;
-        final Vector3D acc = Vector3D.NaN;
-        // Gets the transform
-        return new PVCoordinates(pos, vel, acc);
-    }
-
-    /**
-     * Gets the position of the GPS SV in WGS84 ECEF.
-     *
-     * <p>The algorithm is defined at Table 20-IV from IS-GPS-200 document.</p>
-     *
-     * @param date the computation date
-     * @return the GPS SV position in WGS84 ECEF
-     */
-    public Vector3D progate(final AbsoluteDate date) {
+    public PVCoordinates propagateInEcef(final AbsoluteDate date) {
         // Duration from GPS ephemeris Reference date
-        final double tk = getTk(date);
+        final DerivativeStructure tk = new DerivativeStructure(1, 2, 0, getTk(date));
         // Mean anomaly
-        final double mk = gpsOrbit.getM0() + gpsOrbit.getMeanMotion() * tk;
+        final DerivativeStructure mk = tk.multiply(gpsOrbit.getMeanMotion()).add(gpsOrbit.getM0());
         // Eccentric Anomaly
-        final double ek = getEccentricAnomaly(mk);
+        final DerivativeStructure ek = getEccentricAnomaly(mk);
         // True Anomaly
-        final double vk =  getTrueAnomaly(ek);
+        final DerivativeStructure vk =  getTrueAnomaly(ek);
         // Argument of Latitude
-        final double phik = vk + gpsOrbit.getPa();
-        final double c2phi = FastMath.cos(2. * phik);
-        final double s2phi = FastMath.sin(2. * phik);
+        final DerivativeStructure phik    = vk.add(gpsOrbit.getPa());
+        final DerivativeStructure twoPhik = phik.multiply(2);
+        final DerivativeStructure c2phi   = twoPhik.cos();
+        final DerivativeStructure s2phi   = twoPhik.sin();
         // Argument of Latitude Correction
-        final double dphik = gpsOrbit.getCuc() * c2phi + gpsOrbit.getCus() * s2phi;
+        final DerivativeStructure dphik = c2phi.multiply(gpsOrbit.getCuc()).add(s2phi.multiply(gpsOrbit.getCus()));
         // Radius Correction
-        final double drk = gpsOrbit.getCrc() * c2phi + gpsOrbit.getCrs() * s2phi;
+        final DerivativeStructure drk = c2phi.multiply(gpsOrbit.getCrc()).add(s2phi.multiply(gpsOrbit.getCrs()));
         // Inclination Correction
-        final double dik = gpsOrbit.getCic() * c2phi + gpsOrbit.getCis() * s2phi;
+        final DerivativeStructure dik = c2phi.multiply(gpsOrbit.getCic()).add(s2phi.multiply(gpsOrbit.getCis()));
         // Corrected Argument of Latitude
-        final double uk = phik + dphik;
+        final DerivativeStructure uk = phik.add(dphik);
         // Corrected Radius
-        final double rk = gpsOrbit.getSma() * (1. - gpsOrbit.getE() * FastMath.cos(ek)) + drk;
+        final DerivativeStructure rk = ek.cos().multiply(-gpsOrbit.getE()).add(1).multiply(gpsOrbit.getSma()).add(drk);
         // Corrected Inclination
-        final double ik = gpsOrbit.getI0() + gpsOrbit.getIDot() * tk + dik;
-        final double cik = FastMath.cos(ik);
+        final DerivativeStructure ik  = tk.multiply(gpsOrbit.getIDot()).add(gpsOrbit.getI0()).add(dik);
+        final DerivativeStructure cik = ik.cos();
         // Positions in orbital plane
-        final double xk = rk * FastMath.cos(uk);
-        final double yk = rk * FastMath.sin(uk);
+        final DerivativeStructure xk = uk.cos().multiply(rk);
+        final DerivativeStructure yk = uk.sin().multiply(rk);
         // Corrected longitude of ascending node
-        final double omk = gpsOrbit.getOmega0() + (gpsOrbit.getOmegaDot() - GPS_AV) * tk - GPS_AV * gpsOrbit.getTime();
-        final double comk = FastMath.cos(omk);
-        final double somk = FastMath.sin(omk);
+        final DerivativeStructure omk = tk.multiply(gpsOrbit.getOmegaDot() - GPS_AV).
+                                        add(gpsOrbit.getOmega0() - GPS_AV * gpsOrbit.getTime());
+        final DerivativeStructure comk = omk.cos();
+        final DerivativeStructure somk = omk.sin();
         // returns the Earth-fixed coordinates
-        return new Vector3D(xk * comk - yk * somk * cik,
-                            xk * somk + yk * comk * cik,
-                            yk * FastMath.sin(ik));
+        final FieldVector3D<DerivativeStructure> positionwithDerivatives =
+                        new FieldVector3D<DerivativeStructure>(xk.multiply(comk).subtract(yk.multiply(somk).multiply(cik)),
+                                                               xk.multiply(somk).add(yk.multiply(comk).multiply(cik)),
+                                                               yk.multiply(ik.sin()));
+        return new PVCoordinates(positionwithDerivatives);
     }
 
     /**
@@ -288,50 +277,56 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
      * @param mk the mean anomaly (rad)
      * @return the eccentric anomaly (rad)
      */
-    private double getEccentricAnomaly(final double mk) {
+    private DerivativeStructure getEccentricAnomaly(final DerivativeStructure mk) {
+
         // reduce M to [-PI PI] interval
-        final double reducedM = MathUtils.normalizeAngle(mk, 0.0);
+        final double[] mlDerivatives = mk.getAllDerivatives();
+        mlDerivatives[0] = MathUtils.normalizeAngle(mlDerivatives[0], 0.0);
+        final DerivativeStructure reducedM = new DerivativeStructure(mk.getFreeParameters(),
+                                                                     mk.getOrder(),
+                                                                     mlDerivatives);
+
         // compute start value according to A. W. Odell and R. H. Gooding S12 starter
-        double ek;
-        if (FastMath.abs(reducedM) < 1.0 / 6.0) {
-            ek = reducedM + gpsOrbit.getE() * (FastMath.cbrt(6 * reducedM) - reducedM);
+        DerivativeStructure ek;
+        if (FastMath.abs(reducedM.getValue()) < 1.0 / 6.0) {
+            ek = reducedM.add(reducedM.multiply(6).cbrt().subtract(reducedM).multiply(gpsOrbit.getE()));
         } else {
-            if (reducedM < 0) {
-                final double w = FastMath.PI + reducedM;
-                ek = reducedM + gpsOrbit.getE() * (A * w / (B - w) - FastMath.PI - reducedM);
+            if (reducedM.getValue() < 0) {
+                final DerivativeStructure w = reducedM.add(FastMath.PI);
+                ek = reducedM.add(w.multiply(-A).divide(w.subtract(B)).subtract(FastMath.PI).subtract(reducedM).multiply(gpsOrbit.getE()));
             } else {
-                final double w = FastMath.PI - reducedM;
-                ek = reducedM + gpsOrbit.getE() * (FastMath.PI - A * w / (B - w) - reducedM);
+                final DerivativeStructure minusW = reducedM.subtract(FastMath.PI);
+                ek = reducedM.add(minusW.multiply(A).divide(minusW.add(B)).add(FastMath.PI).subtract(reducedM).multiply(gpsOrbit.getE()));
             }
         }
 
         final double e1 = 1 - gpsOrbit.getE();
-        final boolean noCancellationRisk = (e1 + ek * ek / 6) >= 0.1;
+        final boolean noCancellationRisk = (e1 + ek.getValue() * ek.getValue() / 6) >= 0.1;
 
         // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
         for (int j = 0; j < 2; ++j) {
-            final double f;
-            double fd;
-            final double fdd  = gpsOrbit.getE() * FastMath.sin(ek);
-            final double fddd = gpsOrbit.getE() * FastMath.cos(ek);
+            final DerivativeStructure f;
+            DerivativeStructure fd;
+            final DerivativeStructure fdd  = ek.sin().multiply(gpsOrbit.getE());
+            final DerivativeStructure fddd = ek.cos().multiply(gpsOrbit.getE());
             if (noCancellationRisk) {
-                f  = (ek - fdd) - reducedM;
-                fd = 1 - fddd;
+                f  = ek.subtract(fdd).subtract(reducedM);
+                fd = fddd.subtract(1).negate();
             } else {
-                f  = eMeSinE(ek) - reducedM;
-                final double s = FastMath.sin(0.5 * ek);
-                fd = e1 + 2 * gpsOrbit.getE() * s * s;
+                f  = eMeSinE(ek).subtract(reducedM);
+                final DerivativeStructure s = ek.multiply(0.5).sin();
+                fd = s.multiply(s).multiply(2 * gpsOrbit.getE()).add(e1);
             }
-            final double dee = f * fd / (0.5 * f * fdd - fd * fd);
+            final DerivativeStructure dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
 
             // update eccentric anomaly, using expressions that limit underflow problems
-            final double w = fd + 0.5 * dee * (fdd + dee * fddd / 3);
-            fd += dee * (fdd + 0.5 * dee * fddd);
-            ek -= (f - dee * (fd - w)) / fd;
+            final DerivativeStructure w = fd.add(dee.multiply(0.5).multiply(fdd.add(dee.multiply(fdd).divide(3))));
+            fd = fd.add(dee.multiply(fdd.add(dee.multiply(0.5).multiply(fdd))));
+            ek = ek.subtract(f.subtract(dee.multiply(fd.subtract(w))).divide(fd));
         }
 
         // expand the result back to original range
-        ek += mk - reducedM;
+        ek = ek.add(mk.getValue() - reducedM.getValue());
 
         // Returns the eccentric anomaly
         return ek;
@@ -343,17 +338,17 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
      * @param E eccentric anomaly
      * @return E - e sin(E)
      */
-    private double eMeSinE(final double E) {
-        double x = (1 - gpsOrbit.getE()) * FastMath.sin(E);
-        final double mE2 = -E * E;
-        double term = E;
-        double d    = 0;
+    private DerivativeStructure eMeSinE(final DerivativeStructure E) {
+        DerivativeStructure x = E.sin().multiply(1 - gpsOrbit.getE());
+        final DerivativeStructure mE2 = E.negate().multiply(E);
+        DerivativeStructure term = E;
+        DerivativeStructure d    = E.getField().getZero();
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (double x0 = Double.NaN; x != x0;) {
-            d += 2;
-            term *= mE2 / (d * (d + 1));
+        for (DerivativeStructure x0 = d.add(Double.NaN); x.getValue() != x0.getValue();) {
+            d = d.add(2);
+            term = term.multiply(mE2.divide(d.multiply(d.add(1))));
             x0 = x;
-            x = x - term;
+            x = x.subtract(term);
         }
         return x;
     }
@@ -363,10 +358,10 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
      * @param ek the eccentric anomaly (rad)
      * @return the true anomaly (rad)
      */
-    private double getTrueAnomaly(final double ek) {
-        final double svk = FastMath.sin(ek) * FastMath.sqrt(1. - gpsOrbit.getE() * gpsOrbit.getE());
-        final double cvk = FastMath.cos(ek) - gpsOrbit.getE();
-        return FastMath.atan2(svk, cvk);
+    private DerivativeStructure getTrueAnomaly(final DerivativeStructure ek) {
+        final DerivativeStructure svk = ek.sin().multiply(FastMath.sqrt(1. - gpsOrbit.getE() * gpsOrbit.getE()));
+        final DerivativeStructure cvk = ek.cos().subtract(gpsOrbit.getE());
+        return svk.atan2(cvk);
     }
 
     /**
@@ -418,7 +413,7 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-            throws PropagationException {
+        throws PropagationException {
         throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
@@ -431,7 +426,7 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     protected Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
         try {
             // Gets the PVCoordinates in ECEF frame
-            final PVCoordinates pvaInECEF = getPVCoordinates(date);
+            final PVCoordinates pvaInECEF = propagateInEcef(date);
             // Transforms the PVCoordinates to ECI frame
             final PVCoordinates pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
             // Returns the Cartesian orbit

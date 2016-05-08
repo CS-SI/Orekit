@@ -35,7 +35,7 @@ public class SEMParserTest {
 
     @Before
     public void setUp() throws OrekitException {
-        Utils.setDataRoot("regular-data:gnss");
+        Utils.setDataRoot("gnss");
     }
 
     @Test
