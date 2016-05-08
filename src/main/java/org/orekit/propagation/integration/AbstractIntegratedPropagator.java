@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathIllegalStateException;
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.EquationsMapper;
 import org.hipparchus.ode.ExpandableODE;
@@ -279,7 +278,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(ODEIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -293,7 +292,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(ODEIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setMasterMode(final OrekitStepHandler handler) {
@@ -307,7 +306,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(ODEIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {
@@ -895,13 +894,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             return convert(mathInterpolator.getCurrentState());
         }
 
-        /** Get the interpolated state.
-         * @return interpolated state at the current interpolation date
-         * @exception OrekitException if state cannot be interpolated or converted
-         * @see #getInterpolatedDate()
-         * @see #setInterpolatedDate(AbsoluteDate)
-         */
-        public SpacecraftState getInterpolatedState(final AbsoluteDate date) throws PropagationException {
+        /** {@inheritDoc}} */
+        @Override
+        public SpacecraftState getInterpolatedState(final AbsoluteDate date)
+            throws PropagationException {
             return convert(mathInterpolator.getInterpolatedState(date.durationFrom(getStartDate())));
         }
 
@@ -914,7 +910,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @see #getInterpolatedDate()
          * @see #setInterpolatedDate(AbsoluteDate)
          */
-        private SpacecraftState convert(final ODEStateAndDerivative os) throws PropagationException {
+        private SpacecraftState convert(final ODEStateAndDerivative os)
+            throws PropagationException {
             try {
 
                 SpacecraftState s =

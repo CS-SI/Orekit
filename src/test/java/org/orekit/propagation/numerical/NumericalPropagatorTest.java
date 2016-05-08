@@ -96,7 +96,7 @@ public class NumericalPropagatorTest {
         ephemeris.addEventDetector(detector);
 
         //action
-        // fails when this trows an "out of rand date for ephemerides"
+        // fails when this throws an "out of range date for ephemerides"
         SpacecraftState actual = ephemeris.propagate(end);
 
         //verify

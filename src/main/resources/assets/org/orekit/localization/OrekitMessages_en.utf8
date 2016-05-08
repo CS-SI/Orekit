@@ -387,3 +387,18 @@ ORBIT_TYPE_NOT_ALLOWED = orbit type {0} not allowed here, allowed types: {1}
 
 # body shape is not an ellipsoid
 BODY_SHAPE_IS_NOT_AN_ELLIPSOID = body shape is not an ellipsoid
+
+# no SEM almanac file found
+NO_SEM_ALMANAC_AVAILABLE = no SEM almanac file found
+
+# file {0} is not a supported SEM almanac file
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE = file {0} is not a supported SEM almanac file
+
+# no Yuma almanac file found
+NO_YUMA_ALMANAC_AVAILABLE = no Yuma almanac file found
+
+# file {0} is not a supported Yuma almanac file
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = file {0} is not a supported Yuma almanac file
+
+# only {0} GNSS orbits are provided while {1} are needed to compute the DOP
+NOT_ENOUGH_GNSS_FOR_DOP = only {0} GNSS orbits are provided while {1} are needed to compute the DOP

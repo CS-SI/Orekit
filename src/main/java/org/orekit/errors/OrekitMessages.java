@@ -176,7 +176,12 @@ public enum OrekitMessages implements Localizable {
     OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range"),
     OUT_OF_RANGE_LATITUDE("out of range latitude: {0}, [{1}, {2}]"),
     ORBIT_TYPE_NOT_ALLOWED("orbit type {0} not allowed here, allowed types: {1}"),
-    BODY_SHAPE_IS_NOT_AN_ELLIPSOID("body shape is not an ellipsoid");
+    BODY_SHAPE_IS_NOT_AN_ELLIPSOID("body shape is not an ellipsoid"),
+    NO_SEM_ALMANAC_AVAILABLE("no SEM almanac file found"),
+    NOT_A_SUPPORTED_SEM_ALMANAC_FILE("file {0} is not a supported SEM almanac file"),
+    NO_YUMA_ALMANAC_AVAILABLE("no Yuma almanac file found"),
+    NOT_A_SUPPORTED_YUMA_ALMANAC_FILE("file {0} is not a supported Yuma almanac file"),
+    NOT_ENOUGH_GNSS_FOR_DOP("only {0} GNSS orbits are provided while {1} are needed to compute the DOP");
 
     // CHECKSTYLE: resume JavadocVariable check
 
