@@ -46,6 +46,7 @@
     * composite transforms reduction and caching for efficiency
     * extensible central body shapes models (with predefined spherical and ellipsoidic shapes)
     * Cartesian and geodesic coordinates, kinematics
+    * Computation of Dilution Of Precision (DOP) with respect to GNSS constellations
 
   * Spacecraft state
 
@@ -93,6 +94,7 @@
       * file based
       * memory based
       * integration based
+    * specialized GPS propagation, using SEM or YUMA files
     * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
     * all propagators can be used in several different modes
@@ -163,6 +165,7 @@
   
     * loading of SP3-a and SP3-c orbit files
     * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
+    * loading of SEM and YUMA files for GPS constellation
 
   * Earth models
   

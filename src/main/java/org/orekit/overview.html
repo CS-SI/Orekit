@@ -54,6 +54,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>composite transforms reduction and caching for efficiency</li>
       <li>extensible central body shapes models (with predefined spherical and ellipsoidic shapes)</li>
       <li>Cartesian and geodesic coordinates, kinematics</li>
+      <li>Computation of Dilution Of Precision (DOP) with respect to GNSS constellations</li>
     </ul>
   </li>
   <li>Spacecraft state
@@ -109,6 +110,8 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>memory based</li>
           <li>integration based</li>
         </ul>
+      </li>
+      <li>specialized GPS propagation, using SEM or YUMA files
       </li>
       <li>unified interface above analytical/numerical/tabulated propagators for easy
           switch from coarse analysis to fine simulation with one line change</li>
@@ -198,6 +201,7 @@ discrete events. Here is a short list of the features offered by the library:</p
     <ul>
       <li>loading of SP3-a and SP3-c orbit files</li>
       <li>loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)</li>
+      <li>loading of SEM and YUMA files for GPS constellation</li>
     </ul>
   </li>
   <li>Earth models
@@ -224,7 +228,7 @@ discrete events. Here is a short list of the features offered by the library:</p
 
 <h2>3. Dependency</h2>
 <p>
-OREKIT has only one dependency: the <a href="https://hipparchus/">Hipparchus</a>
+OREKIT has only one dependency: the <a href="https://hipparchus.org/">Hipparchus</a>
 open-source library. This library provides mathematical tools for many purposes: geometry,
 polynomial equations, differential equations, and more... It is distributed under the
 business-friendly Apache Software License version 2.0.
