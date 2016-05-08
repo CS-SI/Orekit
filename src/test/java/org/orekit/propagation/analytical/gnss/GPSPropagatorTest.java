@@ -168,7 +168,7 @@ public class GPSPropagatorTest {
                 final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
                 final double h = 10.0;
                 List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
-                for (int i = -3; i < 3; ++i) {
+                for (int i = -3; i <= 3; ++i) {
                     sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
                 }
                 final PVCoordinates interpolated =
@@ -181,8 +181,8 @@ public class GPSPropagatorTest {
             }
         }
         Assert.assertEquals(0.0, errorP, 3.8e-9);
-        Assert.assertEquals(0.0, errorV, 4.3e-8);
-        Assert.assertEquals(0.0, errorA, 9.3e-9);
+        Assert.assertEquals(0.0, errorV, 3.5e-8);
+        Assert.assertEquals(0.0, errorA, 1.1e-8);
 
     }
 
