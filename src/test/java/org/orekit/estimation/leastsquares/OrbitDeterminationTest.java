@@ -37,7 +37,7 @@ import java.util.TreeSet;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.hipparchus.stat.descriptive.SummaryStatistics;
+import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
@@ -282,17 +282,17 @@ public class OrbitDeterminationTest {
        private int numberOfIteration;
        private int numberOfEvaluation;
        private PVCoordinates estimatedPV;
-       private SummaryStatistics rangeStat;
-       private SummaryStatistics azimStat;
-       private SummaryStatistics elevStat;
+       private StreamingStatistics rangeStat;
+       private StreamingStatistics azimStat;
+       private StreamingStatistics elevStat;
        private  List<ParameterDriver> propagatorParameters  ;
        private  List<ParameterDriver> measurementsParameters;
        ResultOD(List<ParameterDriver>  propagatorParameters,
                 List<ParameterDriver>  measurementsParameters,
                 int numberOfIteration, int numberOfEvaluation, PVCoordinates estimatedPV,
-                SummaryStatistics rangeStat, SummaryStatistics rangeRateStat,
-                SummaryStatistics azimStat, SummaryStatistics elevStat,
-                SummaryStatistics posStat, SummaryStatistics velStat) {
+                StreamingStatistics rangeStat, StreamingStatistics rangeRateStat,
+                StreamingStatistics azimStat, StreamingStatistics elevStat,
+                StreamingStatistics posStat, StreamingStatistics velStat) {
 
            this.propagatorParameters   = propagatorParameters;
            this.measurementsParameters = measurementsParameters;
@@ -320,18 +320,18 @@ public class OrbitDeterminationTest {
     }
 
 
-    public SummaryStatistics getRangeStat() {
+    public StreamingStatistics getRangeStat() {
         return rangeStat;
     }
 
 
 
-    public SummaryStatistics getAzimStat() {
+    public StreamingStatistics getAzimStat() {
         return azimStat;
     }
 
 
-    public SummaryStatistics getElevStat() {
+    public StreamingStatistics getElevStat() {
         return elevStat;
     }
 
@@ -1402,10 +1402,10 @@ public class OrbitDeterminationTest {
 
         /**Create a  statistics summary
          */
-        public SummaryStatistics createStatisticsSummary() {
+        public StreamingStatistics createStatisticsSummary() {
             if (!evaluations.isEmpty()) {
                 // compute statistics
-                final SummaryStatistics stats = SummaryStatistics.create();
+                final StreamingStatistics stats = new StreamingStatistics();
                 for (final Evaluation<T> evaluation : evaluations) {
                     stats.addValue(residual(evaluation));
                 }

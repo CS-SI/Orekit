@@ -41,7 +41,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.hipparchus.stat.descriptive.SummaryStatistics;
+import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.bodies.CelestialBody;
@@ -1364,7 +1364,7 @@ public class OrbitDetermination {
             if (!evaluations.isEmpty()) {
 
                 // compute statistics
-                final SummaryStatistics stats = SummaryStatistics.create();
+                final StreamingStatistics stats = new StreamingStatistics();
                 for (final Evaluation<T> evaluation : evaluations) {
                     stats.addValue(residual(evaluation));
                 }

@@ -26,7 +26,7 @@ import java.util.Locale;
 
 import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
-import org.hipparchus.stat.descriptive.SummaryStatistics;
+import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.GeodeticPoint;
@@ -181,7 +181,7 @@ public class DOPComputation {
         System.out.println("                           PDOP");
         System.out.println("          Date           min  max");
         for (List<DOP> dopAtDate : allDop) {
-            final SummaryStatistics pDoP = SummaryStatistics.create();
+            final StreamingStatistics pDoP = new StreamingStatistics();
             for (DOP dopAtLoc : dopAtDate) {
                 pDoP.addValue(dopAtLoc.getPdop());
             }
