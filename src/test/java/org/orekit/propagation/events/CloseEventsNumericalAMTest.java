@@ -19,17 +19,15 @@ public class CloseEventsNumericalAMTest extends CloseEventsAbstractTest {
     /**
      * Create a propagator using the {@link #initialOrbit}.
      *
-     * @param minStep   of integrator.
-     * @param maxStep   of integrator.
+     * @param stepSize   of integrator.
      * @return a usable propagator.
      * @throws OrekitException
      */
-    public Propagator getPropagator(double minStep,
-                                    double maxStep) throws OrekitException {
+    public Propagator getPropagator(double stepSize) throws OrekitException {
         double[][] tol = NumericalPropagator
                 .tolerances(1, initialOrbit, OrbitType.CARTESIAN);
         final NumericalPropagator propagator = new NumericalPropagator(
-                new AdamsMoultonIntegrator(4, minStep, maxStep, tol[0], tol[1]));
+                new AdamsMoultonIntegrator(4, stepSize, stepSize, tol[0], tol[1]));
         propagator.setInitialState(new SpacecraftState(initialOrbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
         return propagator;
