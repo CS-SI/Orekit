@@ -2,6 +2,7 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.ode.nonstiff.AdamsBashforthIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsMoultonIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.Propagator;
@@ -26,8 +27,14 @@ public class CloseEventsNumericalAMTest extends CloseEventsAbstractTest {
     public Propagator getPropagator(double stepSize) throws OrekitException {
         double[][] tol = NumericalPropagator
                 .tolerances(1, initialOrbit, OrbitType.CARTESIAN);
-        final NumericalPropagator propagator = new NumericalPropagator(
-                new AdamsMoultonIntegrator(4, stepSize, stepSize, tol[0], tol[1]));
+        final AdamsMoultonIntegrator integrator =
+                new AdamsMoultonIntegrator(4, stepSize, stepSize, tol[0], tol[1]);
+        final DormandPrince853Integrator starter =
+                        new DormandPrince853Integrator(stepSize / 100, stepSize / 10,
+                                                       tol[0], tol[1]);
+        starter.setInitialStepSize(stepSize / 20);
+        integrator.setStarterIntegrator(starter);
+        final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(new SpacecraftState(initialOrbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
         return propagator;
