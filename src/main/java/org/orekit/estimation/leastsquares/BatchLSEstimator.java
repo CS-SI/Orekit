@@ -376,7 +376,8 @@ public class BatchLSEstimator {
         return Collections.unmodifiableMap(evaluations);
     }
 
-    /** Get the last {@link LeastSquaresProblem.Evaluation least squares problem evaluation}.
+    /** Get the last {@link org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation
+     * least squares problem evaluation}.
      * @return last least squares problem evaluation
      */
     public LeastSquaresProblem.Evaluation getLastLSPEvaluation() {

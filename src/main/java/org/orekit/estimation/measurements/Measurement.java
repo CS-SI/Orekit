@@ -111,7 +111,7 @@ public interface Measurement<T extends Measurement<T>> extends TimeStamped {
     /** Add a modifier.
      * <p>
      * The modifiers are applied in the order in which they are added in order to
-     * {@link #evaluate(SpacecraftState) evaluate} the measurement.
+     * {@link #evaluate(int, int, SpacecraftState) evaluate} the measurement.
      * </p>
      * @param modifier modifier to add
      * @see #getModifiers()

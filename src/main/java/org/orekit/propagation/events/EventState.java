@@ -413,8 +413,8 @@ public class EventState<T extends EventDetector> implements Serializable {
      * Try to accept the current history up to the given time.
      *
      * <p> It is not necessary to call this method before calling {@link
-     * #doEvent(ODEStateAndDerivative)} with the same state. It is necessary to call this
-     * method before you call {@link #doEvent(ODEStateAndDerivative)} on some other event
+     * #doEvent(SpacecraftState)} with the same state. It is necessary to call this
+     * method before you call {@link #doEvent(SpacecraftState)} on some other event
      * detector.
      *
      * @param state        to try to accept.
@@ -460,8 +460,8 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
      * @return the user's requested action and the new state if the action is {@link
-     * Action#RESET_STATE}. Otherwise the new state is {@code state}. The stop time
-     * indicates what time propagation should stop if the action is {@link Action#STOP}.
+     * EventHandler.Action#RESET_STATE}. Otherwise the new state is {@code state}. The stop time
+     * indicates what time propagation should stop if the action is {@link EventHandler.Action#STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
      * @exception OrekitException if the event detector throws one

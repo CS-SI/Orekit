@@ -25,8 +25,8 @@ import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
  *
- * <p>It mirrors the {@link org.hipparchus.migration.ode.events.EventHandler
- * EventHandler} interface from <a href="https://hipparchus.org/">
+ * <p>It mirrors the {@link org.hipparchus.ode.events.ODEEventHandler
+ * ODEEventHandler} interface from <a href="https://hipparchus.org/">
  * Hipparchus</a> but provides a space-dynamics interface to the
  * methods.</p>
  *

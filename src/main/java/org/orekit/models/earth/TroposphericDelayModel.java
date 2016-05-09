@@ -49,7 +49,7 @@ public interface TroposphericDelayModel extends Serializable {
      * @param elevation the elevation of the satellite in degrees
      * @param height the height of the station in m above sea level
      * @return the signal delay due to the troposphere in s
-     * @deprecated as of 7.1, replaced with {@link TroposphericModel#signalDelay(double, double)}
+     * @deprecated as of 7.1, replaced with {@link TroposphericModel#pathDelay(double, double)}
      */
     @Deprecated
     double calculateSignalDelay(final double elevation, final double height);

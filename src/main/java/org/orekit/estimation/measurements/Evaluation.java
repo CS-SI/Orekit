@@ -149,7 +149,7 @@ public class Evaluation<T extends Measurement<T>> implements TimeStamped {
     /** Get the partial derivatives of the {@link #getValue()
      * simulated measurement} with respect to state Cartesian coordinates.
      * @return partial derivatives of the simulated value (array of size
-     * {@link dimension x 6}
+     * {@link Measurement#getDimension() dimension} x 6)
      */
     public double[][] getStateDerivatives() {
         final double[][] sd = new double[measurement.getDimension()][];

@@ -161,7 +161,7 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
      * @param state orbital state at measurement date
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
-     * @see #evaluate(SpacecraftStatet)
+     * @see #evaluate(int, int, SpacecraftState)
      */
     protected abstract Evaluation<T> theoreticalEvaluation(final int iteration, final int count,
                                                            final SpacecraftState state)
