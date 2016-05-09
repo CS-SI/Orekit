@@ -787,8 +787,33 @@ public abstract class CloseEventsAbstractTest {
         Assert.assertSame(detectorA, events.get(2).getDetector());
     }
 
+    /** check when root finding tolerance > event finding tolerance. */
+    @Test
+    public void testToleranceMaxIterations() throws OrekitException {
+        // setup
+        double maxCheck = 10;
+        double tolerance = 1e-18; // less than 1 ulp
+        AbsoluteDate t1 = epoch.shiftedBy(15).shiftedBy(FastMath.ulp(15.0) / 8);
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        FlatDetector detectorA = new FlatDetector(t1)
+                .withHandler(new RecordAndContinue<>(events))
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance);
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
 
+        // action
+        propagator.propagate(epoch.shiftedBy(30));
 
+        // verify
+        Assert.assertEquals(1, events.size());
+        // use root finder tolerance instead of event finder tolerance.
+        Assert.assertEquals(t1.durationFrom(epoch),
+                events.get(0).getState().getDate().durationFrom(epoch), tolerance);
+        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+    }
 
     /* The following tests are copies of the above tests, except that they propagate in
      * the reverse direction and all the signs on the time values are negated.
@@ -1518,6 +1543,35 @@ public abstract class CloseEventsAbstractTest {
         Assert.assertSame(detectorA, events.get(2).getDetector());
     }
 
+    /** check when root finding tolerance > event finding tolerance. */
+    @Test
+    public void testToleranceMaxIterationsReverse() throws OrekitException {
+        // setup
+        double maxCheck = 10;
+        double tolerance = 1e-18; // less than 1 ulp
+        AbsoluteDate t1 = epoch.shiftedBy(-15).shiftedBy(FastMath.ulp(-15.0) / 8);
+        // shared event list so we know the order in which they occurred
+        List<Event<EventDetector>> events = new ArrayList<>();
+        FlatDetector detectorA = new FlatDetector(t1)
+                .withHandler(new RecordAndContinue<>(events))
+                .withMaxCheck(maxCheck)
+                .withThreshold(tolerance);
+        Propagator propagator = getPropagator(10);
+        propagator.addEventDetector(detectorA);
+
+        // action
+        propagator.propagate(epoch.shiftedBy(-30));
+
+        // verify
+        Assert.assertEquals(1, events.size());
+        // use root finder tolerance instead of event finder tolerance.
+        Assert.assertEquals(t1.durationFrom(epoch),
+                events.get(0).getState().getDate().durationFrom(epoch),
+                FastMath.ulp(-15.0));
+        Assert.assertEquals(true, events.get(0).isIncreasing());
+        Assert.assertSame(detectorA, events.get(0).getDetector());
+    }
+
 
 
     /* utility classes and methods */
@@ -1560,6 +1614,16 @@ public abstract class CloseEventsAbstractTest {
         public TimeDetector(double... eventTs) {
             this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                     new StopOnEvent<>(), toDates(eventTs));
+        }
+
+        /**
+         * Create a detector that finds events at specific times.
+         *
+         * @param eventTs event times past epoch.
+         */
+        public TimeDetector(AbsoluteDate... eventTs) {
+            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                    new StopOnEvent<>(), Arrays.asList(eventTs));
         }
 
         private TimeDetector(double newMaxCheck,
@@ -1609,6 +1673,11 @@ public abstract class CloseEventsAbstractTest {
         private final EventDetector g;
 
         public FlatDetector(double... eventTs) {
+            this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+                    new StopOnEvent<>(), new TimeDetector(eventTs));
+        }
+
+        public FlatDetector(AbsoluteDate... eventTs) {
             this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
                     new StopOnEvent<>(), new TimeDetector(eventTs));
         }
