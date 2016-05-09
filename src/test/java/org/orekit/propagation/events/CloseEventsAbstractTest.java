@@ -64,13 +64,11 @@ public abstract class CloseEventsAbstractTest {
     /**
      * Create a propagator using the {@link #initialOrbit}.
      *
-     * @param minStep   required minimum step of integrator.
-     * @param maxStep   required maximum step size of integrator.
+     * @param stepSize   required minimum step of integrator.
      * @return a usable propagator.
      * @throws OrekitException
      */
-    public abstract Propagator getPropagator(double minStep,
-                                             double maxStep) throws OrekitException;
+    public abstract Propagator getPropagator(double stepSize) throws OrekitException;
 
     @Test
     public void testCloseEventsFirstOneIsReset() throws OrekitException {
@@ -84,35 +82,35 @@ public abstract class CloseEventsAbstractTest {
         // and end of the interval so we need another event less than half a max
         // check interval after d2 so that the g function will be negative at
         // all three times. Then we get a non bracketing exception.
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10.0);
 
+        double t1 = 49, t2 = t1 + 1e-15, t3 = t1 + 4.9;
         List<Event<EventDetector>> events = new ArrayList<>();
-        TimeDetector detector1 = new TimeDetector(9)
+        TimeDetector detector1 = new TimeDetector(t1)
                 .withHandler(new Handler<>(events, Action.RESET_DERIVATIVES))
                 .withMaxCheck(10)
                 .withThreshold(1e-9);
         propagator.addEventDetector(detector1);
-        TimeDetector detector2 = new TimeDetector(9 + 1e-15, 9 + 4.9)
+        TimeDetector detector2 = new TimeDetector(t2, t3)
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(11)
                 .withThreshold(1e-9);
         propagator.addEventDetector(detector2);
 
         // action
-        propagator.propagate(epoch.shiftedBy(20));
+        propagator.propagate(epoch.shiftedBy(60));
 
         // verify
         Assert.assertEquals(1, events.size());
-        Assert.assertEquals(9, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
+        Assert.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch), 0.0);
         Assert.assertEquals(detector1, events.get(0).getDetector());
     }
 
     @Test
     public void testCloseEvents() throws OrekitException {
         // setup
-        double e = 1e-15;
         double tolerance = 1;
-        Propagator propagator = getPropagator(e, 2.0);
+        Propagator propagator = getPropagator(10);
 
         RecordAndContinue<EventDetector> handler = new RecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(5)
@@ -141,7 +139,7 @@ public abstract class CloseEventsAbstractTest {
     @Test
     public void testSimultaneousEvents() throws OrekitException {
         // setup
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10);
 
         RecordAndContinue<EventDetector> handler1 = new RecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(5)
@@ -177,7 +175,7 @@ public abstract class CloseEventsAbstractTest {
     public void testFastSwitching() throws OrekitException {
         // setup
         // step size of 10 to land in between two events we would otherwise miss
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10);
 
         RecordAndContinue<EventDetector> handler = new RecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(9.9, 10.1, 12)
@@ -219,7 +217,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
         propagator.addEventDetector(detectorC);
@@ -262,7 +260,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(0.5);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -303,7 +301,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(toleranceB);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -343,7 +341,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorB);
 
         // action
@@ -377,8 +375,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator =
-                getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -416,7 +413,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -447,7 +444,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         // action
         propagator.propagate(epoch.shiftedBy(30));
@@ -475,7 +472,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
 
         // action
@@ -513,7 +510,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
         propagator.addEventDetector(detectorC);
@@ -579,7 +576,7 @@ public abstract class CloseEventsAbstractTest {
                         .withMaxCheck(maxCheck)
                         .withThreshold(tolerance);
 
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -610,7 +607,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
 
         // action
@@ -666,16 +663,16 @@ public abstract class CloseEventsAbstractTest {
                 }
             }
 
-            @SuppressWarnings("rawtypes")
             @Override
-            protected EventDetector create(double newMaxCheck,
-                                           double newThreshold,
-                                           int newMaxIter,
-                                           EventHandler newHandler) {
+            protected EventDetector create(
+                    double newMaxCheck,
+                    double newThreshold,
+                    int newMaxIter,
+                    EventHandler<? super EventDetector> newHandler) {
                 return null;
             }
         };
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
 
@@ -705,7 +702,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new Handler<>(events, Action.STOP))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
 
         // action
@@ -770,7 +767,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -810,7 +807,7 @@ public abstract class CloseEventsAbstractTest {
         // and end of the interval so we need another event less than half a max
         // check interval after d2 so that the g function will be negative at
         // all three times. Then we get a non bracketing exception.
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10.0);
 
         // switched for 9 to 1 to be close to the start of the step
         double t1 = -1;
@@ -841,9 +838,8 @@ public abstract class CloseEventsAbstractTest {
     @Test
     public void testCloseEventsReverse() throws OrekitException {
         // setup
-        double e = 1e-15;
         double tolerance = 1;
-        Propagator propagator = getPropagator(e, 2.0);
+        Propagator propagator = getPropagator(10);
 
         RecordAndContinue<EventDetector> handler1 = new RecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(-5)
@@ -873,7 +869,7 @@ public abstract class CloseEventsAbstractTest {
     @Test
     public void testSimultaneousEventsReverse() throws OrekitException {
         // setup
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10);
 
         RecordAndContinue<EventDetector> handler1 = new RecordAndContinue<>();
         TimeDetector detector1 = new TimeDetector(-5)
@@ -909,7 +905,7 @@ public abstract class CloseEventsAbstractTest {
     public void testFastSwitchingReverse() throws OrekitException {
         // setup
         // step size of 10 to land in between two events we would otherwise miss
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10);
 
         List<Event<EventDetector>> events = new ArrayList<>();
         TimeDetector detector1 = new TimeDetector(-9.9, -10.1, -12)
@@ -950,7 +946,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
         propagator.addEventDetector(detectorC);
@@ -993,7 +989,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(0.5);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -1034,7 +1030,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(toleranceB);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -1074,7 +1070,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorB);
 
         // action
@@ -1108,7 +1104,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -1147,7 +1143,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
         detectorB.g(state(t1));
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -1178,7 +1174,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
 
         // action
@@ -1207,7 +1203,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
 
         // action
@@ -1245,7 +1241,7 @@ public abstract class CloseEventsAbstractTest {
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
 
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
         propagator.addEventDetector(detectorC);
@@ -1311,7 +1307,7 @@ public abstract class CloseEventsAbstractTest {
                         .withMaxCheck(maxCheck)
                         .withThreshold(tolerance);
 
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
@@ -1342,7 +1338,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
 
         // action
@@ -1407,7 +1403,7 @@ public abstract class CloseEventsAbstractTest {
             }
 
         };
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorC);
 
@@ -1437,7 +1433,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new Handler<>(events, Action.STOP))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1.0, 2.0);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
 
         // action
@@ -1502,7 +1498,7 @@ public abstract class CloseEventsAbstractTest {
                 .withHandler(new RecordAndContinue<>(events))
                 .withMaxCheck(maxCheck)
                 .withThreshold(tolerance);
-        Propagator propagator = getPropagator(1, 10);
+        Propagator propagator = getPropagator(10);
         propagator.addEventDetector(detectorA);
         propagator.addEventDetector(detectorB);
 
