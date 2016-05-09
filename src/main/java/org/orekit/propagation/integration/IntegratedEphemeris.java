@@ -80,6 +80,9 @@ public class IntegratedEphemeris
     /** Serializable UID. */
     private static final long serialVersionUID = 20140213L;
 
+    /** Event detection requires evaluating the state slightly before / past an event. */
+    private static final double EXTRAPOLATION_TOLERANCE = 1.0;
+
     /** Mapper between raw double components and spacecraft state. */
     private final StateMapper mapper;
 
@@ -160,8 +163,8 @@ public class IntegratedEphemeris
 
         // compare using double precision instead of AbsoluteDate.compareTo(...)
         // because time is expressed as a double when searching for events
-        if (date.durationFrom(maxDate) < minDate.durationFrom(maxDate) ||
-                date.durationFrom(minDate) >  maxDate.durationFrom(minDate)) {
+        if (date.compareTo(minDate.shiftedBy(-EXTRAPOLATION_TOLERANCE)) < 0 ||
+                date.compareTo(maxDate.shiftedBy(EXTRAPOLATION_TOLERANCE)) > 0 ) {
             // date is outside of supported range
             throw new PropagationException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
                                            date, minDate, maxDate);
