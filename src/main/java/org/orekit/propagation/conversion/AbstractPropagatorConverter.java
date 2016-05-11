@@ -190,26 +190,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         return adapt(states, positionOnly);
     }
 
-//    /** Get the available free parameters.
-//     * @return available free parameters
-//     */
-//    public Collection<String> getAvailableParameters() {
-//        return availableParameters;
-//    }
-//
-//    /** Check if a parameter can be free.
-//     * @param name parameter name to check
-//     * @return true if the parameter can be free
-//     */
-//    public boolean isAvailable(final String name) {
-//        for (final String supportedName : availableParameters) {
-//            if (supportedName.equals(name)) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
     /** Get the adapted propagator.
      * @return adapted propagator
      */
