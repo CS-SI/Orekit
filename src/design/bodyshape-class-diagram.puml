@@ -29,30 +29,63 @@
   package org.orekit #ECEBD8 {
     package bodies #DDEBD8 {
 
-    class GeodeticPoint {
-      +double getLatitude()
-      +double getLongitude()
-      +double getAltitude()
-      +Vector3D getZenith()
-      +Vector3D getNadir()
-      +Vector3D getNorth()
-      +Vector3D getSouth()
-      +Vector3D getEast()
-      +Vector3D getWest()
+      class GeodeticPoint {
+        +double getLatitude()
+        +double getLongitude()
+        +double getAltitude()
+        +Vector3D getZenith()
+        +Vector3D getNadir()
+        +Vector3D getNorth()
+        +Vector3D getSouth()
+        +Vector3D getEast()
+        +Vector3D getWest()
+      }
+
+      interface BodyShape {
+        +getBodyFrame()
+        +getIntersectionPoint(line, close, frame, date)
+        +transform(point, frame, date)
+        +transform(geodeticPoint)
+        +projectToGround(point, date, frame)
+      }
+
+      class OneAxisEllipsoid
+
+      class Ellipse {
+        +getCenterOfCurvature()
+        +pointAt()
+        +projectToEllipse()
+        +toPlane()
+      }
+
+      class Ellipsoid {
+        +getPlaneSection( Vector3D planePoint, Vector3D planeNormal)
+        +isInside(Vector3D point)
+        +pointOnLimb(Vector3D observer, Vector3D outside)
+      }
+
+      BodyShape <|.. OneAxisEllipsoid
+      OneAxisEllipsoid --|> Ellipsoid
+      Ellipsoid --> Ellipse : creates
+      BodyShape --> GeodeticPoint
+
+    }
+    package models.earth #DDEBD8 {
+      interface EarthShape {
+        +getEllipsoid
+      }
+      class ReferenceEllipsoid
+      class Geoid
+      EarthShape <|.. ReferenceEllipsoid
+      OneAxisEllipsoid <|-- ReferenceEllipsoid
+      BodyShape <|-- EarthShape
+      EarthShape <|.. Geoid 
+    }
+    package forces.gravity.potential #DDEBD8 {
+      interface NormalizedSphericalHarmonicsProvider
+      Geoid --> NormalizedSphericalHarmonicsProvider
     }
 
-    interface BodyShape {
-      +Frame getBodyFrame()
-      +GeodeticPoint getIntersectionPoint(Line line, Vector3D close, Frame frame, AbsoluteDate date)
-      +GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date)
-      +Vector3D transform(GeodeticPoint point)
-    }
-
-    class OneAxisEllipsoid
-    BodyShape <|-- OneAxisEllipsoid
-    BodyShape --> GeodeticPoint
-
-  }
   }
 
 @enduml

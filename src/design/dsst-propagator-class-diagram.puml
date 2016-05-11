@@ -28,7 +28,7 @@
 
   package org.hipparchus.ode #DDEBD8 {
 
-    interface FirstOrderIntegrator
+    interface ODEIntegrator
 
   }
 
@@ -46,7 +46,7 @@
       +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
     }
 
-    FirstOrderIntegrator <--* "1" DSSTPropagator
+    ODEIntegrator <--* "1" DSSTPropagator
 
     package forces #ECEBD8 {
 
@@ -60,18 +60,14 @@
       }
 
       DSSTForceModel -right->  AuxiliaryElements
-      DSSTForceModel <|-- DSSTCentralBody
-      DSSTForceModel <|-- ZonalContribution
-      DSSTForceModel <|-- TesseralContribution
+      DSSTForceModel <|-- DSSTZonal
+      DSSTForceModel <|-- DSSTTesseral
       DSSTForceModel <|-- DSSTThirdBody
       DSSTForceModel <|-- AbstractGaussianContribution
 
       AbstractGaussianContribution <|-- DSSTAtmosphericDrag
       AbstractGaussianContribution <|-- DSSTSolarRadiationPressure
       AbstractGaussianContribution o--> "1" ForceModel : acceleration provider
-
-      DSSTCentralBody *--> ZonalContribution
-      DSSTCentralBody *--> TesseralContribution
 
     }
 

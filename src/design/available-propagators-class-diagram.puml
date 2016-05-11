@@ -85,6 +85,10 @@
           AbstractAnalyticalPropagator <|-- TLEPropagator
         }
 
+        package gnss #DDEBD8 {
+          AbstractAnalyticalPropagator <|-- GPSPropagator
+        }
+
      }
 
      package integration #ECEBD8 {

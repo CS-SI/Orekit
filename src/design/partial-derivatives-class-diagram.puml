@@ -36,11 +36,6 @@
         +EventDetector[] getEventsDetectors()
       }
 
-      package complex #EAECE6 {
-        class ComplexForceModel
-        ForceModel <|.. ComplexForceModel
-      }
-
       package radiation #EAECE6 {
         class SolarRadiationPressure
         ForceModel <|.. SolarRadiationPressure
@@ -87,6 +82,7 @@
           +void selectParamAndStep(String parameter, double hP)
           +void setInitialJacobians()
        }
+      class Jacobianizer
 
        TimeDerivativesEquations    <--      ForceModel : contributes
        AdditionalEquations         <|..     PartialDerivativesEquations
@@ -95,11 +91,15 @@
        NumericalPropagator         "1..*" *--> ForceModel
        NumericalPropagator         "1" *--> TimeDerivativesEquations : main
 
-       Jacobianizer                  "1" <-->  "1" ComplexForceModel
-
       }
     }
 
   }
 
+  package user.application #F3EDF7 {
+        class ComplexForceModel #EAE6F7/B9B3D2
+        ComplexForceModel ..|> ForceModel
+       Jacobianizer                  "1" <-->  "1" ComplexForceModel
+
+  }
 @enduml

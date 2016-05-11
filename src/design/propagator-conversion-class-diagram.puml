@@ -26,78 +26,73 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.hipparchus.ode #ECEBD8 {
-
-    interface Parameterizable {
-      +Collection<String> getParametersNames()
-      +boolean isSupported(String name) 
+  package org.orekit #ECEBD8 {
+    package utils #DDEBD8 {
+      class ParameterDriver {
+        +getName()
+        +getDimension()
+        +getInitialValue()
+        +getVaue()
+        +setValue()
+        +isEstimated()
+      }
     }
 
-    interface ParameterizedODE {
-      +double getParameter(String name) 
-      +void setParameter(String name, double value)
+    package propagation.conversion #DDEBD8 {
+
+      interface PropagatorBuilder {
+        +buildPropagator(date, parameters)
+        +getFrame()
+        +getParametersDrivers()
+      }
+
+      class EcksteinHechlerPropagatorBuilder
+      class KeplerianPropagatorBuilder
+      class TLEPropagatorBuilder
+
+      class NumericalPropagatorBuilder {
+        +addForceModel(model)
+        +setAttitudeProvider(attitudeProvider)
+        +setMass(mass)
+      }
+
+      interface PropagatorConverter {
+        +Propagator convert(Propagator source, double timeSpan, int nbPoints, Collection<String> freeParameters)
+        +Propagator convert(Propagator source, double timeSpan, int nbPoints, String ... freeParameters)
+        +Propagator convert(List<SpacecraftState> states, boolean positionOnly, Collection<String> freeParameters)
+        +Propagator convert(List<SpacecraftState> states, boolean positionOnly, String ... freeParameters)
+      }
+
+      abstract class AbstractPropagatorConverter {
+        +Propagator getAdaptedPropagator()
+        +double getRMS()
+        +int getEvaluations()
+      }
+
+      class FiniteDifferencePropagatorConverter
+      class JacobianPropagatorConverter
+
+      interface IntegratorBuilder {
+        +buildIntegrator()
+      }
+
+      ParameterDriver  <--* PropagatorBuilder
+      PropagatorBuilder <|.. EcksteinHechlerPropagatorBuilder
+      PropagatorBuilder <|.. KeplerianPropagatorBuilder
+      PropagatorBuilder <|.. NumericalPropagatorBuilder
+      PropagatorBuilder <|.. TLEPropagatorBuilder
+
+      PropagatorConverter <|.. AbstractPropagatorConverter
+      AbstractPropagatorConverter <|.. JacobianPropagatorConverter
+      AbstractPropagatorConverter <|.. FiniteDifferencePropagatorConverter
+
+      PropagatorBuilder <--* "1" AbstractPropagatorConverter
+
+      NumericalPropagatorBuilder <-* "1" JacobianPropagatorConverter
+
+      NumericalPropagatorBuilder "1" *--> IntegratorBuilder
+
     }
-    
-    Parameterizable <|.. ParameterizedODE
-
-  }
-
-  package org.orekit.propagation.conversion #DDEBD8 {
-
-    interface PropagatorBuilder {
-      +Propagator buildPropagator(AbsoluteDate date, double[] parameters)
-      +Frame getFrame()
-      +void setFreeParameters(Collection<String> parameters)
-    }
-
-    class EcksteinHechlerPropagatorBuilder
-    class KeplerianPropagatorBuilder
-    class TLEPropagatorBuilder
-
-    class NumericalPropagatorBuilder {
-      +void addForceModel(ForceModel model)
-      +void setAttitudeProvider(AttitudeProvider attitudeProvider)
-      +void setMass(double mass)
-    }
-
-    interface PropagatorConverter {
-      +Propagator convert(Propagator source, double timeSpan, int nbPoints, Collection<String> freeParameters)
-      +Propagator convert(Propagator source, double timeSpan, int nbPoints, String ... freeParameters)
-      +Propagator convert(List<SpacecraftState> states, boolean positionOnly, Collection<String> freeParameters)
-      +Propagator convert(List<SpacecraftState> states, boolean positionOnly, String ... freeParameters)
-    }
-
-    abstract class AbstractPropagatorConverter {
-      +Propagator getAdaptedPropagator()
-      +double getRMS()
-      +int getEvaluations()
-      +Collection<String> getAvailableParameters()
-      +boolean isAvailable(String name)
-    }
-
-    class FiniteDifferencePropagatorConverter
-    class JacobianPropagatorConverter
-
-    interface IntegratorBuilder {
-      +FirstOrderIntegrator buildIntegrator()
-    }
-
-    ParameterizedODE  <|.. PropagatorBuilder
-    PropagatorBuilder <|.. EcksteinHechlerPropagatorBuilder
-    PropagatorBuilder <|.. KeplerianPropagatorBuilder
-    PropagatorBuilder <|.. NumericalPropagatorBuilder
-    PropagatorBuilder <|.. TLEPropagatorBuilder
-
-    PropagatorConverter <|.. AbstractPropagatorConverter
-    AbstractPropagatorConverter <|.. JacobianPropagatorConverter
-    AbstractPropagatorConverter <|.. FiniteDifferencePropagatorConverter
-
-    PropagatorBuilder <--* "1" AbstractPropagatorConverter
-
-    NumericalPropagatorBuilder <-* "1" JacobianPropagatorConverter
-
-    NumericalPropagatorBuilder "1" *--> IntegratorBuilder
-
   }
 
 
