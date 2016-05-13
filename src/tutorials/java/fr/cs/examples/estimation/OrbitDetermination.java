@@ -661,11 +661,11 @@ public class OrbitDetermination {
 
 
             //Transformation from TEME to frame.
-            Transform t =FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), initDate.getDate());
-            return new CartesianOrbit( t.transformPVCoordinates(initialState.getPVCoordinates()) ,
+            Transform t = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), initDate.getDate());
+            return new CartesianOrbit(t.transformPVCoordinates(initialState.getPVCoordinates()) ,
                                       frame,
                                       initDate,
-                                       mu);
+                                      mu);
 
 
         } else {
