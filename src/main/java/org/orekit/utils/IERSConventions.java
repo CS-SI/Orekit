@@ -1908,8 +1908,6 @@ public enum IERSConventions {
      * library cannot be read
      */
     protected LoveNumbers loadLoveNumbers(final String nameLove) throws OrekitException {
-        InputStream stream = null;
-        BufferedReader reader = null;
         try {
 
             // allocate the three triangular arrays for real, imaginary and time-dependent numbers
@@ -1922,46 +1920,49 @@ public enum IERSConventions {
                 plus[i]      = new double[i + 1];
             }
 
-            stream = IERSConventions.class.getResourceAsStream(nameLove);
-            if (stream == null) {
-                // this should never happen with files embedded within Orekit
-                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, nameLove);
-            }
+            try (final InputStream stream = IERSConventions.class.getResourceAsStream(nameLove)) {
 
-            // setup the reader
-            reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-
-            String line = reader.readLine();
-            int lineNumber = 1;
-
-            // look for the Love numbers
-            while (line != null) {
-
-                line = line.trim();
-                if (!(line.isEmpty() || line.startsWith("#"))) {
-                    final String[] fields = line.split("\\p{Space}+");
-                    if (fields.length != 5) {
-                        // this should never happen with files embedded within Orekit
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, nameLove, line);
-                    }
-                    final int n = Integer.parseInt(fields[0]);
-                    final int m = Integer.parseInt(fields[1]);
-                    if ((n < 2) || (n > 3) || (m < 0) || (m > n)) {
-                        // this should never happen with files embedded within Orekit
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, nameLove, line);
-
-                    }
-                    real[n][m]      = Double.parseDouble(fields[2]);
-                    imaginary[n][m] = Double.parseDouble(fields[3]);
-                    plus[n][m]      = Double.parseDouble(fields[4]);
+                if (stream == null) {
+                    // this should never happen with files embedded within Orekit
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, nameLove);
                 }
 
-                // next line
-                lineNumber++;
-                line = reader.readLine();
+                // setup the reader
+                try (final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
 
+                    String line = reader.readLine();
+                    int lineNumber = 1;
+
+                    // look for the Love numbers
+                    while (line != null) {
+
+                        line = line.trim();
+                        if (!(line.isEmpty() || line.startsWith("#"))) {
+                            final String[] fields = line.split("\\p{Space}+");
+                            if (fields.length != 5) {
+                                // this should never happen with files embedded within Orekit
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, nameLove, line);
+                            }
+                            final int n = Integer.parseInt(fields[0]);
+                            final int m = Integer.parseInt(fields[1]);
+                            if ((n < 2) || (n > 3) || (m < 0) || (m > n)) {
+                                // this should never happen with files embedded within Orekit
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, nameLove, line);
+
+                            }
+                            real[n][m]      = Double.parseDouble(fields[2]);
+                            imaginary[n][m] = Double.parseDouble(fields[3]);
+                            plus[n][m]      = Double.parseDouble(fields[4]);
+                        }
+
+                        // next line
+                        lineNumber++;
+                        line = reader.readLine();
+
+                    }
+                }
             }
 
             return new LoveNumbers(real, imaginary, plus);
@@ -1969,17 +1970,6 @@ public enum IERSConventions {
         } catch (IOException ioe) {
             // this should never happen with files embedded within Orekit
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, nameLove);
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException ioe) {
-                // ignored here
-            }
         }
     }
 
