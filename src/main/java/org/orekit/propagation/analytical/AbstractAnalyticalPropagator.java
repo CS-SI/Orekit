@@ -564,9 +564,21 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             return previousState;
         }
 
+        @Override
+        public boolean isPreviousStateInterpolated() {
+            // no difference in analytical propagators
+            return false;
+        }
+
         /** {@inheritDoc} */
         public SpacecraftState getCurrentState() {
             return currentState;
+        }
+
+        @Override
+        public boolean isCurrentStateInterpolated() {
+            // no difference in analytical propagators
+            return false;
         }
 
         /** {@inheritDoc} */

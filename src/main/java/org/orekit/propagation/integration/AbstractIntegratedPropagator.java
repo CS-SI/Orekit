@@ -889,9 +889,21 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc}} */
         @Override
+        public boolean isPreviousStateInterpolated() {
+            return mathInterpolator.isPreviousStateInterpolated();
+        }
+
+        /** {@inheritDoc}} */
+        @Override
         public SpacecraftState getCurrentState()
             throws PropagationException {
             return convert(mathInterpolator.getCurrentState());
+        }
+
+        /** {@inheritDoc}} */
+        @Override
+        public boolean isCurrentStateInterpolated() {
+            return mathInterpolator.isCurrentStateInterpolated();
         }
 
         /** {@inheritDoc}} */
