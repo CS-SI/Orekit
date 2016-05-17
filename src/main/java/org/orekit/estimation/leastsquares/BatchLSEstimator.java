@@ -335,19 +335,22 @@ public class BatchLSEstimator {
             public boolean converged(final int iteration,
                                      final LeastSquaresProblem.Evaluation previous,
                                      final LeastSquaresProblem.Evaluation current) {
-
                 // save the last evaluations
                 lspEvaluation = current;
 
                 // notify the observer
                 if (observer != null) {
-                    observer.iterationPerformed(iterationsCounter.getCount(),
-                                                evaluationsCounter.getCount(),
-                                                orbit,
-                                                estimatedPropagatorParameters,
-                                                estimatedMeasurementsParameters,
-                                                new Provider(),
-                                                lspEvaluation);
+                    try {
+                        observer.iterationPerformed(iterationsCounter.getCount(),
+                                                    evaluationsCounter.getCount(),
+                                                    orbit,
+                                                    estimatedPropagatorParameters,
+                                                    estimatedMeasurementsParameters,
+                                                    new Provider(),
+                                                    lspEvaluation);
+                    } catch (OrekitException oe) {
+                        throw new OrekitExceptionWrapper(oe);
+                    }
                 }
 
                 return super.converged(iteration, previous, current);
@@ -485,7 +488,7 @@ public class BatchLSEstimator {
             throws OrekitException {
 
             // safety checks
-            if (index < 0 || index > evaluations.size()) {
+            if (index < 0 || index >= evaluations.size()) {
                 throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE,
                                           index, 0, evaluations.size());
             }
