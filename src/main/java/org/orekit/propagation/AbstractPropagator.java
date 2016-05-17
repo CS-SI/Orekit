@@ -148,6 +148,14 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
+    @Override
+    public void setEphemerisMode(final OrekitStepHandler handler) {
+        mode          = EPHEMERIS_GENERATION_MODE;
+        stepHandler   = handler;
+        fixedStepSize = Double.NaN;
+    }
+
+    /** {@inheritDoc} */
     public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider)
         throws OrekitException {
 
