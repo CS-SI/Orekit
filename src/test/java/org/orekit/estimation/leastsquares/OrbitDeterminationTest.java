@@ -207,7 +207,7 @@ public class OrbitDeterminationTest {
         //test on propagator parameters
         final double dragCoef  = 0.215421;
         final double SRPCoef = 112.336693;
-        Assert.assertEquals(dragCoef, odsatW3.propagatorParameters.get(0).getValue()[0], dimensionLessCoef);
+        Assert.assertEquals(dragCoef, odsatW3.propagatorParameters.get(0).getValue()[0], 3e-3);
         Assert.assertEquals(SRPCoef,  odsatW3.propagatorParameters.get(1).getValue()[0], dimensionLessCoef);
 
         //test on measurements parameters

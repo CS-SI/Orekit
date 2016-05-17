@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -77,7 +76,7 @@ import org.orekit.time.TimeStamped;
  * model is done using Jacchia's equation in [1].
  * </p>
  *
- * <h2> References
+ * <h2>References</h2>
  *
  * <ol> <li> Jacchia, L. G. "CIRA 1972, recent atmospheric models, and improvements in
  * progress." COSPAR, 21st Plenary Meeting. Vol. 1. 1978. </li> </ol>
