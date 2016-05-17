@@ -248,15 +248,21 @@ ground.station.elevation.refraction.correction [4] = true
 ground.station.range.tropospheric.correction[4] = true
 
 ### Measurements parameters
-outlier.rejection.multiplier         = 6
-outlier.rejection.starting.iteration = 2
-range.measurements.base.weight       = 1.0
-range.rate.measurements.base.weight  = 1.0
-azimuth.measurements.base.weight     = 1.0
-elevation.measurements.base.weight   = 1.0
-PV.measurements.base.weight          = 1.0
-PV.measurements.position.sigma       = 10.0
-PV.measurements.velocity.sigma       = 0.01
+range.outlier.rejection.multiplier              = 6
+range.outlier.rejection.starting.iteration      = 2
+range.rate.outlier.rejection.multiplier         = 6
+range.rate.outlier.rejection.starting.iteration = 2
+az.el.outlier.rejection.multiplier              = 6
+az.el.outlier.rejection.starting.iteration      = 2
+PV.outlier.rejection.multiplier                 = 6
+PV.outlier.rejection.starting.iteration         = 2
+range.measurements.base.weight                  = 1.0
+range.rate.measurements.base.weight             = 1.0
+azimuth.measurements.base.weight                = 1.0
+elevation.measurements.base.weight              = 1.0
+PV.measurements.base.weight                     = 1.0
+PV.measurements.position.sigma                  = 10.0
+PV.measurements.velocity.sigma                  = 0.01
 
 ## Estimator
 estimator.rms.absolute.convergence.threshold = 1.0e-15

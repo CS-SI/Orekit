@@ -56,6 +56,7 @@ import org.orekit.estimation.measurements.Bias;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.OutlierFilter;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.RangeRate;
@@ -103,7 +104,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
-
 
 public class OrbitDeterminationTest {
 
@@ -393,7 +393,11 @@ public class OrbitDeterminationTest {
                                                  createStationsData(parser, body),
                                                  createPVData(parser),
                                                  createSatRangeBias(parser),
-                                                 createWeights(parser)));
+                                                 createWeights(parser),
+                                                 createRangeOutliersManager(parser),
+                                                 createRangeRateOutliersManager(parser),
+                                                 createAzElOutliersManager(parser),
+                                                 createPVOutliersManager(parser)));
         }
         for (Measurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
@@ -914,6 +918,82 @@ public class OrbitDeterminationTest {
                            parser.getDouble(ParameterKey.PV_MEASUREMENTS_BASE_WEIGHT));
     }
 
+    /** Set up outliers manager for range measurements.
+     * @param parser input file parser
+     * @return outliers manager (null if none configured)
+     * @throws OrekitException if outliers are partly configured
+     */
+    private OutlierFilter<Range> createRangeOutliersManager(final KeyValueFileParser<ParameterKey> parser)
+        throws OrekitException {
+        if (parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER) !=
+            parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION)) {
+            throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                      ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER.toString().toLowerCase().replace('_', '.') +
+                                      " and  " +
+                                      ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION.toString().toLowerCase().replace('_', '.') +
+                                      " must be both present or both absent");
+        }
+        return new OutlierFilter<Range>(parser.getInt(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION),
+                                        parser.getInt(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER));
+    }
+
+    /** Set up outliers manager for range-rate measurements.
+     * @param parser input file parser
+     * @return outliers manager (null if none configured)
+     * @throws OrekitException if outliers are partly configured
+     */
+    private OutlierFilter<RangeRate> createRangeRateOutliersManager(final KeyValueFileParser<ParameterKey> parser)
+        throws OrekitException {
+        if (parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER) !=
+            parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION)) {
+            throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                      ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER.toString().toLowerCase().replace('_', '.') +
+                                      " and  " +
+                                      ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION.toString().toLowerCase().replace('_', '.') +
+                                      " must be both present or both absent");
+        }
+        return new OutlierFilter<RangeRate>(parser.getInt(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION),
+                                            parser.getInt(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER));
+    }
+
+    /** Set up outliers manager for azimuth-elevation measurements.
+     * @param parser input file parser
+     * @return outliers manager (null if none configured)
+     * @throws OrekitException if outliers are partly configured
+     */
+    private OutlierFilter<Angular> createAzElOutliersManager(final KeyValueFileParser<ParameterKey> parser)
+        throws OrekitException {
+        if (parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER) !=
+            parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION)) {
+            throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                      ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER.toString().toLowerCase().replace('_', '.') +
+                                      " and  " +
+                                      ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION.toString().toLowerCase().replace('_', '.') +
+                                      " must be both present or both absent");
+        }
+        return new OutlierFilter<Angular>(parser.getInt(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION),
+                                          parser.getInt(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER));
+    }
+
+    /** Set up outliers manager for PV measurements.
+     * @param parser input file parser
+     * @return outliers manager (null if none configured)
+     * @throws OrekitException if outliers are partly configured
+     */
+    private OutlierFilter<PV> createPVOutliersManager(final KeyValueFileParser<ParameterKey> parser)
+        throws OrekitException {
+        if (parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER) !=
+            parser.containsKey(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION)) {
+            throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                      ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER.toString().toLowerCase().replace('_', '.') +
+                                      " and  " +
+                                      ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION.toString().toLowerCase().replace('_', '.') +
+                                      " must be both present or both absent");
+        }
+        return new OutlierFilter<PV>(parser.getInt(ParameterKey.RANGE_OUTLIER_REJECTION_STARTING_ITERATION),
+                                     parser.getInt(ParameterKey.RANGE_OUTLIER_REJECTION_MULTIPLIER));
+    }
+
     /** Set up PV data.
      * @param parser input file parser
      * @return PV data
@@ -976,13 +1056,21 @@ public class OrbitDeterminationTest {
      * @param pvData PV measurements data
      * @param satRangeBias range bias due to transponder delay
      * @param weights base weights for measurements
+     * @param rangeOutliersManager manager for range measurements outliers (null if none configured)
+     * @param rangeRateOutliersManager manager for range-rate measurements outliers (null if none configured)
+     * @param azElOutliersManager manager for azimuth-elevation measurements outliers (null if none configured)
+     * @param pvOutliersManager manager for PV measurements outliers (null if none configured)
      * @return measurements list
      */
     private List<Measurement<?>> readMeasurements(final File file,
                                                   final Map<String, StationData> stations,
                                                   final PVData pvData,
                                                   final Bias<Range> satRangeBias,
-                                                  final Weights weights)
+                                                  final Weights weights,
+                                                  final OutlierFilter<Range> rangeOutliersManager,
+                                                  final OutlierFilter<RangeRate> rangeRateOutliersManager,
+                                                  final OutlierFilter<Angular> azElOutliersManager,
+                                                  final OutlierFilter<PV> pvOutliersManager)
         throws UnsupportedEncodingException, IOException, OrekitException {
 
         final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
@@ -999,24 +1087,48 @@ public class OrbitDeterminationTest {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   lineNumber, file.getName(), line);
                     }
-                    try {
-                        final MeasurementsParser parser  = MeasurementsParser.valueOf(fields[1]);
-                        final Measurement<?> measurement = parser.parseFields(fields, stations, pvData,
+                    switch (fields[1]) {
+                        case "RANGE" :
+                            final Range range = new RangeParser().parseFields(fields, stations, pvData,
                                                                               satRangeBias, weights,
                                                                               line, lineNumber, file.getName());
-                        double sum = 0;
-                        for (double w : measurement.getBaseWeight()) {
-                            sum += FastMath.abs(w);
-                        }
-                        if (sum > Precision.SAFE_MIN) {
-                            // we only consider measurements with non-zero weight
-                            measurements.add(measurement);
-                        }
-                    } catch (IllegalArgumentException iae) {
-                        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
-                                                  "unknown measurement type " + fields[1] +
-                                                  " at line " + lineNumber +
-                                                  " in file " + file.getName());
+                            if (rangeOutliersManager != null) {
+                                range.addModifier(rangeOutliersManager);
+                            }
+                            addIfNonZeroWeight(range, measurements);
+                            break;
+                        case "RANGE_RATE" :
+                            final RangeRate rangeRate = new RangeRateParser().parseFields(fields, stations, pvData,
+                                                                                          satRangeBias, weights,
+                                                                                          line, lineNumber, file.getName());
+                            if (rangeOutliersManager != null) {
+                                rangeRate.addModifier(rangeRateOutliersManager);
+                            }
+                            addIfNonZeroWeight(rangeRate, measurements);
+                            break;
+                        case "AZ_EL" :
+                            final Angular angular = new AzElParser().parseFields(fields, stations, pvData,
+                                                                                 satRangeBias, weights,
+                                                                                 line, lineNumber, file.getName());
+                            if (azElOutliersManager != null) {
+                                angular.addModifier(azElOutliersManager);
+                            }
+                            addIfNonZeroWeight(angular, measurements);
+                            break;
+                        case "PV" :
+                            final PV pv = new PVParser().parseFields(fields, stations, pvData,
+                                                                     satRangeBias, weights,
+                                                                     line, lineNumber, file.getName());
+                            if (pvOutliersManager != null) {
+                                pv.addModifier(pvOutliersManager);
+                            }
+                            addIfNonZeroWeight(pv, measurements);
+                            break;
+                        default :
+                            throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                                      "unknown measurement type " + fields[1] +
+                                                      " at line " + lineNumber +
+                                                      " in file " + file.getName());
                     }
                 }
             }
@@ -1033,6 +1145,21 @@ public class OrbitDeterminationTest {
 
         return measurements;
 
+    }
+
+    /** Add a measurement to a list if it has non-zero weight.
+     * @param measurement measurement to add
+     * @param measurements measurements list
+     */
+    private void addIfNonZeroWeight(final Measurement<?> measurement, final List<Measurement<?>> measurements) {
+        double sum = 0;
+        for (double w : measurement.getBaseWeight()) {
+            sum += FastMath.abs(w);
+        }
+        if (sum > Precision.SAFE_MIN) {
+            // we only consider measurements with non-zero weight
+            measurements.add(measurement);
+        }
     }
 
     /** Container for stations-related data. */
@@ -1149,131 +1276,7 @@ public class OrbitDeterminationTest {
     }
 
     /** Measurements types. */
-    private static enum MeasurementsParser {
-
-        /** Parser for range measurements. */
-        RANGE() {
-            /** {@inheritDoc} */
-            @Override
-            public Range parseFields(final String[] fields,
-                                     final Map<String, StationData> stations,
-                                     final PVData pvData,
-                                     final Bias<Range> satRangeBias,
-                                     final Weights weights,
-                                     final String line,
-                                     final int lineNumber,
-                                     final String fileName)
-                throws OrekitException {
-                checkFields(4, fields, line, lineNumber, fileName);
-                final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
-                final Range range = new Range(stationData.station,
-                                              getDate(fields[0], line, lineNumber, fileName),
-                                              Double.parseDouble(fields[3]) * 1000.0,
-                                              stationData.rangeSigma,
-                                              weights.rangeBaseWeight);
-                if (stationData.rangeBias != null) {
-                    range.addModifier(stationData.rangeBias);
-                }
-                if (satRangeBias != null) {
-                    range.addModifier(satRangeBias);
-                }
-                if (stationData.rangeTroposphericCorrection != null) {
-                    range.addModifier(stationData.rangeTroposphericCorrection);
-                }
-                return range;
-            }
-        },
-
-        /** Parser for range rate measurements. */
-        RANGE_RATE() {
-            /** {@inheritDoc} */
-            @Override
-            public RangeRate parseFields(final String[] fields,
-                                         final Map<String, StationData> stations,
-                                         final PVData pvData,
-                                         final Bias<Range> satRangeBias,
-                                         final Weights weights,
-                                         final String line,
-                                         final int lineNumber,
-                                         final String fileName)
-                throws OrekitException {
-                checkFields(4, fields, line, lineNumber, fileName);
-                final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
-                final RangeRate rangeRate = new RangeRate(stationData.station,
-                                                          getDate(fields[0], line, lineNumber, fileName),
-                                                          Double.parseDouble(fields[3]) * 1000.0,
-                                                          stationData.rangeRateSigma,
-                                                          weights.rangeRateBaseWeight,
-                                                          true);
-                if (stationData.rangeRateBias != null) {
-                    rangeRate.addModifier(stationData.rangeRateBias);
-                }
-                return rangeRate;
-            }
-        },
-
-        /** Parser for azimuth-elevation measurements. */
-        AZ_EL() {
-            /** {@inheritDoc} */
-            @Override
-            public Angular parseFields(final String[] fields,
-                                       final Map<String, StationData> stations,
-                                       final PVData pvData,
-                                       final Bias<Range> satRangeBias,
-                                       final Weights weights,
-                                       final String line,
-                                       final int lineNumber,
-                                       final String fileName)
-                throws OrekitException {
-                checkFields(5, fields, line, lineNumber, fileName);
-                final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
-                final Angular azEl = new Angular(stationData.station,
-                                                 getDate(fields[0], line, lineNumber, fileName),
-                                                 new double[] {
-                                                     FastMath.toRadians(Double.parseDouble(fields[3])),
-                                                     FastMath.toRadians(Double.parseDouble(fields[4]))
-                                                 },
-                                                 stationData.azElSigma,
-                                                 weights.azElBaseWeight);
-                if (stationData.refractionCorrection != null) {
-                    azEl.addModifier(stationData.refractionCorrection);
-                }
-                if (stationData.azELBias != null) {
-                    azEl.addModifier(stationData.azELBias);
-                }
-                return azEl;
-            }
-        },
-
-        /** Parser for PV measurements. */
-        PV() {
-            /** {@inheritDoc} */
-            @Override
-            public org.orekit.estimation.measurements.PV parseFields(final String[] fields,
-                                                                     final Map<String, StationData> stations,
-                                                                     final PVData pvData,
-                                                                     final Bias<Range> satRangeBias,
-                                                                     final Weights weights,
-                                                                     final String line,
-                                                                     final int lineNumber,
-                                                                     final String fileName)
-                throws OrekitException {
-                // field 2, which corresponds to stations in other measurements, is ignored
-                // this allows the measurements files to be columns aligned
-                // by inserting something like "----" instead of a station name
-                checkFields(9, fields, line, lineNumber, fileName);
-                return new org.orekit.estimation.measurements.PV(getDate(fields[0], line, lineNumber, fileName),
-                                                                 new Vector3D(Double.parseDouble(fields[3]) * 1000.0,
-                                                                              Double.parseDouble(fields[4]) * 1000.0,
-                                                                              Double.parseDouble(fields[5]) * 1000.0),
-                                                                 new Vector3D(Double.parseDouble(fields[6]) * 1000.0,
-                                                                              Double.parseDouble(fields[7]) * 1000.0,
-                                                                              Double.parseDouble(fields[8]) * 1000.0),
-                                                                 pvData.positionSigma,
-                                                                 pvData.velocitySigma,
-                                                                 weights.pvBaseWeight);
-            }
-        };
+    private static abstract class MeasurementsParser<T extends Measurement<T>> {
 
         /** Parse the fields of a measurements line.
          * @param fields measurements line fields
@@ -1287,11 +1290,11 @@ public class OrbitDeterminationTest {
          * @return parsed measurement
          * @exception OrekitException if the fields do not represent a valid measurements line
          */
-        public abstract Measurement<?> parseFields(String[] fields,
-                                                   Map<String, StationData> stations,
-                                                   PVData pvData,
-                                                   Bias<Range> satRangeBias, Weights weight,
-                                                   String line, int lineNumber, String fileName)
+        public abstract T parseFields(String[] fields,
+                                      Map<String, StationData> stations,
+                                      PVData pvData,
+                                      Bias<Range> satRangeBias, Weights weight,
+                                      String line, int lineNumber, String fileName)
             throws OrekitException;
 
         /** Check the number of fields.
@@ -1356,9 +1359,131 @@ public class OrbitDeterminationTest {
             }
             return stationData;
         }
-
     }
 
+    /** Parser for range measurements. */
+    private static class RangeParser extends MeasurementsParser<Range> {
+        /** {@inheritDoc} */
+        @Override
+        public Range parseFields(final String[] fields,
+                                 final Map<String, StationData> stations,
+                                 final PVData pvData,
+                                 final Bias<Range> satRangeBias,
+                                 final Weights weights,
+                                 final String line,
+                                 final int lineNumber,
+                                 final String fileName)
+                                                 throws OrekitException {
+            checkFields(4, fields, line, lineNumber, fileName);
+            final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
+            final Range range = new Range(stationData.station,
+                                          getDate(fields[0], line, lineNumber, fileName),
+                                          Double.parseDouble(fields[3]) * 1000.0,
+                                          stationData.rangeSigma,
+                                          weights.rangeBaseWeight);
+            if (stationData.rangeBias != null) {
+                range.addModifier(stationData.rangeBias);
+            }
+            if (satRangeBias != null) {
+                range.addModifier(satRangeBias);
+            }
+            if (stationData.rangeTroposphericCorrection != null) {
+                range.addModifier(stationData.rangeTroposphericCorrection);
+            }
+            return range;
+        }
+    }
+
+    /** Parser for range rate measurements. */
+    private static class RangeRateParser extends MeasurementsParser<RangeRate> {
+        /** {@inheritDoc} */
+        @Override
+        public RangeRate parseFields(final String[] fields,
+                                     final Map<String, StationData> stations,
+                                     final PVData pvData,
+                                     final Bias<Range> satRangeBias,
+                                     final Weights weights,
+                                     final String line,
+                                     final int lineNumber,
+                                     final String fileName)
+                                                     throws OrekitException {
+            checkFields(4, fields, line, lineNumber, fileName);
+            final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
+            final RangeRate rangeRate = new RangeRate(stationData.station,
+                                                      getDate(fields[0], line, lineNumber, fileName),
+                                                      Double.parseDouble(fields[3]) * 1000.0,
+                                                      stationData.rangeRateSigma,
+                                                      weights.rangeRateBaseWeight,
+                                                      true);
+            if (stationData.rangeRateBias != null) {
+                rangeRate.addModifier(stationData.rangeRateBias);
+            }
+            return rangeRate;
+        }
+    };
+
+    /** Parser for azimuth-elevation measurements. */
+    private static class AzElParser extends MeasurementsParser<Angular> {
+        /** {@inheritDoc} */
+        @Override
+        public Angular parseFields(final String[] fields,
+                                   final Map<String, StationData> stations,
+                                   final PVData pvData,
+                                   final Bias<Range> satRangeBias,
+                                   final Weights weights,
+                                   final String line,
+                                   final int lineNumber,
+                                   final String fileName)
+                                                   throws OrekitException {
+            checkFields(5, fields, line, lineNumber, fileName);
+            final StationData stationData = getStationData(fields[2], stations, line, lineNumber, fileName);
+            final Angular azEl = new Angular(stationData.station,
+                                             getDate(fields[0], line, lineNumber, fileName),
+                                             new double[] {
+                                                           FastMath.toRadians(Double.parseDouble(fields[3])),
+                                                           FastMath.toRadians(Double.parseDouble(fields[4]))
+            },
+                                             stationData.azElSigma,
+                                             weights.azElBaseWeight);
+            if (stationData.refractionCorrection != null) {
+                azEl.addModifier(stationData.refractionCorrection);
+            }
+            if (stationData.azELBias != null) {
+                azEl.addModifier(stationData.azELBias);
+            }
+            return azEl;
+        }
+    };
+
+    /** Parser for PV measurements. */
+    private static class PVParser extends MeasurementsParser<PV> {
+        /** {@inheritDoc} */
+        @Override
+        public PV parseFields(final String[] fields,
+                              final Map<String, StationData> stations,
+                              final PVData pvData,
+                              final Bias<Range> satRangeBias,
+                              final Weights weights,
+                              final String line,
+                              final int lineNumber,
+                              final String fileName)
+                                              throws OrekitException {
+            // field 2, which corresponds to stations in other measurements, is ignored
+            // this allows the measurements files to be columns aligned
+            // by inserting something like "----" instead of a station name
+            checkFields(9, fields, line, lineNumber, fileName);
+            return new org.orekit.estimation.measurements.PV(getDate(fields[0], line, lineNumber, fileName),
+                                                             new Vector3D(Double.parseDouble(fields[3]) * 1000.0,
+                                                                          Double.parseDouble(fields[4]) * 1000.0,
+                                                                          Double.parseDouble(fields[5]) * 1000.0),
+                                                             new Vector3D(Double.parseDouble(fields[6]) * 1000.0,
+                                                                          Double.parseDouble(fields[7]) * 1000.0,
+                                                                          Double.parseDouble(fields[8]) * 1000.0),
+                                                             pvData.positionSigma,
+                                                             pvData.velocitySigma,
+                                                             weights.pvBaseWeight);
+        }
+    };
 
     /** Local class for measurement-specific log.
      * @param T type of mesurement
@@ -1620,8 +1745,14 @@ public class OrbitDeterminationTest {
         PV_MEASUREMENTS_BASE_WEIGHT,
         PV_MEASUREMENTS_POSITION_SIGMA,
         PV_MEASUREMENTS_VELOCITY_SIGMA,
-        OUTLIER_REJECTION_MULTIPLIER,
-        OUTLIER_REJECTION_STARTING_ITERATION,
+        RANGE_OUTLIER_REJECTION_MULTIPLIER,
+        RANGE_OUTLIER_REJECTION_STARTING_ITERATION,
+        RANGE_RATE_OUTLIER_REJECTION_MULTIPLIER,
+        RANGE_RATE_OUTLIER_REJECTION_STARTING_ITERATION,
+        AZ_EL_OUTLIER_REJECTION_MULTIPLIER,
+        AZ_EL_OUTLIER_REJECTION_STARTING_ITERATION,
+        PV_OUTLIER_REJECTION_MULTIPLIER,
+        PV_OUTLIER_REJECTION_STARTING_ITERATION,
         MEASUREMENTS_FILES,
         OUTPUT_BASE_NAME,
         ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD,
