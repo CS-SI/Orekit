@@ -24,6 +24,8 @@ import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.exception.DummyLocalizable;
@@ -35,6 +37,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -82,6 +85,33 @@ public class KeplerianPropagatorTest {
 
     // Body mu
     private double mu;
+
+    @Test
+    public void testEphemerisModeWithHandler() throws PropagationException {
+        // setup
+        AbsoluteDate initDate = AbsoluteDate.GPS_EPOCH;
+        Orbit ic = new KeplerianOrbit(6378137 + 500e3, 1e-3, 0, 0, 0, 0,
+                PositionAngle.TRUE, FramesFactory.getGCRF(), initDate, mu);
+        Propagator propagator = new KeplerianPropagator(ic);
+        AbsoluteDate end = initDate.shiftedBy(90 * 60);
+
+        // action
+        final List<SpacecraftState> states = new ArrayList<>();
+        propagator.setEphemerisMode((interpolator, isLast) -> {
+            states.add(interpolator.getCurrentState());
+            states.add(interpolator.getPreviousState());
+        });
+        propagator.propagate(end);
+        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+
+        //verify
+        Assert.assertTrue(states.size() > 1); // got some data
+        for (SpacecraftState state : states) {
+            PVCoordinates actual =
+                    ephemeris.propagate(state.getDate()).getPVCoordinates();
+            Assert.assertThat(actual, OrekitMatchers.pvIs(state.getPVCoordinates()));
+        }
+    }
 
     @Test
     public void sameDateCartesian() throws OrekitException {

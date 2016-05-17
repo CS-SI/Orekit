@@ -129,6 +129,31 @@ public interface Propagator extends PVCoordinatesProvider {
      */
     void setEphemerisMode();
 
+    /**
+     * Set the propagator to ephemeris generation mode with the specified handler for each
+     * integration step.
+     *
+     * <p>This mode is used when the user needs random access to the orbit state at any
+     * time between the initial and target times, as well as access to the steps computed
+     * by the integrator as in Master Mode. A typical example is the implementation of
+     * search and iterative algorithms that may navigate forward and backward inside the
+     * propagation range before finding their result.</p>
+     *
+     * <p>Beware that since this mode stores <strong>all</strong> intermediate results, it
+     * may be memory intensive for long integration ranges and high precision/short time
+     * steps.</p>
+     *
+     * @param handler handler called at the end of each finalized step
+     * @see #setEphemerisMode()
+     * @see #getGeneratedEphemeris()
+     * @see #setSlaveMode()
+     * @see #setMasterMode(double, OrekitFixedStepHandler)
+     * @see #setMasterMode(OrekitStepHandler)
+     * @see #getMode()
+     * @see #EPHEMERIS_GENERATION_MODE
+     */
+    void setEphemerisMode(OrekitStepHandler handler);
+
     /** Get the ephemeris generated during propagation.
      * @return generated ephemeris
      * @exception IllegalStateException if the propagator was not set in ephemeris

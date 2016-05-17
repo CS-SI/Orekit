@@ -18,6 +18,8 @@ package org.orekit.propagation.numerical;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -78,6 +80,27 @@ public class NumericalPropagatorTest {
     private AbsoluteDate         initDate;
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
+
+    @Test
+    public void testEphemerisModeWithHandler() throws PropagationException {
+        // setup
+        AbsoluteDate end = initDate.shiftedBy(90 * 60);
+
+        // action
+        final List<SpacecraftState> states = new ArrayList<>();
+        propagator.setEphemerisMode(
+                (interpolator, isLast) -> states.add(interpolator.getCurrentState()));
+        propagator.propagate(end);
+        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+
+        //verify
+        Assert.assertTrue(states.size() > 10); // got some data
+        for (SpacecraftState state : states) {
+            PVCoordinates actual =
+                    ephemeris.propagate(state.getDate()).getPVCoordinates();
+            Assert.assertThat(actual, OrekitMatchers.pvIs(state.getPVCoordinates()));
+        }
+    }
 
     /** test for issue #238 */
     @Test

@@ -317,6 +317,22 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         integrator.addStepHandler(ephemeris);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Note that this method has the side effect of replacing the step handlers of the
+     * underlying integrator set up in the {@link #AbstractIntegratedPropagator(ODEIntegrator,
+     * boolean) constructor}.</p>
+     */
+    @Override
+    public void setEphemerisMode(final OrekitStepHandler handler) {
+        super.setEphemerisMode();
+        integrator.clearStepHandlers();
+        final EphemerisModeHandler ephemeris = new EphemerisModeHandler(handler);
+        modeHandler = ephemeris;
+        integrator.addStepHandler(ephemeris);
+    }
+
     /** {@inheritDoc} */
     public BoundedPropagator getGeneratedEphemeris()
         throws IllegalStateException {
@@ -889,9 +905,21 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
         /** {@inheritDoc}} */
         @Override
+        public boolean isPreviousStateInterpolated() {
+            return mathInterpolator.isPreviousStateInterpolated();
+        }
+
+        /** {@inheritDoc}} */
+        @Override
         public SpacecraftState getCurrentState()
             throws PropagationException {
             return convert(mathInterpolator.getCurrentState());
+        }
+
+        /** {@inheritDoc}} */
+        @Override
+        public boolean isCurrentStateInterpolated() {
+            return mathInterpolator.isCurrentStateInterpolated();
         }
 
         /** {@inheritDoc}} */
@@ -956,10 +984,21 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** the user supplied end date. Propagation may not end on this date. */
         private AbsoluteDate endDate;
 
+        private final AdaptedStepHandler handler;
+
         /** Creates a new instance of EphemerisModeHandler which must be
          *  filled by the propagator.
          */
         EphemerisModeHandler() {
+            this.handler = null;
+        }
+
+        /** Creates a new instance of EphemerisModeHandler which must be
+         *  filled by the propagator.
+         *  @param handler the handler to notify of every integrator step.
+         */
+        EphemerisModeHandler(final OrekitStepHandler handler) {
+            this.handler = new AdaptedStepHandler(handler);
         }
 
         /** {@inheritDoc} */
@@ -971,7 +1010,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // ephemeris will be generated when last step is processed
             this.ephemeris = null;
-
+            if (this.handler != null) {
+                this.handler.initialize(activateHandlers, targetDate);
+            }
         }
 
         /** Get the generated ephemeris.
@@ -986,6 +1027,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             throws OrekitExceptionWrapper {
             try {
                 if (activate) {
+                    if (this.handler != null) {
+                        this.handler.handleStep(interpolator, isLast);
+                    }
+
                     model.handleStep(interpolator, isLast);
                     if (isLast) {
 
@@ -1038,6 +1083,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void init(final ODEStateAndDerivative s0, final double t) {
             model.init(s0, t);
+            if (this.handler != null) {
+                this.handler.init(s0, t);
+            }
         }
 
     }
