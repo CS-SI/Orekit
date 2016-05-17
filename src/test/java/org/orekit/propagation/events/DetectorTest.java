@@ -30,13 +30,16 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -106,7 +109,6 @@ public class DetectorTest {
 
         @Override
         public void init(SpacecraftState initialState, AbsoluteDate target) {
-            // TODO Auto-generated method stub
             EventHandler.super.init(initialState, target);
         }
 
@@ -266,6 +268,48 @@ public class DetectorTest {
             final OrekitException oe = (OrekitException) poe.getCause();
             Assert.assertSame(dummyCause, oe.getCause());
         }
+    }
+
+    @Test
+    public void testDefaultMethods() throws OrekitException {
+        EventDetector dummyDetector = new EventDetector() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public double getThreshold() {
+                return 1.0e-10;
+            }
+            
+            @Override
+            public int getMaxIterationCount() {
+                return 100;
+            }
+            
+            @Override
+            public double getMaxCheckInterval() {
+                return 60;
+            }
+            
+            @Override
+            public double g(SpacecraftState s) {
+                return s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH);
+            }
+            
+            @Override
+            public Action eventOccurred(SpacecraftState s, boolean increasing) {
+                return Action.RESET_STATE;
+            }
+       };
+
+       // by default, this method does nothing, so this should pass without exception
+       dummyDetector.init(null, null);
+
+       // by default, this method returns its argument
+       SpacecraftState s = new SpacecraftState(new KeplerianOrbit(7e6, 0.01, 0.3, 0, 0, 0,
+                                                                  PositionAngle.TRUE, FramesFactory.getEME2000(),
+                                                                  AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU));
+       Assert.assertSame(s, dummyDetector.resetState(s));
+
     }
 
     @Before
