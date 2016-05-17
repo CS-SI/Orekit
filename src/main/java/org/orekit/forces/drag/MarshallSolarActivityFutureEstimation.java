@@ -104,24 +104,6 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
     /** Serializable UID. */
     private static final long serialVersionUID = -5212198874900835369L;
 
-    /** 1/3. */
-    private static final double ONE_THIRD = 1.0 / 3.0;
-
-    /** 3 hours geomagnetic indices array. */
-    private static final double[] KP_ARRAY = new double[] {
-        0, 0 + ONE_THIRD, 1 - ONE_THIRD, 1, 1 + ONE_THIRD, 2 - ONE_THIRD,
-        2, 2 + ONE_THIRD, 3 - ONE_THIRD, 3, 3 + ONE_THIRD, 4 - ONE_THIRD,
-        4, 4 + ONE_THIRD, 5 - ONE_THIRD, 5, 5 + ONE_THIRD, 6 - ONE_THIRD,
-        6, 6 + ONE_THIRD, 7 - ONE_THIRD, 7, 7 + ONE_THIRD, 8 - ONE_THIRD,
-        8, 8 + ONE_THIRD, 9 - ONE_THIRD, 9
-    };
-
-    /** Mean geomagnetic indices array. */
-    private static final double[] AP_ARRAY = new double[] {
-        0, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 22, 27, 32,
-        39, 48, 56, 67, 80, 94, 111, 132, 154, 179, 207, 236, 300, 400
-    };
-
     /** Pattern for the data fields of MSAFE data. */
     private final Pattern dataPattern;
 
