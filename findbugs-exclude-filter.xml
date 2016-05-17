@@ -105,9 +105,13 @@
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
 
-  <!-- the approximate constants do belong to the model -->
+  <!-- the approximate constants do belong to the models -->
   <Match>
     <Class name="~.*\.JB2006$"/>
+    <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.SEMParser$"/>
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
   
