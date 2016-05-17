@@ -460,8 +460,10 @@ public class EventState<T extends EventDetector> implements Serializable {
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
      * @return the user's requested action and the new state if the action is {@link
-     * EventHandler.Action#RESET_STATE}. Otherwise the new state is {@code state}. The stop time
-     * indicates what time propagation should stop if the action is {@link EventHandler.Action#STOP}.
+     * org.orekit.propagation.events.handlers.EventHandler.Action#RESET_STATE Action.RESET_STATE}.
+     * Otherwise the new state is {@code state}. The stop time indicates what time propagation
+     * should stop if the action is {@link
+     * org.orekit.propagation.events.handlers.EventHandler.Action#STOP Action.STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
      * @exception OrekitException if the event detector throws one
