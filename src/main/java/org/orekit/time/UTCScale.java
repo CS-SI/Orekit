@@ -212,7 +212,7 @@ public class UTCScale implements TimeScale {
         int inf = 0;
         int sup = offsets.length;
         while (sup - inf > 1) {
-            final int middle = (inf + sup) / 2;
+            final int middle = (inf + sup) >>> 1;
             if (date.compareTo(offsets[middle].getDate()) < 0) {
                 sup = middle;
             } else {
@@ -238,7 +238,7 @@ public class UTCScale implements TimeScale {
         int inf = 0;
         int sup = offsets.length;
         while (sup - inf > 1) {
-            final int middle = (inf + sup) / 2;
+            final int middle = (inf + sup) >>> 1;
             if (mjd < offsets[middle].getMJD()) {
                 sup = middle;
             } else {
