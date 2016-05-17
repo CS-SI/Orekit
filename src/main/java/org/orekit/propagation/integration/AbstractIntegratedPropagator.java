@@ -984,6 +984,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** the user supplied end date. Propagation may not end on this date. */
         private AbsoluteDate endDate;
 
+        /** User's integration step handler. May be null. */
         private final AdaptedStepHandler handler;
 
         /** Creates a new instance of EphemerisModeHandler which must be

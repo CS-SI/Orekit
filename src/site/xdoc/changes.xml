@@ -22,6 +22,15 @@
   <body>
     <release version="8.0" date="TBC"
              description="TBC">
+      <action dev="evan" type="add">
+        Add methods for a integration step handler to tell if the start/end of the step is
+        interpolated due to event detection. Also added ability to add a step handler in
+        ephemeris mode.
+      </action>
+      <action dev="evan" type="fix">
+        Switch to a continuous Ap to Kp geomagnetic index conversion.
+        Fixes issue #240.
+      </action>
       <action dev="pascal" type="add">
         Added computation of Dilution Of Precision (DOP).
       </action>
