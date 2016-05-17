@@ -104,43 +104,43 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
         throws IOException, OrekitException {
 
         final Pattern        arrayPattern = Pattern.compile("([\\w\\.]+)\\s*\\[([0-9]+)\\]");
-        final BufferedReader reader       = new BufferedReader(new InputStreamReader(input));
-        int lineNumber = 0;
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++lineNumber;
-            line = line.trim();
-            // we ignore blank lines and line starting with '#'
-            if ((line.length() > 0) && !line.startsWith("#")) {
-                String[] fields = line.split("\\s*=\\s*");
-                if (fields.length != 2) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              lineNumber, name, line);
-                }
-                final Matcher matcher = arrayPattern.matcher(fields[0]);
-                if (matcher.matches()) {
-                    // this is a key[i]=value line
-                    String canonicalized = matcher.group(1).toUpperCase().replaceAll("\\.", "_");
-                    Key key = Key.valueOf(enumType, canonicalized);
-                    Integer index = Integer.valueOf(matcher.group(2));
-                    List<String> list = arrayMap.get(key);
-                    if (list == null) {
-                        list = new ArrayList<String>();
-                        arrayMap.put(key, list);
+        try (final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"))) {
+            int lineNumber = 0;
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                ++lineNumber;
+                line = line.trim();
+                // we ignore blank lines and line starting with '#'
+                if ((line.length() > 0) && !line.startsWith("#")) {
+                    String[] fields = line.split("\\s*=\\s*");
+                    if (fields.length != 2) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, name, line);
                     }
-                    while (index >= list.size()) {
-                        // insert empty strings for missing elements
-                        list.add("");
+                    final Matcher matcher = arrayPattern.matcher(fields[0]);
+                    if (matcher.matches()) {
+                        // this is a key[i]=value line
+                        String canonicalized = matcher.group(1).toUpperCase().replaceAll("\\.", "_");
+                        Key key = Key.valueOf(enumType, canonicalized);
+                        Integer index = Integer.valueOf(matcher.group(2));
+                        List<String> list = arrayMap.get(key);
+                        if (list == null) {
+                            list = new ArrayList<String>();
+                            arrayMap.put(key, list);
+                        }
+                        while (index >= list.size()) {
+                            // insert empty strings for missing elements
+                            list.add("");
+                        }
+                        list.set(index, fields[1]);
+                    } else {
+                        // this is a key=value line
+                        String canonicalized = fields[0].toUpperCase().replaceAll("\\.", "_");
+                        Key key = Key.valueOf(enumType, canonicalized);
+                        scalarMap.put(key, fields[1]);
                     }
-                    list.set(index, fields[1]);
-                } else {
-                    // this is a key=value line
-                    String canonicalized = fields[0].toUpperCase().replaceAll("\\.", "_");
-                    Key key = Key.valueOf(enumType, canonicalized);
-                    scalarMap.put(key, fields[1]);
                 }
             }
         }
-        reader.close();
 
     }
 

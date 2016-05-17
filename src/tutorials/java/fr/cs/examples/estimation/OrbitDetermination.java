@@ -160,7 +160,9 @@ public class OrbitDetermination {
 
         // read input parameters
         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
+        try (final FileInputStream fis = new FileInputStream(input)) {
+            parser.parseInput(input.getAbsolutePath(), fis);
+        }
 
         // log file
         final String baseName;
@@ -168,7 +170,7 @@ public class OrbitDetermination {
         if (parser.containsKey(ParameterKey.OUTPUT_BASE_NAME) &&
             parser.getString(ParameterKey.OUTPUT_BASE_NAME).length() > 0) {
             baseName  = parser.getString(ParameterKey.OUTPUT_BASE_NAME);
-            logStream = new PrintStream(new File(home, baseName + "-log.out"));
+            logStream = new PrintStream(new File(home, baseName + "-log.out"), "UTF-8");
         } else {
             baseName  = null;
             logStream = null;
@@ -1455,7 +1457,7 @@ public class OrbitDetermination {
                 this.stream  = null;
             } else {
                 this.file    = new File(home, baseName + "-" + name + "-residuals.out");
-                this.stream  = new PrintStream(file);
+                this.stream  = new PrintStream(file, "UTF-8");
             }
         }
 
@@ -1520,13 +1522,17 @@ public class OrbitDetermination {
          * <p>
          * The file is deleted if it contains no data.
          * </p>
+         * @exception OrekitException if empty file cannot be deleted
          */
-        public void close() {
+        public void close() throws OrekitException {
             if (stream != null) {
                 stream.close();
                 if (evaluations.isEmpty()) {
                     // delete unused file
-                    file.delete();
+                    if (!file.delete()) {
+                        throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                                                  "cannot delete " + file.getAbsolutePath());
+                    }
                 }
             }
         }

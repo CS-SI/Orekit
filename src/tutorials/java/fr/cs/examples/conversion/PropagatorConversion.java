@@ -18,7 +18,7 @@
 package fr.cs.examples.conversion;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -142,62 +142,62 @@ public class PropagatorConversion {
 
             // Print the results on the output file
             File output = new File(new File(System.getProperty("user.home")), "elements.dat");
-            PrintStream stream = new PrintStream(output);
-            stream.println("# date Anum Akep Enum Ekep Inum Ikep LMnum LMkep");
-            for (SpacecraftState numState : numStates) {
-                for (SpacecraftState kepState : kepStates) {
-                    if (numState.getDate().compareTo(kepState.getDate()) == 0) {
-                        stream.println(numState.getDate()
-                                       + " " + numState.getA()
-                                       + " " + kepState.getA()
-                                       + " " + numState.getE()
-                                       + " " + kepState.getE()
-                                       + " " + FastMath.toDegrees(numState.getI())
-                                       + " " + FastMath.toDegrees(kepState.getI())
-                                       + " " + FastMath.toDegrees(MathUtils.normalizeAngle(numState.getLM(), FastMath.PI))
-                                       + " " + FastMath.toDegrees(MathUtils.normalizeAngle(kepState.getLM(), FastMath.PI)));
-                        break;
+            try (final PrintStream stream = new PrintStream(output, "UTF-8")) {
+                stream.println("# date Anum Akep Enum Ekep Inum Ikep LMnum LMkep");
+                for (SpacecraftState numState : numStates) {
+                    for (SpacecraftState kepState : kepStates) {
+                        if (numState.getDate().compareTo(kepState.getDate()) == 0) {
+                            stream.println(numState.getDate()
+                                           + " " + numState.getA()
+                                           + " " + kepState.getA()
+                                           + " " + numState.getE()
+                                           + " " + kepState.getE()
+                                           + " " + FastMath.toDegrees(numState.getI())
+                                           + " " + FastMath.toDegrees(kepState.getI())
+                                           + " " + FastMath.toDegrees(MathUtils.normalizeAngle(numState.getLM(), FastMath.PI))
+                                           + " " + FastMath.toDegrees(MathUtils.normalizeAngle(kepState.getLM(), FastMath.PI)));
+                            break;
+                        }
                     }
                 }
             }
-            stream.close();
             System.out.println("Results saved as file " + output);
 
             File output1 = new File(new File(System.getProperty("user.home")), "elts_pv.dat");
-            PrintStream stream1 = new PrintStream(output1);
-            stream.println("# date pxn pyn pzn vxn vyn vzn pxk pyk pzk vxk vyk vzk");
-            for (SpacecraftState numState : numStates) {
-                for (SpacecraftState kepState : kepStates) {
-                    if (numState.getDate().compareTo(kepState.getDate()) == 0) {
-                        final double pxn = numState.getPVCoordinates().getPosition().getX();
-                        final double pyn = numState.getPVCoordinates().getPosition().getY();
-                        final double pzn = numState.getPVCoordinates().getPosition().getZ();
-                        final double vxn = numState.getPVCoordinates().getVelocity().getX();
-                        final double vyn = numState.getPVCoordinates().getVelocity().getY();
-                        final double vzn = numState.getPVCoordinates().getVelocity().getZ();
-                        final double pxk = kepState.getPVCoordinates().getPosition().getX();
-                        final double pyk = kepState.getPVCoordinates().getPosition().getY();
-                        final double pzk = kepState.getPVCoordinates().getPosition().getZ();
-                        final double vxk = kepState.getPVCoordinates().getVelocity().getX();
-                        final double vyk = kepState.getPVCoordinates().getVelocity().getY();
-                        final double vzk = kepState.getPVCoordinates().getVelocity().getZ();
-                        stream1.println(numState.getDate()
-                                        + " " + pxn + " " + pyn + " " + pzn
-                                        + " " + vxn + " " + vyn + " " + vzn
-                                        + " " + pxk + " " + pyk + " " + pzk
-                                        + " " + vxk + " " + vyk + " " + vzk);
-                        break;
+            try (final PrintStream stream = new PrintStream(output1, "UTF-8")) {
+                stream.println("# date pxn pyn pzn vxn vyn vzn pxk pyk pzk vxk vyk vzk");
+                for (SpacecraftState numState : numStates) {
+                    for (SpacecraftState kepState : kepStates) {
+                        if (numState.getDate().compareTo(kepState.getDate()) == 0) {
+                            final double pxn = numState.getPVCoordinates().getPosition().getX();
+                            final double pyn = numState.getPVCoordinates().getPosition().getY();
+                            final double pzn = numState.getPVCoordinates().getPosition().getZ();
+                            final double vxn = numState.getPVCoordinates().getVelocity().getX();
+                            final double vyn = numState.getPVCoordinates().getVelocity().getY();
+                            final double vzn = numState.getPVCoordinates().getVelocity().getZ();
+                            final double pxk = kepState.getPVCoordinates().getPosition().getX();
+                            final double pyk = kepState.getPVCoordinates().getPosition().getY();
+                            final double pzk = kepState.getPVCoordinates().getPosition().getZ();
+                            final double vxk = kepState.getPVCoordinates().getVelocity().getX();
+                            final double vyk = kepState.getPVCoordinates().getVelocity().getY();
+                            final double vzk = kepState.getPVCoordinates().getVelocity().getZ();
+                            stream.println(numState.getDate()
+                                           + " " + pxn + " " + pyn + " " + pzn
+                                           + " " + vxn + " " + vyn + " " + vzn
+                                           + " " + pxk + " " + pyk + " " + pzk
+                                           + " " + vxk + " " + vyk + " " + vzk);
+                            break;
+                        }
                     }
                 }
             }
-            stream1.close();
             System.out.println("Results saved as file " + output1);
 
         } catch (OrekitException oe) {
             System.err.println(oe.getLocalizedMessage());
             System.exit(1);
-        } catch (FileNotFoundException fnfe) {
-            System.err.println(fnfe.getLocalizedMessage());
+        } catch (IOException ioe) {
+            System.err.println(ioe.getLocalizedMessage());
             System.exit(1);
         }
     }

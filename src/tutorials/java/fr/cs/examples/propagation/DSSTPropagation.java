@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,9 +38,10 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.drag.Atmosphere;
@@ -105,8 +107,18 @@ public class DSSTPropagation {
     public static void main(String[] args) {
         try {
 
-            // configure Orekit data acces
-            Utils.setDataRoot("tutorial-orekit-data");
+            // configure Orekit data access
+            String className = "/" + DSSTPropagation.class.getName().replaceAll("\\.", "/") + ".class";
+            File f = new File(DSSTPropagation.class.getResource(className).toURI().getPath());
+            File resourcesDir = null;
+            while (resourcesDir == null || !resourcesDir.exists()) {
+                f = f.getParentFile();
+                if (f == null) {
+                    System.err.println("cannot find resources directory");
+                }
+                resourcesDir = new File(new File(new File(new File(f, "src"), "tutorials"), "resources"), "tutorial-orekit-data");
+            }
+            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(resourcesDir));
 
             // input/output (in user's home directory)
             File input  = new File(new File(System.getProperty("user.home")), "dsst-propagation.in");
@@ -125,6 +137,9 @@ public class DSSTPropagation {
             System.exit(1);
         } catch (ParseException pe) {
             System.err.println(pe.getLocalizedMessage());
+            System.exit(1);
+        } catch (URISyntaxException e) {
+            System.err.println(e.getLocalizedMessage());
             System.exit(1);
         }
     }
@@ -205,7 +220,9 @@ public class DSSTPropagation {
 
         // read input parameters
         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
+        try (final FileInputStream fis = new FileInputStream(input)) {
+            parser.parseInput(input.getAbsolutePath(), fis);
+        }
 
         // check mandatory input parameters
         if (!parser.containsKey(ParameterKey.ORBIT_DATE)) {

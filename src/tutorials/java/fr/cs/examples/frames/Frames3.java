@@ -20,6 +20,7 @@ package fr.cs.examples.frames;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.util.Locale;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -30,6 +31,8 @@ import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -50,8 +53,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
-import fr.cs.examples.Autoconfiguration;
-
 /** Orekit tutorial for computing spacecraft related data.
  * @author Pascal Parraud
  * @author Luc Maisonobe
@@ -62,7 +63,17 @@ public class Frames3 {
         try {
 
             // configure Orekit and printing format
-            Autoconfiguration.configureOrekit();
+            String className = "/" + Frames3.class.getName().replaceAll("\\.", "/") + ".class";
+            File f = new File(Frames3.class.getResource(className).toURI().getPath());
+            File resourcesDir = null;
+            while (resourcesDir == null || !resourcesDir.exists()) {
+                f = f.getParentFile();
+                if (f == null) {
+                    System.err.println("cannot find resources directory");
+                }
+                resourcesDir = new File(new File(new File(new File(f, "src"), "test"), "resources"), "regular-data");
+            }
+            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(resourcesDir));
 
             // Initial state definition :
             // ==========================
@@ -124,7 +135,7 @@ public class Frames3 {
                     try {
                         File file = new File(System.getProperty("user.home"), "XYZ.dat");
                         System.out.println("Results written to file: " + file.getAbsolutePath());
-                        out = new PrintStream(file);
+                        out = new PrintStream(file, "UTF-8");
                         out.println("#time X Y Z Wx Wy Wz");
                     } catch (IOException ioe) {
                         throw new PropagationException(ioe,
@@ -173,6 +184,8 @@ public class Frames3 {
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
+        } catch (URISyntaxException e) {
+            System.err.println(e.getMessage());
         }
     }
 

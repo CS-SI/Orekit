@@ -160,17 +160,17 @@ public class TrackCorridor {
         // center track latitude in column 4 and center track longitude in column 5
         // right limit latitude in column 6 and right limit longitude in column 7
         DecimalFormat format = new DecimalFormat("#00.00000", new DecimalFormatSymbols(Locale.US));
-        PrintStream stream = new PrintStream(output);
-        for (CorridorPoint p : corridor) {
-            stream.println(p.getDate() + separator +
-                           format.format(FastMath.toDegrees(p.getLeft().getLatitude()))    + separator +
-                           format.format(FastMath.toDegrees(p.getLeft().getLongitude()))   + separator +
-                           format.format(FastMath.toDegrees(p.getCenter().getLatitude()))  + separator +
-                           format.format(FastMath.toDegrees(p.getCenter().getLongitude())) + separator +
-                           format.format(FastMath.toDegrees(p.getRight().getLatitude()))   + separator +
-                           format.format(FastMath.toDegrees(p.getRight().getLongitude())));
+        try (final PrintStream stream = new PrintStream(output, "UTF-8")) {
+            for (CorridorPoint p : corridor) {
+                stream.println(p.getDate() + separator +
+                               format.format(FastMath.toDegrees(p.getLeft().getLatitude()))    + separator +
+                               format.format(FastMath.toDegrees(p.getLeft().getLongitude()))   + separator +
+                               format.format(FastMath.toDegrees(p.getCenter().getLatitude()))  + separator +
+                               format.format(FastMath.toDegrees(p.getCenter().getLongitude())) + separator +
+                               format.format(FastMath.toDegrees(p.getRight().getLatitude()))   + separator +
+                               format.format(FastMath.toDegrees(p.getRight().getLongitude())));
+            }
         }
-        stream.close();
 
     }
 

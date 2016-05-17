@@ -165,7 +165,9 @@ public class Phasing {
         // read input parameters
         KeyValueFileParser<ParameterKey> parser =
                 new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
+        try (final FileInputStream fis = new FileInputStream(input)) {
+            parser.parseInput(input.getAbsolutePath(), fis);
+        }
         TimeScale utc = TimeScalesFactory.getUTC();
 
        // simulation properties
@@ -251,11 +253,11 @@ public class Phasing {
         System.out.println("final orbit (osculating): " + orbit);
 
         // generate the ground track grid file
-        PrintStream output = new PrintStream(new File(input.getParent(), gridOutput));
-        for (int i = 0; i < gridLatitudes.length; ++i) {
-            printGridPoints(output, gridLatitudes[i], gridAscending[i], orbit, propagator, nbOrbits);
+        try (PrintStream output = new PrintStream(new File(input.getParent(), gridOutput), "UTF-8")) {
+            for (int i = 0; i < gridLatitudes.length; ++i) {
+                printGridPoints(output, gridLatitudes[i], gridAscending[i], orbit, propagator, nbOrbits);
+            }
         }
-        output.close();
 
     }
 
