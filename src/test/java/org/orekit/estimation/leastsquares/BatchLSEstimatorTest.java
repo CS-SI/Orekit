@@ -19,19 +19,27 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
+import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 public class BatchLSEstimatorTest {
 
@@ -96,6 +104,39 @@ public class BatchLSEstimatorTest {
         estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
+        estimator.setObserver(new BatchLSObserver() {
+            int last = 0;
+            /** {@inheritDoc} */
+            @Override
+            public void iterationPerformed(int iterationsCount, int evaluationscount,
+                                           Orbit orbit,
+                                           List<ParameterDriver> estimatedPropagatorParameters,
+                                           List<ParameterDriver> estimatedMeasurementsParameters,
+                                           EvaluationsProvider evaluationsProvider,
+                                           Evaluation lspEvaluation) throws OrekitException {
+                Assert.assertEquals(last + 1, iterationsCount);
+                last = iterationsCount;
+                Assert.assertEquals(measurements.size(), evaluationsProvider.getNumber());
+                try {
+                    evaluationsProvider.getEvaluation(-1);
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException oe) {
+                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                }
+                try {
+                    evaluationsProvider.getEvaluation(measurements.size());
+                    Assert.fail("an exception should have been thrown");
+                } catch (OrekitException oe) {
+                    Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                }
+                AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
+                for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
+                    AbsoluteDate current = evaluationsProvider.getEvaluation(i).getDate();
+                    Assert.assertTrue(current.compareTo(previous) >= 0);
+                    previous = current;
+                }
+            }
+        });
 
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 1.5e-6,
@@ -103,6 +144,65 @@ public class BatchLSEstimatorTest {
                                      0.0, 3.8e-7,
                                      0.0, 1.5e-10);
 
+    }
+
+    @Test
+    public void testWrappedException() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<Measurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new RangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+
+        // create orbit estimator
+        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
+                                                                new LevenbergMarquardtOptimizer());
+        for (final Measurement<?> range : measurements) {
+            estimator.addMeasurement(range);
+        }
+        estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
+        estimator.setMaxIterations(10);
+        estimator.setMaxEvaluations(20);
+        estimator.setObserver(new BatchLSObserver() {
+            /** {@inheritDoc} */
+            @Override
+            public void iterationPerformed(int iterationsCount, int evaluationscount,
+                                           Orbit orbit,
+                                           List<ParameterDriver> estimatedPropagatorParameters,
+                                           List<ParameterDriver> estimatedMeasurementsParameters,
+                                           EvaluationsProvider evaluationsProvider,
+                                           Evaluation lspEvaluation) throws DummyException {
+                throw new DummyException();
+            }
+        });
+
+        try {
+            EstimationTestUtils.checkFit(context, estimator, 3, 4,
+                                         0.0, 1.5e-6,
+                                         0.0, 3.2e-6,
+                                         0.0, 3.8e-7,
+                                         0.0, 1.5e-10);
+            Assert.fail("an exception should have been thrown");
+        } catch (DummyException de) {
+            // expected
+        }
+
+    }
+
+    private static class DummyException extends OrekitException {
+        private static final long serialVersionUID = 1L;
+        public DummyException() {
+            super(OrekitMessages.INTERNAL_ERROR);
+        }
     }
 
     @Test

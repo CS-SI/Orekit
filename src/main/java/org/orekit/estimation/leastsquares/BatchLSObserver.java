@@ -19,6 +19,7 @@ package org.orekit.estimation.leastsquares;
 import java.util.List;
 
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
+import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.utils.ParameterDriver;
@@ -44,11 +45,14 @@ public interface BatchLSObserver {
      * current evaluations, its content is changed at each iteration)
      * @param lspEvaluation current evaluation of the underlying {@link LeastSquaresProblem
      * least squares problem}
+     * @exception OrekitException if some problem occurs (for example evaluationProviders not
+     * being able to porvide an evaluation)
      */
     void iterationPerformed(int iterationsCount, int evaluationscount, Orbit orbit,
                             List<ParameterDriver> estimatedPropagatorParameters,
                             List<ParameterDriver> estimatedMeasurementsParameters,
                             EvaluationsProvider evaluationsProvider,
-                            LeastSquaresProblem.Evaluation lspEvaluation);
+                            LeastSquaresProblem.Evaluation lspEvaluation)
+        throws OrekitException;
 
 }
