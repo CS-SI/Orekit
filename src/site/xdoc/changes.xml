@@ -22,6 +22,9 @@
   <body>
     <release version="8.0" date="TBC"
              description="TBC">
+      <action dev="luc" type="update">
+        Allow ICGEM gravity field reader to parse non-Earth gravity fields.
+      </action>
       <action dev="evan" type="add">
         Add methods for a integration step handler to tell if the start/end of the step is
         interpolated due to event detection. Also added ability to add a step handler in

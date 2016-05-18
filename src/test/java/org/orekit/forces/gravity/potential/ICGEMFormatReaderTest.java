@@ -84,6 +84,36 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
+    public void testMoonGravityField() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("GrazLGM300c.truncated", false));
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assert.assertEquals(4.9028010560e+12, provider.getMu(), 1.0e-20);
+        Assert.assertEquals(1.7380000000e+06, provider.getAe(), 1.0e-20);
+    }
+
+    @Test
+    public void testVenusGravityField() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("shgj180ua01.truncated", false));
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assert.assertEquals(3.248585920790e+14, provider.getMu(), 1.0e-20);
+        Assert.assertEquals(6.0510e+06,         provider.getAe(), 1.0e-20);
+    }
+
+    @Test
+    public void testMarsGravityField() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("jgm85f01.truncated", false));
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
+        Assert.assertEquals(4.28283763830e+13, provider.getMu(), 1.0e-20);
+        Assert.assertEquals(3.39420e+06,       provider.getAe(), 1.0e-20);
+    }
+
+    @Test
     public void testRegular05cUnnormalized() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));

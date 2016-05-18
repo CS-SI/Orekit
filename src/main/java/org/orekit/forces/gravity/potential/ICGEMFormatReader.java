@@ -47,6 +47,13 @@ import org.orekit.utils.Constants;
  * to 2011 (up to eigen-5 model) and have also harmonic effects after that date
  * (starting with eigen-6 model). Both versions are supported by the class.</p>
  * <p>
+ * This reader uses relaxed check on the gravity constant key so any key ending
+ * in gravity_constant is accepted and not only earth_gravity_constant as specified
+ * in the previous documents. This allows to read also non Earth gravity fields
+ * as found in <a href="http://icgem.gfz-potsdam.de/ICGEM/ModelstabBodies.html">ICGEM
+ * - Gravity Field Models of other Celestial Bodies</a> page to be read.
+ * </p>
+ * <p>
  * In order to simplify implementation, some design choices have been made: the
  * reference date and the periods of harmonic pulsations are stored globally and
  * not on a per-coefficient basis. This has the following implications:
@@ -84,7 +91,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     private static final String GRAVITY_FIELD           = "gravity_field";
 
     /** Gravity constant marker. */
-    private static final String GRAVITY_CONSTANT        = "earth_gravity_constant";
+    private static final String GRAVITY_CONSTANT        = "gravity_constant";
 
     /** Reference radius. */
     private static final String REFERENCE_RADIUS        = "radius";
@@ -214,7 +221,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                             throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                            lineNumber, name, line);
                         }
-                    } else if ((tab.length == 2) && GRAVITY_CONSTANT.equals(tab[0])) {
+                    } else if ((tab.length == 2) && tab[0].endsWith(GRAVITY_CONSTANT)) {
                         setMu(parseDouble(tab[1]));
                     } else if ((tab.length == 2) && REFERENCE_RADIUS.equals(tab[0])) {
                         setAe(parseDouble(tab[1]));
