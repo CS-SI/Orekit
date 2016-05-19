@@ -150,7 +150,10 @@ There are also several predefined events detectors already available, amongst wh
   `LongitudeExtremumDetector`, which are triggered when satellite position with respect
   to central body reaches some predefined values, 
 * an `AlignmentDetector`, which is triggered when satellite and some body are aligned
-  in the orbital plane...
+  in the orbital plane,
+* an `AngularSeparationDetector`, which is triggered when angular separation between satellite and
+  some beacon as seen by an observer goes below a threshold. The beacon is typically the Sun, the
+  observer is typically a ground station
 
 An `EventShifter` is also provided in order to slightly shift the events occurrences times.
 A typical use case is for handling operational delays before or after some physical event

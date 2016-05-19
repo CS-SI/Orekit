@@ -22,6 +22,11 @@
   <body>
     <release version="8.0" date="TBC"
              description="TBC">
+      <action dev="luc" type="add">
+        Added angular separation detector. This is typically used to check separation
+        between spacecraft and the Sun as seen from a ground station, to avoid interferences
+        or damage.
+      </action>
       <action dev="luc" type="update">
         All class and methods that were deprecated in the 7.X series have been removed.
       </action>

@@ -115,6 +115,8 @@
       * apogee and perigee crossing
       * alignment with some body in the orbital plane
         (with customizable threshold angle)
+      * angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)
+        as seen from an observer (typically a ground station)
       * raising/setting with respect to a ground location
         (with customizable triggering elevation)
       * date
