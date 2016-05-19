@@ -19,8 +19,6 @@ package org.orekit.utils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -31,19 +29,17 @@ import org.hipparchus.ode.ODEState;
 import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.OrdinaryDifferentialEquation;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.hipparchus.ode.sampling.StepNormalizer;
 import org.hipparchus.ode.sampling.ODEFixedStepHandler;
+import org.hipparchus.ode.sampling.StepNormalizer;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.Pair;
 import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 
 public class AngularCoordinatesTest {
 
@@ -477,38 +473,6 @@ public class AngularCoordinatesTest {
         Assert.assertEquals(0, Vector3D.distance(v2.getVelocity(),     v2Computed.getVelocity()),     1.0e-15);
         Assert.assertEquals(0, Vector3D.distance(v1.getAcceleration(), v1Computed.getAcceleration()), 1.0e-15);
         Assert.assertEquals(0, Vector3D.distance(v2.getAcceleration(), v2Computed.getAcceleration()), 1.0e-15);
-    }
-
-    @Test
-    @Deprecated  // to be removed when AngularCoordinates.interpolate is removed
-    public void testInterpolationSimple() throws OrekitException {
-        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
-        double alpha0 = 0.5 * FastMath.PI;
-        double omega  = 0.5 * FastMath.PI;
-        AngularCoordinates reference =
-                new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0, RotationConvention.VECTOR_OPERATOR),
-                                       new Vector3D(omega, Vector3D.MINUS_K),
-                                       Vector3D.ZERO);
-
-        List<Pair<AbsoluteDate, AngularCoordinates>> sample =
-                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
-        for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-            sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(dt), reference.shiftedBy(dt)));
-        }
-
-        for (double dt = 0; dt < 1.0; dt += 0.001) {
-            AngularCoordinates interpolated = AngularCoordinates.interpolate(date.shiftedBy(dt), true, sample);
-            Rotation r            = interpolated.getRotation();
-            Vector3D rate         = interpolated.getRotationRate();
-            Vector3D acceleration = interpolated.getRotationAcceleration();
-            Assert.assertEquals(0.0, Rotation.distance(new Rotation(Vector3D.PLUS_K,
-                                                                    alpha0 + omega * dt,
-                                                                    RotationConvention.VECTOR_OPERATOR),
-                                                       r), 1.1e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(new Vector3D(omega, Vector3D.MINUS_K), rate), 4.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(Vector3D.ZERO, acceleration), 3.0e-14);
-        }
-
     }
 
     private Vector3D randomVector(RandomGenerator random, double norm) {

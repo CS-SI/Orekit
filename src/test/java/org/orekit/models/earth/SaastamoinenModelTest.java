@@ -32,42 +32,11 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
 
 
 public class SaastamoinenModelTest {
 
     private static double epsilon = 1e-6;
-
-    @Test
-    @Deprecated
-    public void testDeprecatedConstructor() throws OrekitException {
-        Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
-        final double elevation = 10d;
-        final double height = 100d;
-
-        final double path = model.pathDelay(FastMath.toRadians(elevation), height);
-
-        Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedDelay() throws OrekitException {
-        Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
-        final double elevation = 10d;
-        final double height = 100d;
-
-        final double delay = model.calculateSignalDelay(elevation, height);
-        final double path = model.calculatePathDelay(elevation, height);
-
-        Assert.assertEquals(path / Constants.SPEED_OF_LIGHT, delay, epsilon);
-        Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
-    }
 
     @Test
     public void testFixedElevation() throws OrekitException {

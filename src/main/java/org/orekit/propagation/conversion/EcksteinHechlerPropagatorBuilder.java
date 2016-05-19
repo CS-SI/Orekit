@@ -40,19 +40,6 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
      * @param frame the frame in which the orbit is propagated
      *        (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param provider for un-normalized zonal coefficients
-     * @deprecated as of 7.1, replaced with {@link #EcksteinHechlerPropagatorBuilder(Frame,
-     * UnnormalizedSphericalHarmonicsProvider, OrbitType, PositionAngle)}
-     */
-    @Deprecated
-    public EcksteinHechlerPropagatorBuilder(final Frame frame,
-                                            final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(frame, provider, OrbitType.CARTESIAN, PositionAngle.TRUE);
-    }
-
-    /** Build a new instance.
-     * @param frame the frame in which the orbit is propagated
-     *        (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param provider for un-normalized zonal coefficients
      * @param orbitType orbit type to use
      * @param positionAngle position angle type to use
      * @since 7.1
@@ -62,34 +49,6 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                             final OrbitType orbitType, final PositionAngle positionAngle) {
         super(frame, provider.getMu(), orbitType, positionAngle);
         this.provider = provider;
-    }
-
-    /** Build a new instance.
-     * @param frame the frame in which the orbit is propagated
-     *        (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param referenceRadius reference radius of the Earth for the potential model (m)
-     * @param mu central attraction coefficient (m³/s²)
-     * @param tideSystem tide system
-     * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
-     * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
-     * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
-     * @param c50 un-normalized zonal coefficient (about +2.28e-7 for Earth)
-     * @param c60 un-normalized zonal coefficient (about -5.41e-7 for Earth)
-     * @deprecated as of 7.1, replaced with {@link #EcksteinHechlerPropagatorBuilder(Frame,
-     * double, double, TideSystem, double, double, double, double, double, OrbitType, PositionAngle)}
-     */
-    @Deprecated
-    public EcksteinHechlerPropagatorBuilder(final Frame frame,
-                                            final double referenceRadius,
-                                            final double mu,
-                                            final TideSystem tideSystem,
-                                            final double c20,
-                                            final double c30,
-                                            final double c40,
-                                            final double c50,
-                                            final double c60) {
-        this(frame, referenceRadius, mu, tideSystem, c20, c30, c40, c50, c60,
-             OrbitType.CARTESIAN, PositionAngle.TRUE);
     }
 
     /** Build a new instance.

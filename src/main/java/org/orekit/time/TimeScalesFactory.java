@@ -18,13 +18,10 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 
-import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
@@ -46,7 +43,7 @@ public class TimeScalesFactory implements Serializable {
     /** International Atomic Time scale. */
     private static TAIScale tai = null;
 
-    /** Universal Time Coordinate scale. */
+    /** Universal Time Coordinate depscale. */
     private static UTCScale utc = null;
 
     /** Universal Time 1 scale (tidal effects ignored). */
@@ -106,57 +103,6 @@ public class TimeScalesFactory implements Serializable {
         loaders.add(loader);
     }
 
-    /** Add a loader for UTC-TAI offsets history files.
-     * @param loader custom loader to add
-     * @see #getUTC()
-     * @see #clearUTCTAILoaders()
-     * @deprecated as of 7.1, replaced with {@link #addUTCTAIOffsetsLoader(UTCTAIOffsetsLoader)}
-     */
-    @Deprecated
-    public static void addUTCTAILoader(final UTCTAILoader loader) {
-        addUTCTAIOffsetsLoader(new UTCTAIOffsetsLoader() {
-
-            /** {@inheritDoc} */
-            @Override
-            public List<OffsetModel> loadOffsets() throws OrekitException {
-
-
-                // get the post-1972 constant offsets
-                DataProvidersManager.getInstance().feed(loader.getSupportedNames(), loader);
-                final SortedMap<DateComponents, Integer> constant = loader.loadTimeSteps();
-                if (constant.isEmpty()) {
-                    // return an empty list, maybe another loader will find something ...
-                    return Collections.emptyList();
-                }
-
-                // add the constant offsets
-                final List<OffsetModel> offsets = new ArrayList<OffsetModel>();
-                for (Map.Entry<DateComponents, Integer> entry : constant.entrySet()) {
-                    offsets.add(new OffsetModel(entry.getKey(), entry.getValue()));
-                }
-
-                return offsets;
-
-            }
-
-        });
-    }
-
-    /** Add the default loader for UTC-TAI offsets history files.
-     * <p>
-     * The default loader looks for a file named {@code UTC-TAI.history}
-     * that must be in the IERS format.
-     * </p>
-     * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history">IERS UTC-TAI.history file</a>
-     * @see #getUTC()
-     * @see #clearUTCTAILoaders()
-     * @deprecated as of 7.1, replaced with {@link #addDefaultUTCTAIOffsetsLoaders()}
-     */
-    @Deprecated
-    public static void addDefaultUTCTAILoader() {
-        addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader());
-    }
-
     /** Add the default loaders for UTC-TAI offsets history files (both IERS and USNO).
      * <p>
      * The default loaders are {@link TAIUTCDatFilesLoader} that looks for
@@ -179,17 +125,6 @@ public class TimeScalesFactory implements Serializable {
     public static void addDefaultUTCTAIOffsetsLoaders() {
         addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(TAIUTCDatFilesLoader.DEFAULT_SUPPORTED_NAMES));
         addUTCTAIOffsetsLoader(new UTCTAIHistoryFilesLoader());
-    }
-
-    /** Clear loaders for UTC-TAI offsets history files.
-     * @see #getUTC()
-     * @see #addUTCTAILoader(UTCTAILoader)
-     * @see #addDefaultUTCTAILoader
-     * @deprecated as of 7.1, replaced with {@link #clearUTCTAIOffsetsLoaders()}
-     */
-    @Deprecated
-    public static void clearUTCTAILoaders() {
-        loaders.clear();
     }
 
     /** Clear loaders for UTC-TAI offsets history files.

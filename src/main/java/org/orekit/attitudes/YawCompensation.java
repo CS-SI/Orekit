@@ -70,16 +70,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
     private final GroundPointing groundPointingLaw;
 
     /** Creates a new instance.
-     * @param groundPointingLaw ground pointing attitude provider without yaw compensation
-     * @deprecated as of 7.1, replaced with  {@link #YawCompensation(Frame, GroundPointing)}
-     */
-    @Deprecated
-    public YawCompensation(final GroundPointing groundPointingLaw) {
-        super(groundPointingLaw.getBodyFrame());
-        this.groundPointingLaw = groundPointingLaw;
-    }
-
-    /** Creates a new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
      * @exception OrekitException if the frame specified is not a pseudo-inertial frame

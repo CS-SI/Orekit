@@ -17,21 +17,16 @@
 package org.orekit.utils;
 
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.time.AbsoluteDate;
 
 public class FieldAngularCoordinatesTest {
 
@@ -180,36 +175,6 @@ public class FieldAngularCoordinatesTest {
         }
     }
 
-    @Test
-    @Deprecated  // to be removed when AngularCoordinates.interpolate is removed
-    public void testInterpolationSimple() throws OrekitException {
-        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
-        double alpha0 = 0.5 * FastMath.PI;
-        double omega  = 0.5 * FastMath.PI;
-        FieldAngularCoordinates<DerivativeStructure> reference =
-                new FieldAngularCoordinates<DerivativeStructure>(createRotation(createVector(0, 0, 1, 4), alpha0),
-                                                                 new FieldVector3D<DerivativeStructure>(omega, createVector(0, 0, -1, 4)),
-                                                                 createVector(0, 0, 0, 4));
-
-        List<Pair<AbsoluteDate, FieldAngularCoordinates<DerivativeStructure>>> sample =
-                new ArrayList<Pair<AbsoluteDate,FieldAngularCoordinates<DerivativeStructure>>>();
-        for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-            sample.add(new Pair<AbsoluteDate, FieldAngularCoordinates<DerivativeStructure>>(date.shiftedBy(dt),
-                                                                                            reference.shiftedBy(dt)));
-        }
-
-        for (double dt = 0; dt < 1.0; dt += 0.001) {
-            FieldAngularCoordinates<DerivativeStructure> interpolated = FieldAngularCoordinates.interpolate(date.shiftedBy(dt), true, sample);
-            FieldRotation<DerivativeStructure> r            = interpolated.getRotation();
-            FieldVector3D<DerivativeStructure> rate         = interpolated.getRotationRate();
-            FieldVector3D<DerivativeStructure> acceleration = interpolated.getRotationAcceleration();
-            Assert.assertEquals(0.0, FieldRotation.distance(createRotation(createVector(0, 0, 1, 4), alpha0 + omega * dt), r).getReal(), 1.1e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(createVector(0, 0, -omega, 4), rate).getReal(), 4.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(createVector(0, 0, 0, 4), acceleration).getReal(), 3.2e-14);
-        }
-
-    }
-
     private FieldVector3D<DerivativeStructure> randomVector(Random random, double norm) {
         double n = random.nextDouble() * norm;
         double x = random.nextDouble();
@@ -225,12 +190,6 @@ public class FieldAngularCoordinatesTest {
         double q3 = random.nextDouble() * 2 - 1;
         double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
         return createRotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
-    }
-
-    private FieldRotation<DerivativeStructure> createRotation(FieldVector3D<DerivativeStructure> axis, double angle) {
-        return new FieldRotation<DerivativeStructure>(axis,
-                                                      new DerivativeStructure(4, 1, angle),
-                                                      RotationConvention.VECTOR_OPERATOR);
     }
 
     private FieldRotation<DerivativeStructure> createRotation(double q0, double q1, double q2, double q3,

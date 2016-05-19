@@ -18,10 +18,6 @@ package org.orekit.time;
 
 
 
-import java.io.InputStream;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -147,44 +143,6 @@ public class TAIUTCDatAFilesLoaderTest {
     public void testFormatError() throws OrekitException {
         checkException("tai-utc-format-error.dat",
                        OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE);
-    }
-
-    @Deprecated
-    @Test
-    public void testDeprecatedAPI() throws OrekitException {
-
-        Utils.setDataRoot("USNO");
-        TimeScalesFactory.addUTCTAILoader(new UTCTAILoader() {
-
-            @Override
-            public boolean stillAcceptsData() {
-                return false;
-            }
-
-            @Override
-            public void loadData(InputStream input, String name) {
-            }
-
-            @Override
-            public SortedMap<DateComponents, Integer> loadTimeSteps() {
-                SortedMap<DateComponents, Integer> map = new TreeMap<DateComponents, Integer>();
-                map.put(new DateComponents(1972, 1, 1), 10);
-                map.put(new DateComponents(1972, 7, 1), 11);
-                return map;
-            }
-
-            @Override
-            public String getSupportedNames() {
-                return "non-existant-name";
-            }
-            
-        });
-
-        checkOffset(1972,  1,  2, -10.0);
-        checkOffset(1972,  6, 30, -10.0);
-        checkOffset(1972,  7,  2, -11.0);
-        checkOffset(3000,  1,  1, -11.0);
-
     }
 
     private void checkOffset(int year, int month, int day, double offset) throws OrekitException {

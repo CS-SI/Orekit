@@ -17,24 +17,17 @@
 package org.orekit.utils;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 
 
 public class PVCoordinatesTest {
@@ -170,50 +163,6 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    @Deprecated // to be removed when PVCoordinates.interpolate is removed
-    public void testInterpolatePolynomialPV() {
-        Random random = new Random(0xae7771c9933407bdl);
-        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
-        for (int i = 0; i < 20; ++i) {
-
-            PolynomialFunction px       = randomPolynomial(5, random);
-            PolynomialFunction py       = randomPolynomial(5, random);
-            PolynomialFunction pz       = randomPolynomial(5, random);
-            PolynomialFunction pxDot    = px.polynomialDerivative();
-            PolynomialFunction pyDot    = py.polynomialDerivative();
-            PolynomialFunction pzDot    = pz.polynomialDerivative();
-            PolynomialFunction pxDotDot = pxDot.polynomialDerivative();
-            PolynomialFunction pyDotDot = pyDot.polynomialDerivative();
-            PolynomialFunction pzDotDot = pzDot.polynomialDerivative();
-
-            List<Pair<AbsoluteDate, PVCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,PVCoordinates>>();
-            for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-                Vector3D position     = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
-                Vector3D velocity     = new Vector3D(pxDot.value(dt), pyDot.value(dt), pzDot.value(dt));
-                sample.add(new Pair<AbsoluteDate, PVCoordinates>(t0.shiftedBy(dt),
-                                                                 new PVCoordinates(position, velocity, Vector3D.ZERO)));
-            }
-
-            for (double dt = 0; dt < 1.0; dt += 0.01) {
-                PVCoordinates interpolated = PVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
-                Vector3D p = interpolated.getPosition();
-                Vector3D v = interpolated.getVelocity();
-                Vector3D a = interpolated.getAcceleration();
-                Assert.assertEquals(px.value(dt),       p.getX(), 1.0e-15 * p.getNorm());
-                Assert.assertEquals(py.value(dt),       p.getY(), 1.0e-15 * p.getNorm());
-                Assert.assertEquals(pz.value(dt),       p.getZ(), 1.0e-15 * p.getNorm());
-                Assert.assertEquals(pxDot.value(dt),    v.getX(), 1.0e-15 * v.getNorm());
-                Assert.assertEquals(pyDot.value(dt),    v.getY(), 1.0e-15 * v.getNorm());
-                Assert.assertEquals(pzDot.value(dt),    v.getZ(), 1.0e-15 * v.getNorm());
-                Assert.assertEquals(pxDotDot.value(dt), a.getX(), 1.0e-14 * a.getNorm());
-                Assert.assertEquals(pyDotDot.value(dt), a.getY(), 1.0e-14 * a.getNorm());
-                Assert.assertEquals(pzDotDot.value(dt), a.getZ(), 1.0e-14 * a.getNorm());
-            }
-
-        }
-    }
-
-    @Test
     public void testGetMomentum() {
         //setup
         Vector3D p = new Vector3D(1, -2, 3);
@@ -341,14 +290,6 @@ public class PVCoordinatesTest {
         Vector3D p1 = randomVector(random, norm1);
         Vector3D p2 = randomVector(random, norm2);
         return new PVCoordinates(p0, p1, p2);
-    }
-
-    private PolynomialFunction randomPolynomial(int degree, Random random) {
-        double[] coeff = new double[ 1 + degree];
-        for (int j = 0; j < degree; ++j) {
-            coeff[j] = random.nextDouble();
-        }
-        return new PolynomialFunction(coeff);
     }
 
     private void checkPV(PVCoordinates expected, PVCoordinates real, double epsilon) {

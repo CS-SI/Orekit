@@ -26,8 +26,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-
-
 /**
  * This class handles target pointing attitude provider.
 
@@ -53,17 +51,6 @@ public class TargetPointing extends GroundPointing {
     private final Vector3D target;
 
     /** Creates a new instance from body frame and target expressed in cartesian coordinates.
-     * @param bodyFrame body frame.
-     * @param target target position in body frame
-     * @deprecated as of 7.1, replaced with {@link #TargetPointing(Frame, Frame, Vector3D)}
-     */
-    @Deprecated
-    public TargetPointing(final Frame bodyFrame, final Vector3D target) {
-        super(bodyFrame);
-        this.target = target;
-    }
-
-    /** Creates a new instance from body frame and target expressed in cartesian coordinates.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param bodyFrame body frame.
      * @param target target position in body frame
@@ -74,18 +61,6 @@ public class TargetPointing extends GroundPointing {
         throws OrekitException {
         super(inertialFrame, bodyFrame);
         this.target = target;
-    }
-
-    /** Creates a new instance from body shape and target expressed in geodetic coordinates.
-     * @param targetGeo target defined as a geodetic point in body shape frame
-     * @param shape body shape
-     * @deprecated as of 7.1, replaced with {@link #TargetPointing(Frame, GeodeticPoint, BodyShape)}
-     */
-    @Deprecated
-    public TargetPointing(final GeodeticPoint targetGeo, final BodyShape shape) {
-        super(shape.getBodyFrame());
-        // Transform target from geodetic coordinates to Cartesian coordinates
-        target = shape.transform(targetGeo);
     }
 
     /** Creates a new instance from body shape and target expressed in geodetic coordinates.

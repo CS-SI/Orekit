@@ -110,37 +110,6 @@ public class AttitudesSequence implements AttitudeProvider {
 
     /** Add a switching condition between two attitude providers.
      * <p>
-     * This method simply calls {@link #addSwitchingCondition(AttitudeProvider, AttitudeProvider,
-     * EventDetector, boolean, boolean, double, AngularDerivativesFilter, SwitchHandler) addSwitchingCondition} with
-     * the transition time set to twice the event threshold, transition filter set to match
-     * rotation only and the switch handler set to null.
-     * </p>
-     * @param past attitude provider applicable for times in the switch event occurrence past
-     * @param switchEvent event triggering the attitude providers switch
-     * @param switchOnIncrease if true, switch is triggered on increasing event
-     * @param switchOnDecrease if true, switch is triggered on decreasing event
-     * @param future attitude provider applicable for times in the switch event occurrence future
-     * @param <T> class type for the generic version
-     * @exception OrekitException if transition time is shorter than event convergence threshold
-     * or if transition order is out of the [0; 2] range (never really thrown here)
-     * @deprecated as of 7.1, replaced with {@link #addSwitchingCondition(AttitudeProvider,
-     * AttitudeProvider, EventDetector, boolean, boolean, double, AngularDerivativesFilter,
-     * SwitchHandler)}
-     */
-    @Deprecated
-    public <T extends EventDetector> void addSwitchingCondition(final AttitudeProvider past,
-                                                                final T switchEvent,
-                                                                final boolean switchOnIncrease,
-                                                                final boolean switchOnDecrease,
-                                                                final AttitudeProvider future)
-        throws OrekitException {
-        addSwitchingCondition(past, future, switchEvent, switchOnIncrease, switchOnDecrease,
-                              2.0 * switchEvent.getThreshold(), AngularDerivativesFilter.USE_R,
-                              null);
-    }
-
-    /** Add a switching condition between two attitude providers.
-     * <p>
      * The {@code past} and {@code future} attitude providers are defined with regard
      * to the natural flow of time. This means that if the propagation is forward, the
      * propagator will switch from {@code past} provider to {@code future} provider at

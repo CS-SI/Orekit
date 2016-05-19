@@ -128,20 +128,6 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
      * @param date the date
      * @return lighting ratio
      * @exception OrekitException if the trajectory is inside the Earth
-     * @deprecated as of 7.1, replaced with {@link #getLightingRatio(Vector3D, Frame, AbsoluteDate)}
-     */
-    @Deprecated
-    public double getLightningRatio(final Vector3D position, final Frame frame, final AbsoluteDate date)
-        throws OrekitException {
-        return getLightingRatio(position, frame, date);
-    }
-
-    /** Get the lighting ratio ([0-1]).
-     * @param position the satellite's position in the selected frame.
-     * @param frame in which is defined the position
-     * @param date the date
-     * @return lighting ratio
-     * @exception OrekitException if the trajectory is inside the Earth
      * @since 7.1
      */
     public double getLightingRatio(final Vector3D position, final Frame frame, final AbsoluteDate date)

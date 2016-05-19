@@ -62,21 +62,6 @@ public abstract class GroundPointing implements AttitudeProvider {
 
     /** Default constructor.
      * Build a new instance with arbitrary default elements.
-     * @param bodyFrame the frame that rotates with the body
-     * @deprecated as of 7.1 replaced with {@link #GroundPointing(Frame, Frame)}
-     */
-    @Deprecated
-    protected GroundPointing(final Frame bodyFrame) {
-        Frame frame = bodyFrame;
-        while (!frame.isPseudoInertial()) {
-            frame = frame.getParent();
-        }
-        this.inertialFrame = frame;
-        this.bodyFrame     = bodyFrame;
-    }
-
-    /** Default constructor.
-     * Build a new instance with arbitrary default elements.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param bodyFrame the frame that rotates with the body
      * @exception OrekitException if the first frame specified is not a pseudo-inertial frame

@@ -58,21 +58,6 @@ public class LofOffsetPointing extends GroundPointing {
     private final Vector3D satPointingVector;
 
     /** Creates new instance.
-     * @param shape Body shape
-     * @param attLaw Attitude law
-     * @param satPointingVector satellite vector defining the pointing direction
-     * @deprecated as of 7.1, replaced with {@link #LofOffsetPointing(Frame, BodyShape, AttitudeProvider, Vector3D)}
-     */
-    @Deprecated
-    public LofOffsetPointing(final BodyShape shape, final AttitudeProvider attLaw,
-                             final Vector3D satPointingVector) {
-        super(shape.getBodyFrame());
-        this.shape = shape;
-        this.attitudeLaw = attLaw;
-        this.satPointingVector = satPointingVector;
-    }
-
-    /** Creates new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param shape Body shape
      * @param attLaw Attitude law

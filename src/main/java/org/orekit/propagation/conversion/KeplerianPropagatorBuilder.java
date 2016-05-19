@@ -34,18 +34,6 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param mu central attraction coefficient (m³/s²)
      * @param frame the frame in which the orbit is propagated
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @deprecated as of 7.1, replaced with {@link #KeplerianPropagatorBuilder(double,
-     * Frame, OrbitType, PositionAngle)}
-     */
-    @Deprecated
-    public KeplerianPropagatorBuilder(final double mu, final Frame frame) {
-        this(mu, frame, OrbitType.KEPLERIAN, PositionAngle.TRUE);
-    }
-
-    /** Build a new instance.
-     * @param mu central attraction coefficient (m³/s²)
-     * @param frame the frame in which the orbit is propagated
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param orbitType orbit type to use
      * @param positionAngle position angle type to use
      * @since 7.1

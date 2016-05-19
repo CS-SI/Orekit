@@ -249,16 +249,6 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         return minutesFromUTC;
     }
 
-    /** Get the second number within the day.
-     * @return second number from 0.0 to Constants.JULIAN_DAY
-     * @deprecated as of 7.2, replaced with either {@link #getSecondsInLocalDay()}
-     * or {@link #getSecondsInUTCDay()}
-     */
-    @Deprecated
-    public double getSecondsInDay() {
-        return getSecondsInLocalDay();
-    }
-
     /** Get the second number within the local day, <em>without</em> applying the {@link #getMinutesFromUTC() offset from UTC}.
      * @return second number from 0.0 to Constants.JULIAN_DAY
      * @see #getSecondsInUTCDay()

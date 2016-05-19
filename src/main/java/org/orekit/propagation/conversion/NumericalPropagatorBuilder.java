@@ -57,21 +57,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param frame the frame in which the orbit is propagated
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param builder first order integrator builder
-     * @deprecated as of 7.1, replaced with {@link #NumericalPropagatorBuilder(double,
-     * Frame, ODEIntegratorBuilder, OrbitType, PositionAngle)}
-     */
-    @Deprecated
-    public NumericalPropagatorBuilder(final double mu,
-                                      final Frame frame,
-                                      final ODEIntegratorBuilder builder) {
-        this(mu, frame, builder, OrbitType.CARTESIAN, PositionAngle.TRUE);
-    }
-
-    /** Build a new instance.
-     * @param mu central attraction coefficient (m³/s²)
-     * @param frame the frame in which the orbit is propagated
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param builder first order integrator builder
      * @param orbitType orbit type to use
      * @param positionAngle position angle type to use
      * @since 7.1

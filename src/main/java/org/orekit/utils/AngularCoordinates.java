@@ -17,9 +17,6 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -36,10 +33,8 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
 /** Simple container for rotation/rotation rate/rotation acceleration triplets.
@@ -604,54 +599,6 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
         return new TimeStampedPVCoordinates(pv.getDate(), transformedP, transformedV, transformedA);
 
-    }
-
-    /** Interpolate angular coordinates.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
-     * </p>
-     * <p>
-     * This method is based on Sergei Tanygin's paper <a
-     * href="http://www.agi.com/downloads/resources/white-papers/Attitude-interpolation.pdf">Attitude
-     * Interpolation</a>, changing the norm of the vector to match the modified Rodrigues
-     * vector as described in Malcolm D. Shuster's paper <a
-     * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
-     * Survey of Attitude Representations</a>. This change avoids the singularity at π.
-     * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
-     * when this singularity is detected.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (rotation rates)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the rotations.
-     * </p>
-     * @param date interpolation date
-     * @param useRotationRates if true, use sample points rotation rates,
-     * otherwise ignore them and use only rotations
-     * @param sample sample points on which interpolation should be done
-     * @return a new position-velocity, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
-     * @deprecated since 7.0 replaced with {@link TimeStampedAngularCoordinates#interpolate(AbsoluteDate, AngularDerivativesFilter, Collection)}
-     */
-    @Deprecated
-    public static AngularCoordinates interpolate(final AbsoluteDate date, final boolean useRotationRates,
-                                                 final Collection<Pair<AbsoluteDate, AngularCoordinates>> sample)
-        throws OrekitException {
-        final List<TimeStampedAngularCoordinates> list = new ArrayList<TimeStampedAngularCoordinates>(sample.size());
-        for (final Pair<AbsoluteDate, AngularCoordinates> pair : sample) {
-            list.add(new TimeStampedAngularCoordinates(pair.getFirst(),
-                                                       pair.getSecond().getRotation(),
-                                                       pair.getSecond().getRotationRate(),
-                                                       pair.getSecond().getRotationAcceleration()));
-        }
-        return TimeStampedAngularCoordinates.interpolate(date,
-                                                         useRotationRates ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R,
-                                                         list);
     }
 
     /** Convert rotation, rate and acceleration to modified Rodrigues vector and derivatives.

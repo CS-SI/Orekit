@@ -30,7 +30,6 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
 import org.orekit.utils.InterpolationTableLoader;
 
 /** The modified Saastamoinen model. Estimates the path delay imposed to
@@ -55,8 +54,7 @@ import org.orekit.utils.InterpolationTableLoader;
  * @author Thomas Neidhart
  * @see "Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007"
  */
-@SuppressWarnings("deprecation")
-public class SaastamoinenModel implements TroposphericModel, TroposphericDelayModel {
+public class SaastamoinenModel implements TroposphericModel {
 
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
@@ -96,20 +94,6 @@ public class SaastamoinenModel implements TroposphericModel, TroposphericDelayMo
 
     /** The humidity [percent]. */
     private double r0;
-
-    /** Create a new Saastamoinen model for the troposphere using the given
-     * environmental conditions.
-     * @param t0 the temperature at the station [K]
-     * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -> 0.5)
-     * @exception OrekitException if δR correction term table cannot be loaded
-     * @deprecated since 7.1, replaced with {@link #SaastamoinenModel(double, double, double, String)}
-     */
-    @Deprecated
-    public SaastamoinenModel(final double t0, final double p0, final double r0)
-        throws OrekitException {
-        this(t0, p0, r0, DELTA_R_FILE_NAME);
-    }
 
     /** Create a new Saastamoinen model for the troposphere using the given
      * environmental conditions.
@@ -468,20 +452,6 @@ public class SaastamoinenModel implements TroposphericModel, TroposphericDelayMo
             return r;
         }
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double calculatePathDelay(final double elevation, final double height) {
-        return pathDelay(FastMath.toRadians(elevation), height);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double calculateSignalDelay(final double elevation, final double height) {
-        return calculatePathDelay(elevation, height) / Constants.SPEED_OF_LIGHT;
     }
 
 }

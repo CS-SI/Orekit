@@ -17,22 +17,15 @@
 package org.orekit.utils;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.time.AbsoluteDate;
 
 
 public class FieldPVCoordinatesTest {
@@ -193,56 +186,6 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
-    @Deprecated // to be removed when FieldPVCoordinates.interpolate is removed
-    public void testInterpolatePolynomialPV() {
-        Random random = new Random(0xae7771c9933407bdl);
-        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
-        for (int i = 0; i < 20; ++i) {
-
-            PolynomialFunction px    = randomPolynomial(5, random);
-            PolynomialFunction py    = randomPolynomial(5, random);
-            PolynomialFunction pz    = randomPolynomial(5, random);
-            PolynomialFunction pxDot = px.polynomialDerivative();
-            PolynomialFunction pyDot = py.polynomialDerivative();
-            PolynomialFunction pzDot = pz.polynomialDerivative();
-
-            List<Pair<AbsoluteDate, FieldPVCoordinates<DerivativeStructure>>> sample =
-                    new ArrayList<Pair<AbsoluteDate,FieldPVCoordinates<DerivativeStructure>>>();
-            for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-                FieldVector3D<DerivativeStructure> position = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(3, 1, 0, px.value(dt)),
-                                                     new DerivativeStructure(3, 1, 1, py.value(dt)),
-                                                     new DerivativeStructure(3, 1, 2, pz.value(dt)));
-                FieldVector3D<DerivativeStructure> velocity = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(3, 1,    pxDot.value(dt)),
-                                                     new DerivativeStructure(3, 1,    pyDot.value(dt)),
-                                                     new DerivativeStructure(3, 1,    pzDot.value(dt)));
-                sample.add(new Pair<AbsoluteDate, FieldPVCoordinates<DerivativeStructure>>(t0.shiftedBy(dt), new FieldPVCoordinates<DerivativeStructure>(position, velocity)));
-            }
-
-            for (double dt = 0; dt < 1.0; dt += 0.01) {
-                FieldPVCoordinates<DerivativeStructure> interpolated = FieldPVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
-                FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
-                FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
-                Assert.assertEquals(px.value(dt),    p.getX().getValue(), 1.0e-15 * p.getNorm().getValue());
-                Assert.assertEquals(1,               p.getX().getPartialDerivative(1, 0, 0), 1.0e-15);
-                Assert.assertEquals(0,               p.getX().getPartialDerivative(0, 1, 0), 1.0e-15);
-                Assert.assertEquals(0,               p.getX().getPartialDerivative(0, 0, 1), 1.0e-15);
-                Assert.assertEquals(py.value(dt),    p.getY().getValue(), 1.0e-15 * p.getNorm().getValue());
-                Assert.assertEquals(0,               p.getY().getPartialDerivative(1, 0, 0), 1.0e-15);
-                Assert.assertEquals(1,               p.getY().getPartialDerivative(0, 1, 0), 1.0e-15);
-                Assert.assertEquals(0,               p.getY().getPartialDerivative(0, 0, 1), 1.0e-15);
-                Assert.assertEquals(pz.value(dt),    p.getZ().getValue(), 1.0e-15 * p.getNorm().getValue());
-                Assert.assertEquals(0,               p.getZ().getPartialDerivative(1, 0, 0), 1.0e-15);
-                Assert.assertEquals(0,               p.getZ().getPartialDerivative(0, 1, 0), 1.0e-15);
-                Assert.assertEquals(1,               p.getZ().getPartialDerivative(0, 0, 1), 1.0e-15);
-                Assert.assertEquals(pxDot.value(dt), v.getX().getValue(), 1.0e-15 * v.getNorm().getValue());
-                Assert.assertEquals(pyDot.value(dt), v.getY().getValue(), 1.0e-15 * v.getNorm().getValue());
-                Assert.assertEquals(pzDot.value(dt), v.getZ().getValue(), 1.0e-15 * v.getNorm().getValue());
-            }
-
-        }
-    }
-
-    @Test
     public void testNormalize() {
         RandomGenerator generator = new Well19937a(0x7ede9376e4e1ab5al);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
@@ -294,14 +237,6 @@ public class FieldPVCoordinatesTest {
         FieldVector3D<DerivativeStructure> p1 = randomVector(random, norm1);
         FieldVector3D<DerivativeStructure> p2 = randomVector(random, norm2);
         return new FieldPVCoordinates<DerivativeStructure>(p0, p1, p2);
-    }
-
-    private PolynomialFunction randomPolynomial(int degree, Random random) {
-        double[] coeff = new double[ 1 + degree];
-        for (int j = 0; j < degree; ++j) {
-            coeff[j] = random.nextDouble();
-        }
-        return new PolynomialFunction(coeff);
     }
 
     private FieldVector3D<DerivativeStructure> createVector(double x, double y, double z, int params) {

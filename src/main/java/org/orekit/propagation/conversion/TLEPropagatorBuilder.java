@@ -72,31 +72,6 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param launchPiece launch piece
      * @param elementNumber element number
      * @param revolutionNumberAtEpoch revolution number at epoch
-     * @throws OrekitException if the TEME frame cannot be set
-     * @deprecated as of 7.1, replaced with {@link #TLEPropagatorBuilder(int,
-     * char, int, int, String, int, int, OrbitType, PositionAngle)}
-     */
-    @Deprecated
-    public TLEPropagatorBuilder(final int satelliteNumber,
-                                final char classification,
-                                final int launchYear,
-                                final int launchNumber,
-                                final String launchPiece,
-                                final int elementNumber,
-                                final int revolutionNumberAtEpoch)
-        throws OrekitException {
-        this(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
-             elementNumber, revolutionNumberAtEpoch, OrbitType.CARTESIAN, PositionAngle.TRUE);
-    }
-
-    /** Build a new instance.
-     * @param satelliteNumber satellite number
-     * @param classification classification (U for unclassified)
-     * @param launchYear launch year (all digits)
-     * @param launchNumber launch number
-     * @param launchPiece launch piece
-     * @param elementNumber element number
-     * @param revolutionNumberAtEpoch revolution number at epoch
      * @param orbitType orbit type to use
      * @param positionAngle position angle type to use
      * @throws OrekitException if the TEME frame cannot be set

@@ -51,17 +51,6 @@ public class NadirPointing extends GroundPointing {
     private final BodyShape shape;
 
     /** Creates new instance.
-     * @param shape Body shape
-     * @deprecated as of 7.1, replaced with {@link #NadirPointing(Frame, BodyShape)}
-     */
-    @Deprecated
-    public NadirPointing(final BodyShape shape) {
-        // Call constructor of superclass
-        super(shape.getBodyFrame());
-        this.shape = shape;
-    }
-
-    /** Creates new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param shape Body shape
      * @exception OrekitException if the frame specified is not a pseudo-inertial frame
