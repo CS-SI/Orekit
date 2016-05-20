@@ -52,8 +52,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenTessera
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
-/** Tesseral contribution to the {@link DSSTCentralBody central body gravitational
- *  perturbation}.
+/** Tesseral contribution to the central body gravitational perturbation.
  *  <p>
  *  Only resonant tesserals are considered.
  *  </p>

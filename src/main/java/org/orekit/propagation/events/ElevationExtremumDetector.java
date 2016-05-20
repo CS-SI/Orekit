@@ -32,9 +32,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p>
  * As in most cases only the elevation maximum is needed and the
  * minimum is often irrelevant, this detector is often wrapped into
- * an {@link EventFilter event filter} configured with
+ * an {@link EventSlopeFilter event slope filter} configured with
  * {@link FilterType#TRIGGER_ONLY_DECREASING_EVENTS} (i.e. when the
- * elevation derivative decreases from positive vaules to negative values,
+ * elevation derivative decreases from positive values to negative values,
  * which correspond to a maximum). Setting up this filter saves some computation
  * time as the elevation minimum occurrences are not even looked at. It is
  * however still often necessary to do an additional filtering

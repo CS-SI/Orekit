@@ -154,17 +154,15 @@ public class TimeScalesFactory implements Serializable {
 
     /** Get the Universal Time Coordinate scale.
      * <p>
-     * If no {@link UTCTAILoader} has been added by calling {@link
-     * #addUTCTAILoader(UTCTAILoader) addUTCTAILoader} or if {@link
-     * #clearUTCTAILoaders() clearUTCTAILoaders} has been called afterwards,
+     * If no {@link UTCTAIOffsetsLoader} has been added by calling {@link
+     * #addUTCTAIOffsetsLoader(UTCTAIOffsetsLoader) addUTCTAIOffsetsLoader} or if {@link
+     * #clearUTCTAIOffsetsLoaders() clearUTCTAIOffsetsLoaders} has been called afterwards,
      * the {@link #addDefaultUTCTAIOffsetsLoaders() addDefaultUTCTAILoaders} method
      * will be called automatically.
      * </p>
      * @return Universal Time Coordinate scale
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
-     * @see #addUTCTAILoader(UTCTAILoader)
-     * @see #clearUTCTAILoaders()
      * @see #addDefaultUTCTAIOffsetsLoaders()
      */
     public static UTCScale getUTC() throws OrekitException {

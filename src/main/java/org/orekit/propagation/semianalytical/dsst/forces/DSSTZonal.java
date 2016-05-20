@@ -47,7 +47,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenZonalLi
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
-/** Zonal contribution to the {@link DSSTCentralBody central body gravitational perturbation}.
+/** Zonal contribution to the central body gravitational perturbation.
  *
  *   @author Romain Di Costanzo
  *   @author Pascal Parraud
