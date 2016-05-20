@@ -57,7 +57,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * This model does not take cast shadow between body and solar array into account.
  * </p>
  *
- * @see SphericalSpacecraft
  * @author Luc Maisonobe
  * @author Pascal Parraud
  */
