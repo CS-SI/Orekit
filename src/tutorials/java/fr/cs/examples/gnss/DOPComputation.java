@@ -95,9 +95,6 @@ public class DOPComputation {
                                            0.));
             }
 
-            // The size of the meshes in meters
-            final double meshSize = 1000.;
-
             // The min elevation over the zone: 10°
             final double minElevation = FastMath.toRadians(10.0);
              
@@ -108,7 +105,7 @@ public class DOPComputation {
             final double tStep = 600.;
 
             // Computes the DOP over the zone for the period
-            new DOPComputation().run(shape, zone, meshSize, minElevation, tStart, tStop, tStep);
+            new DOPComputation().run(shape, zone, 1000., minElevation, tStart, tStop, tStep);
             
         } catch (OrekitException oe) {
             System.err.println(oe.getLocalizedMessage());

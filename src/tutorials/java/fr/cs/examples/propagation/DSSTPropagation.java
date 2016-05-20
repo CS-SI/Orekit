@@ -747,7 +747,7 @@ public class DSSTPropagation {
         public void init(final SpacecraftState s0, final AbsoluteDate t) throws PropagationException {
             try {
                 nbColumns           = 0;
-                outputStream        = new PrintStream(outputFile);
+                outputStream        = new PrintStream(outputFile, "UTF-8");
                 describeNextColumn("time from start (s)");
                 if (outputKeplerian) {
                     describeNextColumn("semi major axis a (km)");

@@ -121,7 +121,9 @@ public class TrackCorridor {
         // read input parameters
         KeyValueFileParser<ParameterKey> parser =
                 new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
+        try (final FileInputStream fis = new FileInputStream(input)) {
+            parser.parseInput(input.getAbsolutePath(), fis);
+        }
         TimeScale utc = TimeScalesFactory.getUTC();
 
         Propagator propagator;

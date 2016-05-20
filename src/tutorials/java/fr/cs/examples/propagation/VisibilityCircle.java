@@ -97,7 +97,9 @@ public class VisibilityCircle {
         // read input parameters
         KeyValueFileParser<ParameterKey> parser =
                 new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
+        try (final FileInputStream fis = new FileInputStream(input)) {
+            parser.parseInput(input.getAbsolutePath(), fis);
+        }
 
         double minElevation = parser.getAngle(ParameterKey.MIN_ELEVATION);
         double radius       = Constants.WGS84_EARTH_EQUATORIAL_RADIUS +
@@ -117,7 +119,7 @@ public class VisibilityCircle {
         // create a 2 columns csv file representing the visibility circle
         // in the user home directory, with latitude in column 1 and longitude in column 2
         DecimalFormat format = new DecimalFormat("#00.00000", new DecimalFormatSymbols(Locale.US));
-        PrintStream csvFile = new PrintStream(output);
+        PrintStream csvFile = new PrintStream(output, "UTF-8");
         for (GeodeticPoint p : circle) {
             csvFile.println(format.format(FastMath.toDegrees(p.getLatitude())) + "," +
                             format.format(FastMath.toDegrees(p.getLongitude())));
