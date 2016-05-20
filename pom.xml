@@ -408,6 +408,11 @@
             <goals>
               <goal>prepare-agent</goal>
             </goals>
+            <configuration>
+              <excludes>
+               <exclude>fr/cs/examples/**/*.class</exclude>
+              </excludes>
+            </configuration>
           </execution>
           <execution>
             <id>report</id>
