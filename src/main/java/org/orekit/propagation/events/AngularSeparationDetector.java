@@ -60,9 +60,9 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      */
     public AngularSeparationDetector(final PVCoordinatesProvider beacon,
                                      final PVCoordinatesProvider observer,
-                                     final double proximiyAngle) {
+                                     final double proximityAngle) {
         this(60.0, 1.0e-3, 100, new StopOnDecreasing<AngularSeparationDetector>(),
-             beacon, observer, proximiyAngle);
+             beacon, observer, proximityAngle);
     }
 
     /** Private constructor with full parameters.
@@ -75,19 +75,21 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
-     * @param body the body to align
-     * @param alignAngle the alignment angle (rad)
+     * @param beacon beacon at the center of the proximity zone
+     * @param observer observer for the spacecraft, that may also see
+     * the beacon at the same time if they are too close to each other
+     * @param proximityAngle proximity angle as seen from observer, at which events are triggered (rad)
      */
     private AngularSeparationDetector(final double maxCheck, final double threshold,
                                       final int maxIter,
                                       final EventHandler<? super AngularSeparationDetector> handler,
                                       final PVCoordinatesProvider beacon,
                                       final PVCoordinatesProvider observer,
-                                      final double proximiyAngle) {
+                                      final double proximityAngle) {
         super(maxCheck, threshold, maxIter, handler);
         this.beacon         = beacon;
         this.observer       = observer;
-        this.proximityAngle = proximiyAngle;
+        this.proximityAngle = proximityAngle;
     }
 
     /** {@inheritDoc} */
