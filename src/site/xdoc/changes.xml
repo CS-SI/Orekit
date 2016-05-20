@@ -22,6 +22,10 @@
   <body>
     <release version="8.0" date="TBC"
              description="TBC">
+      <action dev="luc" type="fix">
+        Apply impulse maneuver correctly in backward propagation.
+        Fixes issue #241.
+      </action>
       <action dev="luc" type="add">
         Added angular separation detector. This is typically used to check separation
         between spacecraft and the Sun as seen from a ground station, to avoid interferences

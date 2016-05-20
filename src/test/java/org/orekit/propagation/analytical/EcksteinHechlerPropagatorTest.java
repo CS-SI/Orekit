@@ -977,9 +977,9 @@ public class EcksteinHechlerPropagatorTest {
                     Assert.assertEquals(97.402, FastMath.toDegrees(currentState.getI()), 1.0e-3);
                 } else if (currentState.getDate().durationFrom(burn1Date) < -0.001 &&
                            currentState.getDate().durationFrom(burn2Date) >  0.001) {
-                    Assert.assertEquals(96.608, FastMath.toDegrees(currentState.getI()), 1.0e-3);
+                    Assert.assertEquals(98.164, FastMath.toDegrees(currentState.getI()), 1.0e-3);
                 } else if (currentState.getDate().durationFrom(burn2Date) < -0.001) {
-                    Assert.assertEquals(95.405, FastMath.toDegrees(currentState.getI()), 1.0e-3);
+                    Assert.assertEquals(99.273, FastMath.toDegrees(currentState.getI()), 1.0e-3);
                 }
             }
         });

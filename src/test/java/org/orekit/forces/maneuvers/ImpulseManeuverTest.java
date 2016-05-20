@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -44,6 +45,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class ImpulseManeuverTest {
@@ -115,6 +117,76 @@ public class ImpulseManeuverTest {
         Assert.assertEquals(finalVxExpected, finalVelocity.getX(), maneuverTolerance);
         Assert.assertEquals(finalVyExpected, finalVelocity.getY(), maneuverTolerance);
         Assert.assertEquals(finalVzExpected, finalVelocity.getZ(), maneuverTolerance);                                               
+
+    }
+
+    @Test
+    public void testBackward() throws OrekitException {
+
+        final AbsoluteDate iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
+        final Orbit initialOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
+                                          FastMath.toRadians(87.0), FastMath.toRadians(216.1807),
+                                          FastMath.toRadians(319.779), PositionAngle.MEAN,
+                                          FramesFactory.getEME2000(), iniDate,
+                                          Constants.EIGEN5C_EARTH_MU);
+        KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit,
+                                                                 new LofOffset(initialOrbit.getFrame(),
+                                                                               LOFType.VNC));
+        DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(-300));
+        Vector3D deltaV = new Vector3D(12.0, 1.0, -4.0);
+        final double isp = 300;
+        ImpulseManeuver<DateDetector> maneuver =
+                        new ImpulseManeuver<DateDetector>(dateDetector, deltaV, isp).
+                        withMaxCheck(3600.0).
+                        withThreshold(1.0e-6);
+        propagator.addEventDetector(maneuver);
+
+        SpacecraftState finalState = propagator.propagate(initialOrbit.getDate().shiftedBy(-900));
+
+        Assert.assertTrue(finalState.getMass() > propagator.getInitialState().getMass());
+        Assert.assertTrue(finalState.getDate().compareTo(propagator.getInitialState().getDate()) < 0);
+
+    }
+
+    @Test
+    public void testBackAndForth() throws OrekitException {
+
+        final AttitudeProvider lof = new LofOffset(FramesFactory.getEME2000(), LOFType.VNC);
+        final double mu = Constants.EIGEN5C_EARTH_MU;
+        final AbsoluteDate iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
+        final Orbit pastOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
+                                                   FastMath.toRadians(87.0), FastMath.toRadians(216.1807),
+                                                   FastMath.toRadians(319.779), PositionAngle.MEAN,
+                                                   FramesFactory.getEME2000(), iniDate, mu);
+        final double pastMass = 2500.0;
+        DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(600));
+        Vector3D deltaV = new Vector3D(12.0, 1.0, -4.0);
+        final double isp = 300;
+        ImpulseManeuver<DateDetector> maneuver =
+                        new ImpulseManeuver<DateDetector>(dateDetector,
+                                                          new InertialProvider(Rotation.IDENTITY),
+                                                          deltaV, isp).
+                        withMaxCheck(3600.0).
+                        withThreshold(1.0e-6);
+
+        double span = 900.0;
+        KeplerianPropagator forwardPropagator = new KeplerianPropagator(pastOrbit, lof, mu, pastMass);
+        forwardPropagator.addEventDetector(maneuver);
+        SpacecraftState futureState = forwardPropagator.propagate(pastOrbit.getDate().shiftedBy(span));
+
+        KeplerianPropagator backwardPropagator = new KeplerianPropagator(futureState.getOrbit(), lof,
+                                                                         mu, futureState.getMass());
+        backwardPropagator.addEventDetector(maneuver);
+        SpacecraftState rebuiltPast = backwardPropagator.propagate(pastOrbit.getDate());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(pastOrbit.getPVCoordinates().getPosition(),
+                                              rebuiltPast.getPVCoordinates().getPosition()),
+                            2.0e-8);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(pastOrbit.getPVCoordinates().getVelocity(),
+                                              rebuiltPast.getPVCoordinates().getVelocity()),
+                            2.0e-11);
+        Assert.assertEquals(pastMass, rebuiltPast.getMass(), 5.0e-13);
 
     }
 

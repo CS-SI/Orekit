@@ -80,6 +80,9 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
     /** Engine exhaust velocity. */
     private final double vExhaust;
 
+    /** Indicator for forward propagation. */
+    private boolean forward;
+
     /** Build a new instance.
      * @param trigger triggering event
      * @param deltaVSat velocity increment in satellite frame
@@ -142,6 +145,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        forward = t.durationFrom(s0.getDate()) >= 0;
     }
 
     /** {@inheritDoc} */
@@ -212,16 +216,18 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractDetector<I
 
             // convert velocity increment in inertial frame
             final Vector3D deltaV = attitude.getRotation().applyInverseTo(im.deltaVSat);
+            final double sign     = im.forward ? +1 : -1;
 
             // apply increment to position/velocity
             final PVCoordinates oldPV = oldState.getPVCoordinates();
-            final PVCoordinates newPV = new PVCoordinates(oldPV.getPosition(),
-                                                          oldPV.getVelocity().add(deltaV));
+            final PVCoordinates newPV =
+                            new PVCoordinates(oldPV.getPosition(),
+                                              new Vector3D(1, oldPV.getVelocity(), sign, deltaV));
             final CartesianOrbit newOrbit =
                     new CartesianOrbit(newPV, oldState.getFrame(), date, oldState.getMu());
 
             // compute new mass
-            final double newMass = oldState.getMass() * FastMath.exp(-deltaV.getNorm() / im.vExhaust);
+            final double newMass = oldState.getMass() * FastMath.exp(-sign * deltaV.getNorm() / im.vExhaust);
 
             // pack everything in a new state
             return new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
