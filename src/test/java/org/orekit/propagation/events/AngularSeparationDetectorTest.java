@@ -65,7 +65,7 @@ public class AngularSeparationDetectorTest {
         Assert.assertEquals(maxCheck, detector.getMaxCheckInterval(), 1.0e-15);
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(7000.0));
-        Assert.assertEquals(1907.8205, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        Assert.assertEquals(1921.1311, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 
     }
 
@@ -82,9 +82,9 @@ public class AngularSeparationDetectorTest {
             withHandler(new EventHandler<AngularSeparationDetector>() {
                 public Action eventOccurred(SpacecraftState s, AngularSeparationDetector detector, boolean increasing) {
                     if (increasing) {
-                        Assert.assertEquals(1990.3816, s.getDate().durationFrom(iniDate), 1.0e-3);
+                        Assert.assertEquals(1928.3659, s.getDate().durationFrom(iniDate), 1.0e-3);
                     } else {
-                        Assert.assertEquals(1828.4986, s.getDate().durationFrom(iniDate), 1.0e-3);
+                        Assert.assertEquals(1914.1680, s.getDate().durationFrom(iniDate), 1.0e-3);
                     }
                     return Action.CONTINUE;
                 }
@@ -113,8 +113,8 @@ public class AngularSeparationDetectorTest {
                                               "Acatenango");
             iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
             initialOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
-                                              FastMath.toRadians(87.0), FastMath.toRadians(216.1807),
-                                              FastMath.toRadians(319.779), PositionAngle.MEAN,
+                                              FastMath.toRadians(87.0), FastMath.toRadians(216.59976025619),
+                                              FastMath.toRadians(319.7), PositionAngle.MEAN,
                                               FramesFactory.getEME2000(), iniDate,
                                               Constants.EIGEN5C_EARTH_MU);
             propagator = new KeplerianPropagator(initialOrbit);

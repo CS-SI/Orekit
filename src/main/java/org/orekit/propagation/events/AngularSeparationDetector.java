@@ -142,7 +142,9 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
     public double g(final SpacecraftState s) throws OrekitException {
         final PVCoordinates sPV = s.getPVCoordinates();
         final PVCoordinates bPV = beacon.getPVCoordinates(s.getDate(), s.getFrame());
-        final double separation = Vector3D.angle(sPV.getPosition(), bPV.getPosition());
+        final PVCoordinates oPV = observer.getPVCoordinates(s.getDate(), s.getFrame());
+        final double separation = Vector3D.angle(sPV.getPosition().subtract(oPV.getPosition()),
+                                                 bPV.getPosition().subtract(oPV.getPosition()));
         return separation - proximityAngle;
     }
 
