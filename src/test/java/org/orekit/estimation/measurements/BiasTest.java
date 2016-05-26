@@ -32,6 +32,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.utils.ParameterDriver;
 
 public class BiasTest {
 
@@ -59,7 +60,15 @@ public class BiasTest {
         final double[] realStationsBiases  = new double[context.stations.size()];
         for (int i = 0; i < context.stations.size(); ++i) {
             final TopocentricFrame base = context.stations.get(i).getBaseFrame();
-            stationsRangeBiases[i] = new Bias<Range>(base.getName() + " range bias", 0.0);
+            stationsRangeBiases[i] = new Bias<Range>(new String[] {
+                                                         base.getName() + " range bias"
+                                                     },
+                                                     new double[] {
+                                                         0.0       
+                                                     },
+                                                     new double[] {
+                                                         1.0       
+                                                     });
             realStationsBiases[i]  = 2 * random.nextDouble() - 1;
         }
 
@@ -89,8 +98,10 @@ public class BiasTest {
         estimator.setMaxEvaluations(20);
 
         // we want to estimate the biases
-        for (int i = 0; i < stationsRangeBiases.length; ++i) {
-            stationsRangeBiases[i].getDriver().setEstimated(true);
+        for (Bias<?> bias : stationsRangeBiases) {
+            for (final ParameterDriver driver : bias.getParametersDrivers()) {
+                driver.setSelected(true);
+            }
         }
 
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
@@ -100,7 +111,7 @@ public class BiasTest {
                                      0.0,  1.3e-10);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assert.assertEquals(realStationsBiases[i],
-                                stationsRangeBiases[i].getDriver().getValue()[0],
+                                stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),
                                 5.9e-8);
         }
 

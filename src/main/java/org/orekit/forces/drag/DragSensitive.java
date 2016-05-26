@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -23,9 +24,11 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.LocalizedODEFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Interface for spacecraft that are sensitive to atmospheric drag forces.
  *
@@ -38,10 +41,11 @@ public interface DragSensitive {
     /** Parameter name for drag coefficient enabling jacobian processing. */
     String DRAG_COEFFICIENT = "drag coefficient";
 
-    /** Get the names of the supported parameters.
-     * @return parameters names
+    /** Get the drivers for supported parameters.
+     * @return parameters drivers
+     * @since 8.0
      */
-    List<String> getDragParametersNames();
+    ParameterDriver[] getDragParametersDrivers();
 
     /** Compute the acceleration due to drag.
      * <p>
@@ -103,14 +107,48 @@ public interface DragSensitive {
                                 double density, Vector3D relativeVelocity, String paramName)
         throws OrekitException;
 
-    /** Set the drag coefficient.
-     *  @param value drag coefficient
+    /** Get the names of the supported parameters.
+     * @return parameters names
+     * @deprecated as of 8.0, replaced with {@link #getDragParametersDrivers()}
      */
-    void setDragCoefficient(double value);
+    @Deprecated
+    default List<String> getDragParametersNames() {
+        final List<String> names = new ArrayList<String>();
+        for (final ParameterDriver driver : getDragParametersDrivers()) {
+            names.add(driver.getName());
+        }
+        return names;
+    }
 
-    /** Get the drag coefficient.
-     * @return drag coefficient
+    /** Set the absorption coefficient.
+     * @param value absorption coefficient
+     * @exception OrekitException if parameter cannot be set
+     * @deprecated as of 8.0, replaced with {@link #getDragParametersDrivers()}
      */
-    double getDragCoefficient();
+    @Deprecated
+    default void setDragCoefficient(double value) throws OrekitException {
+        for (final ParameterDriver driver : getDragParametersDrivers()) {
+            if (driver.getName().equals(DRAG_COEFFICIENT)) {
+                driver.setValue(value);
+                return;
+            }
+        }
+        throw new OrekitException(LocalizedODEFormats.UNKNOWN_PARAMETER, DRAG_COEFFICIENT);
+    }
+
+    /** Get the absorption coefficient.
+     * @return absorption coefficient
+     * @exception OrekitException if parameter cannot be set
+     * @deprecated as of 8.0, replaced with {@link #getDragParametersDrivers()}
+     */
+    @Deprecated
+    default double getDragCoefficient() throws OrekitException {
+        for (final ParameterDriver driver : getDragParametersDrivers()) {
+            if (driver.getName().equals(DRAG_COEFFICIENT)) {
+                return driver.getValue();
+            }
+        }
+        throw new OrekitException(LocalizedODEFormats.UNKNOWN_PARAMETER, DRAG_COEFFICIENT);
+    }
 
 }

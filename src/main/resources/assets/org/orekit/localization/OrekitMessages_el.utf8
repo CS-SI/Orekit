@@ -253,9 +253,6 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = απροσδόκητες υψ�
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = μη έγκυρο όνομα παραμέτρου {0}, έγκυρα ονόματα: {1}
 
-# duplicated parameter name {0}
-DUPLICATED_PARAMETER_NAME = <MISSING TRANSLATION>
-
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = άγνωστη πρόσθετη κατάσταση "{0}"
 
@@ -273,9 +270,6 @@ STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Η κατάσταση είναι ένας {
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Η Jacobian κατάσταση έχει {0} γραμμές, αλλά οι Jacobian παράμετροι έχουν {1} γραμμές
-
-# finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = τα πεπερασμένα βήματα για παράγωγα μοντέλα ισχύος δεν έχουν αρχικοποιηθεί
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
 INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = Ο αρχικός πίνακας έχει {0} στήλες, αλλά {1} παράμετροι έχουν επιλεχθεί

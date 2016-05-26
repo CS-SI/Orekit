@@ -23,7 +23,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -95,30 +94,8 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
     public void addForceModel(final ForceModel model)
         throws OrekitException {
         forceModels.add(model);
-        for (final String name : model.getParametersNames()) {
-            // add model parameters, taking care of
-            // Newtonian central attraction which is already supported by base class
-            if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(name)) {
-                for (final ParameterDriver driver : getParametersDrivers()) {
-                    if (driver.getName().equals(name)) {
-                        driver.setValue(new double[] {
-                            model.getParameter(name)
-                        });
-                        break;
-                    }
-                }
-            } else {
-                addSupportedParameter(new ParameterDriver(name,
-                                                          new double[] {
-                                                              model.getParameter(name)
-                                                          }) {
-                    /** {@inheritDoc} */
-                    @Override
-                    protected void valueChanged(final double[] newValue) {
-                        model.setParameter(name, newValue[0]);
-                    }
-                });
-            }
+        for (final ParameterDriver driver : model.getParametersDrivers()) {
+            addSupportedParameter(driver);
         }
     }
 
@@ -134,10 +111,9 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         final SpacecraftState state = new SpacecraftState(orb, attitude, mass);
 
         int index = 6;
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isEstimated()) {
-                driver.setValue(parameters, index);
-                index += driver.getDimension();
+        for (final ParameterDriver driver : getParametersDrivers().getDrivers()) {
+            if (driver.isSelected()) {
+                driver.setNormalizedValue(parameters[index++]);
             }
         }
 

@@ -104,6 +104,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 public class OrbitDeterminationTest {
 
@@ -145,12 +146,14 @@ public class OrbitDeterminationTest {
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on measurements parameters
+        final List<? extends ParameterDriver> list = odLageos2.measurementsParameters.getDrivers();
+        sortParametersChanges(list);
         final double[] stationOffSet = { -1.351682,  -2.180542,  -5.278784 };
         final double rangeBias = -7.923393;
-        Assert.assertEquals(stationOffSet[0], odLageos2.measurementsParameters.get(0).getValue()[0], distanceAccuracy);
-        Assert.assertEquals(stationOffSet[1], odLageos2.measurementsParameters.get(0).getValue()[1], distanceAccuracy);
-        Assert.assertEquals(stationOffSet[2], odLageos2.measurementsParameters.get(0).getValue()[2], distanceAccuracy);
-        Assert.assertEquals(rangeBias,        odLageos2.measurementsParameters.get(1).getValue()[0], distanceAccuracy);
+        Assert.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
+        Assert.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
+        Assert.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 258;
@@ -207,44 +210,47 @@ public class OrbitDeterminationTest {
         //test on propagator parameters
         final double dragCoef  = 0.215421;
         final double SRPCoef = 112.336693;
-        Assert.assertEquals(dragCoef, odsatW3.propagatorParameters.get(0).getValue()[0], 3e-3);
-        Assert.assertEquals(SRPCoef,  odsatW3.propagatorParameters.get(1).getValue()[0], dimensionLessCoef);
+        Assert.assertEquals(dragCoef, odsatW3.propagatorParameters.getDrivers().get(0).getValue(), 3e-3);
+        Assert.assertEquals(SRPCoef,  odsatW3.propagatorParameters.getDrivers().get(1).getValue(), dimensionLessCoef);
 
         //test on measurements parameters
+        final List<? extends ParameterDriver> list = odsatW3.measurementsParameters.getDrivers();
+        sortParametersChanges(list);
+
         //station CastleRock
         final double[] CastleAzElBias = { 0.061500,  -0.004955};
         final double CastleRangeBias = 11461.679992;
-        Assert.assertEquals(CastleAzElBias[0], FastMath.toDegrees(odsatW3.measurementsParameters.get(0).getValue()[0]), angleAccuracy);
-        Assert.assertEquals(CastleAzElBias[1], FastMath.toDegrees(odsatW3.measurementsParameters.get(0).getValue()[1]), angleAccuracy);
-        Assert.assertEquals(CastleRangeBias,   odsatW3.measurementsParameters.get(1).getValue()[0],                     distanceAccuracy);
+        Assert.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
+        Assert.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
+        Assert.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 
         //station Fucino
         final double[] FucAzElBias = {-0.055555,  0.075471};
         final double FucRangeBias = 13461.362346;
-        Assert.assertEquals(FucAzElBias[0], FastMath.toDegrees(odsatW3.measurementsParameters.get(2).getValue()[0]), angleAccuracy);
-        Assert.assertEquals(FucAzElBias[1], FastMath.toDegrees(odsatW3.measurementsParameters.get(2).getValue()[1]), angleAccuracy);
-        Assert.assertEquals(FucRangeBias,   odsatW3.measurementsParameters.get(3).getValue()[0],                     distanceAccuracy);
+        Assert.assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
+        Assert.assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
+        Assert.assertEquals(FucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
 
         //station Kumsan
         final double[] KumAzElBias = { -0.025227,  -0.054883};
         final double KumRangeBias = 13521.236722;
-        Assert.assertEquals(KumAzElBias[0], FastMath.toDegrees(odsatW3.measurementsParameters.get(4).getValue()[0]), angleAccuracy);
-        Assert.assertEquals(KumAzElBias[1], FastMath.toDegrees(odsatW3.measurementsParameters.get(4).getValue()[1]), angleAccuracy);
-        Assert.assertEquals(KumRangeBias,   odsatW3.measurementsParameters.get(5).getValue()[0],                     distanceAccuracy);
+        Assert.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
+        Assert.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
+        Assert.assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
 
         //station Pretoria
         final double[] PreAzElBias = { 0.029580,  0.011505};
         final double PreRangeBias = 13373.739538;
-        Assert.assertEquals(PreAzElBias[0], FastMath.toDegrees(odsatW3.measurementsParameters.get(6).getValue()[0]), angleAccuracy);
-        Assert.assertEquals(PreAzElBias[1], FastMath.toDegrees(odsatW3.measurementsParameters.get(6).getValue()[1]), angleAccuracy);
-        Assert.assertEquals(PreRangeBias,   odsatW3.measurementsParameters.get(7).getValue()[0],                     distanceAccuracy);
+        Assert.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
+        Assert.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
+        Assert.assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
 
         //station Uralla
         final double[] UraAzElBias = { 0.168236,  -0.121083};
         final double UraRangeBias = 13294.762426;
-        Assert.assertEquals(UraAzElBias[0], FastMath.toDegrees(odsatW3.measurementsParameters.get(8).getValue()[0]), angleAccuracy);
-        Assert.assertEquals(UraAzElBias[1], FastMath.toDegrees(odsatW3.measurementsParameters.get(8).getValue()[1]), angleAccuracy);
-        Assert.assertEquals(UraRangeBias,   odsatW3.measurementsParameters.get(9).getValue()[0],                     distanceAccuracy);
+        Assert.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
+        Assert.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
+        Assert.assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 182;
@@ -285,10 +291,10 @@ public class OrbitDeterminationTest {
        private StreamingStatistics rangeStat;
        private StreamingStatistics azimStat;
        private StreamingStatistics elevStat;
-       private  List<ParameterDriver> propagatorParameters  ;
-       private  List<ParameterDriver> measurementsParameters;
-       ResultOD(List<ParameterDriver>  propagatorParameters,
-                List<ParameterDriver>  measurementsParameters,
+       private  ParameterDriversList propagatorParameters  ;
+       private  ParameterDriversList measurementsParameters;
+       ResultOD(ParameterDriversList  propagatorParameters,
+                ParameterDriversList  measurementsParameters,
                 int numberOfIteration, int numberOfEvaluation, PVCoordinates estimatedPV,
                 StreamingStatistics rangeStat, StreamingStatistics rangeRateStat,
                 StreamingStatistics azimStat, StreamingStatistics elevStat,
@@ -429,11 +435,8 @@ public class OrbitDeterminationTest {
         }
 
         // parmaters and measurements.
-        final List<ParameterDriver> propagatorParameters   = estimator.getPropagatorParameters(true);
-        final List<ParameterDriver> measurementsParameters = estimator.getMeasurementsParameters(true);
-
-        //sort of the measurements parameters
-        sortParametersChanges( measurementsParameters);
+        final ParameterDriversList propagatorParameters   = estimator.getPropagatorParameters(true);
+        final ParameterDriversList measurementsParameters = estimator.getMeasurementsParameters(true);
 
         //instation of results
         return new ResultOD(propagatorParameters, measurementsParameters,
@@ -446,7 +449,7 @@ public class OrbitDeterminationTest {
     /** Sort parameters changes.
      * @param parameters parameters list
      */
-    private void sortParametersChanges(List<ParameterDriver> parameters) {
+    private void sortParametersChanges(List<? extends ParameterDriver> parameters) {
 
         // sort the parameters lexicographically
         Collections.sort(parameters, new Comparator<ParameterDriver>() {
@@ -572,9 +575,9 @@ public class OrbitDeterminationTest {
             Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
             propagatorBuilder.addForceModel(new DragForce(atmosphere, new IsotropicDrag(area, cd)));
             if (cdEstimated) {
-                for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers()) {
+                for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
                     if (driver.getName().equals(DragSensitive.DRAG_COEFFICIENT)) {
-                        driver.setEstimated(true);
+                        driver.setSelected(true);
                     }
                 }
             }
@@ -590,9 +593,9 @@ public class OrbitDeterminationTest {
                                                                        body.getEquatorialRadius(),
                                                                        new IsotropicRadiationSingleCoefficient(area, cr)));
             if (cREstimated) {
-                for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers()) {
+                for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
                     if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
-                        driver.setEstimated(true);
+                        driver.setSelected(true);
                     }
                 }
             }
@@ -776,8 +779,16 @@ public class OrbitDeterminationTest {
         if (FastMath.abs(transponderDelayBias) >= Precision.SAFE_MIN || transponderDelayBiasEstimated) {
             // bias is either non-zero or will be estimated,
             // we really need to create a modifier for this
-            final Bias<Range> bias = new Bias<Range>("transponder delay bias", transponderDelayBias);
-            bias.getDriver().setEstimated(transponderDelayBiasEstimated);
+            final Bias<Range> bias = new Bias<Range>(new String[] {
+                                                         "transponder delay bias",
+                                                     },
+                                                     new double[] {
+                                                         transponderDelayBias             
+                                                     },
+                                                     new double[] {
+                                                         1.0             
+                                                     });
+            bias.getParametersDrivers().get(0).setSelected(transponderDelayBiasEstimated);
             return bias;
         } else {
             // fixed zero bias, we don't need any modifier
@@ -827,15 +838,24 @@ public class OrbitDeterminationTest {
                                                              stationAltitudes[i]);
             final TopocentricFrame topo = new TopocentricFrame(body, position, stationNames[i]);
             final GroundStation station = new GroundStation(topo);
-            station.getPositionOffsetDriver().setEstimated(stationPositionEstimated[i]);
+            station.getEastOffsetDriver().setSelected(stationPositionEstimated[i]);
+            station.getNorthOffsetDriver().setSelected(stationPositionEstimated[i]);
+            station.getZenithOffsetDriver().setSelected(stationPositionEstimated[i]);
 
             // range
             final double rangeSigma = stationRangeSigma[i];
             final Bias<Range> rangeBias;
             if (FastMath.abs(stationRangeBias[i])   >= Precision.SAFE_MIN || stationRangeBiasEstimated[i]) {
-                 rangeBias = new Bias<Range>(stationNames[i] + "/range bias",
-                                             stationRangeBias[i]);
-                 rangeBias.getDriver().setEstimated(stationRangeBiasEstimated[i]);
+                 rangeBias = new Bias<Range>(new String[] {
+                                                 stationNames[i] + "/range bias",
+                                             },
+                                             new double[] {
+                                                 stationRangeBias[i]
+                                             },
+                                             new double[] {
+                                                 1.0
+                                             });
+                 rangeBias.getParametersDrivers().get(0).setSelected(stationRangeBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 rangeBias = null;
@@ -845,9 +865,16 @@ public class OrbitDeterminationTest {
             final double rangeRateSigma = stationRangeRateSigma[i];
             final Bias<RangeRate> rangeRateBias;
             if (FastMath.abs(stationRangeRateBias[i])   >= Precision.SAFE_MIN || stationRangeRateBiasEstimated[i]) {
-                rangeRateBias = new Bias<RangeRate>(stationNames[i] + "/range rate bias",
-                                                    stationRangeRateBias[i]);
-                rangeRateBias.getDriver().setEstimated(stationRangeRateBiasEstimated[i]);
+                rangeRateBias = new Bias<RangeRate>(new String[] {
+                                                        stationNames[i] + "/range rate bias"
+                                                    },
+                                                    new double[] {
+                                                        stationRangeRateBias[i]
+                                                    },
+                                                    new double[] {
+                                                        1.0e-3
+                                                    });
+                rangeRateBias.getParametersDrivers().get(0).setSelected(stationRangeRateBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 rangeRateBias = null;
@@ -861,9 +888,20 @@ public class OrbitDeterminationTest {
             if (FastMath.abs(stationAzimuthBias[i])   >= Precision.SAFE_MIN ||
                 FastMath.abs(stationElevationBias[i]) >= Precision.SAFE_MIN ||
                 stationAzElBiasesEstimated[i]) {
-                azELBias = new Bias<Angular>(stationNames[i] + "/az-el bias",
-                                             stationAzimuthBias[i], stationElevationBias[i]);
-                azELBias.getDriver().setEstimated(stationAzElBiasesEstimated[i]);
+                azELBias = new Bias<Angular>(new String[] {
+                                                 stationNames[i] + "/az bias",
+                                                 stationNames[i] + "/el bias"
+                                             },
+                                             new double[] {
+                                                 stationAzimuthBias[i],
+                                                 stationElevationBias[i]             
+                                             },
+                                             new double[] {
+                                                 1.0e-6,
+                                                 1.0e-6             
+                                             });
+                azELBias.getParametersDrivers().get(0).setSelected(stationAzElBiasesEstimated[i]);
+                azELBias.getParametersDrivers().get(1).setSelected(stationAzElBiasesEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
                 azELBias = null;

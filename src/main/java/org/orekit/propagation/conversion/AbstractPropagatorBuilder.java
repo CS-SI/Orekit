@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -31,12 +32,21 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Base class for propagator builders.
  * @author Pascal Parraud
  * @since 7.1
  */
 public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
+
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
     /** Frame in which the orbit is propagated. */
     private final Frame frame;
@@ -45,7 +55,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     private double mu;
 
     /** List of the supported parameters. */
-    private List<ParameterDriver> supportedParameters;
+    private ParameterDriversList supportedParameters;
 
     /** Orbit type to use. */
     private final OrbitType orbitType;
@@ -63,22 +73,23 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      */
     public AbstractPropagatorBuilder(final Frame frame, final double mu,
                                      final OrbitType orbitType, final PositionAngle positionAngle) {
-        this.frame               = frame;
-        this.mu                  = mu;
-        this.supportedParameters = new ArrayList<ParameterDriver>();
-        this.orbitType           = orbitType;
-        this.positionAngle       = positionAngle;
         try {
-            supportedParameters.add(new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                        new double[] {
-                                                            mu
-                                                        }) {
+            this.frame               = frame;
+            this.mu                  = mu;
+            this.supportedParameters = new ParameterDriversList();
+            this.orbitType           = orbitType;
+            this.positionAngle       = positionAngle;
+
+            final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                                 mu, MU_SCALE) {
                 /** {@inheridDoc} */
                 @Override
-                protected void valueChanged(final double[] newValue) {
-                    AbstractPropagatorBuilder.this.mu = newValue[0];
+                protected void valueChanged(final double newValue) {
+                    AbstractPropagatorBuilder.this.mu = newValue;
                 }
-            });
+            };
+            supportedParameters.add(muDriver);
+
         } catch (OrekitException oe) {
             // this should never happen
             throw new OrekitInternalError(oe);
@@ -101,7 +112,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public List<ParameterDriver> getParametersDrivers() {
+    public ParameterDriversList getParametersDrivers() {
         return supportedParameters;
     }
 
@@ -111,7 +122,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     @Deprecated
     public List<String> getSupportedParameters() {
         final List<String> supportedParametersNames = new ArrayList<String>();
-        for (final ParameterDriver driver : supportedParameters) {
+        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
             supportedParametersNames.add(driver.getName());
         }
         return supportedParametersNames;
@@ -119,24 +130,24 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** {@inheritDoc}
      * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
-     * {@link ParameterDriver#setEstimated(boolean)}
+     * {@link ParameterDriver#setSelected(boolean)}
      */
     @Deprecated
     public void setFreeParameters(final List<String> parameters)
         throws OrekitIllegalArgumentException {
 
         // start by resetting all parameters to not estimated
-        for (final ParameterDriver driver : supportedParameters) {
-            driver.setEstimated(false);
+        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
+            driver.setSelected(false);
         }
 
         // estimate only the specified parameters
         for (final String name : parameters) {
             boolean found = false;
-            for (final ParameterDriver driver : supportedParameters) {
+            for (final ParameterDriver driver : supportedParameters.getDrivers()) {
                 if (driver.getName().equals(name)) {
                     found = true;
-                    driver.setEstimated(true);
+                    driver.setSelected(true);
                 }
             }
             if (!found) {
@@ -149,13 +160,13 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** {@inheritDoc}
      * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
-     * {@link ParameterDriver#isEstimated()}
+     * {@link ParameterDriver#isSelected()}
      */
     @Deprecated
     public List<String> getFreeParameters() {
         final List<String> freeParameters = new ArrayList<String>();
-        for (final ParameterDriver driver : supportedParameters) {
-            if (driver.isEstimated()) {
+        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
+            if (driver.isSelected()) {
                 freeParameters.add(driver.getName());
             }
         }
@@ -174,9 +185,9 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     @Deprecated
     public double getParameter(final String name)
         throws OrekitIllegalArgumentException {
-        for (final ParameterDriver driver : supportedParameters) {
-            if (driver.getName().equals(name) && driver.getDimension() == 1) {
-                return driver.getValue()[0];
+        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
+            if (driver.getName().equals(name)) {
+                return driver.getValue();
             }
         }
         throw new OrekitIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
@@ -195,12 +206,10 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     @Deprecated
     public void setParameter(final String name, final double value)
         throws OrekitIllegalArgumentException {
-        for (final ParameterDriver driver : supportedParameters) {
-            if (driver.getName().equals(name) && driver.getDimension() == 1) {
+        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
+            if (driver.getName().equals(name)) {
                 try {
-                    driver.setValue(new double[] {
-                        value
-                    });
+                    driver.setValue(value);
                     return;
                 } catch (OrekitException oe) {
                     throw new OrekitIllegalArgumentException(oe.getSpecifier(), oe.getParts());
@@ -231,9 +240,9 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
         // compute required array size
         int size = 6;
-        for (final ParameterDriver driver : supportedParameters) {
-            if (driver.isEstimated()) {
-                size += driver.getDimension();
+        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
+            if (driver.isSelected()) {
+                ++size;
             }
         }
 
@@ -249,7 +258,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      */
     protected void addSupportedParameter(final ParameterDriver driver)
         throws OrekitException {
-        driver.checkAndAddSelf(supportedParameters);
+        supportedParameters.add(driver);
     }
 
     /** Create a string with the list of supported parameters.
@@ -257,7 +266,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      */
     private String supportedAsString() {
         final StringBuilder supported = new StringBuilder();
-        for (final ParameterDriver driver : supportedParameters) {
+        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
             if (supported.length() > 0) {
                 supported.append(", ");
             }

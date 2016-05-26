@@ -17,17 +17,15 @@
 package org.orekit.forces.gravity;
 
 
-import java.util.Collections;
-
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -37,9 +35,9 @@ import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.Jacobianizer;
-import org.orekit.propagation.numerical.ParameterConfiguration;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by
@@ -74,8 +72,18 @@ import org.orekit.time.AbsoluteDate;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class CunninghamAttractionModel
-    extends AbstractParameterizable implements ForceModel, TideSystemProvider {
+public class CunninghamAttractionModel extends AbstractForceModel implements TideSystemProvider {
+
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
+    /** Drivers for force model parameters. */
+    private final ParameterDriver[] parametersDrivers;
 
     /** Provider for the spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -92,29 +100,33 @@ public class CunninghamAttractionModel
    /** Creates a new instance.
    * @param centralBodyFrame rotating body frame
    * @param provider provider for spherical harmonics
+   * @param hPosition step used for finite difference computation
    * @since 6.0
    */
     public CunninghamAttractionModel(final Frame centralBodyFrame,
-                                     final UnnormalizedSphericalHarmonicsProvider provider) {
-        super(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+                                     final UnnormalizedSphericalHarmonicsProvider provider,
+                                     final double hPosition) {
+
+        this.parametersDrivers = new ParameterDriver[1];
+        try {
+            parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                       provider.getMu(), MU_SCALE) {
+                /** {@inheritDoc} */
+                @Override
+                protected void valueChanged(final double newValue) {
+                    CunninghamAttractionModel.this.mu = newValue;
+                }
+            };
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        };
 
         this.provider     = provider;
         this.mu           = provider.getMu();
         this.bodyFrame    = centralBodyFrame;
-        this.jacobianizer = null;
+        this.jacobianizer = new Jacobianizer(this, mu, hPosition);
 
-    }
-
-    /** Set the step for finite differences with respect to spacecraft position.
-     * @param hPosition step used for finite difference computation
-     * with respect to spacecraft position (m)
-     * @param hMu step used for finite difference computation
-     * with respect to central attraction coefficient (m³/s²)
-     */
-    public void setSteps(final double hPosition, final double hMu) {
-        final ParameterConfiguration muConfig =
-                new ParameterConfiguration(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, hMu);
-        jacobianizer = new Jacobianizer(this, mu, Collections.singletonList(muConfig), hPosition);
     }
 
     /** {@inheritDoc} */
@@ -372,18 +384,12 @@ public class CunninghamAttractionModel
                                                                       final FieldRotation<DerivativeStructure> rotation,
                                                                       final DerivativeStructure mass)
         throws OrekitException {
-        if (jacobianizer == null) {
-            throw new OrekitException(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES);
-        }
         return jacobianizer.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
     }
 
     /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
-        if (jacobianizer == null) {
-            throw new OrekitException(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES);
-        }
         return jacobianizer.accelerationDerivatives(s, paramName);
     }
 
@@ -393,17 +399,8 @@ public class CunninghamAttractionModel
     }
 
     /** {@inheritDoc} */
-    public double getParameter(final String name)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        return mu;
-    }
-
-    /** {@inheritDoc} */
-    public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        mu = value;
+    public ParameterDriver[] getParametersDrivers() {
+        return parametersDrivers.clone();
     }
 
 }

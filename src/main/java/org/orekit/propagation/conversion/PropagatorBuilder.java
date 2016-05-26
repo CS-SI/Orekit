@@ -27,6 +27,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /** This interface is the top-level abstraction to build propagators for conversion.
  * @author Pascal Parraud
@@ -84,7 +85,7 @@ public interface PropagatorBuilder {
      * @return drivers for the configurable parameters
      * @since 8.0
      */
-    List<ParameterDriver> getParametersDrivers();
+    ParameterDriversList getParametersDrivers();
 
     /** Set the free parameters in order to build the propagator.
      * <p>
@@ -93,7 +94,7 @@ public interface PropagatorBuilder {
      * @param parameters free parameters to set when building the propagator
      * @exception OrekitIllegalArgumentException if one of the parameters is not supported
      * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
-     * {@link ParameterDriver#setEstimated(boolean)}
+     * {@link ParameterDriver#setSelected(boolean)}
      */
     @Deprecated
     void setFreeParameters(List<String> parameters)
@@ -111,7 +112,7 @@ public interface PropagatorBuilder {
      * @return free parameters used when building the propagator
      * @since 7.1
      * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
-     * {@link ParameterDriver#isEstimated()}
+     * {@link ParameterDriver#isSelected()}
      */
     @Deprecated
     List<String> getFreeParameters();

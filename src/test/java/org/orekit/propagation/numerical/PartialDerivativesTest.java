@@ -257,7 +257,7 @@ public class PartialDerivativesTest {
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
         PartialDerivativesEquations PDE = new PartialDerivativesEquations("derivatives", propagator);
-        PDE.selectParamAndStep("thrust", Double.NaN);
+        PDE.selectParameters("thrust");
         Assert.assertEquals(3, PDE.getAvailableParameters().size());
         Assert.assertEquals("central attraction coefficient", PDE.getAvailableParameters().get(0));
         Assert.assertEquals("thrust", PDE.getAvailableParameters().get(1));
@@ -341,7 +341,7 @@ public class PartialDerivativesTest {
                                 new ThirdBodyAttraction(CelestialBodyFactory.getSun()),
                                 new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
         PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
-        partials.selectParamAndStep("non-existent", 1.0);
+        partials.selectParameters("non-existent");
         try {
             partials.computeDerivatives(new SpacecraftState(initialOrbit), new double[6]);
             Assert.fail("an exception should have been thrown");

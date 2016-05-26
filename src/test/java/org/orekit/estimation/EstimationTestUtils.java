@@ -189,9 +189,9 @@ public class EstimationTestUtils {
 
         final int nbOrbitalParameters = 6;
         int dimension = nbOrbitalParameters;
-        for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers()) {
-            if (driver.isEstimated()) {
-                dimension += driver.getDimension();
+        for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+            if (driver.isSelected()) {
+                ++dimension;
             }
         }
 
@@ -200,10 +200,9 @@ public class EstimationTestUtils {
                                                          propagatorBuilder.getPositionAngle(),
                                                          parameters);
         int index = nbOrbitalParameters;
-        for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers()) {
-            if (driver.isEstimated()) {
-                System.arraycopy(driver.getValue(), 0, parameters, index, driver.getDimension());
-                index += driver.getDimension();
+        for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+            if (driver.isSelected()) {
+                parameters[index++] = driver.getNormalizedValue();
             }
         }
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,

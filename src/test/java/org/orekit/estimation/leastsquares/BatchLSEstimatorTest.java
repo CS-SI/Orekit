@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -39,7 +39,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 public class BatchLSEstimatorTest {
 
@@ -110,8 +110,8 @@ public class BatchLSEstimatorTest {
             @Override
             public void iterationPerformed(int iterationsCount, int evaluationscount,
                                            Orbit orbit,
-                                           List<ParameterDriver> estimatedPropagatorParameters,
-                                           List<ParameterDriver> estimatedMeasurementsParameters,
+                                           ParameterDriversList estimatedPropagatorParameters,
+                                           ParameterDriversList estimatedMeasurementsParameters,
                                            EvaluationsProvider evaluationsProvider,
                                            Evaluation lspEvaluation) throws OrekitException {
                 Assert.assertEquals(last + 1, iterationsCount);
@@ -177,8 +177,8 @@ public class BatchLSEstimatorTest {
             @Override
             public void iterationPerformed(int iterationsCount, int evaluationscount,
                                            Orbit orbit,
-                                           List<ParameterDriver> estimatedPropagatorParameters,
-                                           List<ParameterDriver> estimatedMeasurementsParameters,
+                                           ParameterDriversList estimatedPropagatorParameters,
+                                           ParameterDriversList estimatedMeasurementsParameters,
                                            EvaluationsProvider evaluationsProvider,
                                            Evaluation lspEvaluation) throws DummyException {
                 throw new DummyException();

@@ -16,16 +16,18 @@
  */
 package org.orekit.forces;
 
+import java.util.List;
+
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.ode.ParametersController;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -56,7 +58,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface ForceModel extends ParametersController {
+public interface ForceModel {
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
@@ -108,5 +110,55 @@ public interface ForceModel extends ParametersController {
      * related to any discrete events
      */
     EventDetector[] getEventsDetectors();
+
+    /** Get the drivers for force model parameters.
+     * @return drivers for force model parameters
+     * @since 8.0
+     */
+    ParameterDriver[] getParametersDrivers();
+
+    /** Get parameter value from its name.
+     * @param name parameter name
+     * @return parameter value
+     * @exception OrekitException if parameter is not supported
+     * @since 8.0
+     */
+    ParameterDriver getParameterDriver(String name) throws OrekitException;
+
+    /** Check if a parameter is supported.
+     * <p>Supported parameters are those listed by {@link #getParametersDrivers()}.</p>
+     * @param name parameter name to check
+     * @return true if the parameter is supported
+     * @see #getParametersDrivers()
+     */
+    boolean isSupported(String name);
+
+    /** Get the names of the supported parameters.
+     * @return parameters names
+     * @see #isSupported(String)
+     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()}
+     */
+    @Deprecated
+    List<String> getParametersNames();
+
+    /** Get parameter value from its name.
+     * @param name parameter name
+     * @return parameter value
+     * @exception OrekitException if parameter is not supported
+     * @deprecated as of 8.0, replaced with
+     * {@link #getParameterDriver(String)}.{@link ParameterDriver#getName()}
+     */
+    @Deprecated
+    double getParameter(String name) throws OrekitException;
+
+    /** Set the value for a given parameter.
+     * @param name parameter name
+     * @param value parameter value
+     * @exception OrekitException if parameter is not supported
+     * @deprecated as of 8.0, replaced with
+     * {@link #getParameterDriver(String)}.{@link ParameterDriver#setValue(double)}
+     */
+    @Deprecated
+    void setParameter(String name, double value) throws OrekitException;
 
 }

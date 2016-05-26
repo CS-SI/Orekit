@@ -53,6 +53,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 
 public class SolarRadiationPressureTest extends AbstractForceModelTest {
@@ -133,12 +134,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
         }
-        try {
-            Assert.assertEquals(0.0, rs.getAbsorptionCoefficient(), 1.0e-15);
-            rs.setAbsorptionCoefficient(0.3);
-            Assert.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uso) {
-            // expected
+        for (ParameterDriver driver : rs.getRadiationParametersDrivers()) {
+            Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                driver.getName());
         }
     }
 

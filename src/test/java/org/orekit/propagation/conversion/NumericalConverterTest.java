@@ -270,7 +270,9 @@ public class NumericalConverterTest {
                 if (force.isSupported(param)) {
                     for (ForceModel model: prop.getForceModels()) {
                         if (model.isSupported(param)) {
-                            Assert.assertEquals(force.getParameter(param), model.getParameter(param), 0.);
+                            Assert.assertEquals(force.getParameterDriver(param).getValue(),
+                                                model.getParameterDriver(param).getValue(),
+                                                0.);
                         }
                     }
                 }
@@ -350,7 +352,7 @@ public class NumericalConverterTest {
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                         GravityFieldFactory.getNormalizedProvider(2, 0));
-        mu = gravity.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+        mu = gravity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue();
         minStep = 0.001;
         maxStep = 200.0;
         dP = 0.01;

@@ -20,26 +20,38 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** Third body attraction force model.
  *
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class ThirdBodyAttraction extends AbstractParameterizable implements ForceModel {
+public class ThirdBodyAttraction extends AbstractForceModel {
+
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
 
     /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
     public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
+
+    /** Drivers for force model parameters. */
+    private final ParameterDriver[] parametersDrivers;
 
     /** The body to consider. */
     private final CelestialBody body;
@@ -53,7 +65,21 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
      * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
      */
     public ThirdBodyAttraction(final CelestialBody body) {
-        super(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX);
+        this.parametersDrivers = new ParameterDriver[1];
+        try {
+            parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
+                                                       body.getGM(), MU_SCALE) {
+                /** {@inheritDoc} */
+                @Override
+                protected void valueChanged(final double newValue) {
+                    ThirdBodyAttraction.this.gm = newValue;
+                }
+            };
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        };
+
         this.body = body;
         this.gm   = body.getGM();
     }
@@ -127,17 +153,8 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
     }
 
     /** {@inheritDoc} */
-    public double getParameter(final String name)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        return gm;
-    }
-
-    /** {@inheritDoc} */
-    public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        gm = value;
+    public ParameterDriver[] getParametersDrivers() {
+        return parametersDrivers.clone();
     }
 
 }

@@ -253,9 +253,6 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = due valori di elevazione inatt
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = nome del parametro {0} sconosciuto, parametri conosciuti: {1}
 
-# duplicated parameter name {0}
-DUPLICATED_PARAMETER_NAME = nome del parametro {0} duplicato
-
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = stato aggiuntivo "{0}" sconosciuto
 
@@ -273,9 +270,6 @@ STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = lo stato Jacobiano è una matrice {0}x{1}, 
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = lo stato Jacobiano ha {0} righe ma i parametri Jacobiani hanno {1} righe
-
-# finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = passo delle differenze finite non inizializzato per il calcolo delle derivate del modello di forza
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
 INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = la matrice Jacobiana iniziale ha {0} colonne, mentre {1} parametri sono stati selezionati

@@ -21,9 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
@@ -38,7 +35,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.ForceModel;
@@ -100,7 +96,8 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         propagator.addForceModel(new CunninghamAttractionModel(itrf2008,
                                                                GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu,
                                                                                                            TideSystem.UNKNOWN,
-                                                                                                           c, s)));
+                                                                                                           c, s),
+                                                               1.0));
 
         // let the step handler perform the test
         propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
@@ -171,7 +168,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        })));
+        }), 1.0));
 
         // let the step handler perform the test
         propagator.setInitialState(new SpacecraftState(initialOrbit));
@@ -249,7 +246,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        })));
+        }), 1.0));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cunnOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
@@ -266,7 +263,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        })));
+        }), 1.0));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
@@ -296,10 +293,10 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
             // perturbing force (ITRF2008 central body frame)
             final ForceModel cunModel =
                     new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                                  GravityFieldFactory.getUnnormalizedProvider(i, i));
+                                                  GravityFieldFactory.getUnnormalizedProvider(i, i), 1.0);
             final ForceModel droModel =
                     new DrozinerAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                                GravityFieldFactory.getUnnormalizedProvider(i, i));
+                                                GravityFieldFactory.getUnnormalizedProvider(i, i), 1.0);
 
             /**
              * Compute acceleration
@@ -370,7 +367,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setEphemerisMode();
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider));
+        propagator.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider, 1.0));
         propagator.setInitialState(initialState);
         propagator.propagate(initialState.getDate().shiftedBy(duration));
         return propagator.getGeneratedEphemeris();
@@ -393,18 +390,10 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
         final CunninghamAttractionModel cunninghamModel =
                 new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                              GravityFieldFactory.getUnnormalizedProvider(20, 20));
+                                              GravityFieldFactory.getUnnormalizedProvider(20, 20), 1.0);
 
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
-        try {
-            cunninghamModel.accelerationDerivatives(state, name);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES,
-                                oe.getSpecifier());
-        }
-        cunninghamModel.setSteps(1.0, 1.0e10);
-        checkParameterDerivative(state, cunninghamModel, name, 1.0e-4, 5.0e-12);
+        checkParameterDerivative(state, cunninghamModel, name, 1.0e-4, 9.0e-12);
 
     }
 
@@ -431,29 +420,11 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                                                                             tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         CunninghamAttractionModel cuModel =
-                new CunninghamAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50));
+                new CunninghamAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50), 1.0);
         Assert.assertEquals(TideSystem.UNKNOWN, cuModel.getTideSystem());
         propagator.addForceModel(cuModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);
-        try {
-            DerivativeStructure one = new DerivativeStructure(7, 1, 1.0);
-            cuModel.accelerationDerivatives(state0.getDate(), state0.getFrame(),
-                                            new FieldVector3D<DerivativeStructure>(one, state0.getPVCoordinates().getPosition()),
-                                            new FieldVector3D<DerivativeStructure>(one, state0.getPVCoordinates().getVelocity()),
-                                            new FieldRotation<DerivativeStructure>(one.multiply(state0.getAttitude().getRotation().getQ0()),
-                                                           one.multiply(state0.getAttitude().getRotation().getQ1()),
-                                                           one.multiply(state0.getAttitude().getRotation().getQ2()),
-                                                           one.multiply(state0.getAttitude().getRotation().getQ3()),
-                                                           false),
-                                            one.multiply(state0.getMass()));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES,
-                                oe.getSpecifier());
-        }
-        cuModel.setSteps(1.0, 1.0e10);
-
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
                            40000, tolerances[0], 2.0e-7);
     }

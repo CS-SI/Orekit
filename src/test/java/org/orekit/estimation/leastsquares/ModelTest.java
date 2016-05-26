@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +40,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 public class ModelTest {
 
@@ -60,10 +60,10 @@ public class ModelTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
-        final List<ParameterDriver> measurementsParameters = new ArrayList<ParameterDriver>();
+        final ParameterDriversList measurementsParameters = new ParameterDriversList();
         for (Measurement<?> measurement : measurements) {
             for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
-                addMeasurementParameter(measurementsParameters, parameter);
+                measurementsParameters.add(parameter);
             }
         }
 
@@ -83,9 +83,9 @@ public class ModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final List<ParameterDriver> estimatedPropagatorParameters = new ArrayList<ParameterDriver>();
-        for (final ParameterDriver parameterDriver : propagatorBuilder.getParametersDrivers()) {
-            if (parameterDriver.isEstimated()) {
+        final ParameterDriversList estimatedPropagatorParameters = new ParameterDriversList();
+        for (final ParameterDriver parameterDriver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+            if (parameterDriver.isSelected()) {
                 estimatedPropagatorParameters.add(parameterDriver);
             }
         }
@@ -109,31 +109,21 @@ public class ModelTest {
 
     }
 
-    private void addMeasurementParameter(final List<ParameterDriver> measurementsParameters,
-                                         final ParameterDriver parameter) {
-        for (final ParameterDriver existing : measurementsParameters) {
-            if (existing.getName().equals(parameter.getName())) {
-                return;
-            }
-        }
-        measurementsParameters.add(parameter);
-    }
-
     private RealVector startPoint(final Context context,
                                   final PropagatorBuilder propagatorBuilder,
-                                  final List<ParameterDriver> measurementsParameters)
+                                  final ParameterDriversList measurementsParameters)
         throws OrekitException {
 
         // allocate vector
         int dimension = 6;
-        for (final ParameterDriver parameter : propagatorBuilder.getParametersDrivers()) {
-            if (parameter.isEstimated()) {
-                dimension += parameter.getDimension();
+        for (final ParameterDriver parameter : propagatorBuilder.getParametersDrivers().getDrivers()) {
+            if (parameter.isSelected()) {
+                ++dimension;
             }
         }
-        for (final ParameterDriver parameter : measurementsParameters) {
-            if (parameter.isEstimated()) {
-                dimension += parameter.getDimension();
+        for (final ParameterDriver parameter : measurementsParameters.getDrivers()) {
+            if (parameter.isSelected()) {
+                ++dimension;
             }
         }
         RealVector point = new ArrayRealVector(dimension);
@@ -150,20 +140,16 @@ public class ModelTest {
         }
 
         // propagator parameters
-        for (final ParameterDriver propagatorParameter : propagatorBuilder.getParametersDrivers()) {
-            if (propagatorParameter.isEstimated()) {
-                for (final double v : propagatorParameter.getValue()) {
-                    point.setEntry(index++, v);
-                }
+        for (final ParameterDriver propagatorParameter : propagatorBuilder.getParametersDrivers().getDrivers()) {
+            if (propagatorParameter.isSelected()) {
+                point.setEntry(index++, propagatorParameter.getValue());
             }
         }
 
         // measurements parameters
-        for (final ParameterDriver parameter : measurementsParameters) {
-            if (parameter.isEstimated()) {
-                for (int i = 0; i < parameter.getDimension(); ++i) {
-                    point.setEntry(index++, parameter.getValue()[i]);
-                }
+        for (final ParameterDriver parameter : measurementsParameters.getDrivers()) {
+            if (parameter.isSelected()) {
+                point.setEntry(index++, parameter.getValue());
             }
         }
 
@@ -172,5 +158,6 @@ public class ModelTest {
     }
 
 }
+
 
 

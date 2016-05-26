@@ -16,18 +16,18 @@
  */
 package org.orekit.forces.radiation;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses a single coefficient cr, considered to be
@@ -42,6 +42,17 @@ import org.orekit.time.AbsoluteDate;
  */
 public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
 
+    /** Parameters scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private final double SCALE = FastMath.scalb(1.0, -3);
+
+    /** Drivers for radiation pressure coefficient parameter. */
+    private final ParameterDriver[] radiationParametersDrivers;
+
     /** Cross section (m²). */
     private final double crossSection;
 
@@ -53,13 +64,29 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
      * @param cr reflection coefficient
      */
     public IsotropicRadiationSingleCoefficient(final double crossSection, final double cr) {
+        this.radiationParametersDrivers = new ParameterDriver[1];
+        try {
+            radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                                cr, SCALE) {
+                /** {@inheritDoc} */
+                @Override
+                protected void valueChanged(final double newValue) {
+                    IsotropicRadiationSingleCoefficient.this.cr = newValue;
+                }
+            };
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        };
+
         this.crossSection = crossSection;
         this.cr           = cr;
     }
 
     /** {@inheritDoc} */
-    public List<String> getRadiationParametersNames() {
-        return Arrays.asList(REFLECTION_COEFFICIENT);
+    @Override
+    public ParameterDriver[] getRadiationParametersDrivers() {
+        return radiationParametersDrivers.clone();
     }
 
     /** {@inheritDoc} */
@@ -91,37 +118,6 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
 
         return new FieldVector3D<DerivativeStructure>(crDS.multiply(crossSection / mass), flux);
 
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * As there are no absorption coefficients, this method
-     * throws an {@link UnsupportedOperationException}.
-     * </p>
-     */
-    public void setAbsorptionCoefficient(final double value)
-        throws UnsupportedOperationException {
-        throw new UnsupportedOperationException();
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * As there are no absorption coefficients, this method
-     * always returns 0.0.
-     * </p>
-     */
-    public double getAbsorptionCoefficient() {
-        return 0;
-    }
-
-    /** {@inheritDoc} */
-    public void setReflectionCoefficient(final double value) {
-        cr = value;
-    }
-
-    /** {@inheritDoc} */
-    public double getReflectionCoefficient() {
-        return cr;
     }
 
 }

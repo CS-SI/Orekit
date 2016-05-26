@@ -16,19 +16,18 @@
  */
 package org.orekit.forces.drag;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.drag.DragSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 /** This class models isotropic drag effects.
  * <p>The model of this spacecraft is a simple spherical model, this
@@ -42,6 +41,17 @@ import org.orekit.time.AbsoluteDate;
  */
 public class IsotropicDrag implements DragSensitive {
 
+    /** Parameters scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private final double SCALE = FastMath.scalb(1.0, -3);
+
+    /** Drivers for drag coefficient parameter. */
+    private final ParameterDriver[] dragParametersDrivers;
+
     /** Cross section (m²). */
     private final double crossSection;
 
@@ -53,13 +63,28 @@ public class IsotropicDrag implements DragSensitive {
      * @param dragCoeff drag coefficient
      */
     public IsotropicDrag(final double crossSection, final double dragCoeff) {
+        this.dragParametersDrivers     = new ParameterDriver[1];
+        try {
+            dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
+                                                           dragCoeff, SCALE) {
+                /** {@inheritDoc} */
+                @Override
+                protected void valueChanged(final double newValue) {
+                    IsotropicDrag.this.dragCoeff = newValue;
+                }
+            };
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        };
         this.crossSection = crossSection;
         this.dragCoeff    = dragCoeff;
     }
 
     /** {@inheritDoc} */
-    public List<String> getDragParametersNames() {
-        return Arrays.asList(DRAG_COEFFICIENT);
+    @Override
+    public ParameterDriver[] getDragParametersDrivers() {
+        return dragParametersDrivers.clone();
     }
 
     /** {@inheritDoc} */
@@ -94,16 +119,6 @@ public class IsotropicDrag implements DragSensitive {
         return new FieldVector3D<DerivativeStructure>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
                               relativeVelocity);
 
-    }
-
-    /** {@inheritDoc} */
-    public void setDragCoefficient(final double value) {
-        dragCoeff = value;
-    }
-
-    /** {@inheritDoc} */
-    public double getDragCoefficient() {
-        return dragCoeff;
     }
 
 }

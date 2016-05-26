@@ -44,6 +44,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Bridge between {@link Measurement measurements} and {@link
  * org.hipparchus.fitting.leastsquares.LeastSquaresProblem
@@ -57,7 +58,7 @@ class Model implements MultivariateJacobianFunction {
     private final NumericalPropagatorBuilder propagatorBuilder;
 
     /** Estimated propagator parameters. */
-    private final List<ParameterDriver> estimatedPropagatorParameters;
+    private final ParameterDriversList estimatedPropagatorParameters;
 
     /** Dimension of the propagator parameters. */
     private final int propagatorParametersDimension;
@@ -66,7 +67,7 @@ class Model implements MultivariateJacobianFunction {
     private final List<Measurement<?>> measurements;
 
     /** Estimated measurements parameters. */
-    private final List<ParameterDriver> estimatedMeasurementsParameters;
+    private final ParameterDriversList estimatedMeasurementsParameters;
 
     /** Map for measurements parameters columns. */
     private final Map<String, Integer> parameterColumns;
@@ -109,15 +110,15 @@ class Model implements MultivariateJacobianFunction {
      * @param orbitDate orbit date
      * @param observer observer to be notified at model calls
      */
-    Model(final NumericalPropagatorBuilder propagatorBuilder, final List<ParameterDriver> estimatedPropagatorParameters,
-          final List<Measurement<?>> measurements, final List<ParameterDriver> estimatedMeasurementsParameters,
+    Model(final NumericalPropagatorBuilder propagatorBuilder, final ParameterDriversList estimatedPropagatorParameters,
+          final List<Measurement<?>> measurements, final ParameterDriversList estimatedMeasurementsParameters,
           final AbsoluteDate orbitDate, final ModelObserver observer) {
 
         this.propagatorBuilder               = propagatorBuilder;
         this.estimatedPropagatorParameters   = estimatedPropagatorParameters;
         this.measurements                    = measurements;
         this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
-        this.parameterColumns                = new HashMap<String, Integer>(estimatedMeasurementsParameters.size());
+        this.parameterColumns                = new HashMap<String, Integer>(estimatedMeasurementsParameters.getDrivers().size());
         this.evaluations                     = new IdentityHashMap<Measurement<?>, Evaluation<?>>(measurements.size());
         this.orbitDate                       = orbitDate;
         this.observer                        = observer;
@@ -130,16 +131,16 @@ class Model implements MultivariateJacobianFunction {
 
         int columns = 6;
         int countP = 0;
-        for (final ParameterDriver parameter : estimatedPropagatorParameters) {
+        for (final ParameterDriver parameter : estimatedPropagatorParameters.getDrivers()) {
             parameterColumns.put(parameter.getName(), columns);
-            columns += parameter.getDimension();
-            countP  += parameter.getDimension();
+            ++columns;
+            ++countP;
         }
         propagatorParametersDimension = countP;
 
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
+        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
             parameterColumns.put(parameter.getName(), columns);
-            columns += parameter.getDimension();
+            ++columns;
         }
 
         value    = new ArrayRealVector(rows);
@@ -241,12 +242,8 @@ class Model implements MultivariateJacobianFunction {
 
         // set up the measurement parameters
         int index = 6 + propagatorParametersDimension;
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
-            final double[] parameterValue = new double[parameter.getDimension()];
-            for (int i = 0; i < parameterValue.length; ++i) {
-                parameterValue[i] = point.getEntry(index++);
-            }
-            parameter.setValue(parameterValue);
+        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
+            parameter.setNormalizedValue(point.getEntry(index++));
         }
 
         // set up events to handle measurements
@@ -283,7 +280,7 @@ class Model implements MultivariateJacobianFunction {
         final String equationName = Model.class.getName() + "-derivatives";
         final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagator);
         final List<String> freeParameters = new ArrayList<String>();
-        for (final ParameterDriver driver : estimatedPropagatorParameters) {
+        for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
             freeParameters.add(driver.getName());
         }
         partials.selectParameters(freeParameters);
@@ -353,13 +350,11 @@ class Model implements MultivariateJacobianFunction {
         // Jacobian of the measurement with respect to measurements parameters
         final Measurement<?> measurement = evaluation.getMeasurement();
         for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
-            if (parameter.isEstimated()) {
-                final double[][] aMPm = evaluation.getParameterDerivatives(parameter);
+            if (parameter.isSelected()) {
+                final double[] aMPm = evaluation.getParameterDerivatives(parameter);
                 for (int i = 0; i < aMPm.length; ++i) {
-                    for (int j = 0; j < aMPm[i].length; ++j) {
-                        jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()) + j,
-                                          weight[i] * aMPm[i][j] / sigma[i]);
-                    }
+                    jacobian.setEntry(index + i, parameterColumns.get(parameter.getName()),
+                                      weight[i] * aMPm[i] / sigma[i]);
                 }
             }
         }

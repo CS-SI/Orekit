@@ -110,8 +110,8 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                 final NumericalPropagator prop  = builder.buildPropagator(getDate(), arg);
                 final int stateSize = isOnlyPosition() ? 3 : 6;
                 final List<String> freeParameters = new ArrayList<String>();
-                for (final ParameterDriver driver : builder.getParametersDrivers()) {
-                    if (driver.isEstimated()) {
+                for (final ParameterDriver driver : builder.getParametersDrivers().getDrivers()) {
+                    if (driver.isSelected()) {
                         freeParameters.add(driver.getName());
                     }
                 }

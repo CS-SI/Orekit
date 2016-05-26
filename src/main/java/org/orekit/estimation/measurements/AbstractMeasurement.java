@@ -203,9 +203,7 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
         throws OrekitException {
 
         // combine the measurement parameters and the modifier parameters
-        for (final ParameterDriver parameterDriver : modifier.getParametersDrivers()) {
-            parameterDriver.checkAndAddSelf(supportedParameters);
-        }
+        supportedParameters.addAll(modifier.getParametersDrivers());
 
         modifiers.add(modifier);
 

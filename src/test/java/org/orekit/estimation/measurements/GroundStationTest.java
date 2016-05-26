@@ -109,16 +109,18 @@ public class GroundStationTest {
         estimator.setMaxEvaluations(200);
 
         // we want to estimate station offsets
-        moved.getPositionOffsetDriver().setEstimated(true);
+        moved.getEastOffsetDriver().setSelected(true);
+        moved.getNorthOffsetDriver().setSelected(true);
+        moved.getZenithOffsetDriver().setSelected(true);
 
         EstimationTestUtils.checkFit(context, estimator, 3, 4,
                                      0.0, 1.2e-6,
                                      0.0, 2.3e-6,
                                      0.0, 8.8e-7,
                                      0.0, 4.4e-10);
-        Assert.assertEquals(deltaTopo.getX(), moved.getPositionOffsetDriver().getValue()[0], 3.5e-7);
-        Assert.assertEquals(deltaTopo.getY(), moved.getPositionOffsetDriver().getValue()[1], 2.8e-7);
-        Assert.assertEquals(deltaTopo.getZ(), moved.getPositionOffsetDriver().getValue()[2], 1.1e-7);
+        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(), 3.5e-7);
+        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(), 2.8e-7);
+        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 1.1e-7);
 
     }
 
@@ -273,10 +275,20 @@ public class GroundStationTest {
                 public double[][] value(double x) {
                     final double[][] result = new double[4][3];
                     try {
-                        final double[] p = station.getPositionOffsetDriver().getValue();
-                        final double previouspI = p[k];
-                        p[k] += x;
-                        station.getPositionOffsetDriver().setValue(p);
+                        final double previouspI;
+                        switch (k) {
+                            case 0 :
+                                previouspI = station.getEastOffsetDriver().getValue();
+                                station.getEastOffsetDriver().setValue(previouspI + x);
+                                break;
+                            case 1 :
+                                previouspI = station.getNorthOffsetDriver().getValue();
+                                station.getNorthOffsetDriver().setValue(previouspI + x);
+                                break;
+                            default :
+                                previouspI = station.getZenithOffsetDriver().getValue();
+                                station.getZenithOffsetDriver().setValue(previouspI + x);
+                        }
                         Vector3D origin = station.getOffsetFrame().getPVCoordinates(AbsoluteDate.J2000_EPOCH, earth.getFrame()).getPosition();
                         result[0][0] = origin.getX();
                         result[0][1] = origin.getY();
@@ -293,8 +305,16 @@ public class GroundStationTest {
                         result[3][0] = zenith.getX();
                         result[3][1] = zenith.getY();
                         result[3][2] = zenith.getZ();
-                        p[k] = previouspI;
-                        station.getPositionOffsetDriver().setValue(p);
+                        switch (k) {
+                            case 0 :
+                                station.getEastOffsetDriver().setValue(previouspI);
+                                break;
+                            case 1 :
+                                station.getNorthOffsetDriver().setValue(previouspI);
+                                break;
+                            default :
+                                station.getZenithOffsetDriver().setValue(previouspI);
+                        }
                     } catch (OrekitException oe) {
                         Assert.fail(oe.getLocalizedMessage());
                     }
@@ -312,9 +332,9 @@ public class GroundStationTest {
         for (double dEast = -2; dEast <= 2; dEast += 0.5) { 
             for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) { 
                 for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) { 
-                    station.getPositionOffsetDriver().setValue(new double[] {
-                                                                   dEast, dNorth, dZenith         
-                                                               });
+                    station.getEastOffsetDriver().setValue(dEast);
+                    station.getNorthOffsetDriver().setValue(dNorth);
+                    station.getZenithOffsetDriver().setValue(dZenith);
                     OffsetDerivatives od = station.getOffsetDerivatives(parameters, eastIndex, northIndex, zenithIndex);
                     for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
                         DerivativeStructure[][] result = dF[k].value(new DerivativeStructure(1, 1, 0, 0.0));

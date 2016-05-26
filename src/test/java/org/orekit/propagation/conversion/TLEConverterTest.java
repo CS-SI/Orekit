@@ -192,12 +192,12 @@ public class TLEConverterTest {
 
     @Test
     public void testConversionLeoPositionVelocityWithBStar() throws OrekitException {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, false, true, 7.82e-6);
+        checkFit(leoTLE, 86400, 300, 1.0e-3, false, true, 2.26e-7);
     }
 
     @Test
     public void testConversionLeoPositionOnlyWithBStar() throws OrekitException {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 5.79e-7);
+        checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 4.83e-7);
     }
 
     protected void checkFit(final TLE tle,

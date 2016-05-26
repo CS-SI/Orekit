@@ -19,7 +19,6 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +33,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.OrbitValidator;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationsProvider;
@@ -44,6 +42,7 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 
 /** Least squares estimator for orbit determination.
@@ -141,71 +140,25 @@ public class BatchLSEstimator {
         lsBuilder.maxIterations(maxIterations);
     }
 
-    /** Check for parameteres names conflicts.
-     * @exception OrekitException if different parameters have the same name
-     */
-    private void checkParameters() throws OrekitException {
-
-        final Map<String, ParameterDriver> map = new HashMap<String, ParameterDriver>();
-        for (final ParameterDriver parameter : propagatorBuilder.getParametersDrivers()) {
-
-            final ParameterDriver existing = map.get(parameter.getName());
-            if (existing != null) {
-                // the name already exists
-                if (existing != parameter) {
-                    // it is a different parameter with the same name
-                    throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
-                                              parameter.getName());
-                }
-            } else {
-                // it is a new parameter
-                map.put(parameter.getName(), parameter);
-            }
-
-        }
-
-        for (final  Measurement<?> measurement : measurements) {
-            for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
-
-                final ParameterDriver existing = map.get(parameter.getName());
-                if (existing != null) {
-                    // the name already exists
-                    if (existing != parameter) {
-                        // it is a different parameter with the same name
-                        throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
-                                                  parameter.getName());
-                    }
-                } else {
-                    // it is a new parameter
-                    map.put(parameter.getName(), parameter);
-                }
-
-            }
-        }
-
-    }
-
     /** Get the propagator parameters supported by this estimator.
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return propagator parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
      */
-    public List<ParameterDriver> getPropagatorParameters(final boolean estimatedOnly)
+    public ParameterDriversList getPropagatorParameters(final boolean estimatedOnly)
         throws OrekitException {
 
-        final List<ParameterDriver> parameters;
         if (estimatedOnly) {
-            parameters = new ArrayList<ParameterDriver>();
-            for (final ParameterDriver parameterDriver : propagatorBuilder.getParametersDrivers()) {
-                if (parameterDriver.isEstimated()) {
-                    parameterDriver.checkAndAddSelf(parameters);
+            ParameterDriversList estimated = new ParameterDriversList();
+            for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+                if (driver.isSelected()) {
+                    estimated.add(driver);
                 }
             }
+            return estimated;
         } else {
-            parameters = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
+            return propagatorBuilder.getParametersDrivers();
         }
-
-        return parameters;
 
     }
 
@@ -214,21 +167,16 @@ public class BatchLSEstimator {
      * @return measurements parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
      */
-    public List<ParameterDriver> getMeasurementsParameters(final boolean estimatedOnly)
+    public ParameterDriversList getMeasurementsParameters(final boolean estimatedOnly)
         throws OrekitException {
 
-        final List<ParameterDriver> parameters;
-        if (estimatedOnly) {
-            parameters = new ArrayList<ParameterDriver>();
-            for (final  Measurement<?> measurement : measurements) {
-                for (final ParameterDriver parameterDriver : measurement.getParametersDrivers()) {
-                    if (parameterDriver.isEstimated()) {
-                        parameterDriver.checkAndAddSelf(parameters);
-                    }
+        ParameterDriversList parameters =  new ParameterDriversList();
+        for (final  Measurement<?> measurement : measurements) {
+            for (final ParameterDriver driver : measurement.getParametersDrivers()) {
+                if ((!estimatedOnly) || driver.isSelected()) {
+                    parameters.add(driver);
                 }
             }
-        } else {
-            parameters = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
         }
 
         return parameters;
@@ -266,21 +214,16 @@ public class BatchLSEstimator {
      */
     public NumericalPropagator estimate(final Orbit initialGuess) throws OrekitException {
 
-        checkParameters();
-
         // compute problem dimension:
         // orbital parameters + estimated propagator parameters + estimated measurements parameters
         final int                   nbOrbitalParameters      = 6;
-        final List<ParameterDriver> estimatedPropagatorParameters = getPropagatorParameters(true);
-        int dimensionPropagator   = 0;
-        for (final ParameterDriver parameter : estimatedPropagatorParameters) {
-            dimensionPropagator += parameter.getDimension();
-        }
-        final List<ParameterDriver> estimatedMeasurementsParameters = getMeasurementsParameters(true);
+        final ParameterDriversList estimatedPropagatorParameters = getPropagatorParameters(true);
+        final int dimensionPropagator = estimatedPropagatorParameters.getDrivers().size();
+        final ParameterDriversList estimatedMeasurementsParameters = getMeasurementsParameters(true);
         int dimensionMeasurements = 0;
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
-            if (parameter.isEstimated()) {
-                dimensionMeasurements += parameter.getDimension();
+        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
+            if (parameter.isSelected()) {
+                ++dimensionMeasurements;
             }
         }
         final int dimension = nbOrbitalParameters + dimensionPropagator + dimensionMeasurements;
@@ -291,13 +234,11 @@ public class BatchLSEstimator {
                                                          propagatorBuilder.getPositionAngle(),
                                                          start);
         int index = nbOrbitalParameters;
-        for (final ParameterDriver propagatorParameter : estimatedPropagatorParameters) {
-            System.arraycopy(propagatorParameter.getValue(), 0, start, index, propagatorParameter.getDimension());
-            index += propagatorParameter.getDimension();
+        for (final ParameterDriver propagatorParameter : estimatedPropagatorParameters.getDrivers()) {
+            start[index++] = propagatorParameter.getNormalizedValue();
         }
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
-            System.arraycopy(parameter.getValue(), 0, start, index, parameter.getDimension());
-            index += parameter.getDimension();
+        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
+            start[index++] = parameter.getNormalizedValue();
         }
         lsBuilder.start(start);
 

@@ -289,24 +289,24 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private void setFreeParameters(final Iterable<String> freeParameters) throws OrekitException {
 
         // start by setting all parameters as not estimated
-        for (final ParameterDriver driver : builder.getParametersDrivers()) {
-            driver.setEstimated(false);
+        for (final ParameterDriver driver : builder.getParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
         }
 
         // set only the selected parameters as estimated
         for (final String parameter : freeParameters) {
             boolean found = false;
-            for (final ParameterDriver driver : builder.getParametersDrivers()) {
+            for (final ParameterDriver driver : builder.getParametersDrivers().getDrivers()) {
                 if (driver.getName().equals(parameter)) {
                     found = true;
-                    driver.setEstimated(true);
+                    driver.setSelected(true);
                     break;
                 }
             }
             if (!found) {
                 // build the list of supported parameters
                 final StringBuilder sBuilder = new StringBuilder();
-                for (final ParameterDriver driver : builder.getParametersDrivers()) {
+                for (final ParameterDriver driver : builder.getParametersDrivers().getDrivers()) {
                     if (sBuilder.length() > 0) {
                         sBuilder.append(", ");
                     }
@@ -332,9 +332,9 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
         // very rough first guess using osculating parameters of first sample point
         int size = 6;
-        for (final ParameterDriver driver : builder.getParametersDrivers()) {
-            if (driver.isEstimated()) {
-                size += driver.getDimension();
+        for (final ParameterDriver driver : builder.getParametersDrivers().getDrivers()) {
+            if (driver.isSelected()) {
+                ++size;
             }
         }
         final double[] initial = new double[size];
@@ -342,10 +342,10 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                                                builder.getPositionAngle(),
                                                initial);
         int index = 6;
-        for (final ParameterDriver driver : builder.getParametersDrivers()) {
-            if (driver.isEstimated()) {
-                System.arraycopy(driver.getValue(), 0, initial, index, driver.getDimension());
-                index += driver.getDimension();
+        for (final ParameterDriver driver : builder.getParametersDrivers().getDrivers()) {
+            if (driver.isSelected()) {
+                initial[index] = driver.getNormalizedValue();
+                ++index;
             }
         }
 
@@ -380,7 +380,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
             public Pair<RealVector, RealMatrix> value(final RealVector point) {
                 final double[] p = point.toArray();
                 return new Pair<RealVector, RealMatrix>(MatrixUtils.createRealVector(f.value(p)),
-                        MatrixUtils.createRealMatrix(jac.value(p)));
+                                                        MatrixUtils.createRealMatrix(jac.value(p)));
             }
         };
         final LeastSquaresProblem problem = new LeastSquaresBuilder().

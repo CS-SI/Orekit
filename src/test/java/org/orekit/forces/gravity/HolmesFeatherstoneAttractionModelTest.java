@@ -516,7 +516,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        })));
+        }), 1.0));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
@@ -557,7 +557,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         propagator.removeForceModels();
 
         propagator.addForceModel(new CunninghamAttractionModel(itrf,
-                                                               GravityFieldFactory.getUnnormalizedProvider(69, 69)));
+                                                               GravityFieldFactory.getUnnormalizedProvider(69, 69),
+                                                               1.0));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cOrb = propagator.propagate(targetDate);
@@ -587,7 +588,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                                           GravityFieldFactory.getNormalizedProvider(i, i));
             final ForceModel cunninghamModel =
                     new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                                  GravityFieldFactory.getUnnormalizedProvider(i, i));
+                                                  GravityFieldFactory.getUnnormalizedProvider(i, i), 1.0);
             double relativeError = accelerationRelativeError(holmesFeatherstoneModel, cunninghamModel, state);
             Assert.assertEquals(0.0, relativeError, 8.0e-15);
         }

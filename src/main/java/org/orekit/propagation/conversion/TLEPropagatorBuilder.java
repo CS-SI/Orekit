@@ -40,6 +40,14 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
     /** Parameter name for B* coefficient. */
     public static final String B_STAR = "BSTAR";
 
+    /** B* scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -5);
+
     /** Satellite number. */
     private final int satelliteNumber;
 
@@ -96,11 +104,11 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
         this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
         this.bStar                   = 0.0;
         try {
-            addSupportedParameter(new ParameterDriver(B_STAR, new double[1]) {
+            addSupportedParameter(new ParameterDriver(B_STAR, bStar, B_STAR_SCALE) {
                 /** {@inheridDoc} */
                 @Override
-                protected void valueChanged(final double[] newValue) {
-                    TLEPropagatorBuilder.this.bStar = newValue[0];
+                protected void valueChanged(final double newValue) {
+                    TLEPropagatorBuilder.this.bStar = newValue;
                 }
             });
         } catch (OrekitException oe) {
@@ -122,10 +130,9 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
         final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orb);
 
         int index = 6;
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isEstimated()) {
-                driver.setValue(parameters, index);
-                index += driver.getDimension();
+        for (final ParameterDriver driver : getParametersDrivers().getDrivers()) {
+            if (driver.isSelected()) {
+                driver.setNormalizedValue(parameters[index++]);
             }
         }
 

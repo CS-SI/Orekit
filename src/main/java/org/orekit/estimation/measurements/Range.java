@@ -57,7 +57,10 @@ public class Range extends AbstractMeasurement<Range> {
     public Range(final GroundStation station, final AbsoluteDate date,
                  final double range, final double sigma, final double baseWeight)
         throws OrekitException {
-        super(date, range, sigma, baseWeight, station.getPositionOffsetDriver());
+        super(date, range, sigma, baseWeight,
+              station.getEastOffsetDriver(),
+              station.getNorthOffsetDriver(),
+              station.getZenithOffsetDriver());
         this.station = station;
     }
 
@@ -158,7 +161,9 @@ public class Range extends AbstractMeasurement<Range> {
             dRdPx * dt, dRdPy * dt, dRdPz * dt
         });
 
-        if (station.getPositionOffsetDriver().isEstimated()) {
+        if (station.getEastOffsetDriver().isSelected()  |
+            station.getNorthOffsetDriver().isSelected() |
+            station.getZenithOffsetDriver().isSelected()) {
 
             // donwlink partial derivatives
             // with respect to station position in inertial frame
@@ -190,7 +195,15 @@ public class Range extends AbstractMeasurement<Range> {
             // offset parameter is expressed in this frame
             final Vector3D dRdQT = ac.getRotation().applyTo(dRdQI);
 
-            evaluation.setParameterDerivatives(station.getPositionOffsetDriver(), dRdQT.toArray());
+            if (station.getEastOffsetDriver().isSelected()) {
+                evaluation.setParameterDerivatives(station.getEastOffsetDriver(), dRdQT.getX());
+            }
+            if (station.getNorthOffsetDriver().isSelected()) {
+                evaluation.setParameterDerivatives(station.getNorthOffsetDriver(), dRdQT.getY());
+            }
+            if (station.getZenithOffsetDriver().isSelected()) {
+                evaluation.setParameterDerivatives(station.getZenithOffsetDriver(), dRdQT.getZ());
+            }
 
         }
 

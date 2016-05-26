@@ -70,7 +70,9 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getPositionOffsetDriver().setEstimated(true);
+            station.getEastOffsetDriver().setSelected(true);
+            station.getNorthOffsetDriver().setSelected(true);
+            station.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -114,7 +116,9 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getPositionOffsetDriver().setEstimated(true);
+            station.getEastOffsetDriver().setSelected(true);
+            station.getNorthOffsetDriver().setSelected(true);
+            station.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -158,7 +162,9 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getPositionOffsetDriver().setEstimated(true);
+            station.getEastOffsetDriver().setSelected(true);
+            station.getNorthOffsetDriver().setSelected(true);
+            station.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -202,7 +208,9 @@ public class IonoModifierTest {
 
         // create perfect range measurements
         for (final GroundStation station : context.stations) {
-            station.getPositionOffsetDriver().setEstimated(true);
+            station.getEastOffsetDriver().setSelected(true);
+            station.getNorthOffsetDriver().setSelected(true);
+            station.getZenithOffsetDriver().setSelected(true);
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
