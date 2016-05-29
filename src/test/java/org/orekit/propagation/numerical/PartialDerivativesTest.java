@@ -86,7 +86,7 @@ public class PartialDerivativesTest {
                     setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
                 PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
                 final SpacecraftState initialState =
-                        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6, 0);
+                        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
@@ -154,7 +154,7 @@ public class PartialDerivativesTest {
                     setUpPropagator(initialOrbit, dP, orbitType, angleType, gravityField);
                 PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
                 final SpacecraftState initialState =
-                        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6, 0);
+                        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
                 propagator.setInitialState(initialState);
                 final JacobiansMapper mapper = partials.getMapper();
                 PickUpHandler pickUp = new PickUpHandler(mapper, null);
@@ -252,17 +252,12 @@ public class PartialDerivativesTest {
 
         propagator.setAttitudeProvider(law);
         propagator.addForceModel(maneuver);
-
-
+        maneuver.getParameterDriver("thrust").setSelected(true);
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
         PartialDerivativesEquations PDE = new PartialDerivativesEquations("derivatives", propagator);
-        PDE.selectParameters("thrust");
-        Assert.assertEquals(3, PDE.getAvailableParameters().size());
-        Assert.assertEquals("central attraction coefficient", PDE.getAvailableParameters().get(0));
-        Assert.assertEquals("thrust", PDE.getAvailableParameters().get(1));
-        Assert.assertEquals("flow rate", PDE.getAvailableParameters().get(2));
-        propagator.setInitialState(PDE.setInitialJacobians(initialState, 7, 1));
+        Assert.assertEquals(1, PDE.getSelectedParameters().size());
+        propagator.setInitialState(PDE.setInitialJacobians(initialState, 7));
 
         final AbsoluteDate finalDate = fireDate.shiftedBy(3800);
         final SpacecraftState finalorb = propagator.propagate(finalDate);
@@ -329,28 +324,6 @@ public class PartialDerivativesTest {
      }
 
     @Test
-    public void testUnsupportedParameter() throws OrekitException {
-        Orbit initialOrbit =
-                new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
-                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
-                                   Constants.EIGEN5C_EARTH_MU);
-
-        double dP = 0.001;
-        NumericalPropagator propagator =
-                setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE,
-                                new ThirdBodyAttraction(CelestialBodyFactory.getSun()),
-                                new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
-        PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
-        partials.selectParameters("non-existent");
-        try {
-            partials.computeDerivatives(new SpacecraftState(initialOrbit), new double[6]);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
-        }
-    }
-
-    @Test
     public void testWrongParametersDimension() throws OrekitException {
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
@@ -358,15 +331,16 @@ public class PartialDerivativesTest {
                                    Constants.EIGEN5C_EARTH_MU);
 
         double dP = 0.001;
+        ForceModel sunAttraction  = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
+        sunAttraction.getParameterDriver("Sun attraction coefficient").setSelected(true);
+        ForceModel moonAttraction = new ThirdBodyAttraction(CelestialBodyFactory.getMoon());
         NumericalPropagator propagator =
                 setUpPropagator(initialOrbit, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE,
-                                new ThirdBodyAttraction(CelestialBodyFactory.getSun()),
-                                new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
+                                sunAttraction, moonAttraction);
         PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
-        partials.setInitialJacobians(new SpacecraftState(initialOrbit),
-                                     new double[6][6], new double[6][3]);
-        partials.selectParameters("Sun attraction coefficient");
         try {
+            partials.setInitialJacobians(new SpacecraftState(initialOrbit),
+                                         new double[6][6], new double[6][3]);
             partials.computeDerivatives(new SpacecraftState(initialOrbit), new double[6]);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {

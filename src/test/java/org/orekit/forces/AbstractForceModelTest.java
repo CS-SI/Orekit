@@ -133,7 +133,7 @@ public abstract class AbstractForceModelTest {
 
         final String name = "pde";
         PartialDerivativesEquations pde = new PartialDerivativesEquations(name, propagator);
-        propagator.setInitialState(pde.setInitialJacobians(state0, 6, 0));
+        propagator.setInitialState(pde.setInitialJacobians(state0, 6));
         final JacobiansMapper mapper = pde.getMapper();
         final double[][] dYdY0 = new double[6][6];
         propagator.setMasterMode(new OrekitStepHandler() {

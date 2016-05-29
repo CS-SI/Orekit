@@ -149,7 +149,7 @@ public class BatchLSEstimator {
         throws OrekitException {
 
         if (estimatedOnly) {
-            ParameterDriversList estimated = new ParameterDriversList();
+            final ParameterDriversList estimated = new ParameterDriversList();
             for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
                 if (driver.isSelected()) {
                     estimated.add(driver);
@@ -170,7 +170,7 @@ public class BatchLSEstimator {
     public ParameterDriversList getMeasurementsParameters(final boolean estimatedOnly)
         throws OrekitException {
 
-        ParameterDriversList parameters =  new ParameterDriversList();
+        final ParameterDriversList parameters =  new ParameterDriversList();
         for (final  Measurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
                 if ((!estimatedOnly) || driver.isSelected()) {

@@ -39,6 +39,9 @@ import org.orekit.utils.ParameterDriver;
  */
 public class ThirdBodyAttraction extends AbstractForceModel {
 
+    /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
+    public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
+
     /** Central attraction scaling factor.
      * <p>
      * We use a power of 2 to avoid numeric noise introduction
@@ -46,9 +49,6 @@ public class ThirdBodyAttraction extends AbstractForceModel {
      * </p>
      */
     private static final double MU_SCALE = FastMath.scalb(1.0, 32);
-
-    /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
-    public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
 
     /** Drivers for force model parameters. */
     private final ParameterDriver[] parametersDrivers;

@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.analysis.MultivariateMatrixFunction;
@@ -109,16 +108,9 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
 
                 final NumericalPropagator prop  = builder.buildPropagator(getDate(), arg);
                 final int stateSize = isOnlyPosition() ? 3 : 6;
-                final List<String> freeParameters = new ArrayList<String>();
-                for (final ParameterDriver driver : builder.getParametersDrivers().getDrivers()) {
-                    if (driver.isSelected()) {
-                        freeParameters.add(driver.getName());
-                    }
-                }
-                final int paramSize = freeParameters.size();
                 final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
-                pde.selectParameters(freeParameters);
-                prop.setInitialState(pde.setInitialJacobians(prop.getInitialState(), stateSize, paramSize));
+                final List<ParameterDriver> freeParameters = pde.getSelectedParameters();
+                prop.setInitialState(pde.setInitialJacobians(prop.getInitialState(), stateSize));
                 final JacobiansMapper mapper  = pde.getMapper();
                 final JacobianHandler handler = new JacobianHandler(mapper);
                 prop.setMasterMode(handler);
@@ -130,7 +122,9 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                     final double[][] dYdP  = handler.getdYdP();
                     for (int k = 0; k < stateSize; k++, i++) {
                         System.arraycopy(dYdY0[k], 0, jacob[i], 0, stateSize);
-                        System.arraycopy(dYdP[k], 0, jacob[i], stateSize, paramSize);
+                        for (int j = 0; j < freeParameters.size(); ++j) {
+                            jacob[i][stateSize + j] = dYdP[k][j] * freeParameters.get(j).getScale();
+                        }
                     }
                 }
 

@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -56,9 +55,6 @@ class Model implements MultivariateJacobianFunction {
 
     /** Builder for propagator. */
     private final NumericalPropagatorBuilder propagatorBuilder;
-
-    /** Estimated propagator parameters. */
-    private final ParameterDriversList estimatedPropagatorParameters;
 
     /** Dimension of the propagator parameters. */
     private final int propagatorParametersDimension;
@@ -115,7 +111,6 @@ class Model implements MultivariateJacobianFunction {
           final AbsoluteDate orbitDate, final ModelObserver observer) {
 
         this.propagatorBuilder               = propagatorBuilder;
-        this.estimatedPropagatorParameters   = estimatedPropagatorParameters;
         this.measurements                    = measurements;
         this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
         this.parameterColumns                = new HashMap<String, Integer>(estimatedMeasurementsParameters.getDrivers().size());
@@ -279,16 +274,10 @@ class Model implements MultivariateJacobianFunction {
 
         final String equationName = Model.class.getName() + "-derivatives";
         final PartialDerivativesEquations partials = new PartialDerivativesEquations(equationName, propagator);
-        final List<String> freeParameters = new ArrayList<String>();
-        for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
-            freeParameters.add(driver.getName());
-        }
-        partials.selectParameters(freeParameters);
 
         // add the derivatives to the initial state
         final SpacecraftState rawState = propagator.getInitialState();
-        final SpacecraftState stateWithDerivatives =
-                        partials.setInitialJacobians(rawState, 6, propagatorParametersDimension);
+        final SpacecraftState stateWithDerivatives = partials.setInitialJacobians(rawState, 6);
         propagator.resetInitialState(stateWithDerivatives);
 
         mapper = partials.getMapper();

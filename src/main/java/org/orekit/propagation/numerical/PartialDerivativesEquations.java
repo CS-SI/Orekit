@@ -18,11 +18,10 @@ package org.orekit.propagation.numerical;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -45,37 +44,39 @@ import org.orekit.utils.ParameterDriver;
  * in order to compute partial derivatives of the orbit along with the orbit itself. This is
  * useful for example in orbit determination applications.
  * </p>
+ * <p>
+ * The partial derivatives with respect to initial state can be either dimension 6
+ * (orbit only) or 7 (orbit and mass).
+ * </p>
+ * <p>
+ * The partial derivatives with respect to force models parameters has a dimension
+ * equal to the number of selected parameters. Parameters selection is implemented at
+ * {@link ForceModel force models} level. Users must retrieve a {@link ParameterDriver
+ * parameter driver} using {@link ForceModel#getParameterDriver(String)} and then
+ * select it by calling {@link ParameterDriver#setSelected(boolean) setSelected(true)}.
+ * </p>
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class PartialDerivativesEquations implements AdditionalEquations {
 
-    /** Selected parameters for Jacobian computation. */
-    private NumericalPropagator propagator;
+    /** Propagator computing state evolution. */
+    private final NumericalPropagator propagator;
 
-    /** Derivatives providers. */
-    private final List<ForceModel> derivativesProviders;
+    /** Selected parameters for Jacobian computation. */
+    private List<ParameterDriver> selected;
 
     /** Parameters map. */
-    private final Map<String, ForceModel> map;
-
-    /** List of parameters selected for Jacobians computation. */
-    private List<String> selectedParameters;
+    private Map<ParameterDriver, ForceModel> map;
 
     /** Name. */
-    private String name;
+    private final String name;
 
     /** State vector dimension without additional parameters
      * (either 6 or 7 depending on mass derivatives being included or not). */
     private int stateDim;
 
-    /** Parameters vector dimension. */
-    private int paramDim;
-
     /** Step used for finite difference computation with respect to spacecraft position. */
     private double hPos;
-
-    /** Boolean for force models / selected parameters consistency. */
-    private boolean dirty = false;
 
     /** Jacobian of acceleration with respect to spacecraft position. */
     private transient double[][] dAccdPos;
@@ -102,15 +103,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      */
     public PartialDerivativesEquations(final String name, final NumericalPropagator propagator)
         throws OrekitException {
-        this.name = name;
-        derivativesProviders = new ArrayList<ForceModel>();
-        map                  = new HashMap<String, ForceModel>();
-        dirty = true;
+        this.name       = name;
+        this.selected   = null;
+        this.map        = null;
         this.propagator = propagator;
-        selectedParameters = new ArrayList<String>();
-        stateDim = -1;
-        paramDim = -1;
-        hPos     = Double.NaN;
+        this.stateDim   = -1;
+        this.hPos       = Double.NaN;
         propagator.addAdditionalEquations(this);
     }
 
@@ -119,86 +117,133 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         return name;
     }
 
+    /** Freeze the selected parameters from the force models.
+     */
+    private void freezeParametersSelection() {
+        if (selected == null) {
+            // lazy setting of parameters
+            selected = new ArrayList<ParameterDriver>();
+            map      = new HashMap<ParameterDriver, ForceModel>();
+            for (final ForceModel provider : propagator.getForceModels()) {
+                for (final ParameterDriver driver : provider.getParametersDrivers()) {
+                    if (driver.isSelected()) {
+                        selected.add(driver);
+                        map.put(driver, provider);
+                    }
+                }
+            }
+            final ForceModel provider = propagator.getNewtonianAttractionForceModel();
+            for (final ParameterDriver driver : provider.getParametersDrivers()) {
+                if (driver.isSelected()) {
+                    selected.add(driver);
+                    map.put(driver, provider);
+                }
+            }
+        }
+    }
+
+    /** Get the selected parameters, in Jacobian matrix column order.
+     * <p>
+     * The force models parameters for which partial derivatives are desired,
+     * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
+     * before this method is called, so the proper list is returned.
+     * </p>
+     * @return selected parameters, in Jacobian matrix column order
+     */
+    public List<ParameterDriver> getSelectedParameters() {
+        freezeParametersSelection();
+        return Collections.unmodifiableList(selected);
+    }
+
     /** Get the names of the available parameters in the propagator.
      * <p>
      * The names returned depend on the force models set up in the propagator,
      * including the Newtonian attraction from the central body.
      * </p>
      * @return available parameters
+     * @deprecated as of 8.0, this method is not needed anymore, as
+     * parameters selection is performed at force model level
      */
+    @Deprecated
     public List<String> getAvailableParameters() {
         final List<String> available = new ArrayList<String>();
         for (final ParameterDriver driver : propagator.getNewtonianAttractionForceModel().getParametersDrivers()) {
             available.add(driver.getName());
         }
         for (final ForceModel model : propagator.getForceModels()) {
-            for (final ParameterDriver parameterDriver : model.getParametersDrivers()) {
-                available.add(parameterDriver.getName());
+            for (final ParameterDriver driver : model.getParametersDrivers()) {
+                available.add(driver.getName());
             }
         }
         return available;
     }
 
     /** Select the parameters to consider for Jacobian processing.
-     * <p>Parameters names have to be consistent with some
-     * {@link ForceModel} added elsewhere.</p>
+     * <p>This method is deprecated. Starting with version 8.0, parameters
+     * selection is implemented at {@link ForceModel force models} level.</p>
      * @param parameters parameters to consider for Jacobian processing
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
-     * @see ForceModel
-     * @see org.hipparchus.ode.Parameterizable
-
+     * @deprecated as of 8.0, this method is not needed anymore, as
+     * parameters selection is performed at force model level
      */
+    @Deprecated
     public void selectParameters(final Iterable<String> parameters) {
 
-        selectedParameters.clear();
-        for (String param : parameters) {
-            selectedParameters.add(param);
+        // unselect everything
+        for (final ForceModel model : propagator.getForceModels()) {
+            for (final ParameterDriver driver : model.getParametersDrivers()) {
+                driver.setSelected(false);
+            }
         }
 
-        dirty = true;
+        // select the specified parameters
+        for (String param : parameters) {
+            for (final ForceModel model : propagator.getForceModels()) {
+                for (final ParameterDriver driver : model.getParametersDrivers()) {
+                    if (param.equals(driver.getName())) {
+                        driver.setSelected(true);
+                    }
+                }
+            }
+        }
 
     }
 
     /** Select the parameters to consider for Jacobian processing.
-     * <p>Parameters names have to be consistent with some
-     * {@link ForceModel} added elsewhere.</p>
+     * <p>This method is deprecated. Starting with version 8.0, parameters
+     * selection is implemented at {@link ForceModel force models} level.</p>
      * @param parameters parameters to consider for Jacobian processing
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
-     * @see ForceModel
-     * @see org.hipparchus.ode.Parameterizable
-
+     * @deprecated as of 8.0, this method is not needed anymore, as
+     * parameters selection is performed at force model level
      */
+    @Deprecated
     public void selectParameters(final String ... parameters) {
-
-        selectedParameters.clear();
-        for (String param : parameters) {
-            selectedParameters.add(param);
-        }
-
-        dirty = true;
-
+        selectParameters(Arrays.asList(parameters));
     }
 
     /** Select the parameters to consider for Jacobian processing.
-     * <p>Parameters names have to be consistent with some
-     * {@link ForceModel} added elsewhere.</p>
+     * <p>This method is deprecated. Starting with version 8.0, parameters
+     * selection is implemented at {@link ForceModel force models} level.</p>
      * @param parameter parameter to consider for Jacobian processing
      * @param ignored ignored parameter (used to be the step to use for
      * computing Jacobian column using finite differences)
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
-     * @see ForceModel
-     * @see org.hipparchus.ode.Parameterizable
-     * @deprecated as of 8.0, replaced witth either {@link #selectParameters(Iterable)}
-     * or {@link #selectParameters(String...)} as the step size is forced to be the
-     * {@link ParameterDriver#getScale() scale} of the force model {@link ParameterDriver}
+     * @deprecated as of 8.0, this method is not needed anymore, as
+     * parameters selection is performed at force model level
      */
     @Deprecated
-    public void selectParamAndStep(final String parameter, final double hP) {
-        selectedParameters.add(parameter);
-        dirty = true;
+    public void selectParamAndStep(final String parameter, final double ignored) {
+        for (final ForceModel model : propagator.getForceModels()) {
+            for (final ParameterDriver driver : model.getParametersDrivers()) {
+                if (parameter.equals(driver.getName())) {
+                    driver.setSelected(true);
+                }
+            }
+        }
     }
 
     /** Set the initial value of the Jacobian with respect to state and parameter.
@@ -208,23 +253,22 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * to a zero matrix.
      * </p>
      * <p>
-     * The returned state must be added to the propagator (it is not done
-     * automatically, as the user may need to add more states to it).
+     * The force models parameters for which partial derivatives are desired,
+     * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
+     * before this method is called, so proper matrices dimensions are used.
      * </p>
      * @param s0 initial state
      * @param stateDimension state dimension, must be either 6 for orbit only or 7 for orbit and mass
-     * @param paramDimension parameters dimension
      * @return state with initial Jacobians added
      * @exception OrekitException if the partial equation has not been registered in
      * the propagator or if matrices dimensions are incorrect
-     * @see #selectedParameters
-     * @see #selectParameters(Iterable)
-     * @see #selectParameters(String...)
+     * @see #getSelectedParameters()
      */
-    public SpacecraftState setInitialJacobians(final SpacecraftState s0, final int stateDimension, final int paramDimension)
+    public SpacecraftState setInitialJacobians(final SpacecraftState s0, final int stateDimension)
         throws OrekitException {
+        freezeParametersSelection();
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
-        final double[][] dYdP  = new double[stateDimension][paramDimension];
+        final double[][] dYdP  = new double[stateDimension][selected.size()];
         for (int i = 0; i < stateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }
@@ -236,6 +280,12 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * The returned state must be added to the propagator (it is not done
      * automatically, as the user may need to add more states to it).
      * </p>
+     * <p>
+     * The force models parameters for which partial derivatives are desired,
+     * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
+     * before this method is called, and the {@code dY1dP} matrix dimension <em>must</em>
+     * be consistent with the selection.
+     * </p>
      * @param s1 current state
      * @param dY1dY0 Jacobian of current state at time t₁ with respect
      * to state at some previous time t₀ (may be either 6x6 for orbit
@@ -245,26 +295,35 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @return state with initial Jacobians added
      * @exception OrekitException if the partial equation has not been registered in
      * the propagator or if matrices dimensions are incorrect
-     * @see #selectedParameters
-     * @see #selectParameters(Iterable)
-     * @see #selectParameters(String...)
+     * @see #getSelectedParameters()
      */
     public SpacecraftState setInitialJacobians(final SpacecraftState s1,
                                                final double[][] dY1dY0, final double[][] dY1dP)
         throws OrekitException {
 
+        freezeParametersSelection();
+
         // Check dimensions
         stateDim = dY1dY0.length;
-        if ((stateDim < 6) || (stateDim > 7) || (stateDim != dY1dY0[0].length)) {
+        if (stateDim < 6 || stateDim > 7 || stateDim != dY1dY0[0].length) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NEITHER_6X6_NOR_7X7,
                                       stateDim, dY1dY0[0].length);
         }
-        if ((dY1dP != null) && (stateDim != dY1dP.length)) {
+        if (dY1dP != null && stateDim != dY1dP.length) {
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
                                       stateDim, dY1dP.length);
         }
+        if ((dY1dP == null && selected.size() != 0) ||
+            (dY1dP != null && selected.size() != dY1dP[0].length)) {
+            throw new OrekitException(new OrekitException(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
+                                                          dY1dP == null ? 0 : dY1dP[0].length, selected.size()));
+        }
 
-        paramDim = (dY1dP == null) ? 0 : dY1dP[0].length;
+        final int dim = 3;
+        dAccdParam = new double[dim];
+        dAccdPos   = new double[dim][dim];
+        dAccdVel   = new double[dim][dim];
+        dAccdM     = (stateDim > 6) ? new double[dim] : null;
 
         // store the matrices as a single dimension array
         final JacobiansMapper mapper = getMapper();
@@ -287,7 +346,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         if (stateDim < 0) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
-        return new JacobiansMapper(name, stateDim, paramDim,
+        return new JacobiansMapper(name, stateDim, selected,
                                    propagator.getOrbitType(),
                                    propagator.getPositionAngleType());
     }
@@ -296,77 +355,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     public double[] computeDerivatives(final SpacecraftState s, final double[] pDot)
         throws OrekitException {
 
-        final int dim = 3;
-
-        // Lazy initialization
-        if (dirty) {
-
-            // if step has not been set by user, set a default value
-            if (Double.isNaN(hPos)) {
-                hPos = FastMath.sqrt(Precision.EPSILON) * s.getPVCoordinates().getPosition().getNorm();
-            }
-
-             // set up derivatives providers
-            derivativesProviders.clear();
-            derivativesProviders.addAll(propagator.getForceModels());
-            derivativesProviders.add(propagator.getNewtonianAttractionForceModel());
-
-            // clear existing parameters selection at force model parameters drivers level
-            for (final ForceModel provider : derivativesProviders) {
-                for (final ParameterDriver driver : provider.getParametersDrivers()) {
-                    driver.setSelected(false);
-                }
-            }
-
-            // forward parameters selection to force model parameters drivers
-            map.clear();
-            for (final String parameterName : selectedParameters) {
-                boolean found = false;
-                for (final ForceModel provider : derivativesProviders) {
-                    for (final ParameterDriver driver : provider.getParametersDrivers()) {
-                        if (driver.getName().equals(parameterName)) {
-                            map.put(parameterName, provider);
-                            driver.setSelected(true);
-                            found = true;
-                        }
-                    }
-                }
-                if (!found) {
-
-                    // build the list of supported parameters, avoiding duplication
-                    final SortedSet<String> set = new TreeSet<String>();
-                    for (final ForceModel provider : derivativesProviders) {
-                        for (final ParameterDriver parameterDriver : provider.getParametersDrivers()) {
-                            set.add(parameterDriver.getName());
-                        }
-                    }
-                    final StringBuilder builder = new StringBuilder();
-                    for (final String forceModelParameter : set) {
-                        if (builder.length() > 0) {
-                            builder.append(", ");
-                        }
-                        builder.append(forceModelParameter);
-                    }
-
-                    throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                              parameterName, builder.toString());
-
-                }
-            }
-
-            // check the numbers of parameters and matrix size agree
-            if (selectedParameters.size() != paramDim) {
-                throw new OrekitException(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
-                                          paramDim, selectedParameters.size());
-            }
-
-            dAccdParam = new double[dim];
-            dAccdPos   = new double[dim][dim];
-            dAccdVel   = new double[dim][dim];
-            dAccdM     = (stateDim > 6) ? new double[dim] : null;
-
-            dirty = false;
-
+        // if step has not been set by user, set a default value
+        if (Double.isNaN(hPos)) {
+            hPos = FastMath.sqrt(Precision.EPSILON) * s.getPVCoordinates().getPosition().getNorm();
         }
 
         // initialize acceleration Jacobians to zero
@@ -385,15 +376,17 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         // position corresponds three free parameters
         final Vector3D position = s.getPVCoordinates().getPosition();
-        final FieldVector3D<DerivativeStructure> dsP = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(nbVars, 1, 0, position.getX()),
-                                              new DerivativeStructure(nbVars, 1, 1, position.getY()),
-                                              new DerivativeStructure(nbVars, 1, 2, position.getZ()));
+        final FieldVector3D<DerivativeStructure> dsP =
+                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(nbVars, 1, 0, position.getX()),
+                                                               new DerivativeStructure(nbVars, 1, 1, position.getY()),
+                                                               new DerivativeStructure(nbVars, 1, 2, position.getZ()));
 
         // velocity corresponds three free parameters
         final Vector3D velocity = s.getPVCoordinates().getVelocity();
-        final FieldVector3D<DerivativeStructure> dsV = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(nbVars, 1, 3, velocity.getX()),
-                                              new DerivativeStructure(nbVars, 1, 4, velocity.getY()),
-                                              new DerivativeStructure(nbVars, 1, 5, velocity.getZ()));
+        final FieldVector3D<DerivativeStructure> dsV =
+                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(nbVars, 1, 3, velocity.getX()),
+                                                               new DerivativeStructure(nbVars, 1, 4, velocity.getY()),
+                                                               new DerivativeStructure(nbVars, 1, 5, velocity.getZ()));
 
         // mass corresponds either to a constant or to one free parameter
         final DerivativeStructure dsM = (dAccdM == null) ?
@@ -405,20 +398,28 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         final Rotation rotation = s.getAttitude().getRotation();
         final FieldRotation<DerivativeStructure> dsR =
                 new FieldRotation<DerivativeStructure>(new DerivativeStructure(nbVars, 1, rotation.getQ0()),
-                               new DerivativeStructure(nbVars, 1, rotation.getQ1()),
-                               new DerivativeStructure(nbVars, 1, rotation.getQ2()),
-                               new DerivativeStructure(nbVars, 1, rotation.getQ3()),
-                               false);
+                                                       new DerivativeStructure(nbVars, 1, rotation.getQ1()),
+                                                       new DerivativeStructure(nbVars, 1, rotation.getQ2()),
+                                                       new DerivativeStructure(nbVars, 1, rotation.getQ3()),
+                                                       false);
 
         // compute acceleration Jacobians
-        for (final ForceModel derivativesProvider : derivativesProviders) {
+        for (final ForceModel forceModel : propagator.getForceModels()) {
             final FieldVector3D<DerivativeStructure> acceleration =
-                    derivativesProvider.accelerationDerivatives(s.getDate(), s.getFrame(),
-                                                                dsP, dsV, dsR, dsM);
+                            forceModel.accelerationDerivatives(s.getDate(), s.getFrame(),
+                                                               dsP, dsV, dsR, dsM);
             addToRow(acceleration.getX(), 0);
             addToRow(acceleration.getY(), 1);
             addToRow(acceleration.getZ(), 2);
         }
+
+        // finish with the largest force: Newtonian attraction
+        final FieldVector3D<DerivativeStructure> acceleration =
+                        propagator.getNewtonianAttractionForceModel().accelerationDerivatives(s.getDate(), s.getFrame(),
+                                                                                              dsP, dsV, dsR, dsM);
+        addToRow(acceleration.getX(), 0);
+        addToRow(acceleration.getY(), 1);
+        addToRow(acceleration.getZ(), 2);
 
         // the variational equations of the complete state Jacobian matrix have the
         // following form for 7x7, i.e. when mass partial derivatives are also considered
@@ -457,7 +458,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // (A, B, ... I) matrices into the single dimension array p and of the mapping of the
         // (Adot, Bdot, ... Idot) matrices into the single dimension array pDot.
 
-        // copy D, E and F into Adot, Bdot and Cdot
+        final int dim = 3;
+
+       // copy D, E and F into Adot, Bdot and Cdot
         final double[] p = s.getAdditionalState(getName());
         System.arraycopy(p, dim * stateDim, pDot, 0, dim * stateDim);
 
@@ -478,12 +481,13 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             Arrays.fill(pDot, 6 * stateDim, 7 * stateDim, 0.0);
         }
 
+        final int paramDim = selected.size();
         for (int k = 0; k < paramDim; ++k) {
 
             // compute the acceleration gradient with respect to current parameter
-            final String param = selectedParameters.get(k);
-            final ForceModel provider = map.get(param);
-            final FieldVector3D<DerivativeStructure> accDer = provider.accelerationDerivatives(s, param);
+            final ParameterDriver param = selected.get(k);
+            final ForceModel provider   = map.get(param);
+            final FieldVector3D<DerivativeStructure> accDer = provider.accelerationDerivatives(s, param.getName());
             dAccdParam[0] = accDer.getX().getPartialDerivative(1);
             dAccdParam[1] = accDer.getY().getPartialDerivative(1);
             dAccdParam[2] = accDer.getZ().getPartialDerivative(1);
@@ -538,7 +542,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         }
 
-        // these equations have no effect of the main state itself
+        // these equations have no effect on the main state itself
         return null;
 
     }

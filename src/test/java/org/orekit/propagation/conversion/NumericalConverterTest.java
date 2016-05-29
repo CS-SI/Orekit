@@ -56,6 +56,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 public class NumericalConverterTest {
 
@@ -68,6 +69,8 @@ public class NumericalConverterTest {
     private NumericalPropagator propagator;
     private ForceModel gravity;
     private ForceModel drag;
+    private Atmosphere atmosphere;
+    private double crossSection;
 
     @Test
     @Deprecated
@@ -253,8 +256,24 @@ public class NumericalConverterTest {
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                        OrbitType.CARTESIAN, PositionAngle.TRUE);
 
-        builder.addForceModel(drag);
-        builder.addForceModel(gravity);
+        ForceModel guessedDrag = drag;
+        ForceModel guessedGravity = gravity;
+        for (String param: freeParameters) {
+            if (DragSensitive.DRAG_COEFFICIENT.equals(param)) {
+                // we want to adjust drag coefficient, we need to start from  wrong value
+                ParameterDriver driver = drag.getParameterDriver(param);
+                double coeff = driver.getInitialValue() - 0.125 * driver.getScale();
+                guessedDrag = new DragForce(atmosphere, new IsotropicDrag(crossSection, coeff));
+            } else if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(param)) {
+                // we want to adjust mu, we need to start from  wrong value
+                guessedGravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
+                                                                       GravityFieldFactory.getNormalizedProvider(2, 0));
+                ParameterDriver driver = guessedGravity.getParameterDriver(param);
+                driver.setValue(driver.getInitialValue() + 2 * driver.getScale());
+            }
+        }
+        builder.addForceModel(guessedDrag);
+        builder.addForceModel(guessedGravity);
 
         JacobianPropagatorConverter fitter = new JacobianPropagatorConverter(builder,
                                                                              threshold,
@@ -375,9 +394,10 @@ public class NumericalConverterTest {
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         earth.setAngularThreshold(1.e-7);
-        final Atmosphere atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
+        atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
         final double dragCoef = 2.0;
-        drag = new DragForce(atmosphere, new IsotropicDrag(10., dragCoef));
+        crossSection = 10.0;
+        drag = new DragForce(atmosphere, new IsotropicDrag(crossSection, dragCoef));
 
         propagator.addForceModel(gravity);
         propagator.addForceModel(drag);

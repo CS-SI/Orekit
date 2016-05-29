@@ -76,13 +76,20 @@ public class ParameterDriversList {
 
     }
 
+    /** Get the number of parameters with different names.
+     * @return number of parameters with different names
+     */
+    public int getNbParams() {
+        return delegating.size();
+    }
+
     /** Get delegating drivers for all parameters.
      * <p>
      * The delegating drivers are <em>not</em> the same as
      * the drivers added to the list, but they delegate to them.
      * </p>
      * <p>
-     * All delegating drivers manage different parameters.
+     * All delegating drivers manage parameters with different names.
      * </p>
      * <p>
      * The list is in the same order as the calls to the
@@ -124,7 +131,7 @@ public class ParameterDriversList {
             drivers.add(driver);
         }
 
-        /** {@inheridDoc} */
+        /** {@inheritDoc} */
         @Override
         protected void valueChanged(final double newValue)
             throws OrekitException {
@@ -135,7 +142,7 @@ public class ParameterDriversList {
             }
         }
 
-        /** {@inheridDoc} */
+        /** {@inheritDoc} */
         @Override
         public void setSelected(final boolean selected) {
             super.setSelected(selected);
