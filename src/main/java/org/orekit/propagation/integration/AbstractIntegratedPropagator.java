@@ -638,6 +638,22 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Differential equations for the main state (orbit, attitude and mass). */
     public interface MainStateEquations {
 
+        /**
+         * Initialize the equations at the start of propagation. This method will be
+         * called before any calls to {@link #computeDerivatives(SpacecraftState)}.
+         *
+         * <p> The default implementation of this method does nothing.
+         *
+         * @param initialState initial state information at the start of propagation.
+         * @param target       date of propagation. Not equal to {@code
+         *                     initialState.getDate()}.
+         * @throws OrekitException if there is an Orekit related error during
+         *                         initialization.
+         */
+        default void init(SpacecraftState initialState, AbsoluteDate target)
+                throws OrekitException {
+        }
+
         /** Compute differential equations for main state.
          * @param state current state
          * @return derivatives of main state
@@ -664,6 +680,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public int getDimension() {
             return getBasicDimension();
+        }
+
+        @Override
+        public void init(final double t0, final double[] y0, final double finalTime) {
+            try {
+                // update space dynamics view
+                // use only ODE elements
+                SpacecraftState initialState = stateMapper.mapArrayToState(t0, y0, true);
+                initialState = updateAdditionalStates(initialState);
+                final AbsoluteDate target = stateMapper.mapDoubleToDate(finalTime);
+                main.init(initialState, target);
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
         }
 
         /** {@inheritDoc} */
