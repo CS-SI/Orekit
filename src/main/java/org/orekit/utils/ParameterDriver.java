@@ -87,7 +87,7 @@ public abstract class ParameterDriver {
         this.value        = initialValue;
         this.selected    = false;
 
-        // ensure the physical model known about the initial value
+        // ensure the physical model knows about the initial value
         valueChanged(this.value);
 
     }

@@ -54,7 +54,7 @@ public class OsculatingToMeanElementsConverterTest {
         final NumericalPropagator prop = new NumericalPropagator(integrator);
         prop.setInitialState(initialState);
 
-        final OsculatingToMeanElementsConverter converter = new OsculatingToMeanElementsConverter(initialState, 2, prop);
+        final OsculatingToMeanElementsConverter converter = new OsculatingToMeanElementsConverter(initialState, 2, prop, 1.0);
         final SpacecraftState meanOrbit = converter.convert();
 
         final double eps  = 1.e-15;

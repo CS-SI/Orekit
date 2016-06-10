@@ -36,7 +36,7 @@ public class IodLambertTest {
         final Frame frame = context.initialOrbit.getFrame();
         
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
         
         // create perfect range measurements

@@ -18,7 +18,6 @@ package org.orekit.propagation.numerical;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +35,8 @@ import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -55,6 +56,16 @@ import org.orekit.utils.ParameterDriver;
  * parameter driver} using {@link ForceModel#getParameterDriver(String)} and then
  * select it by calling {@link ParameterDriver#setSelected(boolean) setSelected(true)}.
  * </p>
+ * <p>
+ * If several force models provide different {@link ParameterDriver drivers} for the
+ * same parameter name, selecting any of these drivers has the side effect of
+ * selecting all the drivers for this shared parameter. In this case, the partial
+ * derivatives will be the sum of the partial derivatives contributed by the
+ * corresponding force models. This case typically arises for central attraction
+ * coefficient, which has an influence on {@link org.orekit.forces.gravity.NewtonianAttraction
+ * Newtonian attraction}, {@link org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel
+ * gravity field}, and {@link org.orekit.forces.gravity.Relativity relativity}.
+ * </p>
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class PartialDerivativesEquations implements AdditionalEquations {
@@ -63,7 +74,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     private final NumericalPropagator propagator;
 
     /** Selected parameters for Jacobian computation. */
-    private List<ParameterDriver> selected;
+    private ParameterDriversList selected;
 
     /** Parameters map. */
     private Map<ParameterDriver, ForceModel> map;
@@ -118,27 +129,45 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** Freeze the selected parameters from the force models.
+     * @exception OrekitException if an existing driver for a
+     * parameter throws one when its value is reset using the value
+     * from another driver managing the same parameter
      */
-    private void freezeParametersSelection() {
+    private void freezeParametersSelection()
+        throws OrekitException {
         if (selected == null) {
-            // lazy setting of parameters
-            selected = new ArrayList<ParameterDriver>();
+
+            // first pass, gather all parameters, binding together similar names
+            final ParameterDriversList bound = new ParameterDriversList();
             map      = new HashMap<ParameterDriver, ForceModel>();
+
+            // we start with Newtonian attraction, because it is sometimes uninitialized
+            // and has a mu set to NaN. In this case, the other force models added
+            // later on will update the mu value to something more realistic
+            final ForceModel newton = propagator.getNewtonianAttractionForceModel();
+            for (final ParameterDriver driver : newton.getParametersDrivers()) {
+                map.put(driver, newton);
+                bound.add(driver);
+            }
+
             for (final ForceModel provider : propagator.getForceModels()) {
                 for (final ParameterDriver driver : provider.getParametersDrivers()) {
-                    if (driver.isSelected()) {
+                    map.put(driver, provider);
+                    bound.add(driver);
+                }
+            }
+
+            // second pass, now that shared parameter names are bound together,
+            // we can check the selection status as it has been synchronized
+            selected = new ParameterDriversList();
+            for (final DelegatingDriver delegating : bound.getDrivers()) {
+                if (delegating.isSelected()) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
                         selected.add(driver);
-                        map.put(driver, provider);
                     }
                 }
             }
-            final ForceModel provider = propagator.getNewtonianAttractionForceModel();
-            for (final ParameterDriver driver : provider.getParametersDrivers()) {
-                if (driver.isSelected()) {
-                    selected.add(driver);
-                    map.put(driver, provider);
-                }
-            }
+
         }
     }
 
@@ -149,10 +178,14 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * before this method is called, so the proper list is returned.
      * </p>
      * @return selected parameters, in Jacobian matrix column order
+     * @exception OrekitException if an existing driver for a
+     * parameter throws one when its value is reset using the value
+     * from another driver managing the same parameter
      */
-    public List<ParameterDriver> getSelectedParameters() {
+    public ParameterDriversList getSelectedParameters()
+        throws OrekitException {
         freezeParametersSelection();
-        return Collections.unmodifiableList(selected);
+        return selected;
     }
 
     /** Get the names of the available parameters in the propagator.
@@ -268,7 +301,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         throws OrekitException {
         freezeParametersSelection();
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
-        final double[][] dYdP  = new double[stateDimension][selected.size()];
+        final double[][] dYdP  = new double[stateDimension][selected.getNbParams()];
         for (int i = 0; i < stateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }
@@ -313,10 +346,10 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
                                       stateDim, dY1dP.length);
         }
-        if ((dY1dP == null && selected.size() != 0) ||
-            (dY1dP != null && selected.size() != dY1dP[0].length)) {
+        if ((dY1dP == null && selected.getNbParams() != 0) ||
+            (dY1dP != null && selected.getNbParams() != dY1dP[0].length)) {
             throw new OrekitException(new OrekitException(OrekitMessages.INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH,
-                                                          dY1dP == null ? 0 : dY1dP[0].length, selected.size()));
+                                                          dY1dP == null ? 0 : dY1dP[0].length, selected.getNbParams()));
         }
 
         final int dim = 3;
@@ -481,16 +514,20 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             Arrays.fill(pDot, 6 * stateDim, 7 * stateDim, 0.0);
         }
 
-        final int paramDim = selected.size();
+        final int paramDim = selected.getNbParams();
         for (int k = 0; k < paramDim; ++k) {
 
             // compute the acceleration gradient with respect to current parameter
-            final ParameterDriver param = selected.get(k);
-            final ForceModel provider   = map.get(param);
-            final FieldVector3D<DerivativeStructure> accDer = provider.accelerationDerivatives(s, param.getName());
-            dAccdParam[0] = accDer.getX().getPartialDerivative(1);
-            dAccdParam[1] = accDer.getY().getPartialDerivative(1);
-            dAccdParam[2] = accDer.getZ().getPartialDerivative(1);
+            final ParameterDriversList.DelegatingDriver delegating = selected.getDrivers().get(k);
+            dAccdParam[0] = 0.0;
+            dAccdParam[1] = 0.0;
+            dAccdParam[2] = 0.0;
+            for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                final FieldVector3D<DerivativeStructure> accDer = map.get(driver).accelerationDerivatives(s, driver.getName());
+                dAccdParam[0] += accDer.getX().getPartialDerivative(1);
+                dAccdParam[1] += accDer.getY().getPartialDerivative(1);
+                dAccdParam[2] += accDer.getZ().getPartialDerivative(1);
+            }
 
             // the variational equations of the parameters Jacobian matrix are computed
             // one column at a time, they have the following form:

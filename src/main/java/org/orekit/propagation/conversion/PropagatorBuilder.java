@@ -16,17 +16,12 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 /** This interface is the top-level abstraction to build propagators for conversion.
@@ -36,27 +31,17 @@ import org.orekit.utils.ParameterDriversList;
 public interface PropagatorBuilder {
 
     /** Build a propagator.
-     * @param date date associated to the parameters to configure the initial state
-     * @param parameters set of position/velocity(/free) parameters to configure the propagator
+     * @param normalizedParameters normalized values for the selected parameters
      * @return an initialized propagator
      * @exception OrekitException if propagator cannot be build
      */
-    Propagator buildPropagator(final AbsoluteDate date, final double[] parameters)
+    Propagator buildPropagator(final double[] normalizedParameters)
         throws OrekitException;
 
-    /** Build an initial orbit.
-     * <p>
-     * This method is a stripped down version of {@link #buildPropagator(AbsoluteDate, double[])}
-     * that only builds the initial orbit and not the full propagator.
-     * </p>
-     * @param date date associated to the parameters to configure the initial state
-     * @param parameters set of position/velocity(/free) parameters to configure the propagator
-     * @return an initialized propagator
-     * @exception OrekitException if orbit cannot be build
-     * @since 7.1
+    /** Get the current value of selected normalized parameters.
+     * @return current value of selected normalized parameters
      */
-    Orbit createInitialOrbit(final AbsoluteDate date, final double[] parameters)
-        throws OrekitException;
+    double[] getSelectedNormalizedParameters();
 
     /** Get the orbit type expected for the 6 first parameters in
      * {@link #buildPropagator(AbsoluteDate, double[])}.
@@ -76,65 +61,29 @@ public interface PropagatorBuilder {
      */
     PositionAngle getPositionAngle();
 
+    /** Get the date of the initial orbit.
+     * @return date of the initial orbit
+     */
+    AbsoluteDate getInitialOrbitDate();
+
     /** Get the frame in which the orbit is propagated.
      * @return frame in which the orbit is propagated
      */
     Frame getFrame();
 
-    /** Get the drivers for the configurable parameters.
-     * @return drivers for the configurable parameters
+    /** Get the drivers for the configurable orbital parameters.
+     * @return drivers for the configurable orbital parameters
      * @since 8.0
      */
-    ParameterDriversList getParametersDrivers();
+    ParameterDriversList getOrbitalParametersDrivers();
 
-    /** Set the free parameters in order to build the propagator.
+    /** Get the drivers for the configurable propagation parameters.
      * <p>
-     * The parameters must belong to the list returned by {@link #getSupportedParameters()}
+     * The parameters typically correspond to force models.
      * </p>
-     * @param parameters free parameters to set when building the propagator
-     * @exception OrekitIllegalArgumentException if one of the parameters is not supported
-     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
-     * {@link ParameterDriver#setSelected(boolean)}
+     * @return drivers for the configurable propagation parameters
+     * @since 8.0
      */
-    @Deprecated
-    void setFreeParameters(List<String> parameters)
-        throws OrekitIllegalArgumentException;
-
-    /** Get the names of the supported parameters.
-     * @return parameters names
-     * @since 7.1
-     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()}
-     */
-    @Deprecated
-    List<String> getSupportedParameters();
-
-    /** Get the free parameters used to build the propagator.
-     * @return free parameters used when building the propagator
-     * @since 7.1
-     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
-     * {@link ParameterDriver#isSelected()}
-     */
-    @Deprecated
-    List<String> getFreeParameters();
-
-    /** Get parameter value from its name.
-     * @param name parameter name
-     * @return parameter value
-     * @exception OrekitIllegalArgumentException if parameter is not supported
-     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
-     * {@link ParameterDriver#getValue()}
-     */
-    @Deprecated
-    double getParameter(String name) throws OrekitIllegalArgumentException;
-
-    /** Set parameter value from its name.
-     * @param name parameter name
-     * @param value parameter value
-     * @exception OrekitIllegalArgumentException if parameter is not supported
-     * @deprecated as of 8.0, replaced with {@link #getParametersDrivers()} and
-     * {@link ParameterDriver#setValue(double[])}
-     */
-    @Deprecated
-    void setParameter(String name, double value) throws OrekitIllegalArgumentException;
+    ParameterDriversList getPropagationParametersDrivers();
 
 }

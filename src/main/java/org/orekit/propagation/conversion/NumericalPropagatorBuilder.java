@@ -23,14 +23,11 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Builder for numerical propagator.
@@ -52,19 +49,28 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
     private AttitudeProvider attProvider;
 
     /** Build a new instance.
-     * @param mu central attraction coefficient (m³/s²)
-     * @param frame the frame in which the orbit is propagated
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * <p>
+     * The reference orbit is used as a model to {@link
+     * #createInitialOrbit(AbsoluteDate, double[]) create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, and is also used together
+     * with the {@code positionScale} to convert from the {@link
+     * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
+     * callers of this builder to the real orbital parameters.
+     * </p>
+     * @param referenceOrbit reference orbit from which real orbits will be built
      * @param builder first order integrator builder
-     * @param orbitType orbit type to use
      * @param positionAngle position angle type to use
-     * @since 7.1
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @exception OrekitException if parameters drivers cannot be scaled
+     * @since 8.0
      */
-    public NumericalPropagatorBuilder(final double mu,
-                                      final Frame frame,
+    public NumericalPropagatorBuilder(final Orbit referenceOrbit,
                                       final ODEIntegratorBuilder builder,
-                                      final OrbitType orbitType, final PositionAngle positionAngle) {
-        super(frame, mu, orbitType, positionAngle);
+                                      final PositionAngle positionAngle,
+                                      final double positionScale)
+        throws OrekitException {
+        super(referenceOrbit, positionAngle, positionScale);
         this.builder     = builder;
         this.forceModels = new ArrayList<ForceModel>();
         this.mass        = Propagator.DEFAULT_MASS;
@@ -100,24 +106,15 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public NumericalPropagator buildPropagator(final AbsoluteDate date, final double[] parameters)
+    public NumericalPropagator buildPropagator(final double[] normalizedParameters)
         throws OrekitException {
 
-        checkParameters(parameters);
-        final Orbit orb = createInitialOrbit(date, parameters);
+        setParameters(normalizedParameters);
+        final Orbit           orbit    = createInitialOrbit();
+        final Attitude        attitude = attProvider.getAttitude(orbit, orbit.getDate(), getFrame());
+        final SpacecraftState state    = new SpacecraftState(orbit, attitude, mass);
 
-        final Attitude attitude = attProvider.getAttitude(orb, date, getFrame());
-
-        final SpacecraftState state = new SpacecraftState(orb, attitude, mass);
-
-        int index = 6;
-        for (final ParameterDriver driver : getParametersDrivers().getDrivers()) {
-            if (driver.isSelected()) {
-                driver.setNormalizedValue(parameters[index++]);
-            }
-        }
-
-        final NumericalPropagator propagator = new NumericalPropagator(builder.buildIntegrator(orb, getOrbitType()));
+        final NumericalPropagator propagator = new NumericalPropagator(builder.buildIntegrator(orbit, getOrbitType()));
         propagator.setOrbitType(getOrbitType());
         propagator.setPositionAngleType(getPositionAngle());
         propagator.setAttitudeProvider(attProvider);

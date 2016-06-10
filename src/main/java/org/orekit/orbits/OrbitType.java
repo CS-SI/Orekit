@@ -16,6 +16,9 @@
  */
 package org.orekit.orbits;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
@@ -63,6 +66,11 @@ public enum OrbitType {
 
         }
 
+        /** {@inheritDoc} */
+        public List<String> parametersNames(final PositionAngle type) {
+            return Arrays.asList(POS_X, POS_Y, POS_Z, VEL_X, VEL_Y, VEL_Z);
+        }
+
     },
 
     /** Type for propagation in {@link CircularOrbit circular parameters}. */
@@ -94,6 +102,16 @@ public enum OrbitType {
             return new CircularOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
                                      stateVector[4], stateVector[5], type,
                                      frame, date, mu);
+        }
+
+        /** {@inheritDoc} */
+        public List<String> parametersNames(final PositionAngle type) {
+            return Arrays.asList(A, E_X, E_Y, INC, RAAN,
+                                 type == PositionAngle.MEAN ?
+                                     MEAN_LAT_ARG :
+                                     type == PositionAngle.ECCENTRIC ?
+                                         ECC_LAT_ARG :
+                                         TRUE_LAT_ARG);
         }
 
     },
@@ -130,6 +148,16 @@ public enum OrbitType {
                                         frame, date, mu);
         }
 
+        /** {@inheritDoc} */
+        public List<String> parametersNames(final PositionAngle type) {
+            return Arrays.asList(A, E_X, E_Y, H_X, H_Y,
+                                 type == PositionAngle.MEAN ?
+                                     MEAN_LON_ARG :
+                                     type == PositionAngle.ECCENTRIC ?
+                                         ECC_LON_ARG :
+                                         TRUE_LON_ARG);
+        }
+
     },
 
     /** Type for propagation in {@link KeplerianOrbit Keplerian parameters}. */
@@ -164,7 +192,89 @@ public enum OrbitType {
                                       frame, date, mu);
         }
 
+        /** {@inheritDoc} */
+        public List<String> parametersNames(final PositionAngle type) {
+            return Arrays.asList(A, ECC, INC, PA, RAAN,
+                                 type == PositionAngle.MEAN ?
+                                     MEAN_ANOM :
+                                     type == PositionAngle.ECCENTRIC ?
+                                         ECC_ANOM :
+                                         TRUE_ANOM);
+        }
+
     };
+
+    /** Name for position along X. */
+    private static final String POS_X = "Px";
+
+    /** Name for position along Y. */
+    private static final String POS_Y = "Py";
+
+    /** Name for position along Z. */
+    private static final String POS_Z = "Pz";
+
+    /** Name for velocity along X. */
+    private static final String VEL_X = "Vx";
+
+    /** Name for velocity along Y. */
+    private static final String VEL_Y = "Vy";
+
+    /** Name for velocity along Z. */
+    private static final String VEL_Z = "Vz";
+
+    /** Name for semi major axis. */
+    private static final String A     = "a";
+
+    /** Name for eccentricity. */
+    private static final String ECC   = "e";
+
+    /** Name for eccentricity vector first component. */
+    private static final String E_X   = "ex";
+
+    /** Name for eccentricity vector second component. */
+    private static final String E_Y   = "ey";
+
+    /** Name for inclination. */
+    private static final String INC   = "i";
+
+    /** Name for inclination vector first component. */
+    private static final String H_X   = "hx";
+
+    /** Name for inclination vector second component . */
+    private static final String H_Y   = "hy";
+
+    /** Name for perigee argument. */
+    private static final String PA    = "ω";
+
+    /** Name for right ascension of ascending node. */
+    private static final String RAAN    = "Ω";
+
+    /** Name for mean anomaly. */
+    private static final String MEAN_ANOM = "M";
+
+    /** Name for eccentric anomaly. */
+    private static final String ECC_ANOM  = "E";
+
+    /** Name for mean anomaly. */
+    private static final String TRUE_ANOM = "v";
+
+    /** Name for mean argument of latitude. */
+    private static final String MEAN_LAT_ARG = "αM";
+
+    /** Name for eccentric argument of latitude. */
+    private static final String ECC_LAT_ARG  = "αE";
+
+    /** Name for mean argument of latitude. */
+    private static final String TRUE_LAT_ARG = "αv";
+
+    /** Name for mean argument of longitude. */
+    private static final String MEAN_LON_ARG = "λM";
+
+    /** Name for eccentric argument of longitude. */
+    private static final String ECC_LON_ARG  = "λE";
+
+    /** Name for mean argument of longitude. */
+    private static final String TRUE_LON_ARG = "λv";
 
     /** Convert an orbit to the instance type.
      * <p>
@@ -207,5 +317,16 @@ public enum OrbitType {
      */
     public abstract Orbit mapArrayToOrbit(double[] array, PositionAngle type,
                                           AbsoluteDate date, double mu, Frame frame);
+
+    /** Get the names of the parameters.
+     * <p>
+     * These names are suitable for text displaying, they are short (one or two letters).
+     * Beware some names include unicode greek letters, they cannot be displayed in ASCII,
+     * UTF-8 is recommended for display.
+     * </p>
+     * @param type type of the angle
+     * @return names of the parameters
+     */
+    public abstract List<String> parametersNames(final PositionAngle type);
 
 }

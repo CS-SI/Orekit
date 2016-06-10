@@ -16,15 +16,18 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.analysis.MultivariateMatrixFunction;
 import org.hipparchus.analysis.MultivariateVectorFunction;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
+import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Propagator converter using finite differences to compute the jacobian.
  * @author Pascal Parraud
@@ -53,7 +56,7 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
     }
 
     /** {@inheritDoc} */
-    protected MultivariateMatrixFunction getObjectiveFunctionJacobian() {
+    protected MultivariateJacobianFunction getModel() {
         return new ObjectiveFunctionJacobian();
     }
 
@@ -64,11 +67,14 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
         public double[] value(final double[] arg)
             throws IllegalArgumentException, OrekitExceptionWrapper {
             try {
-                final Propagator propagator = builder.buildPropagator(getDate(), arg);
+                final Propagator propagator = builder.buildPropagator(arg);
                 final double[] eval = new double[getTargetSize()];
                 int k = 0;
                 for (SpacecraftState state : getSample()) {
                     final PVCoordinates pv = propagator.getPVCoordinates(state.getDate(), getFrame());
+                    if (Double.isNaN(pv.getMomentum().getNorm())) {
+                        propagator.getPVCoordinates(state.getDate(), getFrame());
+                    }
                     eval[k++] = pv.getPosition().getX();
                     eval[k++] = pv.getPosition().getY();
                     eval[k++] = pv.getPosition().getZ();
@@ -88,32 +94,43 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
     }
 
     /** Internal class for computing position/velocity Jacobian at sample points. */
-    private class ObjectiveFunctionJacobian implements MultivariateMatrixFunction {
+    private class ObjectiveFunctionJacobian implements MultivariateJacobianFunction {
 
         /** {@inheritDoc} */
-        public double[][] value(final double[] arg)
+        public Pair<RealVector, RealMatrix> value(final RealVector point)
             throws IllegalArgumentException, OrekitExceptionWrapper {
 
+            final double[] arg = point.toArray();
             final MultivariateVectorFunction f = new ObjectiveFunction();
+
+            final double[] increment = new double[arg.length];
+            int index = 0;
+            for (final ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
+                if (driver.isSelected()) {
+                    increment[index++] = driver.getScale();
+                }
+            }
+            for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
+                if (driver.isSelected()) {
+                    increment[index++] = driver.getScale();
+                }
+            }
 
             final double[][] jacob = new double[getTargetSize()][arg.length];
             final double[] eval = f.value(arg);
             final double[] arg1 = new double[arg.length];
-            double increment = 0;
             for (int j = 0; j < arg.length; j++) {
                 System.arraycopy(arg, 0, arg1, 0, arg.length);
-                increment = FastMath.sqrt(Precision.EPSILON) * FastMath.abs(arg[j]);
-                if (increment <= Precision.SAFE_MIN) {
-                    increment = FastMath.sqrt(Precision.EPSILON);
-                }
-                arg1[j] += increment;
+                arg1[j] += increment[j];
                 final double[] eval1 = f.value(arg1);
                 for (int t = 0; t < eval.length; t++) {
-                    jacob[t][j] = (eval1[t] - eval[t]) / increment;
+                    jacob[t][j] = (eval1[t] - eval[t]) / increment[j];
                 }
             }
 
-            return jacob;
+            return new Pair<RealVector, RealMatrix>(MatrixUtils.createRealVector(eval),
+                                                    MatrixUtils.createRealMatrix(jacob));
+
         }
 
     }

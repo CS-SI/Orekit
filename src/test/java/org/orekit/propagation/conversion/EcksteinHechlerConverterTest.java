@@ -17,25 +17,20 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -44,8 +39,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class EcksteinHechlerConverterTest {
 
@@ -53,100 +48,13 @@ public class EcksteinHechlerConverterTest {
     private UnnormalizedSphericalHarmonicsProvider provider;
 
     @Test
-    @Deprecated
-    public void testDeprecatedWrongParametersSize() throws OrekitException {
-        try {
-            PropagatorBuilder builder =
-                            new EcksteinHechlerPropagatorBuilder(orbit.getFrame(), provider,
-                                                                 OrbitType.CIRCULAR, PositionAngle.TRUE);
-            final List<String> empty = Collections.emptyList();
-            builder.setFreeParameters(empty);
-            builder.buildPropagator(orbit.getDate(), new double[3]);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, oiae.getSpecifier());
-            Assert.assertEquals(3, ((Integer) oiae.getParts()[0]).intValue());
-            Assert.assertEquals(6, ((Integer) oiae.getParts()[1]).intValue());
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedNotSupportedParameterFree() throws OrekitException {
-        final String name = "not-supported-parameter";
-        try {
-            PropagatorBuilder builder =
-                            new EcksteinHechlerPropagatorBuilder(orbit.getFrame(), provider,
-                                                                 OrbitType.CIRCULAR, PositionAngle.TRUE);
-            builder.setFreeParameters(Arrays.asList(name));
-            builder.buildPropagator(orbit.getDate(), new double[3]);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
-            Assert.assertEquals(name, oiae.getParts()[0]);
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedNotSupportedParameterGet() throws OrekitException {
-        final String name = "not-supported-parameter";
-        try {
-            PropagatorBuilder builder =
-                            new EcksteinHechlerPropagatorBuilder(orbit.getFrame(), provider,
-                                                                 OrbitType.CIRCULAR, PositionAngle.TRUE);
-            builder.getParameter(name);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
-            Assert.assertEquals(name, oiae.getParts()[0]);
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedNotSupportedParameterSet() throws OrekitException {
-        final String name = "not-supported-parameter";
-        try {
-            PropagatorBuilder builder =
-                            new EcksteinHechlerPropagatorBuilder(orbit.getFrame(), provider,
-                                                                 OrbitType.CIRCULAR, PositionAngle.TRUE);
-            builder.setParameter(name, 0.0);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
-            Assert.assertEquals(name, oiae.getParts()[0]);
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedSupportedParameters() {
-        PropagatorBuilder builder =
-                        new EcksteinHechlerPropagatorBuilder(orbit.getFrame(), provider,
-                                                             OrbitType.CIRCULAR, PositionAngle.TRUE);
-        List<String> supported = builder.getSupportedParameters();
-        Assert.assertEquals(1, supported.size());
-        Assert.assertEquals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                            supported.get(0));
-        Assert.assertEquals(provider.getMu(),
-                            builder.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
-                            1.0e-5);
-        builder.setParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                             Constants.JPL_SSD_MARS_SYSTEM_GM);
-        Assert.assertEquals(Constants.JPL_SSD_MARS_SYSTEM_GM,
-                            builder.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
-                            1.0e-5);
-    }
-
-    @Test
     public void testConversionPositionVelocity() throws OrekitException {
-        checkFit(orbit, 86400, 300, 1.0e-3, false, 2.13e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, false, 1.699e-8);
     }
 
     @Test
     public void testConversionPositionOnly() throws OrekitException {
-        checkFit(orbit, 86400, 300, 1.0e-3, true, 3.55e-8);
+        checkFit(orbit, 86400, 300, 1.0e-3, true, 6.405e-8);
     }
 
     protected void checkFit(final Orbit orbit,
@@ -157,14 +65,21 @@ public class EcksteinHechlerConverterTest {
                             final double expectedRMS)
         throws OrekitException {
 
-        Propagator p = new EcksteinHechlerPropagator(orbit, provider);
+        // shift position by 3m
+        CircularOrbit modified = new CircularOrbit(new TimeStampedPVCoordinates(orbit.getDate(),
+                                                                                new Vector3D(1, orbit.getPVCoordinates().getPosition(),
+                                                                                             3.0, Vector3D.PLUS_J),
+                                                                                orbit.getPVCoordinates().getVelocity()),
+                                                   orbit.getFrame(),
+                                                   orbit.getMu());
+        Propagator p = new EcksteinHechlerPropagator(modified, provider);
         List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
         for (double dt = 0; dt < duration; dt += stepSize) {
-            sample.add(p.propagate(orbit.getDate().shiftedBy(dt)));
+            sample.add(p.propagate(modified.getDate().shiftedBy(dt)));
         }
 
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(orbit.getDate());
-        PropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(p.getFrame(),
+        PropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(orbit,
                                                                          provider.getAe(),
                                                                          provider.getMu(),
                                                                          provider.getTideSystem(),
@@ -174,7 +89,8 @@ public class EcksteinHechlerConverterTest {
                                                                          harmonics.getUnnormalizedCnm(5, 0),
                                                                          harmonics.getUnnormalizedCnm(6, 0),
                                                                          OrbitType.CIRCULAR,
-                                                                         PositionAngle.TRUE);
+                                                                         PositionAngle.TRUE,
+                                                                         1.0);
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder,
                                                                                              threshold,
@@ -188,25 +104,25 @@ public class EcksteinHechlerConverterTest {
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double eps = 1.0e-12;
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
+        Assert.assertEquals(modified.getPVCoordinates().getPosition().getX(),
                             fitted.getPVCoordinates().getPosition().getX(),
-                            eps * orbit.getPVCoordinates().getPosition().getX());
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
+                            eps * modified.getPVCoordinates().getPosition().getX());
+        Assert.assertEquals(modified.getPVCoordinates().getPosition().getY(),
                             fitted.getPVCoordinates().getPosition().getY(),
-                            eps * orbit.getPVCoordinates().getPosition().getY());
-        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
+                            eps * modified.getPVCoordinates().getPosition().getY());
+        Assert.assertEquals(modified.getPVCoordinates().getPosition().getZ(),
                             fitted.getPVCoordinates().getPosition().getZ(),
-                            eps * orbit.getPVCoordinates().getPosition().getZ());
+                            eps * modified.getPVCoordinates().getPosition().getZ());
 
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
+        Assert.assertEquals(modified.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),
-                            eps * orbit.getPVCoordinates().getVelocity().getX());
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getY(),
+                            eps * modified.getPVCoordinates().getVelocity().getX());
+        Assert.assertEquals(modified.getPVCoordinates().getVelocity().getY(),
                             fitted.getPVCoordinates().getVelocity().getY(),
-                            -eps * orbit.getPVCoordinates().getVelocity().getY());
-        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getZ(),
+                            -eps * modified.getPVCoordinates().getVelocity().getY());
+        Assert.assertEquals(modified.getPVCoordinates().getVelocity().getZ(),
                             fitted.getPVCoordinates().getVelocity().getZ(),
-                            -eps * orbit.getPVCoordinates().getVelocity().getZ());
+                            -eps * modified.getPVCoordinates().getVelocity().getZ());
 
     }
 

@@ -65,7 +65,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -111,7 +111,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -146,7 +146,7 @@ public class IonoModifierTest {
 
             final double diffMetersSec = eval.getValue()[0] - evalNoMod.getValue()[0];
             // TODO: check threshold
-            Assert.assertEquals(0.0, diffMetersSec, 0.015);
+            Assert.assertEquals(0.0, diffMetersSec, 0.016);
 
         }
     }
@@ -157,7 +157,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements
@@ -203,7 +203,7 @@ public class IonoModifierTest {
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect range measurements

@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
@@ -98,12 +99,14 @@ public class ParameterDriversList {
      * </p>
      * @return list of delegating drivers
      */
-    public List<? extends ParameterDriver> getDrivers() {
+    public List<DelegatingDriver> getDrivers() {
         return delegating;
     }
 
-    /** Specialized driver delegating to several other. */
-    private static class DelegatingDriver extends ParameterDriver {
+    /** Specialized driver delegating to several other managing
+     * the same parameter name.
+     */
+    public static class DelegatingDriver extends ParameterDriver {
 
         /** Drivers managing the same parameter. */
         private final List<ParameterDriver> drivers;
@@ -124,11 +127,20 @@ public class ParameterDriversList {
          * @param driver driver to add
          * @exception OrekitException if an existing drivers cannot be set to the same value
          */
-        public void add(final ParameterDriver driver)
+        private void add(final ParameterDriver driver)
             throws OrekitException {
+
             setValue(driver.getValue());
-            setSelected(driver.isSelected());
+
+            // if any of the drivers is selected, all must be selected
+            if (isSelected()) {
+                driver.setSelected(true);
+            } else {
+                setSelected(driver.isSelected());
+            }
+
             drivers.add(driver);
+
         }
 
         /** {@inheritDoc} */
@@ -151,6 +163,16 @@ public class ParameterDriversList {
                     driver.setSelected(selected);
                 }
             }
+        }
+
+        /** Get the raw drivers to which this one delegates.
+         * <p>
+         * These raw drivers all manage the same parameter name.
+         * </p>
+         * @return raw drivers to which this one delegates
+         */
+        public List<ParameterDriver> getRawDrivers() {
+            return Collections.unmodifiableList(drivers);
         }
 
     }

@@ -140,6 +140,28 @@ public class BatchLSEstimator {
         lsBuilder.maxIterations(maxIterations);
     }
 
+    /** Get the orbital parameters supported by this estimator.
+     * @param estimatedOnly if true, only estimated parameters are returned
+     * @return orbital parameters supported by this estimator
+     * @exception OrekitException if different parameters have the same name
+     */
+    public ParameterDriversList getOrbitalParameters(final boolean estimatedOnly)
+        throws OrekitException {
+
+        if (estimatedOnly) {
+            final ParameterDriversList estimated = new ParameterDriversList();
+            for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+                if (driver.isSelected()) {
+                    estimated.add(driver);
+                }
+            }
+            return estimated;
+        } else {
+            return propagatorBuilder.getOrbitalParametersDrivers();
+        }
+
+    }
+
     /** Get the propagator parameters supported by this estimator.
      * @param estimatedOnly if true, only estimated parameters are returned
      * @return propagator parameters supported by this estimator
@@ -150,14 +172,14 @@ public class BatchLSEstimator {
 
         if (estimatedOnly) {
             final ParameterDriversList estimated = new ParameterDriversList();
-            for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+            for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
                 if (driver.isSelected()) {
                     estimated.add(driver);
                 }
             }
             return estimated;
         } else {
-            return propagatorBuilder.getParametersDrivers();
+            return propagatorBuilder.getPropagationParametersDrivers();
         }
 
     }
@@ -206,39 +228,31 @@ public class BatchLSEstimator {
      * The estimated parameters are available using {@link #getPropagatorParameters(boolean)}
      * and {@link #getMeasurementsParameters(boolean)}.
      * </p>
-     * @param initialGuess initial guess for the orbit
      * @return propagator configured with estimated orbit as initial state, and all
      * propagator estimated parameters also set
      * @exception OrekitException if there is a conflict in parameters names
      * or if orbit cannot be determined
      */
-    public NumericalPropagator estimate(final Orbit initialGuess) throws OrekitException {
+    public NumericalPropagator estimate() throws OrekitException {
 
-        // compute problem dimension:
-        // orbital parameters + estimated propagator parameters + estimated measurements parameters
-        final int                   nbOrbitalParameters      = 6;
-        final ParameterDriversList estimatedPropagatorParameters = getPropagatorParameters(true);
-        final int dimensionPropagator = estimatedPropagatorParameters.getDrivers().size();
+        // get all estimated parameters
+        final ParameterDriversList estimatedOrbitalParameters      = getOrbitalParameters(true);
+        final ParameterDriversList estimatedPropagatorParameters   = getPropagatorParameters(true);
         final ParameterDriversList estimatedMeasurementsParameters = getMeasurementsParameters(true);
-        int dimensionMeasurements = 0;
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
-            if (parameter.isSelected()) {
-                ++dimensionMeasurements;
-            }
-        }
-        final int dimension = nbOrbitalParameters + dimensionPropagator + dimensionMeasurements;
 
         // create start point
-        final double[] start = new double[dimension];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(initialGuess,
-                                                         propagatorBuilder.getPositionAngle(),
-                                                         start);
-        int index = nbOrbitalParameters;
-        for (final ParameterDriver propagatorParameter : estimatedPropagatorParameters.getDrivers()) {
-            start[index++] = propagatorParameter.getNormalizedValue();
+        final double[] start = new double[estimatedOrbitalParameters.getNbParams() +
+                                          estimatedPropagatorParameters.getNbParams() +
+                                          estimatedMeasurementsParameters.getNbParams()];
+        int iStart = 0;
+        for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
+            start[iStart++] = driver.getNormalizedValue();
         }
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
-            start[index++] = parameter.getNormalizedValue();
+        for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
+            start[iStart++] = driver.getNormalizedValue();
+        }
+        for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+            start[iStart++] = driver.getNormalizedValue();
         }
         lsBuilder.start(start);
 
@@ -262,9 +276,8 @@ public class BatchLSEstimator {
                 BatchLSEstimator.this.evaluations = newEvaluations;
             }
         };
-        final Model model = new Model(propagatorBuilder, estimatedPropagatorParameters,
-                                      measurements, estimatedMeasurementsParameters,
-                                      initialGuess.getDate(), modelObserver);
+        final Model model = new Model(propagatorBuilder, measurements, estimatedMeasurementsParameters,
+                                      modelObserver);
         lsBuilder.model(model);
 
         // add a validator for orbital parameters
@@ -302,7 +315,7 @@ public class BatchLSEstimator {
             // solve the problem
             optimizer.optimize(new TappedLSProblem(lsBuilder.build(), model));
 
-            // create a new configured propagtor with all estimated parameters
+            // create a new configured propagator with all estimated parameters
             return model.createPropagator(lspEvaluation.getPoint());
 
         } catch (MathRuntimeException mrte) {

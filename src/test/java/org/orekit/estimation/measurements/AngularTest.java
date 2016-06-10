@@ -44,7 +44,7 @@ public class AngularTest {
         Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
         
         // create perfect azimuth-elevation measurements
@@ -135,7 +135,7 @@ public class AngularTest {
         //System.out.println("Ecart median Azimuth/dP : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(AzerrorsP) + "\n");
         Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 5.0e-6);
         //System.out.println("Ecart median Azimuth/dV : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(AzerrorsV) + "\n");
-        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.0e-5);
+        Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.3e-5);
 
         // median errors on Elevation
         //System.out.println("Ecart median Elevation/dP : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(ElerrorsP) + "\n");
@@ -150,7 +150,7 @@ public class AngularTest {
         Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect azimuth-elevation measurements

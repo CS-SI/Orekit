@@ -32,11 +32,17 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.drag.DragForce;
+import org.orekit.forces.drag.DragSensitive;
+import org.orekit.forces.drag.HarrisPriester;
+import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -62,11 +68,111 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 public class PartialDerivativesTest {
 
     @Test
-    public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
+    public void testDragParametersDerivatives() throws OrekitException, ParseException, IOException {
+        doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.5e-3);
+    }
+
+    @Test
+    public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
+        doTestParametersDerivatives(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 3e-5);
+    }
+
+    private void doTestParametersDerivatives(String parameterName, double tolerance)
+        throws OrekitException {
+
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        ForceModel drag = new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(), earth),
+                                        new IsotropicDrag(2.5, 1.2));
+
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        ForceModel gravityField =
+            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
+        Orbit initialOrbit =
+                new KeplerianOrbit(7000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
+                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                   provider.getMu());
+
+        double dt = 900;
+        double dP = 1.0;
+        for (OrbitType orbitType : OrbitType.values()) {
+            for (PositionAngle angleType : PositionAngle.values()) {
+
+                NumericalPropagator propagator =
+                    setUpPropagator(initialOrbit, dP, orbitType, angleType, drag, gravityField);
+                for (final ForceModel forceModel : propagator.getForceModels()) {
+                    for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
+                        driver.setValue(driver.getInitialValue());
+                        driver.setSelected(driver.getName().equals(parameterName));
+                    }
+                }
+                ParameterDriver muDriver = propagator.getNewtonianAttractionForceModel().
+                                           getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+                muDriver.setValue(muDriver.getInitialValue());
+                muDriver.setSelected(muDriver.getName().equals(parameterName));
+
+                PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
+                final SpacecraftState initialState =
+                        partials.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
+                propagator.setInitialState(initialState);
+                final JacobiansMapper mapper = partials.getMapper();
+                PickUpHandler pickUp = new PickUpHandler(mapper, null);
+                propagator.setMasterMode(pickUp);
+                propagator.propagate(initialState.getDate().shiftedBy(dt));
+                double[][] dYdP = pickUp.getdYdP();
+
+                // compute reference Jacobian using finite differences
+                double[][] dYdPRef = new double[6][1];
+                AbstractIntegratedPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, angleType,
+                                                                           drag, gravityField);
+                ParameterDriver selected = partials.getSelectedParameters().getDrivers().get(0);
+                double p0 = selected.getInitialValue();
+                double h  = selected.getScale();
+                propagator2.resetInitialState(new SpacecraftState(initialOrbit));
+                selected.setValue(p0 - 4 * h);
+                SpacecraftState sM4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+                propagator2.resetInitialState(new SpacecraftState(initialOrbit));
+                selected.setValue(p0 - 3 * h);
+                SpacecraftState sM3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+                propagator2.resetInitialState(new SpacecraftState(initialOrbit));
+                selected.setValue(p0 - 2 * h);
+                SpacecraftState sM2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+                propagator2.resetInitialState(new SpacecraftState(initialOrbit));
+                selected.setValue(p0 - 1 * h);
+                SpacecraftState sM1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+                propagator2.resetInitialState(new SpacecraftState(initialOrbit));
+                selected.setValue(p0 + 1 * h);
+                SpacecraftState sP1h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+                propagator2.resetInitialState(new SpacecraftState(initialOrbit));
+                selected.setValue(p0 + 2 * h);
+                SpacecraftState sP2h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+                propagator2.resetInitialState(new SpacecraftState(initialOrbit));
+                selected.setValue(p0 + 3 * h);
+                SpacecraftState sP3h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+                propagator2.resetInitialState(new SpacecraftState(initialOrbit));
+                selected.setValue(p0 + 4 * h);
+                SpacecraftState sP4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
+                fillJacobianColumn(dYdPRef, 0, orbitType, angleType, h,
+                                   sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
+
+                for (int i = 0; i < 6; ++i) {
+                    double error = FastMath.abs((dYdP[i][0] - dYdPRef[i][0]) / dYdPRef[i][0]);
+                    Assert.assertEquals(0, error, tolerance);
+                }
+
+            }
+        }
+
+    }
+
+    @Test
+    public void testPropagationTypesElliptical() throws OrekitException {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
@@ -133,7 +239,7 @@ public class PartialDerivativesTest {
     }
 
     @Test
-    public void testPropagationTypesHyperbolic() throws OrekitException, ParseException, IOException {
+    public void testPropagationTypesHyperbolic() throws OrekitException {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
@@ -247,16 +353,13 @@ public class PartialDerivativesTest {
         integrator.setInitialStepSize(60);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
 
-
-
-
         propagator.setAttitudeProvider(law);
         propagator.addForceModel(maneuver);
         maneuver.getParameterDriver("thrust").setSelected(true);
 
         propagator.setOrbitType(OrbitType.CARTESIAN);
         PartialDerivativesEquations PDE = new PartialDerivativesEquations("derivatives", propagator);
-        Assert.assertEquals(1, PDE.getSelectedParameters().size());
+        Assert.assertEquals(1, PDE.getSelectedParameters().getNbParams());
         propagator.setInitialState(PDE.setInitialJacobians(initialState, 7));
 
         final AbsoluteDate finalDate = fireDate.shiftedBy(3800);
@@ -502,6 +605,10 @@ public class PartialDerivativesTest {
 
         public double[][] getdYdY0() {
             return dYdY0;
+        }
+
+        public double[][] getdYdP() {
+            return dYdP;
         }
 
         public void init(SpacecraftState s0, AbsoluteDate t) {

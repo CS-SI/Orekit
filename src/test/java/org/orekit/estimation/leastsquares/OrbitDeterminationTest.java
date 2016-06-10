@@ -409,7 +409,7 @@ public class OrbitDeterminationTest {
             estimator.addMeasurement(measurement);
         }
 
-        Orbit estimated = estimator.estimate(initialGuess).getInitialState().getOrbit();
+        Orbit estimated = estimator.estimate().getInitialState().getOrbit();
 
         // compute some statistics
         for (final Map.Entry<Measurement<?>, Evaluation<?>> entry : estimator.getLastEvaluations().entrySet()) {
@@ -502,11 +502,10 @@ public class OrbitDeterminationTest {
         }
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        new NumericalPropagatorBuilder(gravityField.getMu(),
-                                                       orbit.getFrame(),
+                        new NumericalPropagatorBuilder(orbit,
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       orbit.getType(),
-                                                       PositionAngle.MEAN);
+                                                       PositionAngle.MEAN,
+                                                       dP);
 
         // initial mass
         final double mass;
@@ -575,7 +574,7 @@ public class OrbitDeterminationTest {
             Atmosphere atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), body);
             propagatorBuilder.addForceModel(new DragForce(atmosphere, new IsotropicDrag(area, cd)));
             if (cdEstimated) {
-                for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+                for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
                     if (driver.getName().equals(DragSensitive.DRAG_COEFFICIENT)) {
                         driver.setSelected(true);
                     }
@@ -593,7 +592,7 @@ public class OrbitDeterminationTest {
                                                                        body.getEquatorialRadius(),
                                                                        new IsotropicRadiationSingleCoefficient(area, cr)));
             if (cREstimated) {
-                for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+                for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
                     if (driver.getName().equals(RadiationSensitive.REFLECTION_COEFFICIENT)) {
                         driver.setSelected(true);
                     }

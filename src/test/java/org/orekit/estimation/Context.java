@@ -18,6 +18,7 @@ package org.orekit.estimation;
 
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.GeodeticPoint;
@@ -28,6 +29,7 @@ import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -36,6 +38,7 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.TimeScale;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 
 public class Context {
     public IERSConventions                      conventions;
@@ -50,15 +53,31 @@ public class Context {
     public Orbit                                initialOrbit;
     public List<GroundStation>                  stations;
 
-    public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType,
-                                                    final PositionAngle positionAngle,
+    public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
+                                                    final boolean perfectStart,
                                                     final double minStep, final double maxStep, final double dP,
                                                     final Force ... forces)
         throws OrekitException {
+
+        final Orbit startOrbit;
+        if (perfectStart) {
+            // orbit estimation will start from a perfect orbit
+            startOrbit = initialOrbit;
+        } else {
+            // orbit estimation will start from a wrong point
+            final Vector3D initialPosition = initialOrbit.getPVCoordinates().getPosition();
+            final Vector3D initialVelocity = initialOrbit.getPVCoordinates().getVelocity();
+            final Vector3D wrongPosition   = initialPosition.add(new Vector3D(1000.0, 0, 0));
+            final Vector3D wrongVelocity   = initialVelocity.add(new Vector3D(0, 0, 0.01));
+            startOrbit                     = new CartesianOrbit(new PVCoordinates(wrongPosition, wrongVelocity),
+                                                                initialOrbit.getFrame(),
+                                                                initialOrbit.getDate(),
+                                                                initialOrbit.getMu());
+        }
         final NumericalPropagatorBuilder propagatorBuilder =
-                        new NumericalPropagatorBuilder(gravity.getMu(), initialOrbit.getFrame(),
+                        new NumericalPropagatorBuilder(orbitType.convertType(startOrbit),
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
-                                                       orbitType, positionAngle);
+                                                       positionAngle, dP);
         for (Force force : forces) {
             propagatorBuilder.addForceModel(force.getForceModel(this));
         }
@@ -68,7 +87,7 @@ public class Context {
     }
 
     GroundStation createStation(double latitudeInDegrees, double longitudeInDegrees,
-                                        double altitude, String name)
+                                double altitude, String name)
         throws OrekitException {
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(latitudeInDegrees),
                                                    FastMath.toRadians(longitudeInDegrees),

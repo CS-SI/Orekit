@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.util.List;
-
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.QRDecomposition;
@@ -27,7 +25,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
  * SpacecraftState#getAdditionalState(String) additional state arrays}.
@@ -51,7 +49,7 @@ public class JacobiansMapper {
     private final int stateDimension;
 
     /** Selected parameters for Jacobian computation. */
-    private final List<ParameterDriver> parameters;
+    private final ParameterDriversList parameters;
 
     /** Orbit type. */
     private final OrbitType orbitType;
@@ -67,7 +65,7 @@ public class JacobiansMapper {
      * @param orbitType orbit type
      * @param angleType position angle type
      */
-    JacobiansMapper(final String name, final int stateDimension, final List<ParameterDriver> parameters,
+    JacobiansMapper(final String name, final int stateDimension, final ParameterDriversList parameters,
                     final OrbitType orbitType, final PositionAngle angleType) {
         this.name           = name;
         this.stateDimension = stateDimension;
@@ -87,7 +85,7 @@ public class JacobiansMapper {
      * @return length of the one-dimensional additional state array
      */
     public int getAdditionalStateDimension() {
-        return stateDimension * (stateDimension + parameters.size());
+        return stateDimension * (stateDimension + parameters.getNbParams());
     }
 
     /** Get the state vector dimension.
@@ -101,7 +99,7 @@ public class JacobiansMapper {
      * @return number of parameters
      */
     public int getParameters() {
-        return parameters.size();
+        return parameters.getNbParams();
     }
 
     /** Get the conversion Jacobian between state parameters and Cartesian parameters.
@@ -157,14 +155,14 @@ public class JacobiansMapper {
             }
         }
 
-        if (!parameters.isEmpty()) {
+        if (parameters.getNbParams() != 0) {
             // convert the provided state Jacobian to Cartesian parameters
             final RealMatrix dC1dP = solver.solve(new Array2DRowRealMatrix(dY1dP, false));
 
             // map the converted parameters Jacobian to one-dimensional array
             for (int i = 0; i < stateDimension; ++i) {
-                for (int j = 0; j < parameters.size(); ++j) {
-                    p[index++] = dC1dP.getEntry(i, j) / parameters.get(j).getScale();
+                for (int j = 0; j < parameters.getNbParams(); ++j) {
+                    p[index++] = dC1dP.getEntry(i, j);
                 }
             }
         }
@@ -224,7 +222,7 @@ public class JacobiansMapper {
     public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
         throws OrekitException {
 
-        if (!parameters.isEmpty()) {
+        if (parameters.getNbParams() != 0) {
 
             // get the conversion Jacobian between state parameters and Cartesian parameters
             final double[][] dYdC = getdYdC(state);
@@ -236,14 +234,14 @@ public class JacobiansMapper {
             for (int i = 0; i < stateDimension; i++) {
                 final double[] rowC = dYdC[i];
                 final double[] rowD = dYdP[i];
-                for (int j = 0; j < parameters.size(); ++j) {
+                for (int j = 0; j < parameters.getNbParams(); ++j) {
                     double sum = 0;
                     int pIndex = j + stateDimension * stateDimension;
                     for (int k = 0; k < stateDimension; ++k) {
                         sum += rowC[k] * p[pIndex];
-                        pIndex += parameters.size();
+                        pIndex += parameters.getNbParams();
                     }
-                    rowD[j] = sum * parameters.get(j).getScale();
+                    rowD[j] = sum;
                 }
             }
 

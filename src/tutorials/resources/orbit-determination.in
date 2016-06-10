@@ -267,8 +267,8 @@ PV.measurements.velocity.sigma                  = 0.01
 ## Estimator
 estimator.rms.absolute.convergence.threshold = 1.0e-15
 estimator.rms.relative.convergence.threshold = 1.0e-15
-estimator.max.iterations                     = 10
-estimator.max.evaluations                  = 20
+estimator.max.iterations                     = 20
+estimator.max.evaluations                    = 50
 
 # comma-separated list of measurements files (in the same directory as this file)
 measurements.files = W3B.aer

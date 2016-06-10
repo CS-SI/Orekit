@@ -306,7 +306,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           40000, tolerances[0], 2.0e-7);
+                           40000, tolerances[0], 7.9e-6);
 
     }
 

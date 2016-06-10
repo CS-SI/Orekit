@@ -64,7 +64,7 @@ public class NewtonianAttraction extends AbstractForceModel {
                 /** {@inheritDoc} */
                 @Override
                 protected void valueChanged(final double newValue) {
-                    NewtonianAttraction.this.mu = newValue;
+                                        NewtonianAttraction.this.mu = newValue;
                 }
             };
         } catch (OrekitException oe) {

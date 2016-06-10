@@ -46,7 +46,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -189,7 +188,7 @@ public class EstimationTestUtils {
 
         final int nbOrbitalParameters = 6;
         int dimension = nbOrbitalParameters;
-        for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+        for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 ++dimension;
             }
@@ -200,7 +199,7 @@ public class EstimationTestUtils {
                                                          propagatorBuilder.getPositionAngle(),
                                                          parameters);
         int index = nbOrbitalParameters;
-        for (final ParameterDriver driver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+        for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 parameters[index++] = driver.getNormalizedValue();
             }
@@ -209,7 +208,7 @@ public class EstimationTestUtils {
                                                          propagatorBuilder.getPositionAngle(),
                                                          parameters);
 
-        return propagatorBuilder.buildPropagator(initialOrbit.getDate(), parameters);
+        return propagatorBuilder.buildPropagator(parameters);
 
     }
 
@@ -237,16 +236,7 @@ public class EstimationTestUtils {
                                 final double expectedDeltaVel, final double velEps)
         throws OrekitException {
 
-        // estimate orbit, starting from a wrong point
-        final Vector3D initialPosition = context.initialOrbit.getPVCoordinates().getPosition();
-        final Vector3D initialVelocity = context.initialOrbit.getPVCoordinates().getVelocity();
-        final Vector3D wrongPosition   = initialPosition.add(new Vector3D(1000.0, 0, 0));
-        final Vector3D wrongVelocity   = initialVelocity.add(new Vector3D(0, 0, 0.01));
-        final Orbit   wrongOrbit       = new CartesianOrbit(new PVCoordinates(wrongPosition, wrongVelocity),
-                                                            context.initialOrbit.getFrame(),
-                                                            context.initialOrbit.getDate(),
-                                                            context.initialOrbit.getMu());
-        final Orbit estimatedOrbit = estimator.estimate(wrongOrbit).getInitialState().getOrbit();
+        final Orbit estimatedOrbit = estimator.estimate().getInitialState().getOrbit();
         final Vector3D estimatedPosition = estimatedOrbit.getPVCoordinates().getPosition();
         final Vector3D estimatedVelocity = estimatedOrbit.getPVCoordinates().getVelocity();
 
@@ -279,10 +269,10 @@ public class EstimationTestUtils {
                             max,
                             maxEps);
         Assert.assertEquals(expectedDeltaPos,
-                            Vector3D.distance(initialPosition, estimatedPosition),
+                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getPosition(), estimatedPosition),
                             posEps);
         Assert.assertEquals(expectedDeltaVel,
-                            Vector3D.distance(initialVelocity, estimatedVelocity),
+                            Vector3D.distance(context.initialOrbit.getPVCoordinates().getVelocity(), estimatedVelocity),
                             velEps);
 
     }

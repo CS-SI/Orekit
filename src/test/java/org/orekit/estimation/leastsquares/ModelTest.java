@@ -50,7 +50,7 @@ public class ModelTest {
         final Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect PV measurements
@@ -84,14 +84,13 @@ public class ModelTest {
             }
         };
         final ParameterDriversList estimatedPropagatorParameters = new ParameterDriversList();
-        for (final ParameterDriver parameterDriver : propagatorBuilder.getParametersDrivers().getDrivers()) {
+        for (final ParameterDriver parameterDriver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
             if (parameterDriver.isSelected()) {
                 estimatedPropagatorParameters.add(parameterDriver);
             }
         }
-        final Model model = new Model(propagatorBuilder, estimatedPropagatorParameters,
-                                      measurements, measurementsParameters,
-                                      context.initialOrbit.getDate(), modelObserver);
+        final Model model = new Model(propagatorBuilder, measurements, measurementsParameters,
+                                      modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
 
@@ -116,7 +115,7 @@ public class ModelTest {
 
         // allocate vector
         int dimension = 6;
-        for (final ParameterDriver parameter : propagatorBuilder.getParametersDrivers().getDrivers()) {
+        for (final ParameterDriver parameter : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
             if (parameter.isSelected()) {
                 ++dimension;
             }
@@ -140,7 +139,7 @@ public class ModelTest {
         }
 
         // propagator parameters
-        for (final ParameterDriver propagatorParameter : propagatorBuilder.getParametersDrivers().getDrivers()) {
+        for (final ParameterDriver propagatorParameter : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
             if (propagatorParameter.isSelected()) {
                 point.setEntry(index++, propagatorParameter.getValue());
             }
