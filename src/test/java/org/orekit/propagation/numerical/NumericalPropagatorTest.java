@@ -477,7 +477,7 @@ public class NumericalPropagatorTest {
         newPropagator.setOrbitType(type);
         newPropagator.setPositionAngleType(angle);
         newPropagator.setInitialState(state);
-        for (ForceModel force: propagator.getForceModels()) {
+        for (ForceModel force: propagator.getAllForceModels()) {
             newPropagator.addForceModel(force);
         }
         return newPropagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();

@@ -34,6 +34,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class implements a simple maneuver with constant thrust.
  * <p>The maneuver is defined by a direction in satellite frame.
@@ -118,20 +119,22 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
         this.parametersDrivers = new ParameterDriver[2];
         try {
-            parametersDrivers[0] = new ParameterDriver(THRUST, thrust, THRUST_SCALE) {
+            parametersDrivers[0] = new ParameterDriver(THRUST, thrust, THRUST_SCALE, 1);
+            parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    ConstantThrustManeuver.this.thrust = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    ConstantThrustManeuver.this.thrust = driver.getValue();
                 }
-            };
-            parametersDrivers[1] = new ParameterDriver(FLOW_RATE, flowRate, FLOW_RATE_SCALE) {
+            });
+            parametersDrivers[1] = new ParameterDriver(FLOW_RATE, flowRate, FLOW_RATE_SCALE, 1);
+            parametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    ConstantThrustManeuver.this.flowRate = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    ConstantThrustManeuver.this.flowRate = driver.getValue();
                 }
-            };
+            });
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);

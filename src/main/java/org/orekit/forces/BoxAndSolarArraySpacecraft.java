@@ -35,6 +35,7 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** experimental class representing the features of a classical satellite
  * with a convex body shape and rotating flat solar arrays.
@@ -170,41 +171,44 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final double absorptionCoeff,
                                       final double reflectionCoeff) {
 
-        this.dragParametersDrivers     = new ParameterDriver[1];
+        this.dragParametersDrivers      = new ParameterDriver[1];
         this.radiationParametersDrivers = new ParameterDriver[2];
         try {
             dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                           dragCoeff, SCALE) {
-                /** {@inheritDoc} */
+                                                           dragCoeff, SCALE, 1);
+            dragParametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheridDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    BoxAndSolarArraySpacecraft.this.dragCoeff = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    BoxAndSolarArraySpacecraft.this.dragCoeff = driver.getValue();
                 }
-            };
+            });
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                                absorptionCoeff, SCALE) {
-                /** {@inheritDoc} */
+                                                                absorptionCoeff, SCALE, 1);
+            radiationParametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheridDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    BoxAndSolarArraySpacecraft.this.absorptionCoeff = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    BoxAndSolarArraySpacecraft.this.absorptionCoeff = driver.getValue();
                     BoxAndSolarArraySpacecraft.this.diffuseReflectionCoeff =
-                                    1 - (newValue + BoxAndSolarArraySpacecraft.this.specularReflectionCoeff);
+                                    1 - (driver.getValue() + BoxAndSolarArraySpacecraft.this.specularReflectionCoeff);
                 }
-            };
+            });
             radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                reflectionCoeff, SCALE) {
-                /** {@inheritDoc} */
+                                                                reflectionCoeff, SCALE, 1);
+            radiationParametersDrivers[1].addObserver(new ParameterObserver() {
+                /** {@inheridDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    BoxAndSolarArraySpacecraft.this.specularReflectionCoeff = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    BoxAndSolarArraySpacecraft.this.specularReflectionCoeff = driver.getValue();
                     BoxAndSolarArraySpacecraft.this.diffuseReflectionCoeff  =
-                                    1 - (BoxAndSolarArraySpacecraft.this.absorptionCoeff + newValue);
+                                    1 - (BoxAndSolarArraySpacecraft.this.absorptionCoeff + driver.getValue());
                 }
-            };
+            });
         } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
+            // this should never happen
             throw new OrekitInternalError(oe);
-        };
+        }
 
         this.facets = filter(facets);
 
@@ -295,41 +299,44 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                       final double absorptionCoeff,
                                       final double reflectionCoeff) {
 
-        this.dragParametersDrivers     = new ParameterDriver[1];
+        this.dragParametersDrivers      = new ParameterDriver[1];
         this.radiationParametersDrivers = new ParameterDriver[2];
         try {
             dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                           dragCoeff, SCALE) {
-                /** {@inheritDoc} */
+                                                           dragCoeff, SCALE, 1);
+            dragParametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheridDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    BoxAndSolarArraySpacecraft.this.dragCoeff = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    BoxAndSolarArraySpacecraft.this.dragCoeff = driver.getValue();
                 }
-            };
+            });
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                               absorptionCoeff, SCALE) {
-                /** {@inheritDoc} */
+                                                                absorptionCoeff, SCALE, 1);
+            radiationParametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheridDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    BoxAndSolarArraySpacecraft.this.absorptionCoeff = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    BoxAndSolarArraySpacecraft.this.absorptionCoeff = driver.getValue();
                     BoxAndSolarArraySpacecraft.this.diffuseReflectionCoeff =
-                                    1 - (newValue + BoxAndSolarArraySpacecraft.this.specularReflectionCoeff);
+                                    1 - (driver.getValue() + BoxAndSolarArraySpacecraft.this.specularReflectionCoeff);
                 }
-            };
-            radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                               reflectionCoeff, SCALE) {
-                /** {@inheritDoc} */
+            });
+            radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                                reflectionCoeff, SCALE, 1);
+            radiationParametersDrivers[1].addObserver(new ParameterObserver() {
+                /** {@inheridDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    BoxAndSolarArraySpacecraft.this.specularReflectionCoeff = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    BoxAndSolarArraySpacecraft.this.specularReflectionCoeff = driver.getValue();
                     BoxAndSolarArraySpacecraft.this.diffuseReflectionCoeff  =
-                                    1 - (BoxAndSolarArraySpacecraft.this.absorptionCoeff + newValue);
+                                    1 - (BoxAndSolarArraySpacecraft.this.absorptionCoeff + driver.getValue());
                 }
-            };
+            });
         } catch (OrekitException oe) {
-            // this should never occur as valueChanged above never throws an exception
+            // this should never happen
             throw new OrekitInternalError(oe);
-        };
+        }
 
         this.facets = filter(facets.clone());
 

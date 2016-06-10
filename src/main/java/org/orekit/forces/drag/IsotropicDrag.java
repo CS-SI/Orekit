@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class models isotropic drag effects.
  * <p>The model of this spacecraft is a simple spherical model, this
@@ -66,13 +67,14 @@ public class IsotropicDrag implements DragSensitive {
         this.dragParametersDrivers     = new ParameterDriver[1];
         try {
             dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                           dragCoeff, SCALE) {
+                                                           dragCoeff, SCALE, 1);
+            dragParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    IsotropicDrag.this.dragCoeff = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    IsotropicDrag.this.dragCoeff = driver.getValue();
                 }
-            };
+            });
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);

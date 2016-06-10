@@ -39,7 +39,7 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
     /** Simple constructor.
      * @param name name of the bias
      * @param bias initial value of the bias
-     * @param scale scale of the bias, fornormalization
+     * @param scale scale of the bias, for normalization
      * @exception OrekitException if initial value cannot be set
      */
     public Bias(final String[] name, final double[] bias, final double[] scale)
@@ -47,12 +47,7 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
         drivers = new ArrayList<>(bias.length);
         for (int i = 0; i < bias.length; ++i) {
-            drivers.add(new ParameterDriver(name[i], bias[i], scale[i]) {
-                /** {@inheritDoc} */
-                @Override
-                public void valueChanged(final double newValue) {
-                }
-            });
+            drivers.add(new ParameterDriver(name[i], bias[i], scale[i], 1));
         }
 
         derivatives = new double[bias.length][bias.length];

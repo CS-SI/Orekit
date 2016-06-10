@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses a single coefficient cr, considered to be
@@ -67,13 +68,14 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
         this.radiationParametersDrivers = new ParameterDriver[1];
         try {
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                cr, SCALE) {
+                                                                cr, SCALE, 1);
+            radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    IsotropicRadiationSingleCoefficient.this.cr = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    IsotropicRadiationSingleCoefficient.this.cr = driver.getValue();
                 }
-            };
+            });
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);

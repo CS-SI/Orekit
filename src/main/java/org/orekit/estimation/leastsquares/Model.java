@@ -126,7 +126,6 @@ class Model implements MultivariateJacobianFunction {
         int columns = 0;
         for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
-                parameterColumns.put(driver.getName(), columns);
                 ++columns;
             }
         }
@@ -136,7 +135,6 @@ class Model implements MultivariateJacobianFunction {
         for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
             if (driver.isSelected()) {
                 estimatedPropagatorParameters.add(driver);
-                parameterColumns.put(driver.getName(), columns);
                 ++columns;
             }
         }

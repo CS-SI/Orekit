@@ -57,6 +57,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 public class SolarBodyTest {
 
@@ -434,13 +435,14 @@ public class SolarBodyTest {
             this.parametersDrivers = new ParameterDriver[1];
             try {
                 parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                           body.getGM(), 1.0e-5 * body.getGM()) {
+                                                           body.getGM(), 1.0e-5 * body.getGM(), 1);
+                parametersDrivers[0].addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
-                    protected void valueChanged(final double newValue) {
-                        BodyAttraction.this.gm = newValue;
+                    public void valueChanged(final ParameterDriver driver) {
+                        BodyAttraction.this.gm = driver.getValue();
                     }
-                };
+                });
             } catch (OrekitException oe) {
                 // this should never occur as valueChanged above never throws an exception
                 throw new OrekitInternalError(oe);

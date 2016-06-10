@@ -16,6 +16,9 @@
  */
 package org.orekit.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.orekit.errors.OrekitException;
 
 
@@ -42,10 +45,11 @@ import org.orekit.errors.OrekitException;
  * to be able to modify the parameter value, the algorithm
  * <em>must</em> retrieve a parameter driver.
  * </p>
+ * @see ParameterObserver
  * @author Luc Maisonobe
  * @since 8.0
  */
-public abstract class ParameterDriver {
+public class ParameterDriver {
 
     /** Name of the parameter. */
     private final String name;
@@ -67,6 +71,9 @@ public abstract class ParameterDriver {
      */
     private boolean selected;
 
+    /** Observers observing this driver. */
+    private final List<ParameterObserver> observers;
+
     /** Simple constructor.
      * <p>
      * At construction, the parameter is configured as <em>not</em> selected.
@@ -76,20 +83,32 @@ public abstract class ParameterDriver {
      * @param scale scaling factor to convert the parameters value to
      * non-dimensional (typically set to the expected standard deviation of the
      * parameter)
-     * @exception OrekitException if value is invalid for the driven model
      */
-    protected ParameterDriver(final String name, final double initialValue,
-                              final double scale)
-        throws OrekitException {
+    public ParameterDriver(final String name, final double initialValue,
+                           final double scale, int ddd) {
         this.name         = name;
         this.initialValue = initialValue;
         this.scale        = scale;
         this.value        = initialValue;
-        this.selected    = false;
+        this.selected     = false;
+        this.observers    = new ArrayList<ParameterObserver>();
+    }
 
-        // ensure the physical model knows about the initial value
-        valueChanged(this.value);
 
+    /** Add an observer for this driver.
+     * <p>
+     * The observer {@link ParameterObserver#valueChanged(ParameterDriver)
+     * valueChanged} method is called once automatically when the
+     * observer is added, and then called at each value change.
+     * </p>
+     * @param observer observer to add
+     * @exception OrekitException if the observer triggers one
+     * while being updated
+     */
+    public void addObserver(final ParameterObserver observer)
+        throws OrekitException {
+        observers.add(observer);
+        observer.valueChanged(this);
     }
 
     /** Get name.
@@ -136,7 +155,9 @@ public abstract class ParameterDriver {
      */
     public void setNormalizedValue(final double normalized) throws OrekitException {
         value = initialValue + scale * normalized;
-        valueChanged(value);
+        for (final ParameterObserver observer : observers) {
+            observer.valueChanged(this);
+        }
     }
 
     /** Get current parameter value.
@@ -152,14 +173,10 @@ public abstract class ParameterDriver {
      */
     public void setValue(final double newValue) throws OrekitException {
         value = newValue;
-        valueChanged(value);
+        for (final ParameterObserver observer : observers) {
+            observer.valueChanged(this);
+        }
     }
-
-    /** Notify that the values has been changed.
-     * @param newValue new value
-     * @exception OrekitException if value is invalid for the driven model
-     */
-    protected abstract void valueChanged(final double newValue) throws OrekitException;
 
     /** Configure a parameter selection status.
      * <p>
@@ -182,6 +199,13 @@ public abstract class ParameterDriver {
      */
     public boolean isSelected() {
         return selected;
+    }
+
+    /** Get a text representation of the parameter.
+     * @return text representation of the parameter, in the form name = value.
+     */
+    public String toString() {
+        return name + " = " + value;
     }
 
 }

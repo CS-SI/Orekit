@@ -22,9 +22,11 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.orbits.OrbitType;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 
-/** Enumerate for validating orbital parameters.
+/** Validator for orbital parameters.
  * <p>
  * This class prevents the orbit determination engine to use
  * inconsistent orbital parameters by trimming them back
@@ -34,126 +36,152 @@ import org.orekit.orbits.OrbitType;
  * 0.0 by the validator before it is really used in the
  * space flight dynamics code.
  * </p>
+ * <p>
+ * The parameters are expected to be normalized according
+ * to the {@link ParameterDriver parameters drivers} set
+ * at construction.
+ * </p>
  * @author Luc Maisonobe
  * @since 8.0
  */
-public enum OrbitValidator implements ParameterValidator {
+public class OrbitValidator implements ParameterValidator {
 
-    /** Validator for {@link OrbitType#CARTESIAN Cartesian} orbits. */
-    CARTESIAN() {
+    /** Orbit type. */
+    final OrbitType type;
 
-        /** {@inheritDoc} */
-        @Override
-        public RealVector validate(final RealVector params) {
-            // nothing to validate for Cartesian parameters
-            return params;
-        }
+    /** Drivers for the orbital parameters. */
+    final ParameterDriversList drivers;
 
-    },
-
-    /** Validator for {@link OrbitType#CIRCULAR circular} orbits. */
-    CIRCULAR() {
-
-        /** {@inheritDoc} */
-        @Override
-        public RealVector validate(final RealVector params) {
-
-            // ensure semi-major axis is positive
-            if (params.getEntry(0) <= 0) {
-                params.setEntry(0, Precision.SAFE_MIN);
-            }
-
-            // ensure eccentricity is less than 1
-            final double e = FastMath.hypot(params.getEntry(1), params.getEntry(2));
-            if (e >= 1.0) {
-                params.setEntry(1, params.getEntry(1) / FastMath.nextUp(e));
-                params.setEntry(2, params.getEntry(2) / FastMath.nextUp(e));
-            }
-
-            // ensure inclination is non-negative
-            if (params.getEntry(3) < 0.0) {
-                params.setEntry(3, 0.0);
-            }
-
-            return params;
-
-        }
-
-    },
-
-    /** Validator for {@link OrbitType#KEPLERIAN Keplerian} orbits. */
-    KEPLERIAN() {
-
-        /** {@inheritDoc} */
-        @Override
-        public RealVector validate(final RealVector params) {
-
-            // ensure inclination is non-negative
-            if (params.getEntry(2) < 0.0) {
-                params.setEntry(2, 0.0);
-            }
-
-            final double a = params.getEntry(0);
-            final double e = params.getEntry(1);
-            if (a > 0 && e > 0 && e < 1) {
-                // regular elliptic orbit, nothing to do
-                return params;
-            } else if (a < 0 && e > 1) {
-                // regular hyperbolic orbit, nothing to do
-                return params;
-            } else {
-                // inconsistent parameters, force orbit to elliptic
-                params.setEntry(0, FastMath.max(a, Precision.SAFE_MIN));
-                params.setEntry(1, FastMath.max(0.0, FastMath.min(e, FastMath.nextDown(1.0))));
-                return params;
-            }
-        }
-
-    },
-
-    /** Validator for {@link OrbitType#EQUINOCTIAL equinoctial} orbits. */
-    EQUINOCTIAL() {
-
-        /** {@inheritDoc} */
-        @Override
-        public RealVector validate(final RealVector params) {
-
-            // ensure semi-major axis is positive
-            if (params.getEntry(0) <= 0) {
-                params.setEntry(0, Precision.SAFE_MIN);
-            }
-
-            // ensure eccentricity is less than 1
-            final double e = FastMath.hypot(params.getEntry(1), params.getEntry(2));
-            if (e >= 1.0) {
-                params.setEntry(1, params.getEntry(1) / FastMath.nextUp(e));
-                params.setEntry(2, params.getEntry(2) / FastMath.nextUp(e));
-            }
-
-            return params;
-
-        }
-
-    };
-
-    /** Get the validator corresponding to an orbit type.
-     * @param type orbite type
-     * @return validator for the orbit type
+    /** Simple constructor.
+     * @param type orbit type
+     * @param drivers drivers for the orbital parameters
      */
-    public static OrbitValidator getValidator(final OrbitType type) {
+    public OrbitValidator(final OrbitType type, final ParameterDriversList drivers) {
+        this.type    = type;
+        this.drivers = drivers;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealVector validate(final RealVector params) {
         switch (type) {
             case CARTESIAN:
-                return CARTESIAN;
+                // nothing to validate for Cartesian parameters
+                return params;
             case CIRCULAR:
-                return CIRCULAR;
+                return normalize(circularValidate(unnormalize(params)));
             case KEPLERIAN:
-                return KEPLERIAN;
+                return normalize(keplerValidate(unnormalize(params)));
             case EQUINOCTIAL:
-                return EQUINOCTIAL;
+                return normalize(equinoctialValidate(unnormalize(params)));
             default :
                 // this should never happen
                 throw new OrekitInternalError(null);
         }
+    }
+
+    /** Unnormalize parameters.
+     * @param params normalized parameters
+     * @return unnormalized parameters
+     */
+    private RealVector unnormalize(final RealVector params) {
+        for (int i = 0; i < drivers.getNbParams(); ++i) {
+            final ParameterDriver driver = drivers.getDrivers().get(i);
+            final double normalized      = params.getEntry(i);
+            final double unnormalized    = driver.getInitialValue() + driver.getScale() * normalized;
+            params.setEntry(i, unnormalized);
+        }
+        return params;
+    }
+
+    /** Normalize parameters.
+     * @param params unnormalized parameters
+     * @return normalized parameters
+     */
+    private RealVector normalize(final RealVector params) {
+        for (int i = 0; i < drivers.getNbParams(); ++i) {
+            final ParameterDriver driver = drivers.getDrivers().get(i);
+            final double unnormalized    = params.getEntry(i);
+            final double normalized      = (unnormalized - driver.getInitialValue()) / driver.getScale();
+            params.setEntry(i, normalized);
+        }
+        return params;
+    }
+
+    /** Validate circular orbit parameters.
+     * @param params unnormalized circular orbit parameters
+     * @return validated parameters
+     */
+    private RealVector circularValidate(final RealVector params) {
+
+        // ensure semi-major axis is positive
+        if (params.getEntry(0) <= 0) {
+            params.setEntry(0, Precision.SAFE_MIN);
+        }
+
+        // ensure eccentricity is less than 1
+        final double e = FastMath.hypot(params.getEntry(1), params.getEntry(2));
+        if (e >= 1.0) {
+            params.setEntry(1, params.getEntry(1) / FastMath.nextUp(e));
+            params.setEntry(2, params.getEntry(2) / FastMath.nextUp(e));
+        }
+
+        // ensure inclination is non-negative
+        if (params.getEntry(3) < 0.0) {
+            params.setEntry(3, 0.0);
+        }
+
+        return params;
+
+    }
+
+    /** Validate Keplerian orbit parameters.
+     * @param params unnormalized Keplerian orbit parameters
+     * @return validated parameters
+     */
+    private RealVector keplerValidate(final RealVector params) {
+
+        // ensure inclination is non-negative
+        if (params.getEntry(2) < 0.0) {
+            params.setEntry(2, 0.0);
+        }
+
+        final double a = params.getEntry(0);
+        final double e = params.getEntry(1);
+        if (a > 0 && e > 0 && e < 1) {
+            // regular elliptic orbit, nothing to do
+            return params;
+        } else if (a < 0 && e > 1) {
+            // regular hyperbolic orbit, nothing to do
+            return params;
+        } else {
+            // inconsistent parameters, force orbit to elliptic
+            params.setEntry(0, FastMath.max(a, Precision.SAFE_MIN));
+            params.setEntry(1, FastMath.max(0.0, FastMath.min(e, FastMath.nextDown(1.0))));
+            return params;
+        }
+    }
+
+    /** Validate equinoctial orbit parameters.
+     * @param params unnormalized equinoctial orbit parameters
+     * @return validated parameters
+     */
+    private RealVector equinoctialValidate(final RealVector params) {
+
+        // ensure semi-major axis is positive
+        if (params.getEntry(0) <= 0) {
+            params.setEntry(0, Precision.SAFE_MIN);
+        }
+
+        // ensure eccentricity is less than 1
+        final double e = FastMath.hypot(params.getEntry(1), params.getEntry(2));
+        if (e >= 1.0) {
+            params.setEntry(1, params.getEntry(1) / FastMath.nextUp(e));
+            params.setEntry(2, params.getEntry(2) / FastMath.nextUp(e));
+        }
+
+        return params;
+
     }
 
 }

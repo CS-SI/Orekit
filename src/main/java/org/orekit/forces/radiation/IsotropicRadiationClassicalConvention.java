@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses the classical thermo-optical coefficients
@@ -77,21 +78,23 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
         this.radiationParametersDrivers = new ParameterDriver[2];
         try {
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                                ca, SCALE) {
+                                                                ca, SCALE, 1);
+            radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    IsotropicRadiationClassicalConvention.this.ca = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    IsotropicRadiationClassicalConvention.this.ca = driver.getValue();
                 }
-            };
+            });
             radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                cs, SCALE) {
+                                                                cs, SCALE, 1);
+            radiationParametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    IsotropicRadiationClassicalConvention.this.cs = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    IsotropicRadiationClassicalConvention.this.cs = driver.getValue();
                 }
-            };
+            });
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);

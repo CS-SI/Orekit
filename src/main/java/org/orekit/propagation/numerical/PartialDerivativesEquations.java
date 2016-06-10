@@ -140,17 +140,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             // first pass, gather all parameters, binding together similar names
             final ParameterDriversList bound = new ParameterDriversList();
             map      = new HashMap<ParameterDriver, ForceModel>();
-
-            // we start with Newtonian attraction, because it is sometimes uninitialized
-            // and has a mu set to NaN. In this case, the other force models added
-            // later on will update the mu value to something more realistic
-            final ForceModel newton = propagator.getNewtonianAttractionForceModel();
-            for (final ParameterDriver driver : newton.getParametersDrivers()) {
-                map.put(driver, newton);
-                bound.add(driver);
-            }
-
-            for (final ForceModel provider : propagator.getForceModels()) {
+            for (final ForceModel provider : propagator.getAllForceModels()) {
                 for (final ParameterDriver driver : provider.getParametersDrivers()) {
                     map.put(driver, provider);
                     bound.add(driver);
@@ -200,10 +190,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     @Deprecated
     public List<String> getAvailableParameters() {
         final List<String> available = new ArrayList<String>();
-        for (final ParameterDriver driver : propagator.getNewtonianAttractionForceModel().getParametersDrivers()) {
-            available.add(driver.getName());
-        }
-        for (final ForceModel model : propagator.getForceModels()) {
+        for (final ForceModel model : propagator.getAllForceModels()) {
             for (final ParameterDriver driver : model.getParametersDrivers()) {
                 available.add(driver.getName());
             }
@@ -224,7 +211,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     public void selectParameters(final Iterable<String> parameters) {
 
         // unselect everything
-        for (final ForceModel model : propagator.getForceModels()) {
+        for (final ForceModel model : propagator.getAllForceModels()) {
             for (final ParameterDriver driver : model.getParametersDrivers()) {
                 driver.setSelected(false);
             }
@@ -232,7 +219,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         // select the specified parameters
         for (String param : parameters) {
-            for (final ForceModel model : propagator.getForceModels()) {
+            for (final ForceModel model : propagator.getAllForceModels()) {
                 for (final ParameterDriver driver : model.getParametersDrivers()) {
                     if (param.equals(driver.getName())) {
                         driver.setSelected(true);
@@ -270,7 +257,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      */
     @Deprecated
     public void selectParamAndStep(final String parameter, final double ignored) {
-        for (final ForceModel model : propagator.getForceModels()) {
+        for (final ForceModel model : propagator.getAllForceModels()) {
             for (final ParameterDriver driver : model.getParametersDrivers()) {
                 if (parameter.equals(driver.getName())) {
                     driver.setSelected(true);
@@ -436,8 +423,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                                                        new DerivativeStructure(nbVars, 1, rotation.getQ3()),
                                                        false);
 
-        // compute acceleration Jacobians
-        for (final ForceModel forceModel : propagator.getForceModels()) {
+        // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction
+        for (final ForceModel forceModel : propagator.getAllForceModels()) {
             final FieldVector3D<DerivativeStructure> acceleration =
                             forceModel.accelerationDerivatives(s.getDate(), s.getFrame(),
                                                                dsP, dsV, dsR, dsM);
@@ -445,14 +432,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             addToRow(acceleration.getY(), 1);
             addToRow(acceleration.getZ(), 2);
         }
-
-        // finish with the largest force: Newtonian attraction
-        final FieldVector3D<DerivativeStructure> acceleration =
-                        propagator.getNewtonianAttractionForceModel().accelerationDerivatives(s.getDate(), s.getFrame(),
-                                                                                              dsP, dsV, dsR, dsM);
-        addToRow(acceleration.getX(), 0);
-        addToRow(acceleration.getY(), 1);
-        addToRow(acceleration.getZ(), 2);
 
         // the variational equations of the complete state Jacobian matrix have the
         // following form for 7x7, i.e. when mass partial derivatives are also considered

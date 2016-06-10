@@ -28,6 +28,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** Builder for TLEPropagator.
  * @author Pascal Parraud
@@ -100,13 +101,15 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
         this.revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         this.bStar                   = 0.0;
         try {
-            addSupportedParameter(new ParameterDriver(B_STAR, bStar, B_STAR_SCALE) {
-                /** {@inheridDoc} */
+            final ParameterDriver driver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE, 1);
+            driver.addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    TLEPropagatorBuilder.this.bStar = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    TLEPropagatorBuilder.this.bStar = driver.getValue();
                 }
             });
+            addSupportedParameter(driver);
         } catch (OrekitException oe) {
             // this should never happen
             throw new OrekitInternalError(oe);

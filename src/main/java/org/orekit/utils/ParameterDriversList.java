@@ -116,11 +116,26 @@ public class ParameterDriversList {
          * @exception OrekitException if first drivers throws one
          */
         DelegatingDriver(final ParameterDriver driver) throws OrekitException {
-            super(driver.getName(), driver.getInitialValue(), driver.getScale());
-            setValue(driver.getValue());
-            setSelected(driver.isSelected());
+            super(driver.getName(), driver.getInitialValue(), driver.getScale(), 1);
             drivers = new ArrayList<ParameterDriver>();
             drivers.add(driver);
+
+            setValue(driver.getValue());
+            setSelected(driver.isSelected());
+
+            // when the value of the delegating driver changes,
+            // all underlying drivers must reproduce the change
+            addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final ParameterDriver driver)
+                    throws OrekitException {
+                    for (final ParameterDriver d : drivers) {
+                        d.setValue(driver.getValue());
+                    }
+                }
+            });
+
         }
 
         /** Add a driver.
@@ -145,23 +160,10 @@ public class ParameterDriversList {
 
         /** {@inheritDoc} */
         @Override
-        protected void valueChanged(final double newValue)
-            throws OrekitException {
-            if (drivers != null) { // the drivers list will be null during construction
-                for (final ParameterDriver driver : drivers) {
-                    driver.setValue(newValue);
-                }
-            }
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public void setSelected(final boolean selected) {
             super.setSelected(selected);
-            if (drivers != null) { // the drivers list will be null during construction
-                for (final ParameterDriver driver : drivers) {
-                    driver.setSelected(selected);
-                }
+            for (final ParameterDriver driver : drivers) {
+                driver.setSelected(selected);
             }
         }
 

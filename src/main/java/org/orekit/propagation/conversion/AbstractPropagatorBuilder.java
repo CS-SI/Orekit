@@ -31,6 +31,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterObserver;
 
 /** Base class for propagator builders.
  * @author Pascal Parraud
@@ -112,25 +113,20 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         final List<String> orbitalParametersNames = orbitType.parametersNames(positionAngle);
         for (int i = 0; i < 6; ++i) {
             final ParameterDriver driver = new ParameterDriver(orbitalParametersNames.get(i),
-                                                               initial[i], scales[0][i]) {
-                /** {@inheritDoc} */
-                @Override
-                protected void valueChanged(final double newValue) {
-                    // nothing to do here
-                }
-            };
+                                                               initial[i], scales[0][i], 1);
             driver.setSelected(true);
             orbitalDrivers.add(driver);
         }
 
         final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                             mu, MU_SCALE) {
+                                                             mu, MU_SCALE, 1);
+        muDriver.addObserver(new ParameterObserver() {
             /** {@inheridDoc} */
             @Override
-            protected void valueChanged(final double newValue) {
-                AbstractPropagatorBuilder.this.mu = newValue;
+            public void valueChanged(final ParameterDriver driver) {
+                AbstractPropagatorBuilder.this.mu = driver.getValue();
             }
-        };
+        });
         supportedParameters.add(muDriver);
 
     }

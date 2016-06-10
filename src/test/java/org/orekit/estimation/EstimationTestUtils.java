@@ -56,7 +56,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.ParameterDriver;
 
 /** Utility class for orbit determination tests. */
 public class EstimationTestUtils {
@@ -186,29 +185,16 @@ public class EstimationTestUtils {
                                               final PropagatorBuilder propagatorBuilder)
         throws OrekitException {
 
-        final int nbOrbitalParameters = 6;
-        int dimension = nbOrbitalParameters;
-        for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-            if (driver.isSelected()) {
-                ++dimension;
-            }
-        }
-
-        final double[] parameters = new double[dimension];
+        // override orbital parameters
+        double[] orbitArray = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
                                                          propagatorBuilder.getPositionAngle(),
-                                                         parameters);
-        int index = nbOrbitalParameters;
-        for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-            if (driver.isSelected()) {
-                parameters[index++] = driver.getNormalizedValue();
-            }
+                                                         orbitArray);
+        for (int i = 0; i < orbitArray.length; ++i) {
+            propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(i).setValue(orbitArray[i]);
         }
-        propagatorBuilder.getOrbitType().mapOrbitToArray(initialOrbit,
-                                                         propagatorBuilder.getPositionAngle(),
-                                                         parameters);
 
-        return propagatorBuilder.buildPropagator(parameters);
+        return propagatorBuilder.buildPropagator(propagatorBuilder.getSelectedNormalizedParameters());
 
     }
 

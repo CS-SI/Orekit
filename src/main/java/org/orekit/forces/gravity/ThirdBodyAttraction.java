@@ -31,6 +31,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** Third body attraction force model.
  *
@@ -68,13 +69,13 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         this.parametersDrivers = new ParameterDriver[1];
         try {
             parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                       body.getGM(), MU_SCALE) {
+                                                       body.getGM(), MU_SCALE, 1);
+            parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
-                @Override
-                protected void valueChanged(final double newValue) {
-                    ThirdBodyAttraction.this.gm = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    ThirdBodyAttraction.this.gm = driver.getValue();
                 }
-            };
+            });
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);

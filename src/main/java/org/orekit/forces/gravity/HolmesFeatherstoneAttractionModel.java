@@ -41,6 +41,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>
@@ -121,13 +122,14 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         this.parametersDrivers = new ParameterDriver[1];
         try {
             parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                       provider.getMu(), MU_SCALE) {
+                                                       provider.getMu(), MU_SCALE, 1);
+            parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    HolmesFeatherstoneAttractionModel.this.mu = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    HolmesFeatherstoneAttractionModel.this.mu = driver.getValue();
                 }
-            };
+            });
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);

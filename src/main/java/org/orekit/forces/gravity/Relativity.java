@@ -32,6 +32,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /**
  * Post-Newtonian correction force due to general relativity. The main effect is the
@@ -69,13 +70,14 @@ public class Relativity extends AbstractForceModel {
         this.parametersDrivers = new ParameterDriver[1];
         try {
             parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                       gm, MU_SCALE) {
+                                                       gm, MU_SCALE, 1);
+            parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    Relativity.this.gm = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    Relativity.this.gm = driver.getValue();
                 }
-            };
+            });
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);

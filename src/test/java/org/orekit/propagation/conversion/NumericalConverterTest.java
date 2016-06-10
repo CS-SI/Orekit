@@ -175,9 +175,9 @@ public class NumericalConverterTest {
         Orbit fitted = prop.getInitialState().getOrbit();
 
         for (String param: freeParameters) {
-            for (ForceModel force: propagator.getForceModels()) {
+            for (ForceModel force: propagator.getAllForceModels()) {
                 if (force.isSupported(param)) {
-                    for (ForceModel model: prop.getForceModels()) {
+                    for (ForceModel model: prop.getAllForceModels()) {
                         if (model.isSupported(param)) {
                             Assert.assertEquals(force.getParameterDriver(param).getValue(),
                                                 model.getParameterDriver(param).getValue(),

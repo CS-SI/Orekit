@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses the coefficients described in the collective
@@ -88,21 +89,24 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
         this.radiationParametersDrivers = new ParameterDriver[2];
         try {
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                                alpha, SCALE) {
+                                                                alpha, SCALE, 1);
+            radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    IsotropicRadiationCNES95Convention.this.alpha = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                    IsotropicRadiationCNES95Convention.this.alpha = driver.getValue();
                 }
-            };
+            });
             radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                tau, SCALE) {
+                                                                tau, SCALE, 1);
+            radiationParametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double newValue) {
-                    IsotropicRadiationCNES95Convention.this.tau = newValue;
+                public void valueChanged(final ParameterDriver driver) {
+                /** {@inheritDoc} */
+                    IsotropicRadiationCNES95Convention.this.tau = driver.getValue();
                 }
-            };
+            });
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);

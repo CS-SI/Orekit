@@ -34,6 +34,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** Class modeling a ground station that can perform some measurements.
  * <p>
@@ -80,32 +81,25 @@ public class GroundStation {
 
         this.baseFrame = baseFrame;
 
-        this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
-                                                    0.0, OFFSET_SCALE) {
-            @Override
+        final ParameterObserver resettingObserver = new ParameterObserver() {
             /** {@inheritDoc} */
-            protected void valueChanged(final double xOffset) throws OrekitException {
+            @Override
+            public void valueChanged(final ParameterDriver driver) {
                 offsetFrame = null;
             }
         };
+
+        this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
+                                                    0.0, OFFSET_SCALE, 1);
+        this.eastOffsetDriver.addObserver(resettingObserver);
 
         this.northOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-North",
-                                                     0.0, OFFSET_SCALE) {
-            @Override
-            /** {@inheritDoc} */
-            protected void valueChanged(final double yOffset) throws OrekitException {
-                offsetFrame = null;
-            }
-        };
+                                                     0.0, OFFSET_SCALE, 1);
+        this.northOffsetDriver.addObserver(resettingObserver);
 
         this.zenithOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-Zenith",
-                                                      0.0, OFFSET_SCALE) {
-            @Override
-            /** {@inheritDoc} */
-            protected void valueChanged(final double zOffset) throws OrekitException {
-                offsetFrame = null;
-            }
-        };
+                                                      0.0, OFFSET_SCALE, 1);
+        this.zenithOffsetDriver.addObserver(resettingObserver);
 
     }
 

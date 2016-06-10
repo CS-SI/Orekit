@@ -207,7 +207,7 @@ public class JacobiansMapper {
 
     /** Get theJacobian with respect to parameters from a one-dimensional additional state array.
      * <p>
-     * This method extract the data from the {@code p} array and put it in the
+     * This method extract the data from the {@code state} and put it in the
      * {@code dYdP} array.
      * </p>
      * <p>

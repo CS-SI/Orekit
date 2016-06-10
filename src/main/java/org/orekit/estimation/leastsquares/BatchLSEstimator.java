@@ -225,8 +225,20 @@ public class BatchLSEstimator {
 
     /** Estimate the orbit and the parameters.
      * <p>
-     * The estimated parameters are available using {@link #getPropagatorParameters(boolean)}
-     * and {@link #getMeasurementsParameters(boolean)}.
+     * The initial guess for all parameters must have been set before calling this method
+     * using {@link #getOrbitalParameters(boolean)}, {@link #getPropagatorParameters(boolean)},
+     * and {@link #getMeasurementsParameters(boolean)} and then {@link ParameterDriver#setValue(double)
+     * setting the values} of the parameters.
+     * </p>
+     * <p>
+     * After this method returns, the estimated parameters can be retrieved using
+     * {@link #getOrbitalParameters(boolean)}, {@link #getPropagatorParameters(boolean)},
+     * and {@link #getMeasurementsParameters(boolean)} and then {@link ParameterDriver#getValue()
+     * getting the values} of the parameters.
+     * </p>
+     * <p>
+     * As a convenience, the method also returns a fully configured and ready to use
+     * propagator set up with all the estimated values.
      * </p>
      * @return propagator configured with estimated orbit as initial state, and all
      * propagator estimated parameters also set
@@ -272,6 +284,7 @@ public class BatchLSEstimator {
             @Override
             public void modelCalled(final Orbit newOrbit,
                                     final Map<Measurement<?>, Evaluation<?>> newEvaluations) {
+                System.out.println(newOrbit);
                 BatchLSEstimator.this.orbit       = newOrbit;
                 BatchLSEstimator.this.evaluations = newEvaluations;
             }
@@ -281,7 +294,8 @@ public class BatchLSEstimator {
         lsBuilder.model(model);
 
         // add a validator for orbital parameters
-        lsBuilder.parameterValidator(OrbitValidator.getValidator(propagatorBuilder.getOrbitType()));
+        lsBuilder.parameterValidator(new OrbitValidator(propagatorBuilder.getOrbitType(),
+                                                        propagatorBuilder.getOrbitalParametersDrivers()));
 
         lsBuilder.checker(new EvaluationRmsChecker(relativeTolerance, absoluteTolerance) {
             /** {@inheritDoc} */
