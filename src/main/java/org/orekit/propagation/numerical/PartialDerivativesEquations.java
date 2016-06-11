@@ -36,7 +36,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -137,26 +136,22 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         throws OrekitException {
         if (selected == null) {
 
-            // first pass, gather all parameters, binding together similar names
-            final ParameterDriversList bound = new ParameterDriversList();
-            map      = new HashMap<ParameterDriver, ForceModel>();
+            // first pass: gather all parameters, binding similar names together
+            selected = new ParameterDriversList();
+            map = new HashMap<ParameterDriver, ForceModel>();
             for (final ForceModel provider : propagator.getAllForceModels()) {
                 for (final ParameterDriver driver : provider.getParametersDrivers()) {
                     map.put(driver, provider);
-                    bound.add(driver);
+                    selected.add(driver);
                 }
             }
 
-            // second pass, now that shared parameter names are bound together,
-            // we can check the selection status as it has been synchronized
-            selected = new ParameterDriversList();
-            for (final DelegatingDriver delegating : bound.getDrivers()) {
-                if (delegating.isSelected()) {
-                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
-                        selected.add(driver);
-                    }
-                }
-            }
+            // second pass: now that shared parameter names are bound together,
+            // their selections status have been synchronized, we can filter them
+            selected.filter(true);
+
+            // third pass: sort parameters lexicographically
+            selected.sort();
 
         }
     }
@@ -167,7 +162,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * <em>must</em> have been {@link ParameterDriver#setSelected(boolean) selected}
      * before this method is called, so the proper list is returned.
      * </p>
-     * @return selected parameters, in Jacobian matrix column order
+     * @return selected parameters, in Jacobian matrix column order which
+     * is lexicographic order
      * @exception OrekitException if an existing driver for a
      * parameter throws one when its value is reset using the value
      * from another driver managing the same parameter

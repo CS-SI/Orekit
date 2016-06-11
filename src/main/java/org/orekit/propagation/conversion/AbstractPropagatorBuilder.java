@@ -60,7 +60,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     private final ParameterDriversList orbitalDrivers;
 
     /** List of the supported parameters. */
-    private ParameterDriversList supportedParameters;
+    private ParameterDriversList propagationDrivers;
 
     /** Orbit type to use. */
     private final OrbitType orbitType;
@@ -99,7 +99,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.initialOrbitDate    = templateOrbit.getDate();
         this.frame               = templateOrbit.getFrame();
         this.mu                  = templateOrbit.getMu();
-        this.supportedParameters = new ParameterDriversList();
+        this.propagationDrivers = new ParameterDriversList();
         this.orbitType           = templateOrbit.getType();
         this.positionAngle       = positionAngle;
         this.orbitalDrivers      = new ParameterDriversList();
@@ -127,7 +127,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
                 AbstractPropagatorBuilder.this.mu = driver.getValue();
             }
         });
-        supportedParameters.add(muDriver);
+        propagationDrivers.add(muDriver);
 
     }
 
@@ -158,7 +158,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** {@inheritDoc} */
     public ParameterDriversList getPropagationParametersDrivers() {
-        return supportedParameters;
+        return propagationDrivers;
     }
 
     /** Get the number of selected parameters.
@@ -176,7 +176,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         }
 
         // count propagation parameters
-        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
+        for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
             if (driver.isSelected()) {
                 ++count;
             }
@@ -199,7 +199,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
                 selected[index++] = driver.getNormalizedValue();
             }
         }
-        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
+        for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
             if (driver.isSelected()) {
                 selected[index++] = driver.getNormalizedValue();
             }
@@ -252,7 +252,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         }
 
         // manage propagation parameters
-        for (final ParameterDriver driver : supportedParameters.getDrivers()) {
+        for (final ParameterDriver driver : propagationDrivers.getDrivers()) {
             if (driver.isSelected()) {
                 driver.setNormalizedValue(normalizedParameters[index++]);
             }
@@ -266,7 +266,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
      */
     protected void addSupportedParameter(final ParameterDriver driver)
         throws OrekitException {
-        supportedParameters.add(driver);
+        propagationDrivers.add(driver);
+        propagationDrivers.sort();
     }
 
 }

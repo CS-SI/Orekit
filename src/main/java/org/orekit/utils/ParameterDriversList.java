@@ -18,6 +18,8 @@ package org.orekit.utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
@@ -77,6 +79,30 @@ public class ParameterDriversList {
 
     }
 
+    /** Sort the parameters lexicographically.
+     */
+    public void sort() {
+        Collections.sort(delegating, new Comparator<DelegatingDriver>() {
+            /** {@inheritDoc} */
+            @Override
+            public int compare(final DelegatingDriver d1, final DelegatingDriver d2) {
+                return d1.getName().compareTo(d2.getName());
+            }
+        });
+    }
+
+    /** Filter parameters to keep only one type of selection status.
+     * @param selected if true, only {@link ParameterDriver#isSelected()
+     * selected} parameters will be kept, the other ones will be removed
+     */
+    public void filter(final boolean selected) {
+        for (final Iterator<DelegatingDriver> iterator = delegating.iterator(); iterator.hasNext();) {
+            if (iterator.next().isSelected() != selected) {
+                iterator.remove();
+            }
+        }
+    }
+
     /** Get the number of parameters with different names.
      * @return number of parameters with different names
      */
@@ -92,15 +118,10 @@ public class ParameterDriversList {
      * <p>
      * All delegating drivers manage parameters with different names.
      * </p>
-     * <p>
-     * The list is in the same order as the calls to the
-     * {@link #add(ParameterDriver) add} method, with parameters
-     * names duplications removed
-     * </p>
-     * @return list of delegating drivers
+     * @return unmodifiable view of the list of delegating drivers
      */
     public List<DelegatingDriver> getDrivers() {
-        return delegating;
+        return Collections.unmodifiableList(delegating);
     }
 
     /** Specialized driver delegating to several other managing

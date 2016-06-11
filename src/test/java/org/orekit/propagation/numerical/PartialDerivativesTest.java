@@ -77,7 +77,7 @@ public class PartialDerivativesTest {
 
     @Test
     public void testMuParametersDerivatives() throws OrekitException, ParseException, IOException {
-        doTestParametersDerivatives(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 3e-5);
+        doTestParametersDerivatives(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 4.1e-7);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance)
@@ -201,7 +201,6 @@ public class PartialDerivativesTest {
                 fillJacobianColumn(dYdPRef, 0, orbitType, angleType, h,
                                    sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
-                System.out.println(orbitType + " " + angleType);
                 for (int i = 0; i < 6; ++i) {
                     Assert.assertEquals(dYdPRef[i][0], dYdP[i][0], FastMath.abs(dYdPRef[i][0] * tolerance));
                 }

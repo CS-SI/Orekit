@@ -43,6 +43,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 
 /** Least squares estimator for orbit determination.
@@ -150,9 +151,11 @@ public class BatchLSEstimator {
 
         if (estimatedOnly) {
             final ParameterDriversList estimated = new ParameterDriversList();
-            for (final ParameterDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
-                if (driver.isSelected()) {
-                    estimated.add(driver);
+            for (final DelegatingDriver delegating : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+                if (delegating.isSelected()) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        estimated.add(driver);
+                    }
                 }
             }
             return estimated;
@@ -172,9 +175,11 @@ public class BatchLSEstimator {
 
         if (estimatedOnly) {
             final ParameterDriversList estimated = new ParameterDriversList();
-            for (final ParameterDriver driver : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
-                if (driver.isSelected()) {
-                    estimated.add(driver);
+            for (final DelegatingDriver delegating : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
+                if (delegating.isSelected()) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        estimated.add(driver);
+                    }
                 }
             }
             return estimated;
@@ -200,6 +205,8 @@ public class BatchLSEstimator {
                 }
             }
         }
+
+        parameters.sort();
 
         return parameters;
 
