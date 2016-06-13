@@ -89,6 +89,7 @@ public abstract class AbstractForceModel implements ForceModel {
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     public void setParameter(final String name, final double value)
         throws OrekitException {
         getParameterDriver(name).setValue(value);

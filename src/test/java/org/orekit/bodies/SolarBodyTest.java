@@ -435,7 +435,8 @@ public class SolarBodyTest {
             this.parametersDrivers = new ParameterDriver[1];
             try {
                 parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
-                                                           body.getGM(), 1.0e-5 * body.getGM(), 1);
+                                                           body.getGM(), 1.0e-5 * body.getGM(),
+                                                           0.0, Double.POSITIVE_INFINITY);
                 parametersDrivers[0].addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override

@@ -70,7 +70,8 @@ public class Relativity extends AbstractForceModel {
         this.parametersDrivers = new ParameterDriver[1];
         try {
             parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                       gm, MU_SCALE, 1);
+                                                       gm, MU_SCALE,
+                                                       0.0, Double.POSITIVE_INFINITY);
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

@@ -101,7 +101,8 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
         this.revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         this.bStar                   = 0.0;
         try {
-            final ParameterDriver driver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE, 1);
+            final ParameterDriver driver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
+                                                               0, Double.POSITIVE_INFINITY);
             driver.addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

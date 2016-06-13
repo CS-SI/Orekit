@@ -91,9 +91,9 @@ iers.conventions = 2010
 inertial.frame = EME2000
 
 # Propagator min step (s), max step (s) and position error (m) [0.001, 300, 10.0]
-propagator.min.step       = 0.001
-propagator.max.step       = 300
-propagator.position.error = 10.0
+propagator.min.step                  = 0.1
+propagator.max.step                  = 300
+propagator.position.error            = 10.0
 
 # body (default is a WGS-84 ellipsoid with IERS-2010 conventions and simple EOP frame)
 body.frame              = CIO/2010-based ITRF simple EOP
@@ -142,7 +142,9 @@ solar.radiation.pressure.area = 13.12
 general.relativity = false
 
 ## Transponder delay bias (m) [0.0]
-transponder.delay.bias = 5969.0
+transponder.delay.bias     =   5969.0
+transponder.delay.bias.min = -50000.0
+transponder.delay.bias.max = +50000.0
 ### Estimation flag for transponder delay (true/false) [false]
 transponder.delay.bias.estimated = false
 
@@ -154,19 +156,25 @@ ground.station.altitude                        [0] =  671.3542005921
 ground.station.position.estimated              [0] = false
 ground.station.range.sigma                     [0] = 20.0
 ground.station.range.bias                      [0] = 13468.956
+ground.station.range.bias.min                  [0] = -50000.0
+ground.station.range.bias.max                  [0] = +50000.0
 ground.station.range.bias.estimated            [0] = true
 ground.station.range.rate.sigma                [0] = 0.001
 ground.station.range.rate.bias                 [0] = 0.0
+ground.station.range.rate.bias.min             [0] = -50.0
+ground.station.range.rate.bias.max             [0] = +50.0
 ground.station.range.rate.bias.estimated       [0] = true
-ground.station.azimuth.sigma                   [0] = 0.02
-ground.station.azimuth.bias                    [0] = 0.01
-ground.station.elevation.sigma                 [0] = 0.02
-ground.station.elevation.bias                  [0] = 0.01
-ground.station.az.el.biases.estimated          [0] = true
-ground.station.az.el.biases.estimated          [0] = true
+ground.station.azimuth.sigma                   [0] =  0.02
+ground.station.azimuth.bias                    [0] =  0.01
+ground.station.azimuth.bias.min                [0] = -0.50
+ground.station.azimuth.bias.max                [0] = +0.50
+ground.station.elevation.sigma                 [0] =  0.02
+ground.station.elevation.bias                  [0] =  0.01
+ground.station.elevation.bias.min              [0] = -0.50
+ground.station.elevation.bias.max              [0] = +0.50
+ground.station.az.el.biases.estimated          [0] = false
 ground.station.elevation.refraction.correction [0] = true
 ground.station.range.tropospheric.correction   [0] = true
-
 
 ground.station.name                            [1] = Kumsan
 ground.station.latitude                        [1] =   36.1247623774
@@ -175,18 +183,25 @@ ground.station.altitude                        [1] =  180.5488660489
 ground.station.position.estimated              [1] = false
 ground.station.range.sigma                     [1] = 20.0
 ground.station.range.bias                      [1] = 13527.381
+ground.station.range.bias.min                  [1] = -50000.0
+ground.station.range.bias.max                  [1] = +50000.0
 ground.station.range.bias.estimated            [1] = true
 ground.station.range.rate.sigma                [1] = 0.001
 ground.station.range.rate.bias                 [1] = 0.0
+ground.station.range.rate.bias.min             [1] = -50.0
+ground.station.range.rate.bias.max             [1] = +50.0
 ground.station.range.rate.bias.estimated       [1] = true
-ground.station.azimuth.sigma                   [1] = 0.02
-ground.station.azimuth.bias                    [1] = 0.01
-ground.station.elevation.sigma                 [1] = 0.02
-ground.station.elevation.bias                  [1] = 0.01
-ground.station.az.el.biases.estimated          [1] = true
+ground.station.azimuth.sigma                   [1] =  0.02
+ground.station.azimuth.bias                    [1] =  0.01
+ground.station.azimuth.bias.min                [1] = -0.50
+ground.station.azimuth.bias.max                [1] = +0.50
+ground.station.elevation.sigma                 [1] =  0.02
+ground.station.elevation.bias                  [1] =  0.01
+ground.station.elevation.bias.min              [1] = -0.50
+ground.station.elevation.bias.max              [1] = +0.50
+ground.station.az.el.biases.estimated          [1] = false
 ground.station.elevation.refraction.correction [1] = true
 ground.station.range.tropospheric.correction   [1] = true
-
 
 ground.station.name                            [2] = Uralla
 ground.station.latitude                        [2] =  -30.632947613
@@ -195,18 +210,25 @@ ground.station.altitude                        [2] = 1163.2667864364
 ground.station.position.estimated              [2] = false
 ground.station.range.sigma                     [2] = 20.0
 ground.station.range.bias                      [2] = 13314.655
+ground.station.range.bias.min                  [2] = -50000.0
+ground.station.range.bias.max                  [2] = +50000.0
 ground.station.range.bias.estimated            [2] = true
 ground.station.range.rate.sigma                [2] = 0.001
 ground.station.range.rate.bias                 [2] = 0.0
+ground.station.range.rate.bias.min             [2] = -50.0
+ground.station.range.rate.bias.max             [2] = +50.0
 ground.station.range.rate.bias.estimated       [2] = true
-ground.station.azimuth.sigma                   [2] = 0.02
-ground.station.azimuth.bias                    [2] = 0.01
-ground.station.elevation.sigma                 [2] = 0.02
-ground.station.elevation.bias                  [2] = 0.01
-ground.station.az.el.biases.estimated          [2] = true
+ground.station.azimuth.sigma                   [2] =  0.02
+ground.station.azimuth.bias                    [2] =  0.01
+ground.station.azimuth.bias.min                [2] = -0.50
+ground.station.azimuth.bias.max                [2] = +0.50
+ground.station.elevation.sigma                 [2] =  0.02
+ground.station.elevation.bias                  [2] =  0.01
+ground.station.elevation.bias.min              [2] = -0.50
+ground.station.elevation.bias.max              [2] = +0.50
+ground.station.az.el.biases.estimated          [2] = false
 ground.station.elevation.refraction.correction [2] = true
 ground.station.range.tropospheric.correction   [2] = true
-
 
 ground.station.name                            [3] = Pretoria
 ground.station.latitude                        [3] =  -25.8854896226
@@ -215,18 +237,25 @@ ground.station.altitude                        [3] = 1566.6334663324
 ground.station.position.estimated              [3] = false
 ground.station.range.sigma                     [3] = 20.0
 ground.station.range.bias                      [3] = 13370.193
+ground.station.range.bias.min                  [3] = -50000.0
+ground.station.range.bias.max                  [3] = +50000.0
 ground.station.range.bias.estimated            [3] = true
 ground.station.range.rate.sigma                [3] = 0.001
 ground.station.range.rate.bias                 [3] = 0.0
+ground.station.range.rate.bias.min             [3] = -50.0
+ground.station.range.rate.bias.max             [3] = +50.0
 ground.station.range.rate.bias.estimated       [3] = true
-ground.station.azimuth.sigma                   [3] = 0.02
-ground.station.azimuth.bias                    [3] = 0.01
-ground.station.elevation.sigma                 [3] = 0.02
-ground.station.elevation.bias                  [3] = 0.01
-ground.station.az.el.biases.estimated          [3] = true
-ground.station.elevation.refraction.correction [3] =true
+ground.station.azimuth.sigma                   [3] =  0.02
+ground.station.azimuth.bias                    [3] =  0.01
+ground.station.azimuth.bias.min                [3] = -0.50
+ground.station.azimuth.bias.max                [3] = +0.50
+ground.station.elevation.sigma                 [3] =  0.02
+ground.station.elevation.bias                  [3] =  0.01
+ground.station.elevation.bias.min              [3] = -0.50
+ground.station.elevation.bias.max              [3] = +0.50
+ground.station.az.el.biases.estimated          [3] = false
+ground.station.elevation.refraction.correction [3] = true
 ground.station.range.tropospheric.correction   [3] = true
-
 
 ground.station.name                            [4] = CastleRock
 ground.station.latitude                        [4] =   39.2764477379
@@ -235,15 +264,23 @@ ground.station.altitude                        [4] = 2095.3769797949
 ground.station.position.estimated              [4] = false
 ground.station.range.sigma                     [4] = 20.0
 ground.station.range.bias                      [4] = 11473.623
+ground.station.range.bias.min                  [4] = -50000.0
+ground.station.range.bias.max                  [4] = +50000.0
 ground.station.range.bias.estimated            [4] = true
 ground.station.range.rate.sigma                [4] = 0.001
 ground.station.range.rate.bias                 [4] = 0.0
+ground.station.range.rate.bias.min             [4] = -50.0
+ground.station.range.rate.bias.max             [4] = +50.0
 ground.station.range.rate.bias.estimated       [4] = true
-ground.station.azimuth.sigma                   [4] = 0.02
-ground.station.azimuth.bias                    [4] = 0.01
-ground.station.elevation.sigma                 [4] = 0.02
-ground.station.elevation.bias                  [4] = 0.01
-ground.station.az.el.biases.estimated          [4] = true
+ground.station.azimuth.sigma                   [4] =  0.02
+ground.station.azimuth.bias                    [4] =  0.01
+ground.station.azimuth.bias.min                [4] = -0.50
+ground.station.azimuth.bias.max                [4] = +0.50
+ground.station.elevation.sigma                 [4] =  0.02
+ground.station.elevation.bias                  [4] =  0.01
+ground.station.elevation.bias.min              [4] = -0.50
+ground.station.elevation.bias.max              [4] = +0.50
+ground.station.az.el.biases.estimated          [4] = false
 ground.station.elevation.refraction.correction [4] = true
 ground.station.range.tropospheric.correction   [4] = true
 
@@ -265,9 +302,16 @@ PV.measurements.position.sigma                  = 10.0
 PV.measurements.velocity.sigma                  = 0.01
 
 ## Estimator
-estimator.normalized.parameters.convergence.threshold = 1.0e-3
-estimator.max.iterations                              = 10
-estimator.max.evaluations                             = 20
+# the default initial step bound factor is 100 for Levenberg-Marquardt
+# this is too small for normalized parameters when initial guess is very
+# far. An order of magnitude is 100 times the distance error of the initial guess
+# divided by the propagator.position.error. So if the initial guess
+# is about 100km wrong and propagator.position.error is set to 10.0,
+# the initial step bound factor should be of the order of magnitude of 1.0e6
+estimator.initial.step.bound.factor                   = 1.0e6
+estimator.normalized.parameters.convergence.threshold = 1.0e-2
+estimator.max.iterations                              = 25
+estimator.max.evaluations                             = 30
 
 # comma-separated list of measurements files (in the same directory as this file)
 measurements.files = W3B.aer

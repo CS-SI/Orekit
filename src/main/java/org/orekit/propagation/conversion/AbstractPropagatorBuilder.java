@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -27,10 +25,10 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.ParameterObserver;
 
 /** Base class for propagator builders.
@@ -102,24 +100,13 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         this.propagationDrivers = new ParameterDriversList();
         this.orbitType           = templateOrbit.getType();
         this.positionAngle       = positionAngle;
-        this.orbitalDrivers      = new ParameterDriversList();
-
-        // even if the propagator is not necessarily a numerical propagator
-        // with use the tolerances computation provided by this class
-        // as it really only uses Jacobians and can be applied to any propagator
-        final double[][] scales = NumericalPropagator.tolerances(positionScale, templateOrbit, orbitType);
-        final double[] initial = new double[6];
-        orbitType.mapOrbitToArray(templateOrbit, positionAngle, initial);
-        final List<String> orbitalParametersNames = orbitType.parametersNames(positionAngle);
-        for (int i = 0; i < 6; ++i) {
-            final ParameterDriver driver = new ParameterDriver(orbitalParametersNames.get(i),
-                                                               initial[i], scales[0][i], 1);
+        this.orbitalDrivers      = orbitType.getDrivers(positionScale, templateOrbit, positionAngle);
+        for (final DelegatingDriver driver : orbitalDrivers.getDrivers()) {
             driver.setSelected(true);
-            orbitalDrivers.add(driver);
         }
 
         final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                             mu, MU_SCALE, 1);
+                                                             mu, MU_SCALE, 0, Double.POSITIVE_INFINITY);
         muDriver.addObserver(new ParameterObserver() {
             /** {@inheridDoc} */
             @Override

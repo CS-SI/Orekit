@@ -111,7 +111,7 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
         this.parametersDrivers = new ParameterDriver[1];
         try {
             parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                       provider.getMu(), MU_SCALE, 1);
+                                                       provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

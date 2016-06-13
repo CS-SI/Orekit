@@ -67,8 +67,11 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     public IsotropicRadiationSingleCoefficient(final double crossSection, final double cr) {
         this.radiationParametersDrivers = new ParameterDriver[1];
         try {
+            // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
+            // the single coefficient may be arbitrary, and even negative
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                cr, SCALE, 1);
+                                                                cr, SCALE,
+                                                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

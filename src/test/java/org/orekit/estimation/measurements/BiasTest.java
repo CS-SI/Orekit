@@ -64,10 +64,16 @@ public class BiasTest {
                                                          base.getName() + " range bias"
                                                      },
                                                      new double[] {
-                                                         0.0       
+                                                         0.0
                                                      },
                                                      new double[] {
-                                                         1.0       
+                                                         1.0
+                                                     },
+                                                     new double[] {
+                                                         Double.NEGATIVE_INFINITY
+                                                     },
+                                                     new double[] {
+                                                         Double.POSITIVE_INFINITY
                                                      });
             realStationsBiases[i]  = 2 * random.nextDouble() - 1;
         }

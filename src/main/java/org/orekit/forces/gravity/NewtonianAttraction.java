@@ -61,7 +61,8 @@ public class NewtonianAttraction extends AbstractForceModel {
         this.parametersDrivers = new ParameterDriver[1];
         try {
             parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                                                       mu, MU_SCALE, 1);
+                                                       mu, MU_SCALE,
+                                                       0.0, Double.POSITIVE_INFINITY);
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

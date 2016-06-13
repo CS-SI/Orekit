@@ -258,6 +258,7 @@ public class Jacobianizer {
         }
         final double paramValue = driver.getValue();
         driver.setValue(paramValue + hP);
+        final double realhP = driver.getValue() - paramValue;
         final AccelerationRetriever shifted = new AccelerationRetriever();
         shifted.setOrbit(s.getOrbit());
         forceModel.addContribution(s, shifted);
@@ -267,9 +268,9 @@ public class Jacobianizer {
 
         driver.setValue(paramValue);
 
-        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1, 1, nx, (sx - nx) / hP),
-                              new DerivativeStructure(1, 1, ny, (sy - ny) / hP),
-                              new DerivativeStructure(1, 1, nz, (sz - nz) / hP));
+        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1, 1, nx, (sx - nx) / realhP),
+                              new DerivativeStructure(1, 1, ny, (sy - ny) / realhP),
+                              new DerivativeStructure(1, 1, nz, (sz - nz) / realhP));
 
     }
 

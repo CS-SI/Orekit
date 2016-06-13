@@ -89,7 +89,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
         this.radiationParametersDrivers = new ParameterDriver[2];
         try {
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                                alpha, SCALE, 1);
+                                                                alpha, SCALE, 0.0, 1.0);
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
@@ -98,7 +98,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
                 }
             });
             radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                tau, SCALE, 1);
+                                                                tau, SCALE, 0.0, 1.0);
             radiationParametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

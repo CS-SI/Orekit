@@ -37,6 +37,7 @@ import java.util.TreeSet;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
@@ -797,6 +798,20 @@ public class OrbitDeterminationTest {
             transponderDelayBias = parser.getDouble(ParameterKey.TRANSPONDER_DELAY_BIAS);
         }
 
+        final double transponderDelayBiasMin;
+        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS_MIN)) {
+            transponderDelayBiasMin = Double.NEGATIVE_INFINITY;
+        } else {
+            transponderDelayBiasMin = parser.getDouble(ParameterKey.TRANSPONDER_DELAY_BIAS_MIN);
+        }
+
+        final double transponderDelayBiasMax;
+        if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS_MAX)) {
+            transponderDelayBiasMax = Double.NEGATIVE_INFINITY;
+        } else {
+            transponderDelayBiasMax = parser.getDouble(ParameterKey.TRANSPONDER_DELAY_BIAS_MAX);
+        }
+
         // bias estimation flag
         final boolean transponderDelayBiasEstimated;
         if (!parser.containsKey(ParameterKey.TRANSPONDER_DELAY_BIAS_ESTIMATED)) {
@@ -816,6 +831,12 @@ public class OrbitDeterminationTest {
                                                      },
                                                      new double[] {
                                                          1.0             
+                                                     },
+                                                     new double[] {
+                                                         transponderDelayBiasMin
+                                                     },
+                                                     new double[] {
+                                                         transponderDelayBiasMax
                                                      });
             bias.getParametersDrivers().get(0).setSelected(transponderDelayBiasEstimated);
             return bias;
@@ -846,14 +867,22 @@ public class OrbitDeterminationTest {
         final boolean[] stationPositionEstimated      = parser.getBooleanArray(ParameterKey.GROUND_STATION_POSITION_ESTIMATED);
         final double[]  stationRangeSigma             = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_SIGMA);
         final double[]  stationRangeBias              = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS);
+        final double[]  stationRangeBiasMin           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MIN);
+        final double[]  stationRangeBiasMax           = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_BIAS_MAX);
         final boolean[] stationRangeBiasEstimated     = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_BIAS_ESTIMATED);
         final double[]  stationRangeRateSigma         = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_SIGMA);
         final double[]  stationRangeRateBias          = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS);
+        final double[]  stationRangeRateBiasMin       = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MIN);
+        final double[]  stationRangeRateBiasMax       = parser.getDoubleArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_MAX);
         final boolean[] stationRangeRateBiasEstimated = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED);
         final double[]  stationAzimuthSigma           = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_SIGMA);
         final double[]  stationAzimuthBias            = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS);
+        final double[]  stationAzimuthBiasMin         = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MIN);
+        final double[]  stationAzimuthBiasMax         = parser.getAngleArray(ParameterKey.GROUND_STATION_AZIMUTH_BIAS_MAX);
         final double[]  stationElevationSigma         = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_SIGMA);
         final double[]  stationElevationBias          = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS);
+        final double[]  stationElevationBiasMin       = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MIN);
+        final double[]  stationElevationBiasMax       = parser.getAngleArray(ParameterKey.GROUND_STATION_ELEVATION_BIAS_MAX);
         final boolean[] stationAzElBiasesEstimated    = parser.getBooleanArray(ParameterKey.GROUND_STATION_AZ_EL_BIASES_ESTIMATED);
         final boolean[] stationElevationRefraction    = parser.getBooleanArray(ParameterKey.GROUND_STATION_ELEVATION_REFRACTION_CORRECTION);
         final boolean[] stationRangeTropospheric      = parser.getBooleanArray(ParameterKey.GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION);
@@ -882,7 +911,13 @@ public class OrbitDeterminationTest {
                                                  stationRangeBias[i]
                                              },
                                              new double[] {
-                                                 1.0
+                                                 rangeSigma
+                                             },
+                                             new double[] {
+                                                 stationRangeBiasMin[i]
+                                             },
+                                             new double[] {
+                                                 stationRangeBiasMax[i]
                                              });
                  rangeBias.getParametersDrivers().get(0).setSelected(stationRangeBiasEstimated[i]);
             } else {
@@ -901,7 +936,13 @@ public class OrbitDeterminationTest {
                                                         stationRangeRateBias[i]
                                                     },
                                                     new double[] {
-                                                        1.0e-3
+                                                        rangeRateSigma
+                                                    },
+                                                    new double[] {
+                                                        stationRangeRateBiasMin[i]
+                                                    },
+                                                    new double[] {
+                                                        stationRangeRateBiasMax[i]
                                                     });
                 rangeRateBias.getParametersDrivers().get(0).setSelected(stationRangeRateBiasEstimated[i]);
             } else {
@@ -925,9 +966,14 @@ public class OrbitDeterminationTest {
                                                  stationAzimuthBias[i],
                                                  stationElevationBias[i]             
                                              },
+                                             azELSigma,
                                              new double[] {
-                                                 1.0e-6,
-                                                 1.0e-6             
+                                                 stationAzimuthBiasMin[i],
+                                                 stationElevationBiasMin[i]
+                                             },
+                                             new double[] {
+                                                 stationAzimuthBiasMax[i],
+                                                 stationElevationBiasMax[i]
                                              });
                 azELBias.getParametersDrivers().get(0).setSelected(stationAzElBiasesEstimated[i]);
                 azELBias.getParametersDrivers().get(1).setSelected(stationAzElBiasesEstimated[i]);
@@ -1082,6 +1128,12 @@ public class OrbitDeterminationTest {
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
                                              final NumericalPropagatorBuilder propagatorBuilder)
         throws NoSuchElementException, OrekitException {
+        final double initialStepBoundFactor;
+        if (! parser.containsKey(ParameterKey.ESTIMATOR_INITIAL_STEP_BOUND_FACTOR)) {
+            initialStepBoundFactor = 100.0;
+        } else {
+            initialStepBoundFactor = parser.getDouble(ParameterKey.ESTIMATOR_INITIAL_STEP_BOUND_FACTOR);
+        }
         final double convergenceThreshold;
         if (! parser.containsKey(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD)) {
             convergenceThreshold = 1.0e-3;
@@ -1101,8 +1153,9 @@ public class OrbitDeterminationTest {
             maxEvaluations = parser.getInt(ParameterKey.ESTIMATOR_MAX_EVALUATIONS);
         }
 
+        final LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer().withInitialStepBoundFactor(initialStepBoundFactor);
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                new LevenbergMarquardtOptimizer());
+                                                                optimizer);
         estimator.setConvergenceThreshold(convergenceThreshold);
         estimator.setMaxIterations(maxIterations);
         estimator.setMaxEvaluations(maxEvaluations);
@@ -1779,6 +1832,8 @@ public class OrbitDeterminationTest {
         SOLAR_RADIATION_PRESSURE_AREA,
         GENERAL_RELATIVITY,
         TRANSPONDER_DELAY_BIAS,
+        TRANSPONDER_DELAY_BIAS_MIN,
+        TRANSPONDER_DELAY_BIAS_MAX,
         TRANSPONDER_DELAY_BIAS_ESTIMATED,
         GROUND_STATION_NAME,
         GROUND_STATION_LATITUDE,
@@ -1787,14 +1842,22 @@ public class OrbitDeterminationTest {
         GROUND_STATION_POSITION_ESTIMATED,
         GROUND_STATION_RANGE_SIGMA,
         GROUND_STATION_RANGE_BIAS,
+        GROUND_STATION_RANGE_BIAS_MIN,
+        GROUND_STATION_RANGE_BIAS_MAX,
         GROUND_STATION_RANGE_BIAS_ESTIMATED,
         GROUND_STATION_RANGE_RATE_SIGMA,
         GROUND_STATION_RANGE_RATE_BIAS,
+        GROUND_STATION_RANGE_RATE_BIAS_MIN,
+        GROUND_STATION_RANGE_RATE_BIAS_MAX,
         GROUND_STATION_RANGE_RATE_BIAS_ESTIMATED,
         GROUND_STATION_AZIMUTH_SIGMA,
         GROUND_STATION_AZIMUTH_BIAS,
+        GROUND_STATION_AZIMUTH_BIAS_MIN,
+        GROUND_STATION_AZIMUTH_BIAS_MAX,
         GROUND_STATION_ELEVATION_SIGMA,
         GROUND_STATION_ELEVATION_BIAS,
+        GROUND_STATION_ELEVATION_BIAS_MIN,
+        GROUND_STATION_ELEVATION_BIAS_MAX,
         GROUND_STATION_AZ_EL_BIASES_ESTIMATED,
         GROUND_STATION_ELEVATION_REFRACTION_CORRECTION,
         GROUND_STATION_RANGE_TROPOSPHERIC_CORRECTION,
@@ -1816,6 +1879,7 @@ public class OrbitDeterminationTest {
         PV_OUTLIER_REJECTION_STARTING_ITERATION,
         MEASUREMENTS_FILES,
         OUTPUT_BASE_NAME,
+        ESTIMATOR_INITIAL_STEP_BOUND_FACTOR,
         ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD,
         ESTIMATOR_MAX_ITERATIONS,
         ESTIMATOR_MAX_EVALUATIONS;

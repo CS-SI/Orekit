@@ -175,7 +175,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         this.radiationParametersDrivers = new ParameterDriver[2];
         try {
             dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                           dragCoeff, SCALE, 1);
+                                                           dragCoeff, SCALE, 0.0, Double.POSITIVE_INFINITY);
             dragParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
@@ -184,7 +184,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                 }
             });
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                                absorptionCoeff, SCALE, 1);
+                                                                absorptionCoeff, SCALE, 0.0, 1.0);
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
@@ -195,7 +195,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                 }
             });
             radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                reflectionCoeff, SCALE, 1);
+                                                                reflectionCoeff, SCALE, 0.0, 1.0);
             radiationParametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
@@ -303,7 +303,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         this.radiationParametersDrivers = new ParameterDriver[2];
         try {
             dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                           dragCoeff, SCALE, 1);
+                                                           dragCoeff, SCALE,
+                                                           Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
             dragParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
@@ -312,7 +313,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                 }
             });
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
-                                                                absorptionCoeff, SCALE, 1);
+                                                                absorptionCoeff, SCALE, 0.0, 1.0);
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
@@ -323,7 +324,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                 }
             });
             radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
-                                                                reflectionCoeff, SCALE, 1);
+                                                                reflectionCoeff, SCALE, 0.0, 1.0);
             radiationParametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override

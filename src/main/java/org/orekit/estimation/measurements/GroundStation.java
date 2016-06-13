@@ -90,15 +90,18 @@ public class GroundStation {
         };
 
         this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
-                                                    0.0, OFFSET_SCALE, 1);
+                                                    0.0, OFFSET_SCALE,
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         this.eastOffsetDriver.addObserver(resettingObserver);
 
         this.northOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-North",
-                                                     0.0, OFFSET_SCALE, 1);
+                                                     0.0, OFFSET_SCALE,
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         this.northOffsetDriver.addObserver(resettingObserver);
 
         this.zenithOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-Zenith",
-                                                      0.0, OFFSET_SCALE, 1);
+                                                      0.0, OFFSET_SCALE,
+                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         this.zenithOffsetDriver.addObserver(resettingObserver);
 
     }

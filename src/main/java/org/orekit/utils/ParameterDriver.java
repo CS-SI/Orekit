@@ -19,6 +19,7 @@ package org.orekit.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 
 
@@ -60,6 +61,12 @@ public class ParameterDriver {
     /** Scaling factor. */
     private final double scale;
 
+    /** Minimum value. */
+    private final double minValue;
+
+    /** MAximum value. */
+    private final double maxValue;
+
     /** Current value. */
     private double value;
 
@@ -83,12 +90,17 @@ public class ParameterDriver {
      * @param scale scaling factor to convert the parameters value to
      * non-dimensional (typically set to the expected standard deviation of the
      * parameter)
+     * @param minValue minimum value
+     * @param maxValue maximum value
      */
     public ParameterDriver(final String name, final double initialValue,
-                           final double scale, int ddd) {
+                           final double scale, final double minValue,
+                           final double maxValue) {
         this.name         = name;
         this.initialValue = initialValue;
         this.scale        = scale;
+        this.minValue     = minValue;
+        this.maxValue     = maxValue;
         this.value        = initialValue;
         this.selected     = false;
         this.observers    = new ArrayList<ParameterObserver>();
@@ -125,6 +137,20 @@ public class ParameterDriver {
         return initialValue;
     }
 
+    /** Get minimum parameter value.
+     * @return minimum parameter value
+     */
+    public double getMinValue() {
+        return minValue;
+    }
+
+    /** Get maximum parameter value.
+     * @return maximum parameter value
+     */
+    public double getMaxValue() {
+        return maxValue;
+    }
+
     /** Get scale.
      * @return scale
      */
@@ -151,7 +177,7 @@ public class ParameterDriver {
      * process. It is computed as {@code (current - initial)/scale}.
      * </p>
      * @param normalized value
-     * @exception OrekitException if normalized is invalid
+     * @exception OrekitException if an observer throws one
      */
     public void setNormalizedValue(final double normalized) throws OrekitException {
         setValue(initialValue + scale * normalized);
@@ -165,12 +191,18 @@ public class ParameterDriver {
     }
 
     /** Set parameter value.
+     * <p>
+     * If {@code newValue} is below {@link #getMinValue()}, it will
+     * be silently to {@link #getMinValue()}. If {@code newValue} is
+     * above {@link #getMaxValue()}, it will be silently to {@link
+     * #getMaxValue()}.
+     * </p>
      * @param newValue new value
-     * @exception OrekitException if newValue is invalid
+     * @exception OrekitException if an observer throws one
      */
     public void setValue(final double newValue) throws OrekitException {
         final double previousValue = getValue();
-        value = newValue;
+        value = FastMath.max(minValue, FastMath.min(maxValue, newValue));
         for (final ParameterObserver observer : observers) {
             observer.valueChanged(previousValue, this);
         }

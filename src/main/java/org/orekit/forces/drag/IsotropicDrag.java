@@ -66,8 +66,11 @@ public class IsotropicDrag implements DragSensitive {
     public IsotropicDrag(final double crossSection, final double dragCoeff) {
         this.dragParametersDrivers     = new ParameterDriver[1];
         try {
+            // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
+            // the single coefficient may be arbitrary, and even negative
             dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
-                                                           dragCoeff, SCALE, 1);
+                                                           dragCoeff, SCALE,
+                                                           Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
             dragParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

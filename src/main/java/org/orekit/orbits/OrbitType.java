@@ -16,14 +16,15 @@
  */
 package org.orekit.orbits;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 /** Enumerate for {@link Orbit orbital} parameters types.
  */
@@ -67,8 +68,19 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
-        public List<String> parametersNames(final PositionAngle type) {
-            return Arrays.asList(POS_X, POS_Y, POS_Z, VEL_X, VEL_Y, VEL_Z);
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
+            throws OrekitException {
+            final ParameterDriversList drivers = new ParameterDriversList();
+            final double[] array = new double[6];
+            mapOrbitToArray(orbit, type, array);
+            final double[] scale = scale(dP, orbit);
+            drivers.add(new ParameterDriver(POS_X, array[0], scale[0], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(POS_Y, array[1], scale[1], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(POS_Z, array[2], scale[2], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(VEL_X, array[3], scale[3], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(VEL_Y, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(VEL_Z, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            return drivers;
         }
 
     },
@@ -105,13 +117,22 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
-        public List<String> parametersNames(final PositionAngle type) {
-            return Arrays.asList(A, E_X, E_Y, INC, RAAN,
-                                 type == PositionAngle.MEAN ?
-                                     MEAN_LAT_ARG :
-                                     type == PositionAngle.ECCENTRIC ?
-                                         ECC_LAT_ARG :
-                                         TRUE_LAT_ARG);
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
+            throws OrekitException {
+            final ParameterDriversList drivers = new ParameterDriversList();
+            final double[] array = new double[6];
+            mapOrbitToArray(orbit, type, array);
+            final double[] scale = scale(dP, orbit);
+            final String name = type == PositionAngle.MEAN ?
+                                    MEAN_LAT_ARG :
+                                    type == PositionAngle.ECCENTRIC ? ECC_LAT_ARG : TRUE_LAT_ARG;
+            drivers.add(new ParameterDriver(A,    array[0], scale[0],  0.0, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(E_X,  array[1], scale[1], -1.0, 1.0));
+            drivers.add(new ParameterDriver(E_Y,  array[2], scale[2], -1.0, 1.0));
+            drivers.add(new ParameterDriver(INC,  array[3], scale[3],  0.0, FastMath.PI));
+            drivers.add(new ParameterDriver(RAAN, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(name, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            return drivers;
         }
 
     },
@@ -149,14 +170,24 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
-        public List<String> parametersNames(final PositionAngle type) {
-            return Arrays.asList(A, E_X, E_Y, H_X, H_Y,
-                                 type == PositionAngle.MEAN ?
-                                     MEAN_LON_ARG :
-                                     type == PositionAngle.ECCENTRIC ?
-                                         ECC_LON_ARG :
-                                         TRUE_LON_ARG);
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
+            throws OrekitException {
+            final ParameterDriversList drivers = new ParameterDriversList();
+            final double[] array = new double[6];
+            mapOrbitToArray(orbit, type, array);
+            final double[] scale = scale(dP, orbit);
+            final String name = type == PositionAngle.MEAN ?
+                                    MEAN_LON_ARG :
+                                    type == PositionAngle.ECCENTRIC ? ECC_LON_ARG : TRUE_LON_ARG;
+            drivers.add(new ParameterDriver(A,    array[0], scale[0],  0.0, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(E_X,  array[1], scale[1], -1.0, 1.0));
+            drivers.add(new ParameterDriver(E_Y,  array[2], scale[2], -1.0, 1.0));
+            drivers.add(new ParameterDriver(H_X,  array[3], scale[3], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(H_Y,  array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(name, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            return drivers;
         }
+
 
     },
 
@@ -193,13 +224,22 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
-        public List<String> parametersNames(final PositionAngle type) {
-            return Arrays.asList(A, ECC, INC, PA, RAAN,
-                                 type == PositionAngle.MEAN ?
-                                     MEAN_ANOM :
-                                     type == PositionAngle.ECCENTRIC ?
-                                         ECC_ANOM :
-                                         TRUE_ANOM);
+        public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
+            throws OrekitException {
+            final ParameterDriversList drivers = new ParameterDriversList();
+            final double[] array = new double[6];
+            mapOrbitToArray(orbit, type, array);
+            final double[] scale = scale(dP, orbit);
+            final String name = type == PositionAngle.MEAN ?
+                                    MEAN_ANOM :
+                                    type == PositionAngle.ECCENTRIC ? ECC_ANOM : TRUE_ANOM;
+            drivers.add(new ParameterDriver(A,    array[0], scale[0],  0.0, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(ECC,  array[1], scale[1],  0.0, 1.0));
+            drivers.add(new ParameterDriver(INC,  array[2], scale[2],  0.0, FastMath.PI));
+            drivers.add(new ParameterDriver(PA,   array[3], scale[3], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(RAAN, array[4], scale[4], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            drivers.add(new ParameterDriver(name, array[5], scale[5], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
+            return drivers;
         }
 
     };
@@ -318,15 +358,66 @@ public enum OrbitType {
     public abstract Orbit mapArrayToOrbit(double[] array, PositionAngle type,
                                           AbsoluteDate date, double mu, Frame frame);
 
-    /** Get the names of the parameters.
-     * <p>
-     * These names are suitable for text displaying, they are short (one or two letters).
-     * Beware some names include unicode greek letters, they cannot be displayed in ASCII,
-     * UTF-8 is recommended for display.
-     * </p>
+    /** Get parameters drivers initialized from a reference orbit.
+     * @param dP user specified position error
+     * @param orbit reference orbit
      * @param type type of the angle
-     * @return names of the parameters
+     * @return parameters drivers initialized from reference orbit
+     * @exception OrekitException if Jacobian is singular
      */
-    public abstract List<String> parametersNames(final PositionAngle type);
+    public abstract ParameterDriversList getDrivers(final double dP, final Orbit orbit,
+                                                    final PositionAngle type)
+        throws OrekitException;
+
+    /** Compute scaling factor for parameters drivers.
+     * <p>
+     * The scales are estimated from partial derivatives properties of orbits,
+     * starting from a scalar position error specified by the user.
+     * Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
+     * we get at constant energy (i.e. on a Keplerian trajectory):
+     * <pre>
+     * V² r |dV| = mu |dr|
+     * </pre>
+     * So we deduce a scalar velocity error consistent with the position error.
+     * From here, we apply orbits Jacobians matrices to get consistent scales
+     * on orbital parameters.
+     * </p>
+     * @param dP user specified position error
+     * @param orbit reference orbit
+     * @return scaling factor array
+     * @exception OrekitException if Jacobian is singular
+     */
+    protected double[] scale(final double dP, final Orbit orbit)
+        throws OrekitException {
+
+        // estimate the scalar velocity error
+        final PVCoordinates pv = orbit.getPVCoordinates();
+        final double r2 = pv.getPosition().getNormSq();
+        final double v  = pv.getVelocity().getNorm();
+        final double dV = orbit.getMu() * dP / (v * r2);
+
+        final double[] scale = new double[6];
+
+        // convert the orbit to the desired type
+        final double[][] jacobian = new double[6][6];
+        final Orbit converted = convertType(orbit);
+        converted.getJacobianWrtCartesian(PositionAngle.TRUE, jacobian);
+
+        for (int i = 0; i < 6; ++i) {
+            final double[] row = jacobian[i];
+            scale[i] = FastMath.abs(row[0]) * dP +
+                            FastMath.abs(row[1]) * dP +
+                            FastMath.abs(row[2]) * dP +
+                            FastMath.abs(row[3]) * dV +
+                            FastMath.abs(row[4]) * dV +
+                            FastMath.abs(row[5]) * dV;
+            if (Double.isNaN(scale[i])) {
+                throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, this);
+            }
+        }
+
+        return scale;
+
+    }
 
 }
