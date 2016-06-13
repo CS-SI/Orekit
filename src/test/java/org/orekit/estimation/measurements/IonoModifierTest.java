@@ -124,7 +124,7 @@ public class IonoModifierTest {
                                                                            propagatorBuilder);
         final List<Measurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
-                                                               new RangeRateMeasurementCreator(context),
+                                                               new RangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
         

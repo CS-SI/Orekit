@@ -108,10 +108,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             evaluation.setValue(0.5 * (evaluation.getValue()[0] + evalOneWay2.getValue()[0]));
             final double[][] sd1 = evaluation.getStateDerivatives();
             final double[][] sd2 = evalOneWay2.getStateDerivatives();
-            final double[][] sd = sd1.clone();
+            final double[][] sd = new double[sd1.length][sd1[0].length];
             for (int i = 0; i < sd.length; ++i) {
                 for (int j = 0; j < sd[0].length; ++j) {
-                    sd[i][j] += 0.5 * (sd1[i][j] + sd2[i][j]);
+                    sd[i][j] = 0.5 * (sd1[i][j] + sd2[i][j]);
                 }
             }
             evaluation.setStateDerivatives(sd);
@@ -122,9 +122,9 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                 if (driver.isSelected()) {
                     final double[] pd1 = evaluation.getParameterDerivatives(driver);
                     final double[] pd2 = evalOneWay2.getParameterDerivatives(driver);
-                    final double[] pd = pd1.clone();
+                    final double[] pd = new double[pd1.length];
                     for (int i = 0; i < pd.length; ++i) {
-                        pd[i] += 0.5 * (pd1[i] + pd2[i]);
+                        pd[i] = 0.5 * (pd1[i] + pd2[i]);
                     }
                     evaluation.setParameterDerivatives(driver, pd);
                 }
