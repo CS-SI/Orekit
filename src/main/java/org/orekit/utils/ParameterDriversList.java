@@ -149,7 +149,7 @@ public class ParameterDriversList {
             addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(final ParameterDriver driver)
+                public void valueChanged(double previousValue, final ParameterDriver driver)
                     throws OrekitException {
                     for (final ParameterDriver d : drivers) {
                         d.setValue(driver.getValue());

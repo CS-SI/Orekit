@@ -72,7 +72,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
                                                        body.getGM(), MU_SCALE, 1);
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
-                public void valueChanged(final ParameterDriver driver) {
+                public void valueChanged(double previousValue, final ParameterDriver driver) {
                     ThirdBodyAttraction.this.gm = driver.getValue();
                 }
             });

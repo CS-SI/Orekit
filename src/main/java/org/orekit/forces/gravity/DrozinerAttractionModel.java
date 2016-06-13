@@ -113,7 +113,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(final ParameterDriver driver) {
+                public void valueChanged(double previousValue, final ParameterDriver driver) {
                     DrozinerAttractionModel.this.mu = driver.getValue();
                 }
             });

@@ -34,7 +34,7 @@ import org.orekit.errors.OrekitException;
  * {@link #setValue(double[]) setValue} method to update the
  * parameter value. Each time the value is set, the physical model
  * will be notified as it will implement a specialized version of
- * the {@link #valueChanged(double[]) valueChanged} method.
+ * the {@link #valueChanged(double, double[]) valueChanged} method.
  * </p>
  * <p>
  * This design has two major goals. First, it allows an external
@@ -97,7 +97,7 @@ public class ParameterDriver {
 
     /** Add an observer for this driver.
      * <p>
-     * The observer {@link ParameterObserver#valueChanged(ParameterDriver)
+     * The observer {@link ParameterObserver#valueChanged(double, ParameterDriver)
      * valueChanged} method is called once automatically when the
      * observer is added, and then called at each value change.
      * </p>
@@ -108,7 +108,7 @@ public class ParameterDriver {
     public void addObserver(final ParameterObserver observer)
         throws OrekitException {
         observers.add(observer);
-        observer.valueChanged(this);
+        observer.valueChanged(getValue(), this);
     }
 
     /** Get name.
@@ -154,10 +154,7 @@ public class ParameterDriver {
      * @exception OrekitException if normalized is invalid
      */
     public void setNormalizedValue(final double normalized) throws OrekitException {
-        value = initialValue + scale * normalized;
-        for (final ParameterObserver observer : observers) {
-            observer.valueChanged(this);
-        }
+        setValue(initialValue + scale * normalized);
     }
 
     /** Get current parameter value.
@@ -172,9 +169,10 @@ public class ParameterDriver {
      * @exception OrekitException if newValue is invalid
      */
     public void setValue(final double newValue) throws OrekitException {
+        final double previousValue = getValue();
         value = newValue;
         for (final ParameterObserver observer : observers) {
-            observer.valueChanged(this);
+            observer.valueChanged(previousValue, this);
         }
     }
 

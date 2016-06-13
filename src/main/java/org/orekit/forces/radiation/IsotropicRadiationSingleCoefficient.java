@@ -72,7 +72,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(final ParameterDriver driver) {
+                public void valueChanged(double previousValue, final ParameterDriver driver) {
                     IsotropicRadiationSingleCoefficient.this.cr = driver.getValue();
                 }
             });

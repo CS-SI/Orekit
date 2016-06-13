@@ -82,7 +82,7 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(final ParameterDriver driver) {
+                public void valueChanged(double previousValue, final ParameterDriver driver) {
                     IsotropicRadiationClassicalConvention.this.ca = driver.getValue();
                 }
             });
@@ -91,7 +91,7 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
             radiationParametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(final ParameterDriver driver) {
+                public void valueChanged(double previousValue, final ParameterDriver driver) {
                     IsotropicRadiationClassicalConvention.this.cs = driver.getValue();
                 }
             });

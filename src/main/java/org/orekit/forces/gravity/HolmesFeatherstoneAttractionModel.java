@@ -126,7 +126,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(final ParameterDriver driver) {
+                public void valueChanged(double previousValue, final ParameterDriver driver) {
                     HolmesFeatherstoneAttractionModel.this.mu = driver.getValue();
                 }
             });

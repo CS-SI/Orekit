@@ -71,7 +71,7 @@ public class IsotropicDrag implements DragSensitive {
             dragParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(final ParameterDriver driver) {
+                public void valueChanged(double previousValue, final ParameterDriver driver) {
                     IsotropicDrag.this.dragCoeff = driver.getValue();
                 }
             });

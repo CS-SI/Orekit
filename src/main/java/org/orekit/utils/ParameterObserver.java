@@ -27,9 +27,10 @@ import org.orekit.errors.OrekitException;
 public interface ParameterObserver {
 
     /** Notify that a parameter value has been changed.
+     * @param previousValue TODO
      * @param driver parameter driver that has been changed
      * @exception OrekitException if value is invalid for the driven model
      */
-    void valueChanged(ParameterDriver driver) throws OrekitException;
+    void valueChanged(double previousValue, ParameterDriver driver) throws OrekitException;
 
 }
