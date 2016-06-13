@@ -19,10 +19,16 @@ package org.orekit.propagation.numerical;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -80,6 +86,34 @@ public class NumericalPropagatorTest {
     private AbsoluteDate         initDate;
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
+
+    @Test
+    public void testForceModelInitialized() throws PropagationException {
+        // setup
+        // mutable holders
+        SpacecraftState[] actualState = new SpacecraftState[1];
+        AbsoluteDate[] actualDate = new AbsoluteDate[1];
+        ForceModel force = new ForceModelAdapter(){
+            @Override
+            public void init(SpacecraftState initialState, AbsoluteDate target) {
+                actualState[0] = initialState;
+                actualDate[0] = target;
+            }
+        };
+
+        // action
+        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.addForceModel(force);
+        AbsoluteDate target = initDate.shiftedBy(60);
+        propagator.propagate(target);
+
+        // verify
+        Assert.assertThat(actualDate[0], CoreMatchers.is(target));
+        Assert.assertThat(actualState[0].getDate().durationFrom(initDate),
+                CoreMatchers.is(0.0));
+        Assert.assertThat(actualState[0].getPVCoordinates(),
+                OrekitMatchers.pvIs(initialState.getPVCoordinates()));
+    }
 
     @Test
     public void testEphemerisModeWithHandler() throws PropagationException {
@@ -915,6 +949,71 @@ public class NumericalPropagatorTest {
         initDate = null;
         initialState = null;
         propagator = null;
+    }
+
+    /**
+     * Adapter class for {@link ForceModel} so that sub classes only have to implement the
+     * methods they want.
+     */
+    private static class ForceModelAdapter implements ForceModel {
+
+        @Override
+        public List<String> getParametersNames() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean isSupported(String name) {
+            return false;
+        }
+
+        @Override
+        public double getParameter(String name) throws MathIllegalArgumentException {
+            throw new MathIllegalArgumentException(
+                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                    name,
+                    getParametersNames());
+        }
+
+        @Override
+        public void setParameter(String name, double value)
+                throws MathIllegalArgumentException {
+            throw new MathIllegalArgumentException(
+                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                    name,
+                    getParametersNames());
+        }
+
+        @Override
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(
+                SpacecraftState s,
+                String name) throws OrekitException {
+            throw new MathIllegalArgumentException(
+                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                    name,
+                    getParametersNames());
+        }
+
+        @Override
+        public void addContribution(SpacecraftState s, TimeDerivativesEquations adder) {
+        }
+
+        @Override
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(
+                AbsoluteDate date,
+                Frame frame,
+                FieldVector3D<DerivativeStructure> position,
+                FieldVector3D<DerivativeStructure> velocity,
+                FieldRotation<DerivativeStructure> rotation,
+                DerivativeStructure mass) throws OrekitException {
+            return position.scalarMultiply(0);
+        }
+
+        @Override
+        public EventDetector[] getEventsDetectors() {
+            return new EventDetector[0];
+        }
+
     }
 
 }

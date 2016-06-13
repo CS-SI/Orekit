@@ -60,6 +60,24 @@ import org.orekit.utils.ParameterDriver;
  */
 public interface ForceModel {
 
+    /**
+     * Initialize the force model at the start of propagation. This method will be called
+     * before any calls to {@link #addContribution(SpacecraftState,
+     * TimeDerivativesEquations)} or {@link #accelerationDerivatives(AbsoluteDate, Frame,
+     * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)} or {@link
+     * #accelerationDerivatives(SpacecraftState, String)}.
+     *
+     * <p> The default implementation of this method does nothing.
+     *
+     * @param initialState spacecraft state at the start of propagation.
+     * @param target       date of propagation. Not equal to {@code initialState.getDate()}.
+     * @throws OrekitException if an implementing class overrides the default behavior and
+     *                         takes some action that throws an {@link OrekitException}.
+     */
+    default void init(SpacecraftState initialState, AbsoluteDate target)
+            throws OrekitException {
+    }
+
     /** Compute the contribution of the force model to the perturbing
      * acceleration.
      * @param s current state information: date, kinematics, attitude

@@ -525,6 +525,15 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target)
+                throws OrekitException {
+            for (final ForceModel forceModel : forceModels) {
+                forceModel.init(initialState, target);
+            }
+        }
+
+        /** {@inheritDoc} */
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
 
             orbit = state.getOrbit();
