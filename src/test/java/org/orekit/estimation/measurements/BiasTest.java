@@ -93,7 +93,7 @@ public class BiasTest {
             }
         }
 
-        estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
+        estimator.setConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
@@ -104,15 +104,15 @@ public class BiasTest {
             }
         }
 
-        EstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                     0.0,  9.8e-7,
-                                     0.0,  2.3e-6,
-                                     0.0,  2.9e-7,
-                                     0.0,  1.3e-10);
+        EstimationTestUtils.checkFit(context, estimator, 2, 6,
+                                     0.0,  3.0e-7,
+                                     0.0,  7.3e-7,
+                                     0.0,  1.3e-7,
+                                     0.0,  7.8e-11);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assert.assertEquals(realStationsBiases[i],
                                 stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),
-                                5.9e-8);
+                                3.5e-8);
         }
 
     }

@@ -61,11 +61,8 @@ public class BatchLSEstimator {
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
 
-    /** Relative tolerance. */
-    private double relativeTolerance;
-
-    /** Absolute tolerance. */
-    private double absoluteTolerance;
+    /** Convergence threshold on normalized parameters. */
+    private double parametersConvergenceThreshold;
 
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
@@ -97,14 +94,13 @@ public class BatchLSEstimator {
                             final LeastSquaresOptimizer optimizer)
         throws OrekitException {
 
-        this.propagatorBuilder      = propagatorBuilder;
-        this.measurements           = new ArrayList<Measurement<?>>();
-        this.optimizer              = optimizer;
-        this.relativeTolerance      = Double.NaN;
-        this.absoluteTolerance      = Double.NaN;
-        this.lsBuilder              = new LeastSquaresBuilder();
-        this.evaluations            = null;
-        this.observer               = null;
+        this.propagatorBuilder              = propagatorBuilder;
+        this.measurements                   = new ArrayList<Measurement<?>>();
+        this.optimizer                      = optimizer;
+        this.parametersConvergenceThreshold = Double.NaN;
+        this.lsBuilder                      = new LeastSquaresBuilder();
+        this.evaluations                    = null;
+        this.observer                       = null;
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -220,14 +216,34 @@ public class BatchLSEstimator {
     }
 
     /**
-     * Set convergence thresholds on RMS.
-     * @param relTol the relative tolerance.
-     * @param absTol the absolute tolerance.
+     * Set convergence threshold.
+     * <p>
+     * The convergence used for estimation is based on the estimated
+     * parameters {@link ParameterDriver#getNormalizedValue() normalized values}.
+     * Convergence is considered to have been reached when the difference
+     * between previous and current normalized value is less than the
+     * convergence threshold for all parameters. The same value is used
+     * for all parameters since they are normalized and hence dimensionless.
+     * </p>
+     * <p>
+     * Normalized values are computed as {@code (current - initial)/scale},
+     * so convergence is reached when the following condition holds for
+     * all estimated parameters:
+     * {@code |current[i] - previous[i]| <= threshold * scale[i]}
+     * </p>
+     * <p>
+     * So the convergence threshold specified here can be considered as
+     * a multiplication factor applied to scale. Since for all parameters
+     * the scale is often small (typically about 1 m for orbital positions
+     * for example), then the threshold should not be too small. A value
+     * of 10⁻³ is often quite accurate.
+     * </>
+     * @param parametersConvergenceThreshold convergence threshold on
+     * normalized parameters (dimensionless, related to parameters scales)
      * @see EvaluationRmsChecker
      */
-    public void setConvergenceThreshold(final double relTol, final double absTol) {
-        this.relativeTolerance = relTol;
-        this.absoluteTolerance = absTol;
+    public void setConvergenceThreshold(final double parametersConvergenceThreshold) {
+        this.parametersConvergenceThreshold = parametersConvergenceThreshold;
     }
 
     /** Estimate the orbit and the parameters.
@@ -291,7 +307,6 @@ public class BatchLSEstimator {
             @Override
             public void modelCalled(final Orbit newOrbit,
                                     final Map<Measurement<?>, Evaluation<?>> newEvaluations) {
-                System.out.println(newOrbit);
                 BatchLSEstimator.this.orbit       = newOrbit;
                 BatchLSEstimator.this.evaluations = newEvaluations;
             }
@@ -304,7 +319,7 @@ public class BatchLSEstimator {
         lsBuilder.parameterValidator(new OrbitValidator(propagatorBuilder.getOrbitType(),
                                                         propagatorBuilder.getOrbitalParametersDrivers()));
 
-        lsBuilder.checker(new EvaluationRmsChecker(relativeTolerance, absoluteTolerance) {
+        lsBuilder.checker(new ConvergenceChecker<LeastSquaresProblem.Evaluation>() {
             /** {@inheritDoc} */
             @Override
             public boolean converged(final int iteration,
@@ -328,7 +343,9 @@ public class BatchLSEstimator {
                     }
                 }
 
-                return super.converged(iteration, previous, current);
+                final double lInf = current.getPoint().getLInfDistance(previous.getPoint());
+                return lInf <= parametersConvergenceThreshold;
+
             }
         });
         try {

@@ -104,7 +104,7 @@ public class GroundStationTest {
                     estimator.addMeasurement(range);
                 }
         }
-        estimator.setConvergenceThreshold(1.0e-14, 1.0e-12);
+        estimator.setConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(100);
         estimator.setMaxEvaluations(200);
 
@@ -113,14 +113,14 @@ public class GroundStationTest {
         moved.getNorthOffsetDriver().setSelected(true);
         moved.getZenithOffsetDriver().setSelected(true);
 
-        EstimationTestUtils.checkFit(context, estimator, 3, 4,
-                                     0.0, 1.2e-6,
-                                     0.0, 2.3e-6,
-                                     0.0, 8.8e-7,
-                                     0.0, 4.4e-10);
-        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(), 3.5e-7);
-        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(), 2.8e-7);
-        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 1.1e-7);
+        EstimationTestUtils.checkFit(context, estimator, 2, 3,
+                                     0.0, 1.6e-6,
+                                     0.0, 3.4e-6,
+                                     0.0, 4.5e-7,
+                                     0.0, 2.2e-10);
+        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   6.0e-8);
+        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  1.6e-7);
+        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 1.9e-7);
 
     }
 

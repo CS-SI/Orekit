@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
@@ -36,6 +37,7 @@ import java.util.TreeSet;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
@@ -54,6 +56,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Bias;
 import org.orekit.estimation.measurements.Evaluation;
+import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.OutlierFilter;
@@ -131,8 +134,8 @@ public class OrbitDeterminationTest {
         final double velocityAccuracy = 1e-4;
 
         //test on the convergence
-        final int numberOfIte  = 3;
-        final int numberOfEval = 4;
+        final int numberOfIte  = 12;
+        final int numberOfEval = 24;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -192,8 +195,8 @@ public class OrbitDeterminationTest {
         final double dimensionLessCoef = 1e-3;
 
         //test on the convergence
-        final int numberOfIte  = 4;
-        final int numberOfEval = 5;
+        final int numberOfIte  = 5;
+        final int numberOfEval = 10;
 
         Assert.assertEquals(numberOfIte, odsatW3.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odsatW3.getNumberOfEvaluation());
@@ -391,6 +394,33 @@ public class OrbitDeterminationTest {
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
 
+        estimator.setObserver(new BatchLSObserver() {
+
+            private PVCoordinates previousPV;
+            {
+                previousPV = initialGuess.getPVCoordinates();
+                final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS%n";
+                System.out.format(Locale.US, header);
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void iterationPerformed(final int iterationsCount, final int evaluationsCount,
+                                           final Orbit orbit,
+                                           final ParameterDriversList estimatedPropagatorParameters,
+                                           final ParameterDriversList estimatedMeasurementsParameters,
+                                           final EvaluationsProvider   evaluationsProvider,
+                                           final LeastSquaresProblem.Evaluation lspEvaluation) {
+                PVCoordinates currentPV = orbit.getPVCoordinates();
+                final String format = "    %2d         %2d      %13.6f %12.9f %16.12f%n";
+                System.out.format(Locale.US, format,
+                                  iterationsCount, evaluationsCount,
+                                  Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
+                                  Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
+                                  lspEvaluation.getRMS());
+                previousPV = currentPV;
+            }
+        });
 
         // measurements
         final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
@@ -1052,17 +1082,11 @@ public class OrbitDeterminationTest {
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
                                              final NumericalPropagatorBuilder propagatorBuilder)
         throws NoSuchElementException, OrekitException {
-        final double relativeConvergence;
-        if (! parser.containsKey(ParameterKey.ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD)) {
-            relativeConvergence = 1.0e-14;
+        final double convergenceThreshold;
+        if (! parser.containsKey(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD)) {
+            convergenceThreshold = 1.0e-3;
         } else {
-            relativeConvergence = parser.getDouble(ParameterKey.ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD);
-        }
-        final double absoluteConvergence;
-        if (! parser.containsKey(ParameterKey.ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD)) {
-            absoluteConvergence = 1.0e-12;
-        } else {
-            absoluteConvergence = parser.getDouble(ParameterKey.ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD);
+            convergenceThreshold = parser.getDouble(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD);
         }
         final int maxIterations;
         if (! parser.containsKey(ParameterKey.ESTIMATOR_MAX_ITERATIONS)) {
@@ -1079,7 +1103,7 @@ public class OrbitDeterminationTest {
 
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        estimator.setConvergenceThreshold(relativeConvergence, absoluteConvergence);
+        estimator.setConvergenceThreshold(convergenceThreshold);
         estimator.setMaxIterations(maxIterations);
         estimator.setMaxEvaluations(maxEvaluations);
 
@@ -1792,8 +1816,7 @@ public class OrbitDeterminationTest {
         PV_OUTLIER_REJECTION_STARTING_ITERATION,
         MEASUREMENTS_FILES,
         OUTPUT_BASE_NAME,
-        ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD,
-        ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD,
+        ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD,
         ESTIMATOR_MAX_ITERATIONS,
         ESTIMATOR_MAX_EVALUATIONS;
     }

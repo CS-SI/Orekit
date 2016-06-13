@@ -210,10 +210,9 @@ PV.measurements.position.sigma                  = 1.0
 PV.measurements.velocity.sigma                  = 0.01
 
 ## Estimator
-estimator.rms.absolute.convergence.threshold    = 1.0e-10
-estimator.rms.relative.convergence.threshold    = 1.0e-10
-estimator.max.iterations                        = 15
-estimator.max.evaluations                       = 30
+estimator.normalized.parameters.convergence.threshold = 1.0e-2
+estimator.max.iterations                              = 15
+estimator.max.evaluations                             = 30
 
 # comma-separated list of measurements files (in the same directory as this file)
 measurements.files = Lageos2_test.aer

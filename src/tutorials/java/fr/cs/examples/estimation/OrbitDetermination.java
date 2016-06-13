@@ -991,17 +991,11 @@ public class OrbitDetermination {
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
                                              final NumericalPropagatorBuilder propagatorBuilder)
         throws NoSuchElementException, OrekitException {
-        final double relativeConvergence;
-        if (! parser.containsKey(ParameterKey.ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD)) {
-            relativeConvergence = 1.0e-14;
+        final double convergenceThreshold;
+        if (! parser.containsKey(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD)) {
+            convergenceThreshold = 1.0e-3;
         } else {
-            relativeConvergence = parser.getDouble(ParameterKey.ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD);
-        }
-        final double absoluteConvergence;
-        if (! parser.containsKey(ParameterKey.ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD)) {
-            absoluteConvergence = 1.0e-12;
-        } else {
-            absoluteConvergence = parser.getDouble(ParameterKey.ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD);
+            convergenceThreshold = parser.getDouble(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD);
         }
         final int maxIterations;
         if (! parser.containsKey(ParameterKey.ESTIMATOR_MAX_ITERATIONS)) {
@@ -1018,7 +1012,7 @@ public class OrbitDetermination {
 
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        estimator.setConvergenceThreshold(relativeConvergence, absoluteConvergence);
+        estimator.setConvergenceThreshold(convergenceThreshold);
         estimator.setMaxIterations(maxIterations);
         estimator.setMaxEvaluations(maxEvaluations);
 
@@ -1923,8 +1917,7 @@ public class OrbitDetermination {
         PV_OUTLIER_REJECTION_STARTING_ITERATION,
         MEASUREMENTS_FILES,
         OUTPUT_BASE_NAME,
-        ESTIMATOR_RMS_ABSOLUTE_CONVERGENCE_THRESHOLD,
-        ESTIMATOR_RMS_RELATIVE_CONVERGENCE_THRESHOLD,
+        ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD,
         ESTIMATOR_MAX_ITERATIONS,
         ESTIMATOR_MAX_EVALUATIONS;
     }
