@@ -293,6 +293,14 @@
   		<scope>test</scope>
   		<optional>false</optional>
   	</dependency>
+    <dependency>
+      <groupId>org.hipparchus</groupId>
+      <artifactId>hipparchus-stat</artifactId>
+      <version>${orekit.hipparchus.version}</version>
+      <type>jar</type>
+      <optional>false</optional>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
