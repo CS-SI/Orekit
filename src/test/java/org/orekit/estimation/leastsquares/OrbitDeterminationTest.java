@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
@@ -38,7 +37,6 @@ import java.util.TreeSet;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
-import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
@@ -57,7 +55,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Bias;
 import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.Measurement;
 import org.orekit.estimation.measurements.OutlierFilter;
@@ -109,6 +106,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 public class OrbitDeterminationTest {
 
@@ -135,8 +133,8 @@ public class OrbitDeterminationTest {
         final double velocityAccuracy = 1e-4;
 
         //test on the convergence
-        final int numberOfIte  = 12;
-        final int numberOfEval = 24;
+        final int numberOfIte  = 3;
+        final int numberOfEval = 4;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
@@ -150,7 +148,8 @@ public class OrbitDeterminationTest {
         Assert.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on measurements parameters
-        final List<? extends ParameterDriver> list = odLageos2.measurementsParameters.getDrivers();
+        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
+        list.addAll(odLageos2.measurementsParameters.getDrivers());
         sortParametersChanges(list);
         final double[] stationOffSet = { -1.351682,  -2.180542,  -5.278784 };
         final double rangeBias = -7.923393;
@@ -196,8 +195,8 @@ public class OrbitDeterminationTest {
         final double dimensionLessCoef = 1e-3;
 
         //test on the convergence
-        final int numberOfIte  = 5;
-        final int numberOfEval = 10;
+        final int numberOfIte  = 4;
+        final int numberOfEval = 7;
 
         Assert.assertEquals(numberOfIte, odsatW3.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odsatW3.getNumberOfEvaluation());
@@ -218,7 +217,8 @@ public class OrbitDeterminationTest {
         Assert.assertEquals(SRPCoef,  odsatW3.propagatorParameters.getDrivers().get(1).getValue(), dimensionLessCoef);
 
         //test on measurements parameters
-        final List<? extends ParameterDriver> list = odsatW3.measurementsParameters.getDrivers();
+        final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
+        list.addAll(odsatW3.measurementsParameters.getDrivers());
         sortParametersChanges(list);
 
         //station CastleRock
@@ -372,7 +372,6 @@ public class OrbitDeterminationTest {
         // Orbit initial guess
         final Orbit initialGuess = createOrbit(parser, gravityField.getMu());
 
-
         // IERS conventions
         final IERSConventions conventions;
         if (!parser.containsKey(ParameterKey.IERS_CONVENTIONS)) {
@@ -381,47 +380,15 @@ public class OrbitDeterminationTest {
             conventions = IERSConventions.valueOf("IERS_" + parser.getInt(ParameterKey.IERS_CONVENTIONS));
         }
 
-
         // central body
         final OneAxisEllipsoid body = createBody(parser);
 
-
         // propagator builder
-        // Utils.setDataRoot("orbit-determination-data");
-
         final NumericalPropagatorBuilder propagatorBuilder =
                         createPropagatorBuilder(parser, conventions, gravityField, body, initialGuess);
 
         // estimator
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
-
-        estimator.setObserver(new BatchLSObserver() {
-
-            private PVCoordinates previousPV;
-            {
-                previousPV = initialGuess.getPVCoordinates();
-                final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS%n";
-                System.out.format(Locale.US, header);
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public void iterationPerformed(final int iterationsCount, final int evaluationsCount,
-                                           final Orbit orbit,
-                                           final ParameterDriversList estimatedPropagatorParameters,
-                                           final ParameterDriversList estimatedMeasurementsParameters,
-                                           final EvaluationsProvider   evaluationsProvider,
-                                           final LeastSquaresProblem.Evaluation lspEvaluation) {
-                PVCoordinates currentPV = orbit.getPVCoordinates();
-                final String format = "    %2d         %2d      %13.6f %12.9f %16.12f%n";
-                System.out.format(Locale.US, format,
-                                  iterationsCount, evaluationsCount,
-                                  Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
-                                  Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
-                                  lspEvaluation.getRMS());
-                previousPV = currentPV;
-            }
-        });
 
         // measurements
         final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();

@@ -172,7 +172,7 @@ ground.station.elevation.sigma                 [0] =  0.02
 ground.station.elevation.bias                  [0] =  0.01
 ground.station.elevation.bias.min              [0] = -0.50
 ground.station.elevation.bias.max              [0] = +0.50
-ground.station.az.el.biases.estimated          [0] = false
+ground.station.az.el.biases.estimated          [0] = true
 ground.station.elevation.refraction.correction [0] = true
 ground.station.range.tropospheric.correction   [0] = true
 
@@ -199,7 +199,7 @@ ground.station.elevation.sigma                 [1] =  0.02
 ground.station.elevation.bias                  [1] =  0.01
 ground.station.elevation.bias.min              [1] = -0.50
 ground.station.elevation.bias.max              [1] = +0.50
-ground.station.az.el.biases.estimated          [1] = false
+ground.station.az.el.biases.estimated          [1] = true
 ground.station.elevation.refraction.correction [1] = true
 ground.station.range.tropospheric.correction   [1] = true
 
@@ -226,7 +226,7 @@ ground.station.elevation.sigma                 [2] =  0.02
 ground.station.elevation.bias                  [2] =  0.01
 ground.station.elevation.bias.min              [2] = -0.50
 ground.station.elevation.bias.max              [2] = +0.50
-ground.station.az.el.biases.estimated          [2] = false
+ground.station.az.el.biases.estimated          [2] = true
 ground.station.elevation.refraction.correction [2] = true
 ground.station.range.tropospheric.correction   [2] = true
 
@@ -253,7 +253,7 @@ ground.station.elevation.sigma                 [3] =  0.02
 ground.station.elevation.bias                  [3] =  0.01
 ground.station.elevation.bias.min              [3] = -0.50
 ground.station.elevation.bias.max              [3] = +0.50
-ground.station.az.el.biases.estimated          [3] = false
+ground.station.az.el.biases.estimated          [3] = true
 ground.station.elevation.refraction.correction [3] = true
 ground.station.range.tropospheric.correction   [3] = true
 
@@ -280,7 +280,7 @@ ground.station.elevation.sigma                 [4] =  0.02
 ground.station.elevation.bias                  [4] =  0.01
 ground.station.elevation.bias.min              [4] = -0.50
 ground.station.elevation.bias.max              [4] = +0.50
-ground.station.az.el.biases.estimated          [4] = false
+ground.station.az.el.biases.estimated          [4] = true
 ground.station.elevation.refraction.correction [4] = true
 ground.station.range.tropospheric.correction   [4] = true
 
