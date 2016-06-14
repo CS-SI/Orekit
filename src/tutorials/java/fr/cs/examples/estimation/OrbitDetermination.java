@@ -233,7 +233,7 @@ public class OrbitDetermination {
                 private PVCoordinates previousPV;
                 {
                     previousPV = initialGuess.getPVCoordinates();
-                    final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS%n";
+                    final String header = "iteration evaluations      ΔP(m)        ΔV(m/s)           RMS          nb Range    nb Range-rate  nb Angular     nb PV%n";
                     System.out.format(Locale.US, header);
                     if (logStream != null) {
                         logStream.format(Locale.US, header);
@@ -249,18 +249,45 @@ public class OrbitDetermination {
                                                final EvaluationsProvider   evaluationsProvider,
                                                final LeastSquaresProblem.Evaluation lspEvaluation) {
                     PVCoordinates currentPV = orbit.getPVCoordinates();
-                    final String format = "    %2d         %2d      %13.6f %12.9f %16.12f%n";
+                    final String format = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s%n";
+                    final EvaluationCounter<Range>     rangeCounter     = new EvaluationCounter<Range>();
+                    final EvaluationCounter<RangeRate> rangeRateCounter = new EvaluationCounter<RangeRate>();
+                    final EvaluationCounter<Angular>   angularCounter   = new EvaluationCounter<Angular>();
+                    final EvaluationCounter<PV>        pvCounter        = new EvaluationCounter<PV>();
+                    for (final Map.Entry<Measurement<?>, Evaluation<?>> entry : estimator.getLastEvaluations().entrySet()) {
+                        if (entry.getKey() instanceof Range) {
+                            @SuppressWarnings("unchecked")
+                            Evaluation<Range> evaluation = (Evaluation<Range>) entry.getValue();
+                            rangeCounter.add(evaluation);
+                        } else if (entry.getKey() instanceof RangeRate) {
+                            @SuppressWarnings("unchecked")
+                            Evaluation<RangeRate> evaluation = (Evaluation<RangeRate>) entry.getValue();
+                            rangeRateCounter.add(evaluation);
+                        } else if (entry.getKey() instanceof Angular) {
+                            @SuppressWarnings("unchecked")
+                            Evaluation<Angular> evaluation = (Evaluation<Angular>) entry.getValue();
+                            angularCounter.add(evaluation);
+                        } else if (entry.getKey() instanceof PV) {
+                            @SuppressWarnings("unchecked")
+                            Evaluation<PV> evaluation = (Evaluation<PV>) entry.getValue();
+                            pvCounter.add(evaluation);
+                        }
+                    }
                     System.out.format(Locale.US, format,
                                       iterationsCount, evaluationsCount,
                                       Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
                                       Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
-                                      lspEvaluation.getRMS());
+                                      lspEvaluation.getRMS(),
+                                      rangeCounter.format(8), rangeRateCounter.format(8),
+                                      angularCounter.format(8), pvCounter.format(8));
                     if (logStream != null) {
                         logStream.format(Locale.US, format,
                                          iterationsCount, evaluationsCount,
                                          Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
                                          Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
-                                         lspEvaluation.getRMS());
+                                         lspEvaluation.getRMS(),
+                                         rangeCounter.format(8), rangeRateCounter.format(8),
+                                         angularCounter.format(8), pvCounter.format(8));
                     }
                     previousPV = currentPV;
                 }
@@ -289,35 +316,42 @@ public class OrbitDetermination {
                     velocityLog.add(evaluation);
                 }
             }
+
             System.out.println("Estimated orbit: " + estimated);
             if (logStream != null) {
                 logStream.println("Estimated orbit: " + estimated);
             }
 
+            final ParameterDriversList orbitalParameters      = estimator.getOrbitalParameters(true);
             final ParameterDriversList propagatorParameters   = estimator.getPropagatorParameters(true);
             final ParameterDriversList measurementsParameters = estimator.getMeasurementsParameters(true);
             int length = 0;
+            for (final ParameterDriver parameterDriver : orbitalParameters.getDrivers()) {
+                length = FastMath.max(length, parameterDriver.getName().length());
+            }
             for (final ParameterDriver parameterDriver : propagatorParameters.getDrivers()) {
                 length = FastMath.max(length, parameterDriver.getName().length());
             }
             for (final ParameterDriver parameterDriver : measurementsParameters.getDrivers()) {
                 length = FastMath.max(length, parameterDriver.getName().length());
             }
-            displayParametersChanges(System.out,
-                                     "Estimated propagator parameters changes: ",
-                                     length, propagatorParameters);
+            displayParametersChanges(System.out, "Estimated orbital parameters changes: ",
+                                     false, length, orbitalParameters);
             if (logStream != null) {
-                displayParametersChanges(logStream,
-                                         "Estimated propagator parameters changes: ",
-                                         length, propagatorParameters);
+                displayParametersChanges(logStream, "Estimated orbital parameters changes: ",
+                                         false, length, orbitalParameters);
             }
-            displayParametersChanges(System.out,
-                                     "Estimated measurements parameters changes: ",
-                                     length, measurementsParameters);
+            displayParametersChanges(System.out, "Estimated propagator parameters changes: ",
+                                     true, length, propagatorParameters);
             if (logStream != null) {
-                displayParametersChanges(logStream,
-                                         "Estimated measurements parameters changes: ",
-                                         length, measurementsParameters);
+                displayParametersChanges(logStream, "Estimated propagator parameters changes: ",
+                                         true, length, propagatorParameters);
+            }
+            displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
+                                     true, length, measurementsParameters);
+            if (logStream != null) {
+                displayParametersChanges(logStream, "Estimated measurements parameters changes: ",
+                                         true, length, measurementsParameters);
             }
 
             System.out.println("Number of iterations: " + estimator.getIterationsCount());
@@ -363,21 +397,24 @@ public class OrbitDetermination {
     /** Display parameters changes.
      * @param stream output stream
      * @param header header message
+     * @param sort if true, parameters will be sorted lexicographically
      * @param parameters parameters list
      */
-    private void displayParametersChanges(final PrintStream out, final String header,
+    private void displayParametersChanges(final PrintStream out, final String header, final boolean sort,
                                           final int length, final ParameterDriversList parameters) {
 
-        // sort the parameters lexicographically
         List<ParameterDriver> list = new ArrayList<ParameterDriver>(parameters.getDrivers());
-        Collections.sort(list, new Comparator<ParameterDriver>() {
-            /** {@inheritDoc} */
-            @Override
-            public int compare(final ParameterDriver pd1, final ParameterDriver pd2) {
-                return pd1.getName().compareTo(pd2.getName());
-            }
-
-        });
+        if (sort) {
+            // sort the parameters lexicographically
+            Collections.sort(list, new Comparator<ParameterDriver>() {
+                /** {@inheritDoc} */
+                @Override
+                public int compare(final ParameterDriver pd1, final ParameterDriver pd2) {
+                    return pd1.getName().compareTo(pd2.getName());
+                }
+            
+            });
+        }
 
         out.println(header);
         int index = 0;
@@ -1873,6 +1910,51 @@ public class OrbitDetermination {
             final double[] observed    = evaluation.getMeasurement().getObservedValue();
             return Vector3D.distance(new Vector3D(theoretical[3], theoretical[4], theoretical[5]),
                                      new Vector3D(observed[3],    observed[4],    observed[5]));
+        }
+
+    }
+
+    /** Local class for evaluation conting.
+     * @param T type of mesurement
+     */
+    private static class EvaluationCounter<T extends Measurement<T>> {
+
+        /** Total number of measurements. */
+        private int total;
+
+        /** Number of active (i.e. positive weight) measurements. */
+        private int active;
+
+        /** Add a measurement evaluation.
+         * @param evaluation measurement evaluation to add
+         */
+        public void add(Evaluation<T> evaluation) {
+            ++total;
+            double max = 0;
+            for (final double w : evaluation.getCurrentWeight()) {
+                max = FastMath.max(max, w);
+            }
+            if (max > 0) {
+                ++active;
+            }
+        }
+
+        /** Format an active/total count.
+         * @param size field minimum size
+         */
+        public String format(final int size) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(active);
+            builder.append('/');
+            builder.append(total);
+            while (builder.length() < size) {
+                if (builder.length() % 2 == 0) {
+                    builder.insert(0, ' ');
+                } else {
+                    builder.append(' ');
+                }
+            }
+            return builder.toString();
         }
 
     }
