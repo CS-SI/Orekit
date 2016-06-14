@@ -55,7 +55,10 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
         derivatives = new double[bias.length][bias.length];
         for (int i = 0; i < bias.length; ++i) {
-            derivatives[i][i] = scale[i];
+            // derivatives are computed with respect to the physical parameters,
+            // not with respect to the normalized parameters (normalization is
+            // performed later on), so the derivative is really 1.0 and not scale[i]
+            derivatives[i][i] = 1.0;
         }
 
     }
