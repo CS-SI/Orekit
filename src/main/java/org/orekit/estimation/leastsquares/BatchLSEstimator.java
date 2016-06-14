@@ -30,6 +30,7 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.EvaluationRmsChecker;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.ParameterValidator;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
@@ -314,6 +315,11 @@ public class BatchLSEstimator {
                                       modelObserver);
         lsBuilder.model(model);
 
+        // add a validator for orbital parameters
+        lsBuilder.parameterValidator(new Validator(estimatedOrbitalParameters,
+                                                   estimatedPropagatorParameters,
+                                                   estimatedMeasurementsParameters));
+
         lsBuilder.checker(new ConvergenceChecker<LeastSquaresProblem.Evaluation>() {
             /** {@inheritDoc} */
             @Override
@@ -499,6 +505,61 @@ public class BatchLSEstimator {
 
         }
 
+    }
+
+    /** Validator for estimated parameters. */
+    private static class Validator implements ParameterValidator {
+
+        /** Estimated orbital parameters. */
+        private final ParameterDriversList estimatedOrbitalParameters;
+
+        /** Estimated propagator parameters. */
+        private final ParameterDriversList estimatedPropagatorParameters;
+
+        /** Estimated measurements parameters. */
+        private final ParameterDriversList estimatedMeasurementsParameters;
+
+        /** Simple constructor.
+         * @param estimatedOrbitalParameters estimated orbital parameters
+         * @param estimatedPropagatorParameters estimated propagator parameters
+         * @param estimatedMeasurementsParameters estimated measurements parameters
+         */
+        Validator(final ParameterDriversList estimatedOrbitalParameters,
+                  final ParameterDriversList estimatedPropagatorParameters,
+                  final ParameterDriversList estimatedMeasurementsParameters) {
+            this.estimatedOrbitalParameters      = estimatedOrbitalParameters;
+            this.estimatedPropagatorParameters   = estimatedPropagatorParameters;
+            this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public RealVector validate(final RealVector params)
+            throws OrekitExceptionWrapper {
+
+            try {
+                int i = 0;
+                for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
+                    // let the parameter handle min/max clipping
+                    driver.setNormalizedValue(params.getEntry(i));
+                    params.setEntry(i++, driver.getNormalizedValue());
+                }
+                for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
+                    // let the parameter handle min/max clipping
+                    driver.setNormalizedValue(params.getEntry(i));
+                    params.setEntry(i++, driver.getNormalizedValue());
+                }
+                for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+                    // let the parameter handle min/max clipping
+                    driver.setNormalizedValue(params.getEntry(i));
+                    params.setEntry(i++, driver.getNormalizedValue());
+                }
+
+                return params;
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
+        }
     }
 
 }
