@@ -195,7 +195,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if (timeMatcher.matches()) {
             final int    hour      = Integer.parseInt(timeMatcher.group(1));
             final int    minute    = Integer.parseInt(timeMatcher.group(2));
-            final double second    = Double.parseDouble(timeMatcher.group(3).replace(',', '.'));
+            final double second    = timeMatcher.group(3) == null ? 0.0 : Double.parseDouble(timeMatcher.group(3).replace(',', '.'));
             final String offset    = timeMatcher.group(4);
             final int    minutesFromUTC;
             if (offset == null) {

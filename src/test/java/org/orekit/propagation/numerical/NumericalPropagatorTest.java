@@ -77,6 +77,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -511,7 +512,7 @@ public class NumericalPropagatorTest {
         newPropagator.setOrbitType(type);
         newPropagator.setPositionAngleType(angle);
         newPropagator.setInitialState(state);
-        for (ForceModel force: propagator.getForceModels()) {
+        for (ForceModel force: propagator.getAllForceModels()) {
             newPropagator.addForceModel(force);
         }
         return newPropagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
@@ -1012,6 +1013,18 @@ public class NumericalPropagatorTest {
         @Override
         public EventDetector[] getEventsDetectors() {
             return new EventDetector[0];
+        }
+
+        @Override
+        public ParameterDriver[] getParametersDrivers() {
+            return new ParameterDriver[0];
+        }
+
+        @Override
+        public ParameterDriver getParameterDriver(String name)
+            throws OrekitException {
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                      name, getParametersNames());
         }
 
     }

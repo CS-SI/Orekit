@@ -18,10 +18,8 @@ package org.orekit.forces.gravity;
 
 import java.util.Map;
 
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
-import org.hipparchus.ode.LocalizedODEFormats;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -30,6 +28,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
@@ -167,12 +166,12 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assert.assertEquals(0, fm.getParametersNames().size());
+        Assert.assertEquals(0, fm.getParametersDrivers().length);
         try {
-            fm.getParameter("unknown");
+            fm.getParameterDriver("unknown");
             Assert.fail("an exception should have been thrown");
-        } catch (MathIllegalArgumentException miae) {
-            Assert.assertEquals(LocalizedODEFormats.UNKNOWN_PARAMETER, miae.getSpecifier());
+        } catch (OrekitException miae) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
         }
     }
 
@@ -191,12 +190,12 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assert.assertEquals(0, fm.getParametersNames().size());
+        Assert.assertEquals(0, fm.getParametersDrivers().length);
         try {
-            fm.setParameter("unknown", 0.0);
+            fm.getParameterDriver("unknown").setValue(0.0);
             Assert.fail("an exception should have been thrown");
-        } catch (MathIllegalArgumentException miae) {
-            Assert.assertEquals(LocalizedODEFormats.UNKNOWN_PARAMETER, miae.getSpecifier());
+        } catch (OrekitException miae) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
         }
     }
 

@@ -20,10 +20,9 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -31,6 +30,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 
 /** Atmospheric drag force model.
@@ -48,7 +48,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * @author Pascal Parraud
  */
 
-public class DragForce extends AbstractParameterizable implements ForceModel {
+public class DragForce extends AbstractForceModel {
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
@@ -61,7 +61,6 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
      * @param spacecraft the object physical and geometrical information
      */
     public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
-        super(spacecraft.getDragParametersNames());
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
     }
@@ -97,15 +96,8 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
     }
 
     /** {@inheritDoc} */
-    public double getParameter(final String name) throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        return spacecraft.getDragCoefficient();
-    }
-
-    /** {@inheritDoc} */
-    public void setParameter(final String name, final double value) throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        spacecraft.setDragCoefficient(value);
+    public ParameterDriver[] getParametersDrivers() {
+        return spacecraft.getDragParametersDrivers();
     }
 
     /** {@inheritDoc} */

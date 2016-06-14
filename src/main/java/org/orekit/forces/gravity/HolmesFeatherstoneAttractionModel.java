@@ -26,10 +26,10 @@ import org.hipparchus.geometry.euclidean.threed.SphericalCoordinates;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.TideSystem;
@@ -40,6 +40,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>
@@ -69,14 +71,24 @@ import org.orekit.time.AbsoluteDate;
  * @since 6.0
  */
 
-public class HolmesFeatherstoneAttractionModel
-    extends AbstractParameterizable implements ForceModel, TideSystemProvider {
+public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implements TideSystemProvider {
 
     /** Exponent scaling to avoid floating point overflow.
      * <p>The paper uses 10^280, we prefer a power of two to preserve accuracy thanks to
      * {@link FastMath#scalb(double, int)}, so we use 2^930 which has the same order of magnitude.
      */
     private static final int SCALING = 930;
+
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
+    /** Drivers for force model parameters. */
+    private final ParameterDriver[] parametersDrivers;
 
     /** Provider for the spherical harmonics. */
     private final NormalizedSphericalHarmonicsProvider provider;
@@ -107,7 +119,21 @@ public class HolmesFeatherstoneAttractionModel
     public HolmesFeatherstoneAttractionModel(final Frame centralBodyFrame,
                                              final NormalizedSphericalHarmonicsProvider provider) {
 
-        super(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+        this.parametersDrivers = new ParameterDriver[1];
+        try {
+            parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                       provider.getMu(), MU_SCALE, 0.0, Double.POSITIVE_INFINITY);
+            parametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    HolmesFeatherstoneAttractionModel.this.mu = driver.getValue();
+                }
+            });
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        };
 
         this.provider  = provider;
         this.mu        = provider.getMu();
@@ -728,20 +754,6 @@ public class HolmesFeatherstoneAttractionModel
     }
 
     /** {@inheritDoc} */
-    public double getParameter(final String name)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        return mu;
-    }
-
-    /** {@inheritDoc} */
-    public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        mu = value;
-    }
-
-    /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                                                       final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
                                                                       final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
@@ -804,9 +816,14 @@ public class HolmesFeatherstoneAttractionModel
         final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
 
         return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1, 1, gInertial.getX(), gInertial.getX() / mu),
-                              new DerivativeStructure(1, 1, gInertial.getY(), gInertial.getY() / mu),
-                              new DerivativeStructure(1, 1, gInertial.getZ(), gInertial.getZ() / mu));
+                                                      new DerivativeStructure(1, 1, gInertial.getY(), gInertial.getY() / mu),
+                                                      new DerivativeStructure(1, 1, gInertial.getZ(), gInertial.getZ() / mu));
 
+    }
+
+    /** {@inheritDoc} */
+    public ParameterDriver[] getParametersDrivers() {
+        return parametersDrivers.clone();
     }
 
 }

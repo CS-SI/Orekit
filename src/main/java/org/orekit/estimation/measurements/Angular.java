@@ -26,7 +26,6 @@ import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.ParameterDriver;
 
 /** Class modeling an Azimuth-Elevation measurement from a ground station.
  * The motion of the spacecraft during the signal flight time is taken into
@@ -53,7 +52,10 @@ public class Angular extends AbstractMeasurement<Angular> {
     public Angular(final GroundStation station, final AbsoluteDate date,
                    final double[] angular, final double[] sigma, final double[] baseWeight)
         throws OrekitException {
-        super(date, angular, sigma, baseWeight, station.getPositionOffsetDriver());
+        super(date, angular, sigma, baseWeight,
+              station.getEastOffsetDriver(),
+              station.getNorthOffsetDriver(),
+              station.getZenithOffsetDriver());
         this.station = station;
     }
 
@@ -150,28 +152,30 @@ public class Angular extends AbstractMeasurement<Angular> {
 
         evaluation.setStateDerivatives(dAzOndP, dElOndP);
 
-        final ParameterDriver positionOffsetDriver = station.getPositionOffsetDriver();
-        if (positionOffsetDriver.isEstimated()) {
+        if (station.getEastOffsetDriver().isSelected()  ||
+            station.getNorthOffsetDriver().isSelected() ||
+            station.getZenithOffsetDriver().isSelected()) {
 
             // partial derivatives with respect to parameters
             // Be aware: east; north and zenith are expressed in station parent frame but the derivatives are expressed
             // with respect to reference station topocentric frame
 
-            // partial derivatives of azimuth with respect to parameters in body frame
-            final double[] dAzOndQ = new double[] {
+            if (station.getEastOffsetDriver().isSelected()) {
+                evaluation.setParameterDerivatives(station.getEastOffsetDriver(),
                                                    azimuth.getPartialDerivative(0, 0, 0, 1, 0, 0),
+                                                   elevation.getPartialDerivative(0, 0, 0, 1, 0, 0));
+            }
+            if (station.getNorthOffsetDriver().isSelected()) {
+                evaluation.setParameterDerivatives(station.getNorthOffsetDriver(),
                                                    azimuth.getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 0, 1)
-            };
+                                                   elevation.getPartialDerivative(0, 0, 0, 0, 1, 0));
+            }
+            if (station.getZenithOffsetDriver().isSelected()) {
+                evaluation.setParameterDerivatives(station.getZenithOffsetDriver(),
+                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 0, 1),
+                                                   elevation.getPartialDerivative(0, 0, 0, 0, 0, 1));
+            }
 
-            // partial derivatives of elevation with respect to parameters in body frame
-            final double[] dElOndQ = new double[] {
-                                                   elevation.getPartialDerivative(0, 0, 0, 1, 0, 0),
-                                                   elevation.getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                                   elevation.getPartialDerivative(0, 0, 0, 0, 0, 1)
-            };
-
-            evaluation.setParameterDerivatives(positionOffsetDriver, dAzOndQ, dElOndQ);
         }
 
         return evaluation;

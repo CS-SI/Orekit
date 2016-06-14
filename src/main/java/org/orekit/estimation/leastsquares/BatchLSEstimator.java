@@ -19,7 +19,6 @@ package org.orekit.estimation.leastsquares;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,11 +30,10 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.EvaluationRmsChecker;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.ParameterValidator;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.estimation.OrbitValidator;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.estimation.measurements.Measurement;
@@ -44,6 +42,8 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 
 /** Least squares estimator for orbit determination.
@@ -61,11 +61,8 @@ public class BatchLSEstimator {
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
 
-    /** Relative tolerance. */
-    private double relativeTolerance;
-
-    /** Absolute tolerance. */
-    private double absoluteTolerance;
+    /** Convergence threshold on normalized parameters. */
+    private double parametersConvergenceThreshold;
 
     /** Builder for the least squares problem. */
     private final LeastSquaresBuilder lsBuilder;
@@ -97,14 +94,13 @@ public class BatchLSEstimator {
                             final LeastSquaresOptimizer optimizer)
         throws OrekitException {
 
-        this.propagatorBuilder      = propagatorBuilder;
-        this.measurements           = new ArrayList<Measurement<?>>();
-        this.optimizer              = optimizer;
-        this.relativeTolerance      = Double.NaN;
-        this.absoluteTolerance      = Double.NaN;
-        this.lsBuilder              = new LeastSquaresBuilder();
-        this.evaluations            = null;
-        this.observer               = null;
+        this.propagatorBuilder              = propagatorBuilder;
+        this.measurements                   = new ArrayList<Measurement<?>>();
+        this.optimizer                      = optimizer;
+        this.parametersConvergenceThreshold = Double.NaN;
+        this.lsBuilder                      = new LeastSquaresBuilder();
+        this.evaluations                    = null;
+        this.observer                       = null;
 
         // our model computes value and Jacobian in one call,
         // so we don't use the lazy evaluation feature
@@ -141,46 +137,26 @@ public class BatchLSEstimator {
         lsBuilder.maxIterations(maxIterations);
     }
 
-    /** Check for parameteres names conflicts.
+    /** Get the orbital parameters supported by this estimator.
+     * @param estimatedOnly if true, only estimated parameters are returned
+     * @return orbital parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
      */
-    private void checkParameters() throws OrekitException {
+    public ParameterDriversList getOrbitalParameters(final boolean estimatedOnly)
+        throws OrekitException {
 
-        final Map<String, ParameterDriver> map = new HashMap<String, ParameterDriver>();
-        for (final ParameterDriver parameter : propagatorBuilder.getParametersDrivers()) {
-
-            final ParameterDriver existing = map.get(parameter.getName());
-            if (existing != null) {
-                // the name already exists
-                if (existing != parameter) {
-                    // it is a different parameter with the same name
-                    throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
-                                              parameter.getName());
-                }
-            } else {
-                // it is a new parameter
-                map.put(parameter.getName(), parameter);
-            }
-
-        }
-
-        for (final  Measurement<?> measurement : measurements) {
-            for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
-
-                final ParameterDriver existing = map.get(parameter.getName());
-                if (existing != null) {
-                    // the name already exists
-                    if (existing != parameter) {
-                        // it is a different parameter with the same name
-                        throw new OrekitException(OrekitMessages.DUPLICATED_PARAMETER_NAME,
-                                                  parameter.getName());
+        if (estimatedOnly) {
+            final ParameterDriversList estimated = new ParameterDriversList();
+            for (final DelegatingDriver delegating : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+                if (delegating.isSelected()) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        estimated.add(driver);
                     }
-                } else {
-                    // it is a new parameter
-                    map.put(parameter.getName(), parameter);
                 }
-
             }
+            return estimated;
+        } else {
+            return propagatorBuilder.getOrbitalParametersDrivers();
         }
 
     }
@@ -190,22 +166,22 @@ public class BatchLSEstimator {
      * @return propagator parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
      */
-    public List<ParameterDriver> getPropagatorParameters(final boolean estimatedOnly)
+    public ParameterDriversList getPropagatorParameters(final boolean estimatedOnly)
         throws OrekitException {
 
-        final List<ParameterDriver> parameters;
         if (estimatedOnly) {
-            parameters = new ArrayList<ParameterDriver>();
-            for (final ParameterDriver parameterDriver : propagatorBuilder.getParametersDrivers()) {
-                if (parameterDriver.isEstimated()) {
-                    parameterDriver.checkAndAddSelf(parameters);
+            final ParameterDriversList estimated = new ParameterDriversList();
+            for (final DelegatingDriver delegating : propagatorBuilder.getPropagationParametersDrivers().getDrivers()) {
+                if (delegating.isSelected()) {
+                    for (final ParameterDriver driver : delegating.getRawDrivers()) {
+                        estimated.add(driver);
+                    }
                 }
             }
+            return estimated;
         } else {
-            parameters = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
+            return propagatorBuilder.getPropagationParametersDrivers();
         }
-
-        return parameters;
 
     }
 
@@ -214,22 +190,19 @@ public class BatchLSEstimator {
      * @return measurements parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
      */
-    public List<ParameterDriver> getMeasurementsParameters(final boolean estimatedOnly)
+    public ParameterDriversList getMeasurementsParameters(final boolean estimatedOnly)
         throws OrekitException {
 
-        final List<ParameterDriver> parameters;
-        if (estimatedOnly) {
-            parameters = new ArrayList<ParameterDriver>();
-            for (final  Measurement<?> measurement : measurements) {
-                for (final ParameterDriver parameterDriver : measurement.getParametersDrivers()) {
-                    if (parameterDriver.isEstimated()) {
-                        parameterDriver.checkAndAddSelf(parameters);
-                    }
+        final ParameterDriversList parameters =  new ParameterDriversList();
+        for (final  Measurement<?> measurement : measurements) {
+            for (final ParameterDriver driver : measurement.getParametersDrivers()) {
+                if ((!estimatedOnly) || driver.isSelected()) {
+                    parameters.add(driver);
                 }
             }
-        } else {
-            parameters = new ArrayList<ParameterDriver>(propagatorBuilder.getParametersDrivers());
         }
+
+        parameters.sort();
 
         return parameters;
 
@@ -243,61 +216,78 @@ public class BatchLSEstimator {
     }
 
     /**
-     * Set convergence thresholds on RMS.
-     * @param relTol the relative tolerance.
-     * @param absTol the absolute tolerance.
+     * Set convergence threshold.
+     * <p>
+     * The convergence used for estimation is based on the estimated
+     * parameters {@link ParameterDriver#getNormalizedValue() normalized values}.
+     * Convergence is considered to have been reached when the difference
+     * between previous and current normalized value is less than the
+     * convergence threshold for all parameters. The same value is used
+     * for all parameters since they are normalized and hence dimensionless.
+     * </p>
+     * <p>
+     * Normalized values are computed as {@code (current - initial)/scale},
+     * so convergence is reached when the following condition holds for
+     * all estimated parameters:
+     * {@code |current[i] - previous[i]| <= threshold * scale[i]}
+     * </p>
+     * <p>
+     * So the convergence threshold specified here can be considered as
+     * a multiplication factor applied to scale. Since for all parameters
+     * the scale is often small (typically about 1 m for orbital positions
+     * for example), then the threshold should not be too small. A value
+     * of 10⁻³ is often quite accurate.
+     * </>
+     * @param parametersConvergenceThreshold convergence threshold on
+     * normalized parameters (dimensionless, related to parameters scales)
      * @see EvaluationRmsChecker
      */
-    public void setConvergenceThreshold(final double relTol, final double absTol) {
-        this.relativeTolerance = relTol;
-        this.absoluteTolerance = absTol;
+    public void setParametersConvergenceThreshold(final double parametersConvergenceThreshold) {
+        this.parametersConvergenceThreshold = parametersConvergenceThreshold;
     }
 
     /** Estimate the orbit and the parameters.
      * <p>
-     * The estimated parameters are available using {@link #getPropagatorParameters(boolean)}
-     * and {@link #getMeasurementsParameters(boolean)}.
+     * The initial guess for all parameters must have been set before calling this method
+     * using {@link #getOrbitalParameters(boolean)}, {@link #getPropagatorParameters(boolean)},
+     * and {@link #getMeasurementsParameters(boolean)} and then {@link ParameterDriver#setValue(double)
+     * setting the values} of the parameters.
      * </p>
-     * @param initialGuess initial guess for the orbit
+     * <p>
+     * After this method returns, the estimated parameters can be retrieved using
+     * {@link #getOrbitalParameters(boolean)}, {@link #getPropagatorParameters(boolean)},
+     * and {@link #getMeasurementsParameters(boolean)} and then {@link ParameterDriver#getValue()
+     * getting the values} of the parameters.
+     * </p>
+     * <p>
+     * As a convenience, the method also returns a fully configured and ready to use
+     * propagator set up with all the estimated values.
+     * </p>
      * @return propagator configured with estimated orbit as initial state, and all
      * propagator estimated parameters also set
      * @exception OrekitException if there is a conflict in parameters names
      * or if orbit cannot be determined
      */
-    public NumericalPropagator estimate(final Orbit initialGuess) throws OrekitException {
+    public NumericalPropagator estimate() throws OrekitException {
 
-        checkParameters();
-
-        // compute problem dimension:
-        // orbital parameters + estimated propagator parameters + estimated measurements parameters
-        final int                   nbOrbitalParameters      = 6;
-        final List<ParameterDriver> estimatedPropagatorParameters = getPropagatorParameters(true);
-        int dimensionPropagator   = 0;
-        for (final ParameterDriver parameter : estimatedPropagatorParameters) {
-            dimensionPropagator += parameter.getDimension();
-        }
-        final List<ParameterDriver> estimatedMeasurementsParameters = getMeasurementsParameters(true);
-        int dimensionMeasurements = 0;
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
-            if (parameter.isEstimated()) {
-                dimensionMeasurements += parameter.getDimension();
-            }
-        }
-        final int dimension = nbOrbitalParameters + dimensionPropagator + dimensionMeasurements;
+        // get all estimated parameters
+        final ParameterDriversList estimatedOrbitalParameters      = getOrbitalParameters(true);
+        final ParameterDriversList estimatedPropagatorParameters   = getPropagatorParameters(true);
+        final ParameterDriversList estimatedMeasurementsParameters = getMeasurementsParameters(true);
 
         // create start point
-        final double[] start = new double[dimension];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(initialGuess,
-                                                         propagatorBuilder.getPositionAngle(),
-                                                         start);
-        int index = nbOrbitalParameters;
-        for (final ParameterDriver propagatorParameter : estimatedPropagatorParameters) {
-            System.arraycopy(propagatorParameter.getValue(), 0, start, index, propagatorParameter.getDimension());
-            index += propagatorParameter.getDimension();
+        final double[] start = new double[estimatedOrbitalParameters.getNbParams() +
+                                          estimatedPropagatorParameters.getNbParams() +
+                                          estimatedMeasurementsParameters.getNbParams()];
+        int iStart = 0;
+        for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
+            start[iStart++] = driver.getNormalizedValue();
         }
-        for (final ParameterDriver parameter : estimatedMeasurementsParameters) {
-            System.arraycopy(parameter.getValue(), 0, start, index, parameter.getDimension());
-            index += parameter.getDimension();
+        for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
+            start[iStart++] = driver.getNormalizedValue();
+        }
+        for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+            start[iStart++] = driver.getNormalizedValue();
         }
         lsBuilder.start(start);
 
@@ -321,15 +311,16 @@ public class BatchLSEstimator {
                 BatchLSEstimator.this.evaluations = newEvaluations;
             }
         };
-        final Model model = new Model(propagatorBuilder, estimatedPropagatorParameters,
-                                      measurements, estimatedMeasurementsParameters,
-                                      initialGuess.getDate(), modelObserver);
+        final Model model = new Model(propagatorBuilder, measurements, estimatedMeasurementsParameters,
+                                      modelObserver);
         lsBuilder.model(model);
 
         // add a validator for orbital parameters
-        lsBuilder.parameterValidator(OrbitValidator.getValidator(propagatorBuilder.getOrbitType()));
+        lsBuilder.parameterValidator(new Validator(estimatedOrbitalParameters,
+                                                   estimatedPropagatorParameters,
+                                                   estimatedMeasurementsParameters));
 
-        lsBuilder.checker(new EvaluationRmsChecker(relativeTolerance, absoluteTolerance) {
+        lsBuilder.checker(new ConvergenceChecker<LeastSquaresProblem.Evaluation>() {
             /** {@inheritDoc} */
             @Override
             public boolean converged(final int iteration,
@@ -353,7 +344,9 @@ public class BatchLSEstimator {
                     }
                 }
 
-                return super.converged(iteration, previous, current);
+                final double lInf = current.getPoint().getLInfDistance(previous.getPoint());
+                return lInf <= parametersConvergenceThreshold;
+
             }
         });
         try {
@@ -361,7 +354,7 @@ public class BatchLSEstimator {
             // solve the problem
             optimizer.optimize(new TappedLSProblem(lsBuilder.build(), model));
 
-            // create a new configured propagtor with all estimated parameters
+            // create a new configured propagator with all estimated parameters
             return model.createPropagator(lspEvaluation.getPoint());
 
         } catch (MathRuntimeException mrte) {
@@ -512,6 +505,61 @@ public class BatchLSEstimator {
 
         }
 
+    }
+
+    /** Validator for estimated parameters. */
+    private static class Validator implements ParameterValidator {
+
+        /** Estimated orbital parameters. */
+        private final ParameterDriversList estimatedOrbitalParameters;
+
+        /** Estimated propagator parameters. */
+        private final ParameterDriversList estimatedPropagatorParameters;
+
+        /** Estimated measurements parameters. */
+        private final ParameterDriversList estimatedMeasurementsParameters;
+
+        /** Simple constructor.
+         * @param estimatedOrbitalParameters estimated orbital parameters
+         * @param estimatedPropagatorParameters estimated propagator parameters
+         * @param estimatedMeasurementsParameters estimated measurements parameters
+         */
+        Validator(final ParameterDriversList estimatedOrbitalParameters,
+                  final ParameterDriversList estimatedPropagatorParameters,
+                  final ParameterDriversList estimatedMeasurementsParameters) {
+            this.estimatedOrbitalParameters      = estimatedOrbitalParameters;
+            this.estimatedPropagatorParameters   = estimatedPropagatorParameters;
+            this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public RealVector validate(final RealVector params)
+            throws OrekitExceptionWrapper {
+
+            try {
+                int i = 0;
+                for (final ParameterDriver driver : estimatedOrbitalParameters.getDrivers()) {
+                    // let the parameter handle min/max clipping
+                    driver.setNormalizedValue(params.getEntry(i));
+                    params.setEntry(i++, driver.getNormalizedValue());
+                }
+                for (final ParameterDriver driver : estimatedPropagatorParameters.getDrivers()) {
+                    // let the parameter handle min/max clipping
+                    driver.setNormalizedValue(params.getEntry(i));
+                    params.setEntry(i++, driver.getNormalizedValue());
+                }
+                for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+                    // let the parameter handle min/max clipping
+                    driver.setNormalizedValue(params.getEntry(i));
+                    params.setEntry(i++, driver.getNormalizedValue());
+                }
+
+                return params;
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
+        }
     }
 
 }

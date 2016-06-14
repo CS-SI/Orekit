@@ -20,11 +20,10 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
@@ -34,6 +33,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 /** Solar radiation pressure force model.
  *
@@ -42,7 +42,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Pascal Parraud
  */
-public class SolarRadiationPressure extends AbstractParameterizable implements ForceModel {
+public class SolarRadiationPressure extends AbstractForceModel {
 
     /** Reference distance for the solar radiation pressure (m). */
     private static final double D_REF = 149597870000.0;
@@ -93,7 +93,6 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
                                   final PVCoordinatesProvider sun,
                                   final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
-        super(spacecraft.getRadiationParametersNames());
         this.kRef = pRef * dRef * dRef;
         this.sun  = sun;
         this.equatorialRadius = equatorialRadius;
@@ -184,6 +183,11 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     }
 
     /** {@inheritDoc} */
+    public ParameterDriver[] getParametersDrivers() {
+        return spacecraft.getRadiationParametersDrivers();
+    }
+
+    /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                               final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
                                               final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
@@ -220,27 +224,6 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
                                                         s.getMass(), flux, paramName);
 
-    }
-
-    /** {@inheritDoc} */
-    public double getParameter(final String name)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        if (name.equals(RadiationSensitive.ABSORPTION_COEFFICIENT)) {
-            return spacecraft.getAbsorptionCoefficient();
-        }
-        return spacecraft.getReflectionCoefficient();
-    }
-
-    /** {@inheritDoc} */
-    public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        if (name.equals(RadiationSensitive.ABSORPTION_COEFFICIENT)) {
-            spacecraft.setAbsorptionCoefficient(value);
-        } else {
-            spacecraft.setReflectionCoefficient(value);
-        }
     }
 
     /** Get the useful angles for eclipse computation.

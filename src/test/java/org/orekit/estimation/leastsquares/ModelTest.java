@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.leastsquares;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,8 +38,8 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversList;
 
 public class ModelTest {
 
@@ -50,7 +49,7 @@ public class ModelTest {
         final Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
-                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE,
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
                                               1.0e-6, 60.0, 0.001);
 
         // create perfect PV measurements
@@ -60,10 +59,12 @@ public class ModelTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
-        final List<ParameterDriver> measurementsParameters = new ArrayList<ParameterDriver>();
+        final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
         for (Measurement<?> measurement : measurements) {
-            for (final ParameterDriver parameter : measurement.getParametersDrivers()) {
-                addMeasurementParameter(measurementsParameters, parameter);
+            for (final ParameterDriver driver : measurement.getParametersDrivers()) {
+                if (driver.isSelected()) {
+                    estimatedMeasurementsParameters.add(driver);
+                }
             }
         }
 
@@ -83,24 +84,22 @@ public class ModelTest {
                 Assert.assertEquals(measurements.size(), newEvaluations.size());
             }
         };
-        final List<ParameterDriver> estimatedPropagatorParameters = new ArrayList<ParameterDriver>();
-        for (final ParameterDriver parameterDriver : propagatorBuilder.getParametersDrivers()) {
-            if (parameterDriver.isEstimated()) {
-                estimatedPropagatorParameters.add(parameterDriver);
-            }
-        }
-        final Model model = new Model(propagatorBuilder, estimatedPropagatorParameters,
-                                      measurements, measurementsParameters,
-                                      context.initialOrbit.getDate(), modelObserver);
+        final Model model = new Model(propagatorBuilder, measurements, estimatedMeasurementsParameters, modelObserver);
         model.setIterationsCounter(new Incrementor(100));
         model.setEvaluationsCounter(new Incrementor(100));
 
         // evaluate model on perfect start point
-        RealVector point = startPoint(context, propagatorBuilder, measurementsParameters);
-        Pair<RealVector, RealMatrix> value = model.value(point);
+        final double[] normalizedProp = propagatorBuilder.getSelectedNormalizedParameters();
+        final double[] normalized = new double[normalizedProp.length + estimatedMeasurementsParameters.getNbParams()];
+        System.arraycopy(normalizedProp, 0, normalized, 0, normalizedProp.length);
+        int i = normalizedProp.length;
+        for (final ParameterDriver driver : estimatedMeasurementsParameters.getDrivers()) {
+            normalized[i++] = driver.getNormalizedValue();
+        }
+        Pair<RealVector, RealMatrix> value = model.value(new ArrayRealVector(normalized));
         int index = 0;
         for (Measurement<?> measurement : measurements) {
-            for (int i = 0; i < measurement.getDimension(); ++i) {
+            for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
                 Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.4e-7);
             }
@@ -109,68 +108,7 @@ public class ModelTest {
 
     }
 
-    private void addMeasurementParameter(final List<ParameterDriver> measurementsParameters,
-                                         final ParameterDriver parameter) {
-        for (final ParameterDriver existing : measurementsParameters) {
-            if (existing.getName().equals(parameter.getName())) {
-                return;
-            }
-        }
-        measurementsParameters.add(parameter);
-    }
-
-    private RealVector startPoint(final Context context,
-                                  final PropagatorBuilder propagatorBuilder,
-                                  final List<ParameterDriver> measurementsParameters)
-        throws OrekitException {
-
-        // allocate vector
-        int dimension = 6;
-        for (final ParameterDriver parameter : propagatorBuilder.getParametersDrivers()) {
-            if (parameter.isEstimated()) {
-                dimension += parameter.getDimension();
-            }
-        }
-        for (final ParameterDriver parameter : measurementsParameters) {
-            if (parameter.isEstimated()) {
-                dimension += parameter.getDimension();
-            }
-        }
-        RealVector point = new ArrayRealVector(dimension);
-
-        // orbit
-        final double[] orb = new double[6];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(context.initialOrbit,
-                                                         propagatorBuilder.getPositionAngle(),
-                                                         orb);
-        int index = 0;
-        while (index < 6) {
-            point.setEntry(index, orb[index]);
-            ++index;
-        }
-
-        // propagator parameters
-        for (final ParameterDriver propagatorParameter : propagatorBuilder.getParametersDrivers()) {
-            if (propagatorParameter.isEstimated()) {
-                for (final double v : propagatorParameter.getValue()) {
-                    point.setEntry(index++, v);
-                }
-            }
-        }
-
-        // measurements parameters
-        for (final ParameterDriver parameter : measurementsParameters) {
-            if (parameter.isEstimated()) {
-                for (int i = 0; i < parameter.getDimension(); ++i) {
-                    point.setEntry(index++, parameter.getValue()[i]);
-                }
-            }
-        }
-
-        return point;
-
-    }
-
 }
+
 
 

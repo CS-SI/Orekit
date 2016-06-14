@@ -34,6 +34,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** Class modeling a ground station that can perform some measurements.
  * <p>
@@ -48,11 +49,25 @@ public class GroundStation {
     /** Suffix for ground station position offset parameter name. */
     public static final String OFFSET_SUFFIX = "-offset";
 
+    /** Offsets scaling factor.
+     * <p>
+     * We use a power of 2 (in fact really 1.0 here) to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double OFFSET_SCALE = FastMath.scalb(1.0, 0);
+
     /** Base frame associated with the station. */
     private final TopocentricFrame baseFrame;
 
-    /** Driver for position offset. */
-    private final ParameterDriver positionOffsetDriver;
+    /** Drivers for position offset along the East axis. */
+    private final ParameterDriver eastOffsetDriver;
+
+    /** Drivers for position offset along the North axis. */
+    private final ParameterDriver northOffsetDriver;
+
+    /** Drivers for position offset along the zenith axis. */
+    private final ParameterDriver zenithOffsetDriver;
 
     /** Offset frame associated with the station, taking offset parameter into account. */
     private TopocentricFrame offsetFrame;
@@ -66,31 +81,50 @@ public class GroundStation {
 
         this.baseFrame = baseFrame;
 
-        this.positionOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX, new double[3]) {
-            @Override
+        final ParameterObserver resettingObserver = new ParameterObserver() {
             /** {@inheritDoc} */
-            protected void valueChanged(final double[] positionOffset) throws OrekitException {
-                // estimate new origin for offset frame, in body frame
-                final Frame     bodyFrame    = baseFrame.getParent();
-                final Transform baseToBody   = baseFrame.getTransformTo(bodyFrame, null);
-                final Vector3D  origin       = baseToBody.transformPosition(new Vector3D(positionOffset[0],
-                                                                                         positionOffset[1],
-                                                                                         positionOffset[2]));
-                final GeodeticPoint originGP = baseFrame.getParentShape().transform(origin, bodyFrame, null);
-
-                // create a new topocentric frame at parameterized origin
-                offsetFrame = new TopocentricFrame(baseFrame.getParentShape(), originGP,
-                                                   baseFrame.getName() + OFFSET_SUFFIX);
+            @Override
+            public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                offsetFrame = null;
             }
         };
 
+        this.eastOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-East",
+                                                    0.0, OFFSET_SCALE,
+                                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.eastOffsetDriver.addObserver(resettingObserver);
+
+        this.northOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-North",
+                                                     0.0, OFFSET_SCALE,
+                                                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.northOffsetDriver.addObserver(resettingObserver);
+
+        this.zenithOffsetDriver = new ParameterDriver(baseFrame.getName() + OFFSET_SUFFIX + "-Zenith",
+                                                      0.0, OFFSET_SCALE,
+                                                      Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        this.zenithOffsetDriver.addObserver(resettingObserver);
+
     }
 
-    /** Get a driver allowing to change station position.
-     * @return driver for station position offset
+    /** Get a driver allowing to change station position along East axis.
+     * @return driver for station position offset along East axis
      */
-    public ParameterDriver getPositionOffsetDriver() {
-        return positionOffsetDriver;
+    public ParameterDriver getEastOffsetDriver() {
+        return eastOffsetDriver;
+    }
+
+    /** Get a driver allowing to change station position along North axis.
+     * @return driver for station position offset along North axis
+     */
+    public ParameterDriver getNorthOffsetDriver() {
+        return northOffsetDriver;
+    }
+
+    /** Get a driver allowing to change station position along Zenith axis.
+     * @return driver for station position offset along Zenith axis
+     */
+    public ParameterDriver getZenithOffsetDriver() {
+        return zenithOffsetDriver;
     }
 
     /** Get the base frame associated with the station.
@@ -108,8 +142,24 @@ public class GroundStation {
      * The offset frame takes the position offset into account
      * </p>
      * @return offset frame associated with the station
+     * @exception OrekitException if offset frame cannot be computed for current offset values
      */
-    public TopocentricFrame getOffsetFrame() {
+    public TopocentricFrame getOffsetFrame() throws OrekitException {
+        if (offsetFrame == null) {
+            // lazy evaluation of offset frame, in body frame
+            final Frame     bodyFrame    = baseFrame.getParent();
+            final Transform baseToBody   = baseFrame.getTransformTo(bodyFrame, null);
+            final double    x            = eastOffsetDriver.getValue();
+            final double    y            = northOffsetDriver.getValue();
+            final double    z            = zenithOffsetDriver.getValue();
+            final Vector3D  origin       = baseToBody.transformPosition(new Vector3D(x, y, z));
+            final GeodeticPoint originGP = baseFrame.getParentShape().transform(origin, bodyFrame, null);
+
+            // create a new topocentric frame at parameterized origin
+            offsetFrame = new TopocentricFrame(baseFrame.getParentShape(), originGP,
+                                               baseFrame.getName() + OFFSET_SUFFIX);
+
+        }
         return offsetFrame;
     }
 
@@ -127,7 +177,7 @@ public class GroundStation {
         // station position at signal arrival date, in inertial frame
         // (the station is not there at signal departure date, but will
         //  be there at the signal arrival)
-        final Transform t = offsetFrame.getTransformTo(state.getFrame(), groundArrivalDate);
+        final Transform t = getOffsetFrame().getTransformTo(state.getFrame(), groundArrivalDate);
         final Vector3D arrival = t.transformPosition(Vector3D.ZERO);
 
         // initialize emission date search loop assuming the state is already correct
@@ -171,7 +221,7 @@ public class GroundStation {
         do {
             final double       previous      = delay;
             final AbsoluteDate departureDate = state.getDate().shiftedBy(-delay);
-            final Transform    t             = offsetFrame.getTransformTo(state.getFrame(), departureDate);
+            final Transform    t             = getOffsetFrame().getTransformTo(state.getFrame(), departureDate);
             final Vector3D     departure     = t.transformPosition(Vector3D.ZERO);
             delay = Vector3D.distance(departure, transit) / Constants.SPEED_OF_LIGHT;
             delta = FastMath.abs(delay - previous);
@@ -210,8 +260,10 @@ public class GroundStation {
                                                   final int zenithOffsetIndex)
         throws OrekitException {
 
+        final TopocentricFrame frame = getOffsetFrame();
+
         // offset frame origin
-        final Transform offsetToBody = offsetFrame.getTransformTo(baseFrame.getParent(), null);
+        final Transform offsetToBody = frame.getTransformTo(baseFrame.getParent(), null);
         final Vector3D  offsetOrigin  = offsetToBody.transformPosition(Vector3D.ZERO);
         final FieldVector3D<DerivativeStructure> zeroEast =
                         new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, eastOffsetIndex,   0.0),
@@ -227,7 +279,7 @@ public class GroundStation {
 
         // vectors changes due to offset in the meridian plane
         // (we are in fact only interested in the derivatives parts, not the values)
-        final Vector3D meridianCenter = centerOfCurvature(offsetOrigin, offsetFrame.getEast());
+        final Vector3D meridianCenter = centerOfCurvature(offsetOrigin, frame.getEast());
         final FieldVector3D<DerivativeStructure> meridianCenterToOffset =
                         zeroNorth.add(offsetOrigin).subtract(meridianCenter);
         final FieldVector3D<DerivativeStructure> meridianZ = meridianCenterToOffset.normalize();
@@ -244,7 +296,7 @@ public class GroundStation {
 
         // vectors changes due to offset in the transverse plane
         // (we are in fact only interested in the derivatives parts, not the values)
-        final Vector3D transverseCenter = centerOfCurvature(offsetOrigin, offsetFrame.getNorth());
+        final Vector3D transverseCenter = centerOfCurvature(offsetOrigin, frame.getNorth());
         final FieldVector3D<DerivativeStructure> transverseCenterToOffset =
                         zeroEast.add(offsetOrigin).subtract(transverseCenter);
         final FieldVector3D<DerivativeStructure> transverseZ = transverseCenterToOffset.normalize();
@@ -262,9 +314,9 @@ public class GroundStation {
         // compose the value from the offset frame and the derivatives
         // (the derivatives along the two orthogonal directions of principal curvatures are additive)
         return new OffsetDerivatives(offsetOriginDS,
-                                     combine(offsetFrame.getEast(),   meridianE, transverseE),
-                                     combine(offsetFrame.getNorth(),  meridianN, transverseN),
-                                     combine(offsetFrame.getZenith(), meridianZ, transverseZ));
+                                     combine(frame.getEast(),   meridianE, transverseE),
+                                     combine(frame.getNorth(),  meridianN, transverseN),
+                                     combine(frame.getZenith(), meridianZ, transverseZ));
 
     }
 

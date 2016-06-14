@@ -744,10 +744,10 @@ public class EcksteinHechlerPropagatorTest {
 
         // find the best Eckstein-Hechler propagator that match the orbit evolution
         PropagatorConverter converter =
-                new FiniteDifferencePropagatorConverter(new EcksteinHechlerPropagatorBuilder(poleAligned,
+                new FiniteDifferencePropagatorConverter(new EcksteinHechlerPropagatorBuilder(initial,
                                                                                              provider,
-                                                                                             OrbitType.CIRCULAR,
-                                                                                             PositionAngle.TRUE),
+                                                                                             PositionAngle.TRUE,
+                                                                                             1.0),
                                                         1.0e-6, 100);
         EcksteinHechlerPropagator fittedEH =
                 (EcksteinHechlerPropagator) converter.convert(num, 3 * initial.getKeplerianPeriod(), 300);

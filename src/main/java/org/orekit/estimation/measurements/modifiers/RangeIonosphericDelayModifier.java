@@ -16,14 +16,15 @@
  */
 package org.orekit.estimation.measurements.modifiers;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.analysis.MultivariateVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationUtils;
+import org.orekit.estimation.ParameterFunction;
 import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationModifier;
@@ -84,8 +85,8 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
 
             // delay in meters
             final double delay = ionoModel.pathDelay(state.getDate(),
-                                                              station.getBaseFrame().getPoint(),
-                                                              elevation, azimuth);
+                                                     station.getBaseFrame().getPoint(),
+                                                     elevation, azimuth);
 
             // Multiply by two because it is a two-way measurment.
             return 2 * delay;
@@ -112,7 +113,9 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
                                     // evaluate target's elevation with a changed target position
                                     final double value = rangeErrorIonosphericModel(station, state);
 
-                                    return new double[] {value };
+                                    return new double[] {
+                                        value
+                                    };
 
                                 } catch (OrekitException oe) {
                                     throw new OrekitExceptionWrapper(oe);
@@ -125,41 +128,34 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
     }
 
 
-    /** Compute the Jacobian of the delay term wrt parameters.
+    /** Compute the derivative of the delay term wrt parameters.
      *
-     * @param station station
+     * @param station ground station
+     * @param driver driver for the station offset parameter
      * @param state spacecraft state
      * @param delay current ionospheric delay
-     * @return jacobian of the delay wrt station position
+     * @return derivative of the delay wrt station offset parameter
      * @throws OrekitException  if frames transformations cannot be computed
      */
-    private double[][] rangeErrorJacobianParameter(final GroundStation station,
-                                                   final SpacecraftState state,
-                                                   final double delay) throws OrekitException
-    {
-        final GroundStation stationParameter = station;
+    private double rangeErrorParameterDerivative(final GroundStation station,
+                                                 final ParameterDriver driver,
+                                                 final SpacecraftState state,
+                                                 final double delay)
+        throws OrekitException {
 
-        final double[][] finiteDifferencesJacobian =
-                        EstimationUtils.differentiate(new MultivariateVectorFunction() {
-                                public double[] value(final double[] point) throws OrekitExceptionWrapper {
-                                    try {
-                                        final double[] savedParameter = stationParameter.getPositionOffsetDriver().getValue();
+        final ParameterFunction rangeError = new ParameterFunction() {
+            /** {@inheritDoc} */
+            @Override
+            public double value(final ParameterDriver parameterDriver) throws OrekitException {
+                return rangeErrorIonosphericModel(station, state);
+            }
+        };
 
-                                        stationParameter.getPositionOffsetDriver().setValue(point);
+        final ParameterFunction rangeErrorDerivative =
+                        EstimationUtils.differentiate(rangeError, driver, 3, 10.0);
 
-                                        final double value = rangeErrorIonosphericModel(stationParameter, state);
+        return rangeErrorDerivative.value(driver);
 
-                                        stationParameter.getPositionOffsetDriver().setValue(savedParameter);
-
-                                        return new double[]{value };
-
-                                    } catch (OrekitException oe) {
-                                        throw new OrekitExceptionWrapper(oe);
-                                    }
-                                }
-                            }, 1, 3, 10.0, 10.0, 10.0).value(stationParameter.getPositionOffsetDriver().getValue());
-
-        return finiteDifferencesJacobian;
     }
 
     /** {@inheritDoc} */
@@ -195,17 +191,17 @@ public class RangeIonosphericDelayModifier implements EvaluationModifier<Range> 
         }
         evaluation.setStateDerivatives(stateDerivatives);
 
-        final ParameterDriver positionOffsetDriver = station.getPositionOffsetDriver();
-        if (positionOffsetDriver.isEstimated()) {
-            // update measurement derivatives with jacobian of the measure wrt station parameters
-            final double[][] djacdp = rangeErrorJacobianParameter(station, state, delay);
-            final double[][] parameterDerivatives = evaluation.getParameterDerivatives(positionOffsetDriver);
-            for (int irow = 0; irow < parameterDerivatives.length; ++irow) {
-                for (int jcol = 0; jcol < parameterDerivatives[0].length; ++jcol) {
-                    parameterDerivatives[irow][jcol] += djacdp[irow][jcol];
-                }
+        for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+                                                          station.getNorthOffsetDriver(),
+                                                          station.getZenithOffsetDriver())) {
+            if (driver.isSelected()) {
+                // update measurement derivatives with derivative of the modification wrt station parameters
+                double parameterDerivative = evaluation.getParameterDerivatives(driver)[0];
+                parameterDerivative += rangeErrorParameterDerivative(station, driver, state, delay);
+                evaluation.setParameterDerivatives(driver, parameterDerivative);
             }
-            evaluation.setParameterDerivatives(positionOffsetDriver, parameterDerivatives);
         }
+
     }
+
 }

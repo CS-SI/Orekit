@@ -16,21 +16,31 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.hipparchus.analysis.solvers.UnivariateSolver;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;
 import org.orekit.estimation.Context;
+import org.orekit.frames.Frame;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 public class RangeRateMeasurementCreator extends MeasurementCreator {
 
     private final Context context;
+    private final boolean twoWay;
 
-    public RangeRateMeasurementCreator(final Context context) {
+    public RangeRateMeasurementCreator(final Context context, boolean twoWay) {
         this.context = context;
+        this.twoWay  = twoWay;
     }
 
     /**
@@ -41,40 +51,65 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
         try {
             for (final GroundStation station : context.stations) {
             	
-                final double          downlinkDelay    = station.downlinkTimeOfFlight(currentState, currentState.getDate());
-                final double          offset           = currentState.getDate().durationFrom(currentState.getDate());
+                final AbsoluteDate     date      = currentState.getDate();
+                final Frame            inertial  = currentState.getFrame();
+                final Vector3D         position  = currentState.getPVCoordinates().getPosition();
+                final Vector3D         velocity  = currentState.getPVCoordinates().getVelocity();
+                final TopocentricFrame topo      = station.getBaseFrame();
+                
+                if (topo.getElevation(position, inertial, date) > FastMath.toRadians(30.0)) {
+                    final UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-12, 5);
 
-                final SpacecraftState compensatedState = currentState.shiftedBy(offset - downlinkDelay);
-                
-                final Vector3D position = compensatedState.getPVCoordinates().getPosition();
-                               
-                final double elevation =
-                                station.getBaseFrame().getElevation(position,
-                                                                    currentState.getFrame(),
-                                                                    currentState.getDate());
-                
-                if (elevation > FastMath.toRadians(30.0)) {
-                	
-                    // date of reception (downlink)
-                    final AbsoluteDate date = currentState.getDate(); //currentState.getDate().shiftedBy(dt);
-                    // station position at the date of reception, tR                    
-                    final Transform t = station.getBaseFrame().getTransformTo(currentState.getFrame(),
-                                                                              date);
-                    final Vector3D stationPosition = t.transformPosition(Vector3D.ZERO);
-                    // line of sight (tE, tR)
-                    final Vector3D los = (position.subtract(stationPosition)).normalize();
+                    final double downLinkDelay  = solver.solve(1000, new UnivariateFunction() {
+                        public double value(final double x) throws OrekitExceptionWrapper {
+                            try {
+                                final Transform t = topo.getTransformTo(inertial, date.shiftedBy(x));
+                                final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                                return d - x * Constants.SPEED_OF_LIGHT;
+                            } catch (OrekitException oe) {
+                                throw new OrekitExceptionWrapper(oe);
+                            }
+                        }
+                    }, -1.0, 1.0);
+                    final AbsoluteDate receptionDate  = currentState.getDate().shiftedBy(downLinkDelay);
+                    final PVCoordinates stationAtReception =
+                                    topo.getTransformTo(inertial, receptionDate).transformPVCoordinates(PVCoordinates.ZERO);
+
+                    // line of sight at reception
+                    final Vector3D receptionLOS = (position.subtract(stationAtReception.getPosition())).normalize();
 
                     // relative velocity, spacecraft-station, at the date of reception
-                    final Vector3D v1 = station.getBaseFrame().getPVCoordinates(date, currentState.getFrame()).getVelocity();
-                    final Vector3D v2 = compensatedState.getPVCoordinates().getVelocity();
-                    final Vector3D dr = v2.subtract(v1);
-                    
+                    final Vector3D deltaVr = velocity.subtract(stationAtReception.getVelocity());
+
+                    final double upLinkDelay = solver.solve(1000, new UnivariateFunction() {
+                        public double value(final double x) throws OrekitExceptionWrapper {
+                            try {
+                                final Transform t = topo.getTransformTo(inertial, date.shiftedBy(-x));
+                                final double d = Vector3D.distance(position, t.transformPosition(Vector3D.ZERO));
+                                return d - x * Constants.SPEED_OF_LIGHT;
+                            } catch (OrekitException oe) {
+                                throw new OrekitExceptionWrapper(oe);
+                            }
+                        }
+                    }, -1.0, 1.0);
+                    final AbsoluteDate emissionDate   = currentState.getDate().shiftedBy(-upLinkDelay);
+                    final PVCoordinates stationAtEmission  =
+                                    topo.getTransformTo(inertial, emissionDate).transformPVCoordinates(PVCoordinates.ZERO);
+
+                    // line of sight at emission
+                    final Vector3D emissionLOS = (position.subtract(stationAtEmission.getPosition())).normalize();
+
+                    // relative velocity, spacecraft-station, at the date of emission
+                    final Vector3D deltaVe = velocity.subtract(stationAtEmission.getVelocity());
+
                     // range rate at the date of reception 
-                    final double rr = dr.dotProduct(los);
+                    final double rr = twoWay ?
+                                      0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
+                                      deltaVr.dotProduct(receptionLOS);
                     
                     addMeasurement(new RangeRate(station, date,
-                                             rr,
-                                             1.0, 10, false));
+                                                 rr,
+                                                 1.0, 10, twoWay));
                 }
 
             }

@@ -18,16 +18,20 @@ package org.orekit.estimation;
 
 import org.hipparchus.analysis.MultivariateMatrixFunction;
 import org.hipparchus.analysis.MultivariateVectorFunction;
+import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.utils.ParameterDriver;
 
 /** Utility class for orbit determination.
  * @author Luc Maisonobe
@@ -38,6 +42,60 @@ public class EstimationUtils {
     /** Private constructor for utility class.
      */
     private EstimationUtils() {
+    }
+
+    /** Differentiate a scalar function using finite differences.
+     * @param function function to differentiate
+     * @param driver driver for the parameter
+     * @param nbPoints number of points used for finite differences
+     * @param step step for finite differences
+     * @return scalar function evaluating to the derivative of the original function
+     */
+    public static ParameterFunction differentiate(final ParameterFunction function,
+                                                  final ParameterDriver driver,
+                                                  final int nbPoints, final double step) {
+
+        final UnivariateFunction uf = new UnivariateFunction() {
+            /** {@inheritDoc} */
+            @Override
+            public double value(final double normalizedValue)
+                throws OrekitExceptionWrapper {
+                try {
+                    final double saved = driver.getNormalizedValue();
+                    driver.setNormalizedValue(normalizedValue);
+                    final double functionValue = function.value(driver);
+                    driver.setNormalizedValue(saved);
+                    return functionValue;
+                } catch (OrekitException oe) {
+                    throw new OrekitExceptionWrapper(oe);
+                }
+            }
+        };
+
+        final FiniteDifferencesDifferentiator differentiator  =
+                        new FiniteDifferencesDifferentiator(nbPoints, step);
+        final UnivariateDifferentiableFunction differentiated =
+                        differentiator.differentiate(uf);
+
+        return new ParameterFunction() {
+            /** {@inheritDoc} */
+            @Override
+            public double value(final ParameterDriver parameterDriver)
+                throws OrekitException {
+                if (!parameterDriver.getName().equals(driver.getName())) {
+                    throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                              parameterDriver.getName(), driver.getName());
+                }
+                try {
+                    final DerivativeStructure dsParam = new DerivativeStructure(1, 1, 0, parameterDriver.getNormalizedValue());
+                    final DerivativeStructure dsValue = differentiated.value(dsParam);
+                    return dsValue.getPartialDerivative(1);
+                } catch (OrekitExceptionWrapper oew) {
+                    throw oew.getException();
+                }
+            }
+        };
+
     }
 
     /** Differentiate a vector function using finite differences.

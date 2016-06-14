@@ -16,7 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
@@ -29,46 +30,48 @@ import org.orekit.utils.ParameterDriver;
  */
 public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
-    /** Parameter holding the bias value. */
-    private final ParameterDriver driver;
+    /** Parameters holding the bias value components. */
+    private final List<ParameterDriver> drivers;
 
-    /** Identity matrix, for partial derivatives. */
+    /** IPartial derivatives. */
     private final double[][] derivatives;
-
 
     /** Simple constructor.
      * @param name name of the bias
      * @param bias initial value of the bias
+     * @param scale scale of the bias, for normalization
+     * @param min minimum value of the bias
+     * @param max maximum value of the bias
      * @exception OrekitException if initial value cannot be set
      */
-    public Bias(final String name, final double ... bias)
+    public Bias(final String[] name, final double[] bias, final double[] scale,
+                final double[] min, final double[] max)
         throws OrekitException {
 
-        driver = new ParameterDriver(name, bias) {
-            /** {@inheritDoc} */
-            @Override
-            public void valueChanged(final double[] newValue) {
-            }
-        };
+        drivers = new ArrayList<>(bias.length);
+        for (int i = 0; i < bias.length; ++i) {
+            drivers.add(new ParameterDriver(name[i], bias[i], scale[i], min[i], max[i]));
+        }
 
         derivatives = new double[bias.length][bias.length];
         for (int i = 0; i < bias.length; ++i) {
+            // derivatives are computed with respect to the physical parameters,
+            // not with respect to the normalized parameters (normalization is
+            // performed later on), so the derivative is really 1.0 and not scale[i]
             derivatives[i][i] = 1.0;
         }
 
     }
 
-    /** Get the bias driver.
-     * @return driver for the bias
+    /** {@inheritDoc}
+     * <p>
+     * For a bias, there are {@link Measurement#getDimension()} parameter drivers,
+     * sorted in components order.
+     * </p>
      */
-    public ParameterDriver getDriver() {
-        return driver;
-    }
-
-    /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return Arrays.asList(driver);
+        return Collections.unmodifiableList(drivers);
     }
 
     /** {@inheritDoc} */
@@ -77,16 +80,16 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
         // apply the bias to the measurement value
         final double[] measurementValue = evaluation.getValue();
-        final double[] biasValue        = driver.getValue();
-        for (int i = 0; i < driver.getDimension(); ++i) {
-            measurementValue[i] += biasValue[i];
+        for (int i = 0; i < drivers.size(); ++i) {
+            final ParameterDriver driver = drivers.get(i);
+            measurementValue[i] += driver.getValue();
+            if (driver.isSelected()) {
+                // add the partial derivatives
+                evaluation.setParameterDerivatives(driver, derivatives[i]);
+            }
         }
         evaluation.setValue(measurementValue);
 
-        if (driver.isEstimated()) {
-            // add the partial derivatives
-            evaluation.setParameterDerivatives(driver, derivatives);
-        }
 
     }
 

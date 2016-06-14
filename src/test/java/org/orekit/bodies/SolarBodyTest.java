@@ -28,15 +28,15 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.PropagationException;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -56,6 +56,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 public class SolarBodyTest {
 
@@ -410,10 +412,13 @@ public class SolarBodyTest {
 
     }
 
-    private static class BodyAttraction extends AbstractParameterizable implements ForceModel {
+    private static class BodyAttraction extends AbstractForceModel {
 
         /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
         public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
+
+        /** Drivers for force model parameters. */
+        private final ParameterDriver[] parametersDrivers;
 
         /** The body to consider. */
         private final CelestialBody body;
@@ -427,7 +432,22 @@ public class SolarBodyTest {
          * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
          */
         public BodyAttraction(final CelestialBody body) {
-            super(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX);
+            this.parametersDrivers = new ParameterDriver[1];
+            try {
+                parametersDrivers[0] = new ParameterDriver(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX,
+                                                           body.getGM(), 1.0e-5 * body.getGM(),
+                                                           0.0, Double.POSITIVE_INFINITY);
+                parametersDrivers[0].addObserver(new ParameterObserver() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueChanged(double previousValue, final ParameterDriver driver) {
+                        BodyAttraction.this.gm = driver.getValue();
+                    }
+                });
+            } catch (OrekitException oe) {
+                // this should never occur as valueChanged above never throws an exception
+                throw new OrekitInternalError(oe);
+            };
             this.body = body;
             this.gm   = body.getGM();
         }
@@ -492,17 +512,8 @@ public class SolarBodyTest {
         }
 
         /** {@inheritDoc} */
-        public double getParameter(final String name)
-            throws IllegalArgumentException {
-            complainIfNotSupported(name);
-            return gm;
-        }
-
-        /** {@inheritDoc} */
-        public void setParameter(final String name, final double value)
-            throws IllegalArgumentException {
-            complainIfNotSupported(name);
-            gm = value;
+        public ParameterDriver[] getParametersDrivers() {
+            return parametersDrivers.clone();
         }
 
     }

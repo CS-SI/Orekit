@@ -20,13 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.analysis.MultivariateMatrixFunction;
 import org.hipparchus.analysis.MultivariateVectorFunction;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.DiagonalMatrix;
-import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.ConvergenceChecker;
 import org.hipparchus.optim.SimpleVectorValueChecker;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
@@ -36,7 +32,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -64,9 +59,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
     /** Spacecraft states sample. */
     private List<SpacecraftState> sample;
-
-    /** Reference date for conversion (1st date of the states sample). */
-    private AbsoluteDate date;
 
     /** Target position and velocities at sample points. */
     private double[] target;
@@ -219,7 +211,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Get the Jacobian of the function computing position/velocity at sample points.
      * @return Jacobian of the function computing position/velocity at sample points
      */
-    protected abstract MultivariateMatrixFunction getObjectiveFunctionJacobian();
+    protected abstract MultivariateJacobianFunction getModel();
 
     /** Check if fitting uses only sample positions.
      * @return true if fitting uses only sample positions
@@ -233,13 +225,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      */
     protected int getTargetSize() {
         return target.length;
-    }
-
-    /** Get the date of the initial state.
-     * @return the date
-     */
-    protected AbsoluteDate getDate() {
-        return date;
     }
 
     /** Get the frame of the initial state.
@@ -289,24 +274,24 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private void setFreeParameters(final Iterable<String> freeParameters) throws OrekitException {
 
         // start by setting all parameters as not estimated
-        for (final ParameterDriver driver : builder.getParametersDrivers()) {
-            driver.setEstimated(false);
+        for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
         }
 
         // set only the selected parameters as estimated
         for (final String parameter : freeParameters) {
             boolean found = false;
-            for (final ParameterDriver driver : builder.getParametersDrivers()) {
+            for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
                 if (driver.getName().equals(parameter)) {
                     found = true;
-                    driver.setEstimated(true);
+                    driver.setSelected(true);
                     break;
                 }
             }
             if (!found) {
                 // build the list of supported parameters
                 final StringBuilder sBuilder = new StringBuilder();
-                for (final ParameterDriver driver : builder.getParametersDrivers()) {
+                for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
                     if (sBuilder.length() > 0) {
                         sBuilder.append(", ");
                     }
@@ -327,27 +312,10 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private Propagator adapt(final List<SpacecraftState> states,
                              final boolean positionOnly) throws OrekitException {
 
-        this.date = states.get(0).getDate();
         this.onlyPosition = positionOnly;
 
         // very rough first guess using osculating parameters of first sample point
-        int size = 6;
-        for (final ParameterDriver driver : builder.getParametersDrivers()) {
-            if (driver.isEstimated()) {
-                size += driver.getDimension();
-            }
-        }
-        final double[] initial = new double[size];
-        builder.getOrbitType().mapOrbitToArray(states.get(0).getOrbit(),
-                                               builder.getPositionAngle(),
-                                               initial);
-        int index = 6;
-        for (final ParameterDriver driver : builder.getParametersDrivers()) {
-            if (driver.isEstimated()) {
-                System.arraycopy(driver.getValue(), 0, initial, index, driver.getDimension());
-                index += driver.getDimension();
-            }
-        }
+        final double[] initial = builder.getSelectedNormalizedParameters();
 
         // warm-up iterations, using only a few points
         setSample(states.subList(0, onlyPosition ? 2 : 1));
@@ -372,28 +340,19 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private double[] fit(final double[] initial)
         throws OrekitException, MathRuntimeException {
 
-        final MultivariateVectorFunction f = getObjectiveFunction();
-        final MultivariateMatrixFunction jac = getObjectiveFunctionJacobian();
-        final MultivariateJacobianFunction fJac = new MultivariateJacobianFunction() {
-            /** {@inheritDoc} */
-            @Override
-            public Pair<RealVector, RealMatrix> value(final RealVector point) {
-                final double[] p = point.toArray();
-                return new Pair<RealVector, RealMatrix>(MatrixUtils.createRealVector(f.value(p)),
-                        MatrixUtils.createRealMatrix(jac.value(p)));
-            }
-        };
         final LeastSquaresProblem problem = new LeastSquaresBuilder().
                                             maxIterations(maxIterations).
                                             maxEvaluations(Integer.MAX_VALUE).
-                                            model(fJac).
+                                            model(getModel()).
                                             target(target).
                                             weight(new DiagonalMatrix(weight)).
                                             start(initial).
                                             checker(checker).
                                             build();
+
         optimum = optimizer.optimize(problem);
         return optimum.getPoint().toArray();
+
     }
 
     /** Get the Root Mean Square Deviation for a given parameters set.
@@ -402,28 +361,17 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @exception OrekitException if position/velocity cannot be computed at some date
      */
     private double getRMS(final double[] parameterSet) throws OrekitException {
-
-        final double[] residuals = getResiduals(parameterSet);
-        double sum2 = 0;
-        for (final double residual : residuals) {
-            sum2 += residual * residual;
-        }
-        return FastMath.sqrt(sum2 / residuals.length);
-
-    }
-
-    /** Get the residuals for a given position/velocity parameters set.
-     * @param parameterSet position/velocity parameters set
-     * @return residuals
-     * @exception OrekitException if position/velocity cannot be computed at some date
-     */
-    private double[] getResiduals(final double[] parameterSet) throws OrekitException {
         try {
             final double[] residuals = getObjectiveFunction().value(parameterSet);
             for (int i = 0; i < residuals.length; ++i) {
                 residuals[i] = target[i] - residuals[i];
             }
-            return residuals;
+            double sum2 = 0;
+            for (final double residual : residuals) {
+                sum2 += residual * residual;
+            }
+            return FastMath.sqrt(sum2 / residuals.length);
+
         } catch (OrekitExceptionWrapper oew) {
             throw oew.getException();
         }
@@ -436,7 +384,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      */
     private Propagator buildAdaptedPropagator(final double[] parameterSet)
         throws OrekitException {
-        return builder.buildPropagator(date, parameterSet);
+        return builder.buildPropagator(parameterSet);
     }
 
     /** Set the states sample.

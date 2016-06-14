@@ -224,19 +224,19 @@ public class RelativityTest extends AbstractForceModelTest {
      * Relativity#getParameter(String)}
      */
     @Test
-    public void testGetSetGM() {
+    public void testGetSetGM() throws OrekitException {
         //setup
         Relativity relativity = new Relativity(Constants.EIGEN5C_EARTH_MU);
 
         //actions + verify
         Assert.assertEquals(
                 Constants.EIGEN5C_EARTH_MU,
-                relativity.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
+                relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(),
                 0);
-        relativity.setParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 1);
+        relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).setValue(1);
         Assert.assertEquals(
                 1,
-                relativity.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
+                relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(),
                 0);
     }
 

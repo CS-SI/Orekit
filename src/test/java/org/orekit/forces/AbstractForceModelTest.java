@@ -18,10 +18,8 @@ package org.orekit.forces;
 
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.LocalizedODEFormats;
 import org.junit.Assert;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -37,6 +35,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 
 public abstract class AbstractForceModelTest {
@@ -77,9 +76,6 @@ public abstract class AbstractForceModelTest {
         try {
             forceModel.accelerationDerivatives(state, "not a parameter");
             Assert.fail("an exception should have been thrown");
-        } catch (MathIllegalArgumentException miae) {
-            // expected
-            Assert.assertEquals(LocalizedODEFormats.UNKNOWN_PARAMETER, miae.getSpecifier());
         } catch (OrekitException oe) {
             // expected
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
@@ -90,14 +86,20 @@ public abstract class AbstractForceModelTest {
                                            accDer.getZ().getPartialDerivative(1));
 
         AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
-        double p0 = forceModel.getParameter(name);
-        double hParam = hFactor * forceModel.getParameter(name);
-        forceModel.setParameter(name, p0 - 1 * hParam);
-        Assert.assertEquals(p0 - 1 * hParam, forceModel.getParameter(name), 1.0e-10);
+        ParameterDriver driver = null;
+        for (ParameterDriver d : forceModel.getParametersDrivers()) {
+            if (d.getName().equals(name)) {
+                driver = d;
+            }
+        }
+        double p0 = driver.getValue();
+        double hParam = hFactor * p0;
+        driver.setValue(p0 - 1 * hParam);
+        Assert.assertEquals(p0 - 1 * hParam, driver.getValue(), 1.0e-10);
         forceModel.addContribution(state, accelerationRetriever);
         final Vector3D gammaM1h = accelerationRetriever.getAcceleration();
-        forceModel.setParameter(name, p0 + 1 * hParam);
-        Assert.assertEquals(p0 + 1 * hParam, forceModel.getParameter(name), 1.0e-10);
+        driver.setValue(p0 + 1 * hParam);
+        Assert.assertEquals(p0 + 1 * hParam, driver.getValue(), 1.0e-10);
         forceModel.addContribution(state, accelerationRetriever);
         final Vector3D gammaP1h = accelerationRetriever.getAcceleration();
 
@@ -131,7 +133,7 @@ public abstract class AbstractForceModelTest {
 
         final String name = "pde";
         PartialDerivativesEquations pde = new PartialDerivativesEquations(name, propagator);
-        propagator.setInitialState(pde.setInitialJacobians(state0, 6, 0));
+        propagator.setInitialState(pde.setInitialJacobians(state0, 6));
         final JacobiansMapper mapper = pde.getMapper();
         final double[][] dYdY0 = new double[6][6];
         propagator.setMasterMode(new OrekitStepHandler() {

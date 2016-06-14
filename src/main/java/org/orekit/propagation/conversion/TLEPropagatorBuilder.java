@@ -20,7 +20,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -28,8 +27,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** Builder for TLEPropagator.
  * @author Pascal Parraud
@@ -39,6 +38,14 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Parameter name for B* coefficient. */
     public static final String B_STAR = "BSTAR";
+
+    /** B* scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double B_STAR_SCALE = FastMath.scalb(1.0, -20);
 
     /** Satellite number. */
     private final int satelliteNumber;
@@ -65,44 +72,45 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
     private double bStar;
 
     /** Build a new instance.
-     * @param satelliteNumber satellite number
-     * @param classification classification (U for unclassified)
-     * @param launchYear launch year (all digits)
-     * @param launchNumber launch number
-     * @param launchPiece launch piece
-     * @param elementNumber element number
-     * @param revolutionNumberAtEpoch revolution number at epoch
-     * @param orbitType orbit type to use
+     * <p>
+     * The template TLE is used as a model to {@link
+     * #createInitialOrbit(AbsoluteDate, double[]) create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, orbit type, satellite number,
+     * classification, .... and is also used together with the {@code positionScale} to
+     * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
+     * parameters used by the callers of this builder to the real orbital parameters.
+     * </p>
+     * @param templateTLE reference TLE from which real orbits will be built
      * @param positionAngle position angle type to use
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
      * @throws OrekitException if the TEME frame cannot be set
      * @since 7.1
      */
-    public TLEPropagatorBuilder(final int satelliteNumber,
-                                final char classification,
-                                final int launchYear,
-                                final int launchNumber,
-                                final String launchPiece,
-                                final int elementNumber,
-                                final int revolutionNumberAtEpoch,
-                                final OrbitType orbitType, final PositionAngle positionAngle)
+    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngle positionAngle,
+                                final double positionScale)
         throws OrekitException {
-        super(FramesFactory.getTEME(), TLEPropagator.getMU(), orbitType, positionAngle);
-        this.satelliteNumber         = satelliteNumber;
-        this.classification          = classification;
-        this.launchYear              = launchYear;
-        this.launchNumber            = launchNumber;
-        this.launchPiece             = launchPiece;
-        this.elementNumber           = elementNumber;
-        this.revolutionNumberAtEpoch = revolutionNumberAtEpoch;
+        super(TLEPropagator.selectExtrapolator(templateTLE).getInitialState().getOrbit(),
+              positionAngle, positionScale);
+        this.satelliteNumber         = templateTLE.getSatelliteNumber();
+        this.classification          = templateTLE.getClassification();
+        this.launchYear              = templateTLE.getLaunchYear();
+        this.launchNumber            = templateTLE.getLaunchNumber();
+        this.launchPiece             = templateTLE.getLaunchPiece();
+        this.elementNumber           = templateTLE.getElementNumber();
+        this.revolutionNumberAtEpoch = templateTLE.getRevolutionNumberAtEpoch();
         this.bStar                   = 0.0;
         try {
-            addSupportedParameter(new ParameterDriver(B_STAR, new double[1]) {
-                /** {@inheridDoc} */
+            final ParameterDriver driver = new ParameterDriver(B_STAR, bStar, B_STAR_SCALE,
+                                                               0, Double.POSITIVE_INFINITY);
+            driver.addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
                 @Override
-                protected void valueChanged(final double[] newValue) {
-                    TLEPropagatorBuilder.this.bStar = newValue[0];
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    TLEPropagatorBuilder.this.bStar = driver.getValue();
                 }
             });
+            addSupportedParameter(driver);
         } catch (OrekitException oe) {
             // this should never happen
             throw new OrekitInternalError(oe);
@@ -111,28 +119,20 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final AbsoluteDate date, final double[] parameters)
+    public Propagator buildPropagator(final double[] normalizedParameters)
         throws OrekitException {
 
         // create the orbit
-        checkParameters(parameters);
-        final Orbit orb = createInitialOrbit(date, parameters);
+        setParameters(normalizedParameters);
+        final Orbit orbit = createInitialOrbit();
 
         // we really need a Keplerian orbit type
-        final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orb);
-
-        int index = 6;
-        for (final ParameterDriver driver : getParametersDrivers()) {
-            if (driver.isEstimated()) {
-                driver.setValue(parameters, index);
-                index += driver.getDimension();
-            }
-        }
+        final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
 
         final TLE tle = new TLE(satelliteNumber, classification, launchYear, launchNumber, launchPiece,
-                                TLE.DEFAULT, elementNumber, date,
+                                TLE.DEFAULT, elementNumber, orbit.getDate(),
                                 kep.getKeplerianMeanMotion(), 0.0, 0.0,
-                                kep.getE(), MathUtils.normalizeAngle(orb.getI(), FastMath.PI),
+                                kep.getE(), MathUtils.normalizeAngle(orbit.getI(), FastMath.PI),
                                 MathUtils.normalizeAngle(kep.getPerigeeArgument(), FastMath.PI),
                                 MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), FastMath.PI),
                                 MathUtils.normalizeAngle(kep.getMeanAnomaly(), FastMath.PI),

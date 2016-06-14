@@ -16,6 +16,8 @@
  */
 package org.orekit.estimation.measurements;
 
+import java.util.Arrays;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -64,7 +66,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                      final double baseWeight,
                      final boolean twoway)
         throws OrekitException {
-        super(date, rangeRate, sigma, baseWeight, station.getPositionOffsetDriver());
+        super(date, rangeRate, sigma, baseWeight,
+              station.getEastOffsetDriver(),
+              station.getNorthOffsetDriver(),
+              station.getZenithOffsetDriver());
         this.station = station;
         this.twoway  = twoway;
     }
@@ -103,25 +108,26 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             evaluation.setValue(0.5 * (evaluation.getValue()[0] + evalOneWay2.getValue()[0]));
             final double[][] sd1 = evaluation.getStateDerivatives();
             final double[][] sd2 = evalOneWay2.getStateDerivatives();
-            final double[][] sd = sd1.clone();
+            final double[][] sd = new double[sd1.length][sd1[0].length];
             for (int i = 0; i < sd.length; ++i) {
                 for (int j = 0; j < sd[0].length; ++j) {
-                    sd[i][j] += 0.5 * (sd1[i][j] + sd2[i][j]);
+                    sd[i][j] = 0.5 * (sd1[i][j] + sd2[i][j]);
                 }
             }
             evaluation.setStateDerivatives(sd);
 
-            final ParameterDriver positionOffsetDriver = station.getPositionOffsetDriver();
-            if (station.getPositionOffsetDriver().isEstimated()) {
-                final double[][] pd1 = evaluation.getParameterDerivatives(positionOffsetDriver);
-                final double[][] pd2 = evalOneWay2.getParameterDerivatives(positionOffsetDriver);
-                final double[][] pd = pd1.clone();
-                for (int i = 0; i < pd.length; ++i) {
-                    for (int j = 0; j < pd[0].length; ++j) {
-                        sd[i][j] += 0.5 * (pd1[i][j] + pd2[i][j]);
+            for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
+                                                              station.getNorthOffsetDriver(),
+                                                              station.getZenithOffsetDriver())) {
+                if (driver.isSelected()) {
+                    final double[] pd1 = evaluation.getParameterDerivatives(driver);
+                    final double[] pd2 = evalOneWay2.getParameterDerivatives(driver);
+                    final double[] pd = new double[pd1.length];
+                    for (int i = 0; i < pd.length; ++i) {
+                        pd[i] = 0.5 * (pd1[i] + pd2[i]);
                     }
+                    evaluation.setParameterDerivatives(driver, pd);
                 }
-                evaluation.setParameterDerivatives(positionOffsetDriver, pd);
             }
         }
 
@@ -178,8 +184,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
         // compute sensitivity wrt station position when station bias needs
         // to be estimated
-        final ParameterDriver positionOffsetDriver = station.getPositionOffsetDriver();
-        if (positionOffsetDriver.isEstimated()) {
+        if (station.getEastOffsetDriver().isSelected()  ||
+            station.getNorthOffsetDriver().isSelected() ||
+            station.getZenithOffsetDriver().isSelected()) {
+
             // station position at signal arrival
             final Transform topoToInert =
                             station.getOffsetFrame().getTransformTo(compensatedState.getFrame(), getDate());
@@ -232,7 +240,16 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             // partial derivatives with respect to parameter
             // the parameter has 3 Cartesian coordinates for station offset position
             // at measure time
-            evaluation.setParameterDerivatives(positionOffsetDriver, dRdQT.toArray());
+            if (station.getEastOffsetDriver().isSelected()) {
+                evaluation.setParameterDerivatives(station.getEastOffsetDriver(), dRdQT.getX());
+            }
+            if (station.getNorthOffsetDriver().isSelected()) {
+                evaluation.setParameterDerivatives(station.getNorthOffsetDriver(), dRdQT.getY());
+            }
+            if (station.getZenithOffsetDriver().isSelected()) {
+                evaluation.setParameterDerivatives(station.getZenithOffsetDriver(), dRdQT.getZ());
+            }
+
         }
         return evaluation;
     }

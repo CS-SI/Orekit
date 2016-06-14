@@ -17,26 +17,18 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.exception.LocalizedCoreFormats;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.gravity.NewtonianAttraction;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.utils.Constants;
 
 public class TLEConverterTest {
 
@@ -45,139 +37,13 @@ public class TLEConverterTest {
     private TLE leoTLE;
 
     @Test
-    @Deprecated
-    public void testDeprecatedWrongParametersSize() throws OrekitException {
-        try {
-            PropagatorBuilder builder =
-                            new TLEPropagatorBuilder(leoTLE.getSatelliteNumber(),
-                                                     leoTLE.getClassification(),
-                                                     leoTLE.getLaunchYear(),
-                                                     leoTLE.getLaunchNumber(),
-                                                     leoTLE.getLaunchPiece(),
-                                                     leoTLE.getElementNumber(),
-                                                     leoTLE.getRevolutionNumberAtEpoch(),
-                                                     OrbitType.CIRCULAR, PositionAngle.TRUE);
-            final List<String> empty = Collections.emptyList();
-            builder.setFreeParameters(empty);
-            builder.buildPropagator(leoTLE.getDate(), new double[3]);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, oiae.getSpecifier());
-            Assert.assertEquals(3, ((Integer) oiae.getParts()[0]).intValue());
-            Assert.assertEquals(6, ((Integer) oiae.getParts()[1]).intValue());
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedNotSupportedParameterFree() throws OrekitException {
-        final String name = "not-supported-parameter";
-        try {
-            PropagatorBuilder builder =
-                            new TLEPropagatorBuilder(leoTLE.getSatelliteNumber(),
-                                                     leoTLE.getClassification(),
-                                                     leoTLE.getLaunchYear(),
-                                                     leoTLE.getLaunchNumber(),
-                                                     leoTLE.getLaunchPiece(),
-                                                     leoTLE.getElementNumber(),
-                                                     leoTLE.getRevolutionNumberAtEpoch(),
-                                                     OrbitType.CIRCULAR, PositionAngle.TRUE);
-            builder.setFreeParameters(Arrays.asList(name));
-            builder.buildPropagator(leoTLE.getDate(), new double[3]);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
-            Assert.assertEquals(name, oiae.getParts()[0]);
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedNotSupportedParameterGet() throws OrekitException {
-        final String name = "not-supported-parameter";
-        try {
-            PropagatorBuilder builder =
-                            new TLEPropagatorBuilder(leoTLE.getSatelliteNumber(),
-                                                     leoTLE.getClassification(),
-                                                     leoTLE.getLaunchYear(),
-                                                     leoTLE.getLaunchNumber(),
-                                                     leoTLE.getLaunchPiece(),
-                                                     leoTLE.getElementNumber(),
-                                                     leoTLE.getRevolutionNumberAtEpoch(),
-                                                     OrbitType.CIRCULAR, PositionAngle.TRUE);
-            builder.getParameter(name);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
-            Assert.assertEquals(name, oiae.getParts()[0]);
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedNotSupportedParameterSet() throws OrekitException {
-        final String name = "not-supported-parameter";
-        try {
-            PropagatorBuilder builder =
-                            new TLEPropagatorBuilder(leoTLE.getSatelliteNumber(),
-                                                     leoTLE.getClassification(),
-                                                     leoTLE.getLaunchYear(),
-                                                     leoTLE.getLaunchNumber(),
-                                                     leoTLE.getLaunchPiece(),
-                                                     leoTLE.getElementNumber(),
-                                                     leoTLE.getRevolutionNumberAtEpoch(),
-                                                     OrbitType.CIRCULAR, PositionAngle.TRUE);
-            builder.setParameter(name, 0.0);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitIllegalArgumentException oiae) {
-            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
-            Assert.assertEquals(name, oiae.getParts()[0]);
-        }
-    }
-
-    @Test
-    @Deprecated
-    public void testDeprecatedSupportedParameters() throws OrekitException {
-        PropagatorBuilder builder =
-                        new TLEPropagatorBuilder(leoTLE.getSatelliteNumber(),
-                                                 leoTLE.getClassification(),
-                                                 leoTLE.getLaunchYear(),
-                                                 leoTLE.getLaunchNumber(),
-                                                 leoTLE.getLaunchPiece(),
-                                                 leoTLE.getElementNumber(),
-                                                 leoTLE.getRevolutionNumberAtEpoch(),
-                                                 OrbitType.CIRCULAR, PositionAngle.TRUE);
-        List<String> supported = builder.getSupportedParameters();
-        Assert.assertEquals(2, supported.size());
-        Assert.assertEquals(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                            supported.get(0));
-        Assert.assertEquals(TLEPropagatorBuilder.B_STAR,
-                            supported.get(1));
-        Assert.assertEquals(TLEPropagator.getMU(),
-                            builder.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
-                            1.0e-5);
-        Assert.assertEquals(0.0,
-                            builder.getParameter(TLEPropagatorBuilder.B_STAR),
-                            1.0e-15);
-        builder.setParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
-                             Constants.JPL_SSD_MARS_SYSTEM_GM);
-        builder.setParameter(TLEPropagatorBuilder.B_STAR, 1.2);
-        Assert.assertEquals(Constants.JPL_SSD_MARS_SYSTEM_GM,
-                            builder.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
-                            1.0e-5);
-        Assert.assertEquals(1.2,
-                            builder.getParameter(TLEPropagatorBuilder.B_STAR),
-                            1.0e-15);
-    }
-
-    @Test
     public void testConversionGeoPositionVelocity() throws OrekitException {
-        checkFit(geoTLE, 86400, 300, 1.0e-3, false, false, 8.600e-8);
+        checkFit(geoTLE, 86400, 300, 1.0e-3, false, false, 8.540e-8);
     }
 
     @Test
     public void testConversionGeoPositionOnly() throws OrekitException {
-        checkFit(geoTLE, 86400, 300, 1.0e-3, true, false, 1.058e-7);
+        checkFit(geoTLE, 86400, 300, 1.0e-3, true, false, 1.253e-7);
     }
 
     @Test
@@ -192,12 +58,12 @@ public class TLEConverterTest {
 
     @Test
     public void testConversionLeoPositionVelocityWithBStar() throws OrekitException {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, false, true, 7.82e-6);
+        checkFit(leoTLE, 86400, 300, 1.0e-3, false, true, 1.614e-7);
     }
 
     @Test
     public void testConversionLeoPositionOnlyWithBStar() throws OrekitException {
-        checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 5.79e-7);
+        checkFit(leoTLE, 86400, 300, 1.0e-3, true, true, 4.285e-7);
     }
 
     protected void checkFit(final TLE tle,
@@ -215,15 +81,7 @@ public class TLEConverterTest {
             sample.add(p.propagate(tle.getDate().shiftedBy(dt)));
         }
 
-        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle.getSatelliteNumber(),
-                                                                tle.getClassification(),
-                                                                tle.getLaunchYear(),
-                                                                tle.getLaunchNumber(),
-                                                                tle.getLaunchPiece(),
-                                                                tle.getElementNumber(),
-                                                                tle.getRevolutionNumberAtEpoch(),
-                                                                OrbitType.CARTESIAN,
-                                                                PositionAngle.TRUE);
+        TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngle.TRUE, 1.0);
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
 

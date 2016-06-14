@@ -17,14 +17,13 @@
 package org.orekit.forces.gravity;
 
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractParameterizable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
+import org.orekit.errors.OrekitInternalError;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -32,6 +31,8 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /**
  * Post-Newtonian correction force due to general relativity. The main effect is the
@@ -43,7 +44,18 @@ import org.orekit.utils.PVCoordinates;
  * @see "Montenbruck, Oliver, and Gill, Eberhard. Satellite orbits : models, methods, and
  * applications. Berlin New York: Springer, 2000."
  */
-public class Relativity extends AbstractParameterizable implements ForceModel {
+public class Relativity extends AbstractForceModel {
+
+    /** Central attraction scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double MU_SCALE = FastMath.scalb(1.0, 32);
+
+    /** Drivers for force model parameters. */
+    private final ParameterDriver[] parametersDrivers;
 
     /** Earth's gravitational parameter. */
     private double gm;
@@ -55,7 +67,23 @@ public class Relativity extends AbstractParameterizable implements ForceModel {
      * @param gm Earth's gravitational parameter.
      */
     public Relativity(final double gm) {
-        super(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+        this.parametersDrivers = new ParameterDriver[1];
+        try {
+            parametersDrivers[0] = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
+                                                       gm, MU_SCALE,
+                                                       0.0, Double.POSITIVE_INFINITY);
+            parametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    Relativity.this.gm = driver.getValue();
+                }
+            });
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        };
+
         this.gm = gm;
     }
 
@@ -138,15 +166,9 @@ public class Relativity extends AbstractParameterizable implements ForceModel {
         return null;
     }
 
-    @Override
-    public double getParameter(final String name) throws MathIllegalArgumentException {
-        complainIfNotSupported(name);
-        return this.gm;
+    /** {@inheritDoc} */
+    public ParameterDriver[] getParametersDrivers() {
+        return parametersDrivers.clone();
     }
 
-    @Override
-    public void setParameter(final String name, final double value) throws MathIllegalArgumentException {
-        complainIfNotSupported(name);
-        this.gm = value;
-    }
 }
