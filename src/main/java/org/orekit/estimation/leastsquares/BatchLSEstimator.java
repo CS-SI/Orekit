@@ -33,7 +33,6 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.estimation.OrbitValidator;
 import org.orekit.estimation.measurements.Evaluation;
 import org.orekit.estimation.measurements.EvaluationsProvider;
 import org.orekit.estimation.measurements.Measurement;
@@ -314,10 +313,6 @@ public class BatchLSEstimator {
         final Model model = new Model(propagatorBuilder, measurements, estimatedMeasurementsParameters,
                                       modelObserver);
         lsBuilder.model(model);
-
-        // add a validator for orbital parameters
-        lsBuilder.parameterValidator(new OrbitValidator(propagatorBuilder.getOrbitType(),
-                                                        propagatorBuilder.getOrbitalParametersDrivers()));
 
         lsBuilder.checker(new ConvergenceChecker<LeastSquaresProblem.Evaluation>() {
             /** {@inheritDoc} */
