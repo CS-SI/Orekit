@@ -246,9 +246,12 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 for (final EventState<?> state : eventsStates) {
                     if (state != currentEvent && state.tryAdvance(eventState, interpolator)) {
                         // we need to handle another event first
-                        occurringEvents.add(currentEvent);
-                        occurringEvents.remove(state); // remove if already has pending event
+                        // remove event we just updated to prevent heap corruption
+                        occurringEvents.remove(state);
+                        // add it back to update its position in the heap
                         occurringEvents.add(state);
+                        // re-queue the event we were processing
+                        occurringEvents.add(currentEvent);
                         continue eventLoop;
                     }
                 }
