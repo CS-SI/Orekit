@@ -47,10 +47,10 @@ import org.orekit.utils.ParameterDriversList;
 public class OrbitValidator implements ParameterValidator {
 
     /** Orbit type. */
-    final OrbitType type;
+    private final OrbitType type;
 
     /** Drivers for the orbital parameters. */
-    final ParameterDriversList drivers;
+    private final ParameterDriversList drivers;
 
     /** Simple constructor.
      * @param type orbit type

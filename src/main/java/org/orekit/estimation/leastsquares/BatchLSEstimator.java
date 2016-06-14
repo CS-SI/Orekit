@@ -242,7 +242,7 @@ public class BatchLSEstimator {
      * normalized parameters (dimensionless, related to parameters scales)
      * @see EvaluationRmsChecker
      */
-    public void setConvergenceThreshold(final double parametersConvergenceThreshold) {
+    public void setParametersConvergenceThreshold(final double parametersConvergenceThreshold) {
         this.parametersConvergenceThreshold = parametersConvergenceThreshold;
     }
 

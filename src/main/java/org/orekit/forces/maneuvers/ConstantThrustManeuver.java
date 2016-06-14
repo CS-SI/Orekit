@@ -124,7 +124,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     ConstantThrustManeuver.this.thrust = driver.getValue();
                 }
             });
@@ -133,7 +133,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
             parametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     ConstantThrustManeuver.this.flowRate = driver.getValue();
                 }
             });

@@ -179,7 +179,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             dragParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     BoxAndSolarArraySpacecraft.this.dragCoeff = driver.getValue();
                 }
             });
@@ -188,7 +188,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     BoxAndSolarArraySpacecraft.this.absorptionCoeff = driver.getValue();
                     BoxAndSolarArraySpacecraft.this.diffuseReflectionCoeff =
                                     1 - (driver.getValue() + BoxAndSolarArraySpacecraft.this.specularReflectionCoeff);
@@ -199,7 +199,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             radiationParametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     BoxAndSolarArraySpacecraft.this.specularReflectionCoeff = driver.getValue();
                     BoxAndSolarArraySpacecraft.this.diffuseReflectionCoeff  =
                                     1 - (BoxAndSolarArraySpacecraft.this.absorptionCoeff + driver.getValue());
@@ -308,7 +308,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             dragParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     BoxAndSolarArraySpacecraft.this.dragCoeff = driver.getValue();
                 }
             });
@@ -317,7 +317,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     BoxAndSolarArraySpacecraft.this.absorptionCoeff = driver.getValue();
                     BoxAndSolarArraySpacecraft.this.diffuseReflectionCoeff =
                                     1 - (driver.getValue() + BoxAndSolarArraySpacecraft.this.specularReflectionCoeff);
@@ -328,7 +328,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             radiationParametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheridDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     BoxAndSolarArraySpacecraft.this.specularReflectionCoeff = driver.getValue();
                     BoxAndSolarArraySpacecraft.this.diffuseReflectionCoeff  =
                                     1 - (BoxAndSolarArraySpacecraft.this.absorptionCoeff + driver.getValue());

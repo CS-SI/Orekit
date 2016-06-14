@@ -1156,7 +1156,7 @@ public class OrbitDeterminationTest {
         final LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer().withInitialStepBoundFactor(initialStepBoundFactor);
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 optimizer);
-        estimator.setConvergenceThreshold(convergenceThreshold);
+        estimator.setParametersConvergenceThreshold(convergenceThreshold);
         estimator.setMaxIterations(maxIterations);
         estimator.setMaxEvaluations(maxEvaluations);
 

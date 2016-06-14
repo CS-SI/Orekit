@@ -104,7 +104,7 @@ public class GroundStationTest {
                     estimator.addMeasurement(range);
                 }
         }
-        estimator.setConvergenceThreshold(1.0e-3);
+        estimator.setParametersConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(100);
         estimator.setMaxEvaluations(200);
 

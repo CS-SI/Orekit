@@ -216,7 +216,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 model.getParametersDrivers()[0].addObserver(new ParameterObserver() {
                     /** {@inheritDoc} */
                     @Override
-                    public void valueChanged(double previousValue, final ParameterDriver driver) {
+                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
                         superSetMu(driver.getValue());
                     }
                 });
@@ -284,7 +284,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     public List<ForceModel> getForceModels() {
         if (hasNewtonianAttraction()) {
             // take care to not include central attraction
-            return Collections.unmodifiableList(forceModels.subList(0, forceModels.size() - 1));            
+            return Collections.unmodifiableList(forceModels.subList(0, forceModels.size() - 1));
         } else {
             return Collections.unmodifiableList(forceModels);
         }

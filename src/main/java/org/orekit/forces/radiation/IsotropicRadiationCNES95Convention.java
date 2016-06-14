@@ -93,7 +93,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     IsotropicRadiationCNES95Convention.this.alpha = driver.getValue();
                 }
             });
@@ -102,7 +102,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
             radiationParametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                 /** {@inheritDoc} */
                     IsotropicRadiationCNES95Convention.this.tau = driver.getValue();
                 }

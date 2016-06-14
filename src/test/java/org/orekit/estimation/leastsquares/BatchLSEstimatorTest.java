@@ -66,7 +66,7 @@ public class BatchLSEstimatorTest {
         for (final Measurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
-        estimator.setConvergenceThreshold(1.0e-2);
+        estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
@@ -101,7 +101,7 @@ public class BatchLSEstimatorTest {
         for (final Measurement<?> range : measurements) {
             estimator.addMeasurement(range);
         }
-        estimator.setConvergenceThreshold(1.0e-2);
+        estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
         estimator.setObserver(new BatchLSObserver() {
@@ -169,7 +169,7 @@ public class BatchLSEstimatorTest {
         for (final Measurement<?> range : measurements) {
             estimator.addMeasurement(range);
         }
-        estimator.setConvergenceThreshold(1.0e-2);
+        estimator.setParametersConvergenceThreshold(1.0e-2);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
         estimator.setObserver(new BatchLSObserver() {
@@ -231,7 +231,7 @@ public class BatchLSEstimatorTest {
         for (final Measurement<?> rangerate : measurements) {
             estimator.addMeasurement(rangerate);
         }
-        estimator.setConvergenceThreshold(1.0e-3);
+        estimator.setParametersConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
@@ -275,7 +275,7 @@ public class BatchLSEstimatorTest {
         for (final Measurement<?> meas : measurements) {
             estimator.addMeasurement(meas);
         }
-        estimator.setConvergenceThreshold(1.0e-3);
+        estimator.setParametersConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 

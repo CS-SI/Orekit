@@ -115,7 +115,7 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
                     CunninghamAttractionModel.this.mu = driver.getValue();
                 }
             });

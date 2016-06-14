@@ -99,7 +99,7 @@ public class BiasTest {
             }
         }
 
-        estimator.setConvergenceThreshold(1.0e-3);
+        estimator.setParametersConvergenceThreshold(1.0e-3);
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 

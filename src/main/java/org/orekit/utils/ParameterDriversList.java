@@ -138,7 +138,7 @@ public class ParameterDriversList {
          */
         DelegatingDriver(final ParameterDriver driver) throws OrekitException {
             super(driver.getName(), driver.getInitialValue(),
-                  driver.getScale(),driver.getMinValue(), driver.getMaxValue());
+                  driver.getScale(), driver.getMinValue(), driver.getMaxValue());
             drivers = new ArrayList<ParameterDriver>();
             drivers.add(driver);
 
@@ -150,7 +150,7 @@ public class ParameterDriversList {
             addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver)
+                public void valueChanged(final double previousValue, final ParameterDriver driver)
                     throws OrekitException {
                     for (final ParameterDriver d : drivers) {
                         d.setValue(driver.getValue());

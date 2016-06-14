@@ -84,7 +84,7 @@ public class GroundStation {
         final ParameterObserver resettingObserver = new ParameterObserver() {
             /** {@inheritDoc} */
             @Override
-            public void valueChanged(double previousValue, final ParameterDriver driver) {
+            public void valueChanged(final double previousValue, final ParameterDriver driver) {
                 offsetFrame = null;
             }
         };

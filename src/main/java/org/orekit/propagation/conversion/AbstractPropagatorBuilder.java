@@ -110,7 +110,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         muDriver.addObserver(new ParameterObserver() {
             /** {@inheridDoc} */
             @Override
-            public void valueChanged(double previousValue, final ParameterDriver driver) {
+            public void valueChanged(final double previousValue, final ParameterDriver driver) {
                 AbstractPropagatorBuilder.this.mu = driver.getValue();
             }
         });

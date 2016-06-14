@@ -66,8 +66,8 @@ public class NewtonianAttraction extends AbstractForceModel {
             parametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
-                public void valueChanged(double previousValue, final ParameterDriver driver) {
-                     NewtonianAttraction.this.mu = driver.getValue();
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    NewtonianAttraction.this.mu = driver.getValue();
                 }
             });
         } catch (OrekitException oe) {
