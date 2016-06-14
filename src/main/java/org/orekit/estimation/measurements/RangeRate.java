@@ -184,8 +184,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
         // compute sensitivity wrt station position when station bias needs
         // to be estimated
-        if (station.getEastOffsetDriver().isSelected()  |
-            station.getNorthOffsetDriver().isSelected() |
+        if (station.getEastOffsetDriver().isSelected()  ||
+            station.getNorthOffsetDriver().isSelected() ||
             station.getZenithOffsetDriver().isSelected()) {
 
             // station position at signal arrival

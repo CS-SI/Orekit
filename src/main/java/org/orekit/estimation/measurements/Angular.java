@@ -152,36 +152,28 @@ public class Angular extends AbstractMeasurement<Angular> {
 
         evaluation.setStateDerivatives(dAzOndP, dElOndP);
 
-        if (station.getEastOffsetDriver().isSelected()  |
-            station.getNorthOffsetDriver().isSelected() |
+        if (station.getEastOffsetDriver().isSelected()  ||
+            station.getNorthOffsetDriver().isSelected() ||
             station.getZenithOffsetDriver().isSelected()) {
 
             // partial derivatives with respect to parameters
             // Be aware: east; north and zenith are expressed in station parent frame but the derivatives are expressed
             // with respect to reference station topocentric frame
 
-            // partial derivatives of azimuth with respect to parameters in body frame
-            final double[] dAzOndQ = new double[] {
-                                                   azimuth.getPartialDerivative(0, 0, 0, 1, 0, 0),
-                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 0, 1)
-            };
-
-            // partial derivatives of elevation with respect to parameters in body frame
-            final double[] dElOndQ = new double[] {
-                                                   elevation.getPartialDerivative(0, 0, 0, 1, 0, 0),
-                                                   elevation.getPartialDerivative(0, 0, 0, 0, 1, 0),
-                                                   elevation.getPartialDerivative(0, 0, 0, 0, 0, 1)
-            };
-
             if (station.getEastOffsetDriver().isSelected()) {
-                evaluation.setParameterDerivatives(station.getEastOffsetDriver(), dAzOndQ[0], dElOndQ[0]);
+                evaluation.setParameterDerivatives(station.getEastOffsetDriver(),
+                                                   azimuth.getPartialDerivative(0, 0, 0, 1, 0, 0),
+                                                   elevation.getPartialDerivative(0, 0, 0, 1, 0, 0));
             }
             if (station.getNorthOffsetDriver().isSelected()) {
-                evaluation.setParameterDerivatives(station.getNorthOffsetDriver(), dAzOndQ[1], dElOndQ[1]);
+                evaluation.setParameterDerivatives(station.getNorthOffsetDriver(),
+                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 1, 0),
+                                                   elevation.getPartialDerivative(0, 0, 0, 0, 1, 0));
             }
             if (station.getZenithOffsetDriver().isSelected()) {
-                evaluation.setParameterDerivatives(station.getZenithOffsetDriver(), dAzOndQ[2], dElOndQ[2]);
+                evaluation.setParameterDerivatives(station.getZenithOffsetDriver(),
+                                                   azimuth.getPartialDerivative(0, 0, 0, 0, 0, 1),
+                                                   elevation.getPartialDerivative(0, 0, 0, 0, 0, 1));
             }
 
         }
