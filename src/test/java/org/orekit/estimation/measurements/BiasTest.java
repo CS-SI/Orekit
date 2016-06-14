@@ -114,7 +114,7 @@ public class BiasTest {
                                      0.0,  3.0e-7,
                                      0.0,  7.3e-7,
                                      0.0,  1.3e-7,
-                                     0.0,  7.8e-11);
+                                     0.0,  7.9e-11);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assert.assertEquals(realStationsBiases[i],
                                 stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),
