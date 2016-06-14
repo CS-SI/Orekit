@@ -285,6 +285,13 @@
         <type>jar</type>
         <optional>false</optional>
     </dependency>
+    <dependency>
+        <groupId>org.hipparchus</groupId>
+        <artifactId>hipparchus-stat</artifactId>
+        <version>${orekit.hipparchus.version}</version>
+        <type>jar</type>
+        <optional>false</optional>
+    </dependency>
   	<dependency>
   		<groupId>junit</groupId>
   		<artifactId>junit</artifactId>
