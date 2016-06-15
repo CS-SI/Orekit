@@ -318,6 +318,10 @@ estimator.orbital.parameters.position.scale     = 10.0
 # the initial step bound factor should be of the order of magnitude of 1.0e6
 estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
 
+# we can use either a Levenberg-Marquardt or a Gauss-Newton
+# optimization engine. Default is Levenberg-Marquardt
+estimator.optimization.engine = Levenberg-Marquardt
+
 # convergence is reached when max|p(k+1) - p(k)| < ε for each
 # normalized estimated parameters p and iterations k and k+1
 # so the ε threshold (which corresponds to the key

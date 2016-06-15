@@ -252,6 +252,10 @@ PV.measurements.velocity.sigma                  = 0.01
 # if not specified, the value set for propagator.position.error will be copied
 estimator.orbital.parameters.position.scale     = 10.0
 
+# we can use either a Levenberg-Marquardt or a Gauss-Newton
+# optimization engine. Default is Levenberg-Marquardt
+estimator.optimization.engine = Gauss-Newton
+
 # the default initial step bound factor is 100 for Levenberg-Marquardt
 # this is too small for normalized parameters when initial guess is very
 # far. An order of magnitude is 100 times the distance error of the initial guess

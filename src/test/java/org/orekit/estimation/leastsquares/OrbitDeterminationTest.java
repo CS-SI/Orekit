@@ -36,8 +36,10 @@ import java.util.TreeSet;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer.Decomposition;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -133,7 +135,7 @@ public class OrbitDeterminationTest {
         final double velocityAccuracy = 1e-4;
 
         //test on the convergence
-        final int numberOfIte  = 3;
+        final int numberOfIte  = 4;
         final int numberOfEval = 4;
 
         Assert.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
@@ -1101,12 +1103,30 @@ public class OrbitDeterminationTest {
     private BatchLSEstimator createEstimator(final KeyValueFileParser<ParameterKey> parser,
                                              final NumericalPropagatorBuilder propagatorBuilder)
         throws NoSuchElementException, OrekitException {
-        final double initialStepBoundFactor;
-        if (! parser.containsKey(ParameterKey.ESTIMATOR_LEVENBERG_MARQUARDT_INITIAL_STEP_BOUND_FACTOR)) {
-            initialStepBoundFactor = 100.0;
+        final boolean optimizerIsLevenbergMarquardt;
+        if (! parser.containsKey(ParameterKey.ESTIMATOR_OPTIMIZATION_ENGINE)) {
+            optimizerIsLevenbergMarquardt = true;
         } else {
-            initialStepBoundFactor = parser.getDouble(ParameterKey.ESTIMATOR_LEVENBERG_MARQUARDT_INITIAL_STEP_BOUND_FACTOR);
+            final String engine = parser.getString(ParameterKey.ESTIMATOR_OPTIMIZATION_ENGINE);
+            optimizerIsLevenbergMarquardt = engine.toLowerCase().contains("levenberg");
         }
+        final LeastSquaresOptimizer optimizer;
+
+        if (optimizerIsLevenbergMarquardt) {
+            // we want to use a Levenberg-Marquardt optimization engine
+            final double initialStepBoundFactor;
+            if (! parser.containsKey(ParameterKey.ESTIMATOR_LEVENBERG_MARQUARDT_INITIAL_STEP_BOUND_FACTOR)) {
+                initialStepBoundFactor = 100.0;
+            } else {
+                initialStepBoundFactor = parser.getDouble(ParameterKey.ESTIMATOR_LEVENBERG_MARQUARDT_INITIAL_STEP_BOUND_FACTOR);
+            }
+
+            optimizer = new LevenbergMarquardtOptimizer().withInitialStepBoundFactor(initialStepBoundFactor);
+        } else {
+            // we want to use a Gauss-Newton optimization engine
+            optimizer = new GaussNewtonOptimizer(Decomposition.QR);
+        }
+
         final double convergenceThreshold;
         if (! parser.containsKey(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD)) {
             convergenceThreshold = 1.0e-3;
@@ -1126,9 +1146,7 @@ public class OrbitDeterminationTest {
             maxEvaluations = parser.getInt(ParameterKey.ESTIMATOR_MAX_EVALUATIONS);
         }
 
-        final LeastSquaresOptimizer optimizer = new LevenbergMarquardtOptimizer().withInitialStepBoundFactor(initialStepBoundFactor);
-        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
-                                                                optimizer);
+        final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder, optimizer);
         estimator.setParametersConvergenceThreshold(convergenceThreshold);
         estimator.setMaxIterations(maxIterations);
         estimator.setMaxEvaluations(maxEvaluations);
@@ -1852,6 +1870,7 @@ public class OrbitDeterminationTest {
         PV_OUTLIER_REJECTION_STARTING_ITERATION,
         MEASUREMENTS_FILES,
         OUTPUT_BASE_NAME,
+        ESTIMATOR_OPTIMIZATION_ENGINE,
         ESTIMATOR_LEVENBERG_MARQUARDT_INITIAL_STEP_BOUND_FACTOR,
         ESTIMATOR_ORBITAL_PARAMETERS_POSITION_SCALE,
         ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD,
