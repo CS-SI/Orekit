@@ -244,16 +244,37 @@ PV.measurements.position.sigma                  = 1.0
 PV.measurements.velocity.sigma                  = 0.01
 
 ## Estimator
+
+# normalized parameters p are computed from physical parameters x
+# as p = (x - x0) / sx where x0 is the reference value for physical
+# parameter x and sx is the associated scale factor
+# scaling factor for orbital parameters normalization (m)
+# if not specified, the value set for propagator.position.error will be copied
+estimator.orbital.parameters.position.scale     = 10.0
+
 # the default initial step bound factor is 100 for Levenberg-Marquardt
 # this is too small for normalized parameters when initial guess is very
 # far. An order of magnitude is 100 times the distance error of the initial guess
-# divided by the propagator.position.error. So if the initial guess
-# is about 100km wrong and propagator.position.error is set to 10.0,
+# divided by estimator.orbital.parameters.position.scale. So if the initial guess
+# is about 100km wrong and estimator.orbital.parameters.position.scale is set to 10.0,
 # the initial step bound factor should be of the order of magnitude of 1.0e6
-estimator.initial.step.bound.factor                   = 1.0e6
-estimator.normalized.parameters.convergence.threshold = 1.0e-2
-estimator.max.iterations                              = 25
-estimator.max.evaluations                             = 35
+estimator.Levenberg.Marquardt.initial.step.bound.factor = 1.0e6
+
+# convergence is reached when max|p(k+1) - p(k)| < ε for each
+# normalized estimated parameters p and iterations k and k+1
+# so the ε threshold (which corresponds to the key
+# estimator.normalized.parameters.convergence.threshold)
+# Normalized values are computed as (x - x0) / sx,
+# so convergence is reached when the following condition holds for
+# all estimated parameters: |x[i+1] - x[i]| <= ε * sx
+# So the convergence threshold specified here can be considered as
+# a multiplication factor applied to scale. Since for all parameters
+# the scale is often small (typically about 1 m for orbital positions
+# for example), then the threshold should not be too small. A value
+# of 10⁻³ is often quite accurate.
+estimator.normalized.parameters.convergence.threshold   = 1.0e-3
+estimator.max.iterations                                = 25
+estimator.max.evaluations                               = 35
 
 # comma-separated list of measurements files (in the same directory as this file)
 measurements.files = Lageos2_test.aer

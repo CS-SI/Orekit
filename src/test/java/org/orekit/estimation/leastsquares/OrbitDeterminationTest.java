@@ -499,11 +499,17 @@ public class OrbitDeterminationTest {
             dP = parser.getDouble(ParameterKey.PROPAGATOR_POSITION_ERROR);
         }
 
+        final double positionScale;
+        if (!parser.containsKey(ParameterKey.ESTIMATOR_ORBITAL_PARAMETERS_POSITION_SCALE)) {
+            positionScale = dP;
+        } else {
+            positionScale = parser.getDouble(ParameterKey.ESTIMATOR_ORBITAL_PARAMETERS_POSITION_SCALE);
+        }
         final NumericalPropagatorBuilder propagatorBuilder =
                         new NumericalPropagatorBuilder(orbit,
                                                        new DormandPrince853IntegratorBuilder(minStep, maxStep, dP),
                                                        PositionAngle.MEAN,
-                                                       dP);
+                                                       positionScale);
 
         // initial mass
         final double mass;
@@ -1096,10 +1102,10 @@ public class OrbitDeterminationTest {
                                              final NumericalPropagatorBuilder propagatorBuilder)
         throws NoSuchElementException, OrekitException {
         final double initialStepBoundFactor;
-        if (! parser.containsKey(ParameterKey.ESTIMATOR_INITIAL_STEP_BOUND_FACTOR)) {
+        if (! parser.containsKey(ParameterKey.ESTIMATOR_LEVENBERG_MARQUARDT_INITIAL_STEP_BOUND_FACTOR)) {
             initialStepBoundFactor = 100.0;
         } else {
-            initialStepBoundFactor = parser.getDouble(ParameterKey.ESTIMATOR_INITIAL_STEP_BOUND_FACTOR);
+            initialStepBoundFactor = parser.getDouble(ParameterKey.ESTIMATOR_LEVENBERG_MARQUARDT_INITIAL_STEP_BOUND_FACTOR);
         }
         final double convergenceThreshold;
         if (! parser.containsKey(ParameterKey.ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD)) {
@@ -1846,7 +1852,8 @@ public class OrbitDeterminationTest {
         PV_OUTLIER_REJECTION_STARTING_ITERATION,
         MEASUREMENTS_FILES,
         OUTPUT_BASE_NAME,
-        ESTIMATOR_INITIAL_STEP_BOUND_FACTOR,
+        ESTIMATOR_LEVENBERG_MARQUARDT_INITIAL_STEP_BOUND_FACTOR,
+        ESTIMATOR_ORBITAL_PARAMETERS_POSITION_SCALE,
         ESTIMATOR_NORMALIZED_PARAMETERS_CONVERGENCE_THRESHOLD,
         ESTIMATOR_MAX_ITERATIONS,
         ESTIMATOR_MAX_EVALUATIONS;
