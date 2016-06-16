@@ -38,7 +38,7 @@
       +getBaseWeight()
       +addModifier(modifier)
       +getModifiers()
-      +evaluate(iteration, state)
+      +evaluate(iteration, count, state)
     }
     
     class Evaluation {

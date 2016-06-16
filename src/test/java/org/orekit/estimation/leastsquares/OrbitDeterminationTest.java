@@ -435,8 +435,8 @@ public class OrbitDeterminationTest {
         }
 
         // parmaters and measurements.
-        final ParameterDriversList propagatorParameters   = estimator.getPropagatorParameters(true);
-        final ParameterDriversList measurementsParameters = estimator.getMeasurementsParameters(true);
+        final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
+        final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
 
         //instation of results
         return new ResultOD(propagatorParameters, measurementsParameters,

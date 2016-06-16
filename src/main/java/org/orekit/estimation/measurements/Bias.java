@@ -38,11 +38,11 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
     /** Simple constructor.
      * @param name name of the bias
-     * @param bias initial value of the bias
+     * @param bias reference value of the bias
      * @param scale scale of the bias, for normalization
      * @param min minimum value of the bias
      * @param max maximum value of the bias
-     * @exception OrekitException if initial value cannot be set
+     * @exception OrekitException if reference value cannot be set
      */
     public Bias(final String[] name, final double[] bias, final double[] scale,
                 final double[] min, final double[] max)

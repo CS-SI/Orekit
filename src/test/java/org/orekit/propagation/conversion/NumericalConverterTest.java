@@ -152,14 +152,14 @@ public class NumericalConverterTest {
             if (DragSensitive.DRAG_COEFFICIENT.equals(param)) {
                 // we want to adjust drag coefficient, we need to start from a wrong value
                 ParameterDriver driver = drag.getParameterDriver(param);
-                double coeff = driver.getInitialValue() - driver.getScale();
+                double coeff = driver.getReferenceValue() - driver.getScale();
                 guessedDrag = new DragForce(atmosphere, new IsotropicDrag(crossSection, coeff));
             } else if (NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT.equals(param)) {
                 // we want to adjust mu, we need to start from  a wrong value
                 guessedGravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                                        GravityFieldFactory.getNormalizedProvider(2, 0));
                 ParameterDriver driver = guessedGravity.getParameterDriver(param);
-                driver.setValue(driver.getInitialValue() + driver.getScale());
+                driver.setValue(driver.getReferenceValue() + driver.getScale());
             }
         }
         builder.addForceModel(guessedDrag);

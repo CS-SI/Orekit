@@ -34,8 +34,8 @@ import org.orekit.errors.OrekitException;
  * set of instances of this class so the algorithm can call the
  * {@link #setValue(double[]) setValue} method to update the
  * parameter value. Each time the value is set, the physical model
- * will be notified as it will implement a specialized version of
- * the {@link #valueChanged(double, double[]) valueChanged} method.
+ * will be notified as it will register a {@link ParameterObserver
+ * ParameterObserver} for this purpose.
  * </p>
  * <p>
  * This design has two major goals. First, it allows an external
@@ -55,8 +55,8 @@ public class ParameterDriver {
     /** Name of the parameter. */
     private final String name;
 
-    /** Initial value. */
-    private final double initialValue;
+    /** Reference value. */
+    private final double referenceValue;
 
     /** Scaling factor. */
     private final double scale;
@@ -64,7 +64,7 @@ public class ParameterDriver {
     /** Minimum value. */
     private final double minValue;
 
-    /** MAximum value. */
+    /** Maximum value. */
     private final double maxValue;
 
     /** Current value. */
@@ -83,27 +83,28 @@ public class ParameterDriver {
 
     /** Simple constructor.
      * <p>
-     * At construction, the parameter is configured as <em>not</em> selected.
+     * At construction, the parameter is configured as <em>not</em> selected,
+     * and the value is set to the {@code referenceValue}.
      * </p>
      * @param name name of the parameter
-     * @param initialValue initial value of the parameter
+     * @param referenceValue reference value of the parameter
      * @param scale scaling factor to convert the parameters value to
      * non-dimensional (typically set to the expected standard deviation of the
      * parameter)
      * @param minValue minimum value
      * @param maxValue maximum value
      */
-    public ParameterDriver(final String name, final double initialValue,
+    public ParameterDriver(final String name, final double referenceValue,
                            final double scale, final double minValue,
                            final double maxValue) {
-        this.name         = name;
-        this.initialValue = initialValue;
-        this.scale        = scale;
-        this.minValue     = minValue;
-        this.maxValue     = maxValue;
-        this.value        = initialValue;
-        this.selected     = false;
-        this.observers    = new ArrayList<ParameterObserver>();
+        this.name           = name;
+        this.referenceValue = referenceValue;
+        this.scale          = scale;
+        this.minValue       = minValue;
+        this.maxValue       = maxValue;
+        this.value          = referenceValue;
+        this.selected       = false;
+        this.observers      = new ArrayList<ParameterObserver>();
     }
 
 
@@ -130,11 +131,11 @@ public class ParameterDriver {
         return name;
     }
 
-    /** Get initial parameter value.
-     * @return initial parameter value
+    /** Get reference parameter value.
+     * @return reference parameter value
      */
-    public double getInitialValue() {
-        return initialValue;
+    public double getReferenceValue() {
+        return referenceValue;
     }
 
     /** Get minimum parameter value.
@@ -162,25 +163,25 @@ public class ParameterDriver {
      * <p>
      * The normalized value is a non-dimensional value
      * suitable for use as part of a vector in an optimization
-     * process. It is computed as {@code (current - initial)/scale}.
+     * process. It is computed as {@code (current - reference)/scale}.
      * </p>
      * @return normalized value
      */
     public double getNormalizedValue() {
-        return (value - initialValue) / scale;
+        return (value - referenceValue) / scale;
     }
 
     /** Set normalized value.
      * <p>
      * The normalized value is a non-dimensional value
      * suitable for use as part of a vector in an optimization
-     * process. It is computed as {@code (current - initial)/scale}.
+     * process. It is computed as {@code (current - reference)/scale}.
      * </p>
      * @param normalized value
      * @exception OrekitException if an observer throws one
      */
     public void setNormalizedValue(final double normalized) throws OrekitException {
-        setValue(initialValue + scale * normalized);
+        setValue(referenceValue + scale * normalized);
     }
 
     /** Get current parameter value.

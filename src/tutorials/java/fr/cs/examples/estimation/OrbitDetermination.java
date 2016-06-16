@@ -324,9 +324,9 @@ public class OrbitDetermination {
                 logStream.println("Estimated orbit: " + estimated);
             }
 
-            final ParameterDriversList orbitalParameters      = estimator.getOrbitalParameters(true);
-            final ParameterDriversList propagatorParameters   = estimator.getPropagatorParameters(true);
-            final ParameterDriversList measurementsParameters = estimator.getMeasurementsParameters(true);
+            final ParameterDriversList orbitalParameters      = estimator.getOrbitalParametersDrivers(true);
+            final ParameterDriversList propagatorParameters   = estimator.getPropagatorParametersDrivers(true);
+            final ParameterDriversList measurementsParameters = estimator.getMeasurementsParametersDrivers(true);
             int length = 0;
             for (final ParameterDriver parameterDriver : orbitalParameters.getDrivers()) {
                 length = FastMath.max(length, parameterDriver.getName().length());
@@ -428,7 +428,7 @@ public class OrbitDetermination {
                 } else {
                     factor = 1.0;
                 }
-                final double initial = parameter.getInitialValue();
+                final double initial = parameter.getReferenceValue();
                 final double value   = parameter.getValue();
                 out.format(Locale.US, "  %2d %s", ++index, parameter.getName());
                 for (int i = parameter.getName().length(); i < length; ++i) {

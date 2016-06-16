@@ -113,7 +113,7 @@ public class PartialDerivativesTest {
                 propagator.setMu(provider.getMu());
                 for (final ForceModel forceModel : propagator.getAllForceModels()) {
                     for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
-                        driver.setValue(driver.getInitialValue());
+                        driver.setValue(driver.getReferenceValue());
                         driver.setSelected(driver.getName().equals(parameterName));
                     }
                 }
@@ -145,7 +145,7 @@ public class PartialDerivativesTest {
                     }
                 }
                 ParameterDriver selected = bound.getDrivers().get(0);
-                double p0 = selected.getInitialValue();
+                double p0 = selected.getReferenceValue();
                 double h  = selected.getScale();
                 selected.setValue(p0 - 4 * h);
                 propagator2.resetInitialState(arrayToState(stateToArray(initialState, orbitType, angleType, true),

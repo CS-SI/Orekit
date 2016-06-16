@@ -137,7 +137,7 @@ public class ParameterDriversList {
          * @exception OrekitException if first drivers throws one
          */
         DelegatingDriver(final ParameterDriver driver) throws OrekitException {
-            super(driver.getName(), driver.getInitialValue(),
+            super(driver.getName(), driver.getReferenceValue(),
                   driver.getScale(), driver.getMinValue(), driver.getMaxValue());
             drivers = new ArrayList<ParameterDriver>();
             drivers.add(driver);

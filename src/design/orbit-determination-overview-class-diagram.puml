@@ -49,9 +49,17 @@
 
            class BatchLSEstimator {
               +addMeasurement(measurement)
-              +getParametersDrivers()
-              +estimate(initialGuess)
+              +getOrbitalParametersDrivers()
+              +getPropagatorsParametersDrivers()
+              +getMeasurementsParametersDrivers()
+              +setObserver(observer)
+              +estimate()
            }
+
+           interface BatchLSObserver {
+               +iterationPerformed()
+           }
+
            class ODProblem
            class MeasurementHandler
 
@@ -62,6 +70,7 @@
           BatchLSEstimator *-right-> ODProblem
           LeastSquaresProblem <|-- ODProblem
           LeastSquaresOptimizer  <-- BatchLSEstimator : run
+          BatchLSEstimator *--> BatchLSObserver
         }
 
         package measurements #CEEBD8 {

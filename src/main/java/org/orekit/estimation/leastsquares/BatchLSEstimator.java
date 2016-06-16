@@ -142,7 +142,7 @@ public class BatchLSEstimator {
      * @return orbital parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
      */
-    public ParameterDriversList getOrbitalParameters(final boolean estimatedOnly)
+    public ParameterDriversList getOrbitalParametersDrivers(final boolean estimatedOnly)
         throws OrekitException {
 
         if (estimatedOnly) {
@@ -166,7 +166,7 @@ public class BatchLSEstimator {
      * @return propagator parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
      */
-    public ParameterDriversList getPropagatorParameters(final boolean estimatedOnly)
+    public ParameterDriversList getPropagatorParametersDrivers(final boolean estimatedOnly)
         throws OrekitException {
 
         if (estimatedOnly) {
@@ -190,7 +190,7 @@ public class BatchLSEstimator {
      * @return measurements parameters supported by this estimator
      * @exception OrekitException if different parameters have the same name
      */
-    public ParameterDriversList getMeasurementsParameters(final boolean estimatedOnly)
+    public ParameterDriversList getMeasurementsParametersDrivers(final boolean estimatedOnly)
         throws OrekitException {
 
         final ParameterDriversList parameters =  new ParameterDriversList();
@@ -226,7 +226,7 @@ public class BatchLSEstimator {
      * for all parameters since they are normalized and hence dimensionless.
      * </p>
      * <p>
-     * Normalized values are computed as {@code (current - initial)/scale},
+     * Normalized values are computed as {@code (current - reference)/scale},
      * so convergence is reached when the following condition holds for
      * all estimated parameters:
      * {@code |current[i] - previous[i]| <= threshold * scale[i]}
@@ -249,14 +249,14 @@ public class BatchLSEstimator {
     /** Estimate the orbit and the parameters.
      * <p>
      * The initial guess for all parameters must have been set before calling this method
-     * using {@link #getOrbitalParameters(boolean)}, {@link #getPropagatorParameters(boolean)},
-     * and {@link #getMeasurementsParameters(boolean)} and then {@link ParameterDriver#setValue(double)
+     * using {@link #getOrbitalParametersDrivers(boolean)}, {@link #getPropagatorParametersDrivers(boolean)},
+     * and {@link #getMeasurementsParametersDrivers(boolean)} and then {@link ParameterDriver#setValue(double)
      * setting the values} of the parameters.
      * </p>
      * <p>
      * After this method returns, the estimated parameters can be retrieved using
-     * {@link #getOrbitalParameters(boolean)}, {@link #getPropagatorParameters(boolean)},
-     * and {@link #getMeasurementsParameters(boolean)} and then {@link ParameterDriver#getValue()
+     * {@link #getOrbitalParametersDrivers(boolean)}, {@link #getPropagatorParametersDrivers(boolean)},
+     * and {@link #getMeasurementsParametersDrivers(boolean)} and then {@link ParameterDriver#getValue()
      * getting the values} of the parameters.
      * </p>
      * <p>
@@ -271,9 +271,9 @@ public class BatchLSEstimator {
     public NumericalPropagator estimate() throws OrekitException {
 
         // get all estimated parameters
-        final ParameterDriversList estimatedOrbitalParameters      = getOrbitalParameters(true);
-        final ParameterDriversList estimatedPropagatorParameters   = getPropagatorParameters(true);
-        final ParameterDriversList estimatedMeasurementsParameters = getMeasurementsParameters(true);
+        final ParameterDriversList estimatedOrbitalParameters      = getOrbitalParametersDrivers(true);
+        final ParameterDriversList estimatedPropagatorParameters   = getPropagatorParametersDrivers(true);
+        final ParameterDriversList estimatedMeasurementsParameters = getMeasurementsParametersDrivers(true);
 
         // create start point
         final double[] start = new double[estimatedOrbitalParameters.getNbParams() +

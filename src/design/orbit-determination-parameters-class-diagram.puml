@@ -33,13 +33,21 @@
     }
 
     package utils #DDEBD8 {
-      abstract class ParametersDriver {
-        +getName()
-        +getDimension()
-        +[is|set]Estimated()
-        +[get|set]Value()
-        #valueChanged()
+      interface ParameterObserver {
+        +valueChanged(previousValue, driver)
       }
+      class ParametersDriver {
+        +getName()
+        +getReferenceValue()
+        +geMinValue()
+        +geMaxValue()
+        +geScale()
+        +[is|set]Estimated()
+        +[get|set]NormalizedValue()
+        +[get|set]Value()
+        +addObserver()
+      }
+      ParameterObserver <--o ParametersDriver : observers
     }
 
     package estimation #DDEBD8 {
@@ -48,19 +56,17 @@
         class BatchLSEstimator
       }
 
-      ParametersDriver <-- BatchLSEstimator : change value
+      ParametersDriver <-- BatchLSEstimator : change normalized value
       package measurement #CEEBD8 {
         interface Measurement {
           +getParametersDrivers()
         }
-        class GroundStation {
-          #valueChanged()
-        }
+        class GroundStation
         Range     ..|> Measurement
         RangeRate ..|> Measurement
         GroundStation "1" <--o Range
         GroundStation "1" <--o RangeRate
-        ParametersDriver <..* GroundStation : position offset
+        ParameterObserver <..* GroundStation : East/North/Zenith offsets
         TopocentricFrame <--* GroundStation : updated on parameter change
        }
 
