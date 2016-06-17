@@ -244,14 +244,16 @@ public class OrbitDetermination {
 
                 /** {@inheritDoc} */
                 @Override
-                public void iterationPerformed(final int iterationsCount, final int evaluationsCount,
+                public void evaluationPerformed(final int iterationsCount, final int evaluationsCount,
                                                final Orbit orbit,
+                                               final ParameterDriversList estimatedOrbitalParameters,
                                                final ParameterDriversList estimatedPropagatorParameters,
                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                               final EvaluationsProvider   evaluationsProvider,
+                                               final EvaluationsProvider  evaluationsProvider,
                                                final LeastSquaresProblem.Evaluation lspEvaluation) {
                     PVCoordinates currentPV = orbit.getPVCoordinates();
-                    final String format = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s%n";
+                    final String format0 = "    %2d         %2d                                 %16.12f     %s       %s     %s     %s%n";
+                    final String format  = "    %2d         %2d      %13.6f %12.9f %16.12f     %s       %s     %s     %s%n";
                     final EvaluationCounter<Range>     rangeCounter     = new EvaluationCounter<Range>();
                     final EvaluationCounter<RangeRate> rangeRateCounter = new EvaluationCounter<RangeRate>();
                     final EvaluationCounter<Angular>   angularCounter   = new EvaluationCounter<Angular>();
@@ -275,21 +277,36 @@ public class OrbitDetermination {
                             pvCounter.add(evaluation);
                         }
                     }
-                    System.out.format(Locale.US, format,
-                                      iterationsCount, evaluationsCount,
-                                      Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
-                                      Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
-                                      lspEvaluation.getRMS(),
-                                      rangeCounter.format(8), rangeRateCounter.format(8),
-                                      angularCounter.format(8), pvCounter.format(8));
-                    if (logStream != null) {
-                        logStream.format(Locale.US, format,
-                                         iterationsCount, evaluationsCount,
-                                         Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
-                                         Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
-                                         lspEvaluation.getRMS(),
-                                         rangeCounter.format(8), rangeRateCounter.format(8),
-                                         angularCounter.format(8), pvCounter.format(8));
+                    if (evaluationsCount == 1) {
+                        System.out.format(Locale.US, format0,
+                                          iterationsCount, evaluationsCount,
+                                          lspEvaluation.getRMS(),
+                                          rangeCounter.format(8), rangeRateCounter.format(8),
+                                          angularCounter.format(8), pvCounter.format(8));
+                        if (logStream != null) {
+                            logStream.format(Locale.US, format0,
+                                             iterationsCount, evaluationsCount,
+                                             lspEvaluation.getRMS(),
+                                             rangeCounter.format(8), rangeRateCounter.format(8),
+                                             angularCounter.format(8), pvCounter.format(8));
+                        }
+                    } else {
+                        System.out.format(Locale.US, format,
+                                          iterationsCount, evaluationsCount,
+                                          Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
+                                          Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
+                                          lspEvaluation.getRMS(),
+                                          rangeCounter.format(8), rangeRateCounter.format(8),
+                                          angularCounter.format(8), pvCounter.format(8));
+                        if (logStream != null) {
+                            logStream.format(Locale.US, format,
+                                             iterationsCount, evaluationsCount,
+                                             Vector3D.distance(previousPV.getPosition(), currentPV.getPosition()),
+                                             Vector3D.distance(previousPV.getVelocity(), currentPV.getVelocity()),
+                                             lspEvaluation.getRMS(),
+                                             rangeCounter.format(8), rangeRateCounter.format(8),
+                                             angularCounter.format(8), pvCounter.format(8));
+                        }
                     }
                     previousPV = currentPV;
                 }

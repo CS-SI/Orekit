@@ -105,17 +105,24 @@ public class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
         estimator.setObserver(new BatchLSObserver() {
-            int last = 0;
+            int lastIter = 0;
+            int lastEval = 0;
             /** {@inheritDoc} */
             @Override
-            public void iterationPerformed(int iterationsCount, int evaluationscount,
-                                           Orbit orbit,
-                                           ParameterDriversList estimatedPropagatorParameters,
-                                           ParameterDriversList estimatedMeasurementsParameters,
-                                           EvaluationsProvider evaluationsProvider,
-                                           Evaluation lspEvaluation) throws OrekitException {
-                Assert.assertEquals(last + 1, iterationsCount);
-                last = iterationsCount;
+            public void evaluationPerformed(int iterationsCount, int evaluationscount,
+                                            Orbit orbit,
+                                            ParameterDriversList estimatedOrbitalParameters,
+                                            ParameterDriversList estimatedPropagatorParameters,
+                                            ParameterDriversList estimatedMeasurementsParameters,
+                                            EvaluationsProvider evaluationsProvider, Evaluation lspEvaluation)
+                throws OrekitException {
+                if (iterationsCount == lastIter) {
+                    Assert.assertEquals(lastEval + 1, evaluationscount);
+                } else {
+                    Assert.assertEquals(lastIter + 1, iterationsCount);
+                }
+                lastIter = iterationsCount;
+                lastEval = evaluationscount;
                 Assert.assertEquals(measurements.size(), evaluationsProvider.getNumber());
                 try {
                     evaluationsProvider.getEvaluation(-1);
@@ -175,12 +182,12 @@ public class BatchLSEstimatorTest {
         estimator.setObserver(new BatchLSObserver() {
             /** {@inheritDoc} */
             @Override
-            public void iterationPerformed(int iterationsCount, int evaluationscount,
+            public void evaluationPerformed(int iterationsCount, int evaluationscount,
                                            Orbit orbit,
+                                           ParameterDriversList estimatedOrbitalParameters,
                                            ParameterDriversList estimatedPropagatorParameters,
                                            ParameterDriversList estimatedMeasurementsParameters,
-                                           EvaluationsProvider evaluationsProvider,
-                                           Evaluation lspEvaluation) throws DummyException {
+                                           EvaluationsProvider evaluationsProvider, Evaluation lspEvaluation) throws DummyException {
                 throw new DummyException();
             }
         });

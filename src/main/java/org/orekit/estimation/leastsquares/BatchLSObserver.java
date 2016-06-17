@@ -32,10 +32,11 @@ import org.orekit.utils.ParameterDriversList;
  */
 public interface BatchLSObserver {
 
-    /** Notification callback for the end of each iteration.
+    /** Notification callback for the end of each evaluation.
      * @param iterationsCount iterations count
-     * @param evaluationscount evaluations count
+     * @param evaluationsCount evaluations count
      * @param orbit current estimated orbit
+     * @param estimatedOrbitalParameters estimated orbital parameters
      * @param estimatedPropagatorParameters estimated propagator parameters
      * @param estimatedMeasurementsParameters estimated measurements parameters
      * @param evaluationsProvider provider for measurements evaluations resulting
@@ -44,13 +45,14 @@ public interface BatchLSObserver {
      * @param lspEvaluation current evaluation of the underlying {@link LeastSquaresProblem
      * least squares problem}
      * @exception OrekitException if some problem occurs (for example evaluationProviders not
-     * being able to porvide an evaluation)
+     * being able to provide an evaluation)
      */
-    void iterationPerformed(int iterationsCount, int evaluationscount, Orbit orbit,
-                            ParameterDriversList estimatedPropagatorParameters,
-                            ParameterDriversList estimatedMeasurementsParameters,
-                            EvaluationsProvider evaluationsProvider,
-                            LeastSquaresProblem.Evaluation lspEvaluation)
+    void evaluationPerformed(int iterationsCount, int evaluationsCount, Orbit orbit,
+                             ParameterDriversList estimatedOrbitalParameters,
+                             ParameterDriversList estimatedPropagatorParameters,
+                             ParameterDriversList estimatedMeasurementsParameters,
+                             EvaluationsProvider  evaluationsProvider,
+                             LeastSquaresProblem.Evaluation lspEvaluation)
         throws OrekitException;
 
 }

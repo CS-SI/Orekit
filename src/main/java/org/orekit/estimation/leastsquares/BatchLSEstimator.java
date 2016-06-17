@@ -29,6 +29,7 @@ import org.hipparchus.optim.ConvergenceChecker;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.EvaluationRmsChecker;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.ParameterValidator;
 import org.hipparchus.util.Incrementor;
@@ -76,8 +77,8 @@ public class BatchLSEstimator {
     /** Last orbit. */
     private Orbit orbit;
 
-    /** Last least squares problem evaluation. */
-    private LeastSquaresProblem.Evaluation lspEvaluation;
+    /** Optimum found. */
+    private Optimum optimum;
 
     /** Counter for the evaluations. */
     private Incrementor evaluationsCounter;
@@ -326,36 +327,25 @@ public class BatchLSEstimator {
             public boolean converged(final int iteration,
                                      final LeastSquaresProblem.Evaluation previous,
                                      final LeastSquaresProblem.Evaluation current) {
-                // save the last evaluations
-                lspEvaluation = current;
-
-                // notify the observer
-                if (observer != null) {
-                    try {
-                        observer.iterationPerformed(iterationsCounter.getCount(),
-                                                    evaluationsCounter.getCount(),
-                                                    orbit,
-                                                    estimatedPropagatorParameters,
-                                                    estimatedMeasurementsParameters,
-                                                    new Provider(),
-                                                    lspEvaluation);
-                    } catch (OrekitException oe) {
-                        throw new OrekitExceptionWrapper(oe);
-                    }
-                }
-
                 final double lInf = current.getPoint().getLInfDistance(previous.getPoint());
                 return lInf <= parametersConvergenceThreshold;
-
             }
         });
+
+        // set up the problem to solve
+        final LeastSquaresProblem problem = new TappedLSProblem(lsBuilder.build(),
+                                                                model,
+                                                                estimatedOrbitalParameters,
+                                                                estimatedPropagatorParameters,
+                                                                estimatedMeasurementsParameters);
+
         try {
 
             // solve the problem
-            optimizer.optimize(new TappedLSProblem(lsBuilder.build(), model));
+            optimum = optimizer.optimize(problem);
 
             // create a new configured propagator with all estimated parameters
-            return model.createPropagator(lspEvaluation.getPoint());
+            return model.createPropagator(optimum.getPoint());
 
         } catch (MathRuntimeException mrte) {
             throw new OrekitException(mrte);
@@ -372,12 +362,11 @@ public class BatchLSEstimator {
         return Collections.unmodifiableMap(evaluations);
     }
 
-    /** Get the last {@link org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation
-     * least squares problem evaluation}.
-     * @return last least squares problem evaluation
+    /** Get the optimum found.
+     * @return optimum found after last call to {@link #estimate()}
      */
-    public LeastSquaresProblem.Evaluation getLastLSPEvaluation() {
-        return lspEvaluation;
+    public Optimum getOptimum() {
+        return optimum;
     }
 
     /** Get the number of iterations used for last estimation.
@@ -403,14 +392,32 @@ public class BatchLSEstimator {
         /** Multivariate function model. */
         private final Model model;
 
+        /** Estimated orbital parameters. */
+        private final ParameterDriversList estimatedOrbitalParameters;
+
+        /** Estimated propagator parameters. */
+        private final ParameterDriversList estimatedPropagatorParameters;
+
+        /** Estimated measurements parameters. */
+        private final ParameterDriversList estimatedMeasurementsParameters;
+
         /** Simple constructor.
          * @param problem underlying problem
          * @param model multivariate function model
+         * @param estimatedOrbitalParameters estimated orbital parameters
+         * @param estimatedPropagatorParameters estimated propagator parameters
+         * @param estimatedMeasurementsParameters estimated measurements parameters
          */
         TappedLSProblem(final LeastSquaresProblem problem,
-                        final Model model) {
-            this.problem = problem;
-            this.model   = model;
+                        final Model model,
+                        final ParameterDriversList estimatedOrbitalParameters,
+                        final ParameterDriversList estimatedPropagatorParameters,
+                        final ParameterDriversList estimatedMeasurementsParameters) {
+            this.problem                         = problem;
+            this.model                           = model;
+            this.estimatedOrbitalParameters      = estimatedOrbitalParameters;
+            this.estimatedPropagatorParameters   = estimatedPropagatorParameters;
+            this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
         }
 
         /** {@inheritDoc} */
@@ -458,7 +465,28 @@ public class BatchLSEstimator {
         /** {@inheritDoc} */
         @Override
         public Evaluation evaluate(final RealVector point) {
-            return problem.evaluate(point);
+
+            // perform the evaluation
+            final Evaluation evaluation = problem.evaluate(point);
+
+            // notify the observer
+            if (observer != null) {
+                try {
+                    observer.evaluationPerformed(iterationsCounter.getCount(),
+                                                 evaluationsCounter.getCount(),
+                                                 orbit,
+                                                 estimatedOrbitalParameters,
+                                                 estimatedPropagatorParameters,
+                                                 estimatedMeasurementsParameters,
+                                                 new Provider(),
+                                                 evaluation);
+                } catch (OrekitException oe) {
+                    throw new OrekitExceptionWrapper(oe);
+                }
+            }
+
+            return evaluation;
+
         }
 
     }
