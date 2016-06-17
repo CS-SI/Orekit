@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
@@ -44,7 +44,7 @@ public class IodGoodingTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
         
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                 EstimationTestUtils.createMeasurements(propagator,
                                                        new PVMeasurementCreator(),
                                                        0.0, 1.0, 60.0);        

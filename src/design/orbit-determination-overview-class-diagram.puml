@@ -26,27 +26,28 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.hipparchus.optim.nonlinear.vector.leastsquares #ECEBD8 {
+  package org.hipparchus #ECEBD8 {
 
-          interface LeastSquaresOptimizer
           interface LeastSquaresProblem
-          LeastSquaresOptimizer -right-> LeastSquaresProblem  : optimize
 
   }
 
   package org.orekit #ECEBD8 {
 
-    package propagation #DDEBD8 {
-        interface Propagator
-        package event #CEEBD8 {
-            Propagator --> DateDetector : monitors
-        }
-    }
-
     package estimation #DDEBD8 {
 
+        package measurements #CEEBD8 {
+            class EstimatedMeasurement
+            interface ObservedMeasurement {
+              +estimate(state)
+            }
+             ObservedMeasurement --> EstimatedMeasurement
+        }
         package leastsquares #CEEBD8 {
 
+            class MeasurementHandler
+
+          class ODProblem
            class BatchLSEstimator {
               +addMeasurement(measurement)
               +getOrbitalParametersDrivers()
@@ -56,29 +57,20 @@
               +estimate()
            }
 
-           interface BatchLSObserver {
-               +iterationPerformed()
-           }
-
-           class ODProblem
-           class MeasurementHandler
-
             ODProblem *--> MeasurementHandler
-            ODProblem --> Propagator : run
-            MeasurementHandler <-- DateDetector : triggers
 
           BatchLSEstimator *-right-> ODProblem
-          LeastSquaresProblem <|-- ODProblem
-          LeastSquaresOptimizer  <-- BatchLSEstimator : run
-          BatchLSEstimator *--> BatchLSObserver
+          LeastSquaresProblem <|.. ODProblem
+          ODProblem --> EstimatedMeasurement
+           MeasurementHandler o--> ObservedMeasurement
         }
 
-        package measurements #CEEBD8 {
-            interface Measurement {
-              +evaluate(state)
-            }
-            MeasurementHandler o--> Measurement
-        }
+    package propagation #DDEBD8 {
+        interface Propagator
+            MeasurementHandler <-- Propagator : triggers
+            Propagator <-- ODProblem : run
+    }
+
     }
 
   }

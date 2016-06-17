@@ -26,8 +26,8 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationUtils;
 import org.orekit.estimation.ParameterFunction;
 import org.orekit.estimation.StateFunction;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationModifier;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.TroposphericModel;
@@ -47,7 +47,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Joris Olympio
  * @since 8.0
  */
-public class RangeRateTroposphericDelayModifier implements EvaluationModifier<RangeRate> {
+public class RangeRateTroposphericDelayModifier implements EstimationModifier<RangeRate> {
 
     /** Tropospheric delay model. */
     private final TroposphericModel tropoModel;
@@ -75,7 +75,7 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
      * @return the measuring station height above sea level, m
      */
     private double getStationHeightAMSL(final GroundStation station) {
-        // FIXME Il faut la hauteur par rapport au geoide WGS84+GUND = EGM2008 par exemple
+        // FIXME heigth should be computed with respect to geoid WGS84+GUND = EGM2008 for example
         final double height = station.getBaseFrame().getPoint().getAltitude();
         return height;
     }
@@ -200,41 +200,42 @@ public class RangeRateTroposphericDelayModifier implements EvaluationModifier<Ra
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final Evaluation<RangeRate> evaluation) throws OrekitException {
-        final RangeRate measure = evaluation.getMeasurement();
-        final GroundStation station = measure.getStation();
-        final SpacecraftState state = evaluation.getState();
+    public void modify(final EstimatedMeasurement<RangeRate> estimated)
+        throws OrekitException {
+        final RangeRate       measurement = estimated.getObservedMeasurement();
+        final GroundStation   station     = measurement.getStation();
+        final SpacecraftState state       = estimated.getState();
 
-        final double[] oldValue = evaluation.getValue();
+        final double[] oldValue = estimated.getEstimatedValue();
 
         final double delay = rangeRateErrorTroposphericModel(station, state);
 
-        // update measurement value taking into account the tropospheric delay.
+        // update estimated value taking into account the tropospheric delay.
         // The tropospheric delay is directly added to the range.
         final double[] newValue = oldValue.clone();
         newValue[0] = newValue[0] + delay;
-        evaluation.setValue(newValue);
+        estimated.setEstimatedValue(newValue);
 
-        // update measurement derivatives with jacobian of the measure wrt state
+        // update estimated derivatives with jacobian of the measure wrt state
         final double[][] djac = rangeRateErrorJacobianState(station,
                                       state,
                                       delay);
-        final double[][] stateDerivatives = evaluation.getStateDerivatives();
+        final double[][] stateDerivatives = estimated.getStateDerivatives();
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
                 stateDerivatives[irow][jcol] += djac[irow][jcol];
             }
         }
-        evaluation.setStateDerivatives(stateDerivatives);
+        estimated.setStateDerivatives(stateDerivatives);
 
         for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                // update measurement derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = evaluation.getParameterDerivatives(driver)[0];
+                // update estimated derivatives with derivative of the modification wrt station parameters
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
                 parameterDerivative += rangeRateErrorParameterDerivative(station, driver, state, delay);
-                evaluation.setParameterDerivatives(driver, parameterDerivative);
+                estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
 

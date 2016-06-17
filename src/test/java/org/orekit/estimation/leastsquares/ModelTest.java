@@ -30,8 +30,8 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -55,12 +55,12 @@ public class ModelTest {
         // create perfect PV measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
         final ParameterDriversList estimatedMeasurementsParameters = new ParameterDriversList();
-        for (Measurement<?> measurement : measurements) {
+        for (ObservedMeasurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
                 if (driver.isSelected()) {
                     estimatedMeasurementsParameters.add(driver);
@@ -73,7 +73,7 @@ public class ModelTest {
             /** {@inheritDoc} */
             @Override
             public void modelCalled(final Orbit newOrbit,
-                                    final Map<Measurement<?>, Evaluation<?>> newEvaluations) {
+                                    final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
                 Assert.assertEquals(0,
                                     context.initialOrbit.getDate().durationFrom(newOrbit.getDate()),
                                     1.0e-15);
@@ -98,7 +98,7 @@ public class ModelTest {
         }
         Pair<RealVector, RealMatrix> value = model.value(new ArrayRealVector(normalized));
         int index = 0;
-        for (Measurement<?> measurement : measurements) {
+        for (ObservedMeasurement<?> measurement : measurements) {
             for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
                 Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.4e-7);

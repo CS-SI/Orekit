@@ -56,9 +56,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Bias;
-import org.orekit.estimation.measurements.Evaluation;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.OutlierFilter;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
@@ -393,7 +393,7 @@ public class OrbitDeterminationTest {
         final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
 
         // measurements
-        final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
             measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
                                                  createStationsData(parser, body),
@@ -405,30 +405,30 @@ public class OrbitDeterminationTest {
                                                  createAzElOutliersManager(parser),
                                                  createPVOutliersManager(parser)));
         }
-        for (Measurement<?> measurement : measurements) {
+        for (ObservedMeasurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
 
         Orbit estimated = estimator.estimate().getInitialState().getOrbit();
 
         // compute some statistics
-        for (final Map.Entry<Measurement<?>, Evaluation<?>> entry : estimator.getLastEvaluations().entrySet()) {
+        for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
             if (entry.getKey() instanceof Range) {
                 @SuppressWarnings("unchecked")
-                Evaluation<Range> evaluation = (Evaluation<Range>) entry.getValue();
+                EstimatedMeasurement<Range> evaluation = (EstimatedMeasurement<Range>) entry.getValue();
                 rangeLog.add(evaluation);
             } else if (entry.getKey() instanceof RangeRate) {
                 @SuppressWarnings("unchecked")
-                Evaluation<RangeRate> evaluation = (Evaluation<RangeRate>) entry.getValue();
+                EstimatedMeasurement<RangeRate> evaluation = (EstimatedMeasurement<RangeRate>) entry.getValue();
                 rangeRateLog.add(evaluation);
             } else if (entry.getKey() instanceof Angular) {
                 @SuppressWarnings("unchecked")
-                Evaluation<Angular> evaluation = (Evaluation<Angular>) entry.getValue();
+                EstimatedMeasurement<Angular> evaluation = (EstimatedMeasurement<Angular>) entry.getValue();
                 azimuthLog.add(evaluation);
                 elevationLog.add(evaluation);
             } else if (entry.getKey() instanceof PV) {
                 @SuppressWarnings("unchecked")
-                Evaluation<PV> evaluation = (Evaluation<PV>) entry.getValue();
+                EstimatedMeasurement<PV> evaluation = (EstimatedMeasurement<PV>) entry.getValue();
                 positionLog.add(evaluation);
                 velocityLog.add(evaluation);
             }
@@ -1167,7 +1167,7 @@ public class OrbitDeterminationTest {
      * @param pvOutliersManager manager for PV measurements outliers (null if none configured)
      * @return measurements list
      */
-    private List<Measurement<?>> readMeasurements(final File file,
+    private List<ObservedMeasurement<?>> readMeasurements(final File file,
                                                   final Map<String, StationData> stations,
                                                   final PVData pvData,
                                                   final Bias<Range> satRangeBias,
@@ -1178,7 +1178,7 @@ public class OrbitDeterminationTest {
                                                   final OutlierFilter<PV> pvOutliersManager)
         throws UnsupportedEncodingException, IOException, OrekitException {
 
-        final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         BufferedReader br = null;
         try {
             br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -1256,7 +1256,7 @@ public class OrbitDeterminationTest {
      * @param measurement measurement to add
      * @param measurements measurements list
      */
-    private void addIfNonZeroWeight(final Measurement<?> measurement, final List<Measurement<?>> measurements) {
+    private void addIfNonZeroWeight(final ObservedMeasurement<?> measurement, final List<ObservedMeasurement<?>> measurements) {
         double sum = 0;
         for (double w : measurement.getBaseWeight()) {
             sum += FastMath.abs(w);
@@ -1381,7 +1381,7 @@ public class OrbitDeterminationTest {
     }
 
     /** Measurements types. */
-    private static abstract class MeasurementsParser<T extends Measurement<T>> {
+    private static abstract class MeasurementsParser<T extends ObservedMeasurement<T>> {
 
         /** Parse the fields of a measurements line.
          * @param fields measurements line fields
@@ -1593,10 +1593,10 @@ public class OrbitDeterminationTest {
     /** Local class for measurement-specific log.
      * @param T type of mesurement
      */
-    private static abstract class MeasurementLog<T extends Measurement<T>> {
+    private static abstract class MeasurementLog<T extends ObservedMeasurement<T>> {
 
         /** Residuals. */
-        private final SortedSet<Evaluation<T>> evaluations;
+        private final SortedSet<EstimatedMeasurement<T>> evaluations;
 
         /** Measurements name. */
         private final String name;
@@ -1607,7 +1607,7 @@ public class OrbitDeterminationTest {
          * @exception IOException if output file cannot be created
          */
         MeasurementLog(final String name) throws IOException {
-            this.evaluations = new TreeSet<Evaluation<T>>(new ChronologicalComparator());
+            this.evaluations = new TreeSet<EstimatedMeasurement<T>>(new ChronologicalComparator());
             this.name        = name;
         }
 
@@ -1621,12 +1621,12 @@ public class OrbitDeterminationTest {
         /** Compute residual value.
          * @param evaluation evaluation to consider
          */
-        abstract double residual(final Evaluation<T> evaluation);
+        abstract double residual(final EstimatedMeasurement<T> evaluation);
 
         /** Add an evaluation.
          * @param evaluation evaluation to add
          */
-        void add(final Evaluation<T> evaluation) {
+        void add(final EstimatedMeasurement<T> evaluation) {
             evaluations.add(evaluation);
         }
 
@@ -1636,7 +1636,7 @@ public class OrbitDeterminationTest {
             if (!evaluations.isEmpty()) {
                 // compute statistics
                 final StreamingStatistics stats = new StreamingStatistics();
-                for (final Evaluation<T> evaluation : evaluations) {
+                for (final EstimatedMeasurement<T> evaluation : evaluations) {
                     stats.addValue(residual(evaluation));
                 }
                return stats;
@@ -1658,8 +1658,8 @@ public class OrbitDeterminationTest {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<Range> evaluation) {
-            return evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0];
+        double residual(final EstimatedMeasurement<Range> evaluation) {
+            return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
         }
 
     }
@@ -1676,8 +1676,8 @@ public class OrbitDeterminationTest {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<RangeRate> evaluation) {
-            return evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0];
+        double residual(final EstimatedMeasurement<RangeRate> evaluation) {
+            return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
         }
 
     }
@@ -1694,8 +1694,8 @@ public class OrbitDeterminationTest {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<Angular> evaluation) {
-            return FastMath.toDegrees(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]);
+        double residual(final EstimatedMeasurement<Angular> evaluation) {
+            return FastMath.toDegrees(evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0]);
         }
 
     }
@@ -1714,8 +1714,8 @@ public class OrbitDeterminationTest {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<Angular> evaluation) {
-            return FastMath.toDegrees(evaluation.getValue()[1] - evaluation.getMeasurement().getObservedValue()[1]);
+        double residual(final EstimatedMeasurement<Angular> evaluation) {
+            return FastMath.toDegrees(evaluation.getEstimatedValue()[1] - evaluation.getObservedMeasurement().getObservedValue()[1]);
         }
 
     }
@@ -1734,9 +1734,9 @@ public class OrbitDeterminationTest {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<PV> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        double residual(final EstimatedMeasurement<PV> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             return Vector3D.distance(new Vector3D(theoretical[0], theoretical[1], theoretical[2]),
                                      new Vector3D(observed[0],    observed[1],    observed[2]));
         }
@@ -1757,9 +1757,9 @@ public class OrbitDeterminationTest {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<PV> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        double residual(final EstimatedMeasurement<PV> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             return Vector3D.distance(new Vector3D(theoretical[3], theoretical[4], theoretical[5]),
                                      new Vector3D(observed[3],    observed[4],    observed[5]));
         }

@@ -49,7 +49,7 @@ public class BiasTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -83,7 +83,7 @@ public class BiasTest {
                                                                 new LevenbergMarquardtOptimizer());
 
         // add the measurements, with both spacecraft and stations biases
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             final Range range = (Range) measurement;
             for (int i = 0; i < context.stations.size(); ++i) {
                 if (range.getStation() == context.stations.get(i)) {

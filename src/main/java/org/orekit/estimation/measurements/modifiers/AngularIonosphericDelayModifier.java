@@ -22,8 +22,8 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.Angular;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationModifier;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.models.earth.IonosphericModel;
@@ -44,7 +44,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class AngularIonosphericDelayModifier implements EvaluationModifier<Angular> {
+public class AngularIonosphericDelayModifier implements EstimationModifier<Angular> {
     /** Ionospheric delay model. */
     private final IonosphericModel ionoModel;
 
@@ -98,11 +98,11 @@ public class AngularIonosphericDelayModifier implements EvaluationModifier<Angul
     }
 
     @Override
-    public void modify(final Evaluation<Angular> evaluation)
+    public void modify(final EstimatedMeasurement<Angular> estimated)
         throws OrekitException {
-        final Angular         measure = evaluation.getMeasurement();
+        final Angular         measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
-        final SpacecraftState state   = evaluation.getState();
+        final SpacecraftState state   = estimated.getState();
 
         final double delay = angularErrorIonosphericModel(station, state);
         // Delay is taken into account to shift the spacecraft position
@@ -111,7 +111,7 @@ public class AngularIonosphericDelayModifier implements EvaluationModifier<Angul
         // Position of the spacecraft shifted of dt
         final SpacecraftState transitState = state.shiftedBy(-dt);
 
-        // Update measurement value taking into account the ionospheric delay.
+        // Update estimated value taking into account the ionospheric delay.
         final AbsoluteDate date     = transitState.getDate();
         final Vector3D     position = transitState.getPVCoordinates().getPosition();
         final Frame        inertial = transitState.getFrame();
@@ -120,7 +120,7 @@ public class AngularIonosphericDelayModifier implements EvaluationModifier<Angul
         final double elevation = station.getBaseFrame().getElevation(position, inertial, date);
         final double azimuth   = station.getBaseFrame().getAzimuth(position, inertial, date);
         // azimuth - elevation values
-        evaluation.setValue(azimuth, elevation);
+        estimated.setEstimatedValue(azimuth, elevation);
 
     }
 }

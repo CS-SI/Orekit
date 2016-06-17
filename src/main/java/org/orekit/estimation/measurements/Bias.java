@@ -28,12 +28,12 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
+public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifier<T> {
 
     /** Parameters holding the bias value components. */
     private final List<ParameterDriver> drivers;
 
-    /** IPartial derivatives. */
+    /** Partial derivatives. */
     private final double[][] derivatives;
 
     /** Simple constructor.
@@ -65,7 +65,7 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
     /** {@inheritDoc}
      * <p>
-     * For a bias, there are {@link Measurement#getDimension()} parameter drivers,
+     * For a bias, there are {@link ObservedMeasurement#getDimension()} parameter drivers,
      * sorted in components order.
      * </p>
      */
@@ -76,19 +76,19 @@ public class Bias<T extends Measurement<T>> implements EvaluationModifier<T> {
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final Evaluation<T> evaluation) {
+    public void modify(final EstimatedMeasurement<T> estimated) {
 
         // apply the bias to the measurement value
-        final double[] measurementValue = evaluation.getValue();
+        final double[] value = estimated.getEstimatedValue();
         for (int i = 0; i < drivers.size(); ++i) {
             final ParameterDriver driver = drivers.get(i);
-            measurementValue[i] += driver.getValue();
+            value[i] += driver.getValue();
             if (driver.isSelected()) {
                 // add the partial derivatives
-                evaluation.setParameterDerivatives(driver, derivatives[i]);
+                estimated.setParameterDerivatives(driver, derivatives[i]);
             }
         }
-        evaluation.setValue(measurementValue);
+        estimated.setEstimatedValue(value);
 
 
     }

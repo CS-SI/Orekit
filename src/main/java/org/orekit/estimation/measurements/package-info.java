@@ -17,13 +17,12 @@
 /**
  * The measurements package defines everything that is related to orbit
  * determination measurements.
- * Both the theoretical values and the modifications that can be applied
- * to them. All measurements must implement the {@link
- * org.orekit.estimation.measurements.Measurement} interface, which is the
+ * All measurements must implement the {@link
+ * org.orekit.estimation.measurements.ObservedMeasurement} interface, which is the
  * public API that the engine will use to deal with all measurements. The
- * theoretical values can be modified by registering one or several {@link
- * org.orekit.estimation.measurements.EvaluationModifier} objects. These
- * objects will manage notions like tropospheric delays, biases, ...
+ * estimated theoretical values can be modified by registering one or several {@link
+ * org.orekit.estimation.measurements.EstimationModifier} objects. These
+ * objects will manage notions like tropospheric delays, biases, stations offsets ...
  * @since 8.0
  * @author Luc Maisonobe
  * @author Thierry Ceolin

@@ -26,15 +26,15 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
-/** Class holding a theoretical evaluation of one {@link Measurement measurement}.
+/** Class holding an estimated theoretical value associated to an {@link ObservedMeasurement observed measurement}.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class Evaluation<T extends Measurement<T>> implements TimeStamped {
+public class EstimatedMeasurement<T extends ObservedMeasurement<T>> implements TimeStamped {
 
-    /** Associated measurement. */
-    private final T measurement;
+    /** Associated observed measurement. */
+    private final T observedMeasurement;
 
     /** Iteration number. */
     private final int iteration;
@@ -45,8 +45,8 @@ public class Evaluation<T extends Measurement<T>> implements TimeStamped {
     /** State of the spacecraft. */
     private final SpacecraftState state;
 
-    /** Simulated value. */
-    private double[] value;
+    /** Estimated value. */
+    private double[] estimatedValue;
 
     /** Current weight. */
     private double[] currentWeight;
@@ -58,32 +58,32 @@ public class Evaluation<T extends Measurement<T>> implements TimeStamped {
     private final Map<ParameterDriver, double[]> parametersDerivatives;
 
     /** Simple constructor.
-     * @param measurement associated measurement
+     * @param observedMeasurement associated observed measurement
      * @param iteration iteration number
      * @param count evaluations counter
      * @param state state of the spacecraft
      */
-    public Evaluation(final T measurement,
-                      final int iteration, final int count,
-                      final SpacecraftState state) {
-        this.measurement           = measurement;
+    public EstimatedMeasurement(final T observedMeasurement,
+                                final int iteration, final int count,
+                                final SpacecraftState state) {
+        this.observedMeasurement           = observedMeasurement;
         this.iteration             = iteration;
         this.count                 = count;
         this.state                 = state;
         this.parametersDerivatives = new IdentityHashMap<ParameterDriver, double[]>();
     }
 
-    /** Get the associated measurement.
-     * @return associated measurement
+    /** Get the associated observed measurement.
+     * @return associated observed measurement
      */
-    public T getMeasurement() {
-        return measurement;
+    public T getObservedMeasurement() {
+        return observedMeasurement;
     }
 
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getDate() {
-        return measurement.getDate();
+        return observedMeasurement.getDate();
     }
 
     /** Get the iteration number.
@@ -111,32 +111,32 @@ public class Evaluation<T extends Measurement<T>> implements TimeStamped {
      * @return time offset from state date to measurement date
      */
     public double getTimeOffset() {
-        return measurement.getDate().durationFrom(state.getDate());
+        return observedMeasurement.getDate().durationFrom(state.getDate());
     }
 
-    /** Get the simulated value.
-     * @return simulated value
+    /** Get the estimated value.
+     * @return estimated value
      */
-    public double[] getValue() {
-        return value.clone();
+    public double[] getEstimatedValue() {
+        return estimatedValue.clone();
     }
 
-    /** Set the simulated value.
-     * @param value simulated value
+    /** Set the estimated value.
+     * @param estimatedValue estimated value
      */
-    public void setValue(final double ... value) {
-        this.value = value.clone();
+    public void setEstimatedValue(final double ... estimatedValue) {
+        this.estimatedValue = estimatedValue.clone();
     }
 
     /** Get the current weight.
      * <p>
      * By default, the current weight is measurement {@link
-     * Measurement#getBaseWeight() base weight}.
+     * ObservedMeasurement#getBaseWeight() base weight}.
      * </p>
      * @return current weight
      */
     public double[] getCurrentWeight() {
-        return currentWeight == null ? measurement.getBaseWeight() : currentWeight.clone();
+        return currentWeight == null ? observedMeasurement.getBaseWeight() : currentWeight.clone();
     }
 
     /** Set the current weight.
@@ -146,31 +146,31 @@ public class Evaluation<T extends Measurement<T>> implements TimeStamped {
         this.currentWeight = currentWeight.clone();
     }
 
-    /** Get the partial derivatives of the {@link #getValue()
+    /** Get the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to state Cartesian coordinates.
      * @return partial derivatives of the simulated value (array of size
-     * {@link Measurement#getDimension() dimension} x 6)
+     * {@link ObservedMeasurement#getDimension() dimension} x 6)
      */
     public double[][] getStateDerivatives() {
-        final double[][] sd = new double[measurement.getDimension()][];
-        for (int i = 0; i < measurement.getDimension(); ++i) {
+        final double[][] sd = new double[observedMeasurement.getDimension()][];
+        for (int i = 0; i < observedMeasurement.getDimension(); ++i) {
             sd[i] = stateDerivatives[i].clone();
         }
         return sd;
     }
 
-    /** Set the partial derivatives of the {@link #getValue()
+    /** Set the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to state Cartesian coordinates.
      * @param stateDerivatives partial derivatives with respect to state
      */
     public void setStateDerivatives(final double[] ... stateDerivatives) {
-        this.stateDerivatives = new double[measurement.getDimension()][];
-        for (int i = 0; i < measurement.getDimension(); ++i) {
+        this.stateDerivatives = new double[observedMeasurement.getDimension()][];
+        for (int i = 0; i < observedMeasurement.getDimension(); ++i) {
             this.stateDerivatives[i] = stateDerivatives[i].clone();
         }
     }
 
-    /** Get the partial derivatives of the {@link #getValue()
+    /** Get the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to a parameter.
      * @param driver driver for the parameter
      * @return partial derivatives of the simulated value
@@ -194,7 +194,7 @@ public class Evaluation<T extends Measurement<T>> implements TimeStamped {
         return p;
     }
 
-    /** Set the partial derivatives of the {@link #getValue()
+    /** Set the partial derivatives of the {@link #getEstimatedValue()
      * simulated measurement} with respect to parameter.
      * @param driver driver for the parameter
      * @param parameterDerivatives partial derivatives with respect to parameter

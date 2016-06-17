@@ -76,7 +76,7 @@ public class IonoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -85,20 +85,20 @@ public class IonoModifierTest {
         
         final RangeIonosphericDelayModifier modifier = new RangeIonosphericDelayModifier(model);
         
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
             final SpacecraftState refstate = propagator.propagate(date);
             
             Range range = (Range) measurement;
-            Evaluation<Range> evalNoMod = range.evaluate(0, 0, refstate);
+            EstimatedMeasurement<Range> evalNoMod = range.estimate(0, 0, refstate);
             
             // add modifier
             range.addModifier(modifier);
             // 
-            Evaluation<Range> eval = range.evaluate(0, 0,  refstate);
+            EstimatedMeasurement<Range> eval = range.estimate(0, 0,  refstate);
             
-            final double diffMeters = eval.getValue()[0] - evalNoMod.getValue()[0];
+            final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
             Assert.assertEquals(0.0, diffMeters, 30.0);
 
@@ -122,7 +122,7 @@ public class IonoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
@@ -130,21 +130,21 @@ public class IonoModifierTest {
         
         final RangeRateIonosphericDelayModifier modifier = new RangeRateIonosphericDelayModifier(model, true);
         
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
             final SpacecraftState refstate = propagator.propagate(date);
             
             RangeRate rangeRate = (RangeRate) measurement;
-            Evaluation<RangeRate> evalNoMod = rangeRate.evaluate(0, 0, refstate);
+            EstimatedMeasurement<RangeRate> evalNoMod = rangeRate.estimate(0, 0, refstate);
             
             // add modifier
             rangeRate.addModifier(modifier);
 
             // 
-            Evaluation<RangeRate> eval = rangeRate.evaluate(0, 0,  refstate);
+            EstimatedMeasurement<RangeRate> eval = rangeRate.estimate(0, 0,  refstate);
 
-            final double diffMetersSec = eval.getValue()[0] - evalNoMod.getValue()[0];
+            final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold
             Assert.assertEquals(0.0, diffMetersSec, 0.016);
 
@@ -168,7 +168,7 @@ public class IonoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -177,21 +177,21 @@ public class IonoModifierTest {
         
         final AngularIonosphericDelayModifier modifier = new AngularIonosphericDelayModifier(model);
         
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
             final SpacecraftState refstate = propagator.propagate(date);
             
             Angular angular = (Angular) measurement;
-            Evaluation<Angular> evalNoMod = angular.evaluate(0, 0, refstate);
+            EstimatedMeasurement<Angular> evalNoMod = angular.estimate(0, 0, refstate);
             
             // add modifier
             angular.addModifier(modifier);
             // 
-            Evaluation<Angular> eval = angular.evaluate(0, 0, refstate);
+            EstimatedMeasurement<Angular> eval = angular.estimate(0, 0, refstate);
             
-            final double diffAz = MathUtils.normalizeAngle(eval.getValue()[0], evalNoMod.getValue()[0]) - evalNoMod.getValue()[0];
-            final double diffEl = MathUtils.normalizeAngle(eval.getValue()[1], evalNoMod.getValue()[1]) - evalNoMod.getValue()[1];
+            final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
+            final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
             Assert.assertEquals(0.0, diffAz, 5.0e-5);
             Assert.assertEquals(0.0, diffEl, 5.0e-6);
@@ -214,13 +214,13 @@ public class IonoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
         propagator.setSlaveMode();
                 
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             // parameter corresponding to station position offset
             final GroundStation   station = ((Range) measurement).getStation();
             final AbsoluteDate    date    = ((Range) measurement).getDate();

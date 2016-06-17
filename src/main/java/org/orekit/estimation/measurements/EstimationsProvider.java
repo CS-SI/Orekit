@@ -19,31 +19,32 @@ package org.orekit.estimation.measurements;
 import org.orekit.errors.OrekitException;
 
 
-/** Interface for retrieving evaluations during orbit determination.
+/** Interface for retrieving estimated measurements during orbit determination.
  * <p>
  * Implementations of this interface are provided by the orbit
  * determination engine to user so they can {@link
  * org.orekit.estimation.leastsquares.BatchLSObserver monitor}
  * the orbit determination process.
  * </p>
+ * @see org.orekit.estimation.leastsquares.BatchLSObserver
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface EvaluationsProvider {
+public interface EstimationsProvider {
 
     /** Get the number of evaluations available.
      * @return number of evaluations available
      */
     int getNumber();
 
-    /** Get one evaluation.
-     * @param index index of the evaluation, must be between 0
+    /** Get one estimated measurement.
+     * @param index index of the estimated measurement, must be between 0
      * and {@link #getNumber() getNumber()} - 1, chronologically
      * sorted
-     * @return evaluation at specified index
+     * @return estimated measurement at specified index
      * @exception OrekitException if number is out of range
      */
-    Evaluation<?> getEvaluation(int index)
+    EstimatedMeasurement<?> getEstimatedMeasurement(int index)
         throws OrekitException;
 
 }

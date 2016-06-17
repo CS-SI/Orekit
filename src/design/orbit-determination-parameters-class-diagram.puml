@@ -58,12 +58,12 @@
 
       ParametersDriver <-- BatchLSEstimator : change normalized value
       package measurement #CEEBD8 {
-        interface Measurement {
+        interface ObservedMeasurement {
           +getParametersDrivers()
         }
         class GroundStation
-        Range     ..|> Measurement
-        RangeRate ..|> Measurement
+        Range     ..|> ObservedMeasurement
+        RangeRate ..|> ObservedMeasurement
         GroundStation "1" <--o Range
         GroundStation "1" <--o RangeRate
         ParameterObserver <..* GroundStation : East/North/Zenith offsets

@@ -50,7 +50,7 @@ public class AngularTest {
         // create perfect azimuth-elevation measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
@@ -67,7 +67,7 @@ public class AngularTest {
         int ElindexP = 0;
         int ElindexV = 0;
         
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             
             // parameter corresponding to station position offset
             final GroundStation stationParameter = ((Angular) measurement).getStation();
@@ -85,13 +85,13 @@ public class AngularTest {
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
-            final double[][]   jacobian  = measurement.evaluate(0, 0, state).getStateDerivatives();
+            final double[][]   jacobian  = measurement.estimate(0, 0, state).getStateDerivatives();
 
             // compute a reference value using finite differences
             final double[][] finiteDifferencesJacobian =
                 EstimationUtils.differentiate(new StateFunction() {
                     public double[] value(final SpacecraftState state) throws OrekitException {
-                        return measurement.evaluate(0, 0, state).getValue();
+                        return measurement.estimate(0, 0, state).getEstimatedValue();
                     }
                                                   }, measurement.getDimension(), OrbitType.CARTESIAN,
                                                   PositionAngle.TRUE, 250.0, 4).value(state);
@@ -161,13 +161,13 @@ public class AngularTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularMeasurementCreator(context),
                                                                0.25, 3.0, 600.0);
         propagator.setSlaveMode();
 
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
 
             // parameter corresponding to station position offset
             final GroundStation stationParameter = ((Angular) measurement).getStation();
@@ -191,7 +191,7 @@ public class AngularTest {
                 stationParameter.getZenithOffsetDriver()
             };
             for (int i = 0; i < 3; ++i) {
-                final double[] gradient  = measurement.evaluate(0, 0, state).getParameterDerivatives(drivers[i]);
+                final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
                 Assert.assertEquals(2, measurement.getDimension());
                 Assert.assertEquals(2, gradient.length);
 
@@ -201,7 +201,7 @@ public class AngularTest {
                                         /** {@inheritDoc} */
                                         @Override
                                         public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                            return measurement.evaluate(0, 0, state).getValue()[k];
+                                            return measurement.estimate(0, 0, state).getEstimatedValue()[k];
                                         }
                                     }, drivers[i], 3, 50.0);
                     final double ref = dMkdP.value(drivers[i]);

@@ -22,12 +22,12 @@ import java.util.List;
 import org.hipparchus.util.FastMath;
 import org.orekit.utils.ParameterDriver;
 
-/** Modifier that sets evaluation weight to 0 if residual is too far from expected domain.
+/** Modifier that sets estimated measurement weight to 0 if residual is too far from expected domain.
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 8.0
  */
-public class OutlierFilter<T extends Measurement<T>> implements EvaluationModifier<T> {
+public class OutlierFilter<T extends ObservedMeasurement<T>> implements EstimationModifier<T> {
 
     /** Warmup iterations. */
     private final int warmup;
@@ -52,19 +52,19 @@ public class OutlierFilter<T extends Measurement<T>> implements EvaluationModifi
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final Evaluation<T> evaluation) {
+    public void modify(final EstimatedMeasurement<T> estimated) {
 
-        if (evaluation.getIteration() > warmup) {
+        if (estimated.getIteration() > warmup) {
 
-            // check if evaluation is far to observed value
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
-            final double[] theoretical = evaluation.getValue();
-            final double[] sigma       = evaluation.getMeasurement().getTheoreticalStandardDeviation();
+            // check if observed value is far to estimation
+            final double[] observed    = estimated.getObservedMeasurement().getObservedValue();
+            final double[] theoretical = estimated.getEstimatedValue();
+            final double[] sigma       = estimated.getObservedMeasurement().getTheoreticalStandardDeviation();
             for (int i = 0; i < observed.length; ++i) {
                 if (FastMath.abs(observed[i] - theoretical[i]) > maxSigma * sigma[i]) {
-                    // evaluation is too far
+                    // observed value is too far
                     // set current weight to 0.0
-                    evaluation.setCurrentWeight(new double[observed.length]);
+                    estimated.setCurrentWeight(new double[observed.length]);
                 }
             }
         }

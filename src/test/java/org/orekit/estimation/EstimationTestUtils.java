@@ -32,8 +32,8 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
@@ -198,7 +198,7 @@ public class EstimationTestUtils {
 
     }
 
-    public static List<Measurement<?>> createMeasurements(final Propagator propagator,
+    public static List<ObservedMeasurement<?>> createMeasurements(final Propagator propagator,
                                                           final MeasurementCreator creator,
                                                           final double startPeriod, final double endPeriod,
                                                           final double step)
@@ -232,14 +232,14 @@ public class EstimationTestUtils {
         int    k   = 0;
         double sum = 0;
         double max = 0;
-        for (final Map.Entry<Measurement<?>, Evaluation<?>> entry :
-             estimator.getLastEvaluations().entrySet()) {
-            final Measurement<?> m        = entry.getKey();
-            final Evaluation<?>  e        = entry.getValue();
+        for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry :
+             estimator.getLastEstimations().entrySet()) {
+            final ObservedMeasurement<?> m        = entry.getKey();
+            final EstimatedMeasurement<?>  e        = entry.getValue();
             final double[]    weight      = m.getBaseWeight();
             final double[]    sigma       = m.getTheoreticalStandardDeviation();
             final double[]    observed    = m.getObservedValue();
-            final double[]    theoretical = e.getValue();
+            final double[]    theoretical = e.getEstimatedValue();
             for (int i = 0; i < m.getDimension(); ++i) {
                 final double weightedResidual = weight[i] * (theoretical[i] - observed[i]) / sigma[i];
                 ++k;

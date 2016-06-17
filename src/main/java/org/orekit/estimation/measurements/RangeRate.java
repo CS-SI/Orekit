@@ -83,8 +83,8 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation<RangeRate> theoreticalEvaluation(final int iteration, final int count,
-                                                          final SpacecraftState state)
+    protected EstimatedMeasurement<RangeRate> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                    final SpacecraftState state)
         throws OrekitException {
 
         // one-way (downlink) light time correction
@@ -95,18 +95,18 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         final double          offset           = getDate().durationFrom(state.getDate());
         final SpacecraftState compensatedState = state.shiftedBy(offset - downlinkDelay);
 
-        final Evaluation<RangeRate> evaluation = oneWayTheoreticalEvaluation(iteration, count,
-                                                                             state.getDate(), compensatedState);
+        final EstimatedMeasurement<RangeRate> estimated =
+                        oneWayTheoreticalEvaluation(iteration, evaluation, state.getDate(), compensatedState);
         if (twoway) {
             // one-way (uplink) light time correction
             final double uplinkDelay = station.uplinkTimeOfFlight(compensatedState);
             final AbsoluteDate date = compensatedState.getDate().shiftedBy(uplinkDelay);
-            final Evaluation<RangeRate> evalOneWay2 = oneWayTheoreticalEvaluation(iteration, count,
-                                                                                  date, compensatedState);
+            final EstimatedMeasurement<RangeRate> evalOneWay2 =
+                            oneWayTheoreticalEvaluation(iteration, evaluation, date, compensatedState);
 
             //evaluation
-            evaluation.setValue(0.5 * (evaluation.getValue()[0] + evalOneWay2.getValue()[0]));
-            final double[][] sd1 = evaluation.getStateDerivatives();
+            estimated.setEstimatedValue(0.5 * (estimated.getEstimatedValue()[0] + evalOneWay2.getEstimatedValue()[0]));
+            final double[][] sd1 = estimated.getStateDerivatives();
             final double[][] sd2 = evalOneWay2.getStateDerivatives();
             final double[][] sd = new double[sd1.length][sd1[0].length];
             for (int i = 0; i < sd.length; ++i) {
@@ -114,24 +114,24 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                     sd[i][j] = 0.5 * (sd1[i][j] + sd2[i][j]);
                 }
             }
-            evaluation.setStateDerivatives(sd);
+            estimated.setStateDerivatives(sd);
 
             for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
                                                               station.getNorthOffsetDriver(),
                                                               station.getZenithOffsetDriver())) {
                 if (driver.isSelected()) {
-                    final double[] pd1 = evaluation.getParameterDerivatives(driver);
+                    final double[] pd1 = estimated.getParameterDerivatives(driver);
                     final double[] pd2 = evalOneWay2.getParameterDerivatives(driver);
                     final double[] pd = new double[pd1.length];
                     for (int i = 0; i < pd.length; ++i) {
                         pd[i] = 0.5 * (pd1[i] + pd2[i]);
                     }
-                    evaluation.setParameterDerivatives(driver, pd);
+                    estimated.setParameterDerivatives(driver, pd);
                 }
             }
         }
 
-        return evaluation;
+        return estimated;
     }
 
     /** Evaluate measurement in one-way.
@@ -143,12 +143,12 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
      * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
-    private Evaluation<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int count, final AbsoluteDate date,
-                                                              final SpacecraftState compensatedState)
+    private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int count, final AbsoluteDate date,
+                                                                        final SpacecraftState compensatedState)
         throws OrekitException {
         // prepare the evaluation
-        final Evaluation<RangeRate> evaluation =
-                        new Evaluation<RangeRate>(this, iteration, count, compensatedState);
+        final EstimatedMeasurement<RangeRate> evaluation =
+                        new EstimatedMeasurement<RangeRate>(this, iteration, count, compensatedState);
 
         // station coordinates at date in state frame
         final PVCoordinates pvStation = station.getOffsetFrame().getPVCoordinates(date, compensatedState.getFrame());
@@ -165,7 +165,7 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // range rate
         final double rr = Vector3D.dotProduct(relativeVelocity, lineOfSight);
 
-        evaluation.setValue(rr);
+        evaluation.setEstimatedValue(rr);
 
         // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates.
         final double relnorm = relativePosition.getNorm();

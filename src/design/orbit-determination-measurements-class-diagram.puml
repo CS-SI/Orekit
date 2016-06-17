@@ -28,7 +28,7 @@
 
   package org.orekit.estimation.measurements #ECEBD8 {
 
-    interface Measurement {
+    interface ObservedMeasurement {
       +getDimension()
       +isEnabled()
       +setEnabled()
@@ -38,11 +38,11 @@
       +getBaseWeight()
       +addModifier(modifier)
       +getModifiers()
-      +evaluate(iteration, count, state)
+      +estimate(iteration, evaluation, state)
     }
     
-    class Evaluation {
-      +getMeasurement()
+    class EstimatedMeasurement {
+      +getObservedMeasurement()
       +getIteration()
       +getState()
       +getTimeOffset()
@@ -52,34 +52,32 @@
       +[get|set]ParameterDerivatives()
     }
     
-    interface EvaluationModifier {
+    interface EstimationModifier {
       +getParametersDrivers()
-      +modify(evaluation)
+      +modify(estimated)
     }
     
-    class "..." as OtherModifier
-    
-    Measurement *--> "*" EvaluationModifier
-    Measurement --> Evaluation : create
-    Evaluation <-- EvaluationModifier : modify
+    ObservedMeasurement *--> "*" EstimationModifier
+    ObservedMeasurement --> EstimatedMeasurement : create
+    EstimatedMeasurement <-- EstimationModifier : modify
     class "..." as OtherMeasurement
-    OtherMeasurement   ..|> Measurement
-    Range              ..|> Measurement
-    RangeRate          ..|> Measurement
-    AzimuthElevation   ..|> Measurement
-    PV                 ..|> Measurement
-    EvaluationModifier <|.. Bias
-    EvaluationModifier <|.. CardanAntennaMount
-    EvaluationModifier <|.. OutlierFilter
-    EvaluationModifier <|.. OtherModifier
-
+    OtherMeasurement   ..|> ObservedMeasurement
+    Range              ..|> ObservedMeasurement
+    RangeRate          ..|> ObservedMeasurement
+    Angular   ..|> ObservedMeasurement
+    PV                 ..|> ObservedMeasurement
+    EstimationModifier <|.. Bias
+    EstimationModifier <|.. OutlierFilter
+    EstimationModifier <|.. Tropo
+    EstimationModifier <|.. Iono
+ 
   }
 
   package mission.specific #C4D2C5 {
     class CustomModifier #D5E0D5/E2EBE2
     class CustomMeasurement #D5E0D5/E2EBE2
-    Measurement <|-- CustomMeasurement
-    EvaluationModifier <|-- CustomModifier
+    ObservedMeasurement <|-- CustomMeasurement
+    EstimationModifier <|-- CustomModifier
   }
 
 @enduml

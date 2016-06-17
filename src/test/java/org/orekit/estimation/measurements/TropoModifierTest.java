@@ -69,7 +69,7 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -77,20 +77,20 @@ public class TropoModifierTest {
 
         final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
         
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
             final SpacecraftState refstate = propagator.propagate(date);
             
             Range range = (Range) measurement;
-            Evaluation<Range> evalNoMod = range.evaluate(0, 0, refstate);
+            EstimatedMeasurement<Range> evalNoMod = range.estimate(0, 0, refstate);
             
             // add modifier
             range.addModifier(modifier);
             // 
-            Evaluation<Range> eval = range.evaluate(0, 0, refstate);
+            EstimatedMeasurement<Range> eval = range.estimate(0, 0, refstate);
             
-            final double diffMeters = eval.getValue()[0] - evalNoMod.getValue()[0];
+            final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             
             final double epsilon = 1e-6;
             Assert.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
@@ -115,7 +115,7 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
@@ -123,21 +123,21 @@ public class TropoModifierTest {
 
         final RangeRateTroposphericDelayModifier modifier = new RangeRateTroposphericDelayModifier(SaastamoinenModel.getStandardModel(), false);
         
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
             final SpacecraftState refstate = propagator.propagate(date);
             
             RangeRate rangeRate = (RangeRate) measurement;
-            Evaluation<RangeRate> evalNoMod = rangeRate.evaluate(0, 0, refstate);
+            EstimatedMeasurement<RangeRate> evalNoMod = rangeRate.estimate(0, 0, refstate);
             
             // add modifier
             rangeRate.addModifier(modifier);
 
             // 
-            Evaluation<RangeRate> eval = rangeRate.evaluate(0, 0, refstate);
+            EstimatedMeasurement<RangeRate> eval = rangeRate.estimate(0, 0, refstate);
             
-            final double diffMetersSec = eval.getValue()[0] - evalNoMod.getValue()[0];
+            final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             
             final double epsilon = 1e-6;
             Assert.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
@@ -162,7 +162,7 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -170,21 +170,21 @@ public class TropoModifierTest {
 
         final AngularTroposphericDelayModifier modifier = new AngularTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
         
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
             final SpacecraftState refstate = propagator.propagate(date);
             
             Angular angular = (Angular) measurement;
-            Evaluation<Angular> evalNoMod = angular.evaluate(0, 0, refstate);
+            EstimatedMeasurement<Angular> evalNoMod = angular.estimate(0, 0, refstate);
             
             // add modifier
             angular.addModifier(modifier);
             // 
-            Evaluation<Angular> eval = angular.evaluate(0, 0, refstate);
+            EstimatedMeasurement<Angular> eval = angular.estimate(0, 0, refstate);
             
-            final double diffAz = MathUtils.normalizeAngle(eval.getValue()[0], evalNoMod.getValue()[0]) - evalNoMod.getValue()[0];
-            final double diffEl = MathUtils.normalizeAngle(eval.getValue()[1], evalNoMod.getValue()[1]) - evalNoMod.getValue()[1];
+            final double diffAz = MathUtils.normalizeAngle(eval.getEstimatedValue()[0], evalNoMod.getEstimatedValue()[0]) - evalNoMod.getEstimatedValue()[0];
+            final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
             Assert.assertEquals(0.0, diffAz, 5.0e-5);
             Assert.assertEquals(0.0, diffEl, 5.0e-6);     
@@ -208,7 +208,7 @@ public class TropoModifierTest {
         }
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new AngularMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -216,13 +216,13 @@ public class TropoModifierTest {
  
         
 
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             final AbsoluteDate date = measurement.getDate();
 
             final SpacecraftState refstate = propagator.propagate(date);
             
             Angular angular = (Angular) measurement;
-            Evaluation<Angular> evalNoMod = angular.evaluate(0, 0, refstate);
+            EstimatedMeasurement<Angular> evalNoMod = angular.estimate(0, 0, refstate);
             
             // get the altitude of the station (in kilometers)
             final double altitude = angular.getStation().getBaseFrame().getPoint().getAltitude() / 1000.;
@@ -231,9 +231,9 @@ public class TropoModifierTest {
             // add modifier
             angular.addModifier(modifier);
             // 
-            Evaluation<Angular> eval = angular.evaluate(0, 0, refstate);
+            EstimatedMeasurement<Angular> eval = angular.estimate(0, 0, refstate);
             
-            final double diffEl = MathUtils.normalizeAngle(eval.getValue()[1], evalNoMod.getValue()[1]) - evalNoMod.getValue()[1];
+            final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
             Assert.assertEquals(0.0, diffEl, 1.0e-3);     
         }

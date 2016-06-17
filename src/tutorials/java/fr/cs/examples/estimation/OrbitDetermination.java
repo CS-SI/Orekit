@@ -59,10 +59,10 @@ import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.leastsquares.BatchLSObserver;
 import org.orekit.estimation.measurements.Angular;
 import org.orekit.estimation.measurements.Bias;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationsProvider;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationsProvider;
 import org.orekit.estimation.measurements.GroundStation;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.OutlierFilter;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
@@ -213,7 +213,7 @@ public class OrbitDetermination {
             final BatchLSEstimator estimator = createEstimator(parser, propagatorBuilder);
 
             // measurements
-            final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
+            final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
             for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
                 measurements.addAll(readMeasurements(new File(input.getParentFile(), fileName),
                                                      createStationsData(parser, body),
@@ -225,7 +225,7 @@ public class OrbitDetermination {
                                                      createAzElOutliersManager(parser),
                                                      createPVOutliersManager(parser)));
             }
-            for (Measurement<?> measurement : measurements) {
+            for (ObservedMeasurement<?> measurement : measurements) {
                 estimator.addMeasurement(measurement);
             }
 
@@ -249,7 +249,7 @@ public class OrbitDetermination {
                                                final ParameterDriversList estimatedOrbitalParameters,
                                                final ParameterDriversList estimatedPropagatorParameters,
                                                final ParameterDriversList estimatedMeasurementsParameters,
-                                               final EvaluationsProvider  evaluationsProvider,
+                                               final EstimationsProvider  evaluationsProvider,
                                                final LeastSquaresProblem.Evaluation lspEvaluation) {
                     PVCoordinates currentPV = orbit.getPVCoordinates();
                     final String format0 = "    %2d         %2d                                 %16.12f     %s       %s     %s     %s%n";
@@ -258,22 +258,22 @@ public class OrbitDetermination {
                     final EvaluationCounter<RangeRate> rangeRateCounter = new EvaluationCounter<RangeRate>();
                     final EvaluationCounter<Angular>   angularCounter   = new EvaluationCounter<Angular>();
                     final EvaluationCounter<PV>        pvCounter        = new EvaluationCounter<PV>();
-                    for (final Map.Entry<Measurement<?>, Evaluation<?>> entry : estimator.getLastEvaluations().entrySet()) {
+                    for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
                         if (entry.getKey() instanceof Range) {
                             @SuppressWarnings("unchecked")
-                            Evaluation<Range> evaluation = (Evaluation<Range>) entry.getValue();
+                            EstimatedMeasurement<Range> evaluation = (EstimatedMeasurement<Range>) entry.getValue();
                             rangeCounter.add(evaluation);
                         } else if (entry.getKey() instanceof RangeRate) {
                             @SuppressWarnings("unchecked")
-                            Evaluation<RangeRate> evaluation = (Evaluation<RangeRate>) entry.getValue();
+                            EstimatedMeasurement<RangeRate> evaluation = (EstimatedMeasurement<RangeRate>) entry.getValue();
                             rangeRateCounter.add(evaluation);
                         } else if (entry.getKey() instanceof Angular) {
                             @SuppressWarnings("unchecked")
-                            Evaluation<Angular> evaluation = (Evaluation<Angular>) entry.getValue();
+                            EstimatedMeasurement<Angular> evaluation = (EstimatedMeasurement<Angular>) entry.getValue();
                             angularCounter.add(evaluation);
                         } else if (entry.getKey() instanceof PV) {
                             @SuppressWarnings("unchecked")
-                            Evaluation<PV> evaluation = (Evaluation<PV>) entry.getValue();
+                            EstimatedMeasurement<PV> evaluation = (EstimatedMeasurement<PV>) entry.getValue();
                             pvCounter.add(evaluation);
                         }
                     }
@@ -314,23 +314,23 @@ public class OrbitDetermination {
             Orbit estimated = estimator.estimate().getInitialState().getOrbit();
 
             // compute some statistics
-            for (final Map.Entry<Measurement<?>, Evaluation<?>> entry : estimator.getLastEvaluations().entrySet()) {
+            for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimator.getLastEstimations().entrySet()) {
                 if (entry.getKey() instanceof Range) {
                     @SuppressWarnings("unchecked")
-                    Evaluation<Range> evaluation = (Evaluation<Range>) entry.getValue();
+                    EstimatedMeasurement<Range> evaluation = (EstimatedMeasurement<Range>) entry.getValue();
                     rangeLog.add(evaluation);
                 } else if (entry.getKey() instanceof RangeRate) {
                     @SuppressWarnings("unchecked")
-                    Evaluation<RangeRate> evaluation = (Evaluation<RangeRate>) entry.getValue();
+                    EstimatedMeasurement<RangeRate> evaluation = (EstimatedMeasurement<RangeRate>) entry.getValue();
                     rangeRateLog.add(evaluation);
                 } else if (entry.getKey() instanceof Angular) {
                     @SuppressWarnings("unchecked")
-                    Evaluation<Angular> evaluation = (Evaluation<Angular>) entry.getValue();
+                    EstimatedMeasurement<Angular> evaluation = (EstimatedMeasurement<Angular>) entry.getValue();
                     azimuthLog.add(evaluation);
                     elevationLog.add(evaluation);
                 } else if (entry.getKey() instanceof PV) {
                     @SuppressWarnings("unchecked")
-                    Evaluation<PV> evaluation = (Evaluation<PV>) entry.getValue();
+                    EstimatedMeasurement<PV> evaluation = (EstimatedMeasurement<PV>) entry.getValue();
                     positionLog.add(evaluation);
                     velocityLog.add(evaluation);
                 }
@@ -1164,7 +1164,7 @@ public class OrbitDetermination {
      * @param pvOutliersManager manager for PV measurements outliers (null if none configured)
      * @return measurements list
      */
-    private List<Measurement<?>> readMeasurements(final File file,
+    private List<ObservedMeasurement<?>> readMeasurements(final File file,
                                                   final Map<String, StationData> stations,
                                                   final PVData pvData,
                                                   final Bias<Range> satRangeBias,
@@ -1175,7 +1175,7 @@ public class OrbitDetermination {
                                                   final OutlierFilter<PV> pvOutliersManager)
         throws UnsupportedEncodingException, IOException, OrekitException {
 
-        final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         BufferedReader br = null;
         try {
             br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -1253,7 +1253,7 @@ public class OrbitDetermination {
      * @param measurement measurement to add
      * @param measurements measurements list
      */
-    private void addIfNonZeroWeight(final Measurement<?> measurement, final List<Measurement<?>> measurements) {
+    private void addIfNonZeroWeight(final ObservedMeasurement<?> measurement, final List<ObservedMeasurement<?>> measurements) {
         double sum = 0;
         for (double w : measurement.getBaseWeight()) {
             sum += FastMath.abs(w);
@@ -1378,7 +1378,7 @@ public class OrbitDetermination {
     }
 
     /** Measurements types. */
-    private static abstract class MeasurementsParser<T extends Measurement<T>> {
+    private static abstract class MeasurementsParser<T extends ObservedMeasurement<T>> {
 
         /** Parse the fields of a measurements line.
          * @param fields measurements line fields
@@ -1590,10 +1590,10 @@ public class OrbitDetermination {
     /** Local class for measurement-specific log.
      * @param T type of mesurement
      */
-    private static abstract class MeasurementLog<T extends Measurement<T>> {
+    private static abstract class MeasurementLog<T extends ObservedMeasurement<T>> {
 
         /** Residuals. */
-        private final SortedSet<Evaluation<T>> evaluations;
+        private final SortedSet<EstimatedMeasurement<T>> evaluations;
 
         /** Measurements name. */
         private final String name;
@@ -1611,7 +1611,7 @@ public class OrbitDetermination {
          * @exception IOException if output file cannot be created
          */
         MeasurementLog(final File home, final String baseName, final String name) throws IOException {
-            this.evaluations = new TreeSet<Evaluation<T>>(new ChronologicalComparator());
+            this.evaluations = new TreeSet<EstimatedMeasurement<T>>(new ChronologicalComparator());
             this.name        = name;
             if (baseName == null) {
                 this.file    = null;
@@ -1631,17 +1631,17 @@ public class OrbitDetermination {
          * @param stream output stream
          * @param evaluation evaluation to consider
          */
-        abstract void displayResidual(final PrintStream stream, final Evaluation<T> evaluation);
+        abstract void displayResidual(final PrintStream stream, final EstimatedMeasurement<T> evaluation);
 
         /** Compute residual value.
          * @param evaluation evaluation to consider
          */
-        abstract double residual(final Evaluation<T> evaluation);
+        abstract double residual(final EstimatedMeasurement<T> evaluation);
 
         /** Add an evaluation.
          * @param evaluation evaluation to add
          */
-        void add(final Evaluation<T> evaluation) {
+        void add(final EstimatedMeasurement<T> evaluation) {
             evaluations.add(evaluation);
         }
 
@@ -1653,7 +1653,7 @@ public class OrbitDetermination {
 
                 // compute statistics
                 final StreamingStatistics stats = new StreamingStatistics();
-                for (final Evaluation<T> evaluation : evaluations) {
+                for (final EstimatedMeasurement<T> evaluation : evaluations) {
                     stats.addValue(residual(evaluation));
                 }
 
@@ -1673,7 +1673,7 @@ public class OrbitDetermination {
         public void displayResiduals() {
             if (file != null && !evaluations.isEmpty()) {
                 displayHeader(stream);
-                for (final Evaluation<T> evaluation : evaluations) {
+                for (final EstimatedMeasurement<T> evaluation : evaluations) {
                     displayResidual(stream, evaluation);
                 }
             }
@@ -1723,19 +1723,19 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        void displayResidual(final PrintStream stream, final Evaluation<Range> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        void displayResidual(final PrintStream stream, final EstimatedMeasurement<Range> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             stream.format(Locale.US, "%s  %s       %12.9f   %12.9f   %12.9f%n",
                           evaluation.getDate().toString(),
-                          evaluation.getMeasurement().getStation().getBaseFrame().getName(),
+                          evaluation.getObservedMeasurement().getStation().getBaseFrame().getName(),
                           theoretical[0], observed[0], residual(evaluation));
         }
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<Range> evaluation) {
-            return evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0];
+        double residual(final EstimatedMeasurement<Range> evaluation) {
+            return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
         }
 
     }
@@ -1763,19 +1763,19 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        void displayResidual(final PrintStream stream, final Evaluation<RangeRate> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        void displayResidual(final PrintStream stream, final EstimatedMeasurement<RangeRate> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             stream.format(Locale.US, "%s  %s          %12.9f         %12.9f     %12.9f%n",
                           evaluation.getDate().toString(),
-                          evaluation.getMeasurement().getStation().getBaseFrame().getName(),
+                          evaluation.getObservedMeasurement().getStation().getBaseFrame().getName(),
                           theoretical[0], observed[0], residual(evaluation));
         }
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<RangeRate> evaluation) {
-            return evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0];
+        double residual(final EstimatedMeasurement<RangeRate> evaluation) {
+            return evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0];
         }
 
     }
@@ -1803,12 +1803,12 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        void displayResidual(final PrintStream stream, final Evaluation<Angular> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        void displayResidual(final PrintStream stream, final EstimatedMeasurement<Angular> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             stream.format(Locale.US, "%s  %s           %12.9f            %12.9f        %12.9f%n",
                           evaluation.getDate().toString(),
-                          evaluation.getMeasurement().getStation().getBaseFrame().getName(),
+                          evaluation.getObservedMeasurement().getStation().getBaseFrame().getName(),
                           FastMath.toDegrees(theoretical[0]),
                           FastMath.toDegrees(observed[0]),
                           residual(evaluation));
@@ -1816,8 +1816,8 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<Angular> evaluation) {
-            return FastMath.toDegrees(evaluation.getValue()[0] - evaluation.getMeasurement().getObservedValue()[0]);
+        double residual(final EstimatedMeasurement<Angular> evaluation) {
+            return FastMath.toDegrees(evaluation.getEstimatedValue()[0] - evaluation.getObservedMeasurement().getObservedValue()[0]);
         }
 
     }
@@ -1845,12 +1845,12 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        void displayResidual(final PrintStream stream, final Evaluation<Angular> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        void displayResidual(final PrintStream stream, final EstimatedMeasurement<Angular> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             stream.format(Locale.US, "%s  %s           %12.9f            %12.9f        %12.9f%n",
                           evaluation.getDate().toString(),
-                          evaluation.getMeasurement().getStation().getBaseFrame().getName(),
+                          evaluation.getObservedMeasurement().getStation().getBaseFrame().getName(),
                           FastMath.toDegrees(theoretical[1]),
                           FastMath.toDegrees(observed[1]),
                           residual(evaluation));
@@ -1858,8 +1858,8 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<Angular> evaluation) {
-            return FastMath.toDegrees(evaluation.getValue()[1] - evaluation.getMeasurement().getObservedValue()[1]);
+        double residual(final EstimatedMeasurement<Angular> evaluation) {
+            return FastMath.toDegrees(evaluation.getEstimatedValue()[1] - evaluation.getObservedMeasurement().getObservedValue()[1]);
         }
 
     }
@@ -1889,9 +1889,9 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        void displayResidual(final PrintStream stream, final Evaluation<PV> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        void displayResidual(final PrintStream stream, final EstimatedMeasurement<PV> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             stream.format(Locale.US, "%s  %12.9f %12.9f %12.9f  %12.9f %12.9f %12.9f %12.9f%n",
                           evaluation.getDate().toString(),
                           theoretical[0], theoretical[1], theoretical[2],
@@ -1901,9 +1901,9 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<PV> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        double residual(final EstimatedMeasurement<PV> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             return Vector3D.distance(new Vector3D(theoretical[0], theoretical[1], theoretical[2]),
                                      new Vector3D(observed[0],    observed[1],    observed[2]));
         }
@@ -1934,9 +1934,9 @@ public class OrbitDetermination {
         }
         /** {@inheritDoc} */
         @Override
-        void displayResidual(final PrintStream stream, final Evaluation<PV> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        void displayResidual(final PrintStream stream, final EstimatedMeasurement<PV> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             stream.format(Locale.US, "%s  %12.9f %12.9f %12.9f  %12.9f %12.9f %12.9f %12.9f%n",
                           evaluation.getDate().toString(),
                           theoretical[3], theoretical[4], theoretical[5],
@@ -1946,9 +1946,9 @@ public class OrbitDetermination {
 
         /** {@inheritDoc} */
         @Override
-        double residual(final Evaluation<PV> evaluation) {
-            final double[] theoretical = evaluation.getValue();
-            final double[] observed    = evaluation.getMeasurement().getObservedValue();
+        double residual(final EstimatedMeasurement<PV> evaluation) {
+            final double[] theoretical = evaluation.getEstimatedValue();
+            final double[] observed    = evaluation.getObservedMeasurement().getObservedValue();
             return Vector3D.distance(new Vector3D(theoretical[3], theoretical[4], theoretical[5]),
                                      new Vector3D(observed[3],    observed[4],    observed[5]));
         }
@@ -1958,7 +1958,7 @@ public class OrbitDetermination {
     /** Local class for evaluation conting.
      * @param T type of mesurement
      */
-    private static class EvaluationCounter<T extends Measurement<T>> {
+    private static class EvaluationCounter<T extends ObservedMeasurement<T>> {
 
         /** Total number of measurements. */
         private int total;
@@ -1969,7 +1969,7 @@ public class OrbitDetermination {
         /** Add a measurement evaluation.
          * @param evaluation measurement evaluation to add
          */
-        public void add(Evaluation<T> evaluation) {
+        public void add(EstimatedMeasurement<T> evaluation) {
             ++total;
             double max = 0;
             for (final double w : evaluation.getCurrentWeight()) {

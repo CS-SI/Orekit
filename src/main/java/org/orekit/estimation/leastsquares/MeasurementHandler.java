@@ -17,13 +17,13 @@
 package org.orekit.estimation.leastsquares;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 
 /** Bridge between {@link org.orekit.propagation.events.EventDetector events} and
- * {@link Measurement measurements}.
+ * {@link ObservedMeasurement measurements}.
  * @author Luc Maisonobe
  * @since 8.0
  */
@@ -33,7 +33,7 @@ class MeasurementHandler implements EventHandler<DateDetector> {
     private final Model model;
 
     /** Underlying measurement. */
-    private final Measurement<?> measurement;
+    private final ObservedMeasurement<?> measurement;
 
     /** Index of the first measurement component in the model. */
     private final int index;
@@ -43,7 +43,7 @@ class MeasurementHandler implements EventHandler<DateDetector> {
      * @param measurement underlying measurement
      * @param index index of the first measurement component in the model
      */
-    MeasurementHandler(final Model model, final Measurement<?> measurement, final int index) {
+    MeasurementHandler(final Model model, final ObservedMeasurement<?> measurement, final int index) {
         this.model       = model;
         this.measurement = measurement;
         this.index       = index;
@@ -56,7 +56,7 @@ class MeasurementHandler implements EventHandler<DateDetector> {
         throws OrekitException {
 
         // fetch the evaluated measurement to the estimator
-        model.fetchEvaluatedMeasurement(index, measurement.evaluate(model.getIterationsCount(),
+        model.fetchEvaluatedMeasurement(index, measurement.estimate(model.getIterationsCount(),
                                                                     model.getEvaluationsCount(),
                                                                     s));
 

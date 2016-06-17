@@ -22,8 +22,8 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.Angular;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationModifier;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.SpacecraftState;
@@ -41,7 +41,8 @@ import org.orekit.utils.ParameterDriver;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class AngularRadioRefractionModifier implements EvaluationModifier<Angular> {
+public class AngularRadioRefractionModifier implements EstimationModifier<Angular> {
+
     /** Tropospheric refraction model. */
     private final AtmosphericRefractionModel atmosModel;
 
@@ -61,7 +62,7 @@ public class AngularRadioRefractionModifier implements EvaluationModifier<Angula
     */
     private double angularErrorRadioRefractionModel(final GroundStation station,
                                                     final SpacecraftState state)
-                                                                    throws OrekitException {
+        throws OrekitException {
 
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -81,20 +82,20 @@ public class AngularRadioRefractionModifier implements EvaluationModifier<Angula
     }
 
     @Override
-    public void modify(final Evaluation<Angular> evaluation)
-                    throws OrekitException {
-        final Angular         measure = evaluation.getMeasurement();
+    public void modify(final EstimatedMeasurement<Angular> estimated)
+        throws OrekitException {
+        final Angular         measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
-        final SpacecraftState state   = evaluation.getState();
+        final SpacecraftState state   = estimated.getState();
         final double correction = angularErrorRadioRefractionModel(station, state);
 
-        // update measurement value taking into account the tropospheric elevation corection.
+        // update estimated value taking into account the tropospheric elevation corection.
         // The tropospheric elevation correction is directly added to the elevation.
-        final double[] oldValue = evaluation.getValue();
+        final double[] oldValue = estimated.getEstimatedValue();
         final double[] newValue = oldValue.clone();
 
         // consider only effect on elevation
         newValue[1] = newValue[1] + correction;
-        evaluation.setValue(newValue[0], newValue[1]);
+        estimated.setEstimatedValue(newValue[0], newValue[1]);
     }
 }

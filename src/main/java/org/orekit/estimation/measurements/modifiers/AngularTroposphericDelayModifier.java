@@ -22,8 +22,8 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.Angular;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationModifier;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.models.earth.TroposphericModel;
@@ -44,7 +44,8 @@ import org.orekit.utils.ParameterDriver;
  * @author Thierry Ceolin
  * @since 8.0
  */
-public class AngularTroposphericDelayModifier implements EvaluationModifier<Angular> {
+public class AngularTroposphericDelayModifier implements EstimationModifier<Angular> {
+
     /** Tropospheric delay model. */
     private final TroposphericModel tropoModel;
 
@@ -62,7 +63,7 @@ public class AngularTroposphericDelayModifier implements EvaluationModifier<Angu
      * @return the measuring station height above sea level, m
      */
     private double getStationHeightAMSL(final GroundStation station) {
-        // FIXME Il faut la hauteur par rapport au geoide WGS84+GUND = EGM2008 par exemple
+        // FIXME heigth should be computed with respect to geoid WGS84+GUND = EGM2008 for example
         final double height = station.getBaseFrame().getPoint().getAltitude();
         return height;
     }
@@ -74,8 +75,8 @@ public class AngularTroposphericDelayModifier implements EvaluationModifier<Angu
      * @throws OrekitException  if frames transformations cannot be computed
      */
     private double angularErrorTroposphericModel(final GroundStation station,
-                                                 final SpacecraftState state) throws OrekitException
-    {
+                                                 final SpacecraftState state)
+        throws OrekitException {
         //
         final Vector3D position = state.getPVCoordinates().getPosition();
 
@@ -106,11 +107,11 @@ public class AngularTroposphericDelayModifier implements EvaluationModifier<Angu
     }
 
     @Override
-    public void modify(final Evaluation<Angular> evaluation)
+    public void modify(final EstimatedMeasurement<Angular> estimated)
         throws OrekitException {
-        final Angular         measure = evaluation.getMeasurement();
+        final Angular         measure = estimated.getObservedMeasurement();
         final GroundStation   station = measure.getStation();
-        final SpacecraftState state   = evaluation.getState();
+        final SpacecraftState state   = estimated.getState();
 
         final double delay = angularErrorTroposphericModel(station, state);
         // Delay is taken into account to shift the spacecraft position
@@ -128,8 +129,8 @@ public class AngularTroposphericDelayModifier implements EvaluationModifier<Angu
         final double elevation = station.getBaseFrame().getElevation(position, inertial, date);
         final double azimuth   = station.getBaseFrame().getAzimuth(position, inertial, date);
 
-        // update measurement value taking into account the tropospheric delay.
+        // update estimated value taking into account the tropospheric delay.
         // azimuth - elevation values
-        evaluation.setValue(azimuth, elevation);
+        estimated.setEstimatedValue(azimuth, elevation);
     }
 }

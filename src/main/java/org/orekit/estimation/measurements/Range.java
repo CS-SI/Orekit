@@ -73,8 +73,8 @@ public class Range extends AbstractMeasurement<Range> {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation<Range> theoreticalEvaluation(final int iteration, final int count,
-                                                      final SpacecraftState state)
+    protected EstimatedMeasurement<Range> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                final SpacecraftState state)
         throws OrekitException {
 
         // station position at signal arrival
@@ -98,11 +98,12 @@ public class Range extends AbstractMeasurement<Range> {
                         topoToInert.shiftedBy(-tau).transformPVCoordinates(PVCoordinates.ZERO);
 
         // prepare the evaluation
-        final Evaluation<Range> evaluation = new Evaluation<Range>(this, iteration, count, transitState);
+        final EstimatedMeasurement<Range> estimated =
+                        new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
 
         // range value
         final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
-        evaluation.setValue(tau * cOver2);
+        estimated.setEstimatedValue(tau * cOver2);
 
         // partial derivatives with respect to state
         // The formulas below take into account the fact the measurement is at fixed reception date.
@@ -156,7 +157,7 @@ public class Range extends AbstractMeasurement<Range> {
         final double dRdPy = (dTauDdPy + dTauUdPsy) * cOver2;
         final double dRdPz = (dTauDdPz + dTauUdPsz) * cOver2;
         final double dt     = delta - tauD;
-        evaluation.setStateDerivatives(new double[] {
+        estimated.setStateDerivatives(new double[] {
             dRdPx,      dRdPy,      dRdPz,
             dRdPx * dt, dRdPy * dt, dRdPz * dt
         });
@@ -196,18 +197,18 @@ public class Range extends AbstractMeasurement<Range> {
             final Vector3D dRdQT = ac.getRotation().applyTo(dRdQI);
 
             if (station.getEastOffsetDriver().isSelected()) {
-                evaluation.setParameterDerivatives(station.getEastOffsetDriver(), dRdQT.getX());
+                estimated.setParameterDerivatives(station.getEastOffsetDriver(), dRdQT.getX());
             }
             if (station.getNorthOffsetDriver().isSelected()) {
-                evaluation.setParameterDerivatives(station.getNorthOffsetDriver(), dRdQT.getY());
+                estimated.setParameterDerivatives(station.getNorthOffsetDriver(), dRdQT.getY());
             }
             if (station.getZenithOffsetDriver().isSelected()) {
-                evaluation.setParameterDerivatives(station.getZenithOffsetDriver(), dRdQT.getZ());
+                estimated.setParameterDerivatives(station.getZenithOffsetDriver(), dRdQT.getZ());
             }
 
         }
 
-        return evaluation;
+        return estimated;
 
     }
 

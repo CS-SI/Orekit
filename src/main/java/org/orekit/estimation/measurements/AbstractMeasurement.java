@@ -30,7 +30,8 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public abstract class AbstractMeasurement<T extends Measurement<T>> implements Measurement<T> {
+public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
+    implements ObservedMeasurement<T> {
 
     /** List of the supported parameters. */
     private final List<ParameterDriver> supportedParameters;
@@ -48,7 +49,7 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
     private final double[] baseWeight;
 
     /** Modifiers that apply to the measurement.*/
-    private final List<EvaluationModifier<T>> modifiers;
+    private final List<EstimationModifier<T>> modifiers;
 
     /** Enabling status. */
     private boolean enabled;
@@ -83,7 +84,7 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
             baseWeight
         };
 
-        this.modifiers = new ArrayList<EvaluationModifier<T>>();
+        this.modifiers = new ArrayList<EstimationModifier<T>>();
         setEnabled(true);
 
     }
@@ -111,7 +112,7 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
         this.sigma      = sigma.clone();
         this.baseWeight = baseWeight.clone();
 
-        this.modifiers = new ArrayList<EvaluationModifier<T>>();
+        this.modifiers = new ArrayList<EstimationModifier<T>>();
         setEnabled(true);
 
     }
@@ -152,36 +153,36 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
         return baseWeight.clone();
     }
 
-    /** Compute the theoretical value.
+    /** Estimate the theoretical value.
      * <p>
      * The theoretical value does not have <em>any</em> modifiers applied.
      * </p>
      * @param iteration iteration number
-     * @param count evaluations counter
+     * @param evaluation evaluation number
      * @param state orbital state at measurement date
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
-     * @see #evaluate(int, int, SpacecraftState)
+     * @see #estimate(int, int, SpacecraftState)
      */
-    protected abstract Evaluation<T> theoreticalEvaluation(final int iteration, final int count,
-                                                           final SpacecraftState state)
+    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                     final SpacecraftState state)
         throws OrekitException;
 
     /** {@inheritDoc} */
     @Override
-    public Evaluation<T> evaluate(final int iteration, final int count,
-                                  final SpacecraftState state)
+    public EstimatedMeasurement<T> estimate(final int iteration, final int evaluation,
+                                            final SpacecraftState state)
         throws OrekitException {
 
         // compute the theoretical value
-        final Evaluation<T> evaluation = theoreticalEvaluation(iteration, count, state);
+        final EstimatedMeasurement<T> estimation = theoreticalEvaluation(iteration, evaluation, state);
 
         // apply the modifiers
-        for (final EvaluationModifier<T> modifier : modifiers) {
-            modifier.modify(evaluation);
+        for (final EstimationModifier<T> modifier : modifiers) {
+            modifier.modify(estimation);
         }
 
-        return evaluation;
+        return estimation;
 
     }
 
@@ -199,7 +200,7 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
 
     /** {@inheritDoc} */
     @Override
-    public void addModifier(final EvaluationModifier<T> modifier)
+    public void addModifier(final EstimationModifier<T> modifier)
         throws OrekitException {
 
         // combine the measurement parameters and the modifier parameters
@@ -211,7 +212,7 @@ public abstract class AbstractMeasurement<T extends Measurement<T>> implements M
 
     /** {@inheritDoc} */
     @Override
-    public List<EvaluationModifier<T>> getModifiers() {
+    public List<EstimationModifier<T>> getModifiers() {
         return Collections.unmodifiableList(modifiers);
     }
 

@@ -22,10 +22,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.utils.ParameterDriver;
 
 
-/** Interface for measurements evaluations modifiers used for orbit determination.
+/** Interface for estimated measurements modifiers used for orbit determination.
  * <p>
  * Modifiers are used to take some physical corrections into account in
- * the theoretical {@link Measurement measurement} model. They can be
+ * the theoretical {@link EstimatedMeasurement measurement} model. They can be
  * used to model for example:
  * <ul>
  *   <li>on board delays</li>
@@ -41,18 +41,18 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface EvaluationModifier<T extends Measurement<T>> {
+public interface EstimationModifier<T extends ObservedMeasurement<T>> {
 
     /** Get the drivers for this modifier parameters.
      * @return drivers for this modifier parameters
      */
     List<ParameterDriver> getParametersDrivers();
 
-    /** Apply a modifier to an evaluated measurement.
-     * @param evaluation measurement evaluation to modify
+    /** Apply a modifier to an estimated measurement.
+     * @param estimated estimated measurement to modify
      * @exception OrekitException if modifier cannot be applied
      */
-    void modify(final Evaluation<T> evaluation)
+    void modify(final EstimatedMeasurement<T> estimated)
         throws OrekitException;
 
 }

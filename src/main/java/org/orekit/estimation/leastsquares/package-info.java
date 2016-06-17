@@ -18,12 +18,12 @@
  * The leastsquares package provides an implementation of a batch least
  * squares estimator engine to perform an orbit determination.
  * Users will typically create one instance of this object, register all
- * observation data as {@link org.orekit.estimation.measurements.Measurement
+ * observation data as {@link org.orekit.estimation.measurements.ObservedMeasurement
  * measurements} with their included {@link
- * org.orekit.estimation.measurements.EvaluationModifier modifiers}, and
+ * org.orekit.estimation.measurements.EstimationModifier modifiers}, and
  * run the {@link org.orekit.estimation.leastsquares.BatchLSEstimator least
- * squares estimator}. At the end of the process, the orbital state and the
- * estimated parameters will be available.
+ * squares estimator}. At the end of the process, a fully configured propagator
+ * will be available, as well as all estimated parameters individually.
  * @since 8.0
  * @author Luc Maisonobe
  * @author Thierry Ceolin

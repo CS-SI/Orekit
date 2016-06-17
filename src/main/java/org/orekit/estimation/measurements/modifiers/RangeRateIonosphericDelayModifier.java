@@ -26,8 +26,8 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.estimation.EstimationUtils;
 import org.orekit.estimation.ParameterFunction;
 import org.orekit.estimation.StateFunction;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationModifier;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.models.earth.IonosphericModel;
@@ -46,7 +46,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Joris Olympio
  * @since 8.0
  */
-public class RangeRateIonosphericDelayModifier implements EvaluationModifier<RangeRate> {
+public class RangeRateIonosphericDelayModifier implements EstimationModifier<RangeRate> {
 
     /** Ionospheric delay model. */
     private final IonosphericModel ionoModel;
@@ -200,41 +200,42 @@ public class RangeRateIonosphericDelayModifier implements EvaluationModifier<Ran
 
     /** {@inheritDoc} */
     @Override
-    public void modify(final Evaluation<RangeRate> evaluation)
+    public void modify(final EstimatedMeasurement<RangeRate> estimated)
         throws OrekitException {
-        final RangeRate measure = evaluation.getMeasurement();
-        final GroundStation station = measure.getStation();
-        final SpacecraftState state = evaluation.getState();
 
-        final double[] oldValue = evaluation.getValue();
+        final RangeRate       measurement = estimated.getObservedMeasurement();
+        final GroundStation   station     = measurement.getStation();
+        final SpacecraftState state       = estimated.getState();
+
+        final double[] oldValue = estimated.getEstimatedValue();
 
         final double delay = rangeRateErrorIonosphericModel(station, state);
 
-        // update measurement value taking into account the ionospheric delay.
+        // update estimated value taking into account the ionospheric delay.
         // The ionospheric delay is directly added to the range.
         final double[] newValue = oldValue.clone();
         newValue[0] = newValue[0] + delay;
-        evaluation.setValue(newValue);
+        estimated.setEstimatedValue(newValue);
 
-        // update measurement derivatives with jacobian of the measure wrt state
+        // update estimated derivatives with jacobian of the measure wrt state
         final double[][] djac = rangeErrorJacobianState(station,
                                       state);
-        final double[][] stateDerivatives = evaluation.getStateDerivatives();
+        final double[][] stateDerivatives = estimated.getStateDerivatives();
         for (int irow = 0; irow < stateDerivatives.length; ++irow) {
             for (int jcol = 0; jcol < stateDerivatives[0].length; ++jcol) {
                 stateDerivatives[irow][jcol] += djac[irow][jcol];
             }
         }
-        evaluation.setStateDerivatives(stateDerivatives);
+        estimated.setStateDerivatives(stateDerivatives);
 
         for (final ParameterDriver driver : Arrays.asList(station.getEastOffsetDriver(),
                                                           station.getNorthOffsetDriver(),
                                                           station.getZenithOffsetDriver())) {
             if (driver.isSelected()) {
-                // update measurement derivatives with derivative of the modification wrt station parameters
-                double parameterDerivative = evaluation.getParameterDerivatives(driver)[0];
+                // update estimated derivatives with derivative of the modification wrt station parameters
+                double parameterDerivative = estimated.getParameterDerivatives(driver)[0];
                 parameterDerivative += rangeRateErrorParameterDerivative(station, driver, state, delay);
-                evaluation.setParameterDerivatives(driver, parameterDerivative);
+                estimated.setParameterDerivatives(driver, parameterDerivative);
             }
         }
 

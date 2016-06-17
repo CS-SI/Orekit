@@ -68,8 +68,8 @@ public class Angular extends AbstractMeasurement<Angular> {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation<Angular> theoreticalEvaluation(final int iteration, final int count,
-                                                        final SpacecraftState state)
+    protected EstimatedMeasurement<Angular> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                                  final SpacecraftState state)
         throws OrekitException {
 
         // take propagation time into account
@@ -109,11 +109,12 @@ public class Angular extends AbstractMeasurement<Angular> {
         final DerivativeStructure azimuth     = baseAzimuth.add(twoPiWrap);
         final DerivativeStructure elevation   = staSat.dotProduct(zenith).divide(staSat.getNorm()).asin();
 
-        // prepare the evaluation
-        final Evaluation<Angular> evaluation = new Evaluation<Angular>(this, iteration, count, transitState);
+        // prepare the estimation
+        final EstimatedMeasurement<Angular> estimated =
+                        new EstimatedMeasurement<Angular>(this, iteration, evaluation, transitState);
 
         // azimuth - elevation values
-        evaluation.setValue(azimuth.getValue(), elevation.getValue());
+        estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());
 
         // partial derivatives of azimuth with respect to state
         final AngularCoordinates ac = iner2Body.getInverse().getAngular();
@@ -150,7 +151,7 @@ public class Angular extends AbstractMeasurement<Angular> {
                                                 dElOndPtmp.getZ() * dt
         };
 
-        evaluation.setStateDerivatives(dAzOndP, dElOndP);
+        estimated.setStateDerivatives(dAzOndP, dElOndP);
 
         if (station.getEastOffsetDriver().isSelected()  ||
             station.getNorthOffsetDriver().isSelected() ||
@@ -161,24 +162,24 @@ public class Angular extends AbstractMeasurement<Angular> {
             // with respect to reference station topocentric frame
 
             if (station.getEastOffsetDriver().isSelected()) {
-                evaluation.setParameterDerivatives(station.getEastOffsetDriver(),
+                estimated.setParameterDerivatives(station.getEastOffsetDriver(),
                                                    azimuth.getPartialDerivative(0, 0, 0, 1, 0, 0),
                                                    elevation.getPartialDerivative(0, 0, 0, 1, 0, 0));
             }
             if (station.getNorthOffsetDriver().isSelected()) {
-                evaluation.setParameterDerivatives(station.getNorthOffsetDriver(),
+                estimated.setParameterDerivatives(station.getNorthOffsetDriver(),
                                                    azimuth.getPartialDerivative(0, 0, 0, 0, 1, 0),
                                                    elevation.getPartialDerivative(0, 0, 0, 0, 1, 0));
             }
             if (station.getZenithOffsetDriver().isSelected()) {
-                evaluation.setParameterDerivatives(station.getZenithOffsetDriver(),
+                estimated.setParameterDerivatives(station.getZenithOffsetDriver(),
                                                    azimuth.getPartialDerivative(0, 0, 0, 0, 0, 1),
                                                    elevation.getPartialDerivative(0, 0, 0, 0, 0, 1));
             }
 
         }
 
-        return evaluation;
+        return estimated;
     }
 
 }

@@ -31,8 +31,8 @@ import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -45,7 +45,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-/** Bridge between {@link Measurement measurements} and {@link
+/** Bridge between {@link ObservedMeasurement measurements} and {@link
  * org.hipparchus.fitting.leastsquares.LeastSquaresProblem
  * least squares problems}.
  * @author Luc Maisonobe
@@ -63,7 +63,7 @@ class Model implements MultivariateJacobianFunction {
     private final NumericalPropagatorBuilder propagatorBuilder;
 
     /** Measurements. */
-    private final List<Measurement<?>> measurements;
+    private final List<ObservedMeasurement<?>> measurements;
 
     /** Estimated measurements parameters. */
     private final ParameterDriversList estimatedMeasurementsParameters;
@@ -72,7 +72,7 @@ class Model implements MultivariateJacobianFunction {
     private final Map<String, Integer> parameterColumns;
 
     /** Last evaluations. */
-    private final Map<Measurement<?>, Evaluation<?>> evaluations;
+    private final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> evaluations;
 
     /** Observer to be notified at orbit changes. */
     private final ModelObserver observer;
@@ -106,7 +106,7 @@ class Model implements MultivariateJacobianFunction {
      * @exception OrekitException if some propagator parameter cannot be set properly
      */
     Model(final NumericalPropagatorBuilder propagatorBuilder,
-          final List<Measurement<?>> measurements, final ParameterDriversList estimatedMeasurementsParameters,
+          final List<ObservedMeasurement<?>> measurements, final ParameterDriversList estimatedMeasurementsParameters,
           final ModelObserver observer)
         throws OrekitException {
 
@@ -114,12 +114,12 @@ class Model implements MultivariateJacobianFunction {
         this.measurements                    = measurements;
         this.estimatedMeasurementsParameters = estimatedMeasurementsParameters;
         this.parameterColumns                = new HashMap<String, Integer>(estimatedMeasurementsParameters.getDrivers().size());
-        this.evaluations                     = new IdentityHashMap<Measurement<?>, Evaluation<?>>(measurements.size());
+        this.evaluations                     = new IdentityHashMap<ObservedMeasurement<?>, EstimatedMeasurement<?>>(measurements.size());
         this.observer                        = observer;
 
         // allocate vector and matrix
         int rows = 0;
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             rows += measurement.getDimension();
         }
 
@@ -250,10 +250,10 @@ class Model implements MultivariateJacobianFunction {
 
         // set up events to handle measurements
         int p = 0;
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             if (measurement.isEnabled()) {
                 AbsoluteDate md = measurement.getDate();
-                final Evaluation<?> previousEvaluation = evaluations.get(measurement);
+                final EstimatedMeasurement<?> previousEvaluation = evaluations.get(measurement);
                 if (previousEvaluation != null) {
                     // pre-compensate signal transit time
                     md = md.shiftedBy(-previousEvaluation.getTimeOffset());
@@ -296,14 +296,14 @@ class Model implements MultivariateJacobianFunction {
      * @param evaluation measurement evaluation
      * @exception OrekitException if Jacobians cannot be computed
      */
-    void fetchEvaluatedMeasurement(final int index, final Evaluation<?> evaluation)
+    void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation)
         throws OrekitException {
 
         // compute weighted residuals
-        evaluations.put(evaluation.getMeasurement(), evaluation);
-        final double[] evaluated = evaluation.getValue();
-        final double[] observed  = evaluation.getMeasurement().getObservedValue();
-        final double[] sigma     = evaluation.getMeasurement().getTheoreticalStandardDeviation();
+        evaluations.put(evaluation.getObservedMeasurement(), evaluation);
+        final double[] evaluated = evaluation.getEstimatedValue();
+        final double[] observed  = evaluation.getObservedMeasurement().getObservedValue();
+        final double[] sigma     = evaluation.getObservedMeasurement().getTheoreticalStandardDeviation();
         final double[] weight    = evaluation.getCurrentWeight();
         for (int i = 0; i < evaluated.length; ++i) {
             value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]) / sigma[i]);
@@ -352,7 +352,7 @@ class Model implements MultivariateJacobianFunction {
         }
 
         // Jacobian of the measurement with respect to measurements parameters
-        final Measurement<?> measurement = evaluation.getMeasurement();
+        final ObservedMeasurement<?> measurement = evaluation.getObservedMeasurement();
         for (final ParameterDriver driver : measurement.getParametersDrivers()) {
             if (driver.isSelected()) {
                 final double[] aMPm = evaluation.getParameterDerivatives(driver);

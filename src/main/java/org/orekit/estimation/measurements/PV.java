@@ -89,24 +89,25 @@ public class PV extends AbstractMeasurement<PV> {
 
     /** {@inheritDoc} */
     @Override
-    protected Evaluation<PV> theoreticalEvaluation(final int iteration, final int count,
-                                                   final SpacecraftState state)
+    protected EstimatedMeasurement<PV> theoreticalEvaluation(final int iteration, final int evaluation,
+                                                             final SpacecraftState state)
         throws OrekitException {
 
         // prepare the evaluation
-        final Evaluation<PV> evaluation = new Evaluation<PV>(this, iteration, count, state);
+        final EstimatedMeasurement<PV> estimated =
+                        new EstimatedMeasurement<PV>(this, iteration, evaluation, state);
 
         // PV value
         final PVCoordinates pv = state.getPVCoordinates();
-        evaluation.setValue(new double[] {
+        estimated.setEstimatedValue(new double[] {
             pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
             pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ()
         });
 
         // partial derivatives with respect to state
-        evaluation.setStateDerivatives(IDENTITY);
+        estimated.setStateDerivatives(IDENTITY);
 
-        return evaluation;
+        return estimated;
 
     }
 

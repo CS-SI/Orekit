@@ -29,20 +29,20 @@ import org.orekit.utils.ParameterDriver;
  * The most important methods of this interface allow to:
  * <ul>
  *   <li>get the observed value,</li>
- *   <li>compute the theoretical value of a measurement,</li>
+ *   <li>estimate the theoretical value of a measurement,</li>
  *   <li>compute the corresponding partial derivatives (with respect to state and parameters)</li>
  * </ul>
  * </p>
  * <p>
- * The theoretical values can be modified by registering one or several {@link
- * EvaluationModifier MeasurementModifier} objects. These objects will manage notions
+ * The estimated theoretical values can be modified by registering one or several {@link
+ * EstimationModifier EstimationModifier} objects. These objects will manage notions
  * like tropospheric delays, biases, ...
  * </p>
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 8.0
  */
-public interface Measurement<T extends Measurement<T>> extends TimeStamped {
+public interface ObservedMeasurement<T extends ObservedMeasurement<T>> extends TimeStamped {
 
     /** Enable or disable a measurement.
      * <p>
@@ -96,7 +96,7 @@ public interface Measurement<T extends Measurement<T>> extends TimeStamped {
      * </p>
      * @return base weight
      * @see #getTheoreticalStandardDeviation()
-     * @see Evaluation#getCurrentWeight()
+     * @see EstimatedMeasurement#getCurrentWeight()
      */
     double[] getBaseWeight();
 
@@ -111,38 +111,38 @@ public interface Measurement<T extends Measurement<T>> extends TimeStamped {
     /** Add a modifier.
      * <p>
      * The modifiers are applied in the order in which they are added in order to
-     * {@link #evaluate(int, int, SpacecraftState) evaluate} the measurement.
+     * {@link #estimate(int, int, SpacecraftState) evaluate} the measurement.
      * </p>
      * @param modifier modifier to add
      * @see #getModifiers()
      * @exception OrekitException if there is a conflict between measurement and
      * modifiers parameters
      */
-    void addModifier(EvaluationModifier<T> modifier) throws OrekitException;
+    void addModifier(EstimationModifier<T> modifier) throws OrekitException;
 
     /** Get the modifiers that apply to a measurement.
      * @return modifiers that apply to a measurement
-     * @see #addModifier(EvaluationModifier)
+     * @see #addModifier(EstimationModifier)
      */
-    List<EvaluationModifier<T>> getModifiers();
+    List<EstimationModifier<T>> getModifiers();
 
     /** Get the drivers for this measurement parameters, including its modifiers parameters.
      * @return drivers for this measurement parameters, including its modifiers parameters
      */
     List<ParameterDriver> getParametersDrivers();
 
-    /** Evaluate the measurement.
+    /** Estimate the theoretical value of the measurement.
      * <p>
-     * The evaluated value is the <em>combination</em> of the raw theoretical
+     * The estimated value is the <em>combination</em> of the raw estimated
      * value and all the modifiers that apply to the measurement.
      * </p>
      * @param iteration iteration number
-     * @param count evaluations counter
+     * @param evaluation evaluations number
      * @param state orbital state at measurement date
-     * @return evaluated measurement
+     * @return estimated measurement
      * @exception OrekitException if value cannot be computed
      */
-    Evaluation<T> evaluate(int iteration, int count, SpacecraftState state)
+    EstimatedMeasurement<T> estimate(int iteration, int evaluation, SpacecraftState state)
         throws OrekitException;
 
 }

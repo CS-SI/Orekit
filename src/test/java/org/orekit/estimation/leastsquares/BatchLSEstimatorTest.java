@@ -28,8 +28,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.EvaluationsProvider;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.EstimationsProvider;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PVMeasurementCreator;
 import org.orekit.estimation.measurements.RangeMeasurementCreator;
 import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
@@ -55,7 +55,7 @@ public class BatchLSEstimatorTest {
         // create perfect PV measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PVMeasurementCreator(),
                                                                0.0, 1.0, 300.0);
@@ -63,7 +63,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             estimator.addMeasurement(measurement);
         }
         estimator.setParametersConvergenceThreshold(1.0e-2);
@@ -90,7 +90,7 @@ public class BatchLSEstimatorTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -98,7 +98,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        for (final Measurement<?> range : measurements) {
+        for (final ObservedMeasurement<?> range : measurements) {
             estimator.addMeasurement(range);
         }
         estimator.setParametersConvergenceThreshold(1.0e-2);
@@ -114,7 +114,7 @@ public class BatchLSEstimatorTest {
                                             ParameterDriversList estimatedOrbitalParameters,
                                             ParameterDriversList estimatedPropagatorParameters,
                                             ParameterDriversList estimatedMeasurementsParameters,
-                                            EvaluationsProvider evaluationsProvider, Evaluation lspEvaluation)
+                                            EstimationsProvider evaluationsProvider, Evaluation lspEvaluation)
                 throws OrekitException {
                 if (iterationsCount == lastIter) {
                     Assert.assertEquals(lastEval + 1, evaluationscount);
@@ -125,20 +125,20 @@ public class BatchLSEstimatorTest {
                 lastEval = evaluationscount;
                 Assert.assertEquals(measurements.size(), evaluationsProvider.getNumber());
                 try {
-                    evaluationsProvider.getEvaluation(-1);
+                    evaluationsProvider.getEstimatedMeasurement(-1);
                     Assert.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
                     Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 try {
-                    evaluationsProvider.getEvaluation(measurements.size());
+                    evaluationsProvider.getEstimatedMeasurement(measurements.size());
                     Assert.fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
                     Assert.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
-                    AbsoluteDate current = evaluationsProvider.getEvaluation(i).getDate();
+                    AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
                     Assert.assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
@@ -165,7 +165,7 @@ public class BatchLSEstimatorTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements =
+        final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
@@ -173,7 +173,7 @@ public class BatchLSEstimatorTest {
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        for (final Measurement<?> range : measurements) {
+        for (final ObservedMeasurement<?> range : measurements) {
             estimator.addMeasurement(range);
         }
         estimator.setParametersConvergenceThreshold(1.0e-2);
@@ -187,7 +187,7 @@ public class BatchLSEstimatorTest {
                                            ParameterDriversList estimatedOrbitalParameters,
                                            ParameterDriversList estimatedPropagatorParameters,
                                            ParameterDriversList estimatedMeasurementsParameters,
-                                           EvaluationsProvider evaluationsProvider, Evaluation lspEvaluation) throws DummyException {
+                                           EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) throws DummyException {
                 throw new DummyException();
             }
         });
@@ -224,18 +224,18 @@ public class BatchLSEstimatorTest {
         // create perfect range measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
-        final List<Measurement<?>> measurements1 =
+        final List<ObservedMeasurement<?>> measurements1 =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
 
-        final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         measurements.addAll(measurements1);
         
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        for (final Measurement<?> rangerate : measurements) {
+        for (final ObservedMeasurement<?> rangerate : measurements) {
             estimator.addMeasurement(rangerate);
         }
         estimator.setParametersConvergenceThreshold(1.0e-3);
@@ -262,24 +262,24 @@ public class BatchLSEstimatorTest {
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
 
-        final List<Measurement<?>> measurementsRange =
+        final List<ObservedMeasurement<?>> measurementsRange =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        final List<Measurement<?>> measurementsRangeRate =
+        final List<ObservedMeasurement<?>> measurementsRangeRate =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeRateMeasurementCreator(context, false),
                                                                1.0, 3.0, 300.0);
 
         // concat measurements
-        final List<Measurement<?>> measurements = new ArrayList<Measurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         measurements.addAll(measurementsRange);
         measurements.addAll(measurementsRangeRate);
         
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
-        for (final Measurement<?> meas : measurements) {
+        for (final ObservedMeasurement<?> meas : measurements) {
             estimator.addMeasurement(meas);
         }
         estimator.setParametersConvergenceThreshold(1.0e-3);

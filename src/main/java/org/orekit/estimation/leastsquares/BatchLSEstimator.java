@@ -35,9 +35,9 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.ParameterValidator;
 import org.hipparchus.util.Incrementor;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.estimation.measurements.Evaluation;
-import org.orekit.estimation.measurements.EvaluationsProvider;
-import org.orekit.estimation.measurements.Measurement;
+import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimationsProvider;
+import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -57,7 +57,7 @@ public class BatchLSEstimator {
     private final NumericalPropagatorBuilder propagatorBuilder;
 
     /** Measurements. */
-    private final List<Measurement<?>> measurements;
+    private final List<ObservedMeasurement<?>> measurements;
 
     /** Solver for least squares problem. */
     private final LeastSquaresOptimizer optimizer;
@@ -71,8 +71,8 @@ public class BatchLSEstimator {
     /** Oberver for iterations. */
     private BatchLSObserver observer;
 
-    /** Last evaluations. */
-    private Map<Measurement<?>, Evaluation<?>> evaluations;
+    /** Last estimations. */
+    private Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> estimations;
 
     /** Last orbit. */
     private Orbit orbit;
@@ -96,11 +96,11 @@ public class BatchLSEstimator {
         throws OrekitException {
 
         this.propagatorBuilder              = propagatorBuilder;
-        this.measurements                   = new ArrayList<Measurement<?>>();
+        this.measurements                   = new ArrayList<ObservedMeasurement<?>>();
         this.optimizer                      = optimizer;
         this.parametersConvergenceThreshold = Double.NaN;
         this.lsBuilder                      = new LeastSquaresBuilder();
-        this.evaluations                    = null;
+        this.estimations                    = null;
         this.observer                       = null;
 
         // our model computes value and Jacobian in one call,
@@ -126,16 +126,46 @@ public class BatchLSEstimator {
      * @exception OrekitException if the measurement has a parameter
      * that is already used
      */
-    public void addMeasurement(final Measurement<?> measurement)
+    public void addMeasurement(final ObservedMeasurement<?> measurement)
       throws OrekitException {
         measurements.add(measurement);
     }
 
     /** Set the maximum number of iterations.
+     * <p>
+     * The iterations correspond to the top level iterations of
+     * the {@link LeastSquaresOptimizer least squares optimizer}.
+     * </p>
      * @param maxIterations maxIterations maximum number of iterations
+     * @see #setMaxEvaluations(int)
+     * @see #getIterationsCount()
      */
     public void setMaxIterations(final int maxIterations) {
         lsBuilder.maxIterations(maxIterations);
+    }
+
+    /** Set the maximum number of model evaluations.
+     * <p>
+     * The evaluations correspond to the orbit propagations and
+     * measurements estimations performed with a set of estimated
+     * parameters.
+     * </p>
+     * <p>
+     * For {@link org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer
+     * Gauss-Newton optimizer} there is one evaluation at each iteration,
+     * so the maximum numbers may be set to the same value. For {@link
+     * org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer
+     * Levenberg-Marquardt optimizer}, there can be several evaluations at
+     * some iterations (typically for the first couple of iterations), so the
+     * maximum number of evaluations may be set to a higher value than the
+     * maximum number of iterations.
+     * </p>
+     * @param maxEvaluations maximum number of model evaluations
+     * @see #setMaxIterations(int)
+     * @see #getEvaluationsCount()
+     */
+    public void setMaxEvaluations(final int maxEvaluations) {
+        lsBuilder.maxEvaluations(maxEvaluations);
     }
 
     /** Get the orbital parameters supported by this estimator.
@@ -195,7 +225,7 @@ public class BatchLSEstimator {
         throws OrekitException {
 
         final ParameterDriversList parameters =  new ParameterDriversList();
-        for (final  Measurement<?> measurement : measurements) {
+        for (final  ObservedMeasurement<?> measurement : measurements) {
             for (final ParameterDriver driver : measurement.getParametersDrivers()) {
                 if ((!estimatedOnly) || driver.isSelected()) {
                     parameters.add(driver);
@@ -207,13 +237,6 @@ public class BatchLSEstimator {
 
         return parameters;
 
-    }
-
-    /** Set the maximum number of model evaluations.
-     * @param maxEvaluations maximum number of model evaluations
-     */
-    public void setMaxEvaluations(final int maxEvaluations) {
-        lsBuilder.maxEvaluations(maxEvaluations);
     }
 
     /**
@@ -247,7 +270,7 @@ public class BatchLSEstimator {
         this.parametersConvergenceThreshold = parametersConvergenceThreshold;
     }
 
-    /** Estimate the orbit and the parameters.
+    /** Estimate the orbital, propagation and measurements parameters.
      * <p>
      * The initial guess for all parameters must have been set before calling this method
      * using {@link #getOrbitalParametersDrivers(boolean)}, {@link #getPropagatorParametersDrivers(boolean)},
@@ -294,7 +317,7 @@ public class BatchLSEstimator {
 
         // create target (which is an array set to 0, as we compute weighted residuals ourselves)
         int p = 0;
-        for (final Measurement<?> measurement : measurements) {
+        for (final ObservedMeasurement<?> measurement : measurements) {
             if (measurement.isEnabled()) {
                 p += measurement.getDimension();
             }
@@ -307,9 +330,9 @@ public class BatchLSEstimator {
             /** {@inheritDoc} */
             @Override
             public void modelCalled(final Orbit newOrbit,
-                                    final Map<Measurement<?>, Evaluation<?>> newEvaluations) {
+                                    final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEstimations) {
                 BatchLSEstimator.this.orbit       = newOrbit;
-                BatchLSEstimator.this.evaluations = newEvaluations;
+                BatchLSEstimator.this.estimations = newEstimations;
             }
         };
         final Model model = new Model(propagatorBuilder, measurements, estimatedMeasurementsParameters,
@@ -355,11 +378,11 @@ public class BatchLSEstimator {
 
     }
 
-    /** Get the last evaluations performed.
-     * @return last evaluations performed
+    /** Get the last estimations performed.
+     * @return last estimations performed
      */
-    public Map<Measurement<?>, Evaluation<?>> getLastEvaluations() {
-        return Collections.unmodifiableMap(evaluations);
+    public Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> getLastEstimations() {
+        return Collections.unmodifiableMap(estimations);
     }
 
     /** Get the optimum found.
@@ -371,6 +394,7 @@ public class BatchLSEstimator {
 
     /** Get the number of iterations used for last estimation.
      * @return number of iterations used for last estimation
+     * @see #setMaxIterations(int)
      */
     public int getIterationsCount() {
         return iterationsCounter.getCount();
@@ -378,6 +402,7 @@ public class BatchLSEstimator {
 
     /** Get the number of evaluations used for last estimation.
      * @return number of evaluations used for last estimation
+     * @see #setMaxEvaluations(int)
      */
     public int getEvaluationsCount() {
         return evaluationsCounter.getCount();
@@ -492,44 +517,44 @@ public class BatchLSEstimator {
     }
 
     /** Provider for evaluations. */
-    private class Provider implements EvaluationsProvider {
+    private class Provider implements EstimationsProvider {
 
-        /** Sorted evaluations. */
-        private Evaluation<?>[] sortedEvaluations;
+        /** Sorted estimations. */
+        private EstimatedMeasurement<?>[] sortedEstimations;
 
         /** {@inheritDoc} */
         @Override
         public int getNumber() {
-            return evaluations.size();
+            return estimations.size();
         }
 
         /** {@inheritDoc} */
         @Override
-        public Evaluation<?> getEvaluation(final int index)
+        public EstimatedMeasurement<?> getEstimatedMeasurement(final int index)
             throws OrekitException {
 
             // safety checks
-            if (index < 0 || index >= evaluations.size()) {
+            if (index < 0 || index >= estimations.size()) {
                 throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE,
-                                          index, 0, evaluations.size());
+                                          index, 0, estimations.size());
             }
 
-            if (sortedEvaluations == null) {
+            if (sortedEstimations == null) {
 
                 // lazy evaluation of the sorted array
-                sortedEvaluations = new Evaluation<?>[evaluations.size()];
+                sortedEstimations = new EstimatedMeasurement<?>[estimations.size()];
                 int i = 0;
-                for (final Map.Entry<Measurement<?>, Evaluation<?>> entry : evaluations.entrySet()) {
-                    sortedEvaluations[i++] = entry.getValue();
+                for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry : estimations.entrySet()) {
+                    sortedEstimations[i++] = entry.getValue();
                 }
 
                 // sort the array chronologically
-                Arrays.sort(sortedEvaluations, 0, sortedEvaluations.length,
+                Arrays.sort(sortedEstimations, 0, sortedEstimations.length,
                             new ChronologicalComparator());
 
             }
 
-            return sortedEvaluations[index];
+            return sortedEstimations[index];
 
         }
 
