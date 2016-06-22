@@ -144,6 +144,19 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
     }
 
+    @Override
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        // set the initial value of firing
+        final AbsoluteDate sDate = s0.getDate();
+        final boolean isForward = sDate.compareTo(t) < 0;
+        final boolean isBetween =
+                startDate.compareTo(sDate) < 0 && endDate.compareTo(sDate) > 0;
+        final boolean isOnStart = startDate.compareTo(sDate) == 0;
+        final boolean isOnEnd = endDate.compareTo(sDate) == 0;
+
+        firing = isBetween || (isForward && isOnStart) || (!isForward && isOnEnd);
+    }
+
     /** Get the thrust.
      * @return thrust force (N).
      */

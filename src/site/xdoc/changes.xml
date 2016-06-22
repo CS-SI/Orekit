@@ -22,6 +22,10 @@
   <body>
     <release version="8.0" date="TBC"
              description="TBC">
+      <action dev="evan" type="fix" due-to="Greg Carbott">
+        Fix bug in restarting propagation with a ConstantThrustManeuver with an
+        updated initial condition.
+      </action>
       <action dev="luc" type="fix">
         Fixed a display error for dates less than 0.5ms before a leap second.
       </action>
