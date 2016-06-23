@@ -201,7 +201,6 @@ public class UTCScale implements TimeScale {
             // the date is before the first known leap
             return 60;
         } else {
-            // TODO: this does not work in the last minute, only in the last second
             if (date.compareTo(offsets[offsetIndex].getValidityStart()) < 0) {
                 // the date is during the leap itself
                 return 61;
