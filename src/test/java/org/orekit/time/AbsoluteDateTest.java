@@ -753,6 +753,20 @@ public class AbsoluteDateTest {
         Assert.assertEquals("23:59:60.500", t.shiftedBy(+0.5).toString(utc).substring(11));
     }
 
+    @Test
+    public void testWrapBeforeLeap() throws OrekitException {
+        UTCScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate t = new AbsoluteDate("2015-06-30T23:59:59.999999", utc);
+        Assert.assertEquals(2015,        t.getComponents(utc).getDate().getYear());
+        Assert.assertEquals(   6,        t.getComponents(utc).getDate().getMonth());
+        Assert.assertEquals(  30,        t.getComponents(utc).getDate().getDay());
+        Assert.assertEquals(  23,        t.getComponents(utc).getTime().getHour());
+        Assert.assertEquals(  59,        t.getComponents(utc).getTime().getMinute());
+        Assert.assertEquals(  59.999999, t.getComponents(utc).getTime().getSecond(), 1.0e-6);
+        Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
+        Assert.assertEquals("2015-07-01T02:59:60.000", t.toString(TimeScalesFactory.getGLONASS()));
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");

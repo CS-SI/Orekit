@@ -55,30 +55,11 @@ public class UT1Scale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
         final double dtu1        = eopHistory == null ? 0 : eopHistory.getUT1MinusUTC(date);
         final double utcMinusTai = utc.offsetFromTAI(date);
         return utcMinusTai + dtu1;
-    }
-
-    /** {@inheritDoc} */
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-        double offset = 0;
-        for (int i = 0; i < 3; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
-        }
-        return offset;
-    }
-
-    /** {@inheritDoc} */
-    public boolean insideLeap(final AbsoluteDate date) {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    public double getLeap(final AbsoluteDate date) {
-        return 0;
     }
 
     /** {@inheritDoc} */

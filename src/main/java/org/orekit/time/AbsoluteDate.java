@@ -951,7 +951,7 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
      */
     public String toString(final TimeScale timeScale) {
-        return getComponents(timeScale).toString(timeScale.insideLeap(this));
+        return getComponents(timeScale).toString(timeScale.minuteDuration(this));
     }
 
     /** Get a String representation of the instant location for a local time.
@@ -964,8 +964,8 @@ public class AbsoluteDate
      */
     public String toString(final int minutesFromUTC)
         throws OrekitException {
-        final boolean inLeap = TimeScalesFactory.getUTC().insideLeap(this);
-        return getComponents(minutesFromUTC).toString(inLeap);
+        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
+        return getComponents(minutesFromUTC).toString(minuteDuration);
     }
 
     /** Get a String representation of the instant location for a time zone.
@@ -977,8 +977,8 @@ public class AbsoluteDate
      */
     public String toString(final TimeZone timeZone)
         throws OrekitException {
-        final boolean inLeap = TimeScalesFactory.getUTC().insideLeap(this);
-        return getComponents(timeZone).toString(inLeap);
+        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
+        return getComponents(timeZone).toString(minuteDuration);
     }
 
 }

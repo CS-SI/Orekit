@@ -85,32 +85,66 @@ public class UTCScaleTest {
         AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
                                           new TimeComponents(23, 59, 59),
                                           utc);
+        Assert.assertEquals("1983-06-30T23:58:59.000", d.shiftedBy(-60).toString(utc));
+        Assert.assertEquals(60, utc.minuteDuration(d.shiftedBy(-60)));
+        Assert.assertFalse(utc.insideLeap(d.shiftedBy(-60)));
         Assert.assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
+        Assert.assertEquals(61, utc.minuteDuration(d));
         Assert.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:59.251", d.toString(utc));
+        Assert.assertEquals(61, utc.minuteDuration(d));
         Assert.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:59.502", d.toString(utc));
+        Assert.assertEquals(61, utc.minuteDuration(d));
         Assert.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:59.753", d.toString(utc));
+        Assert.assertEquals(61, utc.minuteDuration(d));
         Assert.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy( 0.251);
         Assert.assertEquals("1983-06-30T23:59:60.004", d.toString(utc));
+        Assert.assertEquals(61, utc.minuteDuration(d));
         Assert.assertTrue(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:60.255", d.toString(utc));
+        Assert.assertEquals(61, utc.minuteDuration(d));
         Assert.assertTrue(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:60.506", d.toString(utc));
-        Assert.assertTrue(utc.insideLeap(d));
+        Assert.assertEquals(61, utc.minuteDuration(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-06-30T23:59:60.757", d.toString(utc));
+        Assert.assertEquals(61, utc.minuteDuration(d));
         Assert.assertTrue(utc.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-07-01T00:00:00.008", d.toString(utc));
+        Assert.assertEquals(60, utc.minuteDuration(d));
         Assert.assertFalse(utc.insideLeap(d));
+    }
+
+    @Test
+    public void testWrapBeforeLeap() throws OrekitException {
+        AbsoluteDate t = new AbsoluteDate("2015-06-30T23:59:59.999999", utc);
+        Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
+    }
+
+    @Test
+    public void testMinuteDuration() {
+        final AbsoluteDate t0 = new AbsoluteDate("1983-06-30T23:58:59.000", utc);
+        for (double dt = 0; dt < 63; dt += 0.3) {
+            if (dt < 1.0) {
+                // before the minute of the leap
+                Assert.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));
+            } else if (dt < 62.0) {
+                // during the minute of the leap
+                Assert.assertEquals(61, utc.minuteDuration(t0.shiftedBy(dt)));
+            } else {
+                // after the minute of the leap
+                Assert.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));                
+            }
+        }
     }
 
     @Test

@@ -22,6 +22,9 @@
   <body>
     <release version="8.0" date="TBC"
              description="TBC">
+      <action dev="luc" type="fix">
+        Fixed a display error for dates less than 0.5ms before a leap second.
+      </action>
       <action dev="luc" type="update">
         Use ParameterDriver with scale factor for both orbit determination, conversion,
         and partial derivatives computation when finite differences are needed.

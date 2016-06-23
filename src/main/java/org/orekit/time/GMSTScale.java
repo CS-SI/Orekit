@@ -69,6 +69,7 @@ public class GMSTScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
 
         // julian seconds since reference date
@@ -86,26 +87,6 @@ public class GMSTScale implements TimeScale {
         // normalize offset between -43200 and +43200 seconds
         return offset - FULL_DAY * FastMath.floor((offset + HALF_DAY) / FULL_DAY);
 
-    }
-
-    /** {@inheritDoc} */
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-        double offset = 0;
-        for (int i = 0; i < 8; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
-        }
-        return offset;
-    }
-
-    /** {@inheritDoc} */
-    public boolean insideLeap(final AbsoluteDate date) {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    public double getLeap(final AbsoluteDate date) {
-        return 0;
     }
 
     /** {@inheritDoc} */

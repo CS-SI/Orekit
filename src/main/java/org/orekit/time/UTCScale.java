@@ -123,17 +123,19 @@ public class UTCScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        final UTCTAIOffset offset = findOffset(date);
-        if (offset == null) {
+        final int offsetIndex = findOffsetIndex(date);
+        if (offsetIndex < 0) {
             // the date is before the first known leap
             return 0;
         } else {
-            return -offset.getOffset(date);
+            return -offsets[offsetIndex].getOffset(date);
         }
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetToTAI(final DateComponents date,
                               final TimeComponents time) {
 
@@ -180,35 +182,60 @@ public class UTCScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean insideLeap(final AbsoluteDate date) {
-        final UTCTAIOffset offset = findOffset(date);
-        if (offset == null) {
+        final int offsetIndex = findOffsetIndex(date);
+        if (offsetIndex < 0) {
             // the date is before the first known leap
             return false;
         } else {
-            return date.compareTo(offset.getValidityStart()) < 0;
+            return date.compareTo(offsets[offsetIndex].getValidityStart()) < 0;
         }
     }
 
-    /** Get the value of the previous leap.
-     * @param date date to check
-     * @return value of the previous leap
-     */
+    /** {@inheritDoc} */
+    @Override
+    public int minuteDuration(final AbsoluteDate date) {
+        final int offsetIndex = findOffsetIndex(date);
+        if (offsetIndex < 0) {
+            // the date is before the first known leap
+            return 60;
+        } else {
+            // TODO: this does not work in the last minute, only in the last second
+            if (date.compareTo(offsets[offsetIndex].getValidityStart()) < 0) {
+                // the date is during the leap itself
+                return 61;
+            } else {
+                // the date is after a leap, but it may be just before the next one
+                if (offsetIndex + 1 < offsets.length &&
+                    offsets[offsetIndex + 1].getDate().durationFrom(date) <= 60.0) {
+                    // the next leap will start in one minute, it will extend the current minute
+                    return 61;
+                } else {
+                    // no leap is expected within the next minute
+                    return 60;
+                }
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getLeap(final AbsoluteDate date) {
-        final UTCTAIOffset offset = findOffset(date);
-        if (offset == null) {
+        final int offsetIndex = findOffsetIndex(date);
+        if (offsetIndex < 0) {
             // the date is before the first known leap
             return 0;
         } else {
-            return offset.getLeap();
+            return offsets[offsetIndex].getLeap();
         }
     }
 
-    /** Find the offset valid at some date.
+    /** Find the index of the offset valid at some date.
      * @param date date at which offset is requested
-     * @return offset valid at this date, or null if date is before first offset.
+     * @return index of the offset valid at this date, or -1 if date is before first offset.
      */
-    private UTCTAIOffset findOffset(final AbsoluteDate date) {
+    private int findOffsetIndex(final AbsoluteDate date) {
         int inf = 0;
         int sup = offsets.length;
         while (sup - inf > 1) {
@@ -221,12 +248,12 @@ public class UTCScale implements TimeScale {
         }
         if (sup == offsets.length) {
             // the date is after the last known leap second
-            return offsets[offsets.length - 1];
+            return offsets.length - 1;
         } else if (date.compareTo(offsets[inf].getDate()) < 0) {
             // the date is before the first known leap
-            return null;
+            return -1;
         } else {
-            return offsets[inf];
+            return inf;
         }
     }
 
