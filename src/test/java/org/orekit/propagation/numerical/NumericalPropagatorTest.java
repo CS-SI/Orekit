@@ -959,6 +959,7 @@ public class NumericalPropagatorTest {
     private static class ForceModelAdapter implements ForceModel {
 
         @Override
+        @Deprecated
         public List<String> getParametersNames() {
             return Collections.emptyList();
         }
@@ -969,6 +970,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
+        @Deprecated
         public double getParameter(String name) throws MathIllegalArgumentException {
             throw new MathIllegalArgumentException(
                     OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
@@ -977,6 +979,7 @@ public class NumericalPropagatorTest {
         }
 
         @Override
+        @Deprecated
         public void setParameter(String name, double value)
                 throws MathIllegalArgumentException {
             throw new MathIllegalArgumentException(
