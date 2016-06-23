@@ -16,8 +16,6 @@
  */
 package org.orekit.estimation;
 
-import org.hipparchus.analysis.MultivariateMatrixFunction;
-import org.hipparchus.analysis.MultivariateVectorFunction;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -96,55 +94,6 @@ public class EstimationUtils {
             }
         };
 
-    }
-
-    /** Differentiate a vector function using finite differences.
-     * @param function function to differentiate
-     * @param dimension dimension of the vector value of the function
-     * @param nbPoints number of points used for finite differences
-     * @param steps step size along each component of the function input parameter array
-     * @return matrix function evaluating to the Jacobian of the original function
-     */
-    public static MultivariateMatrixFunction differentiate(final MultivariateVectorFunction function,
-                                                           final int dimension,
-                                                           final int nbPoints, final double ... steps) {
-        return new MultivariateMatrixFunction() {
-
-            @Override
-            public double[][] value(final double[] parameter) {
-                final double[][] jacobian = new double[dimension][steps.length];
-                for (int j = 0; j < steps.length; ++j) {
-
-                    // compute partial derivatives with respect to parameter component j
-                    final int theJ = j;
-                    final FiniteDifferencesDifferentiator differentiator =
-                                    new FiniteDifferencesDifferentiator(nbPoints, steps[j]);
-                    final UnivariateDifferentiableVectorFunction differentiatedJ =
-                                    differentiator.differentiate(new UnivariateVectorFunction() {
-                                        public double[] value(final double x) {
-                                            final double savedComponent = parameter[theJ];
-                                            parameter[theJ] += x;
-                                            final double[] result = function.value(parameter);
-                                            parameter[theJ] = savedComponent;
-                                            return result;
-                                        }
-                                    });
-
-                    final DerivativeStructure[] c =
-                                    differentiatedJ.value(new DerivativeStructure(1, 1, 0, 0.0));
-
-                    // populate the j-th column of the Jacobian
-                    for (int i = 0; i < dimension; ++i) {
-                        jacobian[i][j] = c[i].getPartialDerivative(1);
-                    }
-
-                }
-
-                return jacobian;
-
-            }
-
-        };
     }
 
     /** Differentiate a vector function using finite differences.
