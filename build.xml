@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="7.1"   />
+  <property name="project.version"         value="8.0"   />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -24,6 +24,7 @@
   <property name="hipparchus.ode.jar"      value="hipparchus-ode-${hipparchus.version}.jar"      />
   <property name="hipparchus.fitting.jar"  value="hipparchus-fitting-${hipparchus.version}.jar"  />
   <property name="hipparchus.optim.jar"    value="hipparchus-optim-${hipparchus.version}.jar"    />
+  <property name="hipparchus.stat.jar"     value="hipparchus-stat-${hipparchus.version}.jar"     />
   <property name="hipparchus.maven.path"   value="org/hipparchus"                                />
   <property name="maven.repository"        value="http://repo1.maven.org/maven2"                 />
 
@@ -61,12 +62,14 @@
          dest="${lib.dir}/${hipparchus.fitting.jar}"/>
     <get src="${maven.repository}/${hipparchus.maven.path}/${hipparchus.version}/${hipparchus.optim.jar}"
          dest="${lib.dir}/${hipparchus.optim.jar}"/>
+    <get src="${maven.repository}/${hipparchus.maven.path}/${hipparchus.version}/${hipparchus.stat.jar}"
+         dest="${lib.dir}/${hipparchus.stat.jar}"/>
   </target>
 
   <target name="compile" depends="get-hipparchus" description="Compile the code">
     <mkdir dir="${main.classes.dir}"/>
     <javac srcdir="${main.src.dir}" destdir="${main.classes.dir}"
-           classpath="${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}"
+           classpath="${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.stat.jar}"
            deprecation="true" target="1.8" source="1.8">
     </javac>
     <copy todir="${main.classes.dir}">
@@ -78,7 +81,7 @@
           description="Compile the test code" if="junit4.present">
     <mkdir dir="${test.classes.dir}"/>
     <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}"
-    	   classpath="${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}"
+    	   classpath="${lib.dir}/${hipparchus.core.jar}:${lib.dir}/${hipparchus.geometry.jar}:${lib.dir}/${hipparchus.ode.jar}:${lib.dir}/${hipparchus.fitting.jar}:${lib.dir}/${hipparchus.optim.jar}:${lib.dir}/${hipparchus.stat.jar}"
     	   deprecation="true" target="1.8" source="1.8">
     </javac>
     <copy todir="${test.classes.dir}">
@@ -90,9 +93,14 @@
     <mkdir dir="${tests.reports}"/>
     <junit>
       <classpath>
-        <pathelement location="${main.classes.dir}" />
-        <pathelement location="${test.classes.dir}" />
-        <pathelement location="${lib.dir}/${hipparchus.jar}" />
+        <pathelement location="${main.classes.dir}"                   />
+        <pathelement location="${test.classes.dir}"                   />
+        <pathelement location="${lib.dir}/${hipparchus.core.jar}"     />
+      	<pathelement location="${lib.dir}/${hipparchus.geometry.jar}" />
+      	<pathelement location="${lib.dir}/${hipparchus.ode.jar}"      />
+      	<pathelement location="${lib.dir}/${hipparchus.fitting.jar}"  />
+      	<pathelement location="${lib.dir}/${hipparchus.optim.jar}"    />
+      	<pathelement location="${lib.dir}/${hipparchus.stat.jar}"     />
       </classpath>
       <formatter type="brief"/>
       <batchtest todir="${tests.reports}">
@@ -116,7 +124,7 @@
              charset="UTF-8" docencoding="UTF-8"
              bottom="&lt;i&gt;Copyright &#169; ${copyright}. All Rights Reserved.&lt;/i&gt;">
       <link href="http://docs.oracle.com/javase/8/docs/api/"/>
-      <link href="https://hipparchis.org/version-${hipparchus.version}/apidoc/"/>
+      <link href="https://www.hipparchus.org/apidocs/"/>
     </javadoc>
   </target>
 

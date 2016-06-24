@@ -20,8 +20,14 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="8.0" date="TBC"
-             description="TBC">
+    <release version="8.0" date="2016-06-30"
+             description="Version 8.0 is a major release of Orekit. It introduces several new
+             features and bug fixes as well as a major dependency change. New features introduced
+             in version 8.0 are orbit determination, specialized propagator for GPS satellites
+             based on SEM or YUMA files, computation of Dilution Of Precision and a new angular
+             separation event detector. Several bugs have been fixed. A major change introduced
+             with version 8.0 is the switch from Apache Commons Math to Hipparchus as the
+             mathematical library, which also implied switching from Java 6 to Java 8.">
       <action dev="luc" type="fix">
         Fixed a display error for dates less than 0.5ms before a leap second.
       </action>
