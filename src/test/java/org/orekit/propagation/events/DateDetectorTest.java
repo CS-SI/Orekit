@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -123,10 +122,10 @@ public class DateDetectorTest {
     /**
      * Check that a generic event handler can be used with an event detector.
      *
-     * @throws PropagationException on error.
+     * @throws OrekitException on error.
      */
     @Test
-    public void testGenericHandler() throws PropagationException {
+    public void testGenericHandler() throws OrekitException {
         //setup
         dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt));
         // generic event handler that works with all detectors.

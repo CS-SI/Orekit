@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.errors.PropagationException;
 import org.orekit.estimation.Context;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
@@ -41,7 +40,7 @@ public class RangeMeasurementCreator extends MeasurementCreator {
     }
 
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws PropagationException {
+        throws OrekitException {
         try {  
             for (final GroundStation station : context.stations) {
                 final AbsoluteDate     date      = currentState.getDate();
@@ -89,9 +88,9 @@ public class RangeMeasurementCreator extends MeasurementCreator {
 
             }
         } catch (OrekitExceptionWrapper oew) {
-            throw new PropagationException(oew.getException());
+            throw new OrekitException(oew.getException());
         } catch (OrekitException oe) {
-            throw new PropagationException(oe);
+            throw new OrekitException(oe);
         }
     }
 

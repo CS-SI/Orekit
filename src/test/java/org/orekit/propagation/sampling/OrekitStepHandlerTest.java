@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FactoryManagedFrame;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -88,7 +87,7 @@ public class OrekitStepHandlerTest {
 
             @Override
             public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws PropagationException {
+                throws OrekitException {
                 // System.out.println("Step stopped at: " +
                 // currentState.getDate());;
             }
@@ -105,7 +104,7 @@ public class OrekitStepHandlerTest {
                 .submit(new Callable<SpacecraftState>() {
 
                     public SpacecraftState call()
-                        throws PropagationException {
+                        throws OrekitException {
                         return kepler.propagate(initialDate.shiftedBy(dt));
                     }
                 });

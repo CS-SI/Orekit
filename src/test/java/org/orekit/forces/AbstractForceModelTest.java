@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -138,18 +137,11 @@ public abstract class AbstractForceModelTest {
         final double[][] dYdY0 = new double[6][6];
         propagator.setMasterMode(new OrekitStepHandler() {
             
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-            
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-                throws PropagationException {
+                throws OrekitException {
                 if (isLast) {
-                    try {
-                        // pick up final Jacobian
-                        mapper.getStateJacobian(interpolator.getCurrentState(), dYdY0);
-                    } catch (OrekitException oe) {
-                        throw new PropagationException(oe);
-                    }
+                    // pick up final Jacobian
+                    mapper.getStateJacobian(interpolator.getCurrentState(), dYdY0);
                 }
             }
 
@@ -168,7 +160,7 @@ public abstract class AbstractForceModelTest {
     private double[] jacobianColumn(final NumericalPropagator propagator, final SpacecraftState state0,
                                     final AbsoluteDate targetDate, final int index,
                                     final double h)
-                                            throws PropagationException {
+                                            throws OrekitException {
         return differential4(integrateShiftedState(propagator, state0, targetDate, index, -2 * h),
                              integrateShiftedState(propagator, state0, targetDate, index, -1 * h),
                              integrateShiftedState(propagator, state0, targetDate, index, +1 * h),
@@ -180,7 +172,7 @@ public abstract class AbstractForceModelTest {
                                            final SpacecraftState state0,
                                            final AbsoluteDate targetDate,
                                            final int index, final double h)
-        throws PropagationException {
+        throws OrekitException {
         OrbitType orbitType = propagator.getOrbitType();
         PositionAngle angleType = propagator.getPositionAngleType();
         double[] a = new double[6];

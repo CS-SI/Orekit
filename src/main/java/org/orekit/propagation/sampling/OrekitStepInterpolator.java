@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.orekit.errors.PropagationException;
+import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -32,9 +32,9 @@ public interface OrekitStepInterpolator {
     /**
      * Get the state at previous grid point date.
      * @return state at previous grid point date
-     * @exception PropagationException if state cannot be retrieved
+     * @exception OrekitException if state cannot be retrieved
      */
-    SpacecraftState getPreviousState() throws PropagationException;
+    SpacecraftState getPreviousState() throws OrekitException;
 
     /**
      * Determines if the {@link #getPreviousState() previous state} is computed directly
@@ -53,9 +53,9 @@ public interface OrekitStepInterpolator {
     /**
      * Get the state at previous grid point date.
      * @return state at previous grid point date
-     * @exception PropagationException if state cannot be retrieved
+     * @exception OrekitException if state cannot be retrieved
      */
-    SpacecraftState getCurrentState() throws PropagationException;
+    SpacecraftState getCurrentState() throws OrekitException;
 
     /**
      * Determines if the {@link #getCurrentState() current state} is computed directly by
@@ -74,11 +74,11 @@ public interface OrekitStepInterpolator {
     /** Get the state at interpolated date.
      * @param date date of the interpolated state
      * @return state at interpolated date
-     * @exception PropagationException if underlying interpolator cannot handle
+     * @exception OrekitException if underlying interpolator cannot handle
      * the date
      */
     SpacecraftState getInterpolatedState(final AbsoluteDate date)
-        throws PropagationException;
+        throws OrekitException;
 
     /** Check is integration direction is forward in date.
      * @return true if integration is forward in date

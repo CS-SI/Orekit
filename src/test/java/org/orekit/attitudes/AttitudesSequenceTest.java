@@ -31,7 +31,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
@@ -119,32 +118,28 @@ public class AttitudesSequenceTest {
         propagator.setMasterMode(60.0, new OrekitFixedStepHandler() {
             public void init(final SpacecraftState s0, final AbsoluteDate t) {
             }
-            public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
-                try {
-                    // the Earth position in spacecraft frame should be along spacecraft Z axis
-                    // during night time and away from it during day time due to roll and pitch offsets
-                    final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
-                    final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
+            public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+                // the Earth position in spacecraft frame should be along spacecraft Z axis
+                // during night time and away from it during day time due to roll and pitch offsets
+                final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
+                final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
 
-                    // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
-                    // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
-                    final double eclipseAngle = ed.g(currentState);
+                // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
+                // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
+                final double eclipseAngle = ed.g(currentState);
 
-                    if (currentState.getDate().durationFrom(lastChange) > 300) {
-                        if (inEclipse) {
-                            Assert.assertTrue(eclipseAngle <= 0);
-                            Assert.assertEquals(0.0, pointingOffset, 1.0e-6);
-                        } else {
-                            Assert.assertTrue(eclipseAngle >= 0);
-                            Assert.assertEquals(0.767215, pointingOffset, 1.0e-6);
-                        }
+                if (currentState.getDate().durationFrom(lastChange) > 300) {
+                    if (inEclipse) {
+                        Assert.assertTrue(eclipseAngle <= 0);
+                        Assert.assertEquals(0.0, pointingOffset, 1.0e-6);
                     } else {
-                        // we are in transition
-                        Assert.assertTrue(pointingOffset + " " + (0.767215 - pointingOffset),
-                                          pointingOffset <= 0.7672155);
+                        Assert.assertTrue(eclipseAngle >= 0);
+                        Assert.assertEquals(0.767215, pointingOffset, 1.0e-6);
                     }
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
+                } else {
+                    // we are in transition
+                    Assert.assertTrue(pointingOffset + " " + (0.767215 - pointingOffset),
+                                      pointingOffset <= 0.7672155);
                 }
             }
         });

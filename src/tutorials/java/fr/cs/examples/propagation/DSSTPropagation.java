@@ -43,7 +43,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
@@ -744,7 +743,7 @@ public class DSSTPropagation {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) throws PropagationException {
+        public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
             try {
                 nbColumns           = 0;
                 outputStream        = new PrintStream(outputFile, "UTF-8");
@@ -778,7 +777,7 @@ public class DSSTPropagation {
                 start   = s0.getDate();
                 isFirst = true;
             } catch (IOException ioe) {
-                throw new PropagationException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
+                throw new OrekitException(ioe, LocalizedCoreFormats.SIMPLE_MESSAGE, ioe.getLocalizedMessage());
             }
         }
 
@@ -790,85 +789,81 @@ public class DSSTPropagation {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(SpacecraftState s, boolean isLast) throws PropagationException {
-            try {
-                if (isFirst) {
-                    if (shortPeriodCoefficients != null) {
-                        if (shortPeriodCoefficients.isEmpty()) {
-                            // we want all available coefficients,
-                            // they correspond to the additional states
-                            for (final Map.Entry<String, double[]> entry : s.getAdditionalStates().entrySet()) {
-                                shortPeriodCoefficients.add(entry.getKey());
-                            }
-                            Collections.sort(shortPeriodCoefficients);
-                        }
-                        for (final String coefficientName : shortPeriodCoefficients) {
-                            describeNextColumn(coefficientName + " (a)");
-                            describeNextColumn(coefficientName + " (h)");
-                            describeNextColumn(coefficientName + " (k)");
-                            describeNextColumn(coefficientName + " (p)");
-                            describeNextColumn(coefficientName + " (q)");
-                            describeNextColumn(coefficientName + " (L)");
-                        }
-                    }
-                    isFirst = false;
-                }
-                outputStream.format(Locale.US, DT_FORMAT, s.getDate().durationFrom(start));
-                if (outputKeplerian) {
-                    final KeplerianOrbit ko = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s.getOrbit());
-                    outputStream.format(Locale.US, KEPLERIAN_ELEMENTS_FORMAT,
-                                        ko.getA() / 1000.,
-                                        ko.getE(),
-                                        FastMath.toDegrees(ko.getI()),
-                                        FastMath.toDegrees(MathUtils.normalizeAngle(ko.getRightAscensionOfAscendingNode(), FastMath.PI)),
-                                        FastMath.toDegrees(MathUtils.normalizeAngle(ko.getPerigeeArgument(), FastMath.PI)),
-                                        FastMath.toDegrees(MathUtils.normalizeAngle(ko.getAnomaly(PositionAngle.MEAN), FastMath.PI)));
-                    if (outputEquinoctial) {
-                        outputStream.format(Locale.US, EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT,
-                                            ko.getEquinoctialEy(), // h
-                                            ko.getEquinoctialEx(), // k
-                                            ko.getHy(),            // p
-                                            ko.getHx(),            // q
-                                            FastMath.toDegrees(MathUtils.normalizeAngle(ko.getLM(), FastMath.PI)));
-                    }
-                } else if (outputEquinoctial) {
-                    outputStream.format(Locale.US, EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT,
-                                        s.getOrbit().getA(),
-                                        s.getOrbit().getEquinoctialEy(), // h
-                                        s.getOrbit().getEquinoctialEx(), // k
-                                        s.getOrbit().getHy(),            // p
-                                        s.getOrbit().getHx(),            // q
-                                        FastMath.toDegrees(MathUtils.normalizeAngle(s.getOrbit().getLM(), FastMath.PI)));
-                }
-                if (outputCartesian) {
-                    final PVCoordinates pv = s.getPVCoordinates();
-                    outputStream.format(Locale.US, CARTESIAN_ELEMENTS_FORMAT,
-                                        pv.getPosition().getX() * 0.001,
-                                        pv.getPosition().getY() * 0.001,
-                                        pv.getPosition().getZ() * 0.001,
-                                        pv.getVelocity().getX() * 0.001,
-                                        pv.getVelocity().getY() * 0.001,
-                                        pv.getVelocity().getZ() * 0.001);
-                }
+        public void handleStep(SpacecraftState s, boolean isLast) throws OrekitException {
+            if (isFirst) {
                 if (shortPeriodCoefficients != null) {
+                    if (shortPeriodCoefficients.isEmpty()) {
+                        // we want all available coefficients,
+                        // they correspond to the additional states
+                        for (final Map.Entry<String, double[]> entry : s.getAdditionalStates().entrySet()) {
+                            shortPeriodCoefficients.add(entry.getKey());
+                        }
+                        Collections.sort(shortPeriodCoefficients);
+                    }
                     for (final String coefficientName : shortPeriodCoefficients) {
-                        final double[] coefficient = s.getAdditionalState(coefficientName);
-                        outputStream.format(Locale.US, SHORT_PERIOD_COEFFICIENTS_FORMAT,
-                                            coefficient[0],
-                                            coefficient[2], // beware, it is really 2 (ey/h), not 1 (ex/k)
-                                            coefficient[1], // beware, it is really 1 (ex/k), not 2 (ey/h)
-                                            coefficient[4], // beware, it is really 4 (hy/p), not 3 (hx/q)
-                                            coefficient[3], // beware, it is really 3 (hx/q), not 4 (hy/p)
-                                            coefficient[5]);
+                        describeNextColumn(coefficientName + " (a)");
+                        describeNextColumn(coefficientName + " (h)");
+                        describeNextColumn(coefficientName + " (k)");
+                        describeNextColumn(coefficientName + " (p)");
+                        describeNextColumn(coefficientName + " (q)");
+                        describeNextColumn(coefficientName + " (L)");
                     }
                 }
-                outputStream.format(Locale.US, "%n");
-                if (isLast) {
-                    outputStream.close();
-                    outputStream = null;
+                isFirst = false;
+            }
+            outputStream.format(Locale.US, DT_FORMAT, s.getDate().durationFrom(start));
+            if (outputKeplerian) {
+                final KeplerianOrbit ko = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(s.getOrbit());
+                outputStream.format(Locale.US, KEPLERIAN_ELEMENTS_FORMAT,
+                                    ko.getA() / 1000.,
+                                    ko.getE(),
+                                    FastMath.toDegrees(ko.getI()),
+                                    FastMath.toDegrees(MathUtils.normalizeAngle(ko.getRightAscensionOfAscendingNode(), FastMath.PI)),
+                                    FastMath.toDegrees(MathUtils.normalizeAngle(ko.getPerigeeArgument(), FastMath.PI)),
+                                    FastMath.toDegrees(MathUtils.normalizeAngle(ko.getAnomaly(PositionAngle.MEAN), FastMath.PI)));
+                if (outputEquinoctial) {
+                    outputStream.format(Locale.US, EQUINOCTIAL_ELEMENTS_WITHOUT_A_FORMAT,
+                                        ko.getEquinoctialEy(), // h
+                                        ko.getEquinoctialEx(), // k
+                                        ko.getHy(),            // p
+                                        ko.getHx(),            // q
+                                        FastMath.toDegrees(MathUtils.normalizeAngle(ko.getLM(), FastMath.PI)));
                 }
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe);
+            } else if (outputEquinoctial) {
+                outputStream.format(Locale.US, EQUINOCTIAL_ELEMENTS_WITH_A_FORMAT,
+                                    s.getOrbit().getA(),
+                                    s.getOrbit().getEquinoctialEy(), // h
+                                    s.getOrbit().getEquinoctialEx(), // k
+                                    s.getOrbit().getHy(),            // p
+                                    s.getOrbit().getHx(),            // q
+                                    FastMath.toDegrees(MathUtils.normalizeAngle(s.getOrbit().getLM(), FastMath.PI)));
+            }
+            if (outputCartesian) {
+                final PVCoordinates pv = s.getPVCoordinates();
+                outputStream.format(Locale.US, CARTESIAN_ELEMENTS_FORMAT,
+                                    pv.getPosition().getX() * 0.001,
+                                    pv.getPosition().getY() * 0.001,
+                                    pv.getPosition().getZ() * 0.001,
+                                    pv.getVelocity().getX() * 0.001,
+                                    pv.getVelocity().getY() * 0.001,
+                                    pv.getVelocity().getZ() * 0.001);
+            }
+            if (shortPeriodCoefficients != null) {
+                for (final String coefficientName : shortPeriodCoefficients) {
+                    final double[] coefficient = s.getAdditionalState(coefficientName);
+                    outputStream.format(Locale.US, SHORT_PERIOD_COEFFICIENTS_FORMAT,
+                                        coefficient[0],
+                                        coefficient[2], // beware, it is really 2 (ey/h), not 1 (ex/k)
+                                        coefficient[1], // beware, it is really 1 (ex/k), not 2 (ey/h)
+                                        coefficient[4], // beware, it is really 4 (hy/p), not 3 (hx/q)
+                                        coefficient[3], // beware, it is really 3 (hx/q), not 4 (hy/p)
+                                        coefficient[5]);
+                }
+            }
+            outputStream.format(Locale.US, "%n");
+            if (isLast) {
+                outputStream.close();
+                outputStream = null;
             }
         }
 

@@ -28,7 +28,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -134,32 +133,23 @@ public class AlongTrackAiming implements TileAiming {
                                                                                      final boolean isAscending)
         throws OrekitException {
 
-        try {
-            // find the span of the next half track
-            final Propagator propagator = new KeplerianPropagator(orbit);
-            final HalfTrackSpanHandler handler = new HalfTrackSpanHandler(isAscending);
-            final LatitudeExtremumDetector detector =
-                    new LatitudeExtremumDetector(0.25 * orbit.getKeplerianPeriod(), 1.0e-3, ellipsoid).
-                    withHandler(handler).
-                    withMaxIter(100);
-            propagator.addEventDetector(detector);
-            propagator.propagate(orbit.getDate().shiftedBy(3 * orbit.getKeplerianPeriod()));
+        // find the span of the next half track
+        final Propagator propagator = new KeplerianPropagator(orbit);
+        final HalfTrackSpanHandler handler = new HalfTrackSpanHandler(isAscending);
+        final LatitudeExtremumDetector detector =
+                        new LatitudeExtremumDetector(0.25 * orbit.getKeplerianPeriod(), 1.0e-3, ellipsoid).
+                        withHandler(handler).
+                        withMaxIter(100);
+        propagator.addEventDetector(detector);
+        propagator.propagate(orbit.getDate().shiftedBy(3 * orbit.getKeplerianPeriod()));
 
-            // sample the half track
-            propagator.clearEventsDetectors();
-            final HalfTrackSampler sampler = new HalfTrackSampler(ellipsoid);
-            propagator.setMasterMode(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
-            propagator.propagate(handler.getStart(), handler.getEnd());
+        // sample the half track
+        propagator.clearEventsDetectors();
+        final HalfTrackSampler sampler = new HalfTrackSampler(ellipsoid);
+        propagator.setMasterMode(handler.getEnd().durationFrom(handler.getStart()) / SAMPLING_STEPS, sampler);
+        propagator.propagate(handler.getStart(), handler.getEnd());
 
-            return sampler.getHalfTrack();
-
-        } catch (PropagationException pe) {
-            if (pe.getCause() instanceof OrekitException) {
-                throw (OrekitException) pe.getCause();
-            } else {
-                throw pe;
-            }
-        }
+        return sampler.getHalfTrack();
 
     }
 

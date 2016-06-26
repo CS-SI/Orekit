@@ -65,13 +65,13 @@ public class TimeStampedCacheException extends OrekitException {
         super(exception);
     }
 
-    /** Recover a PropagationException, possibly embedded in a {@link OrekitException}.
+    /** Recover a TimeStampedCacheException, possibly embedded in a {@link OrekitException}.
      * <p>
-     * If the {@code OrekitException} does not embed a PropagationException, a
+     * If the {@code OrekitException} does not embed a TimeStampedCacheException, a
      * new one will be created.
      * </p>
      * @param oe OrekitException to analyze
-     * @return a (possibly embedded) PropagationException
+     * @return a (possibly embedded) TimeStampedCacheException
      */
     public static TimeStampedCacheException unwrap(final OrekitException oe) {
 

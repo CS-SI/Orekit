@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsBashforthIntegrator;
-import org.orekit.errors.PropagationException;
+import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -59,7 +59,7 @@ public class AdamsBashforthIntegratorBuilder implements ODEIntegratorBuilder {
 
     /** {@inheritDoc} */
     public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
-        throws PropagationException {
+        throws OrekitException {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new AdamsBashforthIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
     }

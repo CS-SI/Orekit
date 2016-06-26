@@ -29,7 +29,6 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -122,25 +121,19 @@ public class ElevationDetectorTest {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast)
-        throws PropagationException {
-            try {
-                BodyShape shape = topo.getParentShape();
-                GeodeticPoint p =
-                    shape.transform(currentState.getPVCoordinates().getPosition(),
-                                    currentState.getFrame(), currentState.getDate());
-                Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
-                double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
+            throws OrekitException {
+            BodyShape shape = topo.getParentShape();
+            GeodeticPoint p =
+                            shape.transform(currentState.getPVCoordinates().getPosition(),
+                                            currentState.getFrame(), currentState.getDate());
+            Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
+            double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
 
-                if (visible) {
-                    Assert.assertTrue(range < 2.45e6);
-                } else {
-                    Assert.assertTrue(range > 2.02e6);
-                }
-
-            } catch (OrekitException e) {
-                throw new PropagationException(e);
+            if (visible) {
+                Assert.assertTrue(range < 2.45e6);
+            } else {
+                Assert.assertTrue(range > 2.02e6);
             }
-
         }
 
         @Override

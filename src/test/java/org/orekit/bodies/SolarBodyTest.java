@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -396,15 +395,11 @@ public class SolarBodyTest {
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
             public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws PropagationException {
-                try {
-                    // propagated position should remain within 1400m of ephemeris for one month
-                    Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
-                    Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();
-                    Assert.assertEquals(0, Vector3D.distance(propagatedP, ephemerisP), 1400.0);
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
-                }
+                throws OrekitException {
+                // propagated position should remain within 1400m of ephemeris for one month
+                Vector3D propagatedP = currentState.getPVCoordinates(icrf).getPosition();
+                Vector3D ephemerisP  = venus.getPVCoordinates(currentState.getDate(), icrf).getPosition();
+                Assert.assertEquals(0, Vector3D.distance(propagatedP, ephemerisP), 1400.0);
             }
         });
 

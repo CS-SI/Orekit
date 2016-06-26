@@ -23,7 +23,6 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -407,14 +406,14 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) throws PropagationException {
-        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+    public void resetInitialState(final SpacecraftState state) throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws PropagationException {
-        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+        throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
@@ -423,16 +422,12 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
-        try {
-            // Gets the PVCoordinates in ECEF frame
-            final PVCoordinates pvaInECEF = propagateInEcef(date);
-            // Transforms the PVCoordinates to ECI frame
-            final PVCoordinates pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
-            // Returns the Cartesian orbit
-            return new CartesianOrbit(pvaInECI, eci, date, GPSOrbitalElements.GPS_MU);
-        } catch (OrekitException oe) {
-            throw new PropagationException(oe);
-        }
+    protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
+        // Gets the PVCoordinates in ECEF frame
+        final PVCoordinates pvaInECEF = propagateInEcef(date);
+        // Transforms the PVCoordinates to ECI frame
+        final PVCoordinates pvaInECI = ecef.getTransformTo(eci, date).transformPVCoordinates(pvaInECEF);
+        // Returns the Cartesian orbit
+        return new CartesianOrbit(pvaInECI, eci, date, GPSOrbitalElements.GPS_MU);
     }
 }

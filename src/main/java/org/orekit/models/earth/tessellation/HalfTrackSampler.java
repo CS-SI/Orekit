@@ -23,7 +23,6 @@ import org.hipparchus.util.Pair;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -65,22 +64,18 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
     /** {@inheritDoc} */
     @Override
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws PropagationException {
-        try {
+        throws OrekitException {
 
-            // find the sliding ground point below spacecraft
-            final TimeStampedPVCoordinates pv       = currentState.getPVCoordinates(ellipsoid.getBodyFrame());
-            final TimeStampedPVCoordinates groundPV = ellipsoid.projectToGround(pv, ellipsoid.getBodyFrame());
+        // find the sliding ground point below spacecraft
+        final TimeStampedPVCoordinates pv       = currentState.getPVCoordinates(ellipsoid.getBodyFrame());
+        final TimeStampedPVCoordinates groundPV = ellipsoid.projectToGround(pv, ellipsoid.getBodyFrame());
 
-            // geodetic coordinates
-            final GeodeticPoint gp =
-                    ellipsoid.transform(groundPV.getPosition(), ellipsoid.getBodyFrame(), currentState.getDate());
+        // geodetic coordinates
+        final GeodeticPoint gp =
+                        ellipsoid.transform(groundPV.getPosition(), ellipsoid.getBodyFrame(), currentState.getDate());
 
-            halfTrack.add(new Pair<GeodeticPoint, TimeStampedPVCoordinates>(gp, groundPV));
+        halfTrack.add(new Pair<GeodeticPoint, TimeStampedPVCoordinates>(gp, groundPV));
 
-        } catch (OrekitException oe) {
-            throw new PropagationException(oe);
-        }
     }
 
 }

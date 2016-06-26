@@ -21,7 +21,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -116,7 +115,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Before
-    public void setUp() throws PropagationException {
+    public void setUp() throws OrekitException {
         inertialFrame = FramesFactory.getGCRF();
         initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         initialOrbit =

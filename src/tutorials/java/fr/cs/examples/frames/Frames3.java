@@ -34,7 +34,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -131,49 +130,45 @@ public class Frames3 {
                 PrintStream out = null;
 
                 public void init(SpacecraftState s0, AbsoluteDate t)
-                    throws PropagationException {
+                    throws OrekitException {
                     try {
                         File file = new File(System.getProperty("user.home"), "XYZ.dat");
                         System.out.println("Results written to file: " + file.getAbsolutePath());
                         out = new PrintStream(file, "UTF-8");
                         out.println("#time X Y Z Wx Wy Wz");
                     } catch (IOException ioe) {
-                        throw new PropagationException(ioe,
+                        throw new OrekitException(ioe,
                                                        LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                        ioe.getLocalizedMessage());
                     }
                 }
                 
                 public void handleStep(SpacecraftState currentState, boolean isLast)
-                    throws PropagationException {
-                    try {
+                    throws OrekitException {
 
-                        // get the transform from orbit/attitude reference frame to spacecraft frame
-                        Transform inertToSpacecraft = currentState.toTransform();
+                    // get the transform from orbit/attitude reference frame to spacecraft frame
+                    Transform inertToSpacecraft = currentState.toTransform();
 
-                        // get the position of the Sun in orbit/attitude reference frame
-                        Vector3D sunInert = sun.getPVCoordinates(currentState.getDate(), currentState.getFrame()).getPosition();
+                    // get the position of the Sun in orbit/attitude reference frame
+                    Vector3D sunInert = sun.getPVCoordinates(currentState.getDate(), currentState.getFrame()).getPosition();
 
-                        // convert Sun position to spacecraft frame
-                        Vector3D sunSat = inertToSpacecraft.transformPosition(sunInert);
+                    // convert Sun position to spacecraft frame
+                    Vector3D sunSat = inertToSpacecraft.transformPosition(sunInert);
 
-                        // and the spacecraft rotational rate also
-                        Vector3D spin = inertToSpacecraft.getRotationRate();
+                    // and the spacecraft rotational rate also
+                    Vector3D spin = inertToSpacecraft.getRotationRate();
 
-                        // Lets calculate the reduced coordinates
-                        double sunX = sunSat.getX() / sunSat.getNorm();
-                        double sunY = sunSat.getY() / sunSat.getNorm();
-                        double sunZ = sunSat.getZ() / sunSat.getNorm();
+                    // Lets calculate the reduced coordinates
+                    double sunX = sunSat.getX() / sunSat.getNorm();
+                    double sunY = sunSat.getY() / sunSat.getNorm();
+                    double sunZ = sunSat.getZ() / sunSat.getNorm();
 
-                        out.format(Locale.US, "%s %12.3f %12.3f %12.3f %12.7f %12.7f %12.7f%n",
-                                   currentState.getDate(), sunX, sunY, sunZ,
-                                   spin.getX(), spin.getY(), spin.getZ());
+                    out.format(Locale.US, "%s %12.3f %12.3f %12.3f %12.7f %12.7f %12.7f%n",
+                               currentState.getDate(), sunX, sunY, sunZ,
+                               spin.getX(), spin.getY(), spin.getZ());
 
-                        if (isLast) {
-                            out.close();
-                        }
-                    } catch (OrekitException oe) {
-                        throw new PropagationException(oe);
+                    if (isLast) {
+                        out.close();
                     }
                 }
 

@@ -28,7 +28,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -162,35 +161,29 @@ public class TLEPropagatorTest {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws PropagationException {
-            try {
-                // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
-                Rotation rotSat = currentState.getAttitude().getRotation();
+            throws OrekitException {
+            // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
+            Rotation rotSat = currentState.getAttitude().getRotation();
 
-                // Transform Z axis from satellite frame to inertial frame
-                Vector3D zSat = rotSat.applyInverseTo(Vector3D.PLUS_K);
+            // Transform Z axis from satellite frame to inertial frame
+            Vector3D zSat = rotSat.applyInverseTo(Vector3D.PLUS_K);
 
-                // Transform Z axis from inertial frame to ITRF
-                Transform transform = currentState.getFrame().getTransformTo(itrf, currentState.getDate());
-                Vector3D zSatITRF = transform.transformVector(zSat);
+            // Transform Z axis from inertial frame to ITRF
+            Transform transform = currentState.getFrame().getTransformTo(itrf, currentState.getDate());
+            Vector3D zSatITRF = transform.transformVector(zSat);
 
-                // Transform satellite position/velocity from inertial frame to ITRF
-                PVCoordinates pvSatITRF = transform.transformPVCoordinates(currentState.getPVCoordinates());
+            // Transform satellite position/velocity from inertial frame to ITRF
+            PVCoordinates pvSatITRF = transform.transformPVCoordinates(currentState.getPVCoordinates());
 
-                // Line containing satellite point and following pointing direction
-                Line pointingLine = new Line(pvSatITRF.getPosition(),
-                                             pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                         zSatITRF),
-                                             1.0e-10);
+            // Line containing satellite point and following pointing direction
+            Line pointingLine = new Line(pvSatITRF.getPosition(),
+                                         pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                     zSatITRF),
+                                         1.0e-10);
 
-                double distance = pointingLine.distance(Vector3D.ZERO);
-                minDistance = FastMath.min(minDistance, distance);
-                maxDistance = FastMath.max(maxDistance, distance);
-                
-
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe);
-            }
+            double distance = pointingLine.distance(Vector3D.ZERO);
+            minDistance = FastMath.min(minDistance, distance);
+            maxDistance = FastMath.max(maxDistance, distance);
         }
 
     }

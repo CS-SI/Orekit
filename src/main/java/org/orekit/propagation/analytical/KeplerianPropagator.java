@@ -25,7 +25,6 @@ import java.util.SortedSet;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -54,10 +53,10 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
      * for the initial orbit definition. Mass and attitude provider are set to
      * unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
-     * @exception PropagationException if initial attitude cannot be computed
+     * @exception OrekitException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit)
-        throws PropagationException {
+        throws OrekitException {
         this(initialOrbit, DEFAULT_LAW, initialOrbit.getMu(), DEFAULT_MASS);
     }
 
@@ -65,10 +64,10 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
      * @param mu central attraction coefficient (m³/s²)
-     * @exception PropagationException if initial attitude cannot be computed
+     * @exception OrekitException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit, final double mu)
-        throws PropagationException {
+        throws OrekitException {
         this(initialOrbit, DEFAULT_LAW, mu, DEFAULT_MASS);
     }
 
@@ -78,11 +77,11 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
      * non-null arbitrary value.</p>
      * @param initialOrbit initial orbit
      * @param attitudeProv  attitude provider
-     * @exception PropagationException if initial attitude cannot be computed
+     * @exception OrekitException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit,
                                final AttitudeProvider attitudeProv)
-        throws PropagationException {
+        throws OrekitException {
         this(initialOrbit, attitudeProv, initialOrbit.getMu(), DEFAULT_MASS);
     }
 
@@ -92,12 +91,12 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param mu central attraction coefficient (m³/s²)
-     * @exception PropagationException if initial attitude cannot be computed
+     * @exception OrekitException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit,
                                final AttitudeProvider attitudeProv,
                                final double mu)
-        throws PropagationException {
+        throws OrekitException {
         this(initialOrbit, attitudeProv, mu, DEFAULT_MASS);
     }
 
@@ -107,45 +106,40 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
      * @param attitudeProv attitude provider
      * @param mu central attraction coefficient (m³/s²)
      * @param mass spacecraft mass (kg)
-     * @exception PropagationException if initial attitude cannot be computed
+     * @exception OrekitException if initial attitude cannot be computed
      */
     public KeplerianPropagator(final Orbit initialOrbit, final AttitudeProvider attitudeProv,
                                final double mu, final double mass)
-        throws PropagationException {
+        throws OrekitException {
 
         super(attitudeProv);
 
-        try {
+        // ensure the orbit use the specified mu
+        final OrbitType type = initialOrbit.getType();
+        final double[] stateVector = new double[6];
+        type.mapOrbitToArray(initialOrbit, PositionAngle.TRUE, stateVector);
+        final Orbit orbit = type.mapArrayToOrbit(stateVector, PositionAngle.TRUE,
+                                                 initialOrbit.getDate(), mu, initialOrbit.getFrame());
 
-            // ensure the orbit use the specified mu
-            final OrbitType type = initialOrbit.getType();
-            final double[] stateVector = new double[6];
-            type.mapOrbitToArray(initialOrbit, PositionAngle.TRUE, stateVector);
-            final Orbit orbit = type.mapArrayToOrbit(stateVector, PositionAngle.TRUE,
-                                                     initialOrbit.getDate(), mu, initialOrbit.getFrame());
+        resetInitialState(new SpacecraftState(orbit,
+                                              getAttitudeProvider().getAttitude(orbit,
+                                                                                orbit.getDate(),
+                                                                                orbit.getFrame()),
+                                              mass));
 
-            resetInitialState(new SpacecraftState(orbit,
-                                                   getAttitudeProvider().getAttitude(orbit,
-                                                                                     orbit.getDate(),
-                                                                                     orbit.getFrame()),
-                                                   mass));
-
-        } catch (OrekitException oe) {
-            throw new PropagationException(oe);
-        }
     }
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
-        throws PropagationException {
+        throws OrekitException {
         super.resetInitialState(state);
-        initialState   = state;
-        states         = new TimeSpanMap<SpacecraftState>(initialState);
+        initialState = state;
+        states       = new TimeSpanMap<SpacecraftState>(initialState);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws PropagationException {
+        throws OrekitException {
         if (forward) {
             states.addValidAfter(state, state.getDate());
         } else {
@@ -155,7 +149,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date)
-        throws PropagationException {
+        throws OrekitException {
 
         // propagate orbit
         Orbit orbit = states.get(date).getOrbit();

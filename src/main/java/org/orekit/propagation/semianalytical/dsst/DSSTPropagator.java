@@ -38,7 +38,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -194,21 +193,21 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** Set the initial state with osculating orbital elements.
      *  @param initialState initial state (defined with osculating elements)
-     *  @throws PropagationException if the initial state cannot be set
+     *  @throws OrekitException if the initial state cannot be set
      */
     public void setInitialState(final SpacecraftState initialState)
-        throws PropagationException {
+        throws OrekitException {
         setInitialState(initialState, true);
     }
 
     /** Set the initial state.
      *  @param initialState initial state
      *  @param isOsculating true if the orbital state is defined with osculating elements
-     *  @throws PropagationException if the initial state cannot be set
+     *  @throws OrekitException if the initial state cannot be set
      */
     public void setInitialState(final SpacecraftState initialState,
                                 final boolean isOsculating)
-        throws PropagationException {
+        throws OrekitException {
         initialIsOsculating = isOsculating;
         resetInitialState(initialState);
     }
@@ -216,10 +215,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Reset the initial state.
      *
      *  @param state new initial state
-     *  @throws PropagationException if initial state cannot be reset
+     *  @throws OrekitException if initial state cannot be reset
      */
     @Override
-    public void resetInitialState(final SpacecraftState state) throws PropagationException {
+    public void resetInitialState(final SpacecraftState state) throws OrekitException {
         super.setStartDate(state.getDate());
         super.resetInitialState(state);
     }
@@ -540,7 +539,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                                              meanOrbit.getDate(), meanOrbit.getMu());
         }
 
-        throw new PropagationException(OrekitMessages.UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS, i);
+        throw new OrekitException(OrekitMessages.UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS, i);
     }
 
     /** Compute osculating state from mean state.
@@ -572,15 +571,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState getInitialIntegrationState() throws PropagationException {
+    protected SpacecraftState getInitialIntegrationState() throws OrekitException {
         if (initialIsOsculating) {
             // the initial state is an osculating state,
             // it must be converted to mean state
-            try {
-                return computeMeanState(getInitialState(), forceModels);
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe);
-            }
+            return computeMeanState(getInitialState(), forceModels);
         } else {
             // the initial state is already a mean state
             return getInitialState();
@@ -678,7 +673,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             final double mass = elements[6];
             if (mass <= 0.0) {
-                throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
             final Orbit orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, PositionAngle.MEAN, date, getMu(), getFrame());
@@ -914,10 +909,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
-     * @exception PropagationException if Jacobian is singular
+     * @exception OrekitException if Jacobian is singular
      */
     public static double[][] tolerances(final double dP, final Orbit orbit)
-        throws PropagationException {
+        throws OrekitException {
 
         return NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
 

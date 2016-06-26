@@ -135,6 +135,26 @@ public class OrekitException extends Exception implements LocalizedException {
         return parts.clone();
     }
 
+    /** Recover a OrekitException, possibly embedded in a {@link MathRuntimeException}.
+     * <p>
+     * If the {@code MathRuntimeException} does not embed a OrekitException, a
+     * new one will be created.
+     * </p>
+     * @param exception MathRuntimeException to analyze
+     * @return a (possibly embedded) OrekitException
+     */
+    public static OrekitException unwrap(final MathRuntimeException exception) {
+
+        for (Throwable t = exception; t != null; t = t.getCause()) {
+            if (t instanceof OrekitException) {
+                return (OrekitException) t;
+            }
+        }
+
+        return new OrekitException(exception);
+
+    }
+
     /**
      * Builds a message string by from a pattern and its arguments.
      * @param locale Locale in which the message should be translated

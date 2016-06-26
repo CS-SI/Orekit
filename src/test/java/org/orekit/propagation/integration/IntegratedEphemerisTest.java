@@ -35,7 +35,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -130,23 +129,16 @@ public class IntegratedEphemerisTest {
 
             private final Array2DRowRealMatrix dYdY0 = new Array2DRowRealMatrix(6, 6);
 
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-            throws PropagationException {
-                try {
-                    SpacecraftState state = interpolator.getCurrentState();
-                    Assert.assertEquals(mapper.getAdditionalStateDimension(),
-                                        state.getAdditionalState(eqName).length);
-                    mapper.getStateJacobian(state, dYdY0.getDataRef());
-                    mapper.getParametersJacobian(state, null); // no parameters, this is a no-op and should work
-                    RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
-                    Assert.assertTrue(deltaId.getNorm() >  100);
-                    Assert.assertTrue(deltaId.getNorm() < 3100);
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
-                }
+                throws OrekitException {
+                SpacecraftState state = interpolator.getCurrentState();
+                Assert.assertEquals(mapper.getAdditionalStateDimension(),
+                                    state.getAdditionalState(eqName).length);
+                mapper.getStateJacobian(state, dYdY0.getDataRef());
+                mapper.getParametersJacobian(state, null); // no parameters, this is a no-op and should work
+                RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
+                Assert.assertTrue(deltaId.getNorm() >  100);
+                Assert.assertTrue(deltaId.getNorm() < 3100);
             }
 
         });
@@ -156,7 +148,7 @@ public class IntegratedEphemerisTest {
     }
     
     @Test
-    public void testGetFrame() throws PropagationException, OrekitException {
+    public void testGetFrame() throws OrekitException, OrekitException {
         // setup
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         numericalPropagator.setEphemerisMode();
@@ -171,7 +163,7 @@ public class IntegratedEphemerisTest {
     }
 
     @Test
-    public void testSerializationNumerical() throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+    public void testSerializationNumerical() throws OrekitException, OrekitException, IOException, ClassNotFoundException {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         numericalPropagator.setEphemerisMode();
@@ -213,18 +205,18 @@ public class IntegratedEphemerisTest {
 
     @Test
     public void testSerializationDSSTMean()
-        throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+        throws OrekitException, OrekitException, IOException, ClassNotFoundException {
         doTestSerializationDSST(true, 36703);
     }
 
     @Test
     public void testSerializationDSSTOsculating()
-        throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+        throws OrekitException, OrekitException, IOException, ClassNotFoundException {
         doTestSerializationDSST(false, 618025);
     }
 
     private void doTestSerializationDSST(boolean meanOnly, int expectedSize)
-        throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+        throws OrekitException, OrekitException, IOException, ClassNotFoundException {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);

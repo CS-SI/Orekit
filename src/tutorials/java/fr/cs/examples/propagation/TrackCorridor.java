@@ -36,7 +36,6 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
@@ -271,31 +270,27 @@ public class TrackCorridor {
 
         /** {@inheritDoc} */
         public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws PropagationException {
-            try {
+            throws OrekitException {
 
-                // compute sub-satellite track
-                AbsoluteDate  date    = currentState.getDate();
-                PVCoordinates pvInert = currentState.getPVCoordinates();
-                Transform     t       = currentState.getFrame().getTransformTo(earth.getBodyFrame(), date);
-                Vector3D      p       = t.transformPosition(pvInert.getPosition());
-                Vector3D      v       = t.transformVector(pvInert.getVelocity());
-                GeodeticPoint center  = earth.transform(p, earth.getBodyFrame(), date);
+            // compute sub-satellite track
+            AbsoluteDate  date    = currentState.getDate();
+            PVCoordinates pvInert = currentState.getPVCoordinates();
+            Transform     t       = currentState.getFrame().getTransformTo(earth.getBodyFrame(), date);
+            Vector3D      p       = t.transformPosition(pvInert.getPosition());
+            Vector3D      v       = t.transformVector(pvInert.getVelocity());
+            GeodeticPoint center  = earth.transform(p, earth.getBodyFrame(), date);
 
-                // compute left and right corridor points
-                Vector3D      nadir      = p.normalize().negate();
-                Vector3D      crossTrack = p.crossProduct(v).normalize();
-                Line          leftLine   = new Line(p, new Vector3D(1.0, p, deltaR, nadir,  deltaC, crossTrack), 1.0e-10);
-                GeodeticPoint left       = earth.getIntersectionPoint(leftLine, p, earth.getBodyFrame(), date);
-                Line          rightLine  = new Line(p, new Vector3D(1.0, p, deltaR, nadir, -deltaC, crossTrack), 1.0e-10);
-                GeodeticPoint right      = earth.getIntersectionPoint(rightLine, p, earth.getBodyFrame(), date);
+            // compute left and right corridor points
+            Vector3D      nadir      = p.normalize().negate();
+            Vector3D      crossTrack = p.crossProduct(v).normalize();
+            Line          leftLine   = new Line(p, new Vector3D(1.0, p, deltaR, nadir,  deltaC, crossTrack), 1.0e-10);
+            GeodeticPoint left       = earth.getIntersectionPoint(leftLine, p, earth.getBodyFrame(), date);
+            Line          rightLine  = new Line(p, new Vector3D(1.0, p, deltaR, nadir, -deltaC, crossTrack), 1.0e-10);
+            GeodeticPoint right      = earth.getIntersectionPoint(rightLine, p, earth.getBodyFrame(), date);
 
-                // add the corridor points
-                corridor.add(new CorridorPoint(date, left, center, right));
+            // add the corridor points
+            corridor.add(new CorridorPoint(date, left, center, right));
 
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe);
-            }
         }
 
         /** Get the corridor.

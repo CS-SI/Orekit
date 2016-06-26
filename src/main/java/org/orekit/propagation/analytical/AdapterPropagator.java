@@ -24,7 +24,6 @@ import java.util.Map;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -111,30 +110,30 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws PropagationException {
+    public SpacecraftState getInitialState() throws OrekitException {
         return reference.getInitialState();
     }
 
     /** {@inheritDoc} */
     @Override
     public void resetInitialState(final SpacecraftState state)
-        throws PropagationException {
+        throws OrekitException {
         reference.resetInitialState(state);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws PropagationException {
+        throws OrekitException {
         if (reference instanceof AbstractAnalyticalPropagator) {
             ((AbstractAnalyticalPropagator) reference).resetIntermediateState(state, forward);
         } else {
-            throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+            throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
+    protected SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
 
         try {
             // compute reference state
@@ -156,30 +155,20 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
             return state;
 
         } catch (OrekitExceptionWrapper oew) {
-            if (oew.getException() instanceof PropagationException) {
-                throw (PropagationException) oew.getException();
-            } else {
-                throw new PropagationException(oew.getException());
-            }
-        } catch (OrekitException oe) {
-            if (oe instanceof PropagationException) {
-                throw (PropagationException) oe;
-            } else {
-                throw new PropagationException(oe);
-            }
+                throw new OrekitException(oew.getException());
         }
 
     }
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date)
-        throws PropagationException {
+        throws OrekitException {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc}*/
     protected double getMass(final AbsoluteDate date)
-        throws PropagationException {
+        throws OrekitException {
         return basicPropagate(date).getMass();
     }
 

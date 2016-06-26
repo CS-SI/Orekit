@@ -17,7 +17,7 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.AbstractIntegrator;
-import org.orekit.errors.PropagationException;
+import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 
@@ -31,8 +31,9 @@ public interface ODEIntegratorBuilder {
      * @param orbit reference orbit
      * @param orbitType orbit type to use
      * @return a first order integrator ready to use
-     * @exception PropagationException if integrator cannot been built
+     * @exception OrekitException if integrator cannot been built
      */
-    AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) throws PropagationException;
+    AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
+        throws OrekitException;
 
 }

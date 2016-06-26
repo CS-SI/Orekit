@@ -22,6 +22,9 @@
   <body>
     <release version="8.0" date="TBC"
              description="TBC">
+      <action dev="luc" type="update">
+        Deprecated PropagationException, replaced by OrekitException.
+      </action>
       <action dev="luc" type="fix">
         Fixed a display error for dates less than 0.5ms before a leap second.
       </action>

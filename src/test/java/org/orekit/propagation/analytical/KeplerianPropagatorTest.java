@@ -46,7 +46,6 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -87,7 +86,7 @@ public class KeplerianPropagatorTest {
     private double mu;
 
     @Test
-    public void testEphemerisModeWithHandler() throws PropagationException {
+    public void testEphemerisModeWithHandler() throws OrekitException {
         // setup
         AbsoluteDate initDate = AbsoluteDate.GPS_EPOCH;
         Orbit ic = new KeplerianOrbit(6378137 + 500e3, 1e-3, 0, 0, 0, 0,
@@ -369,8 +368,8 @@ public class KeplerianPropagatorTest {
 
     }
 
-    @Test(expected = PropagationException.class)
-    public void wrongAttitude() throws PropagationException {
+    @Test(expected = OrekitException.class)
+    public void wrongAttitude() throws OrekitException {
         KeplerianOrbit orbit =
             new KeplerianOrbit(1.0e10, 1.0e-4, 1.0e-2, 0, 0, 0, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -384,8 +383,8 @@ public class KeplerianPropagatorTest {
         propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
     }
 
-    @Test(expected = PropagationException.class)
-    public void testStepException() throws PropagationException {
+    @Test(expected = OrekitException.class)
+    public void testStepException() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -396,9 +395,9 @@ public class KeplerianPropagatorTest {
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
             public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) throws PropagationException {
+                                   boolean isLast) throws OrekitException {
                 if (isLast) {
-                    throw new PropagationException((Throwable) null, new DummyLocalizable("dummy error"));
+                    throw new OrekitException((Throwable) null, new DummyLocalizable("dummy error"));
                 }
             }
         });
@@ -407,8 +406,8 @@ public class KeplerianPropagatorTest {
 
     }
 
-    @Test(expected = PropagationException.class)
-    public void tesWrapedAttitudeException() throws PropagationException {
+    @Test(expected = OrekitException.class)
+    public void tesWrapedAttitudeException() throws OrekitException {
         final KeplerianOrbit orbit =
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
@@ -539,7 +538,7 @@ public class KeplerianPropagatorTest {
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
             public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws PropagationException {
+            throws OrekitException {
                 if (previous != null) {
                     Assert.assertEquals(step, currentState.getDate().durationFrom(previous), 1.0e-10);
                 }
@@ -562,7 +561,7 @@ public class KeplerianPropagatorTest {
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
             public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) throws PropagationException {
+                                   boolean isLast) throws OrekitException {
                 if ((previous != null) && !isLast) {
                     Assert.assertEquals(step, interpolator.getCurrentState().getDate().durationFrom(previous), 1.0e-10);
                 }
@@ -622,9 +621,9 @@ public class KeplerianPropagatorTest {
             private static final long serialVersionUID = 1L;
             AbsoluteDate lastDate = AbsoluteDate.PAST_INFINITY;
 
-            protected SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
+            protected SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
                 if (date.compareTo(lastDate) < 0) {
-                    throw new PropagationException(LocalizedCoreFormats.SIMPLE_MESSAGE,
+                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                    "no backward propagation allowed");
                 }
                 lastDate = date;
