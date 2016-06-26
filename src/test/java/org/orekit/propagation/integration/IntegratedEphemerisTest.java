@@ -148,7 +148,7 @@ public class IntegratedEphemerisTest {
     }
     
     @Test
-    public void testGetFrame() throws OrekitException, OrekitException {
+    public void testGetFrame() throws OrekitException {
         // setup
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         numericalPropagator.setEphemerisMode();
@@ -163,7 +163,7 @@ public class IntegratedEphemerisTest {
     }
 
     @Test
-    public void testSerializationNumerical() throws OrekitException, OrekitException, IOException, ClassNotFoundException {
+    public void testSerializationNumerical() throws OrekitException, IOException, ClassNotFoundException {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         numericalPropagator.setEphemerisMode();
@@ -205,18 +205,18 @@ public class IntegratedEphemerisTest {
 
     @Test
     public void testSerializationDSSTMean()
-        throws OrekitException, OrekitException, IOException, ClassNotFoundException {
+        throws OrekitException, IOException, ClassNotFoundException {
         doTestSerializationDSST(true, 36703);
     }
 
     @Test
     public void testSerializationDSSTOsculating()
-        throws OrekitException, OrekitException, IOException, ClassNotFoundException {
+        throws OrekitException, IOException, ClassNotFoundException {
         doTestSerializationDSST(false, 618025);
     }
 
     private void doTestSerializationDSST(boolean meanOnly, int expectedSize)
-        throws OrekitException, OrekitException, IOException, ClassNotFoundException {
+        throws OrekitException, IOException, ClassNotFoundException {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);

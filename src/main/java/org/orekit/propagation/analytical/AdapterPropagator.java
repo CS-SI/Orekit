@@ -136,6 +136,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     protected SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
 
         try {
+
             // compute reference state
             SpacecraftState state = reference.propagate(date);
             final Map<String, double[]> before = state.getAdditionalStates();
@@ -155,7 +156,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
             return state;
 
         } catch (OrekitExceptionWrapper oew) {
-                throw new OrekitException(oew.getException());
+            throw new OrekitException(oew.getException());
         }
 
     }

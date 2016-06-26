@@ -104,12 +104,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * @param initialOrbit initial orbit
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * @exception OrekitException if the mean parameters cannot be computed
+     * @exception OrekitException if the zonal coefficients cannot be retrieved or
+     * if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws OrekitException, OrekitException {
+        throws OrekitException {
         this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, provider,
              provider.onDate(initialOrbit.getDate()));
     }
@@ -172,12 +172,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * @exception OrekitException if the mean parameters cannot be computed
+     * @exception OrekitException if the zonal coefficients cannot be retrieved or
+     * if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws OrekitException, OrekitException {
+        throws OrekitException {
         this(initialOrbit, DEFAULT_LAW, mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -216,13 +216,13 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * @exception OrekitException if the mean parameters cannot be computed
+     * @exception OrekitException if the zonal coefficients cannot be retrieved or
+     * if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws OrekitException, OrekitException {
+        throws OrekitException {
         this(initialOrbit, attitudeProv, DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -262,14 +262,14 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
      * @param provider for un-normalized zonal coefficients
-     * @exception OrekitException if the zonal coefficients cannot be retrieved
-     * @exception OrekitException if the mean parameters cannot be computed
+     * @exception OrekitException if the zonal coefficients cannot be retrieved or
+     * if the mean parameters cannot be computed
      */
     public EcksteinHechlerPropagator(final Orbit initialOrbit,
                                      final AttitudeProvider attitudeProv,
                                      final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider)
-        throws OrekitException, OrekitException {
+        throws OrekitException {
         this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate()));
     }
 
@@ -309,7 +309,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         this.referenceRadius = referenceRadius;
         this.mu  = mu;
         this.ck0 = new double[] {
-                                 0.0, 0.0, c20, c30, c40, c50, c60
+            0.0, 0.0, c20, c30, c40, c50, c60
         };
 
         // compute mean parameters
