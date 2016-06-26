@@ -83,7 +83,7 @@ public class AttitudesSequenceTest {
                     private static final long serialVersionUID = 1L;
                     public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
-                        return EventHandler.Action.CONTINUE;
+                        return EventHandler.Action.RESET_STATE;
                     }
                 });
         final EventDetector monitored = logger.monitorDetector(ed);
@@ -95,7 +95,9 @@ public class AttitudesSequenceTest {
         attitudesSequence.addSwitchingCondition(nightRestingLaw, dayObservationLaw,
                                                 monitored, true, false, 300.0,
                                                 AngularDerivativesFilter.USE_RRA, nightToDayHandler);
-        if (ed.g(new SpacecraftState(initialOrbit)) >= 0) {
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        initialState = initialState.addAdditionalState("fortyTwo", 42.0);
+        if (ed.g(initialState) >= 0) {
             // initial position is in daytime
             setInEclipse(initialDate, false);
             attitudesSequence.resetActiveProvider(dayObservationLaw);
@@ -182,16 +184,21 @@ public class AttitudesSequenceTest {
                                                 true, false, 10.0, AngularDerivativesFilter.USE_R, null);
         attitudesSequence.resetActiveProvider(current);
 
+        SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        initialState = initialState.addAdditionalState("fortyTwo", 42.0);
         final Propagator propagator = new EcksteinHechlerPropagator(initialOrbit, attitudesSequence,
                                                                     Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                                                     Constants.EIGEN5C_EARTH_MU,  Constants.EIGEN5C_EARTH_C20,
                                                                     Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
                                                                     Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
+        propagator.resetInitialState(initialState);
+        Assert.assertEquals(42.0, propagator.getInitialState().getAdditionalState("fortyTwo")[0], 1.0e-10);
 
         // Register the switching events to the propagator
         attitudesSequence.registerSwitchEvents(propagator);
 
         SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(-10000.0));
+        Assert.assertEquals(42.0, finalState.getAdditionalState("fortyTwo")[0], 1.0e-10);
         Assert.assertEquals(1, handler.dates.size());
         Assert.assertEquals(-500.0, handler.dates.get(0).durationFrom(initialDate), 1.0e-3);
         Assert.assertEquals(-490.0, finalState.getDate().durationFrom(initialDate), 1.0e-3);

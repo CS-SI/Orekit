@@ -782,7 +782,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
             if (!appended) {
                 throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                              cache.get(cache.size() - 1).getData().getDate());
+                                                    cache.get(cache.size() - 1).getData().getDate());
             }
 
             // evict excess data at start

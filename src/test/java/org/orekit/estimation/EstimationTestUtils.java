@@ -23,6 +23,7 @@ import java.util.Map;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.orekit.Utils;
@@ -228,6 +229,10 @@ public class EstimationTestUtils {
 
         Assert.assertEquals(iterations, estimator.getIterationsCount());
         Assert.assertEquals(evaluations, estimator.getEvaluationsCount());
+        Optimum optimum = estimator.getOptimum();
+        Assert.assertEquals(iterations, optimum.getIterations());
+        Assert.assertEquals(evaluations, optimum.getEvaluations());
+        
 
         int    k   = 0;
         double sum = 0;

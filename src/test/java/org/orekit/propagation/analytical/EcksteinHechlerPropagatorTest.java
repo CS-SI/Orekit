@@ -208,8 +208,7 @@ public class EcksteinHechlerPropagatorTest {
         // Extrapolators definitions
         // -------------------------
         EcksteinHechlerPropagator extrapolatorAna =
-            new EcksteinHechlerPropagator(initialOrbit,
-                                          kepProvider);
+            new EcksteinHechlerPropagator(initialOrbit, 1000.0, kepProvider);
         KeplerianPropagator extrapolatorKep = new KeplerianPropagator(initialOrbit);
 
         // Extrapolation at a final date different from initial date

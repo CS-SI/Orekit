@@ -44,8 +44,10 @@ public class IodGooding {
 
     /** Normalizing constant for distances. */
     private double R;
+
     /** Normalizing constant for velocities. */
     private double V;
+
     /** Normalizing constant for duration. */
     private double T;
 
@@ -144,17 +146,16 @@ public class IodGooding {
                                    final Vector3D lineOfSight1, final AbsoluteDate dateObs1,
                                    final Vector3D lineOfSight2, final AbsoluteDate dateObs2,
                                    final Vector3D lineOfSight3, final AbsoluteDate dateObs3,
-                                   final double rho1init, final double rho3init)
-    {
+                                   final double rho1init, final double rho3init) {
 
         this.date1 = dateObs1;
 
-        // normalizeing coefficients
+        // normalizing coefficients
         R = FastMath.max(rho1init, rho3init);
         V = FastMath.sqrt(mu / R);
         T = R / V;
 
-        // Initialize Lambert's problem solver for nondimensional units.
+        // Initialize Lambert's problem solver for non-dimensional units.
         lambert = new IodLambert(1.);
 
         this.vObserverPosition1 = O1.scalarMultiply(1. / R);
@@ -489,8 +490,7 @@ public class IodGooding {
     private Vector3D getPositionOnLoS2(final Vector3D E1, final double RO1,
                                       final Vector3D E3, final double RO3,
                                       final double T13, final double T12,
-                                      final double nRev, final boolean posigrade)
-    {
+                                      final double nRev, final boolean posigrade) {
         final Vector3D P1 = vObserverPosition1.add(E1.scalarMultiply(RO1));
         R1 = P1.getNorm();
 

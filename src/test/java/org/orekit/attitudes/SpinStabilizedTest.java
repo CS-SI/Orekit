@@ -49,10 +49,9 @@ public class SpinStabilizedTest {
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getTAI());
         double rate = 2.0 * FastMath.PI / (12 * 60);
-        AttitudeProvider bbq =
-            new SpinStabilized(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
-                                     Vector3D.PLUS_I, Vector3D.PLUS_K),
-                               date, Vector3D.PLUS_K, rate);
+        AttitudeProvider cbp = new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
+                                                        Vector3D.PLUS_I, Vector3D.PLUS_K);
+        SpinStabilized bbq = new SpinStabilized(cbp, date, Vector3D.PLUS_K, rate);
         PVCoordinates pv =
             new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
                               new Vector3D(0, 0, 3680.853673522056));
@@ -63,6 +62,7 @@ public class SpinStabilizedTest {
                      Vector3D.angle(xDirection, sun.getPVCoordinates(date, FramesFactory.getEME2000()).getPosition()),
                      2.0e-15);
         Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
+        Assert.assertSame(cbp, bbq.getUnderlyingAttitudeProvider());
 
     }
 
