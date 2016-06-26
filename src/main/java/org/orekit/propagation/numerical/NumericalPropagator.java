@@ -32,7 +32,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
@@ -348,14 +347,14 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Set the initial state.
      * @param initialState initial state
-     * @exception PropagationException if initial state cannot be set
+     * @exception OrekitException if initial state cannot be set
      */
-    public void setInitialState(final SpacecraftState initialState) throws PropagationException {
+    public void setInitialState(final SpacecraftState initialState) throws OrekitException {
         resetInitialState(initialState);
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) throws PropagationException {
+    public void resetInitialState(final SpacecraftState state) throws OrekitException {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
@@ -410,7 +409,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             final double mass = y[6];
             if (mass <= 0.0) {
-                throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
             final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, getPositionAngleType(), date, getMu(), getFrame());
@@ -607,10 +606,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-     * @exception PropagationException if Jacobian is singular
+     * @exception OrekitException if Jacobian is singular
      */
     public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type)
-        throws PropagationException {
+        throws OrekitException {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();
@@ -648,7 +647,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                             FastMath.abs(row[4]) * dV +
                             FastMath.abs(row[5]) * dV;
                 if (Double.isNaN(absTol[i])) {
-                    throw new PropagationException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
+                    throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
                 }
             }
 

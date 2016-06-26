@@ -22,7 +22,6 @@ import java.util.List;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -164,16 +163,16 @@ public interface Propagator extends PVCoordinatesProvider {
 
     /** Get the propagator initial state.
      * @return initial state
-     * @exception PropagationException if state cannot be retrieved
+     * @exception OrekitException if state cannot be retrieved
      */
-    SpacecraftState getInitialState() throws PropagationException;
+    SpacecraftState getInitialState() throws OrekitException;
 
     /** Reset the propagator initial state.
      * @param state new initial state to consider
-     * @exception PropagationException if initial state cannot be reset
+     * @exception OrekitException if initial state cannot be reset
      */
     void resetInitialState(final SpacecraftState state)
-        throws PropagationException;
+        throws OrekitException;
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
@@ -268,9 +267,9 @@ public interface Propagator extends PVCoordinatesProvider {
      * target date is only a hint, not a mandatory objective.</p>
      * @param target target date towards which orbit state should be propagated
      * @return propagated state
-     * @exception PropagationException if state cannot be propagated
+     * @exception OrekitException if state cannot be propagated
      */
-    SpacecraftState propagate(AbsoluteDate target) throws PropagationException;
+    SpacecraftState propagate(AbsoluteDate target) throws OrekitException;
 
     /** Propagate from a start date towards a target date.
      * <p>Those propagators use a start date and a target date to
@@ -281,8 +280,8 @@ public interface Propagator extends PVCoordinatesProvider {
      * @param start start date from which orbit state should be propagated
      * @param target target date to which orbit state should be propagated
      * @return propagated state
-     * @exception PropagationException if state cannot be propagated
+     * @exception OrekitException if state cannot be propagated
      */
-    SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target) throws PropagationException;
+    SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target) throws OrekitException;
 
 }

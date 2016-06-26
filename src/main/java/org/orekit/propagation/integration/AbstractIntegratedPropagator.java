@@ -23,8 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hipparchus.exception.MathIllegalArgumentException;
-import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.ode.DenseOutputModel;
 import org.hipparchus.ode.EquationsMapper;
 import org.hipparchus.ode.ExpandableODE;
@@ -43,7 +42,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -369,67 +367,43 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     protected abstract MainStateEquations getMainStateEquations(final ODEIntegrator integ);
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
-        try {
-            if (getStartDate() == null) {
-                if (getInitialState() == null) {
-                    throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
-                }
-                setStartDate(getInitialState().getDate());
+    public SpacecraftState propagate(final AbsoluteDate target) throws OrekitException {
+        if (getStartDate() == null) {
+            if (getInitialState() == null) {
+                throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
             }
-            return propagate(getStartDate(), target);
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded PropagationException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof PropagationException) {
-                    throw (PropagationException) t;
-                }
-            }
-            throw new PropagationException(oe);
-
+            setStartDate(getInitialState().getDate());
         }
+        return propagate(getStartDate(), target);
     }
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate tStart, final AbsoluteDate tEnd)
-        throws PropagationException {
-        try {
+        throws OrekitException {
 
-            if (getInitialState() == null) {
-                throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
-            }
-
-            if (!tStart.equals(getInitialState().getDate())) {
-                // if propagation start date is not initial date,
-                // propagate from initial to start date without event detection
-                propagate(tStart, false);
-            }
-
-            // propagate from start date to end date with event detection
-            return propagate(tEnd, true);
-
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded PropagationException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof PropagationException) {
-                    throw (PropagationException) t;
-                }
-            }
-            throw new PropagationException(oe);
-
+        if (getInitialState() == null) {
+            throw new OrekitException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
         }
+
+        if (!tStart.equals(getInitialState().getDate())) {
+            // if propagation start date is not initial date,
+            // propagate from initial to start date without event detection
+            propagate(tStart, false);
+        }
+
+        // propagate from start date to end date with event detection
+        return propagate(tEnd, true);
+
     }
 
     /** Propagation with or without event detection.
      * @param tEnd target date to which orbit should be propagated
      * @param activateHandlers if true, step and event handlers should be activated
      * @return state at end of propagation
-     * @exception PropagationException if orbit cannot be propagated
+     * @exception OrekitException if orbit cannot be propagated
      */
     protected SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers)
-        throws PropagationException {
+        throws OrekitException {
         try {
 
             if (getInitialState().getDate().equals(tEnd)) {
@@ -450,8 +424,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             if (getInitialState().getMass() <= 0.0) {
-                throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
-                                               getInitialState().getMass());
+                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                                          getInitialState().getMass());
             }
 
             integrator.clearEventHandlers();
@@ -498,22 +472,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             return finalState;
 
-        } catch (PropagationException pe) {
-            throw pe;
-        } catch (OrekitException oe) {
-            throw new PropagationException(oe);
-        } catch (MathIllegalArgumentException miae) {
-            throw PropagationException.unwrap(miae);
-        } catch (MathIllegalStateException mise) {
-            throw PropagationException.unwrap(mise);
+        } catch (MathRuntimeException mre) {
+            throw OrekitException.unwrap(mre);
         }
     }
 
     /** Get the initial state for integration.
      * @return initial state for integration
-     * @exception PropagationException if initial state cannot be retrieved
+     * @exception OrekitException if initial state cannot be retrieved
      */
-    protected SpacecraftState getInitialIntegrationState() throws PropagationException {
+    protected SpacecraftState getInitialIntegrationState() throws OrekitException {
         return getInitialState();
     }
 
@@ -921,7 +889,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 if (activate) {
                     handler.handleStep(this, isLast);
                 }
-            } catch (PropagationException pe) {
+            } catch (OrekitException pe) {
                 throw new OrekitExceptionWrapper(pe);
             }
         }
@@ -929,7 +897,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc}} */
         @Override
         public SpacecraftState getPreviousState()
-            throws PropagationException {
+            throws OrekitException {
             return convert(mathInterpolator.getPreviousState());
         }
 
@@ -942,7 +910,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc}} */
         @Override
         public SpacecraftState getCurrentState()
-            throws PropagationException {
+            throws OrekitException {
             return convert(mathInterpolator.getCurrentState());
         }
 
@@ -955,7 +923,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc}} */
         @Override
         public SpacecraftState getInterpolatedState(final AbsoluteDate date)
-            throws PropagationException {
+            throws OrekitException {
             return convert(mathInterpolator.getInterpolatedState(date.durationFrom(getStartDate())));
         }
 
@@ -963,32 +931,26 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @param os mathematical state
          * @return interpolated state at the current interpolation date
          * @exception OrekitException if state cannot be interpolated or converted
-         * @exception PropagationException if underlying interpolator cannot handle
+         * @exception OrekitException if underlying interpolator cannot handle
          * the date
          * @see #getInterpolatedDate()
          * @see #setInterpolatedDate(AbsoluteDate)
          */
         private SpacecraftState convert(final ODEStateAndDerivative os)
-            throws PropagationException {
-            try {
+            throws OrekitException {
 
-                SpacecraftState s =
-                        stateMapper.mapArrayToState(os.getTime(),
-                                                    os.getPrimaryState(),
-                                                    meanOrbit);
-                s = updateAdditionalStates(s);
-                for (int i = 0; i < additionalEquations.size(); ++i) {
-                    final double[] secondary = os.getSecondaryState(i + 1);
-                    s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
-                }
-
-                return s;
-
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe);
-            } catch (OrekitExceptionWrapper oew) {
-                throw new PropagationException(oew.getException());
+            SpacecraftState s =
+                            stateMapper.mapArrayToState(os.getTime(),
+                                                        os.getPrimaryState(),
+                                                        meanOrbit);
+            s = updateAdditionalStates(s);
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                final double[] secondary = os.getSecondaryState(i + 1);
+                s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
             }
+
+            return s;
+
         }
 
         /** Check is integration direction is forward in date.

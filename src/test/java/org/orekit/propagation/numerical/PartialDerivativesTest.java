@@ -35,7 +35,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
@@ -594,38 +593,32 @@ public class PartialDerivativesTest {
         }
 
         public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-        throws PropagationException {
-            try {
-                final SpacecraftState interpolated;
-                if (pickUpDate == null) {
-                    // we want to pick up the Jacobians at the end of last step
-                    if (isLast) {
-                        interpolated = interpolator.getCurrentState();
-                    } else {
-                        return;
-                    }
+            throws OrekitException {
+            final SpacecraftState interpolated;
+            if (pickUpDate == null) {
+                // we want to pick up the Jacobians at the end of last step
+                if (isLast) {
+                    interpolated = interpolator.getCurrentState();
                 } else {
-                    // we want to pick up some intermediate Jacobians
-                    double dt0 = pickUpDate.durationFrom(interpolator.getPreviousState().getDate());
-                    double dt1 = pickUpDate.durationFrom(interpolator.getCurrentState().getDate());
-                    if (dt0 * dt1 > 0) {
-                        // the current step does not cover the pickup date
-                        return;
-                    } else {
-                        interpolated = interpolator.getInterpolatedState(pickUpDate);
-                    }
+                    return;
                 }
-
-                Assert.assertEquals(1, interpolated.getAdditionalStates().size());
-                Assert.assertTrue(interpolated.getAdditionalStates().containsKey(mapper.getName()));
-                mapper.getStateJacobian(interpolated, dYdY0);
-                mapper.getParametersJacobian(interpolated, dYdP);
-
-            } catch (PropagationException pe) {
-                throw pe;
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe);
+            } else {
+                // we want to pick up some intermediate Jacobians
+                double dt0 = pickUpDate.durationFrom(interpolator.getPreviousState().getDate());
+                double dt1 = pickUpDate.durationFrom(interpolator.getCurrentState().getDate());
+                if (dt0 * dt1 > 0) {
+                    // the current step does not cover the pickup date
+                    return;
+                } else {
+                    interpolated = interpolator.getInterpolatedState(pickUpDate);
+                }
             }
+
+            Assert.assertEquals(1, interpolated.getAdditionalStates().size());
+            Assert.assertTrue(interpolated.getAdditionalStates().containsKey(mapper.getName()));
+            mapper.getStateJacobian(interpolated, dYdY0);
+            mapper.getParametersJacobian(interpolated, dYdP);
+
         }
 
     }

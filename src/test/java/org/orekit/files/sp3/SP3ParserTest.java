@@ -61,6 +61,19 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(16258524.75, -3529015.75, -20611427.049),
                                        new Vector3D(0, 0, 0)),
                      coord.getCoordinate());
+        Assert.assertEquals("NGS", file.getAgency());
+        Assert.assertEquals("ITR92", file.getCoordinateSystem());
+        Assert.assertEquals("d", file.getDataUsed());
+        Assert.assertEquals(0.0, file.getDayFraction(), 1.0e-15);
+        Assert.assertEquals("1994-12-16T23:59:50.000", file.getEpoch().toString(TimeScalesFactory.getUTC()));
+        Assert.assertEquals(49703, file.getJulianDay());
+        Assert.assertEquals(96, file.getNumberOfEpochs());
+        Assert.assertEquals(900.0, file.getEpochInterval(), 1.0e-15);
+        Assert.assertEquals(779, file.getGpsWeek());
+        Assert.assertEquals(518400.0, file.getSecondsOfWeek(), 1.0e-10);
+        Assert.assertEquals(25, file.getSatellites().size());
+        Assert.assertEquals(SP3File.SP3FileType.UNDEFINED, file.getType());
+        Assert.assertNull(file.getSatellite(null));
     }
 
     @Test

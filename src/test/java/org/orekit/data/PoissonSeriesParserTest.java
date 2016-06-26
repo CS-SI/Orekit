@@ -576,6 +576,7 @@ public class PoissonSeriesParserTest {
 
             // direct computation of derivatives
             FieldBodiesElements<DerivativeStructure> elements = arguments.evaluateDerivative(date);
+            Assert.assertEquals(0.0, elements.getDate().durationFrom(date), 1.0e-15);
             DerivativeStructure xDirect = xSeries.value(elements);
             DerivativeStructure yDirect = ySeries.value(elements);
             DerivativeStructure zDirect = zSeries.value(elements);

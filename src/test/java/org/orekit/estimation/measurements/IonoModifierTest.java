@@ -27,6 +27,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.AngularIonosphericDelayModifier;
@@ -39,6 +41,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
 public class IonoModifierTest {
     
@@ -91,12 +94,30 @@ public class IonoModifierTest {
             final SpacecraftState refstate = propagator.propagate(date);
             
             Range range = (Range) measurement;
-            EstimatedMeasurement<Range> evalNoMod = range.estimate(0, 0, refstate);
+            EstimatedMeasurement<Range> evalNoMod = range.estimate(12, 17, refstate);
+            Assert.assertEquals(12, evalNoMod.getIteration());
+            Assert.assertEquals(17, evalNoMod.getCount());
             
             // add modifier
             range.addModifier(modifier);
+            boolean found = false;
+            for (final EstimationModifier<Range> existing : range.getModifiers()) {
+                found = found || existing == modifier;
+            }
+            Assert.assertTrue(found);
             // 
             EstimatedMeasurement<Range> eval = range.estimate(0, 0,  refstate);
+            final double w = evalNoMod.getCurrentWeight()[0];
+            Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
+            eval.setCurrentWeight(new double[] { w + 2 });
+            Assert.assertEquals(w + 2, eval.getCurrentWeight()[0], 1.0e-10);
+
+            try {
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                Assert.fail("an exception should have been thrown");
+            } catch (OrekitIllegalArgumentException oiae) {
+                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            }
             
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
             // TODO: check threshold

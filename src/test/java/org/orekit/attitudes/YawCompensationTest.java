@@ -96,6 +96,7 @@ public class YawCompensationTest {
         Assert.assertEquals(0.0, observedDiff.getPosition().getNorm(), Utils.epsilonTest);
         Assert.assertEquals(0.0, observedDiff.getVelocity().getNorm(), Utils.epsilonTest);
         Assert.assertEquals(0.0, observedDiff.getAcceleration().getNorm(), Utils.epsilonTest);
+        Assert.assertSame(nadirLaw, yawCompensLaw.getUnderlyingAttitudeProvider());
 
     }
 

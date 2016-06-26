@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
@@ -367,19 +366,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         private PVCoordinatesProvider sun;
         private double previous;
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
         public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws PropagationException {
+            throws OrekitException {
 
 
             AbsoluteDate current = currentState.getDate();
-            Vector3D sunPos;
-            try {
-                sunPos = sun.getPVCoordinates(current , FramesFactory.getEME2000()).getPosition();
-            } catch (OrekitException e) {
-                throw new PropagationException(e);
-            }
+            Vector3D sunPos = sun.getPVCoordinates(current , FramesFactory.getEME2000()).getPosition();
             Vector3D normal = currentState.getPVCoordinates().getMomentum();
             double angle = Vector3D.angle(sunPos , normal);
             if (! Double.isNaN(previous)) {
@@ -445,30 +437,22 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         }
 
         private EcksteinHechlerPropagator referencePropagator;
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
-            try {
+        public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException{
 
+            SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
+            Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
+            Vector3D posDROZ = currentState.getPVCoordinates().getPosition();
+            Vector3D velEHP  = EHPOrbit.getPVCoordinates().getVelocity();
+            Vector3D dif     = posEHP.subtract(posDROZ);
 
-                SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
-                Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
-                Vector3D posDROZ = currentState.getPVCoordinates().getPosition();
-                Vector3D velEHP  = EHPOrbit.getPVCoordinates().getVelocity();
-                Vector3D dif     = posEHP.subtract(posDROZ);
+            Vector3D T = new Vector3D(1 / velEHP.getNorm(), velEHP);
+            Vector3D W = EHPOrbit.getPVCoordinates().getMomentum().normalize();
+            Vector3D N = Vector3D.crossProduct(W, T);
 
-                Vector3D T = new Vector3D(1 / velEHP.getNorm(), velEHP);
-                Vector3D W = EHPOrbit.getPVCoordinates().getMomentum().normalize();
-                Vector3D N = Vector3D.crossProduct(W, T);
-
-                Assert.assertTrue(dif.getNorm() < 111);
-                Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, T)) < 111);
-                Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, N)) <  54);
-                Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, W)) <  12);
-
-            } catch (PropagationException e) {
-                e.printStackTrace();
-            }
+            Assert.assertTrue(dif.getNorm() < 111);
+            Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, T)) < 111);
+            Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, N)) <  54);
+            Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, W)) <  12);
 
         }
 

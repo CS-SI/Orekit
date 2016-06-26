@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.channels.UnsupportedAddressTypeException;
 import java.text.ParseException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -144,7 +143,7 @@ public class ZipJarCrawler implements DataProvider {
         try {
 
             // open the raw data stream
-            Archive archive = null;;
+            Archive archive = null;
             try {
                 if (file != null) {
                     archive = new Archive(new FileInputStream(file));
@@ -289,17 +288,7 @@ public class ZipJarCrawler implements DataProvider {
                 /** {@inheritDoc} */
                 @Override
                 public EntryStream next() throws NoSuchElementException {
-                    if (next == null) {
-                        throw new NoSuchElementException();
-                    }
                     return next;
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public void remove() {
-                    // this part is never called
-                    throw new UnsupportedAddressTypeException();
                 }
 
             };

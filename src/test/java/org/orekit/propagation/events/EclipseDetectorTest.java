@@ -29,7 +29,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -143,8 +142,8 @@ public class EclipseDetectorTest {
         try {
             propagator.propagate(iniDate.shiftedBy(6000));
             Assert.fail("an exception should have been thrown");
-        } catch (PropagationException pe) {
-            Assert.assertEquals(n, ((Integer) ((MathRuntimeException) pe.getCause()).getParts()[0]).intValue());
+        } catch (OrekitException oe) {
+            Assert.assertEquals(n, ((Integer) ((MathRuntimeException) oe.getCause()).getParts()[0]).intValue());
         }
     }
 

@@ -28,6 +28,13 @@
              separation event detector. Several bugs have been fixed. A major change introduced
              with version 8.0 is the switch from Apache Commons Math to Hipparchus as the
              mathematical library, which also implied switching from Java 6 to Java 8.">
+      <action dev="luc" type="update">
+        Deprecated PropagationException, replaced by OrekitException.
+      </action>
+      <action dev="evan" type="fix" due-to="Greg Carbott">
+        Fix bug in restarting propagation with a ConstantThrustManeuver with an
+        updated initial condition.
+      </action>
       <action dev="luc" type="fix">
         Fixed a display error for dates less than 0.5ms before a leap second.
       </action>

@@ -116,12 +116,10 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
         // check index in in the range of the data
         if (i < 0) {
-            throw new TimeStampedCacheException(
-                                                OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
+            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                 this.getEarliest().getDate());
         } else if (i >= this.data.size()) {
-            throw new TimeStampedCacheException(
-                                                OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
                                                 this.getLatest().getDate());
         }
 

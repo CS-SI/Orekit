@@ -28,7 +28,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
@@ -129,34 +128,29 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     @Override
     /** {@inheritDoc} */
-    public SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
-        try {
-            final List<SpacecraftState> neighbors = cache.getNeighbors(date);
-            final SpacecraftState interpolatedState = neighbors.get(0).interpolate(date, neighbors);
+    public SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
+        final List<SpacecraftState> neighbors = cache.getNeighbors(date);
+        final SpacecraftState interpolatedState = neighbors.get(0).interpolate(date, neighbors);
 
-            final AttitudeProvider attitudeProvider = this.getAttitudeProvider();
+        final AttitudeProvider attitudeProvider = this.getAttitudeProvider();
 
-            if (attitudeProvider == null) {
-                return interpolatedState;
-            }
-            else {
-                pvProvider.setCurrentState(interpolatedState);
-                final Attitude calculatedAttitude = attitudeProvider.getAttitude(pvProvider, date, interpolatedState.getFrame());
-                return new SpacecraftState(interpolatedState.getOrbit(), calculatedAttitude, interpolatedState.getMass());
-            }
-
-        } catch (OrekitException tce) {
-            throw new PropagationException(tce);
+        if (attitudeProvider == null) {
+            return interpolatedState;
+        }
+        else {
+            pvProvider.setCurrentState(interpolatedState);
+            final Attitude calculatedAttitude = attitudeProvider.getAttitude(pvProvider, date, interpolatedState.getFrame());
+            return new SpacecraftState(interpolatedState.getOrbit(), calculatedAttitude, interpolatedState.getMass());
         }
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
+    protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc} */
-    protected double getMass(final AbsoluteDate date) throws PropagationException {
+    protected double getMass(final AbsoluteDate date) throws OrekitException {
         return basicPropagate(date).getMass();
     }
 
@@ -171,21 +165,21 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * This method always throws an exception, as ephemerides cannot be reset.
      * </p>
      * @param state new initial state to consider
-     * @exception PropagationException always thrown as ephemerides cannot be reset
+     * @exception OrekitException always thrown as ephemerides cannot be reset
      */
     public void resetInitialState(final SpacecraftState state)
-        throws PropagationException {
-        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+        throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws PropagationException {
-        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+        throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws PropagationException {
+    public SpacecraftState getInitialState() throws OrekitException {
         return basicPropagate(getMinDate());
     }
 

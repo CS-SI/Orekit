@@ -25,6 +25,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -73,6 +76,30 @@ public class FundamentalNutationArgumentsTest {
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testEnum() throws NoSuchMethodException, SecurityException,
+                                  IllegalAccessException, IllegalArgumentException,
+                                  InvocationTargetException {
+        Class<?> e = null;
+        for (final Class<?> c : FundamentalNutationArguments.class.getDeclaredClasses()) {
+            if (c.getName().endsWith("FundamentalName")) {
+                e = c;
+            }
+        }
+        Method m = e.getDeclaredMethod("valueOf", String.class);
+        m.setAccessible(true);
+        for (String n : Arrays.asList("L", "L_PRIME", "F", "D", "OMEGA",
+                                      "L_ME", "L_VE", "L_E", "L_MA", "L_J", "L_SA", "L_U", "L_NE", "PA")) {
+            Assert.assertEquals(n, m.invoke(null, n).toString());
+        }
+        try {
+            m.invoke(null, "inexistent");
+            Assert.fail("an exception should have been thrown");
+        } catch (InvocationTargetException ite) {
+            Assert.assertTrue(ite.getCause() instanceof IllegalArgumentException);
         }
     }
 

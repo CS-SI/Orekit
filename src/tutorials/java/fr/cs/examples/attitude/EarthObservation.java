@@ -31,7 +31,6 @@ import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
@@ -128,26 +127,22 @@ public class EarthObservation {
             propagator.setMasterMode(180.0, new OrekitFixedStepHandler() {
                 public void init(final SpacecraftState s0, final AbsoluteDate t) {
                 }
-                public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
-                    try {
-                    	DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
-                    	angleDegree.setDecimalSeparator('\u00b0');
-                        DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
-                        // the Earth position in spacecraft frame should be along spacecraft Z axis
-                        // during nigthtime and away from it during daytime due to roll and pitch offsets
-                        final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
-                        final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
+                public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+                    DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
+                    angleDegree.setDecimalSeparator('\u00b0');
+                    DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
+                    // the Earth position in spacecraft frame should be along spacecraft Z axis
+                    // during nigthtime and away from it during daytime due to roll and pitch offsets
+                    final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
+                    final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
 
-                        // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
-                        // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
-                        final double eclipseAngle = dayNightEvent.g(currentState);
+                    // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
+                    // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
+                    final double eclipseAngle = dayNightEvent.g(currentState);
 
-                        output.add(currentState.getDate() +
-                                   " " + ad.format(FastMath.toDegrees(eclipseAngle)) +
-                                   " " + ad.format(FastMath.toDegrees(pointingOffset)));
-                    } catch (OrekitException oe) {
-                        throw new PropagationException(oe);
-                    }
+                    output.add(currentState.getDate() +
+                               " " + ad.format(FastMath.toDegrees(eclipseAngle)) +
+                               " " + ad.format(FastMath.toDegrees(pointingOffset)));
                 }
             });
 

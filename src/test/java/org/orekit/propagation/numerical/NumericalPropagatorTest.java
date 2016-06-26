@@ -42,7 +42,6 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -89,7 +88,7 @@ public class NumericalPropagatorTest {
     private NumericalPropagator  propagator;
 
     @Test
-    public void testForceModelInitialized() throws PropagationException {
+    public void testForceModelInitialized() throws OrekitException {
         // setup
         // mutable holders
         SpacecraftState[] actualState = new SpacecraftState[1];
@@ -117,7 +116,7 @@ public class NumericalPropagatorTest {
     }
 
     @Test
-    public void testEphemerisModeWithHandler() throws PropagationException {
+    public void testEphemerisModeWithHandler() throws OrekitException {
         // setup
         AbsoluteDate end = initDate.shiftedBy(90 * 60);
 
@@ -139,7 +138,7 @@ public class NumericalPropagatorTest {
 
     /** test for issue #238 */
     @Test
-    public void testEventAtEndOfEphemeris() throws PropagationException {
+    public void testEventAtEndOfEphemeris() throws OrekitException {
         // setup
         // choose duration that will round up when expressed as a double
         AbsoluteDate end = initDate.shiftedBy(100)
@@ -164,7 +163,7 @@ public class NumericalPropagatorTest {
 
     /** test for issue #238 */
     @Test
-    public void testEventAtBeginningOfEphemeris() throws PropagationException {
+    public void testEventAtBeginningOfEphemeris() throws OrekitException {
         // setup
         // choose duration that will round up when expressed as a double
         AbsoluteDate end = initDate.shiftedBy(100)
@@ -219,7 +218,7 @@ public class NumericalPropagatorTest {
      * each other.
      */
     @Test
-    public void testCloseEventDates() throws PropagationException {
+    public void testCloseEventDates() throws OrekitException {
         // setup
         DateDetector d1 = new DateDetector(10, 1, initDate.shiftedBy(15))
                 .withHandler(new ContinueOnEvent<DateDetector>());
@@ -499,7 +498,7 @@ public class NumericalPropagatorTest {
 
     private PVCoordinates propagateInType(SpacecraftState state, double dP,
                                           OrbitType type, PositionAngle angle)
-        throws PropagationException {
+        throws OrekitException {
 
         final double dt = 3200;
         final double minStep = 0.001;
@@ -527,12 +526,12 @@ public class NumericalPropagatorTest {
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
             public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) throws PropagationException {
+                                   boolean isLast) throws OrekitException {
                 if (previousCall != null) {
                     Assert.assertTrue(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
                 }
                 if (--countDown == 0) {
-                    throw new PropagationException(LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy error");
+                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy error");
                 }
             }
         });
@@ -864,13 +863,13 @@ public class NumericalPropagatorTest {
         try {
             ephemeris1.propagate(ephemeris1.getMinDate().shiftedBy(-10.0));
             Assert.fail("an exception should have been thrown");
-        } catch (PropagationException pe) {
+        } catch (OrekitException pe) {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
         }
         try {
             ephemeris1.propagate(ephemeris1.getMaxDate().shiftedBy(+10.0));
             Assert.fail("an exception should have been thrown");
-        } catch (PropagationException pe) {
+        } catch (OrekitException pe) {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
         }
 
@@ -900,7 +899,7 @@ public class NumericalPropagatorTest {
                                              Constants.EIGEN5C_EARTH_MU);
             NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
             Assert.fail("an exception should have been thrown");
-        } catch (PropagationException pe) {
+        } catch (OrekitException pe) {
             Assert.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, pe.getSpecifier());
         }
     }

@@ -25,7 +25,6 @@ import java.util.Map;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -99,7 +98,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws PropagationException {
+    public SpacecraftState getInitialState() throws OrekitException {
         return initialState;
     }
 
@@ -114,7 +113,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) throws PropagationException {
+    public void resetInitialState(final SpacecraftState state) throws OrekitException {
         initialState = state;
         setStartDate(state.getDate());
     }
@@ -179,11 +178,11 @@ public abstract class AbstractPropagator implements Propagator {
     /** Update state by adding all additional states.
      * @param original original state
      * @return updated state, with all additional states included
-     * @exception PropagationException if one of the providers throws one
+     * @exception OrekitException if one of the providers throws one
      * @see #addAdditionalStateProvider(AdditionalStateProvider)
      */
     protected SpacecraftState updateAdditionalStates(final SpacecraftState original)
-        throws PropagationException {
+        throws OrekitException {
 
         // start with original state,
         // which may already contain additional states, for example in interpolated ephemerides
@@ -258,7 +257,7 @@ public abstract class AbstractPropagator implements Propagator {
     public abstract void clearEventsDetectors();
 
     /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
+    public SpacecraftState propagate(final AbsoluteDate target) throws OrekitException {
         if (startDate == null) {
             startDate = getInitialState().getDate();
         }

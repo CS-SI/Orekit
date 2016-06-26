@@ -32,7 +32,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
@@ -117,7 +116,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate start, final AbsoluteDate target)
-        throws PropagationException {
+        throws OrekitException {
         try {
 
             lastPropagationStart = start;
@@ -174,12 +173,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             setStartDate(state.getDate());
             return state;
 
-        } catch (PropagationException pe) {
-            throw pe;
-        } catch (OrekitException oe) {
-            throw PropagationException.unwrap(oe);
         } catch (MathRuntimeException mrte) {
-            throw PropagationException.unwrap(mrte);
+            throw OrekitException.unwrap(mrte);
         }
     }
 
@@ -332,10 +327,10 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Get the mass.
      * @param date target date for the orbit
      * @return mass mass
-     * @exception PropagationException if some parameters are out of bounds
+     * @exception OrekitException if some parameters are out of bounds
      */
     protected abstract double getMass(final AbsoluteDate date)
-        throws PropagationException;
+        throws OrekitException;
 
     /** Get PV coordinates provider.
      * @return PV coordinates provider
@@ -348,18 +343,18 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
      * propagations after itself
-     * @exception PropagationException if initial state cannot be reset
+     * @exception OrekitException if initial state cannot be reset
      */
     protected abstract void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws PropagationException;
+        throws OrekitException;
 
     /** Extrapolate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @return extrapolated parameters
-     * @exception PropagationException if some parameters are out of bounds
+     * @exception OrekitException if some parameters are out of bounds
      */
     protected abstract Orbit propagateOrbit(final AbsoluteDate date)
-        throws PropagationException;
+        throws OrekitException;
 
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
@@ -368,9 +363,9 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * stop exactly at the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
-     * @exception PropagationException if propagation cannot reach specified date
+     * @exception OrekitException if propagation cannot reach specified date
      */
-    protected SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
+    protected SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
         try {
 
             // evaluate orbit
@@ -384,7 +379,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             return new SpacecraftState(orbit, attitude, getMass(date));
 
         } catch (OrekitException oe) {
-            throw new PropagationException(oe);
+            throw new OrekitException(oe);
         }
     }
 
@@ -452,12 +447,12 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         protected Orbit propagateOrbit(final AbsoluteDate target)
-            throws PropagationException {
+            throws OrekitException {
             return AbstractAnalyticalPropagator.this.propagateOrbit(target);
         }
 
         /** {@inheritDoc} */
-        public double getMass(final AbsoluteDate date) throws PropagationException {
+        public double getMass(final AbsoluteDate date) throws OrekitException {
             return AbstractAnalyticalPropagator.this.getMass(date);
         }
 
@@ -468,18 +463,18 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void resetInitialState(final SpacecraftState state) throws PropagationException {
+        public void resetInitialState(final SpacecraftState state) throws OrekitException {
             AbstractAnalyticalPropagator.this.resetInitialState(state);
         }
 
         /** {@inheritDoc} */
         protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-            throws PropagationException {
+            throws OrekitException {
             AbstractAnalyticalPropagator.this.resetIntermediateState(state, forward);
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState getInitialState() throws PropagationException {
+        public SpacecraftState getInitialState() throws OrekitException {
             return AbstractAnalyticalPropagator.this.getInitialState();
         }
 
@@ -586,7 +581,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public SpacecraftState getInterpolatedState(final AbsoluteDate date)
-            throws PropagationException {
+            throws OrekitException {
 
             // compute the basic spacecraft state
             final SpacecraftState basicState = basicPropagate(date);

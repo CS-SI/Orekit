@@ -30,7 +30,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AdditionalStateProvider;
@@ -155,18 +154,18 @@ public class IntegratedEphemeris
     /** Interpolate the model at some date.
      * @param date desired interpolation date
      * @return state interpolated at date
-     * @exception PropagationException if specified date is outside
+     * @exception OrekitException if specified date is outside
      * of supported range
      */
     private ODEStateAndDerivative getInterpolatedState(final AbsoluteDate date)
-        throws PropagationException {
+        throws OrekitException {
 
         // compare using double precision instead of AbsoluteDate.compareTo(...)
         // because time is expressed as a double when searching for events
         if (date.compareTo(minDate.shiftedBy(-EXTRAPOLATION_TOLERANCE)) < 0 ||
                 date.compareTo(maxDate.shiftedBy(EXTRAPOLATION_TOLERANCE)) > 0 ) {
             // date is outside of supported range
-            throw new PropagationException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
                                            date, minDate, maxDate);
         }
 
@@ -177,7 +176,7 @@ public class IntegratedEphemeris
     /** {@inheritDoc} */
     @Override
     protected SpacecraftState basicPropagate(final AbsoluteDate date)
-        throws PropagationException {
+        throws OrekitException {
         try {
             final ODEStateAndDerivative os = getInterpolatedState(date);
             SpacecraftState state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
@@ -188,28 +187,22 @@ public class IntegratedEphemeris
             }
             return state;
         } catch (OrekitExceptionWrapper oew) {
-            if (oew.getException() instanceof PropagationException) {
-                throw (PropagationException) oew.getException();
+            if (oew.getException() instanceof OrekitException) {
+                throw (OrekitException) oew.getException();
             } else {
-                throw new PropagationException(oew.getException());
-            }
-        } catch (OrekitException oe) {
-            if (oe instanceof PropagationException) {
-                throw (PropagationException) oe;
-            } else {
-                throw new PropagationException(oe);
+                throw new OrekitException(oew.getException());
             }
         }
     }
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date)
-        throws PropagationException {
+        throws OrekitException {
         return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc} */
-    protected double getMass(final AbsoluteDate date) throws PropagationException {
+    protected double getMass(final AbsoluteDate date) throws OrekitException {
         return basicPropagate(date).getMass();
     }
 
@@ -240,18 +233,18 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
-        throws PropagationException {
-        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+        throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward)
-        throws PropagationException {
-        throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
+        throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws PropagationException {
+    public SpacecraftState getInitialState() throws OrekitException {
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
@@ -314,7 +307,7 @@ public class IntegratedEphemeris
 
         /** {@inheritDoc} */
         public double[] getAdditionalState(final SpacecraftState state)
-            throws PropagationException {
+            throws OrekitException {
 
             // extract the part of the interpolated array corresponding to the additional state
             return getInterpolatedState(state.getDate()).getSecondaryState(index + 1);

@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -264,8 +263,7 @@ public class DetectorTest {
             });
             k.propagate(initialDate.shiftedBy(Constants.JULIAN_YEAR));
             Assert.fail("an exception should have been thrown");
-        } catch (PropagationException poe) {
-            final OrekitException oe = (OrekitException) poe.getCause();
+        } catch (OrekitException oe) {
             Assert.assertSame(dummyCause, oe.getCause());
         }
     }

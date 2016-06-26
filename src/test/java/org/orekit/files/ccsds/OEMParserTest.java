@@ -179,7 +179,20 @@ public class OEMParserTest {
             final EphemeridesDataLine dataLine = dataLines.get(index++);
             final CartesianOrbit orbit = dataLine.getOrbit();
             Assert.assertEquals(orbit.getDate(), coord.getDate());
+            Assert.assertEquals(orbit.getDate(), coord.getEpoch());
+            Assert.assertTrue(coord.getEpoch().durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) > 4.3e9);
+            coord.setEpoch(AbsoluteDate.MODIFIED_JULIAN_EPOCH);
+            Assert.assertEquals(0.0, coord.getEpoch().durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);
             Assert.assertEquals(orbit.getPVCoordinates(), coord.getCoordinate());
+            Assert.assertTrue(coord.getCoordinate().getPosition().getNorm() > 2.5e6);
+            coord.setCoordinate(PVCoordinates.ZERO);
+            Assert.assertEquals(0.0, coord.getCoordinate().getPosition().getNorm(), 1.0e-10);
+            Assert.assertEquals(0.0, coord.getClockCorrection(), 1.0e-15);
+            coord.setClockCorrection(1.0);
+            Assert.assertEquals(1.0, coord.getClockCorrection(), 1.0e-15);
+            Assert.assertEquals(0.0, coord.getClockRateChange(), 1.0e-15);
+            coord.setClockRateChange(1.0);
+            Assert.assertEquals(1.0, coord.getClockRateChange(), 1.0e-15);
         }
     }
 

@@ -160,12 +160,8 @@ public class NetworkCrawler implements DataProvider {
 
             return loaded;
 
-        } catch (URISyntaxException use) {
-            throw new OrekitException(use, new DummyLocalizable(use.getMessage()));
-        } catch (IOException ioe) {
-            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
-        } catch (ParseException pe) {
-            throw new OrekitException(pe, new DummyLocalizable(pe.getMessage()));
+        } catch (URISyntaxException | IOException | ParseException e) {
+            throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
         }
 
     }

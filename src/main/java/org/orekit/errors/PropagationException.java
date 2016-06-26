@@ -23,7 +23,9 @@ import org.hipparchus.exception.MathRuntimeException;
  * during the propagation computation.
  *
  * @author Luc Maisonobe
+ * @deprecated as of 8.0 this class is not used anymore
  */
+@Deprecated
 public class PropagationException extends OrekitException {
 
     /** Serializable UID. */

@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -214,8 +213,8 @@ public class EventShifterTest {
             propagator =
                 new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
             log = new ArrayList<EventEntry>();
-        } catch (PropagationException pe) {
-            Assert.fail(pe.getLocalizedMessage());
+        } catch (OrekitException oe) {
+            Assert.fail(oe.getLocalizedMessage());
         }
     }
 
