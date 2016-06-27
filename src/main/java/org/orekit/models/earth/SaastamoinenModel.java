@@ -421,7 +421,8 @@ public class SaastamoinenModel implements TroposphericModel {
          * @throws MathIllegalArgumentException if {@code c} is out of the range
          *         defined by the boundary values of {@code val}.
          */
-        private int searchIndex(final double c, final double[] val, final int offset, final int count) {
+        private int searchIndex(final double c, final double[] val, final int offset, final int count)
+            throws MathIllegalArgumentException {
             int r = Arrays.binarySearch(val, c);
 
             if (r == -1 || r == -val.length - 1) {
