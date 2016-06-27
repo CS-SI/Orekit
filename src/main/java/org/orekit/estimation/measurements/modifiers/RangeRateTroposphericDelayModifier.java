@@ -88,7 +88,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
      */
     public double rangeRateErrorTroposphericModel(final GroundStation station,
                                                   final SpacecraftState state)
-    throws OrekitException {
+        throws OrekitException {
         // The effect of tropospheric correction on the range rate is
         // computed using finite differences.
 
@@ -142,7 +142,7 @@ public class RangeRateTroposphericDelayModifier implements EstimationModifier<Ra
     private double[][] rangeRateErrorJacobianState(final GroundStation station,
                                                    final SpacecraftState refstate,
                                                    final double delay)
-    throws OrekitException {
+        throws OrekitException {
         final double[][] finiteDifferencesJacobian =
                         EstimationUtils.differentiate(new StateFunction() {
                             public double[] value(final SpacecraftState state) throws OrekitException {

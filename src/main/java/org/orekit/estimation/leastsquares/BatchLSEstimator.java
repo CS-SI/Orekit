@@ -127,7 +127,7 @@ public class BatchLSEstimator {
      * that is already used
      */
     public void addMeasurement(final ObservedMeasurement<?> measurement)
-      throws OrekitException {
+        throws OrekitException {
         measurements.add(measurement);
     }
 
