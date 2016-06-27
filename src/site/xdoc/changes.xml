@@ -22,6 +22,10 @@
   <body>
     <release version="8.0" date="TBC"
              description="TBC">
+      <action dev="luc" type="fix" due-to="Andrea Antolino">
+        Improved accuracy of orbits Jacobians.
+        Fixes issue #243.
+      </action>
       <action dev="luc" type="update">
         Deprecated PropagationException, replaced by OrekitException.
       </action>
