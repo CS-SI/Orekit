@@ -727,7 +727,7 @@ public class CircularOrbit
         final double[][] jacobian = computeJacobianMeanWrtCartesian();
 
         // Differentiating the Kepler equation aM = aE - ex sin aE + ey cos aE leads to:
-        // daM = (1 - ex cos aE - ey sin aE) dE - sin aE dex + cos aE dey
+        // daM = (1 - ex cos aE - ey sin aE) daE - sin aE dex + cos aE dey
         // which is inverted and rewritten as:
         // daE = a/r daM + sin aE a/r dex - cos aE a/r dey
         final double alphaE = getAlphaE();
