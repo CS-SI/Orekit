@@ -553,7 +553,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private static EquinoctialOrbit computeOsculatingOrbit(final SpacecraftState meanState,
                                                            final List<ShortPeriodTerms> shortPeriodTerms)
-    throws OrekitException {
+        throws OrekitException {
 
         final double[] mean = new double[6];
         OrbitType.EQUINOCTIAL.mapOrbitToArray(meanState.getOrbit(), PositionAngle.MEAN, mean);
