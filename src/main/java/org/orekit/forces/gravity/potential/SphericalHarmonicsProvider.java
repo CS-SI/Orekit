@@ -20,7 +20,7 @@ import org.orekit.time.AbsoluteDate;
 
 /**
  * Interface used to provide spherical harmonics coefficients.
- * <p/>
+ * <p>
  * Two interfaces are provided to distinguish between normalized and un-normalized
  * coefficients: {@link NormalizedSphericalHarmonicsProvider} and {@link
  * UnnormalizedSphericalHarmonicsProvider}. To account for gravity pertubations all

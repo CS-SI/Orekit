@@ -117,8 +117,8 @@ public class DOPComputer {
 
     /**
      * Compute the {@link DOP} at a given date for a set of GNSS spacecrafts.
-     * <p>Four GNSS spacecraft at least are needed to compute the DOP.<br/>
-     * If less than 4 propagators are provided, an exception will be thrown.<br/>
+     * <p>Four GNSS spacecraft at least are needed to compute the DOP.
+     * If less than 4 propagators are provided, an exception will be thrown.
      * If less than 4 spacecrafts are visible at the date, all DOP values will be
      * set to {@link java.lang.Double#NaN NaN}.</p>
      *

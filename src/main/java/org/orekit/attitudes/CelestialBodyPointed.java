@@ -33,7 +33,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *   <li>a celestial body towards which some satellite axis is exactly aimed</li>
  *   <li>a phasing reference defining the rotation around the pointing axis</li>
  * </ul>
- * </p>
+ *
  * <p>
  * The celestial body implicitly defines two of the three degrees of freedom
  * and the phasing reference defines the remaining degree of freedom. This definition

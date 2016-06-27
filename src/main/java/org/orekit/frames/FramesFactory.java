@@ -37,7 +37,7 @@ import org.orekit.utils.OrekitConfiguration;
 
 /** Factory for predefined reference frames.
  *
- * <h5> FramesFactory Presentation </h5>
+ * <h1> FramesFactory Presentation </h1>
  * <p>
  * Several predefined reference {@link Frame frames} are implemented in OREKIT.
  * They are linked together in a tree with the <i>Geocentric
@@ -50,7 +50,7 @@ import org.orekit.utils.OrekitConfiguration;
  *   <li>set up interpolation/caching features for some frames that may induce costly computation</li>
  *   <li>streamline the {@link EOPHistory Earth Orientation Parameters} history loading.</li>
  * </ul>
- * <h5> Reference Frames </h5>
+ * <h2> Reference Frames </h2>
  * <p>
  * The user can retrieve those reference frames using various static methods, the most
  * important ones being: {@link #getFrame(Predefined)}, {@link #getGCRF()},
@@ -60,7 +60,7 @@ import org.orekit.utils.OrekitConfiguration;
  * {@link #getGTOD(IERSConventions, boolean)}, {@link #getITRFEquinox(IERSConventions, boolean)},
  * {@link #getTEME()} and {@link #getVeis1950()}.
  * </p>
- * <h5> International Terrestrial Reference Frame</h5>
+ * <h2> International Terrestrial Reference Frame</h2>
  * <p>
  * This frame is the current (as of 2013) reference realization of
  * the International Terrestrial Reference System produced by IERS.
@@ -96,14 +96,14 @@ import org.orekit.utils.OrekitConfiguration;
  * choice of IERS conventions (i.e. the choice of precession/nutation models) can
  * be made independently by user, Orekit provides all alternatives.
  * </p>
- * <h5>Intermediate frames</h5>
+ * <h2>Intermediate frames</h2>
  * <p>
  * Orekit also provides all the intermediate frames that are needed to transform
  * between GCRF and ITRF, along the two paths: ITRF/TIRF/CIRF/GCRF for the
  * non-rotating origin paradigm and ITRF/GTOD/TOD/MOD/EME2000/GCRF for the equinox
  * paradigm.
  * </p>
- * <h5> Earth Orientation Parameters </h5>
+ * <h2> Earth Orientation Parameters </h2>
  * <p>
  * This factory also handles loading of Earth Orientation Parameters (EOP) needed
  * for accurate transformations between inertial and Earth fixed frames, using

@@ -53,11 +53,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p> The convention used in OREKIT is vectorial transformation. It means
  * that a transformation is defined as a transform to apply to the
  * coordinates of a vector expressed in the old frame to obtain the
- * same vector expressed in the new frame.<p>
+ * same vector expressed in the new frame.
  *
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *
- *  <h5> Example </h5>
+ *  <h1> Example </h1>
  *
  * <pre>
  *
@@ -618,12 +618,12 @@ public class Transform
      * <pre>
      * PV₁ = transform.transformPVCoordinates(PV₀), then
      * </pre>
-     * their differentials dPV₁ and dPV₀ will obey the following relation
-     * where J is the matrix computed by this method:<br/>
+     * <p> their differentials dPV₁ and dPV₀ will obey the following relation
+     * where J is the matrix computed by this method:
      * <pre>
      * dPV₁ = J &times; dPV₀
      * </pre>
-     * </p>
+     *
      * @param selector selector specifying the size of the upper left corner that must be filled
      * (either 3x3 for positions only, 6x6 for positions and velocities, 9x9 for positions,
      * velocities and accelerations)

@@ -99,7 +99,7 @@ public class SaastamoinenModel implements TroposphericModel {
      * environmental conditions.
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -> 0.5)
+     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
@@ -131,13 +131,13 @@ public class SaastamoinenModel implements TroposphericModel {
     }
 
     /** Create a new Saastamoinen model using a standard atmosphere model.
-     * <p>
+     *
      * <ul>
      * <li>temperature: 18 degree Celsius
      * <li>pressure: 1013.25 mbar
      * <li>humidity: 50%
      * </ul>
-     * </p>
+     *
      * @return a Saastamoinen model with standard environmental values
      * @exception OrekitException if δR correction term table cannot be loaded
      */

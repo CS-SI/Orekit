@@ -34,8 +34,8 @@ import org.hipparchus.util.FastMath;
  *   - 2(2s + n)Y<sub>ρ,σ-1</sub><sup>n,s-1</sup> - (s+n)Y<sub>ρ,σ-2</sub><sup>n,s-2</sup>
  *   + 2(2ρ + 2σ + 2 + 3n)Y<sub>ρ-1,σ-1</sub><sup>n,s</sup>
  *  </pre>
- *  Initialization is given by : <pre>Y<sub>0,0</sub><sup>n,s</sup> = 1</pre>
- *  </p>
+ *  <p> Initialization is given by : <pre>Y<sub>0,0</sub><sup>n,s</sup> = 1</pre>
+ *
  *
  *  Internally, the Modified Newcomb Operators are stored as an array of {@link PolynomialFunction} :
  *

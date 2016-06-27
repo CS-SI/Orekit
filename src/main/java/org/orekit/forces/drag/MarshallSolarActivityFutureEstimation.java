@@ -303,6 +303,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
      * 5 is 5 and 5+ is 5 1/3. The ap (equivalent range) index is derived from
      * the Kp index as follows:</p>
      * <table border="1">
+     * <caption>Kp / Ap Conversion Table</caption>
      * <tbody>
      * <tr>
      * <td>Kp</td><td>0o</td><td>0+</td><td>1-</td><td>1o</td><td>1+</td><td>2-</td><td>2o</td><td>2+</td><td>3-</td><td>3o</td><td>3+</td><td>4-</td><td>4o</td><td>4+</td>

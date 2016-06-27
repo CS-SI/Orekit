@@ -268,7 +268,7 @@ public class SpacecraftState
      * or coarse accuracy.
      * </p>
      * <p>
-     * As a rough order of magnitude, the following table shows the interpolation
+     * As a rough order of magnitude, the following table shows the extrapolation
      * errors obtained between this simple shift method and an {@link
      * org.orekit.propagation.analytical.EcksteinHechlerPropagator Eckstein-Heschler
      * propagator} for an 800km altitude nearly circular polar Earth orbit with
@@ -276,6 +276,7 @@ public class SpacecraftState
      * that these results may be different for other orbits.
      * </p>
      * <table border="1" cellpadding="5">
+     * <caption>Extrapolation Error</caption>
      * <tr bgcolor="#ccccff"><th>interpolation time (s)</th>
      * <th>position error (m)</th><th>velocity error (m/s)</th>
      * <th>attitude error (&deg;)</th></tr>

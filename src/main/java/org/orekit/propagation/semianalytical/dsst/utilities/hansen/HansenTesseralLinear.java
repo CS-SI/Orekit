@@ -22,7 +22,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 
 /**
- * Hansen coefficients K(t,n,s) for t!=0 and n < 0.
+ * Hansen coefficients K(t,n,s) for t!=0 and n &lt; 0.
  * <p>
  * Implements Collins 4-236 or Danielson 2.7.3-(9) for Hansen Coefficients and
  * Collins 4-240 for derivatives. The recursions are transformed into

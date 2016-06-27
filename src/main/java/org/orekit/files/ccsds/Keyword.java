@@ -154,7 +154,7 @@ public enum Keyword {
     MAN_EPOCH_IGNITION,
     /** Maneuver duration (If = 0, impulsive maneuver). */
     MAN_DURATION,
-    /** Mass change during maneuver (value is < 0). */
+    /** Mass change during maneuver (value is &lt; 0). */
     MAN_DELTA_MASS,
     /** Coordinate system for velocity increment vector. Its value can either be RSW, RTN (both
      * indicating "Radial, Transverse, Normal") or TNW. */

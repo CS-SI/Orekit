@@ -20,7 +20,7 @@ import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
 
 /**
- * Hansen coefficients K(t,n,s) for t=0 and n < 0.
+ * Hansen coefficients K(t,n,s) for t=0 and n &lt; 0.
  * <p>
  *Implements Collins 4-242 or echivalently, Danielson 2.7.3-(6) for Hansen Coefficients and
  * Collins 4-245 or Danielson 3.1-(7) for derivatives. The recursions are transformed into
@@ -260,8 +260,9 @@ public class HansenZonalLinear {
     }
 
     /**
-     * Get the K₀<sup>-n-1,s</sup> coefficient value. <br />
-     * The s value is given in the class constructor <br />
+     * Get the K₀<sup>-n-1,s</sup> coefficient value.
+     *
+     * <p> The s value is given in the class constructor
      *
      * @param mnm1 (-n-1) coefficient
      * @param chi The value of χ
@@ -298,8 +299,9 @@ public class HansenZonalLinear {
     }
 
     /**
-     * Get the dK₀<sup>-n-1,s</sup> / d&Chi; coefficient derivative. <br />
-     * The s value is given in the class constructor <br />
+     * Get the dK₀<sup>-n-1,s</sup> / d&Chi; coefficient derivative.
+     *
+     * <p> The s value is given in the class constructor.
      *
      * @param mnm1 (-n-1) coefficient
      * @param chi The value of χ

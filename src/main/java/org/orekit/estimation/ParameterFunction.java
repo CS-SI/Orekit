@@ -20,14 +20,14 @@ import org.orekit.errors.OrekitException;
 import org.orekit.utils.ParameterDriver;
 
 /** Interface representing a scalar function depending on a {@link ParameterDriver}.
- * @see EstimationUtils#differentiate(ParameterFunction ParameterDriver, int, double)
+ * @see EstimationUtils#differentiate(ParameterFunction, ParameterDriver, int, double)
  * @author Luc Maisonobe
  * @since 8.0
  */
 public interface ParameterFunction {
 
     /** Evaluate the function.
-     * @param parameterDriver friver for the parameter.
+     * @param parameterDriver driver for the parameter.
      * @return scalar value of the function
      * @throws OrekitException if evaluation cannot be performed
      */

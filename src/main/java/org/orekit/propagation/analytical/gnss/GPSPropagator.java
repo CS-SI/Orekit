@@ -102,11 +102,11 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
         /** Initializes the builder.
          * <p>The GPS orbital elements is the only requested parameter to build a GPSPropagator.</p>
          * <p>The attitude provider is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br/>
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_LAW DEFAULT_LAW}.<br>
          * The mass is set by default to the
-         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br/>
+         *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
          * The ECI frame is set by default to the
-         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br/>
+         *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame}.<br>
          * The ECEF frame is set by default to the
          *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP CIO/2010-based ITRF simple EOP}.
          * </p>

@@ -35,7 +35,7 @@ import org.orekit.utils.ParameterDriver;
  * Objects implementing this interface are intended to be added to a
  * {@link org.orekit.propagation.numerical.NumericalPropagator numerical propagator}
  * before the propagation is started.
- * <p>
+ *
  * <p>
  * The propagator will call at each step the {@link #addContribution(SpacecraftState,
  * TimeDerivativesEquations)} method. The force model instance will extract all the

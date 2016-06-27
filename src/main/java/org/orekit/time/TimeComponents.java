@@ -180,10 +180,11 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      *   <li>optional signed basic hours and minutes UTC offset: hhmmss+HHMM, hhmmss-HHMM, hh:mm:ss+HHMM, hh:mm:ss-HHMM</li>
      *   <li>optional signed extended hours and minutes UTC offset: hhmmss+HH:MM, hhmmss-HH:MM, hh:mm:ss+HH:MM, hh:mm:ss-HH:MM</li>
      * </ul>
-     * As shown by the list above, only the complete representations defined in section 4.2
+     *
+     * <p> As shown by the list above, only the complete representations defined in section 4.2
      * of ISO-8601 standard are supported, neither expended representations nor representations
      * with reduced accuracy are supported.
-     * </p>
+     *
      * @param string string to parse
      * @return a parsed time
      * @exception IllegalArgumentException if string cannot be parsed

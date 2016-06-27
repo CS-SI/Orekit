@@ -48,7 +48,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   </pre>
  * where ω stands for the Perigee Argument and Ω stands for the
  * Right Ascension of the Ascending Node.
- * </p>
+ *
  * <p>
  * The conversion equations from and to keplerian elements given above hold only
  * when both sides are unambiguously defined, i.e. when orbit is neither equatorial

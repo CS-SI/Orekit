@@ -32,7 +32,7 @@ import org.orekit.utils.ParameterDriver;
  *   <li>estimate the theoretical value of a measurement,</li>
  *   <li>compute the corresponding partial derivatives (with respect to state and parameters)</li>
  * </ul>
- * </p>
+ *
  * <p>
  * The estimated theoretical values can be modified by registering one or several {@link
  * EstimationModifier EstimationModifier} objects. These objects will manage notions

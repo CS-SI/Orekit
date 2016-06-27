@@ -61,10 +61,11 @@ import org.orekit.utils.TimeSpanMap;
  * <li>v is the velocity vector</li>
  * <li>q is the perturbing acceleration due to the considered force</li>
  * </ul>
- * The averaging process and other considerations lead to integrate this contribution
+ *
+ * <p> The averaging process and other considerations lead to integrate this contribution
  * over the true longitude L possibly taking into account some limits.
- * </p><p>
- * To create a numerically averaged contribution, one needs only to provide a
+ *
+ * <p> To create a numerically averaged contribution, one needs only to provide a
  * {@link ForceModel} and to implement in the derived class the method:
  * {@link #getLLimits(SpacecraftState)}.
  * </p>
@@ -1338,7 +1339,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *
      * <p>
      * The value of M is 0. Also, since the values of the Fourier coefficient D<sub>i</sub><sup>m</sup> is 0
-     * then the values of the coefficients D<sub>i</sub><sup>m</sup> for m > 2 are also 0.
+     * then the values of the coefficients D<sub>i</sub><sup>m</sup> for m &gt; 2 are also 0.
      * </p>
      * @author Petre Bazavan
      * @author Lucian Barbulescu

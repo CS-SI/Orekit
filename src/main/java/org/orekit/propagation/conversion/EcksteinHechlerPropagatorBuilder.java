@@ -38,7 +38,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     /** Build a new instance.
      * <p>
      * The template orbit is used as a model to {@link
-     * #createInitialOrbit(AbsoluteDate, double[]) create initial orbit}. It defines the
+     * #createInitialOrbit() create initial orbit}. It defines the
      * inertial frame, the central attraction coefficient, the orbit type, and is also
      * used together with the {@code positionScale} to convert from the {@link
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
@@ -66,7 +66,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
     /** Build a new instance.
      * <p>
      * The template orbit is used as a model to {@link
-     * #createInitialOrbit(AbsoluteDate, double[]) create initial orbit}. It defines the
+     * #createInitialOrbit() create initial orbit}. It defines the
      * inertial frame, the central attraction coefficient, the orbit type, and is also
      * used together with the {@code positionScale} to convert from the {@link
      * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the

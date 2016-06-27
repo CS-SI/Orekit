@@ -85,7 +85,7 @@ public class IntegratedEphemeris
     /** Mapper between raw double components and spacecraft state. */
     private final StateMapper mapper;
 
-    /** Output only the mean orbit. <br/>
+    /** Output only the mean orbit.
      * <p>
      * This is used only in the case of semianalitical propagators where there is a clear separation between
      * mean and short periodic elements. It is ignored by the Numerical propagator.

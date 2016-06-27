@@ -304,15 +304,15 @@ public class OPMFile extends OGMFile {
             this.duration = duration;
         }
 
-        /** Get mass change during maneuver (value is < 0).
-         * @return mass change during maneuver (value is < 0)
+        /** Get mass change during maneuver (value is &lt; 0).
+         * @return mass change during maneuver (value is &lt; 0)
          */
         public double getDeltaMass() {
             return deltaMass;
         }
 
-        /** Set mass change during maneuver (value is < 0).
-         * @param deltaMass mass change during maneuver (value is < 0)
+        /** Set mass change during maneuver (value is &lt; 0).
+         * @param deltaMass mass change during maneuver (value is &lt; 0)
          */
         public void setDeltaMass(final double deltaMass) {
             this.deltaMass = deltaMass;

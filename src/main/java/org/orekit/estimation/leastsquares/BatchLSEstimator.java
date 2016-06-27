@@ -261,7 +261,7 @@ public class BatchLSEstimator {
      * the scale is often small (typically about 1 m for orbital positions
      * for example), then the threshold should not be too small. A value
      * of 10⁻³ is often quite accurate.
-     * </>
+     *
      * @param parametersConvergenceThreshold convergence threshold on
      * normalized parameters (dimensionless, related to parameters scales)
      * @see EvaluationRmsChecker

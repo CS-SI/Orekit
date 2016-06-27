@@ -107,8 +107,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>the {@link org.orekit.orbits.CartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
  *   v<sub>y</sub>, v<sub>z</sub>) in meters and meters per seconds.
  * </ul>
- * The last element is the mass in kilograms.
- * </p>
+ * <p> The last element is the mass in kilograms.
+ *
  * <p>The following code snippet shows a typical setting for Low Earth Orbit propagation in
  * equinoctial parameters and true longitude argument:</p>
  * <pre>
@@ -294,7 +294,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * This method should be called after either {@link #setMu(double)},
      * {@link #setInitialState(SpacecraftState)}, or
      * {@link #resetInitialState(SpacecraftState)} have been called,
-     * or {@link #addForceModel(ForceModel) has been called with a
+     * or {@link #addForceModel(ForceModel)} has been called with a
      * {@link NewtonianAttraction} instance.
      * </p>
      * @return Newtonian attraction force model, or null if it has
@@ -590,10 +590,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * <pre>
      * V² r |dV| = mu |dr|
      * </pre>
-     * So we deduce a scalar velocity error consistent with the position error.
+     * <p> So we deduce a scalar velocity error consistent with the position error.
      * From here, we apply orbits Jacobians matrices to get consistent errors
      * on orbital parameters.
-     * </p>
+     *
      * <p>
      * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
      * are only local estimates, not global ones. So some care must be taken when using

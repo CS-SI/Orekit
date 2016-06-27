@@ -20,7 +20,7 @@ import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
 
 /**
- * Hansen coefficients K(t,n,s) for t=0 and n > 0.
+ * Hansen coefficients K(t,n,s) for t=0 and n &gt; 0.
  * <p>
  * Implements Collins 4-254 or Danielson 2.7.3-(7) for Hansen Coefficients and
  * Danielson 3.2-(3) for derivatives. The recursions are transformed into

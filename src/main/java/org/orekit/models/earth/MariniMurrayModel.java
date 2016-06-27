@@ -49,7 +49,7 @@ public class MariniMurrayModel implements TroposphericModel {
      * environmental conditions.
      * @param t0 the temperature at the station, K
      * @param p0 the atmospheric pressure at the station, mbar
-     * @param rh the humidity at the station, percent (50% -> 0.5)
+     * @param rh the humidity at the station, percent (50% -&gt; 0.5)
      * @param latitude site latitude
      * @param lambda laser wavelength (c/f), nm
      */
@@ -65,13 +65,13 @@ public class MariniMurrayModel implements TroposphericModel {
     }
 
     /** Create a new Marini-Murray model using a standard atmosphere model.
-     * <p>
+     *
      * <ul>
      * <li>temperature: 20 degree Celsius
      * <li>pressure: 1013.25 mbar
      * <li>humidity: 50%
      * </ul>
-     * </p>
+     *
      * @param latitude site latitude
      * @param frequency laser frequency, Hz
      *

@@ -49,7 +49,6 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  *  if osculating parameters are desired, on a sample of points within the
  *  last step.</li>
  *  </ol>
- *  </p>
  *
  * @author Romain Di Constanzo
  * @author Pascal Parraud

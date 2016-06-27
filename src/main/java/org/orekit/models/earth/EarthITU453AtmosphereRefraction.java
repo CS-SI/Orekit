@@ -86,8 +86,8 @@ public class EarthITU453AtmosphereRefraction implements AtmosphericRefractionMod
     /** refraction correction value where elevation+refraction correction is minimal (near inequality 11 validity domain). */
     private final double refrac_star;
 
-     /** Creates a new default instance.
-     * * @param altitude altitude of the ground station from which measurement is performed (m)
+    /** Creates a new default instance.
+     * @param altitude altitude of the ground station from which measurement is performed (m)
      */
     public EarthITU453AtmosphereRefraction(final double altitude) {
         this.altitude = altitude;

@@ -40,7 +40,6 @@
  *   <li>{@link org.orekit.time.AbsoluteDate#PAST_INFINITY Past infinity}: at infinity in the past,</li>
  *   <li>{@link org.orekit.time.AbsoluteDate#FUTURE_INFINITY Future infinity}: at infinity in the future.</li>
  * </ul>
- * </p>
  *
  * <p>
  * The second definition, which could be the source of some confusion if not used with care,
@@ -85,7 +84,6 @@
  *       The Greenwich Mean Sidereal Time is the hour angle between the meridian
  *       of Greenwich and mean equinox of date at 0h UT1.</li>
  * </ul>
- * </p>
  *
  * <p>
  * Once it is built, an {@link org.orekit.time.AbsoluteDate} can be compared to

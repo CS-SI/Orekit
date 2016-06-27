@@ -56,12 +56,10 @@ import org.orekit.utils.ParameterObserver;
  * Holmes-Featherstone model} rather than this class.
  * </p>
  * <p>
- * As this class uses finite differences to compute derivatives, the steps for
- * finite differences <strong>must</strong> be initialized by calling {@link
- * #setSteps(double, double)} prior to use derivatives, otherwise an exception
- * will be thrown by {@link #accelerationDerivatives(AbsoluteDate, Frame, FieldVector3D,
- * FieldVector3D, FieldRotation, DerivativeStructure)} and by {@link
- * #accelerationDerivatives(SpacecraftState, String)}.
+ * This class uses finite differences to compute derivatives and the steps for
+ * finite differences are initialized in the {@link
+ * #DrozinerAttractionModel(Frame, UnnormalizedSphericalHarmonicsProvider,
+ * double) constructor}
  * </p>
  *
  * @see HolmesFeatherstoneAttractionModel

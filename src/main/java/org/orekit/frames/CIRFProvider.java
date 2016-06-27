@@ -35,7 +35,7 @@ import org.orekit.time.TimeFunction;
  * It <strong>must</strong> be used with the Earth Rotation Angle (REA) defined by
  * Capitaine's model and <strong>not</strong> IAU-82 sidereal
  * time which is consistent with the older models only.</p>
- * <p>Its parent frame is the GCRF frame.<p>
+ * <p>Its parent frame is the GCRF frame.
  */
 class CIRFProvider implements EOPBasedTransformProvider {
 
