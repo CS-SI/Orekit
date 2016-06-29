@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="8.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Fixed ant build script to retrieve Hipparchus dependencies correctly.
+        Fixes issue #244.
+      </action>
     </release>
     <release version="8.0" date="2016-06-30"
              description="Version 8.0 is a major release of Orekit. It introduces several new
