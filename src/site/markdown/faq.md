@@ -160,7 +160,7 @@ data for the IERS convention 2003, they have switched to IERS conventions 2010. 
 (EOP 05 C08 file) are still published. We advise then that you update these files regularly as
 the IERS publish them.
 
-Concerning UTC leap seconds, as of early 2016, the last one was introduced at the end of June 2015.
+Concerning UTC leap seconds, as of mid 2016, the last one was introduced at the end of June 2015.
 
 ## Runtime errors
 

@@ -158,7 +158,8 @@
     * possibility to add custom measurements
     * several predefined modifiers
       * tropospheric effects
-      * antenna mounts
+      * ionospheric effects
+      * station offsets
       * biases
       * delays
     * possibility to add custom measurement modifiers (even for predefined events)
