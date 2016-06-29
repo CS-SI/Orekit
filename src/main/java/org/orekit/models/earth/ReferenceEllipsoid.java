@@ -169,7 +169,7 @@ public class ReferenceEllipsoid extends OneAxisEllipsoid implements EarthShape {
      * Get the fully normalized coefficient C<sub>2n,0</sub> for the normal
      * gravity potential.
      *
-     * @param n index in C<sub>2n,0</sub>, n >=1.
+     * @param n index in C<sub>2n,0</sub>, n &gt;= 1.
      * @return normalized C<sub>2n,0</sub> of the ellipsoid
      * @see "Department of Defense World Geodetic System 1984. 2000. NIMA TR
      * 8350.2 Third Edition, Amendment 1."

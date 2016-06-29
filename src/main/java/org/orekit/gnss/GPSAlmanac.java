@@ -24,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
 /**
  * This class holds a GPS almanac as read from SEM or YUMA files.
  *
- * <p>Depending on the source (SEM or YUMA), some fields may be filled in or not.<br/>
+ * <p>Depending on the source (SEM or YUMA), some fields may be filled in or not.
  * An almanac read from a YUMA file doesn't hold SVN number, average URA and satellite
  * configuration.</p>
  *

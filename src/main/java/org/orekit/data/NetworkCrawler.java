@@ -59,7 +59,7 @@ import org.orekit.errors.OrekitException;
  *   System.setProperty("http.nonProxyHosts", "localhost|*.your.domain.com");
  *   Authenticator.setDefault(new AuthenticatorDialog());
  * </pre>
- * </p>
+ *
  * <p>
  * Gzip-compressed files are supported.
  * </p>

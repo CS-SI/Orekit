@@ -23,8 +23,8 @@ package org.orekit.time;
  * underlying comparator. An example using for {@link org.orekit.orbits.Orbit
  * Orbit} instances is given here:</p>
  * <pre>
- *     SortedSet&lt;Orbit> sortedOrbits =
- *         new TreeSet&lt;Orbit>(new ChronologicalComparator());
+ *     SortedSet&lt;Orbit&gt; sortedOrbits =
+ *         new TreeSet&lt;Orbit&gt;(new ChronologicalComparator());
  *     sortedOrbits.add(orbit1);
  *     sortedOrbits.add(orbit2);
  *     ...

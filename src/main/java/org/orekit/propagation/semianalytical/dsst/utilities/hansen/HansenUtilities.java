@@ -42,11 +42,11 @@ public class HansenUtilities {
 
     /**
      * Build the identity matrix of order 2.
-     * <p>
+     *
      * <pre>
-     *                  / 1   0 \
+     *       / 1   0 \
      *  I₂ = |       |
-     *                  \ 0   1 /
+     *       \ 0   1 /
      * </pre>
      *
      * @return the identity matrix of order 2
@@ -66,11 +66,11 @@ public class HansenUtilities {
 
     /**
      * Build the empty matrix of order 2.
-     * <p>
+     *
      * <pre>
-     *                  / 0   0 \
+     *       / 0   0 \
      *  E₂ = |       |
-     *                  \ 0   0 /
+     *       \ 0   0 /
      * </pre>
      *
      * @return the identity matrix of order 2
@@ -91,15 +91,15 @@ public class HansenUtilities {
 
     /**
      * Build the identity matrix of order 4.
-     * <p>
+     *
      * <pre>
-     *                  / 1  0  0  0 \
-     *                  |            |
-     *                   | 0  1  0  0 |
+     *       / 1  0  0  0 \
+     *       |            |
+     *       | 0  1  0  0 |
      *  I₄ = |            |
-     *                  | 0  0  1  0 |
-     *                  |             |
-     *                  \ 0  0  0  1 /
+     *       | 0  0  1  0 |
+     *       |            |
+     *       \ 0  0  0  1 /
      * </pre>
      *
      * @return the identity matrix of order 4
@@ -125,15 +125,15 @@ public class HansenUtilities {
 
     /**
      * Build the empty matrix of order 4.
-     * <p>
+     *
      * <pre>
-     *                  / 0  0  0  0 \
-     *                  |            |
-     *                   | 0  0  0  0 |
+     *       / 0  0  0  0 \
+     *       |            |
+     *       | 0  0  0  0 |
      *  E₄ = |            |
-     *                  | 0  0  0  0 |
-     *                  |             |
-     *                  \ 0  0  0  0 /
+     *       | 0  0  0  0 |
+     *       |            |
+     *       \ 0  0  0  0 /
      * </pre>
      *
      * @return the identity matrix of order 4

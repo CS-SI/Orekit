@@ -355,7 +355,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
      * with the same name as the instance
      * @exception OrekitException if the initial Jacobians have not been initialized yet
-     * @see #setInitialJacobians(SpacecraftState, int, int)
+     * @see #setInitialJacobians(SpacecraftState, int)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
     public JacobiansMapper getMapper() throws OrekitException {

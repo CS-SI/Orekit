@@ -22,7 +22,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.
 
 /** Compute the L<sub>n</sub><sup>s</sup>(γ).
  *  <p>
- *  The fomula used is: <br/>
+ *  The fomula used is: <br>
  *  L<sub>n</sub><sup>s</sup>(γ) = ( R / a )<sup>n</sup>V<sub>ns</sub>Q<sup>ns</sup>(γ)
  *  </p>
  *  @author Lucian Barbulescu

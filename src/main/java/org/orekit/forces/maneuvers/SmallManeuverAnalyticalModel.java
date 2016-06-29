@@ -39,14 +39,14 @@ import org.orekit.utils.Constants;
  * <p>These effect are computed analytically using two Jacobian matrices:
  * <ol>
  *   <li>J₀: Jacobian of Keplerian or equinoctial elements with respect
- *   to cartesian parameters at date t₀</li> allows to compute
- *   maneuver effect as a change in orbital elements at maneuver date t₀,
+ *   to cartesian parameters at date t₀ allows to compute
+ *   maneuver effect as a change in orbital elements at maneuver date t₀,</li>
  *   <li>J<sub>1/0</sub>: Jacobian of Keplerian or equinoctial elements
  *   at date t₁ with respect to Keplerian or equinoctial elements
- *   at date t₀</li> allows to propagate the change in orbital elements
- *   to final date t₁.
+ *   at date t₀ allows to propagate the change in orbital elements
+ *   to final date t₁.</li>
  * </ol>
- * </p>
+ *
  * <p>
  * The second Jacobian, J<sub>1/0</sub>, is computed using a simple Keplerian
  * model, i.e. it is the identity except for the mean motion row which also includes

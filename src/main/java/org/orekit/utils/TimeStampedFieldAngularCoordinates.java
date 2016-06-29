@@ -50,8 +50,8 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
     /** Builds a rotation/rotation rate pair.
      * @param date coordinates date
      * @param rotation rotation
-     * @param rotationRate FieldRotation<T> rate Ω (rad/s)
-     * @param rotationAcceleration FieldRotation<T> acceleration dΩ/dt (rad²/s²)
+     * @param rotationRate rotation rate Ω (rad/s)
+     * @param rotationAcceleration rotation acceleration dΩ/dt (rad²/s²)
      */
     public TimeStampedFieldAngularCoordinates(final AbsoluteDate date,
                                               final FieldRotation<T> rotation,
@@ -97,7 +97,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
 
     /** Add an offset from the instance.
      * <p>
-     * We consider here that the offset FieldRotation<T> is applied first and the
+     * We consider here that the offset rotation is applied first and the
      * instance is applied afterward. Note that angular coordinates do <em>not</em>
      * commute under this operation, i.e. {@code a.addOffset(b)} and {@code
      * b.addOffset(a)} lead to <em>different</em> results in most cases.
@@ -149,7 +149,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
     /** Interpolate angular coordinates.
      * <p>
      * The interpolated instance is created by polynomial Hermite interpolation
-     * on Rodrigues vector ensuring FieldRotation<T> rate remains the exact derivative of FieldRotation<T>.
+     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
      * </p>
      * <p>
      * This method is based on Sergei Tanygin's paper <a
@@ -158,17 +158,17 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * vector as described in Malcolm D. Shuster's paper <a
      * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
      * Survey of Attitude Representations</a>. This change avoids the singularity at π.
-     * There is still a singularity at 2π, which is handled by slightly offsetting all FieldRotation<T>s
+     * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
      * when this singularity is detected.
      * </p>
      * <p>
-     * Note that even if first time derivatives (FieldRotation<T> rates)
+     * Note that even if first time derivatives (rotation rates)
      * from sample can be ignored, the interpolated instance always includes
      * interpolated derivatives. This feature can be used explicitly to
      * compute these derivatives when it would be too complex to compute them
      * from an analytical formula: just compute a few sample points from the
      * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the FieldRotation<T>s.
+     * then use interpolation to add derivatives consistent with the rotations.
      * </p>
      * @param date interpolation date
      * @param filter filter for derivatives from the sample to use in interpolation

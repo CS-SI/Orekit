@@ -135,7 +135,7 @@ public class HarrisPriester implements Atmosphere {
     /** Simple constructor for Modified Harris-Priester atmosphere model.
      *  <p>The cosine exponent value is set to 4 by default.</p>
      *  <p>The default embedded density table is the one given in the referenced
-     *  book from Montenbruck & Gill. It is given for mean solar activity and
+     *  book from Montenbruck &amp; Gill. It is given for mean solar activity and
      *  spreads over 100 to 1000 km.</p>
      * @param sun the sun position
      * @param earth the earth body shape
@@ -149,7 +149,7 @@ public class HarrisPriester implements Atmosphere {
      *  <p>Recommanded values for the cosine exponent spread over the range
      *  2, for low inclination orbits, to 6, for polar orbits.</p>
      *  <p> The default embedded density table is the one given in the referenced
-     *  book from Montenbruck & Gill. It is given for mean solar activity and
+     *  book from Montenbruck &amp; Gill. It is given for mean solar activity and
      *  spreads over 100 to 1000 km. </p>
      *  @param sun the sun position
      * @param earth the earth body shape
@@ -168,9 +168,9 @@ public class HarrisPriester implements Atmosphere {
      *   <li>tabAltRho[][1] = min density (kg/m³)</li>
      *   <li>tabAltRho[][2] = max density (kg/m³)</li>
      *  </ul>
-     *  The altitude must be increasing without limitation in range.<br>
-     *  The internal density table is a copy of the provided one.
-     *  </p>
+     *  <p> The altitude must be increasing without limitation in range. The
+     *  internal density table is a copy of the provided one.
+     *
      *  <p>The cosine exponent value is set to 4 by default.</p>
      * @param sun the sun position
      * @param earth the earth body shape
@@ -191,9 +191,9 @@ public class HarrisPriester implements Atmosphere {
      *   <li>tabAltRho[][1] = min density (kg/m³)</li>
      *   <li>tabAltRho[][2] = max density (kg/m³)</li>
      *  </ul>
-     *  The altitude must be increasing without limitation in range.<br>
-     *  The internal density table is a copy of the provided one.
-     *  </p>
+     *  <p> The altitude must be increasing without limitation in range. The
+     *  internal density table is a copy of the provided one.
+     *
      *  @param sun the sun position
      * @param earth the earth body shape
      * @param tabAltRho the density table
@@ -238,8 +238,8 @@ public class HarrisPriester implements Atmosphere {
      *   <li>tabAltRho[][1] = min density (kg/m³)</li>
      *   <li>tabAltRho[][2] = max density (kg/m³)</li>
      *  </ul>
-     *  The altitude must be increasing without limitation in range.
-     *  </p>
+     *  <p> The altitude must be increasing without limitation in range.
+     *
      *  <p>
      *  The returned density table is a copy of the current one.
      *  </p>

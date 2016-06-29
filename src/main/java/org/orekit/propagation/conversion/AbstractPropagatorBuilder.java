@@ -69,7 +69,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     /** Build a new instance.
      * <p>
      * The template orbit is used as a model to {@link
-     * #createInitialOrbit(AbsoluteDate, double[]) create initial orbit}. It defines the
+     * #createInitialOrbit() create initial orbit}. It defines the
      * inertial frame, the central attraction coefficient, the orbit type, and is also
      * used together with the {@code positionScale} to convert from the {@link
      * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
@@ -198,11 +198,10 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
     /** Build an initial orbit using the current selected parameters.
      * <p>
-     * This method is a stripped down version of {@link #buildPropagator(AbsoluteDate, double[])}
+     * This method is a stripped down version of {@link #buildPropagator(double[])}
      * that only builds the initial orbit and not the full propagator.
      * </p>
      * @return an initial orbit
-     * @exception OrekitException if orbit cannot be build
      * @since 8.0
      */
     protected Orbit createInitialOrbit() {

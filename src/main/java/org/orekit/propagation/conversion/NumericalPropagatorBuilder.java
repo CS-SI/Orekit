@@ -51,7 +51,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
     /** Build a new instance.
      * <p>
      * The reference orbit is used as a model to {@link
-     * #createInitialOrbit(AbsoluteDate, double[]) create initial orbit}. It defines the
+     * #createInitialOrbit() create initial orbit}. It defines the
      * inertial frame, the central attraction coefficient, and is also used together
      * with the {@code positionScale} to convert from the {@link
      * ParameterDriver#setNormalizedValue(double) normalized} parameters used by the

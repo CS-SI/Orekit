@@ -74,7 +74,7 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Set the propagator to slave mode.
      * <p>This mode is used when the user needs only the final orbit at the target time.
      *  The (slave) propagator computes this result and return it to the calling
-     *  (master) application, without any intermediate feedback.<p>
+     *  (master) application, without any intermediate feedback.
      * <p>This is the default mode.</p>
      * @see #setMasterMode(double, OrekitFixedStepHandler)
      * @see #setMasterMode(OrekitStepHandler)

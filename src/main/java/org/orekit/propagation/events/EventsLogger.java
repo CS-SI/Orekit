@@ -33,7 +33,7 @@ import org.orekit.time.AbsoluteDate;
  * method is called. This class can be used to add a global logging
  * feature registering all events with their corresponding states in
  * a chronological sequence (or reverse-chronological if propagation
- * occurs backward).<p>
+ * occurs backward).
  * <p>This class works by wrapping user-provided {@link EventDetector
  * events detectors} before they are registered to the propagator. The
  * wrapper monitor the calls to {@link

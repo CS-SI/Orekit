@@ -36,7 +36,7 @@ import org.orekit.utils.ParameterDriver;
  *   <li>ground station displacements due to tidal effects</li>
  *   <li>...</li>
  * </ul>
- * </p>
+ *
  * @param <T> the type of the measurement
  * @author Luc Maisonobe
  * @since 8.0

@@ -26,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
 
 /** Tridimensional references frames class.
  *
- * <h5> Frame Presentation </h5>
+ * <h1> Frame Presentation </h1>
  * <p>This class is the base class for all frames in OREKIT. The frames are
  * linked together in a tree with some specific frame chosen as the root of the tree.
  * Each frame is defined by {@link Transform transforms} combining any number

@@ -32,7 +32,7 @@ import org.orekit.errors.OrekitException;
  * internal parameter in a physical model that needs to be slightly
  * offset. The physical model will expose to the algorithm a
  * set of instances of this class so the algorithm can call the
- * {@link #setValue(double[]) setValue} method to update the
+ * {@link #setValue(double)} method to update the
  * parameter value. Each time the value is set, the physical model
  * will be notified as it will register a {@link ParameterObserver
  * ParameterObserver} for this purpose.

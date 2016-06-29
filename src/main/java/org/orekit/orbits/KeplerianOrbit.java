@@ -48,7 +48,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   </pre>
  * where ω stands for the Perigee Argument, Ω stands for the
  * Right Ascension of the Ascending Node and v stands for the true anomaly.
- * </p>
+ *
  * <p>
  * This class supports hyperbolic orbits, using the convention that semi major
  * axis is negative for such orbits (and of course eccentricity is greater than 1).

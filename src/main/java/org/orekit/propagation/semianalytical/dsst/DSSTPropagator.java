@@ -103,7 +103,7 @@ import org.orekit.time.AbsoluteDate;
  * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, λ<sub>m</sub>)
  * in meters and radians,</li>
  * </ul>
- * </p>
+ *
  * <p>
  * The same propagator can be reused for several orbit extrapolations,
  * by resetting the initial state without modifying the other configuration
@@ -895,9 +895,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  V² r |dV| = mu |dr|
      *  </pre>
      *
-     *  So we deduce a scalar velocity error consistent with the position error. From here, we apply
+     *  <p> So we deduce a scalar velocity error consistent with the position error. From here, we apply
      *  orbits Jacobians matrices to get consistent errors on orbital parameters.
-     *  </p>
+     *
      *  <p>
      *  The tolerances are only <em>orders of magnitude</em>, and integrator tolerances are only
      *  local estimates, not global ones. So some care must be taken when using these tolerances.

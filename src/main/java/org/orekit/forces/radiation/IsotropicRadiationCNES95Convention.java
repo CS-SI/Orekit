@@ -31,6 +31,7 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
 /** This class represents the features of a simplified spacecraft.
+ *
  * <p>This model uses the coefficients described in the collective
  * book edited by CNES in 1995: Spaceflight Dynamics (part I), in
  * section 5.2.2.1.3.1 (page 296 of the English edition). The absorption
@@ -40,12 +41,12 @@ import org.orekit.utils.ParameterObserver;
  * Some authors prefer to express thermo-optical properties for surfaces
  * using the following coefficients: Ka = α, Ks = (1-α)τ, Kd = (1-α)(1-τ)
  * </pre>
- * Ka is the same absorption coefficient, and Ks is also called specular
+ * <p> Ka is the same absorption coefficient, and Ks is also called specular
  * reflection coefficient, which leads to a confusion. In fact, as the Ka,
  * Ks and Kd coefficients are the most frequently used ones (using the
  * names Ca, Cs and Cd), when speaking about reflection coefficients, it
  * is more often Cd that is considered rather than τ.
- * </p>
+ *
  * <p>
  * The classical set of coefficients Ca, Cs, and Cd are implemented in the
  * sister class {@link IsotropicRadiationClassicalConvention}, which should

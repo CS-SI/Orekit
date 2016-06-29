@@ -378,10 +378,10 @@ public enum OrbitType {
      * <pre>
      * V² r |dV| = mu |dr|
      * </pre>
-     * So we deduce a scalar velocity error consistent with the position error.
+     * <p> So we deduce a scalar velocity error consistent with the position error.
      * From here, we apply orbits Jacobians matrices to get consistent scales
      * on orbital parameters.
-     * </p>
+     *
      * @param dP user specified position error
      * @param orbit reference orbit
      * @return scaling factor array

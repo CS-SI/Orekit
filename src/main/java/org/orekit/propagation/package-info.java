@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 /**
+ * <h1> Propagation </h1>
  *
  * This package provides tools to propagate orbital states with different methods.
  *
@@ -31,32 +32,33 @@
  * farthest dates, several full-featured propagators are available to propagate
  * the state.
  * </p>
- * <p>
- * <h5> Keplerian propagation </h5>
- * The {@link org.orekit.propagation.analytical.KeplerianPropagator}
+ *
+ * <h2> Keplerian propagation </h2>
+ *
+ * <p> The {@link org.orekit.propagation.analytical.KeplerianPropagator}
  * implements the {@link org.orekit.propagation.Propagator}
  * interface, which ensures that we can obtain a propagated SpacecraftState
  * at any time once the instance is initialized with an initial state.
  * This extrapolation is not a problem with a simple
  * {@link org.orekit.orbits.EquinoctialOrbit}
  * representation: only the mean anomaly value changes.
- * </p>
- * <p>
- * <h5> Eckstein-Hechler propagation </h5>
- * This analytical model is suited for near circular orbits and inclination
+ *
+ * <h2> Eckstein-Hechler propagation </h2>
+ *
+ * <p> This analytical model is suited for near circular orbits and inclination
  * neither equatorial nor critical. It considers J2 to J6 potential
  * coefficients correctors, and uses mean parameters to compute the new
  * position. As the keplerian propagator, it implements the
  * {@link org.orekit.propagation.Propagator} interface.
- * </p>
- * <p>
- * <h5> Numerical propagation </h5>
- * It is the most important part of the OREKIT project. Based on Hipparchus
+ *
+ * <h2> Numerical propagation </h2>
+ *
+ * <p> It is the most important part of the OREKIT project. Based on Hipparchus
  * integrators, the {@link org.orekit.propagation.numerical.NumericalPropagator}
  * class realizes the interface between space mechanics and mathematical
  * resolutions. If its utilization seems difficult on first sight, it is in
  * fact quite clear and intuitive.
- * </p>
+ *
  * <p>
  * The mathematical problem to integrate is a seven dimension time derivative
  * equations system. The six first equations are given by the Gauss equations

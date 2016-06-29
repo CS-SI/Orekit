@@ -26,7 +26,6 @@
  *   <li>Geomagnetic Field</li>
  *   <li>Geoid</li>
  * </ul>
- * </p>
  *
  * <h2>Geoid</h2>
  *

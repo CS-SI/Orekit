@@ -30,8 +30,8 @@ import org.orekit.utils.IERSConventions;
 
 /** Mean Equator, Mean Equinox Frame.
  * <p>This frame handles precession effects according to to selected IERS conventions.</p>
- * <p>Its parent frame is the GCRF frame.<p>
- * <p>It is sometimes called Mean of Date (MoD) frame.<p>
+ * <p>Its parent frame is the GCRF frame.
+ * <p>It is sometimes called Mean of Date (MoD) frame.
  * @author Pascal Parraud
  */
 class MODProvider implements TransformProvider {

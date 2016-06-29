@@ -44,18 +44,18 @@ public interface PropagatorBuilder {
     double[] getSelectedNormalizedParameters();
 
     /** Get the orbit type expected for the 6 first parameters in
-     * {@link #buildPropagator(AbsoluteDate, double[])}.
-     * @return orbit type to use in {@link #buildPropagator(AbsoluteDate, double[])}
-     * @see #buildPropagator(AbsoluteDate, double[])
+     * {@link #buildPropagator(double[])}.
+     * @return orbit type to use in {@link #buildPropagator(double[])}
+     * @see #buildPropagator(double[])
      * @see #getPositionAngle()
      * @since 7.1
      */
     OrbitType getOrbitType();
 
     /** Get the position angle type expected for the 6 first parameters in
-     * {@link #buildPropagator(AbsoluteDate, double[])}.
-     * @return position angle type to use in {@link #buildPropagator(AbsoluteDate, double[])}
-     * @see #buildPropagator(AbsoluteDate, double[])
+     * {@link #buildPropagator(double[])}.
+     * @return position angle type to use in {@link #buildPropagator(double[])}
+     * @see #buildPropagator(double[])
      * @see #getOrbitType()
      * @since 7.1
      */

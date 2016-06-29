@@ -158,7 +158,7 @@ public class CoefficientsFactory {
      * @param n n
      * @param s s
      * @return The V<sub>n, s</sub> <sup>m</sup> coefficient
-     * @throws OrekitException if m > n
+     * @throws OrekitException if m &gt; n
      */
     public static double getVmns(final int m, final int n, final int s)
         throws OrekitException {

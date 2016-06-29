@@ -26,7 +26,8 @@ import org.hipparchus.complex.Complex;
  *  <p>
  *  Those series are given in Danielson paper by expression 2.5.3-(5):
  *  <pre>C<sub>j</sub>(k, h) + i S<sub>j</sub>(k, h) = (k+ih)<sup>j</sup> </pre>
- *  </p>
+ *
+ *  <p>
  *  The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) elements are store as an
  *  {@link ArrayList} of {@link Complex} number, the C<sub>j</sub>(k, h) being
  *  represented by the real and the S<sub>j</sub>(k, h) by the imaginary part.

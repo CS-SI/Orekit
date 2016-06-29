@@ -60,7 +60,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *        {@link org.orekit.forces.drag.DragForce drag force model}
  *        computation.</li>
  * </ul>
- *</p>
+ *
  *<p>
  * This model provides dense output for altitudes beyond 120 km. Computed data are:
  * <ul>
@@ -72,7 +72,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *   <li>Partial densities in (kg/m³) : hydrogen, helium, atomic oxygen,
  *   molecular nitrogen, molecular oxygen, atomic nitrogen</li>
  * </ul>
- * </p>
+ *
  * <p>
  * The model needs geographical and time information to compute general values,
  * but also needs space weather data : mean and instantaneous solar flux and
@@ -83,8 +83,8 @@ import org.orekit.utils.PVCoordinatesProvider;
  * flux can be set to the mean value if the data is not available. Geomagnetic
  * activity is represented by the Kp indice, which goes from 1 (very low activity) to
  * 9 (high activity).
+ *
  * <p>
- * </p>
  * All these data can be found on the <a href="http://sec.noaa.gov/Data/index.html">
  * NOAA (National Oceanic and Atmospheric Administration) website.</a>
  * </p>
@@ -202,12 +202,12 @@ public class DTM2000 implements Atmosphere {
     private double[] cachedFbar = new double[3];
 
     /** Kp coefficients.
-     * <p><ul>
+     * <ul>
      *   <li>akp[1] = 3-hourly kp</li>
      *   <li>akp[2] = 0 (not used)</li>
      *   <li>akp[3] = mean kp of last 24 hours</li>
      *   <li>akp[4] = 0 (not used)</li>
-     * </ul></p>
+     * </ul>
      */
     private double[] akp = new double[5];
 

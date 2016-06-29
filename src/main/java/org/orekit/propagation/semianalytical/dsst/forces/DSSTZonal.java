@@ -971,9 +971,9 @@ public class DSSTZonal implements DSSTForceModel {
      * Those coefficients are given in Danielson paper by expressions 4.1-(20) to 4.1.-(25)
      * </p>
      * <p>
-     * The coefficients are: <br/>
-     * - C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> <br/>
-     * - ρ<sub>j</sub> and σ<sub>j</sub> <br/>
+     * The coefficients are: <br>
+     * - C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> <br>
+     * - ρ<sub>j</sub> and σ<sub>j</sub> <br>
      * - C<sub>i</sub>⁰
      * </p>
      *
