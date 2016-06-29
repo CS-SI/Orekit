@@ -288,6 +288,10 @@ public class ZipJarCrawler implements DataProvider {
                 /** {@inheritDoc} */
                 @Override
                 public EntryStream next() throws NoSuchElementException {
+                    if (next == null) {
+                        // this should never happen
+                        throw new NoSuchElementException();
+                    }
                     return next;
                 }
 

@@ -162,8 +162,8 @@ public class Range extends AbstractMeasurement<Range> {
             dRdPx * dt, dRdPy * dt, dRdPz * dt
         });
 
-        if (station.getEastOffsetDriver().isSelected()  |
-            station.getNorthOffsetDriver().isSelected() |
+        if (station.getEastOffsetDriver().isSelected()  ||
+            station.getNorthOffsetDriver().isSelected() ||
             station.getZenithOffsetDriver().isSelected()) {
 
             // donwlink partial derivatives
