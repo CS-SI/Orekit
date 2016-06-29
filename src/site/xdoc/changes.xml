@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="8.1" date="TBD" description="TBD">
+    </release>
     <release version="8.0" date="2016-06-30"
              description="Version 8.0 is a major release of Orekit. It introduces several new
              features and bug fixes as well as a major dependency change. New features introduced
@@ -103,7 +105,7 @@
         Fixes issue #238
       </action>
     </release>
-    <release version="7.2" date="TBC"
+    <release version="7.2" date="2016-04-05"
              description="Version 7.2 is a minor release of Orekit. It introduces several new
              features and bug fixes. The most important features introduced in version 7.2
              are handling of GLONASS and QZSS time scales, support for local time zones
