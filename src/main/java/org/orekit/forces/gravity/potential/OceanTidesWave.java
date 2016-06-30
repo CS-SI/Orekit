@@ -21,7 +21,6 @@ import org.orekit.data.BodiesElements;
 
 /** Container for ocen tides coefficients for one tide wave.
  * @see org.orekit.forces.gravity.OceanTides
- * @see org.orekit.forces.gravity.OceanTidesField
  * @author Luc Maisonobe
  * @since 6.1
  * @see OceanTidesReader
