@@ -25,7 +25,8 @@ import org.hipparchus.complex.Complex;
  *  and their partial derivatives with respect to k and h.
  *  <p>
  *  Those series are given in Danielson paper by expression 2.5.3-(5):
- *  <pre>C<sub>j</sub>(k, h) + i S<sub>j</sub>(k, h) = (k+ih)<sup>j</sup> </pre>
+ *
+ *  <p> C<sub>j</sub>(k, h) + i S<sub>j</sub>(k, h) = (k+ih)<sup>j</sup>
  *
  *  <p>
  *  The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) elements are store as an

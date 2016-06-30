@@ -57,43 +57,44 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *
- *  <h1> Example </h1>
+ * <h1> Examples </h1>
  *
- * <pre>
+ * <h2> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h2>
  *
- * 1 ) Example of translation from R<sub>A</sub> to R<sub>B</sub>:
- * We want to transform the {@link PVCoordinates} PV<sub>A</sub> to PV<sub>B</sub>.
+ * <p> We want to transform the {@link PVCoordinates} PV<sub>A</sub> to
+ * PV<sub>B</sub> with :
+ * <p> PV<sub>A</sub> = ({1, 0, 0}, {2, 0, 0}, {3, 0, 0}); <br>
+ *     PV<sub>B</sub> = ({0, 0, 0}, {0, 0, 0}, {0, 0, 0});
  *
- * With :  PV<sub>A</sub> = ({1, 0, 0}, {2, 0, 0}, {3, 0, 0});
- * and  :  PV<sub>B</sub> = ({0, 0, 0}, {0, 0, 0}, {0, 0, 0});
+ * <p> The transform to apply then is defined as follows :
  *
- * The transform to apply then is defined as follows :
- *
+ * <pre><code>
  * Vector3D translation  = new Vector3D(-1, 0, 0);
  * Vector3D velocity     = new Vector3D(-2, 0, 0);
  * Vector3D acceleration = new Vector3D(-3, 0, 0);
  *
  * Transform R1toR2 = new Transform(date, translation, velocity, acceleration);
  *
- * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
+ * PVB = R1toR2.transformPVCoordinates(PVA);
+ * </code></pre>
  *
+ * <h2> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h2>
+ * <p> We want to transform the {@link PVCoordinates} PV<sub>A</sub> to
+ * PV<sub>B</sub> with
  *
- * 2 ) Example of rotation from R<sub>A</sub> to R<sub>B</sub>:
- * We want to transform the {@link PVCoordinates} PV<sub>A</sub> to PV<sub>B</sub>.
+ * <p> PV<sub>A</sub> = ({1, 0, 0}, { 1, 0, 0}); <br>
+ *     PV<sub>B</sub> = ({0, 1, 0}, {-2, 1, 0});
  *
- * With :  PV<sub>A</sub> = ({1, 0, 0}, {1, 0, 0});
- * and  :  PV<sub>B</sub> = ({0, 1, 0}, {-2, 1, 0});
+ * <p> The transform to apply then is defined as follows :
  *
- * The transform to apply then is defined as follows :
- *
+ * <pre><code>
  * Rotation rotation = new Rotation(Vector3D.PLUS_K, FastMath.PI / 2);
  * Vector3D rotationRate = new Vector3D(0, 0, -2);
  *
  * Transform R1toR2 = new Transform(rotation, rotationRate);
  *
- * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
- *
- * </pre>
+ * PVB = R1toR2.transformPVCoordinates(PVA);
+ * </code></pre>
  *
  * @author Luc Maisonobe
  * @author Fabien Maussion

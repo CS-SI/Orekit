@@ -25,29 +25,29 @@ import java.util.TreeMap;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
 
-/** Implementation of the Modified Newcomb Operators.
+/**
+ * Implementation of the Modified Newcomb Operators.
+ *
+ *  <p> From equations 2.7.3 - (12)(13) of the Danielson paper, those operators
+ *  are defined as:
+ *
  *  <p>
- *  From equations 2.7.3 - (12)(13) of the Danielson paper, those operators are defined as:
- *  <pre>
- *  4(ρ + σ)Y<sub>ρ,σ</sub><sup>n,s</sup> =
- *     2(2s - n)Y<sub>ρ-1,σ</sub><sup>n,s+1</sup> + (s - n)Y<sub>ρ-2,σ</sub><sup>n,s+2</sup>
- *   - 2(2s + n)Y<sub>ρ,σ-1</sub><sup>n,s-1</sup> - (s+n)Y<sub>ρ,σ-2</sub><sup>n,s-2</sup>
+ *  4(ρ + σ)Y<sub>ρ,σ</sub><sup>n,s</sup> = <br>
+ *     2(2s - n)Y<sub>ρ-1,σ</sub><sup>n,s+1</sup> + (s - n)Y<sub>ρ-2,σ</sub><sup>n,s+2</sup> <br>
+ *   - 2(2s + n)Y<sub>ρ,σ-1</sub><sup>n,s-1</sup> - (s+n)Y<sub>ρ,σ-2</sub><sup>n,s-2</sup> <br>
  *   + 2(2ρ + 2σ + 2 + 3n)Y<sub>ρ-1,σ-1</sub><sup>n,s</sup>
- *  </pre>
- *  <p> Initialization is given by : <pre>Y<sub>0,0</sub><sup>n,s</sup> = 1</pre>
  *
+ *  <p> Initialization is given by : Y<sub>0,0</sub><sup>n,s</sup> = 1
  *
- *  Internally, the Modified Newcomb Operators are stored as an array of {@link PolynomialFunction} :
+ *  <p> Internally, the Modified Newcomb Operators are stored as an array of
+ *  {@link PolynomialFunction} :
  *
- *  <pre>
- *  Y<sub>ρ,σ</sub><sup>n,s</sup> = P<sub>k₀</sub> + P<sub>k₁</sub>n + ... + P<sub>k<sub>j</sub></sub>n<sup>j</sup>
- *  </pre>
+ *  <p> Y<sub>ρ,σ</sub><sup>n,s</sup> = P<sub>k₀</sub> + P<sub>k₁</sub>n + ... +
+ *  P<sub>k<sub>j</sub></sub>n<sup>j</sup>
  *
- * where the P<sub>k<sub>j</sub></sub> are given by
+ * <p> where the P<sub>k<sub>j</sub></sub> are given by
  *
- * <pre>
- *  P<sub>k<sub>j</sub></sub> = ∑<sub>j=0;ρ</sub> a<sub>j</sub>s<sup>j</sup>
- * </pre>
+ * <p> P<sub>k<sub>j</sub></sub> = ∑<sub>j=0;ρ</sub> a<sub>j</sub>s<sup>j</sup>
  *
  * @author Romain Di Costanzo
  * @author Pascal Parraud

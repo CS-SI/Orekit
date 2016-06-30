@@ -143,11 +143,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <pre>
-     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
-     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *   C<sub>n,0</sub> = -J<sub>n</sub>
-     * </pre>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
      * @param initialOrbit initial orbit
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m³/s²)
@@ -187,11 +188,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <pre>
-     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
-     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *   C<sub>n,0</sub> = -J<sub>n</sub>
-     * </pre>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
      * @param initialOrbit initial orbit
      * @param mass spacecraft mass
      * @param referenceRadius reference radius of the Earth for the potential model (m)
@@ -232,11 +234,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <pre>
-     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
-     *                     <span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *   C<sub>n,0</sub> = -J<sub>n</sub>
-     * </pre>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param referenceRadius reference radius of the Earth for the potential model (m)
@@ -278,11 +281,12 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
      * are related to both the normalized coefficients
      * <span style="text-decoration: overline">C</span><sub>n,0</sub>
      *  and the J<sub>n</sub> one as follows:</p>
-     * <pre>
-     *   C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
-     *                      <span style="text-decoration: overline">C</span><sub>n,0</sub>
-     *   C<sub>n,0</sub> = -J<sub>n</sub>
-     * </pre>
+     *
+     * <p> C<sub>n,0</sub> = [(2-δ<sub>0,m</sub>)(2n+1)(n-m)!/(n+m)!]<sup>½</sup>
+     * <span style="text-decoration: overline">C</span><sub>n,0</sub>
+     *
+     * <p> C<sub>n,0</sub> = -J<sub>n</sub>
+     *
      * @param initialOrbit initial orbit
      * @param attitudeProv attitude provider
      * @param mass spacecraft mass
