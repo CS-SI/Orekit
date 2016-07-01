@@ -619,17 +619,22 @@ public class AbsoluteDate
                                 TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
     }
 
-    /** Build an instance corresponding to a Modified Julian Day date.
-     * @param mjd modified Julian day
-     * @param secondsInDay seconds in the day
+    /**
+     * Build an instance corresponding to a Modified Julian Day date.
+     *
+     * @param mjd       modified Julian day
+     * @param seconds   past the start of the {@code mjd}. Therefore the last
+     *                  second of most days is 86399, but on days with a leap
+     *                  second in the UTC time scale the last second is 86400.
      * @param timeScale time scale in which the seconds in day are defined
      * @return a new instant
      */
-    public static AbsoluteDate createMJDDate(final int mjd, final double secondsInDay,
+    public static AbsoluteDate createMJDDate(final int mjd,
+                                             final double seconds,
                                              final TimeScale timeScale) {
-        return new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                new TimeComponents(secondsInDay),
-                                timeScale);
+        final DateComponents date =
+                new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
+        return new AbsoluteDate(date, timeScale).shiftedBy(seconds);
     }
 
     /** Build an instance corresponding to a GPS date.

@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="8.1" date="TBD" description="TBD">
+      <action dev="evan" type="fix">
+        Fix AbsoluteDate.createMJDDate when the time scale is UTC and the date
+        is during a leap second.
+        Fixes issue #247
+      </action>
       <action dev="luc" type="fix" >
         Fixed ant build script to retrieve Hipparchus dependencies correctly.
         Fixes issue #244.

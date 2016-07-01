@@ -767,6 +767,23 @@ public class AbsoluteDateTest {
         Assert.assertEquals("2015-07-01T02:59:60.000", t.toString(TimeScalesFactory.getGLONASS()));
     }
 
+    @Test
+    public void testMjdInLeap() {
+        // inside a leap second
+        AbsoluteDate date1 = new AbsoluteDate(2008, 12, 31, 23, 59, 60.5, utc);
+
+        // check date to MJD conversion
+        DateTimeComponents date1Components = date1.getComponents(utc);
+        int mjd = date1Components.getDate().getMJD();
+        double seconds = date1Components.getTime().getSecondsInUTCDay();
+        Assert.assertEquals(54831, mjd);
+        Assert.assertEquals(86400.5, seconds, 0);
+
+        // check MJD to date conversion
+        AbsoluteDate date2 = AbsoluteDate.createMJDDate(mjd, seconds, utc);
+        Assert.assertEquals(date1, date2);
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
