@@ -23,6 +23,7 @@ import java.util.TimeZone;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
@@ -619,23 +620,41 @@ public class AbsoluteDate
                                 TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
     }
 
-    /**
-     * Build an instance corresponding to a Modified Julian Day date.
-     *
-     * @param mjd       modified Julian day
-     * @param seconds   past the start of the {@code mjd}. Therefore the last
-     *                  second of most days is 86399, but on days with a leap
-     *                  second in the UTC time scale the last second is 86400.
+    /** Build an instance corresponding to a Modified Julian Day date.
+     * @param mjd modified Julian day
+     * @param secondsInDay seconds in the day
      * @param timeScale time scale in which the seconds in day are defined
      * @return a new instant
+     * @exception OrekitIllegalArgumentException if seconds number is out of range
      */
-    public static AbsoluteDate createMJDDate(final int mjd,
-                                             final double seconds,
-                                             final TimeScale timeScale) {
-        final DateComponents date =
-                new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
-        return new AbsoluteDate(date, timeScale).shiftedBy(seconds);
+    public static AbsoluteDate createMJDDate(final int mjd, final double secondsInDay,
+                                             final TimeScale timeScale)
+        throws OrekitIllegalArgumentException {
+        final DateComponents dc = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
+        final TimeComponents tc;
+        if (secondsInDay >= Constants.JULIAN_DAY) {
+            // check we are really allowed to use this number of seconds
+            final int    secondsA = 86399; // 23:59:59, i.e. 59s in the last minute of the day
+            final double secondsB = secondsInDay - secondsA;
+            final TimeComponents safeTC = new TimeComponents(secondsA, 0.0);
+            final AbsoluteDate safeDate = new AbsoluteDate(dc, safeTC, timeScale);
+            if (timeScale.minuteDuration(safeDate) > 59 + secondsB) {
+                // we are within the last minute of the day, the number of seconds is OK
+                return safeDate.shiftedBy(secondsB);
+            } else {
+                // let TimeComponents trigger an OrekitIllegalArgumentException
+                // for the wrong number of seconds
+                tc = new TimeComponents(secondsA, secondsB);
+            }
+        } else {
+            tc = new TimeComponents(secondsInDay);
+        }
+
+        // create the date
+        return new AbsoluteDate(dc, tc, timeScale);
+
     }
+
 
     /** Build an instance corresponding to a GPS date.
      * <p>GPS dates are provided as a week number starting at

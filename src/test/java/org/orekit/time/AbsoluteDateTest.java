@@ -28,6 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
 public class AbsoluteDateTest {
@@ -782,6 +784,16 @@ public class AbsoluteDateTest {
         // check MJD to date conversion
         AbsoluteDate date2 = AbsoluteDate.createMJDDate(mjd, seconds, utc);
         Assert.assertEquals(date1, date2);
+
+        // check we still detect seconds overflow
+        try {
+            AbsoluteDate.createMJDDate(mjd, seconds + 1.0, utc);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER, oiae.getSpecifier());
+            Assert.assertEquals(86401.5, ((Double) oiae.getParts()[0]).doubleValue(), 1.0e-10);
+        }
+
     }
 
     @Before

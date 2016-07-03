@@ -126,9 +126,10 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * </p>
      * @param secondInDay second number from 0.0 to {@link
      * org.orekit.utils.Constants#JULIAN_DAY} (excluded)
-     * @exception IllegalArgumentException if seconds number is out of range
+     * @exception OrekitIllegalArgumentException if seconds number is out of range
      */
-    public TimeComponents(final double secondInDay) {
+    public TimeComponents(final double secondInDay)
+        throws OrekitIllegalArgumentException {
         this(0, secondInDay);
     }
 
@@ -144,9 +145,10 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * </p>
      * @param secondInDayA first part of the second number
      * @param secondInDayB last part of the second number
-     * @exception IllegalArgumentException if seconds number is out of range
+     * @exception OrekitIllegalArgumentException if seconds number is out of range
      */
-    public TimeComponents(final int secondInDayA, final double secondInDayB) {
+    public TimeComponents(final int secondInDayA, final double secondInDayB)
+        throws OrekitIllegalArgumentException {
 
         // split the numbers as a whole number of seconds
         // and a fractional part between 0.0 (included) and 1.0 (excluded)
@@ -158,7 +160,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if (wholeSeconds < 0 || wholeSeconds > 86400) {
             // beware, 86400 must be allowed to cope with leap seconds introduction days
             throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER,
-                                                     wholeSeconds);
+                                                     wholeSeconds + fractional);
         }
 
         // extract the time components
