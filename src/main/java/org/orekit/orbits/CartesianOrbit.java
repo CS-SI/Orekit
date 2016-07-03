@@ -21,11 +21,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.math3.exception.ConvergenceException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -47,7 +48,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *     <li>zDot</li>
  *   </ul>
  * contained in {@link PVCoordinates}.
- * </p>
+ *
 
  * <p>
  * Note that the implementation of this class delegates all non-cartesian related
@@ -399,7 +400,7 @@ public class CartesianOrbit extends Orbit {
 
         } while (++iter < 50);
 
-        throw new ConvergenceException();
+        throw new MathIllegalStateException(LocalizedCoreFormats.CONVERGENCE_FAILED);
 
     }
 
@@ -454,8 +455,8 @@ public class CartesianOrbit extends Orbit {
 
         } while (++iter < 50);
 
-        throw new ConvergenceException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
-                                       iter);
+        throw new MathIllegalStateException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
+                                            iter);
     }
 
     @Override

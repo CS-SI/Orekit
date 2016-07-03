@@ -22,11 +22,11 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -523,7 +523,6 @@ public class PoissonSeriesParserTest {
         InputStream zStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
         PoissonSeries<DerivativeStructure> sSeries = parser.parse(zStream, "2010/tab5.2d.txt");
-        @SuppressWarnings("unchecked")
         PoissonSeries.CompiledSeries<DerivativeStructure> xysSeries =
                 PoissonSeries.compile(xSeries, ySeries, sSeries);
 
@@ -577,6 +576,7 @@ public class PoissonSeriesParserTest {
 
             // direct computation of derivatives
             FieldBodiesElements<DerivativeStructure> elements = arguments.evaluateDerivative(date);
+            Assert.assertEquals(0.0, elements.getDate().durationFrom(date), 1.0e-15);
             DerivativeStructure xDirect = xSeries.value(elements);
             DerivativeStructure yDirect = ySeries.value(elements);
             DerivativeStructure zDirect = zSeries.value(elements);

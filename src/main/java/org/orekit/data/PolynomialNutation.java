@@ -18,7 +18,7 @@ package org.orekit.data;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.RealFieldElement;
+import org.hipparchus.RealFieldElement;
 
 /**
  * Polynomial nutation function.

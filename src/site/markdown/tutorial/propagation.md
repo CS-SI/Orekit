@@ -149,7 +149,7 @@ As in the slave mode tutorial above, let's define some initial state with:
     SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
 Here we use a more sophisticated `NumericalPropagator` based on an adaptive
-step integrator provided by the underlying Apache Commons Math library,
+step integrator provided by the underlying Hipparchus library,
 but it doesn't matter which integrator is used.
 
     // Adaptive step integrator
@@ -284,7 +284,7 @@ As in the two tutorials above, let's first define some initial state as:
 
 Here we use a simple `NumericalPropagator`, without perturbation,
 based on a classical fixed step Runge-Kutta integrator provided
-by the underlying Apache Commons Math library.
+by the underlying Hipparchus library.
 
     double stepSize = 10;
     FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);

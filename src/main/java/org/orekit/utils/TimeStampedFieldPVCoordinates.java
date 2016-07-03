@@ -18,9 +18,9 @@ package org.orekit.utils;
 
 import java.util.Collection;
 
-import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.analysis.interpolation.FieldHermiteInterpolator;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -353,7 +353,6 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
-    @SuppressWarnings("unchecked")
     public static <T extends RealFieldElement<T>>
         TimeStampedFieldPVCoordinates<T> interpolate(final AbsoluteDate date,
                                                      final CartesianDerivativesFilter filter,

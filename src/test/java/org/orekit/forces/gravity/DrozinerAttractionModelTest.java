@@ -21,15 +21,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,8 +34,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -95,7 +90,8 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
                                                              GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu,
                                                                                                          TideSystem.UNKNOWN,
                                                              new double[][] { { 0.0 }, { 0.0 }, { c20 } },
-                                                             new double[][] { { 0.0 }, { 0.0 }, { 0.0 } })));
+                                                             new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }),
+                                                             1.0));
 
         // let the step handler perform the test
         propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler());
@@ -114,18 +110,11 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
         private PVCoordinatesProvider sun;
         private double previous;
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
         public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws PropagationException {
+            throws OrekitException {
 
             AbsoluteDate current = currentState.getDate();
-            Vector3D sunPos;
-            try {
-                sunPos = sun.getPVCoordinates(current , FramesFactory.getEME2000()).getPosition();
-            } catch (OrekitException e) {
-                throw new PropagationException(e);
-            }
+            Vector3D sunPos = sun.getPVCoordinates(current , FramesFactory.getEME2000()).getPosition();
             Vector3D normal = currentState.getPVCoordinates().getMomentum();
             double angle = Vector3D.angle(sunPos , normal);
             if (! Double.isNaN(previous)) {
@@ -165,7 +154,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        })));
+        }), 1.0));
 
         // let the step handler perform the test
         propagator.setMasterMode(20,
@@ -188,30 +177,22 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
         private EcksteinHechlerPropagator referencePropagator;
 
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
+        public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
 
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
-            try {
+            SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
+            Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
+            Vector3D posDROZ = currentState.getPVCoordinates().getPosition();
+            Vector3D velEHP  = EHPOrbit.getPVCoordinates().getVelocity();
+            Vector3D dif     = posEHP.subtract(posDROZ);
 
-                SpacecraftState EHPOrbit   = referencePropagator.propagate(currentState.getDate());
-                Vector3D posEHP  = EHPOrbit.getPVCoordinates().getPosition();
-                Vector3D posDROZ = currentState.getPVCoordinates().getPosition();
-                Vector3D velEHP  = EHPOrbit.getPVCoordinates().getVelocity();
-                Vector3D dif     = posEHP.subtract(posDROZ);
+            Vector3D T = new Vector3D(1 / velEHP.getNorm(), velEHP);
+            Vector3D W = EHPOrbit.getPVCoordinates().getMomentum().normalize();
+            Vector3D N = Vector3D.crossProduct(W, T);
 
-                Vector3D T = new Vector3D(1 / velEHP.getNorm(), velEHP);
-                Vector3D W = EHPOrbit.getPVCoordinates().getMomentum().normalize();
-                Vector3D N = Vector3D.crossProduct(W, T);
-
-                Assert.assertTrue(dif.getNorm() < 111);
-                Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, T)) < 111);
-                Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, N)) <  54);
-                Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, W)) <  12);
-
-            } catch (PropagationException e) {
-                e.printStackTrace();
-            }
+            Assert.assertTrue(dif.getNorm() < 111);
+            Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, T)) < 111);
+            Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, N)) <  54);
+            Assert.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, W)) <  12);
 
         }
 
@@ -244,7 +225,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         SpacecraftState hfOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
         propagator.removeForceModels();
-        propagator.addForceModel(new DrozinerAttractionModel(itrf2008, unnormalized));
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2008, unnormalized, 1.0));
                                                              
 
         propagator.setInitialState(new SpacecraftState(orbit));
@@ -273,18 +254,10 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
         final DrozinerAttractionModel drozinerModel =
                 new DrozinerAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
-                                            GravityFieldFactory.getUnnormalizedProvider(20, 20));
+                                            GravityFieldFactory.getUnnormalizedProvider(20, 20), 1.0);
 
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
-        try {
-            drozinerModel.accelerationDerivatives(state, name);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES,
-                                oe.getSpecifier());
-        }
-        drozinerModel.setSteps(1.0, 1.0e10);
-        checkParameterDerivative(state, drozinerModel, name, 1.0e-5, 2.0e-11);
+        checkParameterDerivative(state, drozinerModel, name, 1.0e-5, 2.1e-11);
 
     }
 
@@ -311,31 +284,13 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
                                                                             tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         DrozinerAttractionModel drModel =
-                new DrozinerAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50));
+                new DrozinerAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50), 1.0);
         Assert.assertEquals(TideSystem.UNKNOWN, drModel.getTideSystem());
         propagator.addForceModel(drModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);
-        try {
-            DerivativeStructure one = new DerivativeStructure(7, 1, 1.0);
-            drModel.accelerationDerivatives(state0.getDate(), state0.getFrame(),
-                                            new FieldVector3D<DerivativeStructure>(one, state0.getPVCoordinates().getPosition()),
-                                            new FieldVector3D<DerivativeStructure>(one, state0.getPVCoordinates().getVelocity()),
-                                            new FieldRotation<DerivativeStructure>(one.multiply(state0.getAttitude().getRotation().getQ0()),
-                                                           one.multiply(state0.getAttitude().getRotation().getQ1()),
-                                                           one.multiply(state0.getAttitude().getRotation().getQ2()),
-                                                           one.multiply(state0.getAttitude().getRotation().getQ3()),
-                                                           false),
-                                            one.multiply(state0.getMass()));
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES,
-                                oe.getSpecifier());
-        }
-        drModel.setSteps(1.0, 1.0e10);
-
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           40000, tolerances[0], 2.0e-7);
+                           40000, tolerances[0], 7.9e-6);
 
     }
 

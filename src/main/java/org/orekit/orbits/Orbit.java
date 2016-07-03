@@ -18,12 +18,13 @@ package org.orekit.orbits;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.QRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.DecompositionSolver;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.QRDecomposition;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -509,9 +510,9 @@ public abstract class Orbit
      */
     protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ();
+        row[j]     = MathArrays.linearCombination(a1, v1.getX(), a2, v2.getX());
+        row[j + 1] = MathArrays.linearCombination(a1, v1.getY(), a2, v2.getY());
+        row[j + 2] = MathArrays.linearCombination(a1, v1.getZ(), a2, v2.getZ());
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -527,9 +528,9 @@ public abstract class Orbit
     protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
                                       final double a3, final Vector3D v3,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ();
+        row[j]     = MathArrays.linearCombination(a1, v1.getX(), a2, v2.getX(), a3, v3.getX());
+        row[j + 1] = MathArrays.linearCombination(a1, v1.getY(), a2, v2.getY(), a3, v3.getY());
+        row[j + 2] = MathArrays.linearCombination(a1, v1.getZ(), a2, v2.getZ(), a3, v3.getZ());
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -547,9 +548,9 @@ public abstract class Orbit
     protected static void fillHalfRow(final double a1, final Vector3D v1, final double a2, final Vector3D v2,
                                       final double a3, final Vector3D v3, final double a4, final Vector3D v4,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX() + a4 * v4.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY() + a4 * v4.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ() + a4 * v4.getZ();
+        row[j]     = MathArrays.linearCombination(a1, v1.getX(), a2, v2.getX(), a3, v3.getX(), a4, v4.getX());
+        row[j + 1] = MathArrays.linearCombination(a1, v1.getY(), a2, v2.getY(), a3, v3.getY(), a4, v4.getY());
+        row[j + 2] = MathArrays.linearCombination(a1, v1.getZ(), a2, v2.getZ(), a3, v3.getZ(), a4, v4.getZ());
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -570,9 +571,18 @@ public abstract class Orbit
                                       final double a3, final Vector3D v3, final double a4, final Vector3D v4,
                                       final double a5, final Vector3D v5,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX() + a4 * v4.getX() + a5 * v5.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY() + a4 * v4.getY() + a5 * v5.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ() + a4 * v4.getZ() + a5 * v5.getZ();
+        final double[] a = new double[] {
+            a1, a2, a3, a4, a5
+        };
+        row[j]     = MathArrays.linearCombination(a, new double[] {
+            v1.getX(), v2.getX(), v3.getX(), v4.getX(), v5.getX()
+        });
+        row[j + 1] = MathArrays.linearCombination(a, new double[] {
+            v1.getY(), v2.getY(), v3.getY(), v4.getY(), v5.getY()
+        });
+        row[j + 2] = MathArrays.linearCombination(a, new double[] {
+            v1.getZ(), v2.getZ(), v3.getZ(), v4.getZ(), v5.getZ()
+        });
     }
 
     /** Fill a Jacobian half row with a linear combination of vectors.
@@ -595,9 +605,18 @@ public abstract class Orbit
                                       final double a3, final Vector3D v3, final double a4, final Vector3D v4,
                                       final double a5, final Vector3D v5, final double a6, final Vector3D v6,
                                       final double[] row, final int j) {
-        row[j]     = a1 * v1.getX() + a2 * v2.getX() + a3 * v3.getX() + a4 * v4.getX() + a5 * v5.getX() + a6 * v6.getX();
-        row[j + 1] = a1 * v1.getY() + a2 * v2.getY() + a3 * v3.getY() + a4 * v4.getY() + a5 * v5.getY() + a6 * v6.getY();
-        row[j + 2] = a1 * v1.getZ() + a2 * v2.getZ() + a3 * v3.getZ() + a4 * v4.getZ() + a5 * v5.getZ() + a6 * v6.getZ();
+        final double[] a = new double[] {
+            a1, a2, a3, a4, a5, a6
+        };
+        row[j]     = MathArrays.linearCombination(a, new double[] {
+            v1.getX(), v2.getX(), v3.getX(), v4.getX(), v5.getX(), v6.getX()
+        });
+        row[j + 1] = MathArrays.linearCombination(a, new double[] {
+            v1.getY(), v2.getY(), v3.getY(), v4.getY(), v5.getY(), v6.getY()
+        });
+        row[j + 2] = MathArrays.linearCombination(a, new double[] {
+            v1.getZ(), v2.getZ(), v3.getZ(), v4.getZ(), v5.getZ(), v6.getZ()
+        });
     }
 
 }

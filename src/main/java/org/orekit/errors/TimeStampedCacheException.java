@@ -16,8 +16,8 @@
  */
 package org.orekit.errors;
 
-import org.apache.commons.math3.exception.util.ExceptionContextProvider;
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
+import org.hipparchus.exception.MathRuntimeException;
 
 /** This class is the base class for all specific exceptions thrown by
  * during the {@link org.orekit.utils.GenericTimeStampedCache}.
@@ -58,20 +58,20 @@ public class TimeStampedCacheException extends OrekitException {
     }
 
     /** Simple constructor.
-     * Build an exception wrapping an Apache Commons Math exception context exception
-     * @param provider underlying cause
+     * Build an exception from an Hipparchus exception
+     * @param exception underlying Hipparchus exception
      */
-    public TimeStampedCacheException(final ExceptionContextProvider provider) {
-        super(provider);
+    public TimeStampedCacheException(final MathRuntimeException exception) {
+        super(exception);
     }
 
-    /** Recover a PropagationException, possibly embedded in a {@link OrekitException}.
+    /** Recover a TimeStampedCacheException, possibly embedded in a {@link OrekitException}.
      * <p>
-     * If the {@code OrekitException} does not embed a PropagationException, a
+     * If the {@code OrekitException} does not embed a TimeStampedCacheException, a
      * new one will be created.
      * </p>
      * @param oe OrekitException to analyze
-     * @return a (possibly embedded) PropagationException
+     * @return a (possibly embedded) TimeStampedCacheException
      */
     public static TimeStampedCacheException unwrap(final OrekitException oe) {
 
@@ -85,17 +85,17 @@ public class TimeStampedCacheException extends OrekitException {
 
     }
 
-    /** Recover a PropagationException, possibly embedded in an {@link ExceptionContextProvider}.
+    /** Recover a TimeStampedCacheException, possibly embedded in a {@link MathRuntimeException}.
      * <p>
-     * If the {@code ExceptionContextProvider} does not embed a PropagationException, a
+     * If the {@code MathRuntimeException} does not embed a TimeStampedCacheException, a
      * new one will be created.
      * </p>
-     * @param provider ExceptionContextProvider to analyze
-     * @return a (possibly embedded) PropagationException
+     * @param exception MathRuntimeException to analyze
+     * @return a (possibly embedded) TimeStampedCacheException
      */
-    public static TimeStampedCacheException unwrap(final ExceptionContextProvider provider) {
+    public static TimeStampedCacheException unwrap(final MathRuntimeException exception) {
 
-        for (Throwable t = provider.getContext().getThrowable(); t != null; t = t.getCause()) {
+        for (Throwable t = exception; t != null; t = t.getCause()) {
             if (t instanceof OrekitException) {
                 if (t instanceof TimeStampedCacheException) {
                     return (TimeStampedCacheException) t;
@@ -105,7 +105,7 @@ public class TimeStampedCacheException extends OrekitException {
             }
         }
 
-        return new TimeStampedCacheException(provider);
+        return new TimeStampedCacheException(exception);
 
     }
 

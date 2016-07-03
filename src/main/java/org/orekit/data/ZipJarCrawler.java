@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.channels.UnsupportedAddressTypeException;
 import java.text.ParseException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -33,8 +32,8 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.orekit.errors.OrekitException;
 
 
@@ -117,7 +116,7 @@ public class ZipJarCrawler implements DataProvider {
             this.url         = null;
             this.name        = classLoader.getResource(resource).toURI().toString();
         } catch (URISyntaxException use) {
-            throw new OrekitException(use, LocalizedFormats.SIMPLE_MESSAGE, use.getMessage());
+            throw new OrekitException(use, LocalizedCoreFormats.SIMPLE_MESSAGE, use.getMessage());
         }
     }
 
@@ -133,7 +132,7 @@ public class ZipJarCrawler implements DataProvider {
             this.url         = url;
             this.name        = url.toURI().toString();
         } catch (URISyntaxException use) {
-            throw new OrekitException(use, LocalizedFormats.SIMPLE_MESSAGE, use.getMessage());
+            throw new OrekitException(use, LocalizedCoreFormats.SIMPLE_MESSAGE, use.getMessage());
         }
     }
 
@@ -144,7 +143,7 @@ public class ZipJarCrawler implements DataProvider {
         try {
 
             // open the raw data stream
-            Archive archive = null;;
+            Archive archive = null;
             try {
                 if (file != null) {
                     archive = new Archive(new FileInputStream(file));
@@ -290,16 +289,10 @@ public class ZipJarCrawler implements DataProvider {
                 @Override
                 public EntryStream next() throws NoSuchElementException {
                     if (next == null) {
+                        // this should never happen
                         throw new NoSuchElementException();
                     }
                     return next;
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public void remove() {
-                    // this part is never called
-                    throw new UnsupportedAddressTypeException();
                 }
 
             };

@@ -70,23 +70,44 @@ public class GLONASSScaleTest {
         AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 06, 30),
                                           new TimeComponents(23, 59, 59),
                                           TimeScalesFactory.getUTC());
+        Assert.assertEquals("1983-07-01T02:58:59.000", d.shiftedBy(-60).toString(glonass));
+        Assert.assertEquals(60, glonass.minuteDuration(d.shiftedBy(-60)));
+        Assert.assertFalse(glonass.insideLeap(d.shiftedBy(-60)));
         Assert.assertEquals("1983-07-01T02:59:59.000", d.toString(glonass));
+        Assert.assertEquals(61, glonass.minuteDuration(d));
+        Assert.assertFalse(glonass.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-07-01T02:59:59.251", d.toString(glonass));
+        Assert.assertEquals(61, glonass.minuteDuration(d));
+        Assert.assertFalse(glonass.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-07-01T02:59:59.502", d.toString(glonass));
+        Assert.assertEquals(61, glonass.minuteDuration(d));
+        Assert.assertFalse(glonass.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-07-01T02:59:59.753", d.toString(glonass));
+        Assert.assertEquals(61, glonass.minuteDuration(d));
+        Assert.assertFalse(glonass.insideLeap(d));
         d = d.shiftedBy( 0.251);
         Assert.assertEquals("1983-07-01T02:59:60.004", d.toString(glonass));
+        Assert.assertEquals(61, glonass.minuteDuration(d));
+        Assert.assertTrue(glonass.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-07-01T02:59:60.255", d.toString(glonass));
+        Assert.assertEquals(61, glonass.minuteDuration(d));
+        Assert.assertTrue(glonass.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-07-01T02:59:60.506", d.toString(glonass));
+        Assert.assertEquals(61, glonass.minuteDuration(d));
+        Assert.assertTrue(glonass.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-07-01T02:59:60.757", d.toString(glonass));
+        Assert.assertEquals(61, glonass.minuteDuration(d));
+        Assert.assertTrue(glonass.insideLeap(d));
         d = d.shiftedBy(0.251);
         Assert.assertEquals("1983-07-01T03:00:00.008", d.toString(glonass));
+        Assert.assertEquals(60, glonass.minuteDuration(d));
+        Assert.assertFalse(glonass.insideLeap(d));
     }
 
     @Test
@@ -97,6 +118,29 @@ public class GLONASSScaleTest {
             DateTimeComponents components = date.getComponents(glonass);
             double dt2 = glonass.offsetToTAI(components.getDate(), components.getTime());
             Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+        }
+    }
+
+    @Test
+    public void testWrapBeforeLeap() throws OrekitException {
+        AbsoluteDate t = new AbsoluteDate("2015-07-01T02:59:59.999999", glonass);
+        Assert.assertEquals("2015-07-01T02:59:60.000", t.toString(glonass));
+    }
+
+    @Test
+    public void testMinuteDuration() {
+        final AbsoluteDate t0 = new AbsoluteDate("1983-07-01T02:58:59.000", glonass);
+        for (double dt = 0; dt < 63; dt += 0.3) {
+            if (dt < 1.0) {
+                // before the minute of the leap
+                Assert.assertEquals(60, glonass.minuteDuration(t0.shiftedBy(dt)));
+            } else if (dt < 62.0) {
+                // during the minute of the leap
+                Assert.assertEquals(61, glonass.minuteDuration(t0.shiftedBy(dt)));
+            } else {
+                // after the minute of the leap
+                Assert.assertEquals(60, glonass.minuteDuration(t0.shiftedBy(dt)));                
+            }
         }
     }
 

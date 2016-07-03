@@ -28,12 +28,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -259,8 +260,9 @@ public class SpacecraftStateTest {
         try {
             extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", new double[7]));
             Assert.fail("an exception should have been thrown");
-        } catch (DimensionMismatchException dme) {
-            Assert.assertEquals(dme.getArgument(), 7);
+        } catch (MathIllegalStateException mise) {
+            Assert.assertEquals(LocalizedCoreFormats.DIMENSIONS_MISMATCH, mise.getSpecifier());
+            Assert.assertEquals(7, ((Integer) mise.getParts()[0]).intValue());
         }
         Assert.assertEquals(2, extended.getAdditionalStates().size());
         Assert.assertTrue(extended.hasAdditionalState("test-1"));

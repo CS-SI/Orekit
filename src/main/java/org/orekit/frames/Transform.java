@@ -22,13 +22,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
@@ -53,47 +53,48 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p> The convention used in OREKIT is vectorial transformation. It means
  * that a transformation is defined as a transform to apply to the
  * coordinates of a vector expressed in the old frame to obtain the
- * same vector expressed in the new frame.<p>
+ * same vector expressed in the new frame.
  *
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *
- *  <h5> Example </h5>
+ * <h1> Examples </h1>
  *
- * <pre>
+ * <h2> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h2>
  *
- * 1 ) Example of translation from R<sub>A</sub> to R<sub>B</sub>:
- * We want to transform the {@link PVCoordinates} PV<sub>A</sub> to PV<sub>B</sub>.
+ * <p> We want to transform the {@link PVCoordinates} PV<sub>A</sub> to
+ * PV<sub>B</sub> with :
+ * <p> PV<sub>A</sub> = ({1, 0, 0}, {2, 0, 0}, {3, 0, 0}); <br>
+ *     PV<sub>B</sub> = ({0, 0, 0}, {0, 0, 0}, {0, 0, 0});
  *
- * With :  PV<sub>A</sub> = ({1, 0, 0}, {2, 0, 0}, {3, 0, 0});
- * and  :  PV<sub>B</sub> = ({0, 0, 0}, {0, 0, 0}, {0, 0, 0});
+ * <p> The transform to apply then is defined as follows :
  *
- * The transform to apply then is defined as follows :
- *
+ * <pre><code>
  * Vector3D translation  = new Vector3D(-1, 0, 0);
  * Vector3D velocity     = new Vector3D(-2, 0, 0);
  * Vector3D acceleration = new Vector3D(-3, 0, 0);
  *
  * Transform R1toR2 = new Transform(date, translation, velocity, acceleration);
  *
- * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
+ * PVB = R1toR2.transformPVCoordinates(PVA);
+ * </code></pre>
  *
+ * <h2> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h2>
+ * <p> We want to transform the {@link PVCoordinates} PV<sub>A</sub> to
+ * PV<sub>B</sub> with
  *
- * 2 ) Example of rotation from R<sub>A</sub> to R<sub>B</sub>:
- * We want to transform the {@link PVCoordinates} PV<sub>A</sub> to PV<sub>B</sub>.
+ * <p> PV<sub>A</sub> = ({1, 0, 0}, { 1, 0, 0}); <br>
+ *     PV<sub>B</sub> = ({0, 1, 0}, {-2, 1, 0});
  *
- * With :  PV<sub>A</sub> = ({1, 0, 0}, {1, 0, 0});
- * and  :  PV<sub>B</sub> = ({0, 1, 0}, {-2, 1, 0});
+ * <p> The transform to apply then is defined as follows :
  *
- * The transform to apply then is defined as follows :
- *
+ * <pre><code>
  * Rotation rotation = new Rotation(Vector3D.PLUS_K, FastMath.PI / 2);
  * Vector3D rotationRate = new Vector3D(0, 0, -2);
  *
  * Transform R1toR2 = new Transform(rotation, rotationRate);
  *
- * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
- *
- * </pre>
+ * PVB = R1toR2.transformPVCoordinates(PVA);
+ * </code></pre>
  *
  * @author Luc Maisonobe
  * @author Fabien Maussion
@@ -407,44 +408,6 @@ public class Transform
      * and numerical problems (including NaN appearing).
      * </p>
      * @param date interpolation date
-     * @param useVelocities if true, use sample transforms velocities,
-     * otherwise ignore them and use only positions
-     * @param useRotationRates if true, use sample points rotation rates,
-     * otherwise ignore them and use only rotations
-     * @param sample sample points on which interpolation should be done
-     * @return a new instance, interpolated at specified date
-     * @exception OrekitException if the number of point is too small for interpolating
-     * @deprecated as of 7.0, replaced with {@link #interpolate(AbsoluteDate, CartesianDerivativesFilter, AngularDerivativesFilter, Collection)}
-     */
-    @Deprecated
-    public static Transform interpolate(final AbsoluteDate date,
-                                        final boolean useVelocities, final boolean useRotationRates,
-                                        final Collection<Transform> sample)
-        throws OrekitException {
-        return interpolate(date,
-                           useVelocities    ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
-                           useRotationRates ? AngularDerivativesFilter.USE_RR   : AngularDerivativesFilter.USE_R,
-                           sample);
-    }
-
-    /** Interpolate a transform from a sample set of existing transforms.
-     * <p>
-     * Note that even if first time derivatives (velocities and rotation rates)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions
-     * and rotations.
-     * </p>
-     * <p>
-     * As this implementation of interpolation is polynomial, it should be used only
-     * with small samples (about 10-20 points) in order to avoid <a
-     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
-     * and numerical problems (including NaN appearing).
-     * </p>
-     * @param date interpolation date
      * @param cFilter filter for derivatives from the sample to use in interpolation
      * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
@@ -656,39 +619,12 @@ public class Transform
      * <pre>
      * PV₁ = transform.transformPVCoordinates(PV₀), then
      * </pre>
-     * their differentials dPV₁ and dPV₀ will obey the following relation
-     * where J is the matrix computed by this method:<br/>
+     * <p> their differentials dPV₁ and dPV₀ will obey the following relation
+     * where J is the matrix computed by this method:
      * <pre>
      * dPV₁ = J &times; dPV₀
      * </pre>
-     * </p>
-     * @param jacobian placeholder 6x6 (or larger) matrix to be filled with
-     * the Jacobian, only the upper left 6x6 corner will be modified
-     * @deprecated as of 7.0, replaced with {@link #getJacobian(CartesianDerivativesFilter, double[][])}
-     */
-    @Deprecated
-    public void getJacobian(final double[][] jacobian) {
-        getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
-    }
-
-    /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}
-     * method of the transform.
-     * <p>
-     * Element {@code jacobian[i][j]} is the derivative of Cartesian coordinate i
-     * of the transformed {@link PVCoordinates} with respect to Cartesian coordinate j
-     * of the input {@link PVCoordinates} in method {@link #transformPVCoordinates(PVCoordinates)}.
-     * </p>
-     * <p>
-     * This definition implies that if we define position-velocity coordinates
-     * <pre>
-     * PV₁ = transform.transformPVCoordinates(PV₀), then
-     * </pre>
-     * their differentials dPV₁ and dPV₀ will obey the following relation
-     * where J is the matrix computed by this method:<br/>
-     * <pre>
-     * dPV₁ = J &times; dPV₀
-     * </pre>
-     * </p>
+     *
      * @param selector selector specifying the size of the upper left corner that must be filled
      * (either 3x3 for positions only, 6x6 for positions and velocities, 9x9 for positions,
      * velocities and accelerations)

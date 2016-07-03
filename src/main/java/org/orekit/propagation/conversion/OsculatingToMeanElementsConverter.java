@@ -17,7 +17,6 @@
 package org.orekit.propagation.conversion;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -53,17 +52,24 @@ public class OsculatingToMeanElementsConverter {
     /** Propagator used to compute mean orbit. */
     private final Propagator      propagator;
 
+    /** Scaling factor used for orbital parameters normalization. */
+    private double positionScale;
+
     /** Constructor.
      *  @param state initial orbit to convert
      *  @param satelliteRevolution number of satellite revolutions in the averaging interval
      *  @param propagator propagator used to compute mean orbit
+     *  @param positionScale scaling factor used for orbital parameters normalization
+     *  (typically set to the expected standard deviation of the position)
      */
     public OsculatingToMeanElementsConverter(final SpacecraftState state,
                                              final int satelliteRevolution,
-                                             final Propagator propagator) {
+                                             final Propagator propagator,
+                                             final double positionScale) {
         this.state = state;
         this.satelliteRevolution = satelliteRevolution;
         this.propagator = propagator;
+        this.positionScale = positionScale;
     }
 
     /** Convert an osculating orbit into a mean orbit, in DSST sense.
@@ -75,10 +81,9 @@ public class OsculatingToMeanElementsConverter {
         final double timeSpan = state.getKeplerianPeriod() * satelliteRevolution;
         propagator.resetInitialState(state);
         final FiniteDifferencePropagatorConverter converter =
-                new FiniteDifferencePropagatorConverter(new KeplerianPropagatorBuilder(state.getMu(),
-                                                                                       state.getFrame(),
-                                                                                       OrbitType.KEPLERIAN,
-                                                                                       PositionAngle.MEAN),
+                new FiniteDifferencePropagatorConverter(new KeplerianPropagatorBuilder(state.getOrbit(),
+                                                                                       PositionAngle.MEAN,
+                                                                                       positionScale),
                                                         1.e-6, MAX_EVALUATION);
         final Propagator prop = converter.convert(propagator, timeSpan, satelliteRevolution * 36);
         return prop.getInitialState();

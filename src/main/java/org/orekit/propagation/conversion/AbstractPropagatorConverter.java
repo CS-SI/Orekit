@@ -17,27 +17,21 @@
 package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
-import org.apache.commons.math3.analysis.MultivariateVectorFunction;
-import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
-import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem.Evaluation;
-import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
-import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
-import org.apache.commons.math3.linear.DiagonalMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.apache.commons.math3.optim.ConvergenceChecker;
-import org.apache.commons.math3.optim.SimpleVectorValueChecker;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.analysis.MultivariateVectorFunction;
+import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.linear.DiagonalMatrix;
+import org.hipparchus.optim.ConvergenceChecker;
+import org.hipparchus.optim.SimpleVectorValueChecker;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresBuilder;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresFactory;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
+import org.hipparchus.optim.nonlinear.vector.leastsquares.MultivariateJacobianFunction;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -46,16 +40,17 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 /** Common handling of {@link PropagatorConverter} methods for propagators conversions.
  * <p>
- * This abstract class factorizes the common code for propagators conversion.
+ * This abstract class factors the common code for propagators conversion.
  * Only one method must be implemented by derived classes: {@link #getObjectiveFunction()}.
  * </p>
  * <p>
  * The converter uses the LevenbergMarquardtOptimizer from the <a
- * href="http://commons.apache.org/math/">commons math</a> library.
- * Different implementations correspond to different methods for computing the jacobian.
+ * href="https://hipparchus.org/">Hipparchus</a> library.
+ * Different implementations correspond to different methods for computing the Jacobian.
  * </p>
  * @author Pascal Parraud
  * @since 6.0
@@ -64,9 +59,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
     /** Spacecraft states sample. */
     private List<SpacecraftState> sample;
-
-    /** Reference date for conversion (1st date of the states sample). */
-    private AbsoluteDate date;
 
     /** Target position and velocities at sample points. */
     private double[] target;
@@ -83,12 +75,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Adapted propagator. */
     private Propagator adapted;
 
-    /** List of the desired free parameters names. */
-    private List<String> parameters;
-
-    /** List of the available free parameters names. */
-    private final Collection<String> availableParameters;
-
     /** Propagator builder. */
     private final PropagatorBuilder builder;
 
@@ -102,7 +88,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private LeastSquaresOptimizer.Optimum optimum;
 
     /** Convergence checker for optimization algorithm. */
-    private final ConvergenceChecker<Evaluation> checker;
+    private final ConvergenceChecker<LeastSquaresProblem.Evaluation> checker;
 
     /** Maximum number of iterations for optimization. */
     private final int maxIterations;
@@ -115,12 +101,11 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     protected AbstractPropagatorConverter(final PropagatorBuilder builder,
                                           final double threshold,
                                           final int maxIterations) {
-        this.builder             = builder;
-        this.frame               = builder.getFrame();
-        this.availableParameters = builder.getSupportedParameters();
-        this.optimizer           = new LevenbergMarquardtOptimizer();
-        this.maxIterations       = maxIterations;
-        this.sample              = new ArrayList<SpacecraftState>();
+        this.builder       = builder;
+        this.frame         = builder.getFrame();
+        this.optimizer     = new LevenbergMarquardtOptimizer();
+        this.maxIterations = maxIterations;
+        this.sample        = new ArrayList<SpacecraftState>();
 
         final SimpleVectorValueChecker svvc = new SimpleVectorValueChecker(-1.0, threshold);
         this.checker = LeastSquaresFactory.evaluationChecker(svvc);
@@ -141,8 +126,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                               final int nbPoints,
                               final List<String> freeParameters)
         throws OrekitException, IllegalArgumentException {
-
-        checkParameters(freeParameters);
+        setFreeParameters(freeParameters);
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
         return convert(states, false, freeParameters);
     }
@@ -161,8 +145,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                               final int nbPoints,
                               final String ... freeParameters)
         throws OrekitException, IllegalArgumentException {
-
-        checkParameters(freeParameters);
+        setFreeParameters(Arrays.asList(freeParameters));
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
         return convert(states, false, freeParameters);
     }
@@ -179,14 +162,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                               final boolean positionOnly,
                               final List<String> freeParameters)
         throws OrekitException, IllegalArgumentException {
-
-        checkParameters(freeParameters);
-
-        parameters = new ArrayList<String>();
-        parameters.addAll(freeParameters);
-
-        builder.setFreeParameters(parameters);
-
+        setFreeParameters(freeParameters);
         return adapt(states, positionOnly);
     }
 
@@ -202,37 +178,8 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
                               final boolean positionOnly,
                               final String ... freeParameters)
         throws OrekitException, IllegalArgumentException {
-
-        checkParameters(freeParameters);
-
-        parameters = new ArrayList<String>();
-        for (final String name : freeParameters) {
-            parameters.add(name);
-        }
-
-        builder.setFreeParameters(parameters);
-
+        setFreeParameters(Arrays.asList(freeParameters));
         return adapt(states, positionOnly);
-    }
-
-    /** Get the available free parameters.
-     * @return available free parameters
-     */
-    public Collection<String> getAvailableParameters() {
-        return availableParameters;
-    }
-
-    /** Check if a parameter can be free.
-     * @param name parameter name to check
-     * @return true if the parameter can be free
-     */
-    public boolean isAvailable(final String name) {
-        for (final String supportedName : availableParameters) {
-            if (supportedName.equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** Get the adapted propagator.
@@ -264,7 +211,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Get the Jacobian of the function computing position/velocity at sample points.
      * @return Jacobian of the function computing position/velocity at sample points
      */
-    protected abstract MultivariateMatrixFunction getObjectiveFunctionJacobian();
+    protected abstract MultivariateJacobianFunction getModel();
 
     /** Check if fitting uses only sample positions.
      * @return true if fitting uses only sample positions
@@ -280,13 +227,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         return target.length;
     }
 
-    /** Get the date of the initial state.
-     * @return the date
-     */
-    protected AbsoluteDate getDate() {
-        return date;
-    }
-
     /** Get the frame of the initial state.
      * @return the orbit frame
      */
@@ -299,13 +239,6 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      */
     protected List<SpacecraftState> getSample() {
         return sample;
-    }
-
-    /** Get the free parameters.
-     * @return the free parameters
-     */
-    protected Collection<String>  getFreeParameters() {
-        return parameters;
     }
 
     /** Create a sample of {@link SpacecraftState}.
@@ -334,48 +267,40 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         return states;
     }
 
-    /** Check if parameters can be free.
+    /** Free some parameters.
      * @param freeParameters names of the free parameters
      * @exception OrekitException if one of the parameters cannot be free
      */
-    private void checkParameters(final Collection<String> freeParameters) throws OrekitException {
-        for (String parameter : freeParameters) {
-            checkParameter(parameter);
+    private void setFreeParameters(final Iterable<String> freeParameters) throws OrekitException {
+
+        // start by setting all parameters as not estimated
+        for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
         }
-    }
 
-    /** Check if parameters can be free.
-     * @param freeParameters names of the free parameters
-     * @exception OrekitException if one of the parameters cannot be free
-     */
-    private void checkParameters(final String ... freeParameters) throws OrekitException {
-        for (String parameter : freeParameters) {
-            checkParameter(parameter);
-        }
-    }
-
-    /** Check if parameter can be free.
-     * @param parameter name of the free parameter
-     * @exception OrekitException if the parameter cannot be free
-     */
-    private void checkParameter(final String parameter) throws OrekitException {
-
-        if ( !availableParameters.contains(parameter) ) {
-
-            // build the list of supported parameters
-            final StringBuilder sBuilder = new StringBuilder();
-            for (final String available : availableParameters) {
-                if (sBuilder.length() > 0) {
-                    sBuilder.append(", ");
+        // set only the selected parameters as estimated
+        for (final String parameter : freeParameters) {
+            boolean found = false;
+            for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
+                if (driver.getName().equals(parameter)) {
+                    found = true;
+                    driver.setSelected(true);
+                    break;
                 }
-                sBuilder.append(available);
             }
-
-            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      parameter, sBuilder.toString());
-
+            if (!found) {
+                // build the list of supported parameters
+                final StringBuilder sBuilder = new StringBuilder();
+                for (final ParameterDriver driver : builder.getPropagationParametersDrivers().getDrivers()) {
+                    if (sBuilder.length() > 0) {
+                        sBuilder.append(", ");
+                    }
+                    sBuilder.append(driver.getName());
+                }
+                throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                          parameter, sBuilder.toString());
+            }
         }
-
     }
 
     /** Adapt a propagator to minimize the mean square error for a set of {@link SpacecraftState states}.
@@ -387,18 +312,10 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private Propagator adapt(final List<SpacecraftState> states,
                              final boolean positionOnly) throws OrekitException {
 
-        this.date = states.get(0).getDate();
         this.onlyPosition = positionOnly;
 
         // very rough first guess using osculating parameters of first sample point
-        final double[] initial = new double[6 + parameters.size()];
-        builder.getOrbitType().mapOrbitToArray(states.get(0).getOrbit(),
-                                               builder.getPositionAngle(),
-                                               initial);
-        int i = 6;
-        for (String name : parameters) {
-            initial[i++] = builder.getParameter(name);
-        }
+        final double[] initial = builder.getSelectedNormalizedParameters();
 
         // warm-up iterations, using only a few points
         setSample(states.subList(0, onlyPosition ? 2 : 1));
@@ -418,33 +335,24 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @param initial initial estimation parameters (position, velocity, free parameters)
      * @return fitted parameters
      * @exception OrekitException if propagator cannot be adapted
-     * @exception MaxCountExceededException if maximal number of iterations is exceeded
+     * @exception MathRuntimeException if maximal number of iterations is exceeded
      */
     private double[] fit(final double[] initial)
-        throws OrekitException, MaxCountExceededException {
+        throws OrekitException, MathRuntimeException {
 
-        final MultivariateVectorFunction f = getObjectiveFunction();
-        final MultivariateMatrixFunction jac = getObjectiveFunctionJacobian();
-        final MultivariateJacobianFunction fJac = new MultivariateJacobianFunction() {
-            /** {@inheritDoc} */
-            @Override
-            public Pair<RealVector, RealMatrix> value(final RealVector point) {
-                final double[] p = point.toArray();
-                return new Pair<RealVector, RealMatrix>(MatrixUtils.createRealVector(f.value(p)),
-                        MatrixUtils.createRealMatrix(jac.value(p)));
-            }
-        };
         final LeastSquaresProblem problem = new LeastSquaresBuilder().
                                             maxIterations(maxIterations).
                                             maxEvaluations(Integer.MAX_VALUE).
-                                            model(fJac).
+                                            model(getModel()).
                                             target(target).
                                             weight(new DiagonalMatrix(weight)).
                                             start(initial).
                                             checker(checker).
                                             build();
+
         optimum = optimizer.optimize(problem);
         return optimum.getPoint().toArray();
+
     }
 
     /** Get the Root Mean Square Deviation for a given parameters set.
@@ -453,28 +361,17 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      * @exception OrekitException if position/velocity cannot be computed at some date
      */
     private double getRMS(final double[] parameterSet) throws OrekitException {
-
-        final double[] residuals = getResiduals(parameterSet);
-        double sum2 = 0;
-        for (final double residual : residuals) {
-            sum2 += residual * residual;
-        }
-        return FastMath.sqrt(sum2 / residuals.length);
-
-    }
-
-    /** Get the residuals for a given position/velocity parameters set.
-     * @param parameterSet position/velocity parameters set
-     * @return residuals
-     * @exception OrekitException if position/velocity cannot be computed at some date
-     */
-    private double[] getResiduals(final double[] parameterSet) throws OrekitException {
         try {
             final double[] residuals = getObjectiveFunction().value(parameterSet);
             for (int i = 0; i < residuals.length; ++i) {
                 residuals[i] = target[i] - residuals[i];
             }
-            return residuals;
+            double sum2 = 0;
+            for (final double residual : residuals) {
+                sum2 += residual * residual;
+            }
+            return FastMath.sqrt(sum2 / residuals.length);
+
         } catch (OrekitExceptionWrapper oew) {
             throw oew.getException();
         }
@@ -487,7 +384,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      */
     private Propagator buildAdaptedPropagator(final double[] parameterSet)
         throws OrekitException {
-        return builder.buildPropagator(date, parameterSet);
+        return builder.buildPropagator(parameterSet);
     }
 
     /** Set the states sample.

@@ -19,11 +19,12 @@ package org.orekit.forces.radiation;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
+import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,9 +54,26 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 
 public class SolarRadiationPressureTest extends AbstractForceModelTest {
+
+    @Test
+    @Deprecated
+    public void testDeprecatedMethods() throws OrekitException {
+        final RadiationSensitive rs = new IsotropicRadiationClassicalConvention(2.5, 0.7, 0.2);
+        final List<String> names = rs.getRadiationParametersNames();
+        Assert.assertEquals(2, names.size());
+        Assert.assertEquals(RadiationSensitive.ABSORPTION_COEFFICIENT, names.get(0));
+        Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT, names.get(1));
+        Assert.assertEquals(0.7, rs.getAbsorptionCoefficient(), 1.0e-10);
+        rs.setAbsorptionCoefficient(0.8);
+        Assert.assertEquals(0.8, rs.getAbsorptionCoefficient(), 1.0e-10);
+        Assert.assertEquals(0.2, rs.getReflectionCoefficient(), 1.0e-10);
+        rs.setReflectionCoefficient(0.3);
+        Assert.assertEquals(0.3, rs.getReflectionCoefficient(), 1.0e-10);
+    }
 
     @Test
     public void testLighting() throws OrekitException, ParseException {
@@ -133,12 +151,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
         }
-        try {
-            Assert.assertEquals(0.0, rs.getAbsorptionCoefficient(), 1.0e-15);
-            rs.setAbsorptionCoefficient(0.3);
-            Assert.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uso) {
-            // expected
+        for (ParameterDriver driver : rs.getRadiationParametersDrivers()) {
+            Assert.assertEquals(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                driver.getName());
         }
     }
 
@@ -158,8 +173,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            rs);
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0, 5.0e-16);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 2.0e-15);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 5.0e-16);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 6.0e-16);
 
         try {
             rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
@@ -190,8 +205,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            rs);
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0, 5.0e-16);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 2.0e-15);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 2.5e-15);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 2.0e-14);
 
         try {
             rs.radiationPressureAcceleration(state.getDate(), state.getFrame(),
@@ -318,8 +333,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0, 4.0e-16);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 3.0e-15);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 0.25, 1.7e-15);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 0.25, 1.7e-14);
 
     }
 

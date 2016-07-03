@@ -18,17 +18,17 @@ package org.orekit.forces.gravity;
 
 import java.util.Map;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.UnknownParameterException;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
@@ -151,7 +151,7 @@ public class OceanTidesTest {
 
     }
 
-    @Test(expected=UnknownParameterException.class)
+    @Test
     public void testNoGetParameter() throws OrekitException {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
@@ -166,11 +166,16 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assert.assertEquals(0, fm.getParametersNames().size());
-        fm.getParameter("unknown");
+        Assert.assertEquals(0, fm.getParametersDrivers().length);
+        try {
+            fm.getParameterDriver("unknown");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException miae) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
+        }
     }
 
-    @Test(expected=UnknownParameterException.class)
+    @Test
     public void testNoSetParameter() throws OrekitException {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
@@ -185,8 +190,13 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assert.assertEquals(0, fm.getParametersNames().size());
-        fm.setParameter("unknown", 0.0);
+        Assert.assertEquals(0, fm.getParametersDrivers().length);
+        try {
+            fm.getParameterDriver("unknown").setValue(0.0);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException miae) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
+        }
     }
 
     private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel ... forceModels)

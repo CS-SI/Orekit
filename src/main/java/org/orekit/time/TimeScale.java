@@ -43,7 +43,14 @@ public interface TimeScale extends Serializable {
      * to get a location in <em>{@link TAIScale} time scale</em>
      * @see #offsetFromTAI(AbsoluteDate)
      */
-    double offsetToTAI(final DateComponents date, final TimeComponents time);
+    default double offsetToTAI(final DateComponents date, final TimeComponents time) {
+        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
+        double offset = 0;
+        for (int i = 0; i < 8; i++) {
+            offset = -offsetFromTAI(reference.shiftedBy(offset));
+        }
+        return offset;
+    }
 
     /** Check if date is within a leap second introduction <em>in this time scale</em>.
      * <p>
@@ -54,7 +61,24 @@ public interface TimeScale extends Serializable {
      * @param date date to check
      * @return true if time is within a leap second introduction
      */
-    boolean insideLeap(final AbsoluteDate date);
+    default boolean insideLeap(final AbsoluteDate date) {
+        return false;
+    }
+
+    /** Check length of the current minute <em>in this time scale</em>.
+     * <p>
+     * This method will return 60 for all time scales that do <em>not</em>
+     * implement leap seconds, even if the date corresponds to a leap second
+     * in {@link UTCScale UTC scale}, and 61 for time scales that do implement
+     * leap second when the current date is within the last minute before the
+     * leap, or during the leap itself.
+     * </p>
+     * @param date date to check
+     * @return 60 or 61 depending on leap seconds introduction
+     */
+    default int minuteDuration(final AbsoluteDate date) {
+        return 60;
+    }
 
     /** Get the value of the previous leap.
      * <p>
@@ -64,7 +88,9 @@ public interface TimeScale extends Serializable {
      * @param date date to check
      * @return value of the previous leap
      */
-    double getLeap(final AbsoluteDate date);
+    default double getLeap(final AbsoluteDate date) {
+        return 0;
+    }
 
     /** Get the name time scale.
      * @return name of the time scale

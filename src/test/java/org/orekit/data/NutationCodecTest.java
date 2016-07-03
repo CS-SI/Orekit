@@ -19,8 +19,8 @@ package org.orekit.data;
 
 import java.util.Arrays;
 
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well1024a;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well1024a;
 import org.junit.Assert;
 import org.junit.Test;
 

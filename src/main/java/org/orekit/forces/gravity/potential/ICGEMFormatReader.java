@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.OrekitParseException;
@@ -46,6 +46,13 @@ import org.orekit.utils.Constants;
  * These versions differ in time-dependent coefficients, which are linear-only prior
  * to 2011 (up to eigen-5 model) and have also harmonic effects after that date
  * (starting with eigen-6 model). Both versions are supported by the class.</p>
+ * <p>
+ * This reader uses relaxed check on the gravity constant key so any key ending
+ * in gravity_constant is accepted and not only earth_gravity_constant as specified
+ * in the previous documents. This allows to read also non Earth gravity fields
+ * as found in <a href="http://icgem.gfz-potsdam.de/ICGEM/ModelstabBodies.html">ICGEM
+ * - Gravity Field Models of other Celestial Bodies</a> page to be read.
+ * </p>
  * <p>
  * In order to simplify implementation, some design choices have been made: the
  * reference date and the periods of harmonic pulsations are stored globally and
@@ -84,7 +91,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     private static final String GRAVITY_FIELD           = "gravity_field";
 
     /** Gravity constant marker. */
-    private static final String GRAVITY_CONSTANT        = "earth_gravity_constant";
+    private static final String GRAVITY_CONSTANT        = "gravity_constant";
 
     /** Reference radius. */
     private static final String REFERENCE_RADIUS        = "radius";
@@ -214,7 +221,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                             throw new OrekitParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                            lineNumber, name, line);
                         }
-                    } else if ((tab.length == 2) && GRAVITY_CONSTANT.equals(tab[0])) {
+                    } else if ((tab.length == 2) && tab[0].endsWith(GRAVITY_CONSTANT)) {
                         setMu(parseDouble(tab[1]));
                     } else if ((tab.length == 2) && REFERENCE_RADIUS.equals(tab[0])) {
                         setAe(parseDouble(tab[1]));
@@ -337,7 +344,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
         if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {
             // ensure at least the (0, 0) element is properly set
-            if (Precision.equals(c[0][0], 0.0, 1)) {
+            if (Precision.equals(c[0][0], 0.0, 0)) {
                 c[0][0] = 1.0;
             }
         }

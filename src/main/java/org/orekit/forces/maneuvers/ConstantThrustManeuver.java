@@ -16,14 +16,15 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractParameterizable;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.ForceModel;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -32,6 +33,8 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class implements a simple maneuver with constant thrust.
  * <p>The maneuver is defined by a direction in satellite frame.
@@ -44,13 +47,32 @@ import org.orekit.utils.Constants;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class ConstantThrustManeuver extends AbstractParameterizable implements ForceModel {
+public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** Parameter name for thrust. */
     private static final String THRUST = "thrust";
 
     /** Parameter name for flow rate. */
     private static final String FLOW_RATE = "flow rate";
+
+    /** Thrust scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double THRUST_SCALE = FastMath.scalb(1.0, -5);
+
+    /** Flow rate scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private static final double FLOW_RATE_SCALE = FastMath.scalb(1.0, -12);
+
+    /** Drivers for maneuver parameters. */
+    private final ParameterDriver[] parametersDrivers;
 
     /** State of the engine. */
     private boolean firing;
@@ -82,7 +104,6 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
                                   final double thrust, final double isp,
                                   final Vector3D direction) {
 
-        super(THRUST, FLOW_RATE);
         if (duration >= 0) {
             this.startDate = date;
             this.endDate   = date.shiftedBy(duration);
@@ -96,6 +117,44 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         this.direction = direction.normalize();
         firing = false;
 
+        this.parametersDrivers = new ParameterDriver[2];
+        try {
+            parametersDrivers[0] = new ParameterDriver(THRUST, thrust, THRUST_SCALE,
+                                                       0.0, Double.POSITIVE_INFINITY);
+            parametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    ConstantThrustManeuver.this.thrust = driver.getValue();
+                }
+            });
+            parametersDrivers[1] = new ParameterDriver(FLOW_RATE, flowRate, FLOW_RATE_SCALE,
+                                                       0.0, Double.POSITIVE_INFINITY);
+            parametersDrivers[1].addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    ConstantThrustManeuver.this.flowRate = driver.getValue();
+                }
+            });
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        };
+
+    }
+
+    @Override
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        // set the initial value of firing
+        final AbsoluteDate sDate = s0.getDate();
+        final boolean isForward = sDate.compareTo(t) < 0;
+        final boolean isBetween =
+                startDate.compareTo(sDate) < 0 && endDate.compareTo(sDate) > 0;
+        final boolean isOnStart = startDate.compareTo(sDate) == 0;
+        final boolean isOnEnd = endDate.compareTo(sDate) == 0;
+
+        firing = isBetween || (isForward && isOnStart) || (!isForward && isOnEnd);
     }
 
     /** Get the thrust.
@@ -194,24 +253,8 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
     }
 
     /** {@inheritDoc} */
-    public double getParameter(final String name)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        if (name.equals(THRUST)) {
-            return thrust;
-        }
-        return flowRate;
-    }
-
-    /** {@inheritDoc} */
-    public void setParameter(final String name, final double value)
-        throws IllegalArgumentException {
-        complainIfNotSupported(name);
-        if (name.equals(THRUST)) {
-            thrust = value;
-        } else {
-            flowRate = value;
-        }
+    public ParameterDriver[] getParametersDrivers() {
+        return parametersDrivers.clone();
     }
 
     /** Handler for start of maneuver. */
@@ -234,12 +277,6 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
             return EventHandler.Action.RESET_DERIVATIVES;
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState) {
-            return oldState;
-        }
-
     }
 
     /** Handler for end of maneuver. */
@@ -259,12 +296,6 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
                 firing = true;
             }
             return EventHandler.Action.RESET_DERIVATIVES;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState) {
-            return oldState;
         }
 
     }

@@ -44,27 +44,27 @@ tests and packaging for you. At the end, it will create several files named
 target/orekit-x.y.jar where x.y is the version number.
 
 This command should always work for released Orekit versions as they
-always depend only on released Apache Commons Math versions. Maven knows how
-to download the pre-built binary for released Apache Commons Math versions.
+always depend only on released Hipparchus versions. Maven knows how
+to download the pre-built binary for released Hipparchus versions.
 The previous command may not work for development Orekit versions as they
-may depend on unreleased Apache Commons Math versions. Maven cannot download
-pre-built binaries for unreleased Apache Commons Math versions as none are
+may depend on unreleased Hipparchus versions. Maven cannot download
+pre-built binaries for unreleased Hipparchus versions as none are
 publicly available. In this case the command above will end with an error message
 like:
 
-    [ERROR] Failed to execute goal on project orekit: Could not resolve dependencies for project org.orekit:orekit:jar:7.1-SNAPSHOT: Could not find artifact org.apache.commons:commons-math3:jar:3.6-SNAPSHOT
+    [ERROR] Failed to execute goal on project orekit: Could not resolve dependencies for project org.orekit:orekit:jar:8.0-SNAPSHOT: Could not find artifact org.hipparchus:hipparchus-core:jar:1.0-SNAPSHOT
 
-In this case, you should build the missing Apache Commons Math artifact and
+In this case, you should build the missing Hipparchus artifact and
 install it in your local maven repository beforehand. This is done by cloning
-the Apache Commons Math source (using the MATH_3_X branch) from Apache git
-repository in some temporary folder and install it with maven. This is done by
+the Hipparchus source from Hipparchus git repository at GitHub in some
+temporary folder and install it with maven. This is done by
 running the commands below (using Linux command syntax):
 
-    git clone --branch MATH_3_X https://git-wip-us.apache.org/repos/asf/commons-math.git
-    cd commons-math
+    git clone https://github.com/Hipparchus-Math/hipparchus.git
+    cd hipparchus
     mvn install
 
-Once the Apache Commons Math development version has been installed locally using
+Once the Hipparchus development version has been installed locally using
 the previous commands, you can delete the cloned folder if you want. You can then
 attempt again the mvn command at Orekit level, this time it should succeed as the
 necessary artifact is now locally available.

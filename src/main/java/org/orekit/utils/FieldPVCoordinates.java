@@ -17,14 +17,9 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
-import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.util.Pair;
-import org.orekit.time.AbsoluteDate;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.time.TimeShiftable;
 
 /** Simple container for Position/Velocity pairs, using {@link RealFieldElement}.
@@ -326,44 +321,6 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
                                          acceleration);
     }
 
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param date interpolation date
-     * @param useVelocities if true, use sample points velocities,
-     * otherwise ignore them and use only positions
-     * @param sample sample points on which interpolation should be done
-     * @param <T> the type of the field elements
-     * @return a new position-velocity, interpolated at specified date
-     * @deprecated as of 7.0, replaced with {@link TimeStampedFieldPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Collection)}
-     */
-    @Deprecated
-    public static <T extends RealFieldElement<T>> FieldPVCoordinates<T> interpolate(final AbsoluteDate date,
-                                                                                    final boolean useVelocities,
-                                                                                    final Collection<Pair<AbsoluteDate, FieldPVCoordinates<T>>> sample) {
-        final List<TimeStampedFieldPVCoordinates<T>> list = new ArrayList<TimeStampedFieldPVCoordinates<T>>(sample.size());
-        for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> pair : sample) {
-            list.add(new TimeStampedFieldPVCoordinates<T>(pair.getFirst(),
-                                                          pair.getSecond().getPosition(),
-                                                          pair.getSecond().getVelocity(),
-                                                          pair.getSecond().getAcceleration()));
-        }
-        return TimeStampedFieldPVCoordinates.interpolate(date,
-                                                         useVelocities ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
-                                                         list);
-    }
-
     /** Gets the position.
      * @return the position vector (m).
      */
@@ -399,9 +356,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
 
     /**
      * Get the angular velocity (spin) of this point as seen from the origin.
-     * <p/>
-     * The angular velocity vector is parallel to the {@link #getMomentum() angular
-     * momentum} and is computed by ω = p &times; v / ||p||²
+     *
+     * <p> The angular velocity vector is parallel to the {@link #getMomentum()
+     * angular * momentum} and is computed by ω = p &times; v / ||p||²
      *
      * @return the angular velocity vector
      * @see <a href="http://en.wikipedia.org/wiki/Angular_velocity">Angular Velocity on

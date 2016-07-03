@@ -16,13 +16,13 @@
  */
 package org.orekit.forces.gravity;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -224,19 +224,19 @@ public class RelativityTest extends AbstractForceModelTest {
      * Relativity#getParameter(String)}
      */
     @Test
-    public void testGetSetGM() {
+    public void testGetSetGM() throws OrekitException {
         //setup
         Relativity relativity = new Relativity(Constants.EIGEN5C_EARTH_MU);
 
         //actions + verify
         Assert.assertEquals(
                 Constants.EIGEN5C_EARTH_MU,
-                relativity.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
+                relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(),
                 0);
-        relativity.setParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, 1);
+        relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).setValue(1);
         Assert.assertEquals(
                 1,
-                relativity.getParameter(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT),
+                relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(),
                 0);
     }
 

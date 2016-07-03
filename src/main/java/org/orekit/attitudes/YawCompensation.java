@@ -16,9 +16,9 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -68,16 +68,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
 
     /** Underlying ground pointing attitude provider.  */
     private final GroundPointing groundPointingLaw;
-
-    /** Creates a new instance.
-     * @param groundPointingLaw ground pointing attitude provider without yaw compensation
-     * @deprecated as of 7.1, replaced with  {@link #YawCompensation(Frame, GroundPointing)}
-     */
-    @Deprecated
-    public YawCompensation(final GroundPointing groundPointingLaw) {
-        super(groundPointingLaw.getBodyFrame());
-        this.groundPointingLaw = groundPointingLaw;
-    }
 
     /** Creates a new instance.
      * @param inertialFrame frame in which orbital velocities are computed

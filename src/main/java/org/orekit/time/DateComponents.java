@@ -276,10 +276,11 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      *   <li>basic format week date: YYYYWwwD</li>
      *   <li>extended format week date: YYYY-Www-D</li>
      * </ul>
-     * As shown by the list above, only the complete representations defined in section 4.1
+     *
+     * <p> As shown by the list above, only the complete representations defined in section 4.1
      * of ISO-8601 standard are supported, neither expended representations nor representations
      * with reduced accuracy are supported.
-     * </p>
+     *
      * <p>
      * Parsing a single integer as a julian day is <em>not</em> supported as it may be ambiguous
      * with either the basic format calendar date or the basic format ordinal date depending

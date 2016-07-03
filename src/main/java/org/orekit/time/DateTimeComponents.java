@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Holder for date and time components.
@@ -224,17 +224,18 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @return string representation of this pair
      */
     public String toString() {
-        return toString(false);
+        return toString(60);
     }
 
     /** Return a string representation of this pair.
      * <p>The format used is ISO8601.</p>
-     * @param inLeap if true the date is a UTC date during a leap second introduction
+     * @param minuteDuration 60 or 61 depending on the date being
+     * close to a leap second introduction
      * @return string representation of this pair
      */
-    public String toString(final boolean inLeap) {
+    public String toString(final int minuteDuration) {
         double second = time.getSecond();
-        final double wrap = inLeap ? 60.9995 : 59.9995;
+        final double wrap = minuteDuration - 0.0005;
         if (second >= wrap) {
             // we should wrap around next millisecond
             int minute = time.getMinute();

@@ -18,10 +18,10 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Precision;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
@@ -79,10 +79,10 @@ class JPLCelestialBody implements CelestialBody {
      * this frame <strong>must</strong> be aligned with ICRF
      */
     JPLCelestialBody(final String name, final String supportedNames,
-                            final JPLEphemeridesLoader.EphemerisType generateType,
-                            final JPLEphemeridesLoader.RawPVProvider rawPVProvider,
-                            final double gm, final double scale,
-                            final IAUPole iauPole, final Frame definingFrameAlignedWithICRF) {
+                     final JPLEphemeridesLoader.EphemerisType generateType,
+                     final JPLEphemeridesLoader.RawPVProvider rawPVProvider,
+                     final double gm, final double scale,
+                     final IAUPole iauPole, final Frame definingFrameAlignedWithICRF) {
         this.name           = name;
         this.gm             = gm;
         this.scale          = scale;

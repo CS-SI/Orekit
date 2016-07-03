@@ -19,8 +19,8 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -56,21 +56,6 @@ public class LofOffsetPointing extends GroundPointing {
 
     /** Chosen satellite axis for pointing, given in satellite frame. */
     private final Vector3D satPointingVector;
-
-    /** Creates new instance.
-     * @param shape Body shape
-     * @param attLaw Attitude law
-     * @param satPointingVector satellite vector defining the pointing direction
-     * @deprecated as of 7.1, replaced with {@link #LofOffsetPointing(Frame, BodyShape, AttitudeProvider, Vector3D)}
-     */
-    @Deprecated
-    public LofOffsetPointing(final BodyShape shape, final AttitudeProvider attLaw,
-                             final Vector3D satPointingVector) {
-        super(shape.getBodyFrame());
-        this.shape = shape;
-        this.attitudeLaw = attLaw;
-        this.satPointingVector = satPointingVector;
-    }
 
     /** Creates new instance.
      * @param inertialFrame frame in which orbital velocities are computed

@@ -20,8 +20,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
@@ -619,17 +619,22 @@ public class AbsoluteDate
                                 TimeComponents.H12, timeScale).shiftedBy(secondsSinceNoon);
     }
 
-    /** Build an instance corresponding to a Modified Julian Day date.
-     * @param mjd modified Julian day
-     * @param secondsInDay seconds in the day
+    /**
+     * Build an instance corresponding to a Modified Julian Day date.
+     *
+     * @param mjd       modified Julian day
+     * @param seconds   past the start of the {@code mjd}. Therefore the last
+     *                  second of most days is 86399, but on days with a leap
+     *                  second in the UTC time scale the last second is 86400.
      * @param timeScale time scale in which the seconds in day are defined
      * @return a new instant
      */
-    public static AbsoluteDate createMJDDate(final int mjd, final double secondsInDay,
+    public static AbsoluteDate createMJDDate(final int mjd,
+                                             final double seconds,
                                              final TimeScale timeScale) {
-        return new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                new TimeComponents(secondsInDay),
-                                timeScale);
+        final DateComponents date =
+                new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd);
+        return new AbsoluteDate(date, timeScale).shiftedBy(seconds);
     }
 
     /** Build an instance corresponding to a GPS date.
@@ -951,7 +956,7 @@ public class AbsoluteDate
      * in ISO-8601 format with milliseconds accuracy
      */
     public String toString(final TimeScale timeScale) {
-        return getComponents(timeScale).toString(timeScale.insideLeap(this));
+        return getComponents(timeScale).toString(timeScale.minuteDuration(this));
     }
 
     /** Get a String representation of the instant location for a local time.
@@ -964,8 +969,8 @@ public class AbsoluteDate
      */
     public String toString(final int minutesFromUTC)
         throws OrekitException {
-        final boolean inLeap = TimeScalesFactory.getUTC().insideLeap(this);
-        return getComponents(minutesFromUTC).toString(inLeap);
+        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
+        return getComponents(minutesFromUTC).toString(minuteDuration);
     }
 
     /** Get a String representation of the instant location for a time zone.
@@ -977,8 +982,8 @@ public class AbsoluteDate
      */
     public String toString(final TimeZone timeZone)
         throws OrekitException {
-        final boolean inLeap = TimeScalesFactory.getUTC().insideLeap(this);
-        return getComponents(timeZone).toString(inLeap);
+        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
+        return getComponents(timeZone).toString(minuteDuration);
     }
 
 }

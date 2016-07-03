@@ -18,7 +18,7 @@ package org.orekit.data;
 
 import java.util.SortedSet;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.TimeStamped;

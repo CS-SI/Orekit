@@ -16,13 +16,24 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,7 +42,6 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -66,10 +76,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import java.io.IOException;
-import java.text.ParseException;
 
 
 public class NumericalPropagatorTest {
@@ -79,12 +87,138 @@ public class NumericalPropagatorTest {
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
 
+    @Test
+    public void testForceModelInitialized() throws OrekitException {
+        // setup
+        // mutable holders
+        SpacecraftState[] actualState = new SpacecraftState[1];
+        AbsoluteDate[] actualDate = new AbsoluteDate[1];
+        ForceModel force = new ForceModelAdapter(){
+            @Override
+            public void init(SpacecraftState initialState, AbsoluteDate target) {
+                actualState[0] = initialState;
+                actualDate[0] = target;
+            }
+        };
+
+        // action
+        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.addForceModel(force);
+        AbsoluteDate target = initDate.shiftedBy(60);
+        propagator.propagate(target);
+
+        // verify
+        Assert.assertThat(actualDate[0], CoreMatchers.is(target));
+        Assert.assertThat(actualState[0].getDate().durationFrom(initDate),
+                CoreMatchers.is(0.0));
+        Assert.assertThat(actualState[0].getPVCoordinates(),
+                OrekitMatchers.pvIs(initialState.getPVCoordinates()));
+    }
+
+    @Test
+    public void testEphemerisModeWithHandler() throws OrekitException {
+        // setup
+        AbsoluteDate end = initDate.shiftedBy(90 * 60);
+
+        // action
+        final List<SpacecraftState> states = new ArrayList<>();
+        propagator.setEphemerisMode(
+                (interpolator, isLast) -> states.add(interpolator.getCurrentState()));
+        propagator.propagate(end);
+        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+
+        //verify
+        Assert.assertTrue(states.size() > 10); // got some data
+        for (SpacecraftState state : states) {
+            PVCoordinates actual =
+                    ephemeris.propagate(state.getDate()).getPVCoordinates();
+            Assert.assertThat(actual, OrekitMatchers.pvIs(state.getPVCoordinates()));
+        }
+    }
+
+    /** test for issue #238 */
+    @Test
+    public void testEventAtEndOfEphemeris() throws OrekitException {
+        // setup
+        // choose duration that will round up when expressed as a double
+        AbsoluteDate end = initDate.shiftedBy(100)
+                .shiftedBy(3 * FastMath.ulp(100.0) / 4);
+        propagator.setEphemerisMode();
+        propagator.propagate(end);
+        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        CountingHandler handler = new CountingHandler();
+        DateDetector detector = new DateDetector(10, 1e-9, end)
+                .withHandler(handler);
+        // propagation works fine w/o event detector, but breaks with it
+        ephemeris.addEventDetector(detector);
+
+        //action
+        // fails when this throws an "out of range date for ephemerides"
+        SpacecraftState actual = ephemeris.propagate(end);
+
+        //verify
+        Assert.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
+        Assert.assertEquals(1, handler.eventCount);
+    }
+
+    /** test for issue #238 */
+    @Test
+    public void testEventAtBeginningOfEphemeris() throws OrekitException {
+        // setup
+        // choose duration that will round up when expressed as a double
+        AbsoluteDate end = initDate.shiftedBy(100)
+                .shiftedBy(3 * FastMath.ulp(100.0) / 4);
+        propagator.setEphemerisMode();
+        propagator.propagate(end);
+        BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+        CountingHandler handler = new CountingHandler();
+        // events directly on propagation start date are not triggered,
+        // so move the event date slightly after
+        AbsoluteDate eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
+        DateDetector detector = new DateDetector(10, 1e-9, eventDate)
+                .withHandler(handler);
+        // propagation works fine w/o event detector, but breaks with it
+        ephemeris.addEventDetector(detector);
+
+        // action + verify
+        // propagate forward
+        Assert.assertEquals(ephemeris.propagate(end).getDate().durationFrom(end), 0.0, 0.0);
+        // propagate backward
+        Assert.assertEquals(ephemeris.propagate(initDate).getDate().durationFrom(initDate), 0.0, 0.0);
+        Assert.assertEquals(2, handler.eventCount);
+    }
+
+    /** Counts the number of events that have occurred. */
+    private static class CountingHandler
+            implements EventHandler<EventDetector> {
+
+        /**
+         * number of calls to {@link #eventOccurred(SpacecraftState,
+         * EventDetector, boolean)}.
+         */
+        private int eventCount = 0;
+
+        @Override
+        public Action eventOccurred(SpacecraftState s,
+                                    EventDetector detector,
+                                    boolean increasing) {
+            eventCount++;
+            return Action.CONTINUE;
+        }
+
+        @Override
+        public SpacecraftState resetState(EventDetector detector,
+                                          SpacecraftState oldState) {
+            return null;
+        }
+    }
+
     /**
      * check propagation succeeds when two events are within the tolerance of
      * each other.
      */
     @Test
-    public void testCloseEventDates() throws PropagationException {
+    public void testCloseEventDates() throws OrekitException {
         // setup
         DateDetector d1 = new DateDetector(10, 1, initDate.shiftedBy(15))
                 .withHandler(new ContinueOnEvent<DateDetector>());
@@ -364,7 +498,7 @@ public class NumericalPropagatorTest {
 
     private PVCoordinates propagateInType(SpacecraftState state, double dP,
                                           OrbitType type, PositionAngle angle)
-        throws PropagationException {
+        throws OrekitException {
 
         final double dt = 3200;
         final double minStep = 0.001;
@@ -377,7 +511,7 @@ public class NumericalPropagatorTest {
         newPropagator.setOrbitType(type);
         newPropagator.setPositionAngleType(angle);
         newPropagator.setInitialState(state);
-        for (ForceModel force: propagator.getForceModels()) {
+        for (ForceModel force: propagator.getAllForceModels()) {
             newPropagator.addForceModel(force);
         }
         return newPropagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
@@ -392,12 +526,12 @@ public class NumericalPropagatorTest {
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
             public void handleStep(OrekitStepInterpolator interpolator,
-                                   boolean isLast) throws PropagationException {
+                                   boolean isLast) throws OrekitException {
                 if (previousCall != null) {
-                    Assert.assertTrue(interpolator.getInterpolatedDate().compareTo(previousCall) < 0);
+                    Assert.assertTrue(interpolator.getCurrentState().getDate().compareTo(previousCall) < 0);
                 }
                 if (--countDown == 0) {
-                    throw new PropagationException(LocalizedFormats.SIMPLE_MESSAGE, "dummy error");
+                    throw new OrekitException(LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy error");
                 }
             }
         });
@@ -729,13 +863,13 @@ public class NumericalPropagatorTest {
         try {
             ephemeris1.propagate(ephemeris1.getMinDate().shiftedBy(-10.0));
             Assert.fail("an exception should have been thrown");
-        } catch (PropagationException pe) {
+        } catch (OrekitException pe) {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
         }
         try {
             ephemeris1.propagate(ephemeris1.getMaxDate().shiftedBy(+10.0));
             Assert.fail("an exception should have been thrown");
-        } catch (PropagationException pe) {
+        } catch (OrekitException pe) {
             Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
         }
 
@@ -765,7 +899,7 @@ public class NumericalPropagatorTest {
                                              Constants.EIGEN5C_EARTH_MU);
             NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
             Assert.fail("an exception should have been thrown");
-        } catch (PropagationException pe) {
+        } catch (OrekitException pe) {
             Assert.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, pe.getSpecifier());
         }
     }
@@ -787,11 +921,6 @@ public class NumericalPropagatorTest {
         public Action eventOccurred(SpacecraftState s, T detector, boolean increasing) {
             gotHere = true;
             return actionOnEvent;
-        }
-
-        public SpacecraftState resetState(T detector, SpacecraftState oldState)
-            throws OrekitException {
-            return oldState;
         }
 
     }
@@ -820,6 +949,86 @@ public class NumericalPropagatorTest {
         initDate = null;
         initialState = null;
         propagator = null;
+    }
+
+    /**
+     * Adapter class for {@link ForceModel} so that sub classes only have to implement the
+     * methods they want.
+     */
+    private static class ForceModelAdapter implements ForceModel {
+
+        @Override
+        @Deprecated
+        public List<String> getParametersNames() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public boolean isSupported(String name) {
+            return false;
+        }
+
+        @Override
+        @Deprecated
+        public double getParameter(String name) throws MathIllegalArgumentException {
+            throw new MathIllegalArgumentException(
+                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                    name,
+                    getParametersNames());
+        }
+
+        @Override
+        @Deprecated
+        public void setParameter(String name, double value)
+                throws MathIllegalArgumentException {
+            throw new MathIllegalArgumentException(
+                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                    name,
+                    getParametersNames());
+        }
+
+        @Override
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(
+                SpacecraftState s,
+                String name) throws OrekitException {
+            throw new MathIllegalArgumentException(
+                    OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                    name,
+                    getParametersNames());
+        }
+
+        @Override
+        public void addContribution(SpacecraftState s, TimeDerivativesEquations adder) {
+        }
+
+        @Override
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(
+                AbsoluteDate date,
+                Frame frame,
+                FieldVector3D<DerivativeStructure> position,
+                FieldVector3D<DerivativeStructure> velocity,
+                FieldRotation<DerivativeStructure> rotation,
+                DerivativeStructure mass) throws OrekitException {
+            return position.scalarMultiply(0);
+        }
+
+        @Override
+        public EventDetector[] getEventsDetectors() {
+            return new EventDetector[0];
+        }
+
+        @Override
+        public ParameterDriver[] getParametersDrivers() {
+            return new ParameterDriver[0];
+        }
+
+        @Override
+        public ParameterDriver getParameterDriver(String name)
+            throws OrekitException {
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                      name, getParametersNames());
+        }
+
     }
 
 }

@@ -16,17 +16,17 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** EME2000 frame : mean equator at J2000.0.
  * <p>This frame was the standard inertial reference prior to GCRF. It was defined
  * using Lieske precession-nutation model for Earth. This frame has been superseded
- * by GCRF which is implicitly defined from a few hundred quasars coordinates.<p>
+ * by GCRF which is implicitly defined from a few hundred quasars coordinates.
  * <p>The transformation between GCRF and EME2000 is a constant rotation bias.</p>
  * @author Luc Maisonobe
  */

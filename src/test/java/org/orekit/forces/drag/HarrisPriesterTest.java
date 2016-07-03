@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.drag;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

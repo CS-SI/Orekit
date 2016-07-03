@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.general.OrbitFile;
 import org.orekit.files.general.SatelliteTimeCoordinate;
@@ -304,15 +304,15 @@ public class OPMFile extends OGMFile {
             this.duration = duration;
         }
 
-        /** Get mass change during maneuver (value is < 0).
-         * @return mass change during maneuver (value is < 0)
+        /** Get mass change during maneuver (value is &lt; 0).
+         * @return mass change during maneuver (value is &lt; 0)
          */
         public double getDeltaMass() {
             return deltaMass;
         }
 
-        /** Set mass change during maneuver (value is < 0).
-         * @param deltaMass mass change during maneuver (value is < 0)
+        /** Set mass change during maneuver (value is &lt; 0).
+         * @param deltaMass mass change during maneuver (value is &lt; 0)
          */
         public void setDeltaMass(final double deltaMass) {
             this.deltaMass = deltaMass;

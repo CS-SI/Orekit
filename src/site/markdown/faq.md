@@ -34,6 +34,9 @@ systems, study systems and mission analysis systems.
 Orekit is used at Eumetsat for very long term mission analysis (up to
 the full lifetime of a satellite) for both LEO and GEO missions.
 
+Orekit is used underneath the [Rugged](https://www.orekit.org/rugged/) sensor-to-terrain mapping library in the
+Sentinel-2 Image Processing Facility to process terabytes of data each day.
+
 As Orekit is open-source, we cannot know about all uses as people are
 not require to notify us of anything.
 
@@ -100,7 +103,9 @@ for which sequential access is natural (like numerical propagators) are <em>not<
 Up to version 4.0, Orekit depended on features of Apache Commons Math which were not released
 as of mid 2008, so the dependency was set to 2.0-SNAPSHOT development version.
 This development version was available from Apache subversion repository. Starting
-with version 4.1, Orekit depends only on officially released versions of Apache Commons Math
+with version 4.1, and up to 7.2, Orekit depends only on officially released versions of
+Apache Commons Math. Starting with version 8.0, Orekit has switched from Apache Commons
+Math to Hipparchus
 
     version    |                             dependency
 ---------------|---------------------------------------------
@@ -112,30 +117,31 @@ with version 4.1, Orekit depends only on officially released versions of Apache 
   Orekit 7.0   | Apache Commons Math 3.4.1
   Orekit 7.1   | Apache Commons Math 3.6
   Orekit 7.2   | Apache Commons Math 3.6.1
+  Orekit 8.0   | Hipparchus          1.0
 
 ### Maven failed to compile Orekit and complained about a missing artifact.
 
-The released versions of Orekit always depend only on released Apache Commons
-Math versions, but development Orekit versions may depend on unreleased Apache
-Commons Math versions. Maven knows how to download the pre-built binary for
-released Apache Commons Math versions but it cannot download
-pre-built binaries for unreleased Apache Commons Math versions as none are
+The released versions of Orekit always depend only on released Hipparchus
+versions, but development Orekit versions may depend on unreleased Hipparchus
+versions. Maven knows how to download the pre-built binary for
+released Hipparchus versions but it cannot download
+pre-built binaries for unreleased Hipparchus versions as none are
 publicly available. In this case the maven command will end with an error message
 like:
 
-    [ERROR] Failed to execute goal on project orekit: Could not resolve dependencies for project org.orekit:orekit:jar:7.1-SNAPSHOT: Could not find artifact org.apache.commons:commons-math3:jar:3.6-SNAPSHOT
+    [ERROR] Failed to execute goal on project orekit: Could not resolve dependencies for project org.orekit:orekit:jar:8.0-SNAPSHOT: Could not find artifact org.hipparchus:hipparchus-core:jar:1.0-SNAPSHOT
 
-In this case, you should build the missing Apache Commons Math artifact and
+In this case, you should build the missing Hipparchus artifact and
 install it in your local maven repository beforehand. This is done by cloning
-the Apache Commons Math source (using the MATH_3_X branch) from Apache git
-repository in some temporary folder and install it with maven. This is done by
+the Hipparchus source from Hipparchus git repository at GitHub in some
+temporary folder and install it with maven. This is done by
 running the commands below (using Linux command syntax):
 
-    git clone --branch MATH_3_X https://git-wip-us.apache.org/repos/asf/commons-math.git
-    cd commons-math
+    git clone https://github.com/Hipparchus-Math/hipparchus.git
+    cd hipparchus
     mvn install
 
-Once the Apache Commons Math development version has been installed locally using
+Once the Hipparchus development version has been installed locally using
 the previous commands, you can delete the cloned folder if you want. You can then
 attempt again the mvn command at Orekit level, this time it should succeed as the
 necessary artifact is now locally available.
@@ -154,7 +160,7 @@ data for the IERS convention 2003, they have switched to IERS conventions 2010. 
 (EOP 05 C08 file) are still published. We advise then that you update these files regularly as
 the IERS publish them.
 
-Concerning UTC leap seconds, as of early 2016, the last one was introduced at the end of June 2015.
+Concerning UTC leap seconds, as of mid 2016, the last one was introduced at the end of June 2015.
 
 ## Runtime errors
 

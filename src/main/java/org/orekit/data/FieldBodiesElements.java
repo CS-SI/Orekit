@@ -18,7 +18,7 @@ package org.orekit.data;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.RealFieldElement;
+import org.hipparchus.RealFieldElement;
 import org.orekit.time.AbsoluteDate;
 
 /** Elements of the bodies having an effect on nutation.

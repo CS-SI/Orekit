@@ -41,23 +41,15 @@ public class GalileoScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
         return -19;
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
         return 19;
-    }
-
-    /** {@inheritDoc} */
-    public boolean insideLeap(final AbsoluteDate date) {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    public double getLeap(final AbsoluteDate date) {
-        return 0;
     }
 
     /** {@inheritDoc} */

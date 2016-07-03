@@ -46,6 +46,7 @@
     * composite transforms reduction and caching for efficiency
     * extensible central body shapes models (with predefined spherical and ellipsoidic shapes)
     * Cartesian and geodesic coordinates, kinematics
+    * Computation of Dilution Of Precision (DOP) with respect to GNSS constellations
 
   * Spacecraft state
 
@@ -93,6 +94,7 @@
       * file based
       * memory based
       * integration based
+    * specialized GPS propagation, using SEM or YUMA files
     * unified interface above analytical/numerical/tabulated propagators for easy
       switch from coarse analysis to fine simulation with one line change
     * all propagators can be used in several different modes
@@ -113,6 +115,8 @@
       * apogee and perigee crossing
       * alignment with some body in the orbital plane
         (with customizable threshold angle)
+      * angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)
+        as seen from an observer (typically a ground station)
       * raising/setting with respect to a ground location
         (with customizable triggering elevation)
       * date
@@ -142,10 +146,29 @@
       * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
       * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
 
+  * Orbit determination
+  
+    * batch least squares fitting of orbit
+    * several predefined measurements
+      * range
+      * range rate
+      * azimuth
+      * elevation
+      * position-velocity
+    * possibility to add custom measurements
+    * several predefined modifiers
+      * tropospheric effects
+      * ionospheric effects
+      * station offsets
+      * biases
+      * delays
+    * possibility to add custom measurement modifiers (even for predefined events)
+
   * Orbit file handling
   
     * loading of SP3-a and SP3-c orbit files
     * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
+    * loading of SEM and YUMA files for GPS constellation
 
   * Earth models
   

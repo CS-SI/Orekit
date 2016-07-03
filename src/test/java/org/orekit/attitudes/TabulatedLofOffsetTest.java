@@ -26,15 +26,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.CardanEulerSingularityException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.random.RandomGenerator;
-import org.apache.commons.math3.random.Well19937a;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,7 +41,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
@@ -83,7 +81,7 @@ public class TabulatedLofOffsetTest {
     PVCoordinates pvSatEME2000;
 
     @Test
-    public void testConstantOffset() throws OrekitException, CardanEulerSingularityException {
+    public void testConstantOffset() throws OrekitException {
 
         RandomGenerator random = new Well19937a(0x1199d4bb8f53d2b6l);
         for (LOFType type : LOFType.values()) {
@@ -133,19 +131,14 @@ public class TabulatedLofOffsetTest {
             }
             
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                throws PropagationException {
-                try {
-                    Rotation  offsetAtt    = currentState.getAttitude().getRotation();
-                    LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
-                    Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
-                                                                 currentState.getFrame()).getRotation();
-                    Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
-                    sample.add(new TimeStampedAngularCoordinates(currentState.getDate(),
-                                                                 offsetProper, Vector3D.ZERO, Vector3D.ZERO));
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
-                }
-                
+                throws OrekitException {
+                Rotation  offsetAtt    = currentState.getAttitude().getRotation();
+                LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
+                Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
+                                                             currentState.getFrame()).getRotation();
+                Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
+                sample.add(new TimeStampedAngularCoordinates(currentState.getDate(),
+                                                             offsetProper, Vector3D.ZERO, Vector3D.ZERO));
             }
         });
         originalPropagator.propagate(orbit.getDate().shiftedBy(2000));
@@ -161,16 +154,11 @@ public class TabulatedLofOffsetTest {
             }
             
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                throws PropagationException {
-                try {
-                    final SpacecraftState rebuilt = originalPropagator.propagate(currentState.getDate());
-                    final Rotation r1 = currentState.getAttitude().getRotation();
-                    final Rotation r2 = rebuilt.getAttitude().getRotation();
-                    Assert.assertEquals(0.0, Rotation.distance(r1, r2), 7.0e-6);
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
-                }
-                
+                throws OrekitException {
+                final SpacecraftState rebuilt = originalPropagator.propagate(currentState.getDate());
+                final Rotation r1 = currentState.getAttitude().getRotation();
+                final Rotation r2 = rebuilt.getAttitude().getRotation();
+                Assert.assertEquals(0.0, Rotation.distance(r1, r2), 7.0e-6);
             }
         });
         rebuildingPropagator.propagate(orbit.getDate().shiftedBy(50), orbit.getDate().shiftedBy(1950));
@@ -192,19 +180,14 @@ public class TabulatedLofOffsetTest {
             }
             
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
-                throws PropagationException {
-                try {
-                    Rotation  offsetAtt    = currentState.getAttitude().getRotation();
-                    LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
-                    Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
-                                                                 currentState.getFrame()).getRotation();
-                    Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
-                    sample.add(new TimeStampedAngularCoordinates(currentState.getDate(),
-                                                                 offsetProper, Vector3D.ZERO, Vector3D.ZERO));
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
-                }
-                
+                throws OrekitException {
+                Rotation  offsetAtt    = currentState.getAttitude().getRotation();
+                LofOffset aligned      = new LofOffset(currentState.getFrame(), type);
+                Rotation  alignedAtt   = aligned.getAttitude(currentState.getOrbit(), currentState.getDate(),
+                                                             currentState.getFrame()).getRotation();
+                Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
+                sample.add(new TimeStampedAngularCoordinates(currentState.getDate(),
+                                                             offsetProper, Vector3D.ZERO, Vector3D.ZERO));
             }
         });
         originalPropagator.propagate(orbit.getDate().shiftedBy(2000));

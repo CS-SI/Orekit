@@ -18,12 +18,11 @@ package org.orekit.forces.gravity;
 
 import java.util.List;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.ode.AbstractParameterizable;
-import org.apache.commons.math3.ode.UnknownParameterException;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -38,12 +37,13 @@ import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
+import org.orekit.utils.ParameterDriver;
 
 /** Ocean tides force model.
  * @since 6.1
  * @author Luc Maisonobe
  */
-public class OceanTides extends AbstractParameterizable implements ForceModel {
+public class OceanTides extends AbstractForceModel {
 
     /** Default step for tides field sampling (seconds). */
     public static final double DEFAULT_STEP = 600.0;
@@ -129,22 +129,6 @@ public class OceanTides extends AbstractParameterizable implements ForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public double getParameter(final String name)
-        throws UnknownParameterException {
-        // there are no tunable parameters at all in this force model
-        throw new UnknownParameterException(name);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setParameter(final String name, final double value)
-        throws UnknownParameterException {
-        // there are no tunable parameters at all in this force model
-        throw new UnknownParameterException(name);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void addContribution(final SpacecraftState s,
                                 final TimeDerivativesEquations adder)
         throws OrekitException {
@@ -179,6 +163,11 @@ public class OceanTides extends AbstractParameterizable implements ForceModel {
     public EventDetector[] getEventsDetectors() {
         // delegate to underlying attraction model
         return attractionModel.getEventsDetectors();
+    }
+
+    /** {@inheritDoc} */
+    public ParameterDriver[] getParametersDrivers() {
+        return new ParameterDriver[0];
     }
 
 }

@@ -26,10 +26,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -638,7 +638,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                                 parseCoefficient(regularMatcher, sinCosColumns[2 * d],     sinCosFactors[2 * d]);
                         final double cosCoeff =
                                 parseCoefficient(regularMatcher, sinCosColumns[2 * d + 1], sinCosFactors[2 * d + 1]);
-                        if (!Precision.equals(sinCoeff, 0.0, 1) || !Precision.equals(cosCoeff, 0.0, 1)) {
+                        if (!Precision.equals(sinCoeff, 0.0, 0) || !Precision.equals(cosCoeff, 0.0, 0)) {
                             nonZero = true;
                             term.add(0, degree + d, sinCoeff, cosCoeff);
                             ++count;

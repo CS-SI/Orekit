@@ -16,15 +16,7 @@
  */
 package org.orekit.files.ccsds;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -35,17 +27,26 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-/** Base class for all CCSDS Orbit Data Message parsers.
- * <p>
- * This base class is immutable, and hence thread safe. When parts
- * must be changed, such as reference date for Mission Elapsed Time or
- * Mission Relative Time time systems, or the gravitational coefficient or
- * the IERS conventions, the various {@code withXxx} methods must be called,
- * which create a new immutable instance with the new parameters. This
- * is a combination of the <a href="">builder design pattern</a> and
- * a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Base class for all CCSDS Orbit Data Message parsers.
+ *
+ * <p> This base class is immutable, and hence thread safe. When parts must be
+ * changed, such as reference date for Mission Elapsed Time or Mission Relative
+ * Time time systems, or the gravitational coefficient or the IERS conventions,
+ * the various {@code withXxx} methods must be called, which create a new
+ * immutable instance with the new parameters. This is a combination of the <a
+ * href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
+ * pattern</a> and a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
  * interface</a>.
- * </p>
+ *
  * @author Luc Maisonobe
  * @since 6.1
  */

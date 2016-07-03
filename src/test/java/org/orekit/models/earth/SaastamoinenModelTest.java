@@ -25,49 +25,18 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
+
 
 public class SaastamoinenModelTest {
 
     private static double epsilon = 1e-6;
-
-    @Test
-    @Deprecated
-    public void testDeprecatedConstructor() throws OrekitException {
-        Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = new SaastamoinenModel(273.16 + 18, 1013.25, 0.5);
-        final double elevation = 10d;
-        final double height = 100d;
-
-        final double delay = model.calculateSignalDelay(elevation, height);
-        final double path = model.calculatePathDelay(elevation, height);
-
-        Assert.assertEquals(path / Constants.SPEED_OF_LIGHT, delay, epsilon);
-        Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
-    }
-
-    @Test
-    public void testDelay() throws OrekitException {
-        Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
-        final double elevation = 10d;
-        final double height = 100d;
-
-        final double delay = model.calculateSignalDelay(elevation, height);
-        final double path = model.calculatePathDelay(elevation, height);
-
-        Assert.assertEquals(path / Constants.SPEED_OF_LIGHT, delay, epsilon);
-        Assert.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assert.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
-    }
 
     @Test
     public void testFixedElevation() throws OrekitException {
@@ -76,7 +45,7 @@ public class SaastamoinenModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing height of the station
         for (double height = 0; height < 5000; height += 100) {
-            final double delay = model.calculatePathDelay(5, height);
+            final double delay = model.pathDelay(FastMath.toRadians(5), height);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
@@ -89,7 +58,7 @@ public class SaastamoinenModelTest {
         double lastDelay = Double.MAX_VALUE;
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.calculatePathDelay(elev, 350);
+            final double delay = model.pathDelay(FastMath.toRadians(elev), 350);
             Assert.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
@@ -129,14 +98,19 @@ public class SaastamoinenModelTest {
             3500.0, 3750.0, 4000.0, 4250.0, 4500.0, 4750.0, 5000.0
         };
         double[] elevations = new double[] {
-            10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0
+            FastMath.toRadians(10.0), FastMath.toRadians(15.0), FastMath.toRadians(20.0),
+            FastMath.toRadians(25.0), FastMath.toRadians(30.0), FastMath.toRadians(35.0),
+            FastMath.toRadians(40.0), FastMath.toRadians(45.0), FastMath.toRadians(50.0),
+            FastMath.toRadians(55.0), FastMath.toRadians(60.0), FastMath.toRadians(65.0),
+            FastMath.toRadians(70.0), FastMath.toRadians(75.0), FastMath.toRadians(80.0),
+            FastMath.toRadians(85.0), FastMath.toRadians(90.0)
         };
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
                 double height = heights[h];
                 double elevation = elevations[e];
-                double expectedValue = model.calculatePathDelay(elevation, height);
-                double actualValue = deserialized.calculatePathDelay(elevation, height);
+                double expectedValue = model.pathDelay(elevation, height);
+                double actualValue = deserialized.pathDelay(elevation, height);
                 assertEquals("For height=" + height + " elevation = " + elevation + " precision not met",
                              expectedValue, actualValue, epsilon);
             }
@@ -154,15 +128,21 @@ public class SaastamoinenModelTest {
             3500.0, 3750.0, 4000.0, 4250.0, 4500.0, 4750.0, 5000.0
         };
         double[] elevations = new double[] {
-            10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0
+            FastMath.toRadians(10.0), FastMath.toRadians(15.0), FastMath.toRadians(20.0),
+            FastMath.toRadians(25.0), FastMath.toRadians(30.0), FastMath.toRadians(35.0),
+            FastMath.toRadians(40.0), FastMath.toRadians(45.0), FastMath.toRadians(50.0),
+            FastMath.toRadians(55.0), FastMath.toRadians(60.0), FastMath.toRadians(65.0),
+            FastMath.toRadians(70.0), FastMath.toRadians(75.0), FastMath.toRadians(80.0),
+            FastMath.toRadians(85.0), FastMath.toRadians(90.0)
         };
         for (int h = 0; h < heights.length; h++) {
             for (int e = 0; e < elevations.length; e++) {
                 double height = heights[h];
                 double elevation = elevations[e];
-                double expectedValue = defaultModel.calculatePathDelay(elevation, height);
-                double actualValue = loadedModel.calculatePathDelay(elevation, height);
-                assertEquals("For height=" + height + " elevation = " + elevation + " precision not met",
+                double expectedValue = defaultModel.pathDelay(elevation, height);
+                double actualValue = loadedModel.pathDelay(elevation, height);
+                assertEquals("For height=" + height + " elevation = " +
+                             FastMath.toDegrees(elevation) + " precision not met",
                              expectedValue, actualValue, epsilon);
             }
         }
@@ -177,9 +157,14 @@ public class SaastamoinenModelTest {
             3500.0, 3750.0, 4000.0, 4250.0, 4500.0, 4750.0, 5000.0
         };
         double[] elevations = new double[] {
-            10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0, 60.0, 65.0, 70.0, 75.0, 80.0, 85.0, 90.0
+            FastMath.toRadians(10.0), FastMath.toRadians(15.0), FastMath.toRadians(20.0),
+            FastMath.toRadians(25.0), FastMath.toRadians(30.0), FastMath.toRadians(35.0),
+            FastMath.toRadians(40.0), FastMath.toRadians(45.0), FastMath.toRadians(50.0),
+            FastMath.toRadians(55.0), FastMath.toRadians(60.0), FastMath.toRadians(65.0),
+            FastMath.toRadians(70.0), FastMath.toRadians(75.0), FastMath.toRadians(80.0),
+            FastMath.toRadians(85.0), FastMath.toRadians(90.0)
         };
-       double[][] expectedValues = new double[][] {
+        double[][] expectedValues = new double[][] {
             {
                 13.517414068807756, 9.204443522241771, 7.0029750138616835, 5.681588299211439, 4.8090544808193805,
                 4.196707503563898, 3.7474156937027994, 3.408088733958258, 3.1468182787091985, 2.943369134588668,
@@ -313,27 +298,12 @@ public class SaastamoinenModelTest {
                 double height = heights[h];
                 double elevation = elevations[e];
                 double expectedValue = expectedValues[h][e];
-                double actualValue = model.calculatePathDelay(elevation, height);
-                assertEquals("For height=" + height + " elevation = " + elevation + " precision not met",
+                double actualValue = model.pathDelay(elevation, height);
+                assertEquals("For height=" + height + " elevation = " +
+                             FastMath.toDegrees(elevation) + " precision not met",
                              expectedValue, actualValue, epsilon);
             }
         }
-    }
-
-    @Test
-    @Ignore
-    public void testPerformance() throws OrekitException {
-        final double elevation = 10d;
-
-        Utils.setDataRoot("atmosphere");
-        SaastamoinenModel model = SaastamoinenModel.getStandardModel();
-        long RUNS = 100000;
-        long start = System.currentTimeMillis();
-        for (int i = 0; i < RUNS; i++) {
-            model.calculateSignalDelay(elevation, 350);
-        }
-
-        System.out.println(RUNS + " runs took " + (System.currentTimeMillis() - start) + "ms");
     }
 
 }

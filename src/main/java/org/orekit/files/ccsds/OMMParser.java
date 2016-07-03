@@ -23,8 +23,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.OrbitFileParser;
@@ -44,8 +44,10 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
      * Mission Relative Time time systems, or the gravitational coefficient or
      * the IERS conventions, the various {@code withXxx} methods must be called,
      * which create a new immutable instance with the new parameters. This
-     * is a combination of the <a href="">builder design pattern</a> and
-     * a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+     * is a combination of the
+     * <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder design
+     * pattern</a> and a
+     * <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
      * interface</a>.
      * </p>
      * <p>

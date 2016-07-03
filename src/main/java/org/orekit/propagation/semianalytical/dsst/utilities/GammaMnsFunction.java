@@ -18,8 +18,8 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.Arrays;
 
-import org.apache.commons.math3.fraction.BigFraction;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.fraction.BigFraction;
+import org.hipparchus.util.FastMath;
 
 /** Compute the &Gamma;<sup>m</sup><sub>n,s</sub>(γ) function from equation 2.7.1-(13).
  *

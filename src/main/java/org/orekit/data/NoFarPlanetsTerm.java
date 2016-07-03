@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.apache.commons.math3.RealFieldElement;
+import org.hipparchus.RealFieldElement;
 
 /** Class for terms that do not depend on far planets and some other elements.
  * @param <T> the type of the field elements

@@ -18,10 +18,10 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.RotationOrder;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
@@ -30,8 +30,8 @@ import org.orekit.utils.IERSConventions;
 
 /** Mean Equator, Mean Equinox Frame.
  * <p>This frame handles precession effects according to to selected IERS conventions.</p>
- * <p>Its parent frame is the GCRF frame.<p>
- * <p>It is sometimes called Mean of Date (MoD) frame.<p>
+ * <p>Its parent frame is the GCRF frame.
+ * <p>It is sometimes called Mean of Date (MoD) frame.
  * @author Pascal Parraud
  */
 class MODProvider implements TransformProvider {

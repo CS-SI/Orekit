@@ -50,12 +50,9 @@
       }
 
       interface OrekitStepInterpolator {
-        +AbsoluteDate getCurrentDate()
-        +AbsoluteDate getPreviousDate()
-        +AbsoluteDate getInterpolatedDate()
-        +void setInterpolatedDate(AbsoluteDate date)
-        +SpacecraftState getInterpolatedState()
-        +double[] getInterpolatedAdditionalState(String name)
+        +SpacecraftState getCurrentState()
+        +SpacecraftState getPreviousState()
+        +SpacecraftState getInterpolatedState(AbsoluteDate date)
         +boolean isForward()
       }
 

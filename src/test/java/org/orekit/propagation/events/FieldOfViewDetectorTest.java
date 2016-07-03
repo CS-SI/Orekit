@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -207,10 +207,6 @@ public class FieldOfViewDetectorTest {
                 //System.err.println(" Sun visibility ends at " + s.getDate());
                 return Action.CONTINUE;//STOP;
             }
-        }
-
-        public SpacecraftState resetState(FieldOfViewDetector detector, SpacecraftState oldState) {
-            return oldState;
         }
 
     }

@@ -16,14 +16,16 @@
  */
 package org.orekit.errors;
 
-import org.apache.commons.math3.exception.util.ExceptionContextProvider;
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
+import org.hipparchus.exception.MathRuntimeException;
 
 /** This class is the base class for all specific exceptions thrown by
  * during the propagation computation.
  *
  * @author Luc Maisonobe
+ * @deprecated as of 8.0 this class is not used anymore
  */
+@Deprecated
 public class PropagationException extends OrekitException {
 
     /** Serializable UID. */
@@ -58,11 +60,11 @@ public class PropagationException extends OrekitException {
     }
 
     /** Simple constructor.
-     * Build an exception wrapping an Apache Commons Math exception context exception
-     * @param provider underlying cause
+     * Build an exception from an Hipparchus exception
+     * @param exception underlying Hipparchus exception
      */
-    public PropagationException(final ExceptionContextProvider provider) {
-        super(provider);
+    public PropagationException(final MathRuntimeException exception) {
+        super(exception);
     }
 
     /** Recover a PropagationException, possibly embedded in a {@link OrekitException}.
@@ -85,17 +87,17 @@ public class PropagationException extends OrekitException {
 
     }
 
-    /** Recover a PropagationException, possibly embedded in an {@link ExceptionContextProvider}.
+    /** Recover a PropagationException, possibly embedded in a {@link MathRuntimeException}.
      * <p>
-     * If the {@code ExceptionContextProvider} does not embed a PropagationException, a
+     * If the {@code MathRuntimeException} does not embed a PropagationException, a
      * new one will be created.
      * </p>
-     * @param provider ExceptionContextProvider to analyze
+     * @param exception MathRuntimeException to analyze
      * @return a (possibly embedded) PropagationException
      */
-    public static PropagationException unwrap(final ExceptionContextProvider provider) {
+    public static PropagationException unwrap(final MathRuntimeException exception) {
 
-        for (Throwable t = provider.getContext().getThrowable(); t != null; t = t.getCause()) {
+        for (Throwable t = exception; t != null; t = t.getCause()) {
             if (t instanceof OrekitException) {
                 if (t instanceof PropagationException) {
                     return (PropagationException) t;
@@ -105,7 +107,7 @@ public class PropagationException extends OrekitException {
             }
         }
 
-        return new PropagationException(provider);
+        return new PropagationException(exception);
 
     }
 

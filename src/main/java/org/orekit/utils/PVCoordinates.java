@@ -17,17 +17,12 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Pair;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
 /** Simple container for Position/Velocity/Acceleration triplets.
@@ -267,42 +262,6 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                  acceleration);
     }
 
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param date interpolation date
-     * @param useVelocities if true, use sample points velocities,
-     * otherwise ignore them and use only positions
-     * @param sample sample points on which interpolation should be done
-     * @return a new position-velocity, interpolated at specified date
-     * @deprecated since 7.0 replaced with {@link TimeStampedPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Collection)}
-     */
-    @Deprecated
-    public static PVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocities,
-                                            final Collection<Pair<AbsoluteDate, PVCoordinates>> sample) {
-        final List<TimeStampedPVCoordinates> list = new ArrayList<TimeStampedPVCoordinates>(sample.size());
-        for (final Pair<AbsoluteDate, PVCoordinates> pair : sample) {
-            list.add(new TimeStampedPVCoordinates(pair.getFirst(),
-                                                  pair.getSecond().getPosition(),
-                                                  pair.getSecond().getVelocity(),
-                                                  pair.getSecond().getAcceleration()));
-        }
-        return TimeStampedPVCoordinates.interpolate(date,
-                                                    useVelocities ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
-                                                    list);
-    }
-
     /** Gets the position.
      * @return the position vector (m).
      */
@@ -338,9 +297,9 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
 
     /**
      * Get the angular velocity (spin) of this point as seen from the origin.
-     * <p/>
-     * The angular velocity vector is parallel to the {@link #getMomentum() angular
-     * momentum} and is computed by ω = p &times; v / ||p||²
+     *
+     * <p> The angular velocity vector is parallel to the {@link #getMomentum()
+     * angular momentum} and is computed by ω = p &times; v / ||p||²
      *
      * @return the angular velocity vector
      * @see <a href="http://en.wikipedia.org/wiki/Angular_velocity">Angular Velocity on

@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,10 +54,10 @@ public class BackAndForthDetectorTest {
         // Orbit
         final double a = 7274000.;
         final double e = 0.00127;
-        final double i = Math.toRadians(90.);
-        final double w = Math.toRadians(0.);
-        final double raan = Math.toRadians(12.5);
-        final double lM = Math.toRadians(60.);
+        final double i = FastMath.toRadians(90.);
+        final double w = FastMath.toRadians(0.);
+        final double raan = FastMath.toRadians(12.5);
+        final double lM = FastMath.toRadians(60.);
         Orbit iniOrb = new KeplerianOrbit(a, e, i, w, raan, lM,
                                           PositionAngle.MEAN, FramesFactory.getEME2000(), date0,
                                           Constants.WGS84_EARTH_MU);
@@ -66,7 +66,7 @@ public class BackAndForthDetectorTest {
         KeplerianPropagator propagator = new KeplerianPropagator(iniOrb);
 
         // Station
-        final GeodeticPoint stationPosition = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(100.), 110.);
+        final GeodeticPoint stationPosition = new GeodeticPoint(FastMath.toRadians(0.), FastMath.toRadians(100.), 110.);
         final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                      Constants.WGS84_EARTH_FLATTENING,
                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -105,9 +105,6 @@ public class BackAndForthDetectorTest {
             return Action.CONTINUE;
         }
 
-        public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
     }
 
     @Before

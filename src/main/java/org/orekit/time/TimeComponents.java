@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
@@ -53,7 +53,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     private static final DecimalFormat SECONDS_FORMAT =
         new DecimalFormat("00.000", new DecimalFormatSymbols(Locale.US));
 
-    /** Basic and extends formats for local time, UTC time. */
+    /** Basic and extends formats for local time, with optional timezone. */
     private static Pattern ISO8601_FORMATS = Pattern.compile("^(\\d\\d):?(\\d\\d):?(\\d\\d(?:[.,]\\d+)?)?(?:Z|([-+]\\d\\d(?::?\\d\\d)?))?$");
 
     /** Hour number. */
@@ -180,10 +180,11 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      *   <li>optional signed basic hours and minutes UTC offset: hhmmss+HHMM, hhmmss-HHMM, hh:mm:ss+HHMM, hh:mm:ss-HHMM</li>
      *   <li>optional signed extended hours and minutes UTC offset: hhmmss+HH:MM, hhmmss-HH:MM, hh:mm:ss+HH:MM, hh:mm:ss-HH:MM</li>
      * </ul>
-     * As shown by the list above, only the complete representations defined in section 4.2
+     *
+     * <p> As shown by the list above, only the complete representations defined in section 4.2
      * of ISO-8601 standard are supported, neither expended representations nor representations
      * with reduced accuracy are supported.
-     * </p>
+     *
      * @param string string to parse
      * @return a parsed time
      * @exception IllegalArgumentException if string cannot be parsed
@@ -195,7 +196,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if (timeMatcher.matches()) {
             final int    hour      = Integer.parseInt(timeMatcher.group(1));
             final int    minute    = Integer.parseInt(timeMatcher.group(2));
-            final double second    = Double.parseDouble(timeMatcher.group(3).replace(',', '.'));
+            final double second    = timeMatcher.group(3) == null ? 0.0 : Double.parseDouble(timeMatcher.group(3).replace(',', '.'));
             final String offset    = timeMatcher.group(4);
             final int    minutesFromUTC;
             if (offset == null) {
@@ -247,16 +248,6 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      */
     public int getMinutesFromUTC() {
         return minutesFromUTC;
-    }
-
-    /** Get the second number within the day.
-     * @return second number from 0.0 to Constants.JULIAN_DAY
-     * @deprecated as of 7.2, replaced with either {@link #getSecondsInLocalDay()}
-     * or {@link #getSecondsInUTCDay()}
-     */
-    @Deprecated
-    public double getSecondsInDay() {
-        return getSecondsInLocalDay();
     }
 
     /** Get the second number within the local day, <em>without</em> applying the {@link #getMinutesFromUTC() offset from UTC}.

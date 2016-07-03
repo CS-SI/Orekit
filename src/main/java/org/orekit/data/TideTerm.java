@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.apache.commons.math3.RealFieldElement;
+import org.hipparchus.RealFieldElement;
 
 /** Class for tide terms.
  * <p>

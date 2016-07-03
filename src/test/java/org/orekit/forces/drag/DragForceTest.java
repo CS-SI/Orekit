@@ -17,10 +17,12 @@
 package org.orekit.forces.drag;
 
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.util.FastMath;
+import java.util.List;
+
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,6 +53,18 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class DragForceTest extends AbstractForceModelTest {
+
+    @Test
+    @Deprecated
+    public void testDeprecatedMethods() throws OrekitException {
+        final DragSensitive ds = new IsotropicDrag(2.5, 1.2);
+        final List<String> names = ds.getDragParametersNames();
+        Assert.assertEquals(1, names.size());
+        Assert.assertEquals(DragSensitive.DRAG_COEFFICIENT, names.get(0));
+        Assert.assertEquals(1.2, ds.getDragCoefficient(), 1.0e-10);
+        ds.setDragCoefficient(10.0);
+        Assert.assertEquals(10.0, ds.getDragCoefficient(), 1.0e-10);
+    }
 
     @Test
     public void testParameterDerivativeSphere() throws OrekitException {
@@ -196,7 +210,7 @@ public class DragForceTest extends AbstractForceModelTest {
         propagator.setMu(orbit.getMu());
         propagator.addForceModel(new DragForce(atmosphere, shape));
         PartialDerivativesEquations partials = new PartialDerivativesEquations("partials", propagator);
-        propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(orbit, mass), 6, 0));
+        propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(orbit, mass), 6));
 
         SpacecraftState state = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
 
@@ -205,7 +219,7 @@ public class DragForceTest extends AbstractForceModelTest {
                                                                         orbit.getPVCoordinates().getPosition().add(new Vector3D(delta, 0, 0)),
                                                                         orbit.getPVCoordinates().getVelocity()),
                                            orbit.getFrame(), orbit.getMu());
-        propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(shifted, mass), 6, 0));
+        propagator.setInitialState(partials.setInitialJacobians(new SpacecraftState(shifted, mass), 6));
         SpacecraftState newState = propagator.propagate(new AbsoluteDate(2004, 1, 1, 1, 30, 0., TimeScalesFactory.getUTC()));
         double[] dPVdX = new double[] {
             (newState.getPVCoordinates().getPosition().getX() - state.getPVCoordinates().getPosition().getX()) / delta,

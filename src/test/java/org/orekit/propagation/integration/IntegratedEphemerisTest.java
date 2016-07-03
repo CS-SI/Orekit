@@ -22,12 +22,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.Array2DRowRealMatrix;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +35,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -121,7 +120,7 @@ public class IntegratedEphemerisTest {
         final PartialDerivativesEquations derivatives =
             new PartialDerivativesEquations(eqName, numericalPropagator);
         final SpacecraftState initialState =
-                derivatives.setInitialJacobians(new SpacecraftState(initialOrbit), 6, 0);
+                derivatives.setInitialJacobians(new SpacecraftState(initialOrbit), 6);
         final JacobiansMapper mapper = derivatives.getMapper();
         numericalPropagator.setInitialState(initialState);
         numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
@@ -130,23 +129,16 @@ public class IntegratedEphemerisTest {
 
             private final Array2DRowRealMatrix dYdY0 = new Array2DRowRealMatrix(6, 6);
 
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-            throws PropagationException {
-                try {
-                    SpacecraftState state = interpolator.getInterpolatedState();
-                    Assert.assertEquals(mapper.getAdditionalStateDimension(),
-                                        state.getAdditionalState(eqName).length);
-                    mapper.getStateJacobian(state, dYdY0.getDataRef());
-                    mapper.getParametersJacobian(state, null); // no parameters, this is a no-op and should work
-                    RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
-                    Assert.assertTrue(deltaId.getNorm() >  100);
-                    Assert.assertTrue(deltaId.getNorm() < 3100);
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
-                }
+                throws OrekitException {
+                SpacecraftState state = interpolator.getCurrentState();
+                Assert.assertEquals(mapper.getAdditionalStateDimension(),
+                                    state.getAdditionalState(eqName).length);
+                mapper.getStateJacobian(state, dYdY0.getDataRef());
+                mapper.getParametersJacobian(state, null); // no parameters, this is a no-op and should work
+                RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
+                Assert.assertTrue(deltaId.getNorm() >  100);
+                Assert.assertTrue(deltaId.getNorm() < 3100);
             }
 
         });
@@ -156,7 +148,7 @@ public class IntegratedEphemerisTest {
     }
     
     @Test
-    public void testGetFrame() throws PropagationException, OrekitException {
+    public void testGetFrame() throws OrekitException {
         // setup
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         numericalPropagator.setEphemerisMode();
@@ -171,7 +163,7 @@ public class IntegratedEphemerisTest {
     }
 
     @Test
-    public void testSerializationNumerical() throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+    public void testSerializationNumerical() throws OrekitException, IOException, ClassNotFoundException {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         numericalPropagator.setEphemerisMode();
@@ -197,8 +189,9 @@ public class IntegratedEphemerisTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ephemeris);
 
-        Assert.assertTrue(bos.size() > 218000);
-        Assert.assertTrue(bos.size() < 219000);
+        int expectedSize = 258223;
+        Assert.assertTrue("size = " + bos.size (), bos.size () >  9 * expectedSize / 10);
+        Assert.assertTrue("size = " + bos.size (), bos.size () < 11 * expectedSize / 10);
 
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
@@ -212,18 +205,18 @@ public class IntegratedEphemerisTest {
 
     @Test
     public void testSerializationDSSTMean()
-        throws PropagationException, OrekitException, IOException, ClassNotFoundException {
-        doTestSerializationDSST(true, 35000, 36000);
+        throws OrekitException, IOException, ClassNotFoundException {
+        doTestSerializationDSST(true, 36703);
     }
 
     @Test
     public void testSerializationDSSTOsculating()
-        throws PropagationException, OrekitException, IOException, ClassNotFoundException {
-        doTestSerializationDSST(false, 616000, 617000);
+        throws OrekitException, IOException, ClassNotFoundException {
+        doTestSerializationDSST(false, 618025);
     }
 
-    private void doTestSerializationDSST(boolean meanOnly, int minSize, int maxSize)
-        throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+    private void doTestSerializationDSST(boolean meanOnly, int expectedSize)
+        throws OrekitException, IOException, ClassNotFoundException {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);
@@ -252,8 +245,9 @@ public class IntegratedEphemerisTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ephemeris);
 
-        Assert.assertTrue(bos.size() > minSize);
-        Assert.assertTrue(bos.size() < maxSize);
+        Assert.assertTrue("size = " + bos.size (), bos.size () >  9 * expectedSize / 10);
+        Assert.assertTrue("size = " + bos.size (), bos.size () < 11 * expectedSize / 10);
+
 
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), dsstProp.getFrame());

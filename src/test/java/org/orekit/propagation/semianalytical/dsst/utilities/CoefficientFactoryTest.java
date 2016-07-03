@@ -19,12 +19,12 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
-import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.util.CombinatoricsUtils;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialsUtils;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.random.MersenneTwister;
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -85,7 +85,7 @@ public class CoefficientFactoryTest {
         final double vmnsp = getVmns2(12, 26, 20);
         Assert.assertEquals(vmnsp,
                             CoefficientsFactory.getVmns(12, 26, 20),
-                            Math.abs(eps12 * vmnsp));
+                            FastMath.abs(eps12 * vmnsp));
         final double vmnsm = getVmns2(12, 27, -21);
         Assert.assertEquals(vmnsm,
                             CoefficientsFactory.getVmns(12, 27, -21),
@@ -117,7 +117,7 @@ public class CoefficientFactoryTest {
                 final int sdim = FastMath.min(smax + 2, n);
                 for (int s = 0; s <= sdim; s++) {
                     final double qp = getQnsPolynomialValue(gamma, n, s);
-                    Assert.assertEquals(qns[n][s], qp, Math.abs(eps10 * qns[n][s]));
+                    Assert.assertEquals(qns[n][s], qp, FastMath.abs(eps10 * qns[n][s]));
                 }
             }
         }
@@ -138,8 +138,8 @@ public class CoefficientFactoryTest {
             final double[][] GH = CoefficientsFactory.computeGsHs(k, h, a, b, s);
             for (int j = 1; j < s; j++) {
                 final double[] GsHs = getGsHs(k, h, a, b, j);
-                Assert.assertEquals(GsHs[0], GH[0][j], Math.abs(eps12 * GsHs[0]));
-                Assert.assertEquals(GsHs[1], GH[1][j], Math.abs(eps12 * GsHs[1]));
+                Assert.assertEquals(GsHs[0], GH[0][j], FastMath.abs(eps12 * GsHs[0]));
+                Assert.assertEquals(GsHs[1], GH[1][j], FastMath.abs(eps12 * GsHs[1]));
             }
         }
     }
@@ -186,7 +186,7 @@ public class CoefficientFactoryTest {
             final PolynomialFunction legendre = PolynomialsUtils.createLegendrePolynomial(n);
             derivative = legendre;
             for (int i = 0; i < s; i++) {
-                derivative = (PolynomialFunction) derivative.derivative();
+                derivative = (PolynomialFunction) derivative.polynomialDerivative();
             }
             QNS_MAP.put(new NSKey(n, s), derivative);
         }

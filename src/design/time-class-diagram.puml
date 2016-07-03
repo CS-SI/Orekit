@@ -106,13 +106,11 @@
     class UT1Scale
     class TTScale
     class GalileoScale
-    class GPSScale
-    class TCGScale
-    class TDBScale
-    class TCBScale
-    class GMSTScale
-    class GLONASSScale
-    class QZSSScale
+    class "...Scale" as DummyScale
+    note bottom
+      numerous times scales ommitted
+      for clarity
+    end note
 
     TimeStamped               <|.left. AbsoluteDate
     TimeShiftable_T_          <|.left. AbsoluteDate
@@ -134,13 +132,7 @@
     TimeScale  <|-- UT1Scale
     TimeScale  <|-- TTScale
     TimeScale  <|-- GalileoScale
-    TimeScale  <|-- GPSScale
-    TimeScale  <|-- TCGScale
-    TimeScale  <|-- TDBScale
-    TimeScale  <|-- TCBScale
-    TimeScale  <|-- GMSTScale
-    TimeScale  <|-- GLONASSScale
-    TimeScale  <|-- QZSSScale
+    TimeScale  <|-- DummyScale
 
     UTCScale <--* GLONASSScale
 

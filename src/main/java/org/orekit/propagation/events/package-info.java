@@ -38,6 +38,10 @@
  *  <li>{@link org.orekit.propagation.events.AlignmentDetector AlignmentDetector}
  *  detects satellite/body alignment (and by default stop when reaching alignment)
  *  </li>
+ *  <li>{@link org.orekit.propagation.events.AngularSeparationDetector AngularSeparationDetector}
+ *  detects angular separation thresholds crossing between spacecraft and a beacon
+ *  (typically the Sun) as seen from an observer (typically a ground station)
+ *  </li>
  *  <li>{@link org.orekit.propagation.events.AltitudeDetector AltitudeDetector}
  *  detects altitude crossing (and by default stop at descending)
  *  </li>
@@ -109,7 +113,7 @@
  * <p>
  * The low level interfaces and classes are heavily based on similar classes
  * from the ode.events package from the <a
- * href="http://commons.apache.org/math/">commons math</a> library. The changes are mainly
+ * href="https://hipparchus.org/">Hipparchus</a> library. The changes are mainly
  * adaptations of the signatures to space dynamics.
  * </p>
  * <ul>

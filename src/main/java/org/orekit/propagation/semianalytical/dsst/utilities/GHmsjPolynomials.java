@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 
 /** Compute the G<sub>ms</sub><sup>j</sup> and the H<sub>ms</sub><sup>j</sup>
  *  polynomials in the equinoctial elements h, k and the direction cosines α and β

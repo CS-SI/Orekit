@@ -19,8 +19,8 @@ package org.orekit.propagation.events;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -192,9 +191,6 @@ public class EventShifterTest {
                                                                   increasing ? nameIncreasing : nameDecreasing));
                                            return Action.CONTINUE;
                                        }
-                                       public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
-                                           return oldState;
-                                       }
                                    });
     }
 
@@ -217,8 +213,8 @@ public class EventShifterTest {
             propagator =
                 new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
             log = new ArrayList<EventEntry>();
-        } catch (PropagationException pe) {
-            Assert.fail(pe.getLocalizedMessage());
+        } catch (OrekitException oe) {
+            Assert.fail(oe.getLocalizedMessage());
         }
     }
 

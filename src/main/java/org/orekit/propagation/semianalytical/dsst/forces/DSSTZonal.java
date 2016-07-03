@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -47,7 +47,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenZonalLi
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
-/** Zonal contribution to the {@link DSSTCentralBody central body gravitational perturbation}.
+/** Zonal contribution to the central body gravitational perturbation.
  *
  *   @author Romain Di Costanzo
  *   @author Pascal Parraud
@@ -243,11 +243,8 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private void checkIndexRange(final int index, final int min, final int max)
         throws OrekitException {
-        if (index < min) {
-            throw new OrekitException(LocalizedFormats.NUMBER_TOO_SMALL, index, min);
-        }
-        if (index > max) {
-            throw new OrekitException(LocalizedFormats.NUMBER_TOO_LARGE, index, max);
+        if (index < min || index > max) {
+            throw new OrekitException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, index, min, max);
         }
     }
 
@@ -974,9 +971,9 @@ public class DSSTZonal implements DSSTForceModel {
      * Those coefficients are given in Danielson paper by expressions 4.1-(20) to 4.1.-(25)
      * </p>
      * <p>
-     * The coefficients are: <br/>
-     * - C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> <br/>
-     * - ρ<sub>j</sub> and σ<sub>j</sub> <br/>
+     * The coefficients are: <br>
+     * - C<sub>i</sub><sup>j</sup> and S<sub>i</sub><sup>j</sup> <br>
+     * - ρ<sub>j</sub> and σ<sub>j</sub> <br>
      * - C<sub>i</sub>⁰
      * </p>
      *

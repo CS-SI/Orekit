@@ -136,26 +136,22 @@ about the current attitude law.
     propagator.setMasterMode(180., new OrekitFixedStepHandler() {
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
         }
-        public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
-            try {
-                DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
-                angleDegree.setDecimalSeparator('\u00b0');
-                DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
-                // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
-                // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
-                final double eclipseAngle = dayNightEvent.g(currentState);
+        public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+            DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
+            angleDegree.setDecimalSeparator('\u00b0');
+            DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
+            // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
+            // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
+            final double eclipseAngle = dayNightEvent.g(currentState);
     
-                // the Earth position in spacecraft frame should be along spacecraft Z axis
-                // during nigthtime and away from it during daytime due to roll and pitch offsets
-                final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
-                final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
+            // the Earth position in spacecraft frame should be along spacecraft Z axis
+            // during nigthtime and away from it during daytime due to roll and pitch offsets
+            final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
+            final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
     
-                output.add(currentState.getDate() +
-                           " " + ad.format(FastMath.toDegrees(eclipseAngle) +
-                           " " + vFastMath.toDegrees(pointingOffset));
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe.getLocalizedMessage(), oe);
-            }
+            output.add(currentState.getDate() +
+                       " " + ad.format(FastMath.toDegrees(eclipseAngle) +
+                       " " + vFastMath.toDegrees(pointingOffset));
         }
     });
 

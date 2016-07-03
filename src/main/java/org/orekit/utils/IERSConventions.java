@@ -23,10 +23,10 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FieldBodiesElements;
@@ -171,7 +171,6 @@ public enum IERSConventions {
                     withSinCos(1, 12, deciMilliAS, 11, deciMilliAS);
             final PoissonSeries<DerivativeStructure> ySum = yParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
 
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> xySum =
                     PoissonSeries.compile(xSum, ySum);
 
@@ -284,7 +283,6 @@ public enum IERSConventions {
                     withSinCos(1, -1, deciMilliAS, 10, deciMilliAS);
             final PoissonSeries<DerivativeStructure> epsilonSeries = epsilonParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
 
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
 
@@ -419,7 +417,6 @@ public enum IERSConventions {
             final PoissonSeries<DerivativeStructure> ut1Series =
                     ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
 
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> correctionSeries =
                 PoissonSeries.compile(xSeries, ySeries, ut1Series);
 
@@ -492,7 +489,6 @@ public enum IERSConventions {
                     withSinCos(0, 16, -pico, -1, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
 
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> kSeries =
                 PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
 
@@ -647,7 +643,6 @@ public enum IERSConventions {
             final PoissonSeries<DerivativeStructure> xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
             final PoissonSeries<DerivativeStructure> ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
             final PoissonSeries<DerivativeStructure> sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
@@ -737,10 +732,8 @@ public enum IERSConventions {
             final PoissonSeries<DerivativeStructure> epsilonPlanetarySeries =
                     planetaryEpsilonParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
 
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> luniSolarSeries =
                     PoissonSeries.compile(psiLuniSolarSeries, epsilonLuniSolarSeries);
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> planetarySeries =
                     PoissonSeries.compile(psiPlanetarySeries, epsilonPlanetarySeries);
 
@@ -831,7 +824,6 @@ public enum IERSConventions {
                         withSinCos(0, 2, microAS, 3, microAS).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
             final PoissonSeries<DerivativeStructure> gstSeries = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> psiGstSeries =
                     PoissonSeries.compile(psiLuniSolarSeries, psiPlanetarySeries, gstSeries);
 
@@ -897,7 +889,6 @@ public enum IERSConventions {
             final PoissonSeries<DerivativeStructure> ut1Series =
                     ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
 
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> correctionSeries =
                 PoissonSeries.compile(xSeries, ySeries, ut1Series);
 
@@ -970,7 +961,6 @@ public enum IERSConventions {
                     withSinCos(0, 16, -pico, -1, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
 
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> kSeries =
                 PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
 
@@ -1221,7 +1211,6 @@ public enum IERSConventions {
             final PoissonSeries<DerivativeStructure> xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
             final PoissonSeries<DerivativeStructure> ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
             final PoissonSeries<DerivativeStructure> sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
@@ -1288,7 +1277,6 @@ public enum IERSConventions {
                     withSinCos(0, 16, -pico, -1, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
 
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> kSeries =
                 PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
 
@@ -1481,7 +1469,6 @@ public enum IERSConventions {
                         withSinCos(0, 2, microAS, 3, microAS);
             final PoissonSeries<DerivativeStructure> psiSeries     = parser.parse(getStream(PSI_SERIES), PSI_SERIES);
             final PoissonSeries<DerivativeStructure> epsilonSeries = parser.parse(getStream(EPSILON_SERIES), EPSILON_SERIES);
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
 
@@ -1553,7 +1540,6 @@ public enum IERSConventions {
             final PoissonSeriesParser<DerivativeStructure> gstParser  = baseParser.withPolynomialPart('t', Unit.ARC_SECONDS);
             final PoissonSeries<DerivativeStructure> psiSeries        = baseParser.parse(getStream(PSI_SERIES), PSI_SERIES);
             final PoissonSeries<DerivativeStructure> gstSeries        = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> psiGstSeries =
                     PoissonSeries.compile(psiSeries, gstSeries);
 
@@ -1619,7 +1605,6 @@ public enum IERSConventions {
             final PoissonSeries<DerivativeStructure> ut1Series =
                     ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
 
-            @SuppressWarnings("unchecked")
             final PoissonSeries.CompiledSeries<DerivativeStructure> correctionSeries =
                     PoissonSeries.compile(xSeries, ySeries, ut1Series);
 
@@ -1923,8 +1908,6 @@ public enum IERSConventions {
      * library cannot be read
      */
     protected LoveNumbers loadLoveNumbers(final String nameLove) throws OrekitException {
-        InputStream stream = null;
-        BufferedReader reader = null;
         try {
 
             // allocate the three triangular arrays for real, imaginary and time-dependent numbers
@@ -1937,46 +1920,49 @@ public enum IERSConventions {
                 plus[i]      = new double[i + 1];
             }
 
-            stream = IERSConventions.class.getResourceAsStream(nameLove);
-            if (stream == null) {
-                // this should never happen with files embedded within Orekit
-                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, nameLove);
-            }
+            try (final InputStream stream = IERSConventions.class.getResourceAsStream(nameLove)) {
 
-            // setup the reader
-            reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-
-            String line = reader.readLine();
-            int lineNumber = 1;
-
-            // look for the Love numbers
-            while (line != null) {
-
-                line = line.trim();
-                if (!(line.isEmpty() || line.startsWith("#"))) {
-                    final String[] fields = line.split("\\p{Space}+");
-                    if (fields.length != 5) {
-                        // this should never happen with files embedded within Orekit
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, nameLove, line);
-                    }
-                    final int n = Integer.parseInt(fields[0]);
-                    final int m = Integer.parseInt(fields[1]);
-                    if ((n < 2) || (n > 3) || (m < 0) || (m > n)) {
-                        // this should never happen with files embedded within Orekit
-                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                  lineNumber, nameLove, line);
-
-                    }
-                    real[n][m]      = Double.parseDouble(fields[2]);
-                    imaginary[n][m] = Double.parseDouble(fields[3]);
-                    plus[n][m]      = Double.parseDouble(fields[4]);
+                if (stream == null) {
+                    // this should never happen with files embedded within Orekit
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, nameLove);
                 }
 
-                // next line
-                lineNumber++;
-                line = reader.readLine();
+                // setup the reader
+                try (final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
 
+                    String line = reader.readLine();
+                    int lineNumber = 1;
+
+                    // look for the Love numbers
+                    while (line != null) {
+
+                        line = line.trim();
+                        if (!(line.isEmpty() || line.startsWith("#"))) {
+                            final String[] fields = line.split("\\p{Space}+");
+                            if (fields.length != 5) {
+                                // this should never happen with files embedded within Orekit
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, nameLove, line);
+                            }
+                            final int n = Integer.parseInt(fields[0]);
+                            final int m = Integer.parseInt(fields[1]);
+                            if ((n < 2) || (n > 3) || (m < 0) || (m > n)) {
+                                // this should never happen with files embedded within Orekit
+                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                          lineNumber, nameLove, line);
+
+                            }
+                            real[n][m]      = Double.parseDouble(fields[2]);
+                            imaginary[n][m] = Double.parseDouble(fields[3]);
+                            plus[n][m]      = Double.parseDouble(fields[4]);
+                        }
+
+                        // next line
+                        lineNumber++;
+                        line = reader.readLine();
+
+                    }
+                }
             }
 
             return new LoveNumbers(real, imaginary, plus);
@@ -1984,17 +1970,6 @@ public enum IERSConventions {
         } catch (IOException ioe) {
             // this should never happen with files embedded within Orekit
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, nameLove);
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException ioe) {
-                // ignored here
-            }
         }
     }
 

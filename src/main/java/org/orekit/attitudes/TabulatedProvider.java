@@ -18,7 +18,6 @@ package org.orekit.attitudes;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
@@ -53,21 +52,6 @@ public class TabulatedProvider implements AttitudeProvider {
     private final AngularDerivativesFilter filter;
 
     /** Creates new instance.
-     * @param table tabulated attitudes
-     * @param n number of attitude to use for interpolation
-     * @param useRotationRate if true, rotation rate from the tables are used in
-     * the interpolation, otherwise rates present in the table are ignored
-     * and rate is reconstructed from the rotation angles only
-     * @deprecated as of 7.0, replaced with {@link #TabulatedProvider(Frame, List, int, AngularDerivativesFilter)}
-     */
-    @Deprecated
-    public TabulatedProvider(final List<Attitude> table, final int n, final boolean useRotationRate) {
-        this(table.get(0).getReferenceFrame(),
-             toTimeStampedAngularCoordinates(table),
-             n, useRotationRate ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R);
-    }
-
-    /** Creates new instance.
      * @param referenceFrame reference frame for tabulated attitudes
      * @param table tabulated attitudes
      * @param n number of attitude to use for interpolation
@@ -95,19 +79,6 @@ public class TabulatedProvider implements AttitudeProvider {
         // build the attitude
         return new Attitude(referenceFrame, interpolated);
 
-    }
-
-    /** Convert an attitude list into a time-stamped angular coordinates list.
-     * @param attitudes attitudes list
-     * @return converted list
-     */
-    private static List<TimeStampedAngularCoordinates> toTimeStampedAngularCoordinates(final List<Attitude> attitudes) {
-        final List<TimeStampedAngularCoordinates> converted =
-                new ArrayList<TimeStampedAngularCoordinates>(attitudes.size());
-        for (final Attitude attitude : attitudes) {
-            converted.add(attitude.getOrientation());
-        }
-        return converted;
     }
 
     /** Replace the instance with a data transfer object for serialization.

@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
@@ -88,7 +88,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
                                                      data.size(), neighborsSize);
         }
         if (neighborsSize < 1) {
-            throw new OrekitIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL,
+            throw new OrekitIllegalArgumentException(LocalizedCoreFormats.NUMBER_TOO_SMALL,
                                                      neighborsSize, 0);
         }
 
@@ -116,12 +116,10 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
         // check index in in the range of the data
         if (i < 0) {
-            throw new TimeStampedCacheException(
-                                                OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
+            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                 this.getEarliest().getDate());
         } else if (i >= this.data.size()) {
-            throw new TimeStampedCacheException(
-                                                OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+            throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
                                                 this.getLatest().getDate());
         }
 

@@ -150,7 +150,10 @@ There are also several predefined events detectors already available, amongst wh
   `LongitudeExtremumDetector`, which are triggered when satellite position with respect
   to central body reaches some predefined values, 
 * an `AlignmentDetector`, which is triggered when satellite and some body are aligned
-  in the orbital plane...
+  in the orbital plane,
+* an `AngularSeparationDetector`, which is triggered when angular separation between satellite and
+  some beacon as seen by an observer goes below a threshold. The beacon is typically the Sun, the
+  observer is typically a ground station
 
 An `EventShifter` is also provided in order to slightly shift the events occurrences times.
 A typical use case is for handling operational delays before or after some physical event
@@ -257,7 +260,7 @@ a maneuver changed inclination or semi-major axis of a Sun-Synchronous satellite
 ## Numerical propagation
 
 Numerical propagation is one of the most important parts of the Orekit project.
-Based on Apache Commons Math ordinary differential equations integrators, the
+Based on Hipparchus ordinary differential equations integrators, the
 `NumericalPropagator` class realizes the interface between  space mechanics and
 mathematical resolutions. Despite its utilization seems daunting on first sight,
 it is in fact quite straigthforward to use.
@@ -277,7 +280,7 @@ during maneuvers. The user only needs to register the various force models neede
 the simulation. Various force models are already available in the library and specialized
 ones can be added by users easily for specific needs.
  
-The integrators (_first order integrators_) provided by Apache Commons Math need 
+The integrators (_first order integrators_) provided by Hipparchus need 
 the state vector at t0, the state vector first time derivative at t0,
 and then calculates the next step state vector, and asks for the next first 
 time derivative, etc. until it reaches the final asked date. These underlying numerical

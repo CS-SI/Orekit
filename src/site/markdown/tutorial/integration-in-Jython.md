@@ -18,7 +18,7 @@ Jython is a Java-based implementation of the Python language, and interfaces wel
 Java libraries. The number of Jython modules available for plotting is limited, but
 Java libraries can be used.
 
-It is important that the orekit jar file and common-math are in the Java CLASSPATH.
+It is important that the orekit jar file and Hipparchus jars are in the Java CLASSPATH.
 This can be set manually at the command prompt, or by using an IDE such as Eclipse
 with PyDev. The file `orekit-data.zip` should be in the current directory, the same
 as your Jython files.
@@ -45,7 +45,7 @@ Keplerian propagation.
      * limitations under the License.
      */
 
-    # orekit.jar,orekit-data.zip and commons-maths in CLASSPATH through eclipse project
+    # orekit.jar,orekit-data.zip and Hipparchus jars in CLASSPATH through eclipse project
     import java, os
 
     from org.orekit.errors import OrekitException
@@ -53,6 +53,7 @@ Keplerian propagation.
     from org.orekit.frames import FramesFactory
     from org.orekit.orbits import KeplerianOrbit
     from org.orekit.orbits import Orbit
+    from org.orekit.orbits import PositionAngle
     from org.orekit.propagation import SpacecraftState
     from org.orekit.propagation.analytical import KeplerianPropagator
     from org.orekit.data import DataProvidersManager
@@ -88,7 +89,7 @@ Keplerian propagation.
 
     #Orbit construction as Keplerian
     initialOrbit = KeplerianOrbit(a, e, i, omega, raan, lM,
-                                  KeplerianOrbit.MEAN_ANOMALY,
+                                  PositionAngle.MEAN,
                                   inertialFrame, initialDate, mu)
 
     #Simple extrapolation with Keplerian motion
@@ -138,12 +139,12 @@ example of subclassing of a Java object into a jython object.
      * limitations under the License.
      */
 
-    # orekit and common maths in CLASSPATH through eclipse project
+    # Orekit and Hipparchus in CLASSPATH through eclipse project
     import java, os
 
     from org.orekit.data import DataProvidersManager
     from org.orekit.data import ZipJarCrawler
-    from org.apache.commons.math.geometry import Vector3D
+    from org.hipparchus.geometry import Vector3D
     from org.orekit.bodies import BodyShape
     from org.orekit.bodies import GeodeticPoint
     from org.orekit.bodies import OneAxisEllipsoid

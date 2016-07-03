@@ -16,8 +16,8 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -35,7 +35,7 @@ public enum LOFType {
      *   <li>Y<sub>TNW</sub> = -Z<sub>VNC</sub></li>
      *   <li>Z<sub>TNW</sub> =  Y<sub>VNC</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #VNC
      */
     TNW {
@@ -58,7 +58,7 @@ public enum LOFType {
      *   <li>Y<sub>QSW/LVLH</sub> =  X<sub>VVLH</sub></li>
      *   <li>Z<sub>QSW/LVLH</sub> = -Y<sub>VVLH</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #LVLH
      * @see #VVLH
      */
@@ -82,7 +82,7 @@ public enum LOFType {
      *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>VVLH</sub></li>
      *   <li>Z<sub>LVLH/QSW</sub> = -Y<sub>VVLH</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #QSW
      * @see #VVLH
      */
@@ -103,7 +103,7 @@ public enum LOFType {
      *   <li>Y<sub>VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
      *   <li>Z<sub>VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #QSW
      * @see #LVLH
      */
@@ -124,7 +124,7 @@ public enum LOFType {
      *   <li>Y<sub>VNC</sub> =  Z<sub>TNW</sub></li>
      *   <li>Z<sub>VNC</sub> = -Y<sub>TNW</sub></li>
      * </ul>
-     * </p>
+     *
      * @see #TNW
      */
     VNC {

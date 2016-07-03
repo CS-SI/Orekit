@@ -19,7 +19,7 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -49,17 +49,6 @@ public class NadirPointing extends GroundPointing {
 
     /** Body shape.  */
     private final BodyShape shape;
-
-    /** Creates new instance.
-     * @param shape Body shape
-     * @deprecated as of 7.1, replaced with {@link #NadirPointing(Frame, BodyShape)}
-     */
-    @Deprecated
-    public NadirPointing(final BodyShape shape) {
-        // Call constructor of superclass
-        super(shape.getBodyFrame());
-        this.shape = shape;
-    }
 
     /** Creates new instance.
      * @param inertialFrame frame in which orbital velocities are computed

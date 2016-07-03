@@ -18,9 +18,9 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
@@ -35,7 +35,7 @@ import org.orekit.time.TimeFunction;
  * It <strong>must</strong> be used with the Earth Rotation Angle (REA) defined by
  * Capitaine's model and <strong>not</strong> IAU-82 sidereal
  * time which is consistent with the older models only.</p>
- * <p>Its parent frame is the GCRF frame.<p>
+ * <p>Its parent frame is the GCRF frame.
  */
 class CIRFProvider implements EOPBasedTransformProvider {
 

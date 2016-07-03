@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -84,7 +84,7 @@ public class LatitudeCrossingDetectorTest {
             SpacecraftState state = e.getState();
             double latitude = earth.transform(state.getPVCoordinates(earth.getBodyFrame()).getPosition(),
                                               earth.getBodyFrame(), null).getLatitude();
-            Assert.assertEquals(60.0, FastMath.toDegrees(latitude), 2.0e-10);
+            Assert.assertEquals(60.0, FastMath.toDegrees(latitude), 3.0e-10);
             if (previous != null) {
                 if (e.isIncreasing()) {
                     // crossing northward

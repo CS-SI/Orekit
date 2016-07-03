@@ -16,27 +16,29 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -87,13 +89,6 @@ public class DetectorTest {
             return Action.CONTINUE;
         }
 
-        public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
-
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             // step handling and event occurrences may be out of order up to one step
             // with variable steps, and two steps with fixed steps (due to the delay
@@ -109,6 +104,11 @@ public class DetectorTest {
 
         public boolean outOfOrderCallDetected() {
             return outOfOrderCallDetected;
+        }
+
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate target) {
+            EventHandler.super.init(initialState, target);
         }
 
     }
@@ -204,7 +204,7 @@ public class DetectorTest {
                                                       k1));
         k2.addEventDetector(new DateDetector(Constants.JULIAN_DAY, 1.0e-6, interruptDate));
         SpacecraftState s = k2.propagate(startDate, targetDate);
-        Assert.assertEquals(interruptDate, s.getDate());
+        Assert.assertEquals(0.0, interruptDate.durationFrom(s.getDate()), 1.1e-6);
     }
 
     private static class CloseApproachDetector extends AbstractDetector<CloseApproachDetector> {
@@ -256,17 +256,58 @@ public class DetectorTest {
                 public double g(final SpacecraftState s) throws OrekitException {
                     final double dt = s.getDate().durationFrom(exceptionDate);
                     if (FastMath.abs(dt) < 1.0) {
-                        throw new OrekitException(dummyCause, LocalizedFormats.SIMPLE_MESSAGE, "dummy");
+                        throw new OrekitException(dummyCause, LocalizedCoreFormats.SIMPLE_MESSAGE, "dummy");
                     }
                     return dt;
                 }
             });
             k.propagate(initialDate.shiftedBy(Constants.JULIAN_YEAR));
             Assert.fail("an exception should have been thrown");
-        } catch (PropagationException poe) {
-            final OrekitException oe = (OrekitException) poe.getCause();
+        } catch (OrekitException oe) {
             Assert.assertSame(dummyCause, oe.getCause());
         }
+    }
+
+    @Test
+    public void testDefaultMethods() throws OrekitException {
+        EventDetector dummyDetector = new EventDetector() {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public double getThreshold() {
+                return 1.0e-10;
+            }
+            
+            @Override
+            public int getMaxIterationCount() {
+                return 100;
+            }
+            
+            @Override
+            public double getMaxCheckInterval() {
+                return 60;
+            }
+            
+            @Override
+            public double g(SpacecraftState s) {
+                return s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH);
+            }
+            
+            @Override
+            public Action eventOccurred(SpacecraftState s, boolean increasing) {
+                return Action.RESET_STATE;
+            }
+       };
+
+       // by default, this method does nothing, so this should pass without exception
+       dummyDetector.init(null, null);
+
+       // by default, this method returns its argument
+       SpacecraftState s = new SpacecraftState(new KeplerianOrbit(7e6, 0.01, 0.3, 0, 0, 0,
+                                                                  PositionAngle.TRUE, FramesFactory.getEME2000(),
+                                                                  AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU));
+       Assert.assertSame(s, dummyDetector.resetState(s));
+
     }
 
     @Before

@@ -16,8 +16,8 @@
  */
 package org.orekit.forces.drag;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -49,7 +49,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *        {@link org.orekit.forces.drag.DragForce
  *        drag force model} computation.</li>
  * </ul>
- * </p>
+ *
  * <p>
  * This model provides dense output for all altitudes and positions. Output data are :
  * <ul>
@@ -57,7 +57,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <li>Temperature at Input Position (deg K)</li>
  * <li>Total Mass-Density at Input Position (kg/m³)</li>
  * </ul>
- * </p>
+ *
  * <p>
  * The model needs geographical and time information to compute general values,
  * but also needs space weather data : mean and daily solar flux, retrieved threw
@@ -183,10 +183,10 @@ public class JB2006 implements Atmosphere {
     };
 
     /** Temperatures.
-     *  <p><ul>
+     *  <ul>
      *  <li>TEMP(1): Exospheric Temperature above Input Position (deg K)</li>
      *  <li>TEMP(2): Temperature at Input Position (deg K)</li>
-     *  </ul></p>
+     *  </ul>
      */
     private double[] temp = new double[3];
 

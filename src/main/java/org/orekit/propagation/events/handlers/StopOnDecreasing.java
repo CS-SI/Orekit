@@ -54,11 +54,4 @@ public class StopOnDecreasing <T extends EventDetector> implements EventHandler<
         return increasing ? Action.CONTINUE : Action.STOP;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public SpacecraftState resetState(final T detector, final SpacecraftState oldState)
-        throws OrekitException {
-        return oldState;
-    }
-
 }

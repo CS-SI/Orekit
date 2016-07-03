@@ -34,7 +34,7 @@ compute the Dilution Of Precision for a navigation application on each grid poin
 
 ## Zone Of Interest Definition
 
-The definition of the zone of interest is done using Apache Commons Math
+The definition of the zone of interest is done using Hipparchus
 `SphericalPolygonsSet` class, which can handle arbitrarily complex area.
 It is possible to use non-connected area (for example an archipelago with
 separated islands). It is possible to use are with holes (for example to
@@ -71,7 +71,7 @@ larger and will certainly fail to be tessellated properly as per the
 limitation explained above.
 
 More complex zones can be built from simple ones using the set operations
-available in Apache Commons Math `RegionFactory` class (union, intersection,
+available in Hipparchus `RegionFactory` class (union, intersection,
 differences, symmetric difference, complement).
 
 ## Tile aiming

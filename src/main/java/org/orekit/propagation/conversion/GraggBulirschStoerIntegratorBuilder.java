@@ -16,9 +16,9 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.GraggBulirschStoerIntegrator;
-import org.orekit.errors.PropagationException;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -27,7 +27,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class GraggBulirschStoerIntegratorBuilder implements FirstOrderIntegratorBuilder {
+public class GraggBulirschStoerIntegratorBuilder implements ODEIntegratorBuilder {
 
     /** Minimum step size (s). */
     private final double minStep;
@@ -53,7 +53,7 @@ public class GraggBulirschStoerIntegratorBuilder implements FirstOrderIntegrator
 
     /** {@inheritDoc} */
     public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
-        throws PropagationException {
+        throws OrekitException {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
         return new GraggBulirschStoerIntegrator(minStep, maxStep, tol[0], tol[1]);
     }

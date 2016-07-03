@@ -16,8 +16,9 @@
  */
 package org.orekit;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.SelfDescribing;
@@ -25,6 +26,7 @@ import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 import java.util.Arrays;
 
@@ -226,6 +228,83 @@ public class OrekitMatchers {
     }
 
     /**
+     * Match a {@link PVCoordinates}
+     *
+     * @param position matcher for the position
+     * @param velocity matcher for the velocity
+     * @return a matcher of {@link PVCoordinates}
+     */
+    public static Matcher<PVCoordinates> pvIs(
+            final Matcher<? super Vector3D> position,
+            final Matcher<? super Vector3D> velocity) {
+        return new TypeSafeDiagnosingMatcher<PVCoordinates>() {
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("position ");
+                description.appendDescriptionOf(position);
+                description.appendText(" and velocity ");
+                description.appendDescriptionOf(velocity);
+            }
+
+            @Override
+            protected boolean matchesSafely(PVCoordinates item,
+                    Description mismatchDescription) {
+                if (!position.matches(item.getPosition())) {
+                    // position doesn't match
+                    mismatchDescription.appendText("position ");
+                    position.describeMismatch(item.getPosition(), mismatchDescription);
+                    return false;
+                } else if (!velocity.matches(item.getVelocity())) {
+                    // velocity doesn't match
+                    mismatchDescription.appendText("velocity ");
+                    velocity.describeMismatch(item.getVelocity(), mismatchDescription);
+                    return false;
+                } else {
+                    // both p and v matched
+                    return true;
+                }
+            }
+        };
+    }
+
+    /**
+     * Check that a {@link PVCoordinates} is the same as another one.
+     *
+     * @param pv the reference {@link PVCoordinates}
+     * @return a {@link PVCoordinates} {@link Matcher}
+     */
+    public static Matcher<PVCoordinates> pvIs(PVCoordinates pv) {
+        return pvCloseTo(pv, 0);
+    }
+
+    /**
+     * Match a {@link PVCoordinates} close to another one.
+     *
+     * @param pv     the reference {@link PVCoordinates}
+     * @param absTol distance a matched {@link PVCoordinates} can be from the reference in
+     *               any one coordinate.
+     * @return a matcher of {@link PVCoordinates}.
+     */
+    public static Matcher<PVCoordinates> pvCloseTo(PVCoordinates pv,
+                                                   double absTol) {
+        return pvIs(vectorCloseTo(pv.getPosition(), absTol),
+                vectorCloseTo(pv.getVelocity(), absTol));
+    }
+
+    /**
+     * Match a {@link PVCoordinates} close to another one.
+     *
+     * @param pv   the reference {@link PVCoordinates}
+     * @param ulps the units in last place any coordinate can be off by.
+     * @return a matcher of {@link PVCoordinates}.
+     */
+    public static Matcher<PVCoordinates> pvCloseTo(PVCoordinates pv, int ulps) {
+        return pvIs(vectorCloseTo(pv.getPosition(), ulps),
+                vectorCloseTo(pv.getVelocity(), ulps));
+    }
+
+    /**
      * Checks if two numbers are relatively close to each other. For absolute
      * comparisons, see {@link #closeTo(double, double)}.
      *
@@ -319,7 +398,7 @@ public class OrekitMatchers {
             }
 
             private double actualDelta(Double item) {
-                return (Math.abs((item - value)) - delta);
+                return (FastMath.abs((item - value)) - delta);
             }
         };
 

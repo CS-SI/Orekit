@@ -16,14 +16,14 @@
  */
 package org.orekit.propagation.sampling;
 
-import org.orekit.errors.PropagationException;
+import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface is a space-dynamics aware fixed size step handler.
  *
  * <p>It mirrors the <code>FixedStepHandler</code> interface from <a
- * href="http://commons.apache.org/math/">commons-math</a> but provides
+ * href="https://hipparchus.org/">Hipparchus</a> but provides
  * a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
@@ -35,18 +35,24 @@ public interface OrekitFixedStepHandler {
      * may be used by the step handler to initialize some internal data
      * if needed.
      * </p>
+     * <p>
+     * The default implementation does nothing
+     * </p>
      * @param s0 initial state
      * @param t target time for the integration
-     * @exception PropagationException if step handler cannot be initialized
+     * @exception OrekitException if step handler cannot be initialized
      */
-    void init(SpacecraftState s0, AbsoluteDate t) throws PropagationException;
+    default void init(SpacecraftState s0, AbsoluteDate t)
+        throws OrekitException {
+        // nothing by default
+    }
 
     /** Handle the current step.
      * @param currentState current state at step time
      * @param isLast if true, this is the last integration step
-     * @exception PropagationException if step cannot be handled
+     * @exception OrekitException if step cannot be handled
      */
     void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws PropagationException;
+        throws OrekitException;
 
 }

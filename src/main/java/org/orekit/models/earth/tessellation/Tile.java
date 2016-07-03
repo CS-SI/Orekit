@@ -18,8 +18,8 @@ package org.orekit.models.earth.tessellation;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.GeodeticPoint;
 
 /** Simple data structure for a quadrilateral tile shape on a body surface.

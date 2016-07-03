@@ -20,18 +20,20 @@ package fr.cs.examples.frames;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URISyntaxException;
 import java.util.Locale;
 
-import org.apache.commons.math3.exception.util.LocalizedFormats;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.NadirPointing;
 import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
+import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -50,8 +52,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
-import fr.cs.examples.Autoconfiguration;
-
 /** Orekit tutorial for computing spacecraft related data.
  * @author Pascal Parraud
  * @author Luc Maisonobe
@@ -62,7 +62,17 @@ public class Frames3 {
         try {
 
             // configure Orekit and printing format
-            Autoconfiguration.configureOrekit();
+            String className = "/" + Frames3.class.getName().replaceAll("\\.", "/") + ".class";
+            File f = new File(Frames3.class.getResource(className).toURI().getPath());
+            File resourcesDir = null;
+            while (resourcesDir == null || !resourcesDir.exists()) {
+                f = f.getParentFile();
+                if (f == null) {
+                    System.err.println("cannot find resources directory");
+                }
+                resourcesDir = new File(new File(new File(new File(f, "src"), "test"), "resources"), "regular-data");
+            }
+            DataProvidersManager.getInstance().addProvider(new DirectoryCrawler(resourcesDir));
 
             // Initial state definition :
             // ==========================
@@ -120,49 +130,45 @@ public class Frames3 {
                 PrintStream out = null;
 
                 public void init(SpacecraftState s0, AbsoluteDate t)
-                    throws PropagationException {
+                    throws OrekitException {
                     try {
                         File file = new File(System.getProperty("user.home"), "XYZ.dat");
                         System.out.println("Results written to file: " + file.getAbsolutePath());
-                        out = new PrintStream(file);
+                        out = new PrintStream(file, "UTF-8");
                         out.println("#time X Y Z Wx Wy Wz");
                     } catch (IOException ioe) {
-                        throw new PropagationException(ioe,
-                                                       LocalizedFormats.SIMPLE_MESSAGE,
+                        throw new OrekitException(ioe,
+                                                       LocalizedCoreFormats.SIMPLE_MESSAGE,
                                                        ioe.getLocalizedMessage());
                     }
                 }
                 
                 public void handleStep(SpacecraftState currentState, boolean isLast)
-                    throws PropagationException {
-                    try {
+                    throws OrekitException {
 
-                        // get the transform from orbit/attitude reference frame to spacecraft frame
-                        Transform inertToSpacecraft = currentState.toTransform();
+                    // get the transform from orbit/attitude reference frame to spacecraft frame
+                    Transform inertToSpacecraft = currentState.toTransform();
 
-                        // get the position of the Sun in orbit/attitude reference frame
-                        Vector3D sunInert = sun.getPVCoordinates(currentState.getDate(), currentState.getFrame()).getPosition();
+                    // get the position of the Sun in orbit/attitude reference frame
+                    Vector3D sunInert = sun.getPVCoordinates(currentState.getDate(), currentState.getFrame()).getPosition();
 
-                        // convert Sun position to spacecraft frame
-                        Vector3D sunSat = inertToSpacecraft.transformPosition(sunInert);
+                    // convert Sun position to spacecraft frame
+                    Vector3D sunSat = inertToSpacecraft.transformPosition(sunInert);
 
-                        // and the spacecraft rotational rate also
-                        Vector3D spin = inertToSpacecraft.getRotationRate();
+                    // and the spacecraft rotational rate also
+                    Vector3D spin = inertToSpacecraft.getRotationRate();
 
-                        // Lets calculate the reduced coordinates
-                        double sunX = sunSat.getX() / sunSat.getNorm();
-                        double sunY = sunSat.getY() / sunSat.getNorm();
-                        double sunZ = sunSat.getZ() / sunSat.getNorm();
+                    // Lets calculate the reduced coordinates
+                    double sunX = sunSat.getX() / sunSat.getNorm();
+                    double sunY = sunSat.getY() / sunSat.getNorm();
+                    double sunZ = sunSat.getZ() / sunSat.getNorm();
 
-                        out.format(Locale.US, "%s %12.3f %12.3f %12.3f %12.7f %12.7f %12.7f%n",
-                                   currentState.getDate(), sunX, sunY, sunZ,
-                                   spin.getX(), spin.getY(), spin.getZ());
+                    out.format(Locale.US, "%s %12.3f %12.3f %12.3f %12.7f %12.7f %12.7f%n",
+                               currentState.getDate(), sunX, sunY, sunZ,
+                               spin.getX(), spin.getY(), spin.getZ());
 
-                        if (isLast) {
-                            out.close();
-                        }
-                    } catch (OrekitException oe) {
-                        throw new PropagationException(oe);
+                    if (isLast) {
+                        out.close();
                     }
                 }
 
@@ -173,6 +179,8 @@ public class Frames3 {
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
+        } catch (URISyntaxException e) {
+            System.err.println(e.getMessage());
         }
     }
 

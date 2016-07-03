@@ -18,8 +18,8 @@ package org.orekit.propagation.events;
 
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,7 +29,6 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
@@ -121,33 +120,25 @@ public class ElevationDetectorTest {
             return Action.CONTINUE;
         }
 
-        public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
-            return oldState;
-        }
-
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
-
         public void handleStep(SpacecraftState currentState, boolean isLast)
-        throws PropagationException {
-            try {
-                BodyShape shape = topo.getParentShape();
-                GeodeticPoint p =
-                    shape.transform(currentState.getPVCoordinates().getPosition(),
-                                    currentState.getFrame(), currentState.getDate());
-                Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
-                double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
+            throws OrekitException {
+            BodyShape shape = topo.getParentShape();
+            GeodeticPoint p =
+                            shape.transform(currentState.getPVCoordinates().getPosition(),
+                                            currentState.getFrame(), currentState.getDate());
+            Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
+            double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
 
-                if (visible) {
-                    Assert.assertTrue(range < 2.45e6);
-                } else {
-                    Assert.assertTrue(range > 2.02e6);
-                }
-
-            } catch (OrekitException e) {
-                throw new PropagationException(e);
+            if (visible) {
+                Assert.assertTrue(range < 2.45e6);
+            } else {
+                Assert.assertTrue(range > 2.02e6);
             }
+        }
 
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate target) {
+            EventHandler.super.init(initialState, target);
         }
 
     }
@@ -499,7 +490,7 @@ public class ElevationDetectorTest {
 
         // Event definition
         final double maxcheck  = 60.0;
-        final double threshold =  1.0; // 0.001;
+        final double threshold =  2.0; // 0.001;
         final EventDetector sta1Visi =
                 new ElevationDetector(maxcheck, threshold, sta1Frame).
                 withElevationMask(mask).
@@ -511,10 +502,7 @@ public class ElevationDetectorTest {
                         return (--count > 0) ? Action.CONTINUE : Action.STOP;
                     }
 
-                    @Override
-                    public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
-                        return oldState;
-                    }});
+                });
 
         // Add event to be detected
         EventsLogger logger = new EventsLogger();
@@ -530,7 +518,7 @@ public class ElevationDetectorTest {
         // the second one is not merged into the first one
         AbsoluteDate d2 = events.get(2).getState().getDate();
         AbsoluteDate d3 = events.get(3).getState().getDate();
-        Assert.assertEquals(0.6501, d3.durationFrom(d2), 0.01);
+        Assert.assertEquals(1.529, d3.durationFrom(d2), 0.01);
 
     }
 

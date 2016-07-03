@@ -47,11 +47,13 @@ public class GLONASSScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
         return OFFSET + utc.offsetFromTAI(date);
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
         final DateTimeComponents utcComponents =
                         new DateTimeComponents(new DateTimeComponents(date, time), -OFFSET);
@@ -59,11 +61,19 @@ public class GLONASSScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean insideLeap(final AbsoluteDate date) {
         return utc.insideLeap(date);
     }
 
     /** {@inheritDoc} */
+    @Override
+    public int minuteDuration(final AbsoluteDate date) {
+        return utc.minuteDuration(date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getLeap(final AbsoluteDate date) {
         return utc.getLeap(date);
     }

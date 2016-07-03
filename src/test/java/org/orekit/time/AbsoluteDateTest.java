@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -742,6 +742,46 @@ public class AbsoluteDateTest {
         Assert.assertEquals(59.9996, stillBeforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
         Assert.assertEquals("2008-02-29T23:59:59.999", beforeMidnight.toString(utc));
         Assert.assertEquals("2008-03-01T00:00:00.000", stillBeforeMidnight.toString(utc));
+    }
+
+    @Test
+    public void testLastLeapOutput() throws OrekitException {
+        UTCScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate t = utc.getLastKnownLeapSecond();
+        Assert.assertEquals("23:59:59.500", t.shiftedBy(-0.5).toString(utc).substring(11));
+        Assert.assertEquals("23:59:60.000", t.shiftedBy( 0.0).toString(utc).substring(11));
+        Assert.assertEquals("23:59:60.500", t.shiftedBy(+0.5).toString(utc).substring(11));
+    }
+
+    @Test
+    public void testWrapBeforeLeap() throws OrekitException {
+        UTCScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate t = new AbsoluteDate("2015-06-30T23:59:59.999999", utc);
+        Assert.assertEquals(2015,        t.getComponents(utc).getDate().getYear());
+        Assert.assertEquals(   6,        t.getComponents(utc).getDate().getMonth());
+        Assert.assertEquals(  30,        t.getComponents(utc).getDate().getDay());
+        Assert.assertEquals(  23,        t.getComponents(utc).getTime().getHour());
+        Assert.assertEquals(  59,        t.getComponents(utc).getTime().getMinute());
+        Assert.assertEquals(  59.999999, t.getComponents(utc).getTime().getSecond(), 1.0e-6);
+        Assert.assertEquals("2015-06-30T23:59:60.000", t.toString(utc));
+        Assert.assertEquals("2015-07-01T02:59:60.000", t.toString(TimeScalesFactory.getGLONASS()));
+    }
+
+    @Test
+    public void testMjdInLeap() {
+        // inside a leap second
+        AbsoluteDate date1 = new AbsoluteDate(2008, 12, 31, 23, 59, 60.5, utc);
+
+        // check date to MJD conversion
+        DateTimeComponents date1Components = date1.getComponents(utc);
+        int mjd = date1Components.getDate().getMJD();
+        double seconds = date1Components.getTime().getSecondsInUTCDay();
+        Assert.assertEquals(54831, mjd);
+        Assert.assertEquals(86400.5, seconds, 0);
+
+        // check MJD to date conversion
+        AbsoluteDate date2 = AbsoluteDate.createMJDDate(mjd, seconds, utc);
+        Assert.assertEquals(date1, date2);
     }
 
     @Before

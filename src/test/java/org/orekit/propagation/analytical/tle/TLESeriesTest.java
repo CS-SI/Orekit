@@ -20,7 +20,7 @@ package org.orekit.propagation.analytical.tle;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

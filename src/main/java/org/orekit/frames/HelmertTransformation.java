@@ -16,10 +16,10 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Precision;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Precision;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -35,7 +35,7 @@ import org.orekit.utils.PVCoordinates;
  * includes translation, velocity, rotation, rotation rate and scale factor.
  * The scale factor is useful for coordinates near Earth surface, but it
  * cannot be extended to outer space as it would correspond to a non-unitary
- * transform. Therefore, the scale factor is <em>not</em> used here.<p>
+ * transform. Therefore, the scale factor is <em>not</em> used here.
  *
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *

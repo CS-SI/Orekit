@@ -22,13 +22,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -71,8 +71,19 @@ import org.orekit.time.TimeStamped;
  * #get24HoursKp(AbsoluteDate)} and {@link #getThreeHourlyKP(AbsoluteDate)}
  * methods return the same values.
  * </p>
+ * <p>
+ * Conversion from Ap index values in the MSAFE file to Kp values used by the atmosphere
+ * model is done using Jacchia's equation in [1].
+ * </p>
+ *
+ * <h2>References</h2>
+ *
+ * <ol> <li> Jacchia, L. G. "CIRA 1972, recent atmospheric models, and improvements in
+ * progress." COSPAR, 21st Plenary Meeting. Vol. 1. 1978. </li> </ol>
+ *
  * @author Bruno Revelin
  * @author Luc Maisonobe
+ * @author Evan Ward
  */
 public class MarshallSolarActivityFutureEstimation implements DTM2000InputParameters, DataLoader {
 
@@ -92,24 +103,6 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
 
     /** Serializable UID. */
     private static final long serialVersionUID = -5212198874900835369L;
-
-    /** 1/3. */
-    private static final double ONE_THIRD = 1.0 / 3.0;
-
-    /** 3 hours geomagnetic indices array. */
-    private static final double[] KP_ARRAY = new double[] {
-        0, 0 + ONE_THIRD, 1 - ONE_THIRD, 1, 1 + ONE_THIRD, 2 - ONE_THIRD,
-        2, 2 + ONE_THIRD, 3 - ONE_THIRD, 3, 3 + ONE_THIRD, 4 - ONE_THIRD,
-        4, 4 + ONE_THIRD, 5 - ONE_THIRD, 5, 5 + ONE_THIRD, 6 - ONE_THIRD,
-        6, 6 + ONE_THIRD, 7 - ONE_THIRD, 7, 7 + ONE_THIRD, 8 - ONE_THIRD,
-        8, 8 + ONE_THIRD, 9 - ONE_THIRD, 9
-    };
-
-    /** Mean geomagnetic indices array. */
-    private static final double[] AP_ARRAY = new double[] {
-        0, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 22, 27, 32,
-        39, 48, 56, 67, 80, 94, 111, 132, 154, 179, 207, 236, 300, 400
-    };
 
     /** Pattern for the data fields of MSAFE data. */
     private final Pattern dataPattern;
@@ -310,6 +303,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
      * 5 is 5 and 5+ is 5 1/3. The ap (equivalent range) index is derived from
      * the Kp index as follows:</p>
      * <table border="1">
+     * <caption>Kp / Ap Conversion Table</caption>
      * <tbody>
      * <tr>
      * <td>Kp</td><td>0o</td><td>0+</td><td>1-</td><td>1o</td><td>1+</td><td>2-</td><td>2o</td><td>2+</td><td>3-</td><td>3o</td><td>3+</td><td>4-</td><td>4o</td><td>4+</td>
@@ -345,21 +339,8 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
         final double ap                 = previousAp * previousWeight + currentAp * currentWeight;
 
         // calculating Ap index, then corresponding Kp index
-        final int i = Arrays.binarySearch(AP_ARRAY, ap);
-        if (i >= 0) {
-            // the exact value for ap has been found, return the corresponding Kp
-            return KP_ARRAY[i];
-        } else {
-            // the exact value has not been found, we have an insertion point
-            final int jSup = -(i + 1);
-            final int jInf = jSup - 1;
-            if ((ap - AP_ARRAY[jInf]) < (AP_ARRAY[jSup] - ap)) {
-                return KP_ARRAY[jInf];
-            } else {
-                return KP_ARRAY[jSup];
-            }
-        }
-
+        // equation 4 in [1] for Ap to Kp conversion
+        return 1.89 * FastMath.asinh(0.154 * ap);
     }
 
     /** Container class for Solar activity indexes.  */

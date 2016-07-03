@@ -239,10 +239,12 @@ following lines at the start of your program:
     DataProvidersManager manager = DataProvidersManager.getInstance();
     manager.addProvider(new DirectoryCrawler(orekitData));
 
-This zip file contains JPL DE 406 ephemerides from 1962 to 2069, IERS Earth orientation
-parameters from 1973 to early 2016 with predicted date to mid-2016 (both IAU-1980
-and IAU-2000), UTC-TAI history from 1972 to end of 2015, Marshall Solar Activity Future
-Estimation from 1999 to 2016 and the Eigen 06S gravity field.
+This zip file contains JPL DE 430 ephemerides from 1990
+to 2069, IERS Earth orientation parameters from 1973
+to June 2016 with predicted date to fall 2016 (both IAU-1980
+and IAU-2000), UTC-TAI history from 1972 to end of 2016,
+Marshall Solar Activity Futur Estimation from 1999 to mid 2016,
+the Eigen 06S gravity field and the FES 2004 ocean tides model.
 
 ## Supported data types
 

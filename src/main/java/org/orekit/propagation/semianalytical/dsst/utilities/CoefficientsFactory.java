@@ -18,8 +18,8 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.TreeMap;
 
-import org.apache.commons.math3.util.CombinatoricsUtils;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.CombinatoricsUtils;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -158,7 +158,7 @@ public class CoefficientsFactory {
      * @param n n
      * @param s s
      * @return The V<sub>n, s</sub> <sup>m</sup> coefficient
-     * @throws OrekitException if m > n
+     * @throws OrekitException if m &gt; n
      */
     public static double getVmns(final int m, final int n, final int s)
         throws OrekitException {

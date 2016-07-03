@@ -19,11 +19,11 @@ package org.orekit.bodies;
 import java.io.Serializable;
 import java.text.NumberFormat;
 
-import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.util.CompositeFormat;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.util.CompositeFormat;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 
 /** Point location relative to a 2D body surface, using {@link RealFieldElement}.
  * <p>Instance of this class are guaranteed to be immutable.</p>

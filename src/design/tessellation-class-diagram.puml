@@ -26,7 +26,7 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package "Apache Commons Math" #F3EDF7 {
+  package "Hipparchus" #F3EDF7 {
     class SphericalPolygonsSet #EAE6F7/B9B3D2
   }
 

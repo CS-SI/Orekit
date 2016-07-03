@@ -17,12 +17,10 @@
 package org.orekit.propagation.conversion;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.time.AbsoluteDate;
 
 /** Builder for Keplerian propagator.
  * @author Pascal Parraud
@@ -31,35 +29,32 @@ import org.orekit.time.AbsoluteDate;
 public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** Build a new instance.
-     * @param mu central attraction coefficient (m³/s²)
-     * @param frame the frame in which the orbit is propagated
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @deprecated as of 7.1, replaced with {@link #KeplerianPropagatorBuilder(double,
-     * Frame, OrbitType, PositionAngle)}
-     */
-    @Deprecated
-    public KeplerianPropagatorBuilder(final double mu, final Frame frame) {
-        this(mu, frame, OrbitType.KEPLERIAN, PositionAngle.TRUE);
-    }
-
-    /** Build a new instance.
-     * @param mu central attraction coefficient (m³/s²)
-     * @param frame the frame in which the orbit is propagated
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param orbitType orbit type to use
+     * <p>
+     * The template orbit is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, the orbit type, and is also
+     * used together with the {@code positionScale} to convert from the {@link
+     * org.orekit.utils.ParameterDriver#setNormalizedValue(double) normalized} parameters used by the
+     * callers of this builder to the real orbital parameters.
+     * </p>
+     * @param templateOrbit reference orbit from which real orbits will be built
      * @param positionAngle position angle type to use
-     * @since 7.1
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @exception OrekitException if parameters drivers cannot be scaled
+     * @since 8.0
      */
-    public KeplerianPropagatorBuilder(final double mu, final Frame frame,
-                                      final OrbitType orbitType, final PositionAngle positionAngle) {
-        super(frame, mu, orbitType, positionAngle);
+    public KeplerianPropagatorBuilder(final Orbit templateOrbit, final PositionAngle positionAngle,
+                                      final double positionScale)
+        throws OrekitException {
+        super(templateOrbit, positionAngle, positionScale);
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final AbsoluteDate date, final double[] parameters)
+    public Propagator buildPropagator(final double[] normalizedParameters)
         throws OrekitException {
-        checkParameters(parameters);
-        return new KeplerianPropagator(createInitialOrbit(date, parameters));
+        setParameters(normalizedParameters);
+        return new KeplerianPropagator(createInitialOrbit());
     }
 
 }

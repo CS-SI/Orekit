@@ -25,8 +25,8 @@ import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.StringTokenizer;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -142,6 +142,19 @@ public class GeoMagneticFieldTest {
 
         GeoMagneticElements e = field.calculateField(0, 0, 0);
         Assert.assertEquals(-4.7446, e.getDeclination(), 1.0e-4);
+    }
+
+    @Test
+    public void testContinuityAtPole() throws OrekitException {
+        double decimalYear = GeoMagneticField.getDecimalYear(1, 1, 2020);
+        GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
+
+        GeoMagneticElements eClose = field.calculateField(89.999999, 0, 0);
+        GeoMagneticElements ePole  = field.calculateField(90.0,      0, 0);
+        Assert.assertEquals("" + (eClose.getDeclination()-         ePole.getDeclination()),         eClose.getDeclination(),         ePole.getDeclination(),         7.0e-7);
+        Assert.assertEquals("" + (eClose.getInclination()-         ePole.getInclination()),         eClose.getInclination(),         ePole.getInclination(),         3.0e-7);
+        Assert.assertEquals("" + (eClose.getTotalIntensity()-      ePole.getTotalIntensity()),      eClose.getTotalIntensity(),      ePole.getTotalIntensity(),      2.0e-4);
+        Assert.assertEquals("" + (eClose.getHorizontalIntensity()- ePole.getHorizontalIntensity()), eClose.getHorizontalIntensity(), ePole.getHorizontalIntensity(), 3.0e-4);
     }
 
     @Test(expected=OrekitException.class)
@@ -410,7 +423,7 @@ public class GeoMagneticFieldTest {
             if (st.hasMoreTokens()) {
                 s = Integer.valueOf(st.nextToken());
             }
-            double deg = Math.abs(d) + m / 60d + s / 3600d;
+            double deg = FastMath.abs(d) + m / 60d + s / 3600d;
             if (d < 0) {
                 deg = -deg;
             }

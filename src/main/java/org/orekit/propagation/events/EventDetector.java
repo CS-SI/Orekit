@@ -25,9 +25,9 @@ import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
  *
- * <p>It mirrors the {@link org.apache.commons.math3.ode.events.EventHandler
- * EventHandler} interface from <a href="http://commons.apache.org/math/">
- * Apache Commons Math</a> but provides a space-dynamics interface to the
+ * <p>It mirrors the {@link org.hipparchus.ode.events.ODEEventHandler
+ * ODEEventHandler} interface from <a href="https://hipparchus.org/">
+ * Hipparchus</a> but provides a space-dynamics interface to the
  * methods.</p>
  *
  * <p>Events detectors are a useful solution to meet the requirements
@@ -54,10 +54,15 @@ public interface EventDetector extends Serializable {
      * may be used by the event handler to initialize some internal data
      * if needed.
      * </p>
+     * <p>
+     * The default implementation does nothing
+     * </p>
      * @param s0 initial state
      * @param t target time for the integration
      */
-    void init(SpacecraftState s0, AbsoluteDate t);
+    default void init(SpacecraftState s0, AbsoluteDate t) {
+        // nothing by default
+    }
 
     /** Compute the value of the switching function.
      * This function must be continuous (at least in its roots neighborhood),
@@ -100,11 +105,16 @@ public interface EventDetector extends Serializable {
      * without perturbing the step handler of the finishing step. If the
      * {@link #eventOccurred} never returns the {@link Action#RESET_STATE}
      * indicator, this function will never be called, and it is safe to simply return null.</p>
+     * <p>
+     * The default implementation simply returns its argument.
+     * </p>
      * @param oldState old state
      * @return new state
      * @exception OrekitException if the state cannot be reseted
      * @since 7.0
      */
-    SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;
+    default SpacecraftState resetState(SpacecraftState oldState) throws OrekitException {
+        return oldState;
+    }
 
 }

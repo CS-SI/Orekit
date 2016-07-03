@@ -18,14 +18,14 @@ package org.orekit.utils;
 
 import java.util.Collection;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.RotationConvention;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.RotationConvention;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -228,7 +228,10 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
      * Survey of Attitude Representations</a>. This change avoids the singularity at π.
      * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
-     * when this singularity is detected.
+     * when this singularity is detected. Another change is that the mean linear motion
+     * is first removed before interpolation and added back after interpolation. This allows
+     * to use interpolation even when the sample covers much more than one turn and even
+     * when sample points are separated by more than one turn.
      * </p>
      * <p>
      * Note that even if first and second time derivatives (rotation rates and acceleration)

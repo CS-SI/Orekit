@@ -16,16 +16,15 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -123,10 +122,10 @@ public class DateDetectorTest {
     /**
      * Check that a generic event handler can be used with an event detector.
      *
-     * @throws PropagationException on error.
+     * @throws OrekitException on error.
      */
     @Test
-    public void testGenericHandler() throws PropagationException {
+    public void testGenericHandler() throws OrekitException {
         //setup
         dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt));
         // generic event handler that works with all detectors.

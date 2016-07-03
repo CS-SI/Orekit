@@ -25,8 +25,8 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
@@ -139,7 +138,7 @@ public class TabulatedProviderTest {
     }
 
     private List<TimeStampedAngularCoordinates> createSample(double samplingRate, AttitudeProvider referenceProvider)
-        throws PropagationException {
+        throws OrekitException {
 
         // reference propagator, using a yaw compensation law
         final KeplerianPropagator referencePropagator = new KeplerianPropagator(circOrbit);
@@ -165,7 +164,7 @@ public class TabulatedProviderTest {
 
     private double checkError(final AbsoluteDate start, AbsoluteDate end, double checkingRate,
                               final AttitudeProvider referenceProvider, TabulatedProvider provider)
-            throws PropagationException {
+            throws OrekitException {
 
         // prepare an interpolating provider, using only internal steps
         // (i.e. ignoring interpolation near boundaries)
@@ -180,17 +179,13 @@ public class TabulatedProviderTest {
                 error[0] = 0.0;
             }
             
-            public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
-                try {
-                    Attitude interpolated = currentState.getAttitude();
-                    Attitude reference    = referenceProvider.getAttitude(currentState.getOrbit(),
-                                                                          currentState.getDate(),
-                                                                          currentState.getFrame());
-                    double localError = Rotation.distance(interpolated.getRotation(), reference.getRotation());
-                    error[0] = FastMath.max(error[0], localError);
-                } catch (OrekitException oe) {
-                    throw new PropagationException(oe);
-                }
+            public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
+                Attitude interpolated = currentState.getAttitude();
+                Attitude reference    = referenceProvider.getAttitude(currentState.getOrbit(),
+                                                                      currentState.getDate(),
+                                                                      currentState.getFrame());
+                double localError = Rotation.distance(interpolated.getRotation(), reference.getRotation());
+                error[0] = FastMath.max(error[0], localError);
             }
 
         });

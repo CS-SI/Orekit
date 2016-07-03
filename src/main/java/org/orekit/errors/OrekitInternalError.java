@@ -19,7 +19,7 @@ package org.orekit.errors;
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
 
 /** Extension of {@link java.lang.Runtime} with localized message for internal errors only.
  * @since 7.1

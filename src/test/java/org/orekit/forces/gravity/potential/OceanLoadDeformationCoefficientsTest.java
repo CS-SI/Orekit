@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;

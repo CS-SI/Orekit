@@ -20,17 +20,18 @@ import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
@@ -44,6 +45,8 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
@@ -104,8 +107,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *   <li>the {@link org.orekit.orbits.CartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
  *   v<sub>y</sub>, v<sub>z</sub>) in meters and meters per seconds.
  * </ul>
- * The last element is the mass in kilograms.
- * </p>
+ * <p> The last element is the mass in kilograms.
+ *
  * <p>The following code snippet shows a typical setting for Low Earth Orbit propagation in
  * equinoctial parameters and true longitude argument:</p>
  * <pre>
@@ -138,10 +141,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class NumericalPropagator extends AbstractIntegratedPropagator {
 
-    /** Central body attraction. */
-    private NewtonianAttraction newtonianAttraction;
-
-    /** Force models used during the extrapolation of the Orbit, without jacobians. */
+    /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
@@ -155,63 +155,160 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * #setPositionAngleType(PositionAngle) position angle type}.
      * @param integrator numerical integrator to use for propagation.
      */
-    public NumericalPropagator(final AbstractIntegrator integrator) {
+    public NumericalPropagator(final ODEIntegrator integrator) {
         super(integrator, true);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
         setAttitudeProvider(DEFAULT_LAW);
-        setMu(Double.NaN);
         setSlaveMode();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }
 
      /** Set the central attraction coefficient μ.
+      * <p>
+      * Setting the central attraction coefficient is
+      * equivalent to {@link #addForceModel(ForceModel) add}
+      * a {@link NewtonianAttraction} force model.
+      * </p>
      * @param mu central attraction coefficient (m³/s²)
      * @see #addForceModel(ForceModel)
+     * @see #getAllForceModels()
      */
     public void setMu(final double mu) {
-        super.setMu(mu);
-        newtonianAttraction = new NewtonianAttraction(mu);
+        addForceModel(new NewtonianAttraction(mu));
     }
 
-    /** Add a force model to the global perturbation model.
+    /** Set the central attraction coefficient μ only in upper class.
+     * @param mu central attraction coefficient (m³/s²)
+     */
+    private void superSetMu(final double mu) {
+        super.setMu(mu);
+    }
+
+    /** Check if Newtonian attraction force model is available.
+     * <p>
+     * Newtonian attraction is always the last force model in the list.
+     * </p>
+     * @return true if Newtonian attraction force model is available
+     */
+    private boolean hasNewtonianAttraction() {
+        final int last = forceModels.size() - 1;
+        return last >= 0 && forceModels.get(last) instanceof NewtonianAttraction;
+    }
+
+    /** Add a force model.
      * <p>If this method is not called at all, the integrated orbit will follow
-     * a keplerian evolution only.</p>
-     * @param model perturbing {@link ForceModel} to add
+     * a Keplerian evolution only.</p>
+     * @param model {@link ForceModel} to add (it can be either a perturbing force
+     * model or an instance of {@link NewtonianAttraction})
      * @see #removeForceModels()
      * @see #setMu(double)
      */
     public void addForceModel(final ForceModel model) {
-        forceModels.add(model);
+
+        if (model instanceof NewtonianAttraction) {
+            // we want to add the central attraction force model
+
+            try {
+                // ensure we are notified of any mu change
+                model.getParametersDrivers()[0].addObserver(new ParameterObserver() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                        superSetMu(driver.getValue());
+                    }
+                });
+            } catch (OrekitException oe) {
+                // this should never happen
+                throw new OrekitInternalError(oe);
+            }
+
+            if (hasNewtonianAttraction()) {
+                // there is already a central attraction model, replace it
+                forceModels.set(forceModels.size() - 1, model);
+            } else {
+                // there are no central attraction model yet, add it at the end of the list
+                forceModels.add(model);
+            }
+        } else {
+            // we want to add a perturbing force model
+            if (hasNewtonianAttraction()) {
+                // insert the new force model before Newtonian attraction,
+                // which should always be the last one in the list
+                forceModels.add(forceModels.size() - 1, model);
+            } else {
+                // we only have perturbing force models up to now, just append at the end of the list
+                forceModels.add(model);
+            }
+        }
+
     }
 
-    /** Remove all perturbing force models from the global perturbation model.
+    /** Remove all force models (except central attraction).
      * <p>Once all perturbing forces have been removed (and as long as no new force
-     * model is added), the integrated orbit will follow a keplerian evolution
+     * model is added), the integrated orbit will follow a Keplerian evolution
      * only.</p>
      * @see #addForceModel(ForceModel)
      */
     public void removeForceModels() {
-        forceModels.clear();
+        final int last = forceModels.size() - 1;
+        if (hasNewtonianAttraction()) {
+            // preserve the Newtonian attraction model at the end
+            final ForceModel newton = forceModels.get(last);
+            forceModels.clear();
+            forceModels.add(newton);
+        } else {
+            forceModels.clear();
+        }
+    }
+
+    /** Get all the force models, perturbing forces and Newtonian attraction included.
+     * @return list of perturbing force models, with Newtonian attraction being the
+     * last one
+     * @see #addForceModel(ForceModel)
+     * @see #setMu(double)
+     */
+    public List<ForceModel> getAllForceModels() {
+        return Collections.unmodifiableList(forceModels);
     }
 
     /** Get perturbing force models list.
      * @return list of perturbing force models
      * @see #addForceModel(ForceModel)
      * @see #getNewtonianAttractionForceModel()
+     * @deprecated as of 8.0, replaced with {@link #getAllForceModels()}
      */
+    @Deprecated
     public List<ForceModel> getForceModels() {
-        return forceModels;
+        if (hasNewtonianAttraction()) {
+            // take care to not include central attraction
+            return Collections.unmodifiableList(forceModels.subList(0, forceModels.size() - 1));
+        } else {
+            return Collections.unmodifiableList(forceModels);
+        }
     }
 
     /** Get the Newtonian attraction from the central body force model.
-     * @return Newtonian attraction force model
+     * <p>
+     * This method should be called after either {@link #setMu(double)},
+     * {@link #setInitialState(SpacecraftState)}, or
+     * {@link #resetInitialState(SpacecraftState)} have been called,
+     * or {@link #addForceModel(ForceModel)} has been called with a
+     * {@link NewtonianAttraction} instance.
+     * </p>
+     * @return Newtonian attraction force model, or null if it has
+     * not been set up by one of the methods explained above
      * @see #setMu(double)
      * @see #getForceModels()
+     * @deprecated as of 8.0, replaced with {@link #getAllForceModels()}
      */
+    @Deprecated
     public NewtonianAttraction getNewtonianAttractionForceModel() {
-        return newtonianAttraction;
+        if (!hasNewtonianAttraction()) {
+            return null;
+        }
+        return (NewtonianAttraction) forceModels.get(forceModels.size() - 1);
     }
 
     /** Set propagation orbit type.
@@ -250,19 +347,20 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Set the initial state.
      * @param initialState initial state
-     * @exception PropagationException if initial state cannot be set
+     * @exception OrekitException if initial state cannot be set
      */
-    public void setInitialState(final SpacecraftState initialState) throws PropagationException {
+    public void setInitialState(final SpacecraftState initialState) throws OrekitException {
         resetInitialState(initialState);
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) throws PropagationException {
+    public void resetInitialState(final SpacecraftState state) throws OrekitException {
         super.resetInitialState(state);
-        if (newtonianAttraction == null) {
+        if (!hasNewtonianAttraction()) {
+            // use the state to define central attraction
             setMu(state.getMu());
         }
-        setStartDate(null);
+        setStartDate(state.getDate());
     }
 
     /** {@inheritDoc} */
@@ -311,7 +409,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
             final double mass = y[6];
             if (mass <= 0.0) {
-                throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
+                throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
             final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, getPositionAngleType(), date, getMu(), getFrame());
@@ -390,7 +488,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
-    protected MainStateEquations getMainStateEquations(final AbstractIntegrator integrator) {
+    protected MainStateEquations getMainStateEquations(final ODEIntegrator integrator) {
         return new Main(integrator);
     }
 
@@ -409,7 +507,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Simple constructor.
          * @param integrator numerical integrator to use for propagation.
          */
-        Main(final AbstractIntegrator integrator) {
+        Main(final ODEIntegrator integrator) {
 
             this.yDot     = new double[7];
             this.jacobian = new double[6][6];
@@ -426,19 +524,27 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public void init(final SpacecraftState initialState, final AbsoluteDate target)
+                throws OrekitException {
+            for (final ForceModel forceModel : forceModels) {
+                forceModel.init(initialState, target);
+            }
+        }
+
+        /** {@inheritDoc} */
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
 
             orbit = state.getOrbit();
             Arrays.fill(yDot, 0.0);
             orbit.getJacobianWrtCartesian(getPositionAngleType(), jacobian);
 
-            // compute the contributions of all perturbing forces
+            // compute the contributions of all perturbing forces,
+            // using the Kepler contribution at the end since
+            // NewtonianAttraction is always the last instance in the list
             for (final ForceModel forceModel : forceModels) {
                 forceModel.addContribution(state, this);
             }
-
-            // finalize derivatives by adding the Kepler contribution
-            newtonianAttraction.addContribution(state, this);
 
             return yDot.clone();
 
@@ -484,10 +590,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * <pre>
      * V² r |dV| = mu |dr|
      * </pre>
-     * So we deduce a scalar velocity error consistent with the position error.
+     * <p> So we deduce a scalar velocity error consistent with the position error.
      * From here, we apply orbits Jacobians matrices to get consistent errors
      * on orbital parameters.
-     * </p>
+     *
      * <p>
      * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
      * are only local estimates, not global ones. So some care must be taken when using
@@ -500,10 +606,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-     * @exception PropagationException if Jacobian is singular
+     * @exception OrekitException if Jacobian is singular
      */
     public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type)
-        throws PropagationException {
+        throws OrekitException {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();
@@ -541,7 +647,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                             FastMath.abs(row[4]) * dV +
                             FastMath.abs(row[5]) * dV;
                 if (Double.isNaN(absTol[i])) {
-                    throw new PropagationException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
+                    throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
                 }
             }
 

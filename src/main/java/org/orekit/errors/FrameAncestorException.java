@@ -16,7 +16,7 @@
  */
 package org.orekit.errors;
 
-import org.apache.commons.math3.exception.util.Localizable;
+import org.hipparchus.exception.Localizable;
 
 /** This class is the base class for exception thrown by
  * the {@link org.orekit.frames.UpdatableFrame#updateTransform(org.orekit.frames.Frame,

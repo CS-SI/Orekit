@@ -54,6 +54,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>composite transforms reduction and caching for efficiency</li>
       <li>extensible central body shapes models (with predefined spherical and ellipsoidic shapes)</li>
       <li>Cartesian and geodesic coordinates, kinematics</li>
+      <li>Computation of Dilution Of Precision (DOP) with respect to GNSS constellations</li>
     </ul>
   </li>
   <li>Spacecraft state
@@ -110,6 +111,8 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>integration based</li>
         </ul>
       </li>
+      <li>specialized GPS propagation, using SEM or YUMA files
+      </li>
       <li>unified interface above analytical/numerical/tabulated propagators for easy
           switch from coarse analysis to fine simulation with one line change</li>
       <li>all propagators can be used in several different modes
@@ -133,6 +136,8 @@ discrete events. Here is a short list of the features offered by the library:</p
               with either true, eccentric or mean angles</li>
           <li>apogee and perigee crossing</li>
           <li>alignment with some body in the orbital plane (with customizable threshold angle)</li>
+          <li>angular separation thresholds crossing between spacecraft and a beacon (typically the Sun)
+              as seen from an observer (typically a ground station)</li>
           <li>raising/setting with respect to a ground location
               (with customizable triggering elevation and ground mask)</li>
           <li>date</li>
@@ -171,10 +176,35 @@ discrete events. Here is a short list of the features offered by the library:</p
       </li>
     </ul>
   </li>
+  <li>Orbit determination
+    <ul>
+      <li>batch least squares fitting of orbit</li>
+      <li>several predefined measurements
+        <ul>
+          <li>range</li>
+          <li>range rate</li>
+          <li>azimuth</li>
+          <li>elevation</li>
+          <li>position-velocity</li>
+        </ul>
+      </li>
+      <li>possibility to add custom measurements</li>
+      <li>several predefined modifiers
+        <ul>
+          <li>tropospheric effects</li>
+          <li>ionospheric effects</li>
+          <li>station offsets</li>
+          <li>biases</li>
+          <li>delays</li>
+        </ul>
+      <li>possibility to add custom measurement modifiers (even for predefined events)</li>
+    </ul>
+  </li>
   <li>Orbit file handling
     <ul>
       <li>loading of SP3-a and SP3-c orbit files</li>
       <li>loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)</li>
+      <li>loading of SEM and YUMA files for GPS constellation</li>
     </ul>
   </li>
   <li>Earth models
@@ -201,13 +231,13 @@ discrete events. Here is a short list of the features offered by the library:</p
 
 <h2>3. Dependency</h2>
 <p>
-OREKIT has only one dependency: the <a href="http://commons.apache.org/math/">Apache Commons Math</a>
+OREKIT has only one dependency: the <a href="https://hipparchus.org/">Hipparchus</a>
 open-source library. This library provides mathematical tools for many purposes: geometry,
 polynomial equations, differential equations, and more... It is distributed under the
 business-friendly Apache Software License version 2.0.
 </p>
 <p>
-OREKIT is based on several Apache Commons Math packages:
+OREKIT is based on several Hipparchus packages:
 </p>
 <ul>
  <li>geometry, which provides very useful objects as vectors
@@ -220,7 +250,7 @@ OREKIT is based on several Apache Commons Math packages:
  to arbitrary order and arbitrary number of free parameters</li>
 </ul>
 <p>
-The use of Apache Commons Math is hidden in OREKIT as much as possible so users don't 
+The use of Hipparchus is hidden in OREKIT as much as possible so users don't 
 need to fully master this library. If they wish, they can limit themselves to understanding
 the simple classes Vector3D and Rotation from the geometry package, and the interface
 FirstOrderIntegrator from the ode package. 

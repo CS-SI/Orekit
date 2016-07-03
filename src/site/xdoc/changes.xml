@@ -20,7 +20,101 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="7.2" date="TBC"
+    <release version="8.1" date="TBD" description="TBD">
+      <action dev="evan" type="fix">
+        Fix AbsoluteDate.createMJDDate when the time scale is UTC and the date
+        is during a leap second.
+        Fixes issue #247
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed ant build script to retrieve Hipparchus dependencies correctly.
+        Fixes issue #244.
+      </action>
+    </release>
+    <release version="8.0" date="2016-06-30"
+             description="Version 8.0 is a major release of Orekit. It introduces several new
+             features and bug fixes as well as a major dependency change. New features introduced
+             in version 8.0 are orbit determination, specialized propagator for GPS satellites
+             based on SEM or YUMA files, computation of Dilution Of Precision and a new angular
+             separation event detector. Several bugs have been fixed. A major change introduced
+             with version 8.0 is the switch from Apache Commons Math to Hipparchus as the
+             mathematical library, which also implied switching from Java 6 to Java 8.">
+      <action dev="luc" type="fix" due-to="Andrea Antolino">
+        Improved accuracy of orbits Jacobians.
+        Fixes issue #243.
+      </action>
+      <action dev="luc" type="update">
+        Deprecated PropagationException, replaced by OrekitException.
+      </action>
+      <action dev="evan" type="fix" due-to="Greg Carbott">
+        Fix bug in restarting propagation with a ConstantThrustManeuver with an
+        updated initial condition.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed a display error for dates less than 0.5ms before a leap second.
+      </action>
+      <action dev="luc" type="update">
+        Use ParameterDriver with scale factor for both orbit determination, conversion,
+        and partial derivatives computation when finite differences are needed.
+      </action>
+      <action dev="luc" type="fix">
+        Apply impulse maneuver correctly in backward propagation.
+        Fixes issue #241.
+      </action>
+      <action dev="luc" type="add">
+        Added angular separation detector. This is typically used to check separation
+        between spacecraft and the Sun as seen from a ground station, to avoid interferences
+        or damage.
+      </action>
+      <action dev="luc" type="update">
+        All class and methods that were deprecated in the 7.X series have been removed.
+      </action>
+      <action dev="luc" type="update">
+        Allow ICGEM gravity field reader to parse non-Earth gravity fields.
+      </action>
+      <action dev="evan" type="add">
+        Add methods for a integration step handler to tell if the start/end of the step is
+        interpolated due to event detection. Also added ability to add a step handler in
+        ephemeris mode.
+      </action>
+      <action dev="evan" type="fix">
+        Switch to a continuous Ap to Kp geomagnetic index conversion.
+        Fixes issue #240.
+      </action>
+      <action dev="pascal" type="add">
+        Added computation of Dilution Of Precision (DOP).
+      </action>
+      <action dev="pascal" type="add">
+        Added a specialized propagator for GPS spacecrafts, based on
+        SEM or YUMA files.
+      </action>
+      <action dev="luc" type="update">
+        Ported the new Hipparchus event handling algorithm to Orekit.
+        This improves robustness in corner cases, typically when different
+        event detectors triggers at very close times and one of them
+        resets the state such that it affects the other detectors.
+      </action>
+      <action dev="luc" type="update">
+        Simplified step interpolators API, replacing the setDate/getState
+        pair with an interpolated state getter taking a date argument.
+      </action>
+      <action dev="luc" type="update">
+        Switched from Apache Commons Math to Hipparchus library.
+      </action>
+      <action dev="luc" type="add">
+        Added an orbit determination feature!
+      </action>
+      <action dev="evan" type="add">
+        Add EventHandler to record all events.
+      </action>
+      <action dev="evan" type="fix">
+        Fix exception during event detection using
+        NumericalPropagator.getGeneratedEphemeris() near the start/end date of
+        the generated ephemeris.
+        Fixes issue #238
+      </action>
+    </release>
+    <release version="7.2" date="2016-04-05"
              description="Version 7.2 is a minor release of Orekit. It introduces several new
              features and bug fixes. The most important features introduced in version 7.2
              are handling of GLONASS and QZSS time scales, support for local time zones

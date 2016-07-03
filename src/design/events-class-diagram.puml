@@ -33,6 +33,7 @@
       package handlers #CEEBD8 {
 
         interface "EventHandler<T extends EventDetector>" as EventHandler_T_ {
+          +init(SpacecraftState s0, AbsoluteDate target)
           +Action eventOccurred(SpacecraftState s, T detector, boolean increasing)
           +SpacecraftState resetState(T detector, SpacecraftState oldState)
         }

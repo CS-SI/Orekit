@@ -28,15 +28,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Line;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Line;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
@@ -121,7 +120,9 @@ public class TrackCorridor {
         // read input parameters
         KeyValueFileParser<ParameterKey> parser =
                 new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
+        try (final FileInputStream fis = new FileInputStream(input)) {
+            parser.parseInput(input.getAbsolutePath(), fis);
+        }
         TimeScale utc = TimeScalesFactory.getUTC();
 
         Propagator propagator;
@@ -160,17 +161,17 @@ public class TrackCorridor {
         // center track latitude in column 4 and center track longitude in column 5
         // right limit latitude in column 6 and right limit longitude in column 7
         DecimalFormat format = new DecimalFormat("#00.00000", new DecimalFormatSymbols(Locale.US));
-        PrintStream stream = new PrintStream(output);
-        for (CorridorPoint p : corridor) {
-            stream.println(p.getDate() + separator +
-                           format.format(FastMath.toDegrees(p.getLeft().getLatitude()))    + separator +
-                           format.format(FastMath.toDegrees(p.getLeft().getLongitude()))   + separator +
-                           format.format(FastMath.toDegrees(p.getCenter().getLatitude()))  + separator +
-                           format.format(FastMath.toDegrees(p.getCenter().getLongitude())) + separator +
-                           format.format(FastMath.toDegrees(p.getRight().getLatitude()))   + separator +
-                           format.format(FastMath.toDegrees(p.getRight().getLongitude())));
+        try (final PrintStream stream = new PrintStream(output, "UTF-8")) {
+            for (CorridorPoint p : corridor) {
+                stream.println(p.getDate() + separator +
+                               format.format(FastMath.toDegrees(p.getLeft().getLatitude()))    + separator +
+                               format.format(FastMath.toDegrees(p.getLeft().getLongitude()))   + separator +
+                               format.format(FastMath.toDegrees(p.getCenter().getLatitude()))  + separator +
+                               format.format(FastMath.toDegrees(p.getCenter().getLongitude())) + separator +
+                               format.format(FastMath.toDegrees(p.getRight().getLatitude()))   + separator +
+                               format.format(FastMath.toDegrees(p.getRight().getLongitude())));
+            }
         }
-        stream.close();
 
     }
 
@@ -269,31 +270,27 @@ public class TrackCorridor {
 
         /** {@inheritDoc} */
         public void handleStep(SpacecraftState currentState, boolean isLast)
-            throws PropagationException {
-            try {
+            throws OrekitException {
 
-                // compute sub-satellite track
-                AbsoluteDate  date    = currentState.getDate();
-                PVCoordinates pvInert = currentState.getPVCoordinates();
-                Transform     t       = currentState.getFrame().getTransformTo(earth.getBodyFrame(), date);
-                Vector3D      p       = t.transformPosition(pvInert.getPosition());
-                Vector3D      v       = t.transformVector(pvInert.getVelocity());
-                GeodeticPoint center  = earth.transform(p, earth.getBodyFrame(), date);
+            // compute sub-satellite track
+            AbsoluteDate  date    = currentState.getDate();
+            PVCoordinates pvInert = currentState.getPVCoordinates();
+            Transform     t       = currentState.getFrame().getTransformTo(earth.getBodyFrame(), date);
+            Vector3D      p       = t.transformPosition(pvInert.getPosition());
+            Vector3D      v       = t.transformVector(pvInert.getVelocity());
+            GeodeticPoint center  = earth.transform(p, earth.getBodyFrame(), date);
 
-                // compute left and right corridor points
-                Vector3D      nadir      = p.normalize().negate();
-                Vector3D      crossTrack = p.crossProduct(v).normalize();
-                Line          leftLine   = new Line(p, new Vector3D(1.0, p, deltaR, nadir,  deltaC, crossTrack), 1.0e-10);
-                GeodeticPoint left       = earth.getIntersectionPoint(leftLine, p, earth.getBodyFrame(), date);
-                Line          rightLine  = new Line(p, new Vector3D(1.0, p, deltaR, nadir, -deltaC, crossTrack), 1.0e-10);
-                GeodeticPoint right      = earth.getIntersectionPoint(rightLine, p, earth.getBodyFrame(), date);
+            // compute left and right corridor points
+            Vector3D      nadir      = p.normalize().negate();
+            Vector3D      crossTrack = p.crossProduct(v).normalize();
+            Line          leftLine   = new Line(p, new Vector3D(1.0, p, deltaR, nadir,  deltaC, crossTrack), 1.0e-10);
+            GeodeticPoint left       = earth.getIntersectionPoint(leftLine, p, earth.getBodyFrame(), date);
+            Line          rightLine  = new Line(p, new Vector3D(1.0, p, deltaR, nadir, -deltaC, crossTrack), 1.0e-10);
+            GeodeticPoint right      = earth.getIntersectionPoint(rightLine, p, earth.getBodyFrame(), date);
 
-                // add the corridor points
-                corridor.add(new CorridorPoint(date, left, center, right));
+            // add the corridor points
+            corridor.add(new CorridorPoint(date, left, center, right));
 
-            } catch (OrekitException oe) {
-                throw new PropagationException(oe);
-            }
         }
 
         /** Get the corridor.

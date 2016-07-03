@@ -40,8 +40,7 @@
  *   <li>physical models (complete or simplified force models, often implicitly assumed with no real reference)</li>
  *   <li>filtering (osculating and centered or mean parameters, related to some models)</li>
  * </ul>
- * They also often forgot all frames issues.
- * </p>
+ * <p> They also often forgot all frames issues.
  *
  * <p>
  * The current design has been reached by progressively removing spurious layers and

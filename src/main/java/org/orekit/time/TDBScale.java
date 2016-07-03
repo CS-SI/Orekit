@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Barycentric Dynamic Time.
@@ -42,30 +42,11 @@ public class TDBScale implements TimeScale {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double offsetFromTAI(final AbsoluteDate date) {
         final double dtDays = date.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY;
         final double g = FastMath.toRadians(357.53 + 0.9856003 * dtDays);
         return TimeScalesFactory.getTT().offsetFromTAI(date) + (0.001658 * FastMath.sin(g) + 0.000014 * FastMath.sin(2 * g));
-    }
-
-    /** {@inheritDoc} */
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
-        double offset = 0;
-        for (int i = 0; i < 3; i++) {
-            offset = -offsetFromTAI(reference.shiftedBy(offset));
-        }
-        return offset;
-    }
-
-    /** {@inheritDoc} */
-    public boolean insideLeap(final AbsoluteDate date) {
-        return false;
-    }
-
-    /** {@inheritDoc} */
-    public double getLeap(final AbsoluteDate date) {
-        return 0;
     }
 
     /** {@inheritDoc} */

@@ -253,9 +253,6 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = uventete to høydeverdier: {0}
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = ustøttet parameter navn {0}, støttete navn: {1}
 
-# duplicated parameter name {0}
-DUPLICATED_PARAMETER_NAME = like parameternavn {0}
-
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = ukjent ytterligere tilstand "{0}"
 
@@ -273,9 +270,6 @@ STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Jacobian-tilstanden er en {0}x{1} matrise, 
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobian-tilstanden har {0} rader men Jacobian parameterene har {1} rader
-
-# finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = endelige forskjellige trinn for kraftmodelderivater ikke initialisert
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
 INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = initiale Jacobian matrisen har {0} kolonner, men {1} parametere har blitt valgt
@@ -384,3 +378,21 @@ OUT_OF_RANGE_LATITUDE = breddegrad utenfor gyldig område: {0}, [{1}, {2}]
 
 # orbit type {0} not allowed here, allowed types: {1}
 ORBIT_TYPE_NOT_ALLOWED = banetype {0} er ikke tillatt her, gyldige typer: {1}
+
+# body shape is not an ellipsoid
+BODY_SHAPE_IS_NOT_AN_ELLIPSOID = <MISSING TRANSLATION>
+
+# no SEM almanac file found
+NO_SEM_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
+
+# file {0} is not a supported SEM almanac file
+NOT_A_SUPPORTED_SEM_ALMANAC_FILE = <MISSING TRANSLATION>
+
+# no Yuma almanac file found
+NO_YUMA_ALMANAC_AVAILABLE = <MISSING TRANSLATION>
+
+# file {0} is not a supported Yuma almanac file
+NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = <MISSING TRANSLATION>
+
+# only {0} GNSS orbits are provided while {1} are needed to compute the DOP
+NOT_ENOUGH_GNSS_FOR_DOP = <MISSING TRANSLATION>

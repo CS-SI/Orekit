@@ -16,8 +16,8 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -59,21 +59,6 @@ public abstract class GroundPointing implements AttitudeProvider {
 
     /** Body frame. */
     private final Frame bodyFrame;
-
-    /** Default constructor.
-     * Build a new instance with arbitrary default elements.
-     * @param bodyFrame the frame that rotates with the body
-     * @deprecated as of 7.1 replaced with {@link #GroundPointing(Frame, Frame)}
-     */
-    @Deprecated
-    protected GroundPointing(final Frame bodyFrame) {
-        Frame frame = bodyFrame;
-        while (!frame.isPseudoInertial()) {
-            frame = frame.getParent();
-        }
-        this.inertialFrame = frame;
-        this.bodyFrame     = bodyFrame;
-    }
 
     /** Default constructor.
      * Build a new instance with arbitrary default elements.

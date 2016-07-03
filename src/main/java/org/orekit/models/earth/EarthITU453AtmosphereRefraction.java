@@ -16,13 +16,13 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.optim.MaxEval;
-import org.apache.commons.math3.optim.nonlinear.scalar.GoalType;
-import org.apache.commons.math3.optim.univariate.BrentOptimizer;
-import org.apache.commons.math3.optim.univariate.SearchInterval;
-import org.apache.commons.math3.optim.univariate.UnivariateObjectiveFunction;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.optim.MaxEval;
+import org.hipparchus.optim.nonlinear.scalar.GoalType;
+import org.hipparchus.optim.univariate.BrentOptimizer;
+import org.hipparchus.optim.univariate.SearchInterval;
+import org.hipparchus.optim.univariate.UnivariateObjectiveFunction;
+import org.hipparchus.util.FastMath;
 import org.orekit.models.AtmosphericRefractionModel;
 
 /** Implementation of refraction model for Earth exponential atmosphere based on ITU-R P.834-7 recommendation.
@@ -35,28 +35,43 @@ import org.orekit.models.AtmosphericRefractionModel;
 
 public class EarthITU453AtmosphereRefraction implements AtmosphericRefractionModel {
 
+    /** Altitude conversion factor. */
+    private static final double KM_TO_M = 1000.0;
+
+    /** Coefficients conversion factor. */
+    private static final double INV_DEG_TO_INV_RAD = 180.0 / FastMath.PI;
+
     /** Default a coefficients to compute refractive index for a typical atmosphere. */
     private static final double DEFAULT_CORRECTION_ACOEF = 0.000315;
 
     /** Default b coefficients to compute refractive index for a typical atmosphere. */
-    private static final double DEFAULT_CORRECTION_BCOEF = 0.1361;
+    private static final double DEFAULT_CORRECTION_BCOEF = 0.1361 / KM_TO_M;
 
-    /** Earth ray as defined in ITU-R P.834-7 (km). */
-    private static final double EARTH_RAY = 6370.0;
+    /** Earth ray as defined in ITU-R P.834-7 (m). */
+    private static final double EARTH_RAY = 6370.0 * KM_TO_M;
 
-    /** Default coefficients array for Tau function (formula number 9). */
-    private static final double[] CCOEF = {1.314, 0.6437, 0.02869, 0.2305, 0.09428, 0.01096, 0.008583};
+    /** Default coefficients array for Tau function (formula number 9).
+     * The coefficients have been converted to SI units
+     */
+    private static final double[] CCOEF = {
+        INV_DEG_TO_INV_RAD * 1.314,  INV_DEG_TO_INV_RAD * 0.6437,  INV_DEG_TO_INV_RAD * 0.02869,
+        INV_DEG_TO_INV_RAD * 0.2305 / KM_TO_M, INV_DEG_TO_INV_RAD * 0.09428 / KM_TO_M, INV_DEG_TO_INV_RAD * 0.01096 / KM_TO_M,
+        INV_DEG_TO_INV_RAD * 0.008583 / (KM_TO_M * KM_TO_M)
+    };
 
-    /** Default coefficients array for TauZero function (formula number 14). */
-    private static final double[] CCOEF0 = {1.728, 0.5411, 0.03723, 0.1815, 0.06272, 0.011380, 0.01727, 0.008288};
+    /** Default coefficients array for TauZero function (formula number 14).
+     * The coefficients have been converted to SI units
+     */
+    private static final double[] CCOEF0 = {
+        INV_DEG_TO_INV_RAD * 1.728, INV_DEG_TO_INV_RAD * 0.5411, INV_DEG_TO_INV_RAD * 0.03723,
+        INV_DEG_TO_INV_RAD * 0.1815 / KM_TO_M, INV_DEG_TO_INV_RAD * 0.06272 / KM_TO_M, INV_DEG_TO_INV_RAD * 0.011380 / KM_TO_M,
+        INV_DEG_TO_INV_RAD * 0.01727 / (KM_TO_M * KM_TO_M), INV_DEG_TO_INV_RAD * 0.008288 / (KM_TO_M * KM_TO_M)
+    };
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20160118L;
 
-    /** station. */
-    //private final GroundStation station;
-
-    /** station altitude (km) (real or above 6370 km ??? TODO : answer the question). */
+    /** station altitude (m). */
     private final double altitude;
 
     /** minimal elevation angle for the station (rad). */
@@ -71,8 +86,8 @@ public class EarthITU453AtmosphereRefraction implements AtmosphericRefractionMod
     /** refraction correction value where elevation+refraction correction is minimal (near inequality 11 validity domain). */
     private final double refrac_star;
 
-     /** Creates a new default instance.
-     * * @param altitude altitude of the ground station from which measurement is performed
+    /** Creates a new default instance.
+     * @param altitude altitude of the ground station from which measurement is performed (m)
      */
     public EarthITU453AtmosphereRefraction(final double altitude) {
         this.altitude = altitude;
@@ -99,7 +114,7 @@ public class EarthITU453AtmosphereRefraction implements AtmosphericRefractionMod
 
     /** Compute the refractive index correction in the case of a typical atmosphere.
      * ITU-R P.834-7, formula number 8, page 3
-     * @param alt altitude of the station at the Earth surface (km)
+     * @param alt altitude of the station at the Earth surface (m)
      * @return the refractive index
      */
     private double getRefractiveIndex(final double alt) {
@@ -109,7 +124,7 @@ public class EarthITU453AtmosphereRefraction implements AtmosphericRefractionMod
 
     /** Compute the minimal elevation angle for a station.
      * ITU-R P.834-7, formula number 10, page 3
-     * @param alt altitude of the station at the Earth surface (km)
+     * @param alt altitude of the station at the Earth surface (m)
      * @return the minimal elevation angle (rad)
      */
     private double getMinimalElevation(final double alt) {
@@ -129,7 +144,7 @@ public class EarthITU453AtmosphereRefraction implements AtmosphericRefractionMod
         final double tmp0 = CCOEF[0] + CCOEF[1] * eld + CCOEF[2] * eld * eld;
         final double tmp1 = altitude * (CCOEF[3] + CCOEF[4] * eld + CCOEF[5] * eld * eld);
         final double tmp2 = altitude * altitude * CCOEF[6];
-        return FastMath.toRadians(1.0 / (tmp0 + tmp1 + tmp2));
+        return 1.0 / (tmp0 + tmp1 + tmp2);
     }
 
 
@@ -145,7 +160,7 @@ public class EarthITU453AtmosphereRefraction implements AtmosphericRefractionMod
         final double tmp0 = CCOEF0[0] + CCOEF0[1] * eld + CCOEF0[2] * eld * eld;
         final double tmp1 = altitude * (CCOEF0[3] + CCOEF0[4] * eld + CCOEF0[5] * eld * eld);
         final double tmp2 = altitude * altitude * (CCOEF0[6] + CCOEF0[7] * eld);
-        return FastMath.toRadians(1.0 / (tmp0 + tmp1 + tmp2));
+        return 1.0 / (tmp0 + tmp1 + tmp2);
     }
 
     /** Compute the refraction correction in the case of a reference atmosphere without validity domain.

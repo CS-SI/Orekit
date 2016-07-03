@@ -70,9 +70,9 @@ public class TCBScaleTest {
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
-        Assert.assertTrue(utc.insideLeap(during));
+        Assert.assertEquals(61, utc.minuteDuration(during));
         Assert.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
-        Assert.assertFalse(scale.insideLeap(during));
+        Assert.assertEquals(60, scale.minuteDuration(during));
         Assert.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
     }
 

@@ -16,16 +16,19 @@
  */
 package org.orekit.forces.radiation;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterObserver;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>This model uses the classical thermo-optical coefficients
@@ -46,6 +49,17 @@ import org.orekit.time.AbsoluteDate;
  */
 public class IsotropicRadiationClassicalConvention implements RadiationSensitive {
 
+    /** Parameters scaling factor.
+     * <p>
+     * We use a power of 2 to avoid numeric noise introduction
+     * in the multiplications/divisions sequences.
+     * </p>
+     */
+    private final double SCALE = FastMath.scalb(1.0, -3);
+
+    /** Drivers for radiation pressure coefficient parameter. */
+    private final ParameterDriver[] radiationParametersDrivers;
+
     /** Cross section (m²). */
     private final double crossSection;
 
@@ -61,9 +75,39 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
      * @param cs specular reflection coefficient Cs between 0.0 an 1.0
      */
     public IsotropicRadiationClassicalConvention(final double crossSection, final double ca, final double cs) {
+        this.radiationParametersDrivers = new ParameterDriver[2];
+        try {
+            radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.ABSORPTION_COEFFICIENT,
+                                                                ca, SCALE, 0.0, 1.0);
+            radiationParametersDrivers[0].addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    IsotropicRadiationClassicalConvention.this.ca = driver.getValue();
+                }
+            });
+            radiationParametersDrivers[1] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
+                                                                cs, SCALE, 0.0, 1.0);
+            radiationParametersDrivers[1].addObserver(new ParameterObserver() {
+                /** {@inheritDoc} */
+                @Override
+                public void valueChanged(final double previousValue, final ParameterDriver driver) {
+                    IsotropicRadiationClassicalConvention.this.cs = driver.getValue();
+                }
+            });
+        } catch (OrekitException oe) {
+            // this should never occur as valueChanged above never throws an exception
+            throw new OrekitInternalError(oe);
+        };
         this.crossSection = crossSection;
         this.ca           = ca;
         this.cs           = cs;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public ParameterDriver[] getRadiationParametersDrivers() {
+        return radiationParametersDrivers.clone();
     }
 
     /** {@inheritDoc} */
@@ -104,26 +148,6 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
                 caDS.add(csDS).subtract(1).multiply(-4.0 / 9.0).add(1).multiply(crossSection);
         return new FieldVector3D<DerivativeStructure>(kP.divide(mass), flux);
 
-    }
-
-    /** {@inheritDoc} */
-    public void setAbsorptionCoefficient(final double value) {
-        ca = value;
-    }
-
-    /** {@inheritDoc} */
-    public double getAbsorptionCoefficient() {
-        return ca;
-    }
-
-    /** {@inheritDoc} */
-    public void setReflectionCoefficient(final double value) {
-        cs = value;
-    }
-
-    /** {@inheritDoc} */
-    public double getReflectionCoefficient() {
-        return cs;
     }
 
 }

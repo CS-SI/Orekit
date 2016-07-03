@@ -19,21 +19,17 @@ package org.orekit.models.earth;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.apache.commons.math3.analysis.BivariateFunction;
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.exception.InsufficientDataException;
-import org.apache.commons.math3.exception.NoDataException;
-import org.apache.commons.math3.exception.NonMonotonicSequenceException;
-import org.apache.commons.math3.exception.OutOfRangeException;
-import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathArrays;
+import org.hipparchus.analysis.BivariateFunction;
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.interpolation.LinearInterpolator;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.Constants;
 import org.orekit.utils.InterpolationTableLoader;
 
 /** The modified Saastamoinen model. Estimates the path delay imposed to
@@ -58,7 +54,7 @@ import org.orekit.utils.InterpolationTableLoader;
  * @author Thomas Neidhart
  * @see "Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007"
  */
-public class SaastamoinenModel implements TroposphericDelayModel {
+public class SaastamoinenModel implements TroposphericModel {
 
     /** Default file name for δR correction term table. */
     public static final String DELTA_R_FILE_NAME = "^saastamoinen-correction\\.txt$";
@@ -103,21 +99,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
      * environmental conditions.
      * @param t0 the temperature at the station [K]
      * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -> 0.5)
-     * @exception OrekitException if δR correction term table cannot be loaded
-     * @deprecated since 7.1, replaced with {@link #SaastamoinenModel(double, double, double, String)}
-     */
-    @Deprecated
-    public SaastamoinenModel(final double t0, final double p0, final double r0)
-        throws OrekitException {
-        this(t0, p0, r0, DELTA_R_FILE_NAME);
-    }
-
-    /** Create a new Saastamoinen model for the troposphere using the given
-     * environmental conditions.
-     * @param t0 the temperature at the station [K]
-     * @param p0 the atmospheric pressure at the station [mbar]
-     * @param r0 the humidity at the station [fraction] (50% -> 0.5)
+     * @param r0 the humidity at the station [fraction] (50% -&gt; 0.5)
      * @param deltaRFileName regular expression for filename containing δR
      * correction term table (typically {@link #DELTA_R_FILE_NAME}), if null
      * default values from the reference book are used
@@ -149,23 +131,23 @@ public class SaastamoinenModel implements TroposphericDelayModel {
     }
 
     /** Create a new Saastamoinen model using a standard atmosphere model.
-     * <p>
+     *
      * <ul>
      * <li>temperature: 18 degree Celsius
      * <li>pressure: 1013.25 mbar
      * <li>humidity: 50%
      * </ul>
-     * </p>
+     *
      * @return a Saastamoinen model with standard environmental values
      * @exception OrekitException if δR correction term table cannot be loaded
      */
     public static SaastamoinenModel getStandardModel()
         throws OrekitException {
-        return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, DELTA_R_FILE_NAME);
+        return new SaastamoinenModel(273.16 + 18, 1013.25, 0.5, (String) null);
     }
 
     /** {@inheritDoc} */
-    public double calculatePathDelay(final double elevation, final double height) {
+    public double pathDelay(final double elevation, final double height) {
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final double T = t0 - 6.5e-3 * height;
         // the corrected pressure
@@ -178,12 +160,11 @@ public class SaastamoinenModel implements TroposphericDelayModel {
         // calculate e
         final double e = R * FastMath.exp(eFunction.value(T));
 
-        // calculate the zenith angle from the elevation and convert to radians
-        final double zInDegree = FastMath.abs(90.0 - elevation);
-        final double z = FastMath.toRadians(zInDegree);
+        // calculate the zenith angle from the elevation
+        final double z = FastMath.abs(0.5 * FastMath.PI - elevation);
 
         // get correction factor
-        final double deltaR = getDeltaR(height, zInDegree);
+        final double deltaR = getDeltaR(height, z);
 
         // calculate the path delay in m
         final double tan = FastMath.tan(z);
@@ -193,22 +174,17 @@ public class SaastamoinenModel implements TroposphericDelayModel {
         return delta;
     }
 
-    /** {@inheritDoc} */
-    public double calculateSignalDelay(final double elevation, final double height) {
-        return calculatePathDelay(elevation, height) / Constants.SPEED_OF_LIGHT;
-    }
-
     /** Calculates the delta R correction term using linear interpolation.
      * @param height the height of the station in m
-     * @param zenith the zenith angle of the satellite in degrees
+     * @param zenith the zenith angle of the satellite
      * @return the delta R correction term in m
      */
     private double getDeltaR(final double height, final double zenith) {
         // limit the height to a range of [0, 5000] m
-        final double h = FastMath.min(Math.max(0, height), 5000);
+        final double h = FastMath.min(FastMath.max(0, height), 5000);
         // limit the zenith angle to 90 degree
         // Note: the function is symmetric for negative zenith angles
-        final double z = FastMath.min(Math.abs(zenith), 90);
+        final double z = FastMath.min(Math.abs(zenith), 0.5 * FastMath.PI);
         return deltaRFunction.value(h, z);
     }
 
@@ -225,8 +201,11 @@ public class SaastamoinenModel implements TroposphericDelayModel {
         final InterpolationTableLoader loader = new InterpolationTableLoader();
         DataProvidersManager.getInstance().feed(deltaRFileName, loader);
         if (!loader.stillAcceptsData()) {
-            return new BilinearInterpolatingFunction(loader.getAbscissaGrid(),
-                                                     loader.getOrdinateGrid(),
+            final double[] elevations = loader.getOrdinateGrid();
+            for (int i = 0; i < elevations.length; ++i) {
+                elevations[i] = FastMath.toRadians(elevations[i]);
+            }
+            return new BilinearInterpolatingFunction(loader.getAbscissaGrid(), elevations,
                                                      loader.getValuesSamples());
         }
         throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE,
@@ -247,9 +226,12 @@ public class SaastamoinenModel implements TroposphericDelayModel {
             0, 500, 1000, 1500, 2000, 3000, 4000, 5000
         };
 
-        // the zenith angle in degrees
+        // the zenith angle
         final double yValForR[] = {
-            0.0, 60.0, 66.0, 70.0, 73.0, 75.0, 76.0, 77.0, 78.0, 78.50, 79.0, 79.50, 79.75, 80.0, 90.0
+            FastMath.toRadians( 0.00), FastMath.toRadians(60.00), FastMath.toRadians(66.00), FastMath.toRadians(70.00),
+            FastMath.toRadians(73.00), FastMath.toRadians(75.00), FastMath.toRadians(76.00), FastMath.toRadians(77.00),
+            FastMath.toRadians(78.00), FastMath.toRadians(78.50), FastMath.toRadians(79.00), FastMath.toRadians(79.50),
+            FastMath.toRadians(79.75), FastMath.toRadians(80.00), FastMath.toRadians(90.00)
         };
 
         final double[][] fval = new double[][] {
@@ -360,16 +342,13 @@ public class SaastamoinenModel implements TroposphericDelayModel {
          * @param y Sample values of the y-coordinate, in increasing order.
          * @param f Values of the function on every grid point. the expected
          *        number of elements.
-         * @throws DimensionMismatchException if the length of x and y don't
-         *         match the row, column height of f
-         * @throws IllegalArgumentException if any of the arguments are null
-         * @throws NoDataException if any of the arrays has zero length.
-         * @throws NonMonotonicSequenceException if {@code x} or {@code y}
-         *         are not strictly increasing.
+         * @throws MathIllegalArgumentException if the length of x and y don't
+         *         match the row, column height of f, or if any of the arguments
+         *         are null, or if any of the arrays has zero length, or if
+         *         {@code x} or {@code y} are not strictly increasing.
          */
         BilinearInterpolatingFunction(final double[] x, final double[] y, final double[][] f)
-                        throws DimensionMismatchException, IllegalArgumentException, NoDataException,
-                        NonMonotonicSequenceException {
+                        throws MathIllegalArgumentException {
 
             if (x == null || y == null || f == null || f[0] == null) {
                 throw new IllegalArgumentException("All arguments must be non-null");
@@ -379,20 +358,22 @@ public class SaastamoinenModel implements TroposphericDelayModel {
             final int yLen = y.length;
 
             if (xLen == 0 || yLen == 0 || f.length == 0 || f[0].length == 0) {
-                throw new NoDataException();
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.NO_DATA);
             }
 
             if (xLen < MIN_NUM_POINTS || yLen < MIN_NUM_POINTS || f.length < MIN_NUM_POINTS ||
                             f[0].length < MIN_NUM_POINTS) {
-                throw new InsufficientDataException();
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.INSUFFICIENT_DATA);
             }
 
             if (xLen != f.length) {
-                throw new DimensionMismatchException(xLen, f.length);
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                                       xLen, f.length);
             }
 
             if (yLen != f[0].length) {
-                throw new DimensionMismatchException(yLen, f[0].length);
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                                       yLen, f[0].length);
             }
 
             MathArrays.checkOrder(x);
@@ -437,14 +418,16 @@ public class SaastamoinenModel implements TroposphericDelayModel {
          *        will be queried
          * @return the index in {@code val} corresponding to the interval
          *         containing {@code c}.
-         * @throws OutOfRangeException if {@code c} is out of the range
+         * @throws MathIllegalArgumentException if {@code c} is out of the range
          *         defined by the boundary values of {@code val}.
          */
-        private int searchIndex(final double c, final double[] val, final int offset, final int count) {
+        private int searchIndex(final double c, final double[] val, final int offset, final int count)
+            throws MathIllegalArgumentException {
             int r = Arrays.binarySearch(val, c);
 
             if (r == -1 || r == -val.length - 1) {
-                throw new OutOfRangeException(c, val[0], val[val.length - 1]);
+                throw new MathIllegalArgumentException(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE,
+                                                       c, val[0], val[val.length - 1]);
             }
 
             if (r < 0) {

@@ -16,12 +16,11 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.orekit.data.BodiesElements;
 
 /** Container for ocen tides coefficients for one tide wave.
  * @see org.orekit.forces.gravity.OceanTides
- * @see org.orekit.forces.gravity.OceanTidesField
  * @author Luc Maisonobe
  * @since 6.1
  * @see OceanTidesReader

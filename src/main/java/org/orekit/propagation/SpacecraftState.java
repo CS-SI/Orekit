@@ -24,11 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -267,7 +268,7 @@ public class SpacecraftState
      * or coarse accuracy.
      * </p>
      * <p>
-     * As a rough order of magnitude, the following table shows the interpolation
+     * As a rough order of magnitude, the following table shows the extrapolation
      * errors obtained between this simple shift method and an {@link
      * org.orekit.propagation.analytical.EcksteinHechlerPropagator Eckstein-Heschler
      * propagator} for an 800km altitude nearly circular polar Earth orbit with
@@ -275,6 +276,7 @@ public class SpacecraftState
      * that these results may be different for other orbits.
      * </p>
      * <table border="1" cellpadding="5">
+     * <caption>Extrapolation Error</caption>
      * <tr bgcolor="#ccccff"><th>interpolation time (s)</th>
      * <th>position error (m)</th><th>velocity error (m/s)</th>
      * <th>attitude error (&deg;)</th></tr>
@@ -395,11 +397,11 @@ public class SpacecraftState
      * @param state state to compare to instance
      * @exception OrekitException if either instance or state supports an additional
      * state not supported by the other one
-     * @exception DimensionMismatchException if an additional state does not have
+     * @exception MathIllegalStateException if an additional state does not have
      * the same dimension in both states
      */
     public void ensureCompatibleAdditionalStates(final SpacecraftState state)
-        throws OrekitException, DimensionMismatchException {
+        throws OrekitException, MathIllegalStateException {
 
         // check instance additional states is a subset of the other one
         for (final Map.Entry<String, double[]> entry : additional.entrySet()) {
@@ -409,7 +411,8 @@ public class SpacecraftState
                                           entry.getKey());
             }
             if (other.length != entry.getValue().length) {
-                throw new DimensionMismatchException(other.length, entry.getValue().length);
+                throw new MathIllegalStateException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
+                                                    other.length, entry.getValue().length);
             }
         }
 

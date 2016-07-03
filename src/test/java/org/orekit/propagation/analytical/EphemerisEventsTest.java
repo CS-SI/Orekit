@@ -19,7 +19,7 @@ package org.orekit.propagation.analytical;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.util.FastMath;
+import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -121,10 +121,6 @@ public class EphemerisEventsTest {
                                         ++outEclipsecounter;
                                     }
                                     return Action.CONTINUE;
-                                }
-                                public SpacecraftState resetState(EclipseDetector detector,
-                                                                  SpacecraftState oldState) {
-                                    return oldState;
                                 }
                             });
 

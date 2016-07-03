@@ -16,15 +16,18 @@
  */
 package org.orekit.propagation.numerical;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
-import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.UnknownParameterException;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -34,11 +37,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-
-import java.util.Collection;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.orekit.utils.ParameterDriver;
 
 /** Unit tests for {@link PartialDerivativesEquations}. */
 public class PartialDerivativesEquationsTest {
@@ -77,7 +76,7 @@ public class PartialDerivativesEquationsTest {
         pv = new PVCoordinates(p, v);
         state = new SpacecraftState(new CartesianOrbit(pv, eci, date, gm))
                 .addAdditionalState("pde", new double[2 * 3 * 6]);
-        pde.setInitialJacobians(state, 6, 0);
+        pde.setInitialJacobians(state, 6);
 
     }
 
@@ -102,7 +101,7 @@ public class PartialDerivativesEquationsTest {
     }
 
     /** Mock {@link ForceModel}. */
-    private static class MockForceModel implements ForceModel {
+    private static class MockForceModel extends AbstractForceModel {
 
         /**
          * argument for {@link #accelerationDerivatives(AbsoluteDate, Frame,
@@ -138,24 +137,10 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public double getParameter(String name) throws UnknownParameterException {
-            return 0;
+        public ParameterDriver[] getParametersDrivers() {
+            return new ParameterDriver[0];
         }
 
-        @Override
-        public void setParameter(String name, double value) throws UnknownParameterException {
-
-        }
-
-        @Override
-        public Collection<String> getParametersNames() {
-            return null;
-        }
-
-        @Override
-        public boolean isSupported(String name) {
-            return false;
-        }
     }
 
 }

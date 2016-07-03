@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.ode.AbstractIntegrator;
-import org.apache.commons.math3.ode.nonstiff.LutherIntegrator;
+import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.LutherIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 
@@ -25,7 +25,7 @@ import org.orekit.orbits.OrbitType;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class LutherIntegratorBuilder implements FirstOrderIntegratorBuilder {
+public class LutherIntegratorBuilder implements ODEIntegratorBuilder {
 
     /** Step size (s). */
     private final double step;
