@@ -21,7 +21,7 @@
 package org.orekit.python;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 
-import org.orekit.errors.PropagationException;
+import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -71,7 +71,7 @@ public class PythonOrekitFixedStepHandler implements OrekitFixedStepHandler {
      * @param s0 initial state
      * @param t target time for the integration
      */
-    public native void init(SpacecraftState s0, AbsoluteDate t) throws PropagationException;
+    public native void init(SpacecraftState s0, AbsoluteDate t) throws OrekitException;
 
     /** Handle the current step.
      * @param currentState current state at step time
@@ -80,6 +80,6 @@ public class PythonOrekitFixedStepHandler implements OrekitFixedStepHandler {
      */
 
     public native void handleStep(final SpacecraftState currentState, final boolean isLast)
-        throws PropagationException;
+        throws OrekitException;
 
 }

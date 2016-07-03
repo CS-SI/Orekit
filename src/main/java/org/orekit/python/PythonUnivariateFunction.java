@@ -20,10 +20,10 @@
 
 package org.orekit.python;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
+/** import org.hipparchus.analysis.UnivariateFunction; **/
 
 
-public class PythonUnivariateFunction implements UnivariateFunction {
+public class PythonUnivariateFunction implements org.hipparchus.analysis.UnivariateFunction {
 
 	static final long serialVersionUID = 1L;
 
