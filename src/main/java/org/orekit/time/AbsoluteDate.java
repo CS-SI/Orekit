@@ -639,7 +639,7 @@ public class AbsoluteDate
             final TimeComponents safeTC = new TimeComponents(secondsA, 0.0);
             final AbsoluteDate safeDate = new AbsoluteDate(dc, safeTC, timeScale);
             if (timeScale.minuteDuration(safeDate) > 59 + secondsB) {
-                // we are within a leap second introduction, the number of seconds is OK
+                // we are within the last minute of the day, the number of seconds is OK
                 return safeDate.shiftedBy(secondsB);
             } else {
                 // let TimeComponents trigger an OrekitIllegalArgumentException
@@ -650,7 +650,7 @@ public class AbsoluteDate
             tc = new TimeComponents(secondsInDay);
         }
 
-        // if the number of seconds was not O
+        // create the date
         return new AbsoluteDate(dc, tc, timeScale);
 
     }
