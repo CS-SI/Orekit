@@ -28,15 +28,8 @@
 
   package org.orekit #ECEBD8 {
 
-    package frames #DDEBD8 {
-      class TopocentricFrame
-    }
-
     package utils #DDEBD8 {
-      interface ParameterObserver {
-        +valueChanged(previousValue, driver)
-      }
-      class ParametersDriver {
+      class ParameterDriver {
         +getName()
         +getReferenceValue()
         +geMinValue()
@@ -47,7 +40,11 @@
         +[get|set]Value()
         +addObserver()
       }
-      ParameterObserver <--o ParametersDriver : observers
+      interface ParameterObserver {
+        +valueChanged(previousValue, driver)
+      }
+      ParameterDriver o--> ParameterObserver : observers
+      ParameterDriver <-right-* ParameterDriversList : manage duplicates
     }
 
     package estimation #DDEBD8 {
@@ -56,20 +53,26 @@
         class BatchLSEstimator
       }
 
-      ParametersDriver <-- BatchLSEstimator : change normalized value
+      BatchLSEstimator --> ParameterDriver : change normalized value
+      BatchLSEstimator *--> ParameterDriversList : managed parameters
       package measurement #CEEBD8 {
         interface ObservedMeasurement {
-          +getParametersDrivers()
+            getParametersDrivers()
         }
         class GroundStation
-        Range     ..|> ObservedMeasurement
-        RangeRate ..|> ObservedMeasurement
-        GroundStation "1" <--o Range
-        GroundStation "1" <--o RangeRate
+        ObservedMeasurement <|.. Range
+        ObservedMeasurement <|.. RangeRate
+        Range o--> "1" GroundStation
+        RangeRate o--> "1" GroundStation
         ParameterObserver <..* GroundStation : East/North/Zenith offsets
-        TopocentricFrame <--* GroundStation : updated on parameter change
+        BatchLSEstimator --> ObservedMeasurement
        }
 
+    }
+
+    package frames #DDEBD8 {
+      class TopocentricFrame
+      GroundStation --> TopocentricFrame : updated on parameter change
     }
 
   }
