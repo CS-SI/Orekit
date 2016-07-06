@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="8.1" date="TBD" description="TBD">
+      <action dev="luc">
+        Added a protection against zero scale factors for parameters drivers.
+      </action>
       <action dev="evan" type="fix">
         Fix AbsoluteDate.createMJDDate when the time scale is UTC and the date
         is during a leap second.
