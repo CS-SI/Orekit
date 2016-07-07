@@ -21,7 +21,11 @@
   </properties>
   <body>
     <release version="8.1" date="TBD" description="TBD">
-      <action dev="luc">
+      <action dev="luc" type="fix" >
+        Fixed ant build script to run Junit tests.
+        Fixes issue #246.
+      </action>
+      <action dev="luc" type="update">
         Added a protection against zero scale factors for parameters drivers.
       </action>
       <action dev="evan" type="fix">
