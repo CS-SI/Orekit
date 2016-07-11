@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 
 /** Class allowing to drive the value of a parameter.
@@ -90,13 +92,19 @@ public class ParameterDriver {
      * @param referenceValue reference value of the parameter
      * @param scale scaling factor to convert the parameters value to
      * non-dimensional (typically set to the expected standard deviation of the
-     * parameter)
+     * parameter), it must be non-zero
      * @param minValue minimum value
      * @param maxValue maximum value
+     * @exception OrekitException if scale is too close to zero
      */
     public ParameterDriver(final String name, final double referenceValue,
                            final double scale, final double minValue,
-                           final double maxValue) {
+                           final double maxValue)
+        throws OrekitException {
+        if (FastMath.abs(scale) <= Precision.SAFE_MIN) {
+            throw new OrekitException(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER,
+                                      name, scale);
+        }
         this.name           = name;
         this.referenceValue = referenceValue;
         this.scale          = scale;

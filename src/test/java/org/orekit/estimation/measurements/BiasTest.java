@@ -24,6 +24,7 @@ import org.hipparchus.random.Well19937a;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
@@ -123,6 +124,20 @@ public class BiasTest {
 
     }
 
+    @Test
+    public void testTooSmallScale() throws OrekitException {
+        try {
+            new Bias<Range>(new String[] { "OK", "not-OK" },
+                            new double[] { 1000.0,    1000.0 },
+                            new double[] {    1.0,    0.0 },
+                            new double[] { -10000.0, -10000.0 },
+                            new double[] { +10000.0, +10000.0 });
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals("not-OK", oe.getParts()[0]);
+        }
+    }
 }
 
 

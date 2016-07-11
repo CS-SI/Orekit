@@ -163,7 +163,6 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                     return new Pair<RealVector, RealMatrix>(value, jacobian);
 
                 } catch (OrekitException ex) {
-                    ex.printStackTrace(System.err);
                     throw new OrekitExceptionWrapper(ex);
                 }
             }

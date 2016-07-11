@@ -253,6 +253,9 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = απροσδόκητες υψ�
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = μη έγκυρο όνομα παραμέτρου {0}, έγκυρα ονόματα: {1}
 
+# scale factor for parameter {0} is too small: {1}
+TOO_SMALL_SCALE_FOR_PARAMETER = <MISSING TRANSLATION>
+
 # unknown additional state "{0}"
 UNKNOWN_ADDITIONAL_STATE = άγνωστη πρόσθετη κατάσταση "{0}"
 
