@@ -324,7 +324,7 @@ public enum OrbitType {
      * @param orbit orbit to convert
      * @return converted orbit with type guaranteed to match (so it can be cast safely)
      */
-    public abstract Orbit convertType(final Orbit orbit);
+    public abstract Orbit convertType(Orbit orbit);
 
     /** Convert orbit to state array.
      * <p>
@@ -365,8 +365,8 @@ public enum OrbitType {
      * @return parameters drivers initialized from reference orbit
      * @exception OrekitException if Jacobian is singular
      */
-    public abstract ParameterDriversList getDrivers(final double dP, final Orbit orbit,
-                                                    final PositionAngle type)
+    public abstract ParameterDriversList getDrivers(double dP, Orbit orbit,
+                                                    PositionAngle type)
         throws OrekitException;
 
     /** Compute scaling factor for parameters drivers.

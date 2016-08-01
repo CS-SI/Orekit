@@ -324,7 +324,7 @@ public abstract class Orbit
      * @param dt time shift in seconds
      * @return a new orbit, shifted with respect to the instance (which is immutable)
      */
-    public abstract Orbit shiftedBy(final double dt);
+    public abstract Orbit shiftedBy(double dt);
 
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
@@ -486,7 +486,7 @@ public abstract class Orbit
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(final PositionAngle type, final double gm, double[] pDot);
+    public abstract void addKeplerContribution(PositionAngle type, double gm, double[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector

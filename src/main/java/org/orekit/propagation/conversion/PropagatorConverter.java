@@ -40,10 +40,10 @@ public interface PropagatorConverter {
      * @return adapted propagator
      * @exception OrekitException if propagator cannot be adapted
      */
-    Propagator convert(final Propagator source,
-                       final double timeSpan,
-                       final int nbPoints,
-                       final List<String> freeParameters) throws OrekitException;
+    Propagator convert(Propagator source,
+                       double timeSpan,
+                       int nbPoints,
+                       List<String> freeParameters) throws OrekitException;
 
     /** Convert a propagator into another one.
      * @param source propagator to convert
@@ -53,10 +53,10 @@ public interface PropagatorConverter {
      * @return adapted propagator
      * @exception OrekitException if propagator cannot be adapted
      */
-    Propagator convert(final Propagator source,
-                       final double timeSpan,
-                       final int nbPoints,
-                       final String ... freeParameters) throws OrekitException;
+    Propagator convert(Propagator source,
+                       double timeSpan,
+                       int nbPoints,
+                       String ... freeParameters) throws OrekitException;
 
     /** Find the propagator that minimize the mean square error for a sample of {@link SpacecraftState states}.
      * @param states spacecraft states sample to fit
@@ -65,9 +65,9 @@ public interface PropagatorConverter {
      * @return adapted propagator
      * @exception OrekitException if propagator cannot be adapted
      */
-    Propagator convert(final List<SpacecraftState> states,
-                       final boolean positionOnly,
-                       final List<String> freeParameters) throws OrekitException;
+    Propagator convert(List<SpacecraftState> states,
+                       boolean positionOnly,
+                       List<String> freeParameters) throws OrekitException;
 
     /** Find the propagator that minimize the mean square error for a sample of {@link SpacecraftState states}.
      * @param states spacecraft states sample to fit
@@ -76,8 +76,8 @@ public interface PropagatorConverter {
      * @return adapted propagator
      * @exception OrekitException if propagator cannot be adapted
      */
-    Propagator convert(final List<SpacecraftState> states,
-                       final boolean positionOnly,
-                       final String ... freeParameters) throws OrekitException;
+    Propagator convert(List<SpacecraftState> states,
+                       boolean positionOnly,
+                       String ... freeParameters) throws OrekitException;
 
 }

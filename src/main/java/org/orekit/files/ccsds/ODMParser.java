@@ -102,7 +102,7 @@ public abstract class ODMParser {
      * @return a new instance, with mission reference date replaced
      * @see #getMissionReferenceDate()
      */
-    public abstract ODMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate);
+    public abstract ODMParser withMissionReferenceDate(AbsoluteDate newMissionReferenceDate);
 
     /** Get initial date.
      * @return mission reference date to use while parsing
@@ -117,7 +117,7 @@ public abstract class ODMParser {
      * @return a new instance, with gravitational coefficient date replaced
      * @see #getMu()
      */
-    public abstract ODMParser withMu(final double newMu);
+    public abstract ODMParser withMu(double newMu);
 
     /** Get gravitational coefficient.
      * @return gravitational coefficient to use while parsing
@@ -132,7 +132,7 @@ public abstract class ODMParser {
      * @return a new instance, with IERS conventions replaced
      * @see #getConventions()
      */
-    public abstract ODMParser withConventions(final IERSConventions newConventions);
+    public abstract ODMParser withConventions(IERSConventions newConventions);
 
     /** Get IERS conventions.
      * @return IERS conventions to use while parsing
@@ -147,7 +147,7 @@ public abstract class ODMParser {
      * @return a new instance, with EOP interpolation method replaced
      * @see #isSimpleEOP()
      */
-    public abstract ODMParser withSimpleEOP(final boolean newSimpleEOP);
+    public abstract ODMParser withSimpleEOP(boolean newSimpleEOP);
 
     /** Get EOP interpolation method.
      * @return true if tidal effects are ignored when interpolating EOP
@@ -170,9 +170,9 @@ public abstract class ODMParser {
      * @param newLaunchPiece piece of launch (from "A" to "ZZZ")
      * @return a new instance, with TLE settings replaced
      */
-    public abstract ODMParser withInternationalDesignator(final int newLaunchYear,
-                                                          final int newLaunchNumber,
-                                                          final String newLaunchPiece);
+    public abstract ODMParser withInternationalDesignator(int newLaunchYear,
+                                                          int newLaunchNumber,
+                                                          String newLaunchPiece);
 
     /** Get the launch year.
      * @return launch year
@@ -238,7 +238,7 @@ public abstract class ODMParser {
      * @return parsed orbit
      * @exception OrekitException if orbit message cannot be parsed
      */
-    public abstract ODMFile parse(final InputStream stream, final String fileName)
+    public abstract ODMFile parse(InputStream stream, String fileName)
         throws OrekitException;
 
     /** Parse a comment line.

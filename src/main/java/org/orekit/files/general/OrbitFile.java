@@ -99,7 +99,7 @@ public interface OrbitFile {
      * @return a {@link SatelliteInformation} object describing the satellite if
      *         present, <code>null</code> otherwise
      */
-    SatelliteInformation getSatellite(final String satId);
+    SatelliteInformation getSatellite(String satId);
 
     /** Tests whether a satellite with the given id is contained in this orbit
      * file.
@@ -107,12 +107,12 @@ public interface OrbitFile {
      * @return <code>true</code> if the satellite is contained in the file,
      *         <code>false</code> otherwise
      */
-    boolean containsSatellite(final String satId);
+    boolean containsSatellite(String satId);
 
     /** Get the time coordinates for the given satellite.
      * @param satId the satellite id
      * @return a {@link List} of {@link SatelliteTimeCoordinate} entries for
      *         this satellite
      */
-    List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId);
+    List<SatelliteTimeCoordinate> getSatelliteCoordinates(String satId);
 }

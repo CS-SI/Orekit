@@ -77,7 +77,7 @@ public interface OrekitStepInterpolator {
      * @exception OrekitException if underlying interpolator cannot handle
      * the date
      */
-    SpacecraftState getInterpolatedState(final AbsoluteDate date)
+    SpacecraftState getInterpolatedState(AbsoluteDate date)
         throws OrekitException;
 
     /** Check is integration direction is forward in date.

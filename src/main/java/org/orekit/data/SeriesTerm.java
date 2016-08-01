@@ -136,7 +136,7 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
      * @param elements luni-solar and planetary elements for the current date
      * @return current value of the argument
      */
-    protected abstract double argument(final BodiesElements elements);
+    protected abstract double argument(BodiesElements elements);
 
     /** Evaluate the value of the series term.
      * @param elements bodies elements for nutation
@@ -170,7 +170,7 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
      * @param elements luni-solar and planetary elements for the current date
      * @return current value of the argument
      */
-    protected abstract T argument(final FieldBodiesElements<T> elements);
+    protected abstract T argument(FieldBodiesElements<T> elements);
 
     /** Factory method for building the appropriate object.
      * <p>The method checks the null coefficients and build an instance

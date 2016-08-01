@@ -32,6 +32,6 @@ public interface TroposphericModel extends Serializable {
      * @param height the height of the station in m above sea level
      * @return the path delay due to the troposphere in m
      */
-    double pathDelay(final double elevation, final double height);
+    double pathDelay(double elevation, double height);
 
 }
