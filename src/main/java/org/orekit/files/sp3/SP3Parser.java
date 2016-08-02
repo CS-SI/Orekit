@@ -143,9 +143,9 @@ public class SP3Parser implements OrbitFileParser {
 
         final SP3File file = pi.file;
 
-        try (final Scanner s1      = new Scanner(line);
-             final Scanner s2      = s1.useDelimiter("\\s+");
-             final Scanner scanner = s2.useLocale(Locale.US)) {
+        try (Scanner s1      = new Scanner(line);
+             Scanner s2      = s1.useDelimiter("\\s+");
+             Scanner scanner = s2.useLocale(Locale.US)) {
 
             // CHECKSTYLE: stop FallThrough check
 

@@ -1920,7 +1920,7 @@ public enum IERSConventions {
                 plus[i]      = new double[i + 1];
             }
 
-            try (final InputStream stream = IERSConventions.class.getResourceAsStream(nameLove)) {
+            try (InputStream stream = IERSConventions.class.getResourceAsStream(nameLove)) {
 
                 if (stream == null) {
                     // this should never happen with files embedded within Orekit
@@ -1928,7 +1928,7 @@ public enum IERSConventions {
                 }
 
                 // setup the reader
-                try (final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
 
                     String line = reader.readLine();
                     int lineNumber = 1;
