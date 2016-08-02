@@ -52,7 +52,7 @@ public interface OrekitFixedStepHandler {
      * @param isLast if true, this is the last integration step
      * @exception OrekitException if step cannot be handled
      */
-    void handleStep(final SpacecraftState currentState, final boolean isLast)
+    void handleStep(SpacecraftState currentState, boolean isLast)
         throws OrekitException;
 
 }

@@ -52,7 +52,7 @@ public interface EstimationModifier<T extends ObservedMeasurement<T>> {
      * @param estimated estimated measurement to modify
      * @exception OrekitException if modifier cannot be applied
      */
-    void modify(final EstimatedMeasurement<T> estimated)
+    void modify(EstimatedMeasurement<T> estimated)
         throws OrekitException;
 
 }

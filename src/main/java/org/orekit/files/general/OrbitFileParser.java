@@ -32,7 +32,7 @@ public interface OrbitFileParser {
      * @exception OrekitException if the orbit file could not be parsed
      * successfully from the given stream
      */
-    OrbitFile parse(final InputStream stream) throws OrekitException;
+    OrbitFile parse(InputStream stream) throws OrekitException;
 
     /** Reads the orbit file and returns a parsed {@link OrbitFile}.
      * @param fileName the file to read and parse
@@ -40,5 +40,5 @@ public interface OrbitFileParser {
      * @exception OrekitException if the orbit file could not be parsed
      * successfully from the given file
      */
-    OrbitFile parse(final String fileName) throws OrekitException;
+    OrbitFile parse(String fileName) throws OrekitException;
 }

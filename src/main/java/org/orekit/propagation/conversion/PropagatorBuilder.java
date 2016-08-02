@@ -35,7 +35,7 @@ public interface PropagatorBuilder {
      * @return an initialized propagator
      * @exception OrekitException if propagator cannot be build
      */
-    Propagator buildPropagator(final double[] normalizedParameters)
+    Propagator buildPropagator(double[] normalizedParameters)
         throws OrekitException;
 
     /** Get the current value of selected normalized parameters.

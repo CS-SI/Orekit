@@ -1665,7 +1665,7 @@ public enum IERSConventions {
      * @exception OrekitException if fundamental nutation arguments cannot be loaded
      * @since 6.1
      */
-    public abstract FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
+    public abstract FundamentalNutationArguments getNutationArguments(TimeScale timeScale)
         throws OrekitException;
 
     /** Get the function computing mean obliquity of the ecliptic.

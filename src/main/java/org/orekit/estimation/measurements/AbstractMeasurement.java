@@ -164,8 +164,8 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      * @exception OrekitException if value cannot be computed
      * @see #estimate(int, int, SpacecraftState)
      */
-    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(final int iteration, final int evaluation,
-                                                                     final SpacecraftState state)
+    protected abstract EstimatedMeasurement<T> theoreticalEvaluation(int iteration, int evaluation,
+                                                                     SpacecraftState state)
         throws OrekitException;
 
     /** {@inheritDoc} */

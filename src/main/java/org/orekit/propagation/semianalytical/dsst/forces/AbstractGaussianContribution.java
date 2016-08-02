@@ -294,7 +294,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  @return the integration limits in L
      *  @exception OrekitException if some specific error occurs
      */
-    protected abstract double[] getLLimits(final SpacecraftState state) throws OrekitException;
+    protected abstract double[] getLLimits(SpacecraftState state) throws OrekitException;
 
     /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
