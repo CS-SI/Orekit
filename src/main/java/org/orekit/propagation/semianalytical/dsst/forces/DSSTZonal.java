@@ -755,7 +755,7 @@ public class DSSTZonal implements DSSTForceModel {
             }
 
             // j between 1 and 2N-3
-            if (isBetween(j, 1, 2 * nMax - 3)) {
+            if (isBetween(j, 1, 2 * nMax - 3) && j + 2 < cjsj.jMax) {
                 final double coef1 = ( j + 2 ) * (-hk * cjsj.getCj(j + 2) + k2mh2o2 * cjsj.getSj(j + 2));
                 final double coef2 = ( j + 2 ) * (k2mh2o2 * cjsj.getCj(j + 2) + hk * cjsj.getSj(j + 2));
                 final double coef3 = ( j + 2 ) * (k * cjsj.getCj(j + 2) + h * cjsj.getSj(j + 2)) / 4;
@@ -779,7 +779,7 @@ public class DSSTZonal implements DSSTForceModel {
             }
 
             // j between 1 and 2N-2
-            if (isBetween(j, 1, 2 * nMax - 2)) {
+            if (isBetween(j, 1, 2 * nMax - 2) && j + 1 < cjsj.jMax) {
                 final double coef1 = 2 * ( j + 1 ) * (-h * cjsj.getCj(j + 1) + k * cjsj.getSj(j + 1));
                 final double coef2 = 2 * ( j + 1 ) * (k * cjsj.getCj(j + 1) + h * cjsj.getSj(j + 1));
                 final double coef3 = ( j + 1 ) * cjsj.getCj(j + 1);
@@ -803,7 +803,7 @@ public class DSSTZonal implements DSSTForceModel {
             }
 
             // j between 2 and 2N
-            if (isBetween(j, 2, 2 * nMax)) {
+            if (isBetween(j, 2, 2 * nMax) && j - 1 < cjsj.jMax) {
                 final double coef1 = 2 * ( j - 1 ) * (h * cjsj.getCj(j - 1) + k * cjsj.getSj(j - 1));
                 final double coef2 = 2 * ( j - 1 ) * (k * cjsj.getCj(j - 1) - h * cjsj.getSj(j - 1));
                 final double coef3 = ( j - 1 ) * cjsj.getCj(j - 1);
@@ -827,7 +827,7 @@ public class DSSTZonal implements DSSTForceModel {
             }
 
             // j between 3 and 2N + 1
-            if (isBetween(j, 3, 2 * nMax + 1)) {
+            if (isBetween(j, 3, 2 * nMax + 1) && j - 2 < cjsj.jMax) {
                 final double coef1 = ( j - 2 ) * (hk * cjsj.getCj(j - 2) + k2mh2o2 * cjsj.getSj(j - 2));
                 final double coef2 = ( j - 2 ) * (-k2mh2o2 * cjsj.getCj(j - 2) + hk * cjsj.getSj(j - 2));
                 final double coef3 = ( j - 2 ) * (k * cjsj.getCj(j - 2) - h * cjsj.getSj(j - 2)) / 4;
@@ -866,7 +866,7 @@ public class DSSTZonal implements DSSTForceModel {
             currentSij[5] *= this.x2on2a2xp1;
 
             // j is between 1 and 2 * N - 1
-            if (isBetween(j, 1, 2 * nMax - 1)) {
+            if (isBetween(j, 1, 2 * nMax - 1) && j < cjsj.jMax) {
                 // Compute cross derivatives
                 // Cj(alpha,gamma) = alpha * dC/dgamma - gamma * dC/dalpha
                 final double CjAlphaGamma   = alpha * cjsj.getdCjdGamma(j) - gamma * cjsj.getdCjdAlpha(j);
