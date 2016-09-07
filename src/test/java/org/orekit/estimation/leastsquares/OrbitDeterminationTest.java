@@ -198,7 +198,7 @@ public class OrbitDeterminationTest {
 
         //test on the convergence
         final int numberOfIte  = 4;
-        final int numberOfEval = 7;
+        final int numberOfEval = 5;
 
         Assert.assertEquals(numberOfIte, odsatW3.getNumberOfIteration());
         Assert.assertEquals(numberOfEval, odsatW3.getNumberOfEvaluation());

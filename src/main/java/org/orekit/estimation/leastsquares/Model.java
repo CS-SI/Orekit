@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.leastsquares;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -37,11 +38,11 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -239,36 +240,24 @@ class Model implements MultivariateJacobianFunction {
     private void configureMeasurements(final Propagator propagator, final RealVector point)
         throws OrekitException {
 
-        firstDate = AbsoluteDate.FUTURE_INFINITY;
-        lastDate  = AbsoluteDate.PAST_INFINITY;
-
         // set up the measurement parameters
         int index = estimatedOrbitalParameters + estimatedPropagatorParameters.getNbParams();
         for (final ParameterDriver parameter : estimatedMeasurementsParameters.getDrivers()) {
             parameter.setNormalizedValue(point.getEntry(index++));
         }
 
-        // set up events to handle measurements
-        int p = 0;
+        // set up measurements handler
+        final List<PreCompensation> precompensated = new ArrayList<>();
         for (final ObservedMeasurement<?> measurement : measurements) {
             if (measurement.isEnabled()) {
-                AbsoluteDate md = measurement.getDate();
-                final EstimatedMeasurement<?> previousEvaluation = evaluations.get(measurement);
-                if (previousEvaluation != null) {
-                    // pre-compensate signal transit time
-                    md = md.shiftedBy(-previousEvaluation.getTimeOffset());
-                }
-                if (md.compareTo(firstDate) < 0) {
-                    firstDate = md;
-                }
-                if (md.compareTo(lastDate) > 0) {
-                    lastDate = md;
-                }
-                final MeasurementHandler mh = new MeasurementHandler(this, measurement, p);
-                propagator.addEventDetector(new DateDetector(md).withHandler(mh));
-                p += measurement.getDimension();
+                precompensated.add(new PreCompensation(measurement, evaluations.get(measurement)));
             }
         }
+        precompensated.sort(new ChronologicalComparator());
+        propagator.setMasterMode(new MeasurementHandler(this, precompensated));
+
+        firstDate = precompensated.get(0).getDate();
+        lastDate  = precompensated.get(precompensated.size() - 1).getDate();
 
     }
 

@@ -39,6 +39,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 public class BatchLSEstimatorTest {
@@ -145,11 +146,14 @@ public class BatchLSEstimatorTest {
             }
         });
 
-        EstimationTestUtils.checkFit(context, estimator, 1, 2,
-                                     0.0, 1.3e-7,
-                                     0.0, 2.8e-7,
-                                     0.0, 1.1e-7,
-                                     0.0, 4.1e-11);
+        ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
+        Assert.assertEquals("a", aDriver.getName());
+        aDriver.setValue(aDriver.getValue() + 1.2);
+        EstimationTestUtils.checkFit(context, estimator, 2, 3,
+                                     0.0, 9.4e-7,
+                                     0.0, 2.2e-6,
+                                     0.0, 3.7e-7,
+                                     0.0, 1.5e-10);
 
     }
 
