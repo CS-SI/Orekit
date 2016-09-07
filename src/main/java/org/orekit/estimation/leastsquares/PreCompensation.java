@@ -31,10 +31,10 @@ class PreCompensation implements TimeStamped {
     private final ObservedMeasurement<?> observed;
 
     /** State pick-up dates, including pre-compensation. */
-    final AbsoluteDate precompensated;
+    private final AbsoluteDate precompensated;
 
     /** Simple constructor.
-     * @param measurement underlying measurement
+     * @param observed underlying measurement
      * @param previousEstimation previous estimation of the measurement (may be null)
      */
     PreCompensation(final ObservedMeasurement<?> observed,
