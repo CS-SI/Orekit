@@ -120,7 +120,7 @@ public class GroundStationTest {
                                      0.0, 2.2e-10);
         Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   6.0e-8);
         Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  2.6e-7);
-        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 1.9e-7);
+        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.1e-7);
 
     }
 
