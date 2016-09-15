@@ -16,7 +16,8 @@
  */
 /**
  *
- * This package provides all drag-related forces.
+ * This package provides classes to get solar activity data,
+ * including solar flux and geomagnetic indices.
  *
  */
-package org.orekit.forces.drag;
+package org.orekit.forces.drag.atmosphere.solaractivity;

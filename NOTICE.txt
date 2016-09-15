@@ -33,3 +33,9 @@ The Apache Software Foundation (http://www.apache.org/)
 
 This product depends on software developed by
 The Hipparchus project (https://hipparchus.org/)
+
+This product includes software translated from original work developed by
+M. Picone, A.E. Hedin, D. Drob (Naval Research Laboratory)
+
+This product includes software translated from original work developed by
+Dominik Brodowski

@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;

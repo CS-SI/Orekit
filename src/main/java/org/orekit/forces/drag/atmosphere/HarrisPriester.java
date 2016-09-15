@@ -23,9 +23,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 
@@ -340,26 +338,6 @@ public class HarrisPriester implements Atmosphere {
         final Vector3D posInEarth = frame.getTransformTo(earth.getBodyFrame(), date).transformPosition(position);
 
         return getDensity(sunInEarth, posInEarth);
-    }
-
-    /** Get the inertial velocity of atmosphere molecules.
-     * <p>
-     * Here the case is simplified : atmosphere is supposed to have a null velocity
-     * in earth frame.
-     * </p>
-     * @param date current date
-     * @param position current position
-     * @param frame the frame in which is defined the position
-     * @return velocity (m/s) (defined in the same frame as the position)
-     * @exception OrekitException if some frame conversion cannot be performed
-     */
-    public Vector3D getVelocity(final AbsoluteDate date, final Vector3D position, final Frame frame)
-        throws OrekitException {
-        final Transform bodyToFrame = earth.getBodyFrame().getTransformTo(frame, date);
-        final Vector3D posInBody    = bodyToFrame.getInverse().transformPosition(position);
-        final PVCoordinates pvBody  = new PVCoordinates(posInBody, Vector3D.ZERO);
-        final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
-        return pvFrame.getVelocity();
     }
 
     /** Get the height above the Earth for the given position.

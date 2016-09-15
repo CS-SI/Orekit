@@ -16,7 +16,7 @@
  */
 /**
  *
- * This package provides all drag-related forces.
+ * This package provides the atmosphere model interface and several implementations.
  *
  */
-package org.orekit.forces.drag;
+package org.orekit.forces.drag.atmosphere;
