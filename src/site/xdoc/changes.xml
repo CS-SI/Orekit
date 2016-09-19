@@ -21,7 +21,11 @@
   </properties>
   <body>
     <release version="8.1" date="TBD" description="TBD">
-      <action dev="luc" type="fix" >
+      <action dev="luc" type="fix" due-to="Hao Peng">
+        Fixed outliers configuration parsing in orbit determination tutorial and test.
+        Fixes issue #249
+      </action>
+       <action dev="luc" type="fix" >
         Greatly improved orbit determination speed when a lot of measurements are used
         (several thousands).
       </action>
