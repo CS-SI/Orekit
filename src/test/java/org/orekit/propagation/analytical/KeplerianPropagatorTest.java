@@ -85,6 +85,30 @@ public class KeplerianPropagatorTest {
     // Body mu
     private double mu;
 
+    /**
+     * Check that the date returned by {@link KeplerianPropagator#propagate(AbsoluteDate)}
+     * is the same as the date passed to propagate().
+     *
+     * @throws OrekitException on error.
+     */
+    @Test
+    public void testPropagationDate() throws OrekitException {
+        // setup
+        AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
+        // date s.t. target - date rounds down when represented as a double.
+        AbsoluteDate target =
+                initDate.shiftedBy(20.0).shiftedBy(FastMath.ulp(20.0) / 4);
+        Orbit ic = new KeplerianOrbit(6378137 + 500e3, 1e-3, 0, 0, 0, 0,
+                PositionAngle.TRUE, FramesFactory.getGCRF(), initDate, mu);
+        Propagator propagator = new KeplerianPropagator(ic);
+
+        // action
+        SpacecraftState actual = propagator.propagate(target);
+
+        // verify
+        Assert.assertEquals(target, actual.getDate());
+    }
+
     @Test
     public void testEphemerisModeWithHandler() throws OrekitException {
         // setup

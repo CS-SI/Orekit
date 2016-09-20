@@ -155,8 +155,10 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 // go ahead one step size
                 final SpacecraftState previous = state;
                 AbsoluteDate t = previous.getDate().shiftedBy(stepSize);
-                if ((dt == 0) || ((dt > 0) ^ (t.compareTo(target) <= 0))) {
+                if ((dt == 0) || ((dt > 0) ^ (t.compareTo(target) <= 0)) ||
+                        (FastMath.abs(target.durationFrom(t)) <= epsilon)) {
                     // current step exceeds target
+                    // or is target to within double precision
                     t = target;
                 }
                 final SpacecraftState current = updateAdditionalStates(basicPropagate(t));
@@ -308,12 +310,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         } while (!occurringEvents.isEmpty());
 
-        final double remaining = target.durationFrom(current.getDate());
-        if (interpolator.isForward()) {
-            isLastStep = remaining <  epsilon;
-        } else {
-            isLastStep = remaining > -epsilon;
-        }
+        isLastStep = target.equals(current.getDate());
 
         // handle the remaining part of the step, after all events if any
         if (getStepHandler() != null) {
