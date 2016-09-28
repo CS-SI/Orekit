@@ -55,7 +55,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * </p>
  * <p>
  * The model needs geographical and time information to compute general values,
- * but also needs space weather data : mean and daily solar flux, retrieved threw
+ * but also needs space weather data : mean and daily solar flux, retrieved through
  * different indices, and planetary geomagnetic indices.<br>
  * More information on these indices can be found on the <a
  * href="http://sol.spacenvironment.net/~JB2008/indices.html">
