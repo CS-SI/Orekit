@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="8.1" date="TBD" description="TBD">
+      <action dev="pascal" type="add">
+        Added JB2008 atmosphere model.
+      </action>
+      <action dev="pascal" type="add">
+        Added NRLMSISE-00 atmosphere model.
+      </action>
       <action dev="luc" type="fix" due-to="Hao Peng">
         Fixed outliers configuration parsing in orbit determination tutorial and test.
         Fixes issue #249
