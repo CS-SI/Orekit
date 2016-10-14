@@ -70,7 +70,7 @@ import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.forces.drag.atmosphere.DTM2000;
-import org.orekit.forces.drag.atmosphere.solaractivity.MarshallSolarActivityFutureEstimation;
+import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.OceanTides;
 import org.orekit.forces.gravity.Relativity;

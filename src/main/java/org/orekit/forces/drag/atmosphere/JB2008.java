@@ -40,7 +40,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * Two computation methods are proposed to the user:
  * <ul>
  * <li>one OREKIT independent and compliant with initial FORTRAN routine entry values:
- *     {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
+ *     {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double, double, double)}. </li>
  * <li>one compliant with OREKIT Atmosphere interface, necessary to the
  *     {@link org.orekit.forces.drag.DragForce drag force model} computation.</li>
  * </ul>
@@ -650,7 +650,7 @@ public class JB2008 implements Atmosphere {
     // OUTPUT:
 
     /** Get the exospheric temperature above input position.
-     * {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}
+     * {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double, double, double)}
      * <b> must </b> must be called before calling this function.
      * @return the exospheric temperature (deg K)
      */
@@ -659,7 +659,7 @@ public class JB2008 implements Atmosphere {
     }
 
     /** Get the temperature at input position.
-     * {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double)}
+     * {@link #getDensity(double, double, double, double, double, double, double, double, double, double, double, double, double, double, double)}
      * <b> must </b> must be called before calling this function.
      * @return the local temperature (deg K)
      */

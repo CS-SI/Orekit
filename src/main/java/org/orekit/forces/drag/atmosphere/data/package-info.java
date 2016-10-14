@@ -16,8 +16,8 @@
  */
 /**
  *
- * This package provides classes to get solar activity data,
- * including solar flux and geomagnetic indices.
+ * This package provides classes to get atmospheric data,
+ * including solar flux and planetary geomagnetic indices.
  *
  */
-package org.orekit.forces.drag.atmosphere.solaractivity;
+package org.orekit.forces.drag.atmosphere.data;

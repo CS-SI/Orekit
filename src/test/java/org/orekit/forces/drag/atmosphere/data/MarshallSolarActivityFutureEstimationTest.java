@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.drag.atmosphere.solaractivity;
+package org.orekit.forces.drag.atmosphere.data;
 
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -34,8 +34,8 @@ import org.orekit.forces.drag.IsotropicDrag;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.forces.drag.atmosphere.DTM2000;
 import org.orekit.forces.drag.atmosphere.DTM2000InputParameters;
-import org.orekit.forces.drag.atmosphere.solaractivity.MarshallSolarActivityFutureEstimation;
-import org.orekit.forces.drag.atmosphere.solaractivity.MarshallSolarActivityFutureEstimation.StrengthLevel;
+import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
+import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation.StrengthLevel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -57,6 +57,29 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.orekit.OrekitMatchers.*;
 
 public class MarshallSolarActivityFutureEstimationTest {
+
+    @Test
+    public void test() throws OrekitException {
+        // Ap <> Kp conversions:
+        // equations 4 & 5 in Jacchia, L. G. "CIRA 1972, recent atmospheric models,
+        // and improvements in progress." COSPAR, 21st Plenary Meeting. Vol. 1. 1978.
+        final double[] ap = {0, 2, 3, 4, 5, 6, 7, 9, 12, 15, 18, 22, 27, 32, 39, 48,
+                             56, 67, 80, 94, 111, 132, 154, 179, 207, 236, 300, 400};
+        final double onethird = 1./3.;
+        final double[] kp = {
+            0, 0+onethird, 1-onethird, 1, 1+onethird, 2-onethird,
+            2, 2+onethird, 3-onethird, 3, 3+onethird, 4-onethird,
+            4, 4+onethird, 5-onethird, 5, 5+onethird, 6-onethird,
+            6, 6+onethird, 7-onethird, 7, 7+onethird, 8-onethird,
+            8, 8+onethird, 9-onethird, 9
+        };
+        for (int i = 0; i < ap.length; i++) {
+            final double KP = 1.89 * FastMath.asinh(0.154 * ap[i]);
+            final double AP = 6.5 * FastMath.sinh(0.53 * kp[i]);
+            System.out.println(ap[i] + " " + KP);
+            System.out.println(AP + " " + kp[i]);
+        }
+    }
 
     /**
      * Check {@link MarshallSolarActivityFutureEstimation#get24HoursKp(AbsoluteDate)} and
