@@ -567,7 +567,7 @@ public class DSSTPropagatorTest {
         // the initial orbit is osculating the final orbit is a mean orbit
         // and they are not considered at the same epoch
         // we keep it only as is was an historical test
-        Assert.assertEquals(2195.9, orbit.getA() - finalState.getA(), 1.0);
+        Assert.assertEquals(2189.4, orbit.getA() - finalState.getA(), 1.0);
 
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
         finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
@@ -650,7 +650,8 @@ public class DSSTPropagatorTest {
         final double[][] tol = DSSTPropagator.tolerances(0.1, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
 
-        DSSTPropagator prop = new DSSTPropagator(integrator, false);
+        // build the propagator for the propagation of the mean elements
+        DSSTPropagator prop = new DSSTPropagator(integrator, true);
 
         final UnnormalizedSphericalHarmonicsProvider provider =
                 GravityFieldFactory.getUnnormalizedProvider(4, 0);
@@ -662,8 +663,13 @@ public class DSSTPropagatorTest {
         prop.addForceModel(zonal);
         prop.addForceModel(tesseral);
 
+        // Set the initial state as osculating
         prop.setInitialState(initialState, false);
-        prop.getInitialState();
+        // Check the stored initial state is the osculating one
+        Assert.assertEquals(initialState, prop.getInitialState());
+        // Check that no propagation, i.e. propagation to the initial date, provides the initial
+        // osculating state although the propagator is configured to propagate mean elements !!!
+        Assert.assertEquals(initialState, prop.propagate(initialState.getDate()));
     }
 
     @Test
