@@ -172,13 +172,12 @@ public class IodGooding {
                           lineOfSight1, lineOfSight2, lineOfSight3,
                           maxiter);
 
-        // use the Gibbs problem to get the orbit now that we have three
-        // position vectors.
+        // use the Gibbs problem to get the orbit now that we have three position vectors.
         final IodGibbs gibbs = new IodGibbs(mu);
-        return gibbs.estimate(frame,
-                              (vObserverPosition1.add(lineOfSight1.scalarMultiply(rho1))).scalarMultiply(R), dateObs1,
-                              (vObserverPosition2.add(lineOfSight2.scalarMultiply(rho2))).scalarMultiply(R), dateObs2,
-                              (vObserverPosition3.add(lineOfSight3.scalarMultiply(rho3))).scalarMultiply(R), dateObs3);
+        final Vector3D p1 = vObserverPosition1.add(lineOfSight1.scalarMultiply(rho1)).scalarMultiply(R);
+        final Vector3D p2 = vObserverPosition2.add(lineOfSight2.scalarMultiply(rho2)).scalarMultiply(R);
+        final Vector3D p3 = vObserverPosition3.add(lineOfSight3.scalarMultiply(rho3)).scalarMultiply(R);
+        return gibbs.estimate(frame, p1, dateObs1, p2, dateObs2, p3, dateObs3);
     }
 
     /** Solve the range problem when three line of sight are given.
@@ -224,8 +223,8 @@ public class IodGooding {
 
             // tentative position for R2
             final Vector3D P2 = getPositionOnLoS2(lineOfSight1, rho1,
-                                          lineOfSight3, rho3,
-                                          T13, T12, nrev, direction);
+                                                  lineOfSight3, rho3,
+                                                  T13, T12, nrev, direction);
 
             if (P2 == null) {
                 modifyIterate(lineOfSight1, lineOfSight2, lineOfSight3);
@@ -372,15 +371,15 @@ public class IodGooding {
         final double dy = facFiniteDiff * y;
 
         final Vector3D Cm1 = getPositionOnLoS2 (lineOfSight1, x - dx,
-                              lineOfSight3, y,
-                              T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                lineOfSight3, y,
+                                                T13, T12, nrev, direction).subtract(vObserverPosition2);
 
         final double Fm1 = P.dotProduct(Cm1);
         final double Gm1 = EN.dotProduct(Cm1);
 
         final Vector3D Cp1 = getPositionOnLoS2 (lineOfSight1, x + dx,
-                              lineOfSight3, y,
-                              T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                lineOfSight3, y,
+                                                T13, T12, nrev, direction).subtract(vObserverPosition2);
 
         final double Fp1  = P.dotProduct(Cp1);
         final double Gp1 = EN.dotProduct(Cp1);
@@ -390,15 +389,15 @@ public class IodGooding {
         final double Gx = (Gp1 - Gm1) / (2 * dx);
 
         final Vector3D Cm3 = getPositionOnLoS2 (lineOfSight1, x,
-                              lineOfSight3, y - dy,
-                              T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                lineOfSight3, y - dy,
+                                                T13, T12, nrev, direction).subtract(vObserverPosition2);
 
         final double Fm3 = P.dotProduct(Cm3);
         final double Gm3 = EN.dotProduct(Cm3);
 
         final Vector3D Cp3 = getPositionOnLoS2 (lineOfSight1, x,
-                              lineOfSight3, y + dy,
-                              T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                lineOfSight3, y + dy,
+                                                T13, T12, nrev, direction).subtract(vObserverPosition2);
 
         final double Fp3 = P.dotProduct(Cp3);
         final double Gp3 = EN.dotProduct(Cp3);
@@ -428,8 +427,8 @@ public class IodGooding {
             final double Gyy = (Gm3 + Gm3 - 2 * F) / hrho3Sq;
 
             final Vector3D Cp13 = getPositionOnLoS2 (lineOfSight1, x + dx,
-                                  lineOfSight3, y + dy,
-                                  T13, T12, nrev, direction).subtract(vObserverPosition2);
+                                                     lineOfSight3, y + dy,
+                                                     T13, T12, nrev, direction).subtract(vObserverPosition2);
 
             // f function value at (x1+dx1, x3+dx3)
             final double Fp13 = P.dotProduct(Cp13) - F;
@@ -488,9 +487,9 @@ public class IodGooding {
      * @return (R2-O2)
      */
     private Vector3D getPositionOnLoS2(final Vector3D E1, final double RO1,
-                                      final Vector3D E3, final double RO3,
-                                      final double T13, final double T12,
-                                      final double nRev, final boolean posigrade) {
+                                       final Vector3D E3, final double RO3,
+                                       final double T13, final double T12,
+                                       final double nRev, final boolean posigrade) {
         final Vector3D P1 = vObserverPosition1.add(E1.scalarMultiply(RO1));
         R1 = P1.getNorm();
 
@@ -512,9 +511,7 @@ public class IodGooding {
         // Solve the Lambert's problem to get the velocities at endpoints
         final double[] V1 = new double[2];
         // work with non-dimensional units (MU=1)
-        final boolean exitflag = lambert.solveLambertPb(R1, R3, TH,
-                                       T13, 0,
-                                       V1);
+        final boolean exitflag = lambert.solveLambertPb(R1, R3, TH, T13, 0, V1);
 
         if (exitflag) {
             // basis vectors
@@ -528,8 +525,7 @@ public class IodGooding {
             }
 
             // velocity vector at P1
-            final Vector3D Vel1 = P1.scalarMultiply(V1[0] / R1)
-                            .add(Pt.scalarMultiply(V1[1] / RT));
+            final Vector3D Vel1 = P1.scalarMultiply(V1[0] / R1).add(Pt.scalarMultiply(V1[1] / RT));
 
             // estimate the position at the second observation time
             // propagate (P1, V1) during TAU + T12 to get (P2, V2)
@@ -548,9 +544,7 @@ public class IodGooding {
      * @param tau propagation time
      * @return final position vector
      */
-    private Vector3D propagatePV(final Vector3D P1, final Vector3D V1,
-                             final double tau)
-    {
+    private Vector3D propagatePV(final Vector3D P1, final Vector3D V1, final double tau) {
         final PVCoordinates pv1 = new PVCoordinates(P1, V1);
         // create a Keplerian orbit. Assume MU = 1.
         final KeplerianOrbit orbit = new KeplerianOrbit(pv1, frame, date1, 1.);
