@@ -178,15 +178,15 @@ public class DTM2000 implements Atmosphere {
     private static double[] tp   = null;
 
     /** Partial derivatives. */
-    private static double[] dtt  = null;
-    private static double[] dh   = null;
-    private static double[] dhe  = null;
-    private static double[] dox  = null;
-    private static double[] daz2 = null;
-    private static double[] do2  = null;
-    private static double[] daz  = null;
-    private static double[] dt0  = null;
-    private static double[] dtp  = null;
+    private double[] dtt;
+    private double[] dh ;
+    private double[] dhe;
+    private double[] dox;
+    private double[] daz2;
+    private double[] do2;
+    private double[] daz;
+    private double[] dt0;
+    private double[] dtp;
 
     // CHECKSTYLE: resume JavadocVariable check
 
@@ -299,12 +299,38 @@ public class DTM2000 implements Atmosphere {
     public DTM2000(final DTM2000InputParameters parameters,
                    final PVCoordinatesProvider sun, final BodyShape earth)
         throws OrekitException {
+
+        synchronized (DTM2000.class) {
+            // lazy reading of model coefficients
+            if (tt == null) {
+                readcoefficients();
+            }
+        }
+
         this.earth = earth;
         this.sun = sun;
         this.inputParams = parameters;
-        if (tt == null) {
-            readcoefficients();
-        }
+
+        dtt  = new double[tt.length];
+        dh   = new double[tt.length];
+        dhe  = new double[tt.length];
+        dox  = new double[tt.length];
+        daz2 = new double[tt.length];
+        do2  = new double[tt.length];
+        daz  = new double[tt.length];
+        dt0  = new double[tt.length];
+        dtp  = new double[tt.length];
+
+        Arrays.fill(dtt,  Double.NaN);
+        Arrays.fill(dh,   Double.NaN);
+        Arrays.fill(dhe,  Double.NaN);
+        Arrays.fill(dox,  Double.NaN);
+        Arrays.fill(daz2, Double.NaN);
+        Arrays.fill(do2,  Double.NaN);
+        Arrays.fill(daz,  Double.NaN);
+        Arrays.fill(dt0,  Double.NaN);
+        Arrays.fill(dtp,  Double.NaN);
+
     }
 
     /** {@inheritDoc} */
@@ -325,10 +351,10 @@ public class DTM2000 implements Atmosphere {
      * @return the local density (kg/m³)
      * @exception OrekitException if altitude is outside of supported range
      */
-    public double getDensity(final int day,
-                             final double alti, final double lon, final double lat,
-                             final double hl, final double f, final double fbar,
-                             final double akp3, final double akp24)
+    public synchronized double getDensity(final int day,
+                                          final double alti, final double lon, final double lat,
+                                          final double hl, final double f, final double fbar,
+                                          final double akp3, final double akp24)
         throws OrekitException {
         final double threshold = 120000;
         if (alti < threshold) {
@@ -351,7 +377,7 @@ public class DTM2000 implements Atmosphere {
 
     /** Computes output vales once the inputs are set.
      */
-    private void computation() {
+    private synchronized void computation() {
         ro = 0.0;
 
         final double zlb = ZLB0; // + dzlb ??
@@ -487,8 +513,8 @@ public class DTM2000 implements Atmosphere {
      * @param kle_eq season indicator flag (summer, winter, equinox)
      * @return value of G
      */
-    private double gFunction(final double[] a, final double[] da,
-                             final int ff0, final int kle_eq) {
+    private synchronized double gFunction(final double[] a, final double[] da,
+                                          final int ff0, final int kle_eq) {
 
         final double[] fmfb   = new double[3];
         final double[] fbm150 = new double[3];
@@ -698,7 +724,7 @@ public class DTM2000 implements Atmosphere {
      * @param param the parameter to correct
      * @return the corrected parameter
      */
-    private double semestrialCorrection(final double param) {
+    private synchronized double semestrialCorrection(final double param) {
         final int debeq_pr = 59;
         final int debeq_au = 244;
         final double result;
@@ -728,25 +754,6 @@ public class DTM2000 implements Atmosphere {
         az   = new double[size];
         t0   = new double[size];
         tp   = new double[size];
-        dtt  = new double[size];
-        dh   = new double[size];
-        dhe  = new double[size];
-        dox  = new double[size];
-        daz2 = new double[size];
-        do2  = new double[size];
-        daz  = new double[size];
-        dt0  = new double[size];
-        dtp  = new double[size];
-
-        Arrays.fill(dtt,  Double.NaN);
-        Arrays.fill(dh,   Double.NaN);
-        Arrays.fill(dhe,  Double.NaN);
-        Arrays.fill(dox,  Double.NaN);
-        Arrays.fill(daz2, Double.NaN);
-        Arrays.fill(do2,  Double.NaN);
-        Arrays.fill(daz,  Double.NaN);
-        Arrays.fill(dt0,  Double.NaN);
-        Arrays.fill(dtp,  Double.NaN);
 
         final InputStream in = DTM2000.class.getResourceAsStream(DTM2000);
         if (in == null) {

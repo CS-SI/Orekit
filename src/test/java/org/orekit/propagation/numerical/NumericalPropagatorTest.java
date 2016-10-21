@@ -16,11 +16,14 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -30,6 +33,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -40,12 +44,24 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.drag.DragForce;
+import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.atmosphere.DTM2000;
+import org.orekit.forces.drag.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
+import org.orekit.forces.gravity.ThirdBodyAttraction;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
+import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
+import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -923,6 +939,130 @@ public class NumericalPropagatorTest {
             return actionOnEvent;
         }
 
+    }
+
+    @Test
+    public void testParallelismIssue258() throws OrekitException, InterruptedException, ExecutionException, FileNotFoundException {
+
+        Utils.setDataRoot("regular-data:atmosphere:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        final double mu = GravityFieldFactory.getNormalizedProvider(2, 2).getMu();
+
+        // Geostationary transfer orbit
+        final double a = 24396159; // semi major axis in meters
+        final double e = 0.72831215; // eccentricity
+        final double i = FastMath.toRadians(7); // inclination
+        final double omega = FastMath.toRadians(180); // perigee argument
+        final double raan = FastMath.toRadians(261); // right ascension of ascending node
+        final double lM = 0; // mean anomaly
+        final Frame inertialFrame = FramesFactory.getEME2000();
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final AbsoluteDate initialDate = new AbsoluteDate(2003, 1, 1, 00, 00, 00.000, utc);
+        final Orbit initialOrbit = new CartesianOrbit( new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
+                                                                          inertialFrame, initialDate, mu));
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit, 1000);
+
+        // initialize the testing points
+        final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
+        final NumericalPropagator propagator = parallelizedPropagator(initialState);
+        final double samplingStep = 10000.0;
+        propagator.setMasterMode(samplingStep, (state, isLast) -> states.add(state));
+        propagator.propagate(initialDate.shiftedBy(5 * samplingStep));
+
+        // compute reference errors, using serial computation in a for loop
+        final double[][] referenceErrors = new double[states.size() - 1][];
+        for (int startIndex = 0; startIndex < states.size() - 1; ++startIndex) {
+            referenceErrors[startIndex] = recomputeFollowing(startIndex, states);
+        }
+
+        final Consumer<SpacecraftState> checker = point -> {
+            try {
+                final int startIndex = states.indexOf(point);
+                double[] errors = recomputeFollowing(startIndex, states);
+                for (int k = 0; k < errors.length; ++k) {
+                    Assert.assertEquals(startIndex + " to " + (startIndex + k + 1),
+                                        referenceErrors[startIndex][k], errors[k],
+                                        1.0e-9);
+                }
+            } catch (OrekitException oe) {
+                Assert.fail(oe.getLocalizedMessage());
+            }
+        };
+
+        // serial propagation using Stream
+        states.stream().forEach(checker);
+
+        // parallel propagation using parallelStream
+        states.parallelStream().forEach(checker);
+
+    }
+
+    /**
+     * Assume we have 5 epochs, we will propagate from the input epoch to all the following epochs.
+     *   If we have [0,1,2,3,4], and input is 2, then we will do 2->3, 2->4. 
+     * @param startIndex index of start state
+     * @param states all states
+     * @return position error for recomputed following points
+     */
+    private static double[] recomputeFollowing(final int startIndex, List<SpacecraftState> allPoints)
+        throws OrekitException {
+        SpacecraftState startState = allPoints.get(startIndex);
+        NumericalPropagator innerPropagator = parallelizedPropagator(startState);
+        double[] errors = new double[allPoints.size() - startIndex - 1];
+        for (int endIndex = startIndex + 1; endIndex < allPoints.size(); ++endIndex) {
+            final TimeStampedPVCoordinates reference  = allPoints.get(endIndex).getPVCoordinates();
+            final TimeStampedPVCoordinates recomputed = innerPropagator.propagate(reference.getDate()).getPVCoordinates();
+            errors[endIndex - startIndex - 1] = Vector3D.distance(recomputed.getPosition(), reference.getPosition());
+        }
+        return errors;
+    }
+
+    private synchronized static NumericalPropagator parallelizedPropagator(SpacecraftState spacecraftState)
+        throws OrekitException {
+
+        final double minStep                         = 0.001;
+        final double maxStep                         = 120.0;
+        final double positionTolerance               = 0.1;
+        final OrbitType type                         = OrbitType.CARTESIAN;
+        final int degree                             = 20;
+        final int order                              = 20;
+        final double spacecraftArea                  = 1.0;
+        final double spacecraftDragCoefficient       = 2.0;
+        final double spacecraftReflectionCoefficient = 2.0; 
+
+        // propagator main configuration
+        final double[][] tol           = NumericalPropagator.tolerances(positionTolerance, spacecraftState.getOrbit(), type);
+        final ODEIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
+        final NumericalPropagator np   = new NumericalPropagator(integrator);
+        np.setOrbitType(type);
+        np.setPositionAngleType(PositionAngle.TRUE);
+        np.setInitialState(spacecraftState);
+
+        // Earth gravity field
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final NormalizedSphericalHarmonicsProvider harmonicsGravityProvider = GravityFieldFactory.getNormalizedProvider(degree, order); // ��г
+        np.addForceModel(new HolmesFeatherstoneAttractionModel(earth.getBodyFrame(), harmonicsGravityProvider));
+
+        // Sun and Moon attraction
+        np.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
+        np.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
+
+        // atmospheric drag
+        MarshallSolarActivityFutureEstimation msafe =
+                        new MarshallSolarActivityFutureEstimation("Jan2000F10-edited-data\\.txt",
+                                                                  MarshallSolarActivityFutureEstimation.StrengthLevel.AVERAGE);
+        DataProvidersManager.getInstance().feed(msafe.getSupportedNames(), msafe);
+        DTM2000 atmosphere = new DTM2000(msafe, CelestialBodyFactory.getSun(), earth);
+        np.addForceModel(new DragForce(atmosphere, new IsotropicDrag(spacecraftArea, spacecraftDragCoefficient)));
+
+        // solar radiation pressure
+        np.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(),
+                                                    earth.getEquatorialRadius(),
+                                                    new IsotropicRadiationSingleCoefficient(spacecraftArea, spacecraftReflectionCoefficient)));
+
+        return np;
     }
 
     @Before

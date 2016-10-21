@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="8.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed thread-safety issues in DTM2000 model.
+        Fixes issue #258.
+      </action>
       <action dev="pascal" type="add">
         Added JB2008 atmosphere model.
       </action>
