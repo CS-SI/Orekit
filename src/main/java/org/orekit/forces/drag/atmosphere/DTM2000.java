@@ -179,7 +179,7 @@ public class DTM2000 implements Atmosphere {
 
     /** Partial derivatives. */
     private double[] dtt;
-    private double[] dh ;
+    private double[] dh;
     private double[] dhe;
     private double[] dox;
     private double[] daz2;
