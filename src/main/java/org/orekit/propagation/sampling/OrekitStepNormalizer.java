@@ -70,7 +70,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
         throws OrekitException {
         lastState = null;
         forward   = true;
-        handler.init(s0, t);
+        handler.init(s0, t, h);
     }
 
     /**

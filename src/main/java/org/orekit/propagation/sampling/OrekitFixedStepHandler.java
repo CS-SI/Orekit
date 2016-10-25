@@ -27,6 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
+@FunctionalInterface
 public interface OrekitFixedStepHandler {
 
     /** Initialize step handler at the start of a propagation.
@@ -40,9 +41,11 @@ public interface OrekitFixedStepHandler {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     * @param step the duration in seconds of the fixed step. This value is
+     *             positive even if propagation is backwards.
      * @exception OrekitException if step handler cannot be initialized
      */
-    default void init(SpacecraftState s0, AbsoluteDate t)
+    default void init(SpacecraftState s0, AbsoluteDate t, double step)
         throws OrekitException {
         // nothing by default
     }
