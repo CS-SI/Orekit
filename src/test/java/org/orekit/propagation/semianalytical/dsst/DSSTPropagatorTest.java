@@ -609,18 +609,9 @@ public class DSSTPropagatorTest {
         // direct generation of states
         propagator.setInitialState(new SpacecraftState(orbit, 45.0), false);
         final List<SpacecraftState> states = new ArrayList<SpacecraftState>();
-        propagator.setMasterMode(600, new OrekitFixedStepHandler() {
-
-            /** {@inheritDoc} */
-            @Override
-            public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            }
-            
-            @Override
-            public void handleStep(SpacecraftState currentState, boolean isLast) {
-                states.add(currentState);
-            }
-        });
+        propagator.setMasterMode(
+                600,
+                (currentState, isLast) -> states.add(currentState));
         propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
 
         // ephemeris generation

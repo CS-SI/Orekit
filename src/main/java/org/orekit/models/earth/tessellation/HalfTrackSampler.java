@@ -58,11 +58,6 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
 
     /** {@inheritDoc} */
     @Override
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
         throws OrekitException {
 
