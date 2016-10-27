@@ -111,6 +111,10 @@ public class DetectorTest {
             EventHandler.super.init(initialState, target);
         }
 
+        @Override
+        public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
+        }
+
     }
 
     @Test
@@ -145,8 +149,6 @@ public class DetectorTest {
         GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<DetectorTest.GCallsCounter>());
         propagator.addEventDetector(counter);
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
             public void handleStep(SpacecraftState currentState, boolean isLast) {
             }
         });

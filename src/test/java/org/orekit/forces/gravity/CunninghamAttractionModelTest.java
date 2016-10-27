@@ -115,8 +115,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
         private PVCoordinatesProvider sun;
         private double previous;
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
+
         public void handleStep(SpacecraftState currentState, boolean isLast)
             throws OrekitException {
 

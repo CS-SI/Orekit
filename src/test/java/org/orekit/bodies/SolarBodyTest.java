@@ -392,8 +392,6 @@ public class SolarBodyTest {
 
         // checks are done within the step handler
         propag.setMasterMode(1000.0, new OrekitFixedStepHandler() {
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
             public void handleStep(SpacecraftState currentState, boolean isLast)
                 throws OrekitException {
                 // propagated position should remain within 1400m of ephemeris for one month

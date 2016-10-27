@@ -148,9 +148,6 @@ public class TabulatedProviderTest {
         final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
         referencePropagator.setMasterMode(samplingRate, new OrekitFixedStepHandler() {
 
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-
             public void handleStep(SpacecraftState currentState, boolean isLast) {
                 sample.add(currentState.getAttitude().getOrientation());
             }
@@ -175,7 +172,7 @@ public class TabulatedProviderTest {
         final double[] error = new double[1];
         interpolatingPropagator.setMasterMode(checkingRate, new OrekitFixedStepHandler() {
             
-            public void init(SpacecraftState s0, AbsoluteDate t) {
+            public void init(SpacecraftState s0, AbsoluteDate t, double step) {
                 error[0] = 0.0;
             }
             

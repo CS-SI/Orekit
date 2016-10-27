@@ -155,7 +155,7 @@ public class TLEPropagatorTest {
             return maxDistance;
         }
 
-        public void init(SpacecraftState s0, AbsoluteDate t) {
+        public void init(SpacecraftState s0, AbsoluteDate t, double step) {
             minDistance = Double.POSITIVE_INFINITY;
             maxDistance = Double.NEGATIVE_INFINITY;
         }

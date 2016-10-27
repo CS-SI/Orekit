@@ -41,13 +41,39 @@ public interface OrekitFixedStepHandler {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     * @exception OrekitException if step handler cannot be initialized
+     * @deprecated as of 9.0, replaced by {@link #init(SpacecraftState, AbsoluteDate, double)}
+     */
+    @Deprecated
+    default void init(SpacecraftState s0, AbsoluteDate t)
+        throws OrekitException {
+        // nothing by default
+    }
+
+    /** Initialize step handler at the start of a propagation.
+     * <p>
+     * This method is called once at the start of the propagation. It
+     * may be used by the step handler to initialize some internal data
+     * if needed.
+     * </p>
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param s0 initial state
+     * @param t target time for the integration
      * @param step the duration in seconds of the fixed step. This value is
      *             positive even if propagation is backwards.
      * @exception OrekitException if step handler cannot be initialized
+     * @since 9.0
      */
     default void init(SpacecraftState s0, AbsoluteDate t, double step)
         throws OrekitException {
-        // nothing by default
+        // as of 9.0, the default implementation calls the DEPRECATED version
+        // without a step size, which does nothing by default byt may have
+        // been overridden by users
+        // When the deprecated version is removed, the default implementation
+        // will do nothing
+        init(s0, t);
     }
 
     /** Handle the current step.

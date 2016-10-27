@@ -131,9 +131,6 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
             this.reference = reference;
         }
 
-        public void init(SpacecraftState s0, AbsoluteDate t) {
-        }
-
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             double t = currentState.getDate().durationFrom(reference);
             Assert.assertEquals(hXRef(t), currentState.getHx(), 1e-4);

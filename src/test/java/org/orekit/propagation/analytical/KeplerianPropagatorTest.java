@@ -559,8 +559,6 @@ public class KeplerianPropagatorTest {
         final double step = 100.0;
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
             public void handleStep(SpacecraftState currentState, boolean isLast)
             throws OrekitException {
                 if (previous != null) {
@@ -582,8 +580,6 @@ public class KeplerianPropagatorTest {
         final double step = orbit.getKeplerianPeriod() / 100;
         propagator.setMasterMode(new OrekitStepHandler() {
             private AbsoluteDate previous;
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws OrekitException {
                 if ((previous != null) && !isLast) {
@@ -804,8 +800,6 @@ public class KeplerianPropagatorTest {
         BoundedPropagator ephemeris  = (BoundedPropagator) ois.readObject();
 
         ephemeris.setMasterMode(10, new OrekitFixedStepHandler() {
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
             public void handleStep(SpacecraftState currentState, boolean isLast) {
                 if (currentState.getDate().durationFrom(burn1Date) < -0.001) {
                     Assert.assertEquals(42100.0, currentState.getA(), 1.0e-3);

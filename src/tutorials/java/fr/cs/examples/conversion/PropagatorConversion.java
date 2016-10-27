@@ -213,9 +213,6 @@ public class PropagatorConversion {
             states = new ArrayList<SpacecraftState>();
         }
 
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        }
-
         public void handleStep(SpacecraftState currentState, boolean isLast) {
 
             // add the current state

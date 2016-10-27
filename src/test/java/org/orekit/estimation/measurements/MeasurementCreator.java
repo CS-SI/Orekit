@@ -35,7 +35,7 @@ public abstract class MeasurementCreator implements OrekitFixedStepHandler {
         return measurements;
     }
 
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
         measurements.clear();
     }
 

@@ -743,7 +743,8 @@ public class DSSTPropagation {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+        public void init(final SpacecraftState s0, final AbsoluteDate t, final double step)
+            throws OrekitException {
             try {
                 nbColumns           = 0;
                 outputStream        = new PrintStream(outputFile, "UTF-8");
