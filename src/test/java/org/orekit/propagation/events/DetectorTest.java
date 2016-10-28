@@ -108,7 +108,6 @@ public class DetectorTest {
 
         @Override
         public void init(SpacecraftState initialState, AbsoluteDate target) {
-            EventHandler.super.init(initialState, target);
         }
 
         @Override

@@ -57,7 +57,10 @@ public interface OrekitFixedStepHandler {
      * if needed.
      * </p>
      * <p>
-     * The default implementation does nothing
+     * The default implementation currently calls the deprecated
+     * {@link #init(SpacecraftState, AbsoluteDate)} which does nothing by
+     * default. When that method is removed the default implementation will do
+     * nothing.
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
