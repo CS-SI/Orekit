@@ -138,40 +138,11 @@ public class OPMFile extends OGMFile {
         return metaData.getComment();
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
-        if (getMetaData().getObjectID().equals(satId)) {
-            return Arrays.asList(new SatelliteTimeCoordinate(getEpoch(), getPVCoordinates()));
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    /** Get the {@link SatelliteTimeCoordinate} of the OPM.
-     * @return the {@link SatelliteTimeCoordinate}
-     */
-    public SatelliteTimeCoordinate getSatelliteCoordinatesOPM() {
-        return new SatelliteTimeCoordinate(getEpoch(), getPVCoordinates());
-    }
-
     /** Get the position/velocity coordinates contained in the OPM.
      * @return the position/velocity coordinates contained in the OPM
      */
     public PVCoordinates getPVCoordinates() {
         return new PVCoordinates(getPosition(), getVelocity());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getCoordinateSystem() {
-        return metaData.getFrame().toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OrbitFile.TimeSystem getTimeSystem() {
-        return metaData.getTimeSystem();
     }
 
     /**

@@ -46,7 +46,7 @@ import org.orekit.time.AbsoluteDate;
  * @author sports
  * @since 6.1
  */
-public class OEMFile extends ODMFile {
+public class OEMFile extends ODMFile implements OrbitFile {
 
     /** List of ephemeris blocks. */
     private List<EphemeridesBlock> ephemeridesBlocks;
@@ -518,5 +518,30 @@ public class OEMFile extends ODMFile {
 
     }
 
+    /**
+     * Not supported by CCSDS orbit messages.
+     * @return always throws an {@link UnsupportedOperationException}
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public double getEpochInterval() {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Not supported by CCSDS orbit messages.
+     * @return always throws an {@link UnsupportedOperationException}
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public int getNumberOfEpochs() {
+        throw new UnsupportedOperationException();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean containsSatellite(final String satId) {
+        return getSatellite(satId) != null;
+    }
 
 }

@@ -66,7 +66,6 @@ public class OPMParserTest {
 
         final OPMFile file = parser.parse(inEntry, "OPMExample.txt");
         Assert.assertEquals(IERSConventions.IERS_2010, file.getConventions());
-        final SatelliteTimeCoordinate coord = file.getSatelliteCoordinatesOPM();
 
         // Check Header Block;
         Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
@@ -86,17 +85,17 @@ public class OPMParserTest {
         Assert.assertTrue(file.getMetaData().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetaData().getCenterBody());
         Assert.assertEquals(CCSDSFrame.ITRF97.toString(), file.getMetaData().getFrame().getName());
-        Assert.assertEquals(TimeSystem.TAI, file.getTimeSystem());
+        Assert.assertEquals(TimeSystem.TAI, file.getMetaData().getTimeSystem());
         Assert.assertFalse(file.hasCovarianceMatrix());
         
         // Check State Vector data Block;
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
-                                             TimeScalesFactory.getTAI()), coord.getEpoch());
+                                             TimeScalesFactory.getTAI()), file.getEpoch());
         checkPVEntry(new PVCoordinates(new Vector3D(6503514.000, 1239647.000,
                                                     -717490.000),
                                        new Vector3D(-873.160, 8740.420,
                                                     -4191.076)),
-                     coord.getCoordinate());
+                     file.getPVCoordinates());
 
         try {
             file.generateCartesianOrbit();
@@ -139,7 +138,6 @@ public class OPMParserTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS, oe.getSpecifier());
         }
-        final SatelliteTimeCoordinate coord = file.getSatelliteCoordinatesOPM();
 
         // Check Header Block;
         Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
@@ -160,7 +158,7 @@ public class OPMParserTest {
         Assert.assertTrue(file.getMetaData().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetaData().getCenterBody());
         Assert.assertEquals(FramesFactory.getGCRF(), file.getMetaData().getFrame());
-        Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
+        Assert.assertEquals(TimeSystem.GPS, file.getMetaData().getTimeSystem());
         Assert.assertEquals(0, file.getMetaDataComment().size());
 
         // Check Data State Vector block
@@ -169,10 +167,10 @@ public class OPMParserTest {
         Assert.assertEquals(epochComment, file.getEpochComment());
         Assert.assertEquals(new AbsoluteDate(2006, 06, 03, 00, 00, 00,
                                              TimeScalesFactory.getGPS()),
-                            coord.getEpoch());
+                            file.getEpoch());
         checkPVEntry(new PVCoordinates(new Vector3D(6655994.2, -40218575.1, -82917.7),
                                        new Vector3D(3115.48208, 470.42605, -1.01495)),
-                     coord.getCoordinate());
+                     file.getPVCoordinates());
 
         // Check Data Keplerian Elements block
         Assert.assertTrue(file.hasKeplerianElements());
@@ -380,24 +378,11 @@ public class OPMParserTest {
                 withConventions(IERSConventions.IERS_2010);
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OPMFile file = parser.parse(inEntry, "OPMExample4.txt");
-        try {
-          file.getEpochInterval();
-          Assert.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uoe) {
-            // expected
-        }
-        try {
-            file.getNumberOfEpochs();
-            Assert.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uoe) {
-            // expected
-        }
-        file.getCoordinateSystem();
-        file.getSatellites();
-        file.getSatelliteCount();
-        file.getSatellite("a");
-        file.containsSatellite("a");
-        file.getSatelliteCoordinates("a");
+        file.getMetaData().getFrame().toString();
+        file.getMetaData().getObjectID();
+        file.getEpoch();
+        file.getPVCoordinates();
+        file.getMetaData().getFrame();
     }
 
     @Test
@@ -408,27 +393,27 @@ public class OPMParserTest {
 
         OPMFile file =
                 parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-solar-system-barycenter.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getTimeSystem());
+        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getMetaData().getTimeSystem());
         Assert.assertEquals("solar system barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-ssb.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TCB, file.getTimeSystem());
+        Assert.assertEquals(OrbitFile.TimeSystem.TCB, file.getMetaData().getTimeSystem());
         Assert.assertEquals("solar system barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-earth-barycenter.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getTimeSystem());
+        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getMetaData().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-earth-dash-moon-barycenter.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getTimeSystem());
+        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getMetaData().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-earth-moon-barycenter.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.UT1, file.getTimeSystem());
+        Assert.assertEquals(OrbitFile.TimeSystem.UT1, file.getMetaData().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-emb.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TT, file.getTimeSystem());
+        Assert.assertEquals(OrbitFile.TimeSystem.TT, file.getMetaData().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
 
     }
@@ -444,32 +429,11 @@ public class OPMParserTest {
         final OPMFile file = parser.parse(inEntry, "OPMExample4.txt");
 
         final String satId = "1998-057A";
-        Assert.assertEquals(1, file.getSatelliteCount());
-        Assert.assertTrue(file.containsSatellite(satId));
-        Assert.assertFalse(file.containsSatellite("1995-025B"));
-        Assert.assertNotNull(file.getSatellite(satId));
-        Assert.assertEquals(1, file.getSatellites().size());
-        Assert.assertEquals(satId, file.getSatellite(satId).getSatelliteId());
+        Assert.assertEquals(satId, file.getMetaData().getObjectID());
 
-        final List<SatelliteTimeCoordinate> coords = file.getSatelliteCoordinates(satId);
-        Assert.assertEquals(1, coords.size());
+        checkPVEntry(file.getPVCoordinates(), file.getPVCoordinates());
+        Assert.assertEquals(file.getEpoch(), file.getEpoch());
 
-        final SatelliteTimeCoordinate coord = coords.get(0);
-        checkPVEntry(file.getPVCoordinates(), coord.getCoordinate());
-        Assert.assertEquals(file.getEpoch(), coord.getEpoch());
-
-        try {
-            file.getEpochInterval();
-            Assert.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uoe) {
-            // expected
-        }
-        try {
-            file.getNumberOfEpochs();
-            Assert.fail("an exception should have been thrown");
-        } catch (UnsupportedOperationException uoe) {
-            // expected
-        }
     }
 
     private void checkPVEntry(final PVCoordinates expected,

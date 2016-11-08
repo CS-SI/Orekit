@@ -232,18 +232,6 @@ public class OMMFile extends OGMFile {
         dataTleRelatedParametersComment = new ArrayList<String>(comment);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public String getCoordinateSystem() {
-        return metaData.getFrame().toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OrbitFile.TimeSystem getTimeSystem() {
-        return metaData.getTimeSystem();
-    }
-
     /** Generate a {@link KeplerianOrbit} based on the OMM mean keplerian elements.
      * If the reference frame is not pseudo-inertial, an exception is raised.
      * @return the {@link KeplerianOrbit} generated from the OMM information

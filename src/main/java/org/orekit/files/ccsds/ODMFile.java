@@ -35,7 +35,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public abstract class ODMFile implements OrbitFile {
+public abstract class ODMFile {
 
     /** CCSDS Format version. */
     private double formatVersion;
@@ -243,38 +243,6 @@ public abstract class ODMFile implements OrbitFile {
      */
     void setOriginator(final String originator) {
         this.originator = originator;
-    }
-
-    /**
-     * Not supported by CCSDS orbit messages.
-     * @return always throws an {@link UnsupportedOperationException}
-     * @throws UnsupportedOperationException always
-     */
-    @Override
-    public double getEpochInterval() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Not supported by CCSDS orbit messages.
-     * @return always throws an {@link UnsupportedOperationException}
-     * @throws UnsupportedOperationException always
-     */
-    @Override
-    public int getNumberOfEpochs() {
-        throw new UnsupportedOperationException();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean containsSatellite(final String satId) {
-        return getSatellite(satId) != null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
-        return Collections.emptyList();
     }
 
 }

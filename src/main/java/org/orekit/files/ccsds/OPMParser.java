@@ -35,7 +35,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OPMParser extends ODMParser implements OrbitFileParser {
+public class OPMParser extends ODMParser {
 
     /** Simple constructor.
      * <p>
@@ -191,7 +191,7 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
                             file.addManeuver(pi.maneuver);
                         }
                         pi.maneuver = new OPMFile.Maneuver();
-                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getTimeSystem()));
+                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getMetaData().getTimeSystem()));
                         if (!pi.commentTmp.isEmpty()) {
                             pi.maneuver.setComment(pi.commentTmp);
                             pi.commentTmp.clear();

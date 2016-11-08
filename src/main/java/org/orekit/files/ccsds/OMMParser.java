@@ -35,7 +35,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OMMParser extends ODMParser implements OrbitFileParser {
+public class OMMParser extends ODMParser {
 
     /** Simple constructor.
      * <p>

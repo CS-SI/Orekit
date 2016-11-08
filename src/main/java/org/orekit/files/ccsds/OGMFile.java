@@ -474,25 +474,4 @@ public abstract class OGMFile extends ODMFile {
      */
     public abstract ODMMetaData getMetaData();
 
-    /** {@inheritDoc} */
-    @Override
-    public Collection<SatelliteInformation> getSatellites() {
-        return Arrays.asList(new SatelliteInformation(getMetaData().getObjectID()));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getSatelliteCount() {
-        return 1;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public SatelliteInformation getSatellite(final String satId) {
-        if (getMetaData().getObjectID().equals(satId)) {
-            return new SatelliteInformation(satId);
-        }
-        return null;
-    }
-
 }
