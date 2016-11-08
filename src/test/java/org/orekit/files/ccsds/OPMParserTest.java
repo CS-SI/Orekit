@@ -85,7 +85,7 @@ public class OPMParserTest {
         Assert.assertTrue(file.getMetaData().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetaData().getCenterBody());
         Assert.assertEquals(CCSDSFrame.ITRF97.toString(), file.getMetaData().getFrame().getName());
-        Assert.assertEquals(TimeSystem.TAI, file.getMetaData().getTimeSystem());
+        Assert.assertEquals(CcsdsTimeScale.TAI, file.getMetaData().getTimeSystem());
         Assert.assertFalse(file.hasCovarianceMatrix());
         
         // Check State Vector data Block;
@@ -158,7 +158,7 @@ public class OPMParserTest {
         Assert.assertTrue(file.getMetaData().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetaData().getCenterBody());
         Assert.assertEquals(FramesFactory.getGCRF(), file.getMetaData().getFrame());
-        Assert.assertEquals(TimeSystem.GPS, file.getMetaData().getTimeSystem());
+        Assert.assertEquals(CcsdsTimeScale.GPS, file.getMetaData().getTimeSystem());
         Assert.assertEquals(0, file.getMetaDataComment().size());
 
         // Check Data State Vector block
@@ -393,27 +393,27 @@ public class OPMParserTest {
 
         OPMFile file =
                 parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-solar-system-barycenter.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getMetaData().getTimeSystem());
+        Assert.assertEquals(CcsdsTimeScale.TDB, file.getMetaData().getTimeSystem());
         Assert.assertEquals("solar system barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-ssb.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TCB, file.getMetaData().getTimeSystem());
+        Assert.assertEquals(CcsdsTimeScale.TCB, file.getMetaData().getTimeSystem());
         Assert.assertEquals("solar system barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-earth-barycenter.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getMetaData().getTimeSystem());
+        Assert.assertEquals(CcsdsTimeScale.TDB, file.getMetaData().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-earth-dash-moon-barycenter.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TDB, file.getMetaData().getTimeSystem());
+        Assert.assertEquals(CcsdsTimeScale.TDB, file.getMetaData().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-earth-moon-barycenter.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.UT1, file.getMetaData().getTimeSystem());
+        Assert.assertEquals(CcsdsTimeScale.UT1, file.getMetaData().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
 
         file = parser.parse(getClass().getResourceAsStream("/ccsds/OPM-dummy-emb.txt"));
-        Assert.assertEquals(OrbitFile.TimeSystem.TT, file.getMetaData().getTimeSystem());
+        Assert.assertEquals(CcsdsTimeScale.TT, file.getMetaData().getTimeSystem());
         Assert.assertEquals("Earth-Moon barycenter", file.getMetaData().getCenterBody().getName());
 
     }

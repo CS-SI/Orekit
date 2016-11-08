@@ -72,7 +72,7 @@ public class OEMFile extends ODMFile implements OrbitFile {
      *  @exception OrekitException if some blocks do not have the same time system
      */
     void checkTimeSystems() throws OrekitException {
-        final OrbitFile.TimeSystem timeSystem = getEphemeridesBlocks().get(0).getMetaData().getTimeSystem();
+        final CcsdsTimeScale timeSystem = getEphemeridesBlocks().get(0).getMetaData().getTimeSystem();
         for (final EphemeridesBlock block : ephemeridesBlocks) {
             if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {
                 throw new OrekitException(OrekitMessages.CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS,
@@ -94,7 +94,8 @@ public class OEMFile extends ODMFile implements OrbitFile {
     /** {@inheritDoc} */
     @Override
     public OrbitFile.TimeSystem getTimeSystem() {
-        return ephemeridesBlocks.get(0).getMetaData().getTimeSystem();
+        return TimeSystem.valueOf(
+                ephemeridesBlocks.get(0).getMetaData().getTimeSystem().name());
     }
 
     /** {@inheritDoc}

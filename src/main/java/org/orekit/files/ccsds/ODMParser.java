@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -345,7 +346,13 @@ public abstract class ODMParser {
                 return true;
 
             case TIME_SYSTEM:
-                final OrbitFile.TimeSystem timeSystem = OrbitFile.TimeSystem.valueOf(keyValue.getValue());
+                if (!CcsdsTimeScale.contains(keyValue.getValue())) {
+                    throw new OrekitException(
+                            OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
+                            keyValue.getValue());
+                }
+                final CcsdsTimeScale timeSystem =
+                        CcsdsTimeScale.valueOf(keyValue.getValue());
                 metaData.setTimeSystem(timeSystem);
                 if (metaData.getFrameEpochString() != null) {
                     metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem));
@@ -566,44 +573,9 @@ public abstract class ODMParser {
      * @return parsed date
      * @exception OrekitException if some time scale cannot be retrieved
      */
-    protected AbsoluteDate parseDate(final String date, final OrbitFile.TimeSystem timeSystem)
+    protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem)
         throws OrekitException {
-        switch (timeSystem) {
-            case GMST:
-                return new AbsoluteDate(date, TimeScalesFactory.getGMST(conventions, false));
-            case GPS:
-                return new AbsoluteDate(date, TimeScalesFactory.getGPS());
-            case TAI:
-                return new AbsoluteDate(date, TimeScalesFactory.getTAI());
-            case TCB:
-                return new AbsoluteDate(date, TimeScalesFactory.getTCB());
-            case TDB:
-                return new AbsoluteDate(date, TimeScalesFactory.getTDB());
-            case TCG:
-                return new AbsoluteDate(date, TimeScalesFactory.getTCG());
-            case TT:
-                return new AbsoluteDate(date, TimeScalesFactory.getTT());
-            case UT1:
-                return new AbsoluteDate(date, TimeScalesFactory.getUT1(conventions, false));
-            case UTC:
-                return new AbsoluteDate(date, TimeScalesFactory.getUTC());
-            case MET: {
-                final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
-                final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                        clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                        clock.getTime().getSecondsInUTCDay();
-                return missionReferenceDate.shiftedBy(offset);
-            }
-            case MRT: {
-                final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
-                final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                        clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                        clock.getTime().getSecondsInUTCDay();
-                return missionReferenceDate.shiftedBy(offset);
-            }
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return timeSystem.parseDate(date, conventions, missionReferenceDate);
     }
 
 }

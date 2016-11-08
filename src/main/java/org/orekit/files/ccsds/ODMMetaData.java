@@ -36,7 +36,7 @@ public class ODMMetaData {
     private final ODMFile odmFile;
 
     /** Time System: used for metadata, orbit state and covariance data. */
-    private OrbitFile.TimeSystem timeSystem;
+    private CcsdsTimeScale timeSystem;
 
     /** Spacecraft name for which the orbit state is provided. */
     private String objectName;
@@ -100,7 +100,7 @@ public class ODMMetaData {
      * covariance data.
      * @return the time system
      */
-    public OrbitFile.TimeSystem getTimeSystem() {
+    public CcsdsTimeScale getTimeSystem() {
         return timeSystem;
     }
 
@@ -110,7 +110,7 @@ public class ODMMetaData {
      * covariance data.
      * @param timeSystem the time system to be set
      */
-    void setTimeSystem(final OrbitFile.TimeSystem timeSystem) {
+    void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
     }
 
