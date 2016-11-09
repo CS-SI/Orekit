@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.bodies.CelestialBody;
-import org.orekit.files.general.OrbitFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 

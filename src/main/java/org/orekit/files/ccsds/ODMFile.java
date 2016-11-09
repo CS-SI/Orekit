@@ -18,13 +18,10 @@
 package org.orekit.files.ccsds;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFile;
-import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 

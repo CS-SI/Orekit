@@ -18,14 +18,11 @@
 package org.orekit.files.ccsds;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.general.OrbitFile;
-import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
