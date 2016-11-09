@@ -30,20 +30,19 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFileParser;
+import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * A parser for the CCSDS OEM (Orbit Ephemeris Message).
  * @author sports
  * @since 6.1
  */
-public class OEMParser extends ODMParser implements OrbitFileParser {
+public class OEMParser extends ODMParser implements EphemerisFileParser {
 
     /** Simple constructor.
      * <p>
@@ -139,10 +138,20 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
 
     /** {@inheritDoc} */
     public OEMFile parse(final InputStream stream, final String fileName) throws OrekitException {
+        try (final BufferedReader reader =
+                     new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
+            return parse(reader, fileName);
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
+        }
+    }
+
+    @Override
+    public OEMFile parse(final BufferedReader reader, final String fileName)
+            throws OrekitException {
 
         try {
 
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
             pi.fileName = fileName;
@@ -261,19 +270,16 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                         final Vector3D velocity = new Vector3D(Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000);
-                        final CartesianOrbit orbit =
-                                new CartesianOrbit(new PVCoordinates(position, velocity),
-                                                   pi.lastEphemeridesBlock.getMetaData().getFrame(),
-                                                   date, pi.file.getMuUsed());
-                        Vector3D acceleration = null;
+                        Vector3D acceleration = Vector3D.NaN;
                         if (sc.hasNext()) {
                             acceleration = new Vector3D(Double.parseDouble(sc.next()) * 1000,
                                                         Double.parseDouble(sc.next()) * 1000,
                                                         Double.parseDouble(sc.next()) * 1000);
                         }
-                        final OEMFile.EphemeridesDataLine epDataLine =
-                                new OEMFile.EphemeridesDataLine(orbit, acceleration);
+                        final TimeStampedPVCoordinates epDataLine =
+                                new TimeStampedPVCoordinates(date, position, velocity, acceleration);
                         pi.lastEphemeridesBlock.getEphemeridesDataLines().add(epDataLine);
+                        pi.lastEphemeridesBlock.updateHasAcceleration(acceleration != Vector3D.NaN);
                     } catch (NumberFormatException nfe) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);

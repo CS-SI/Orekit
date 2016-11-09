@@ -1,9 +1,26 @@
+/* Contributed in the public domain.
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.files.ccsds;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -15,26 +32,22 @@ import org.orekit.utils.IERSConventions;
  */
 public enum CcsdsTimeScale {
 
-    /** Greenwich Mean Sidereal Time */
+    /** Greenwich Mean Sidereal Time. */
     GMST {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate)
+        public TimeScale getTimeScale(final IERSConventions conventions)
                 throws OrekitException {
-            return new AbsoluteDate(date, TimeScalesFactory.getGMST(conventions, false));
+            return TimeScalesFactory.getGMST(conventions, false);
         }
     },
-    /** Global Positioning System */
+    /** Global Positioning System. */
     GPS {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate) {
-            return new AbsoluteDate(date, TimeScalesFactory.getGPS());
+        public TimeScale getTimeScale(final IERSConventions conventions) {
+            return TimeScalesFactory.getGPS();
         }
     },
-    /** Mission Elapsed Time */
+    /** Mission Elapsed Time. */
     MET {
         @Override
         public AbsoluteDate parseDate(final String date,
@@ -46,8 +59,16 @@ public enum CcsdsTimeScale {
                     clock.getTime().getSecondsInUTCDay();
             return missionReferenceDate.shiftedBy(offset);
         }
+
+        @Override
+        public TimeScale getTimeScale(final IERSConventions conventions)
+                throws OrekitException {
+            throw new OrekitException(
+                    OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
+                    "MET");
+        }
     },
-    /** Mission Relative Time */
+    /** Mission Relative Time. */
     MRT {
         @Override
         public AbsoluteDate parseDate(final String date,
@@ -59,6 +80,14 @@ public enum CcsdsTimeScale {
                     clock.getTime().getSecondsInUTCDay();
             return missionReferenceDate.shiftedBy(offset);
         }
+
+        @Override
+        public TimeScale getTimeScale(final IERSConventions conventions)
+                throws OrekitException {
+            throw new OrekitException(
+                    OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
+                    "MRT");
+        }
     },
     /** Spacecraft Clock. Not currently Implemented. */
     SCLK {
@@ -69,72 +98,67 @@ public enum CcsdsTimeScale {
                 throws OrekitException {
             throw new OrekitException(
                     OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
-                    "SCLK");
+                    this.name());
+        }
+
+        @Override
+        public TimeScale getTimeScale(final IERSConventions conventions)
+                throws OrekitException {
+            throw new OrekitException(
+                    OrekitMessages.CCSDS_NO_CORRESPONDING_TIME_SCALE,
+                    this.name());
         }
     },
-    /** International Atomic Time */
+    /** International Atomic Time. */
     TAI {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate) {
-            return new AbsoluteDate(date, TimeScalesFactory.getTAI());
+        public TimeScale getTimeScale(final IERSConventions conventions) {
+            return TimeScalesFactory.getTAI();
         }
     },
-    /** Barycentric Coordinate Time */
+    /** Barycentric Coordinate Time. */
     TCB {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate) {
-            return new AbsoluteDate(date, TimeScalesFactory.getTCB());
+        public TimeScale getTimeScale(final IERSConventions conventions) {
+            return TimeScalesFactory.getTCB();
         }
     },
-    /** Barycentric Dynamical Time */
+    /** Barycentric Dynamical Time. */
     TDB {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate) {
-            return new AbsoluteDate(date, TimeScalesFactory.getTDB());
+        public TimeScale getTimeScale(final IERSConventions conventions)
+                throws OrekitException {
+            return TimeScalesFactory.getTDB();
         }
     },
-    /** Geocentric Coordinate Time */
+    /** Geocentric Coordinate Time. */
     TCG {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate) {
-            return new AbsoluteDate(date, TimeScalesFactory.getTCG());
+        public TimeScale getTimeScale(final IERSConventions conventions) {
+            return TimeScalesFactory.getTCG();
         }
     },
-    /** Terrestrial Time */
+    /** Terrestrial Time. */
     TT {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate) {
-            return new AbsoluteDate(date, TimeScalesFactory.getTT());
+        public TimeScale getTimeScale(final IERSConventions conventions) {
+            return TimeScalesFactory.getTT();
         }
     },
-    /** Univeral Time */
+    /** Universal Time. */
     UT1 {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate)
+        public TimeScale getTimeScale(final IERSConventions conventions)
                 throws OrekitException {
-            return new AbsoluteDate(date, TimeScalesFactory.getUT1(conventions, false));
+            return TimeScalesFactory.getUT1(conventions, false);
         }
     },
-    /** Universal Coordinated Time */
+    /** Universal Coordinated Time. */
     UTC {
         @Override
-        public AbsoluteDate parseDate(final String date,
-                                      final IERSConventions conventions,
-                                      final AbsoluteDate missionReferenceDate)
+        public TimeScale getTimeScale(final IERSConventions conventions)
                 throws OrekitException {
-            return new AbsoluteDate(date, TimeScalesFactory.getUTC());
+            return TimeScalesFactory.getUTC();
         }
     };
 
@@ -148,9 +172,21 @@ public enum CcsdsTimeScale {
      * @throws OrekitException if an {@link AbsoluteDate} cannot be created from {@code
      *                         date} in this time scale.
      */
-    public abstract AbsoluteDate parseDate(String date,
-                                           IERSConventions conventions,
-                                           AbsoluteDate missionReferenceDate)
+    public AbsoluteDate parseDate(final String date,
+                                  final IERSConventions conventions,
+                                  final AbsoluteDate missionReferenceDate)
+            throws OrekitException {
+        return new AbsoluteDate(date, this.getTimeScale(conventions));
+    }
+
+    /**
+     * Get the corresponding {@link TimeScale}.
+     *
+     * @param conventions IERS Conventions for the {@link #GMST} and {@link #UT1} scales.
+     * @return the time scale.
+     * @throws OrekitException if the time scale cannot be constructed.
+     */
+    public abstract TimeScale getTimeScale(IERSConventions conventions)
             throws OrekitException;
 
     /**

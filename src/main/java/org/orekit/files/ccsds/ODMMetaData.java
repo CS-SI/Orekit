@@ -68,6 +68,9 @@ public class ODMMetaData {
      * and Keplerian elements data (and for the covariance reference frame if none is given). */
     private Frame refFrame;
 
+    /** The reference frame specifier, as it appeared in the file. */
+    private String refFrameString;
+
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
     private String frameEpochString;
@@ -243,6 +246,25 @@ public class ODMMetaData {
      */
     void setRefFrame(final Frame refFrame) {
         this.refFrame = refFrame;
+    }
+
+    /**
+     * Get the reference frame specifier as it appeared in the file.
+     *
+     * @return the frame name as it appeared in the file.
+     * @see #getFrame()
+     */
+    public String getFrameString() {
+        return this.refFrameString;
+    }
+
+    /**
+     * Set the reference frame name.
+     *
+     * @param frame specifier as it appeared in the file.
+     */
+    void setFrameString(final String frame) {
+        this.refFrameString = frame;
     }
 
     /** Get epoch of reference frame, if not intrinsic to the definition of the

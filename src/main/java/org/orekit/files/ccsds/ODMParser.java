@@ -18,20 +18,15 @@ package org.orekit.files.ccsds;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFile;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -338,6 +333,7 @@ public abstract class ODMParser {
                 return true;
 
             case REF_FRAME:
+                metaData.setFrameString(keyValue.getValue());
                 metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(getConventions(), isSimpleEOP()));
                 return true;
 
