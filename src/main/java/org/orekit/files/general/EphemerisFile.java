@@ -246,10 +246,10 @@ public interface EphemerisFile {
          * several conditions must be met. An Orekit {@link Frame} and {@link TimeScale}
          * must be constructable from the frame and time scale specification in the
          * ephemeris file. This condition is met when {@link EphemerisSegment#getFrame()}
-         * and {@link EphemerisSegment#getTimeScale()} return normally for all {@link
-         * #getSegments() segments}. Additionally, {@link #getMu()} must return a valid
-         * value. If these conditions are not met an {@link OrekitException} may be thrown
-         * by this method or by one of the methods of the returned {@link Propagator}.
+         * and {@link EphemerisSegment#getTimeScale()} return normally. Additionally,
+         * {@link #getMu()} must return a valid value. If these conditions are not met an
+         * {@link OrekitException} may be thrown by this method or by one of the methods
+         * of the returned {@link Propagator}.
          *
          * <p> Each call to this method creates a new propagator.
          *
