@@ -399,3 +399,9 @@ NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = <MISSING TRANSLATION>
 
 # only {0} GNSS orbits are provided while {1} are needed to compute the DOP
 NOT_ENOUGH_GNSS_FOR_DOP = <MISSING TRANSLATION>
+
+# the CCSDS time system {0} has no corresponding Orekit TimeScale.
+CCSDS_NO_CORRESPONDING_TIME_SCALE = <MISSING TRANSLATION>
+
+# use of time system {0} in CCSDS ODMs requires an additional ICD and is not implemented in Orekit
+CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
