@@ -15,10 +15,27 @@
  * limitations under the License.
  */
 /**
+ * This package provides interfaces for orbit file representations and corresponding
+ * parsers.
  *
- *This package provides interfaces for orbit file representations and corresponding parsers.
+ * <p> {@link org.orekit.files.general.EphemerisFile} and {@link
+ * org.orekit.files.general.EphemerisFileParser} provide a standardized interface for
+ * accessing the date in ephemeris files. Each ephemeris file can have data for one ore
+ * more satellites and the ephemeris for each satellite can have one or more segments.
+ * Each ephemeris segment is interpolated independently so ephemeris segements are
+ * commonly used for discontinuous events, such as maneuvers. Each specific implementation
+ * provides access to additional information in the file by providing specialized return
+ * types with extra getters for the information unique to that file type.
  *
- *@author T. Neidhart
+ * <p> For example to create a propagator from an OEM file one can use:
  *
+ * <code><pre>
+ * EphemerisFileParser parser = new OEMParser()
+ *         .withConventions(IERSConventions.IERS_2010);
+ * EphemerisFile file = parser.parse("my/ephemeris/file.oem");
+ * BoundedPropagator propagator = file.getPropagator();
+ * </pre></code>
+ *
+ * @author T. Neidhart
  */
 package org.orekit.files.general;

@@ -15,8 +15,11 @@
  * limitations under the License.
  */
 /**
- *
  * Top level package for various parsers.
- * <p>Each format is handled by a separate sub-package.</p>
+ *
+ * <p>The interfaces for ephemeris file parsers and writers are in the {@link general}
+ * package. Specifically, see {@link org.orekit.files.general.EphemerisFile
+ * EphemerisFile}. Each format is handled by a separate sub-package: {@link ccsds}, {@link
+ * sp3}.</p>
  */
 package org.orekit.files;
