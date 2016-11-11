@@ -55,20 +55,6 @@ import org.orekit.utils.IERSConventions;
  */
 public class SP3Parser implements EphemerisFileParser {
 
-    /**
-     * Default string to {@link Frame} conversion for {@link #SP3Parser()}.
-     *
-     * @param name of the frame.
-     * @return ITRF based on 2010 conventions.
-     */
-    private static Frame guessFrame(final String name) {
-        try {
-            return FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        } catch (OrekitException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     /** Standard gravitational parameter in m^3 / s^2. */
     private final double mu;
     /** Number of data points to use in interpolation. */
@@ -103,6 +89,20 @@ public class SP3Parser implements EphemerisFileParser {
         this.mu = mu;
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder = frameBuilder;
+    }
+
+    /**
+     * Default string to {@link Frame} conversion for {@link #SP3Parser()}.
+     *
+     * @param name of the frame.
+     * @return ITRF based on 2010 conventions.
+     */
+    private static Frame guessFrame(final String name) {
+        try {
+            return FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        } catch (OrekitException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

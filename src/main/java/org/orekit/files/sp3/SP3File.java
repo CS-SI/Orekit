@@ -208,7 +208,7 @@ public class SP3File implements EphemerisFile, Serializable {
      *
      * @param timeScaleString the time scale identifier used in the file.
      */
-    void setTimeScaleString(String timeScaleString) {
+    void setTimeScaleString(final String timeScaleString) {
         this.timeScaleString = timeScaleString;
     }
 
@@ -406,10 +406,11 @@ public class SP3File implements EphemerisFile, Serializable {
     /**
      * Set the formal accuracy for a satellite.
      *
-     * @param n        is the index of the satellite.
+     * @param index    is the index of the satellite.
      * @param accuracy of the satellite, in m.
      */
-    void setAccuracy(int n, final double accuracy) {
+    void setAccuracy(final int index, final double accuracy) {
+        int n = index;
         for (final SP3Ephemeris ephemeris : satellites.values()) {
             if (n == 0) {
                 ephemeris.setAccuracy(accuracy);
