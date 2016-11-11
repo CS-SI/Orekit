@@ -22,6 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
@@ -45,6 +46,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
         implements BoundedPropagator {
 
+    /** Default frame to use when creating orbits. */
+    public static final Frame DEFAULT_INERTIAL_FRAME = FramesFactory.getGCRF();
+
     /**
      * Sorted cache of state vectors. A duplication of the information in {@link
      * #ephemeris} that could be avoided by duplicating the logic of {@link
@@ -53,18 +57,33 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     private final ImmutableTimeStampedCache<TimeStampedPVCoordinates> cache;
     /** Tabular data from which this propagator is built. */
     private final EphemerisSegment ephemeris;
+    /** Inertial frame used for creating orbits. */
+    private final Frame inertialFrame;
+    /** Frame of the ephemeris data. */
+    private final Frame ephemerisFrame;
 
     /**
      * Create a {@link Propagator} from an ephemeris segment.
      *
+     * <p> If the {@link EphemerisSegment#getFrame() ephemeris frame} is not {@link
+     * Frame#isPseudoInertial() inertial} then {@link #DEFAULT_INERTIAL_FRAME} is used as
+     * the frame for orbits created by this propagator.
+     *
      * @param ephemeris segment containing the data for this propagator.
+     * @throws OrekitException if {@link EphemerisSegment#getFrame()} throws one.
      */
-    EphemerisSegmentPropagator(final EphemerisSegment ephemeris) {
+    EphemerisSegmentPropagator(final EphemerisSegment ephemeris) throws OrekitException {
         super(Propagator.DEFAULT_LAW);
         this.cache = new ImmutableTimeStampedCache<>(
                 ephemeris.getInterpolationSamples(),
                 ephemeris.getCoordinates());
         this.ephemeris = ephemeris;
+        this.ephemerisFrame = ephemeris.getFrame();
+        if (ephemerisFrame.isPseudoInertial()) {
+            this.inertialFrame = ephemerisFrame;
+        } else {
+            this.inertialFrame = DEFAULT_INERTIAL_FRAME;
+        }
     }
 
     @Override
@@ -73,15 +92,13 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
         final List<TimeStampedPVCoordinates> neighbors = this.cache.getNeighbors(date);
         final TimeStampedPVCoordinates point =
                 TimeStampedPVCoordinates.interpolate(date, ephemeris.getAvailableDerivatives(), neighbors);
-        return ephemeris.getFrame().getTransformTo(frame, date)
-                .transformPVCoordinates(point);
+        return ephemerisFrame.getTransformTo(frame, date).transformPVCoordinates(point);
     }
 
     @Override
     protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
-        final Frame frame = this.ephemeris.getFrame();
-        final double mu = this.ephemeris.getMu();
-        return new CartesianOrbit(this.getPVCoordinates(date, frame), frame, mu);
+        final TimeStampedPVCoordinates pv = this.getPVCoordinates(date, inertialFrame);
+        return new CartesianOrbit(pv, inertialFrame, this.ephemeris.getMu());
     }
 
     @Override

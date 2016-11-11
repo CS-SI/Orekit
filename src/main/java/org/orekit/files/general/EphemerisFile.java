@@ -217,7 +217,7 @@ public interface EphemerisFile {
          * @return a list of state vectors in chronological order. The coordinates are not
          * necessarily evenly spaced in time.
          */
-        List<TimeStampedPVCoordinates> getCoordinates();
+        List<? extends TimeStampedPVCoordinates> getCoordinates();
 
         /**
          * Get the start date of this ephemeris segment.
