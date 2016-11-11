@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical;
 
 import java.util.Collection;
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -69,12 +70,12 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,
                                                      final Frame frame)
             throws OrekitException {
-        return propagators.floorEntry(date).getValue().getPVCoordinates(date, frame);
+        return getPropagator(date).getPVCoordinates(date, frame);
     }
 
     @Override
     protected Orbit propagateOrbit(final AbsoluteDate date) throws OrekitException {
-        return propagators.floorEntry(date).getValue().propagate(date).getOrbit();
+        return getPropagator(date).propagate(date).getOrbit();
     }
 
     @Override
@@ -89,7 +90,7 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
 
     @Override
     protected double getMass(final AbsoluteDate date) throws OrekitException {
-        return propagators.floorEntry(date).getValue().propagate(date).getMass();
+        return getPropagator(date).propagate(date).getMass();
     }
 
     @Override
@@ -101,6 +102,22 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     protected void resetIntermediateState(final SpacecraftState state,
                                           final boolean forward) throws OrekitException {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    /**
+     * Get the propagator to use for the given date.
+     *
+     * @param date of query
+     * @return propagator to use on date.
+     */
+    private BoundedPropagator getPropagator(final AbsoluteDate date) {
+        final Entry<AbsoluteDate, BoundedPropagator> entry = propagators.floorEntry(date);
+        if (entry != null) {
+            return entry.getValue();
+        } else {
+            // let the first propagator throw the exception
+            return propagators.firstEntry().getValue();
+        }
     }
 
 }

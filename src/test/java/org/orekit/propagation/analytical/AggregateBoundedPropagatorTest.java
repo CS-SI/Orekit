@@ -24,6 +24,8 @@ import org.orekit.utils.Constants;
  */
 public class AggregateBoundedPropagatorTest {
 
+    public static final Frame frame = FramesFactory.getGCRF();
+
     /** Set Orekit data. */
     @Before
     public void setUp() {
@@ -146,6 +148,55 @@ public class AggregateBoundedPropagatorTest {
         }
     }
 
+    @Test
+    public void testOutsideBounds() throws Exception {
+        // setup
+        AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
+        BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
+        BoundedPropagator p2 = createPropagator(date.shiftedBy(10), date.shiftedBy(20), 1);
+
+        // action
+        BoundedPropagator actual = new AggregateBoundedPropagator(Arrays.asList(p1, p2));
+
+        // verify
+        int ulps = 0;
+        // before bound of first propagator
+        try {
+            // may or may not throw an exception depending on the type of propagator.
+            Assert.assertThat(
+                    actual.propagate(date.shiftedBy(-60)).getPVCoordinates(),
+                    OrekitMatchers.pvCloseTo(p1.propagate(date.shiftedBy(-60)).getPVCoordinates(), ulps));
+        } catch (OrekitException e) {
+            // expected
+        }
+        try {
+            // may or may not throw an exception depending on the type of propagator.
+            Assert.assertThat(
+                    actual.getPVCoordinates(date.shiftedBy(-60), frame),
+                    OrekitMatchers.pvCloseTo(p1.propagate(date.shiftedBy(-60)).getPVCoordinates(), ulps));
+        } catch (OrekitException e) {
+            // expected
+        }
+        // after bound of last propagator
+        try {
+            // may or may not throw an exception depending on the type of propagator.
+            Assert.assertThat(
+                    actual.propagate(date.shiftedBy(60)).getPVCoordinates(),
+                    OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(60)).getPVCoordinates(), ulps));
+        } catch (OrekitException e) {
+            // expected
+        }
+        try {
+            // may or may not throw an exception depending on the type of propagator.
+            Assert.assertThat(
+                    actual.getPVCoordinates(date.shiftedBy(60), frame),
+                    OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(60)).getPVCoordinates(), ulps));
+        } catch (OrekitException e) {
+            // expected
+        }
+
+    }
+
     /**
      * Create a propagator with the given dates.
      *
@@ -159,7 +210,6 @@ public class AggregateBoundedPropagatorTest {
                                                AbsoluteDate end,
                                                double v) throws OrekitException {
         double gm = Constants.EGM96_EARTH_MU;
-        Frame frame = FramesFactory.getGCRF();
         KeplerianPropagator propagator = new KeplerianPropagator(new KeplerianOrbit(
                 6778137, 0, 0, 0, 0, v, PositionAngle.TRUE, frame, start, gm));
         propagator.setEphemerisMode();
