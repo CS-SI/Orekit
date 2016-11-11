@@ -27,7 +27,6 @@ import java.util.function.Function;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.general.EphemerisFile;
-import org.orekit.files.general.OrbitFile.TimeSystem;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -90,6 +89,22 @@ public class SP3File implements EphemerisFile, Serializable {
             }
         }
 
+    }
+
+    /** Time system used throughout this SP3 file. */
+    public enum TimeSystem {
+        /** Global Positioning System. */
+        GPS,
+        /** GLONASS. */
+        GLO,
+        /** GALILEO. */
+        GAL,
+        /** International Atomic Time. */
+        TAI,
+        /** Coordinated Universal Time. */
+        UTC,
+        /** Quasi-Zenith System. */
+        QZS
     }
 
     /** File type. */
