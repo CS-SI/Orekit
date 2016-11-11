@@ -20,7 +20,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="8.1" date="TBD" description="TBD">
+    <release version="9.0" date="TBD" description="TBD">
+      <action dev="evan" type="add">
+        Replace OrbitFile interface with EphemerisFile, adding support for multiple
+        ephemeris segments and the capability to create a propagator from an ephemeris.
+      </action>
       <action dev="luc" type="fix">
         Fixed thread-safety issues in DTM2000 model.
         Fixes issue #258.
