@@ -284,7 +284,7 @@ public class FieldOfViewTest {
         double minDist = Double.POSITIVE_INFINITY;
         double maxDist = 0;
         for (int i = 0; i < loop.size(); ++i) {
-            Assert.assertEquals(0.0, loop.get(i).getAltitude(), 8.0e-9);
+            Assert.assertEquals(0.0, loop.get(i).getAltitude(), 3.0e-7);
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "atLimb");
             final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
                                                        state.getFrame(), state.getDate());
@@ -294,7 +294,7 @@ public class FieldOfViewTest {
             minDist = FastMath.min(minDist, dist);
             maxDist = FastMath.max(maxDist, dist);
         }
-        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 1.0e-12);
+        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 2.0e-12);
         Assert.assertEquals(7.8897,    FastMath.toDegrees(maxEl), 0.001);
         Assert.assertEquals(4584829.6, minDist, 1.0);
         Assert.assertEquals(5347029.8, maxDist, 1.0);
@@ -330,7 +330,7 @@ public class FieldOfViewTest {
         double minDist = Double.POSITIVE_INFINITY;
         double maxDist = 0;
         for (int i = 0; i < loop.size(); ++i) {
-            Assert.assertEquals(0.0, loop.get(i).getAltitude(), 8.0e-9);
+            Assert.assertEquals(0.0, loop.get(i).getAltitude(), 3.0e-7);
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "atLimb");
             final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
                                                        state.getFrame(), state.getDate());
@@ -340,8 +340,8 @@ public class FieldOfViewTest {
             minDist = FastMath.min(minDist, dist);
             maxDist = FastMath.max(maxDist, dist);
         }
-        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 1.0e-13);
-        Assert.assertEquals(0.0,       FastMath.toDegrees(maxEl), 1.0e-12);
+        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 2.0e-12);
+        Assert.assertEquals(0.0,       FastMath.toDegrees(maxEl), 1.7e-12);
         Assert.assertEquals(5323036.6, minDist, 1.0);
         Assert.assertEquals(5347029.8, maxDist, 1.0);
     }

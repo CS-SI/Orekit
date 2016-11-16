@@ -112,14 +112,14 @@ public class BiasTest {
         }
 
         EstimationTestUtils.checkFit(context, estimator, 2, 6,
-                                     0.0,  3.0e-7,
-                                     0.0,  7.3e-7,
+                                     0.0,  5.6e-7,
+                                     0.0,  1.6e-6,
                                      0.0,  1.3e-7,
                                      0.0,  7.9e-11);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assert.assertEquals(realStationsBiases[i],
                                 stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),
-                                3.5e-8);
+                                9.9e-8);
         }
 
     }

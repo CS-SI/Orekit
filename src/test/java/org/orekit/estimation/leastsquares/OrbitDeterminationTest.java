@@ -196,12 +196,9 @@ public class OrbitDeterminationTest {
         final double angleAccuracy = 1e-5;
         final double dimensionLessCoef = 1e-3;
 
-        //test on the convergence
-        final int numberOfIte  = 4;
-        final int numberOfEval = 5;
-
-        Assert.assertEquals(numberOfIte, odsatW3.getNumberOfIteration());
-        Assert.assertEquals(numberOfEval, odsatW3.getNumberOfEvaluation());
+        //test on the convergence (with some margins)
+        Assert.assertTrue(odsatW3.getNumberOfIteration()  <  6);
+        Assert.assertTrue(odsatW3.getNumberOfEvaluation() < 10);
 
         //test on the estimated position and velocity
         final Vector3D estimatedPos = odsatW3.getEstimatedPV().getPosition();

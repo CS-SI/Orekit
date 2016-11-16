@@ -114,20 +114,20 @@ public class GroundStationTest {
         moved.getZenithOffsetDriver().setSelected(true);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 1.6e-6,
-                                     0.0, 3.4e-6,
-                                     0.0, 4.5e-7,
-                                     0.0, 2.2e-10);
-        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   6.0e-8);
-        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  2.6e-7);
-        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.1e-7);
+                                     0.0, 1.7e-6,
+                                     0.0, 4.3e-6,
+                                     0.0, 1.1e-6,
+                                     0.0, 4.7e-10);
+        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   2.8e-7);
+        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  2.8e-7);
+        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.3e-7);
 
     }
 
     @Test
     public void testOffsetDerivativesOctantPxPyPz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 9.8e-9;
+        double tolerancePositionDerivative    = 2.5e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.7e-14;
         double toleranceZDirectionValue       = 1.0e-20;
@@ -141,7 +141,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantPxPyMz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 4.6e-9;
+        double tolerancePositionDerivative    = 2.5e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.7e-14;
         double toleranceZDirectionValue       = 1.0e-20;
@@ -155,7 +155,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantPxMyPz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 6.6e-9;
+        double tolerancePositionDerivative    = 2.3e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.7e-14;
         double toleranceZDirectionValue       = 1.0e-20;
@@ -169,7 +169,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantPxMyMz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 4.6e-9;
+        double tolerancePositionDerivative    = 2.5e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.7e-14;
         double toleranceZDirectionValue       = 1.0e-20;
@@ -183,7 +183,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantMxPyPz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 6.1e-9;
+        double tolerancePositionDerivative    = 2.2e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.4e-14;
         double toleranceZDirectionValue       = 1.2e-16;
@@ -197,7 +197,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantMxPyMz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 6.1e-9;
+        double tolerancePositionDerivative    = 2.2e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.4e-14;
         double toleranceZDirectionValue       = 1.2e-16;
@@ -211,7 +211,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantMxMyPz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 5.9e-9;
+        double tolerancePositionDerivative    = 2.2e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.4e-14;
         double toleranceZDirectionValue       = 5.6e-17;
@@ -225,7 +225,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantMxMyMz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 5.9e-9;
+        double tolerancePositionDerivative    = 2.2e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.4e-14;
         double toleranceZDirectionValue       = 5.6e-17;

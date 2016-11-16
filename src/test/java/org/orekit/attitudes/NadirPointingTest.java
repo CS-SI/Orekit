@@ -261,7 +261,7 @@ public class NadirPointingTest {
                             3.0e-11 * reference.getVelocity().getNorm());
         Assert.assertEquals(0.0,
                             Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
-                            1.0e-5 * reference.getAcceleration().getNorm());
+                            1.3e-5 * reference.getAcceleration().getNorm());
 
     }
 
@@ -293,12 +293,12 @@ public class NadirPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 4.0e-9 * evolutionAngleMinus);
+        Assert.assertEquals(0.0, errorAngleMinus, 5.3e-9 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 8.0e-9 * evolutionAnglePlus);
+        Assert.assertEquals(0.0, errorAnglePlus, 8.1e-9 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Rotation rM = sMinus.getAttitude().getRotation();

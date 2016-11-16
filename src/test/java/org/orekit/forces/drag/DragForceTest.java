@@ -236,7 +236,7 @@ public class DragForceTest extends AbstractForceModelTest {
         double[][] dYdY0 = new double[6][6];
         partials.getMapper().getStateJacobian(state, dYdY0);
         for (int i = 0; i < 6; ++i) {
-            Assert.assertEquals(dPVdX[i], dYdY0[i][0], 4.5e-6 * FastMath.abs(dPVdX[i]));
+            Assert.assertEquals(dPVdX[i], dYdY0[i][0], 6.2e-6 * FastMath.abs(dPVdX[i]));
         }
 
     }

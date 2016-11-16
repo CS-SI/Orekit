@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Improved conversion speed from Cartesian coordinates to geodetic coordinates
+        by about 15%.
+      </action>
       <action dev="evan" type="add">
         Replace OrbitFile interface with EphemerisFile, adding support for multiple
         ephemeris segments and the capability to create a propagator from an ephemeris.

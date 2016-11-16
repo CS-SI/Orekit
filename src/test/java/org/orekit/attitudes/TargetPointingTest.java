@@ -136,7 +136,7 @@ public class TargetPointingTest {
 
         Assert.assertEquals(geoObserved.getLongitude(), geoTargetITRF.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoObserved.getLatitude(), geoTargetITRF.getLatitude(), Utils.epsilonAngle);
-        Assert.assertEquals(geoObserved.getAltitude(), geoTargetITRF.getAltitude(), 1.e-8);
+        Assert.assertEquals(geoObserved.getAltitude(), geoTargetITRF.getAltitude(), 1.1e-8);
 
     }
 
