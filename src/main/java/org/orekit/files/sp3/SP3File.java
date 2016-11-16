@@ -546,6 +546,8 @@ public class SP3File implements EphemerisFile, Serializable {
     /** A single record of position clock and possibly derivatives in an SP3 file. */
     public static class SP3Coordinate extends TimeStampedPVCoordinates {
 
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20161116L;
         /** Clock correction in s. */
         private final double clock;
         /** Clock rate in s / s. */
