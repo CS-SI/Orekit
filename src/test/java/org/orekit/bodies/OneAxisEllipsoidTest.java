@@ -785,34 +785,6 @@ public class OneAxisEllipsoidTest {
 
     }
 
-//    @Test
-//    public void testPerfo() throws OrekitException {
-//        OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-//                                                      Constants.WGS84_EARTH_FLATTENING,
-//                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-//        double sum = 0;
-//        for (int k = 1000; k < 1000000; k += 1000) {
-//            SobolSequenceGenerator sobol = new SobolSequenceGenerator(3);
-//            final double rMax = 10 * model.getEquatorialRadius();
-//            Vector3D[] points = new Vector3D[k];
-//            for (int j = 0; j < k; ++j) {
-//                final double[] v = sobol.nextVector();
-//                points[j] =  new Vector3D(rMax * (2 * v[0] - 1), rMax * (2 * v[1] - 1), rMax * (2 * v[2] - 1));
-//            }
-//            long t0 = System.nanoTime();
-//            for (final Vector3D point : points) {
-//                sum += model.transform(point, model.getBodyFrame(), null).getAltitude();
-//            }
-//            long t1 = System.nanoTime();
-//            for (final Vector3D point : points) {
-//                sum -= transformOldIterative(model, point, model.getBodyFrame(), null).getAltitude();
-//            }
-//            long t2 = System.nanoTime();
-//            System.out.println(k + " " + (1.0e-9 * (t1 - t0)) + " " + (1.0e-9 * (t2 - t1)));
-//        }
-//        System.out.println("# " + sum);
-//    }
-
     /** Transform a cartesian point to a surface-relative point.
      * <p>
      * This method was the implementation used in the main Orekit library
