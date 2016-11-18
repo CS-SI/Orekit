@@ -146,7 +146,7 @@ public class IntegratedEphemerisTest {
         ephemeris.propagate(initialOrbit.getDate().shiftedBy(1800.0));
 
     }
-    
+
     @Test
     public void testGetFrame() throws OrekitException {
         // setup
@@ -156,7 +156,7 @@ public class IntegratedEphemerisTest {
         numericalPropagator.propagate(finalDate);
         Assert.assertTrue(numericalPropagator.getCalls() < 3200);
         BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
-        
+
         //action
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
@@ -184,7 +184,7 @@ public class IntegratedEphemerisTest {
 
         numericalPropagator.propagate(finalDate);
         IntegratedEphemeris ephemeris = (IntegratedEphemeris) numericalPropagator.getGeneratedEphemeris();
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ephemeris);
@@ -240,7 +240,7 @@ public class IntegratedEphemerisTest {
 
         dsstProp.propagate(finalDate);
         IntegratedEphemeris ephemeris = (IntegratedEphemeris) dsstProp.getGeneratedEphemeris();
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ephemeris);

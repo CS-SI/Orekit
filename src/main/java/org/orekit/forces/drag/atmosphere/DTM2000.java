@@ -24,7 +24,9 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
@@ -33,6 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -887,6 +890,15 @@ public class DTM2000 implements Atmosphere {
                           inputParams.getMeanFlux(date), inputParams.getThreeHourlyKP(date),
                           inputParams.get24HoursKp(date));
 
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T
+        getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
+                   final Frame frame)
+            throws OrekitException {
+        // TODO: field implementation
+        throw new UnsupportedOperationException();
     }
 
 }

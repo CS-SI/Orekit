@@ -235,7 +235,7 @@ public class BatchLSEstimatorTest {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         measurements.addAll(measurements1);
-        
+
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
@@ -279,7 +279,7 @@ public class BatchLSEstimatorTest {
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         measurements.addAll(measurementsRange);
         measurements.addAll(measurementsRangeRate);
-        
+
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());

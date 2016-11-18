@@ -146,7 +146,7 @@ public class CoefficientFactoryTest {
 
     /**
      * Direct computation for the Vmns coefficient from equation 2.7.1 - (6)
-     * 
+     *
      * @throws OrekitException
      */
     private static double getVmns2(final int m,
@@ -154,7 +154,7 @@ public class CoefficientFactoryTest {
                                    final int s) throws OrekitException {
         double vmsn = 0d;
         if ((n - s) % 2 == 0) {
-            final int coef = (s > 0 || s % 2 == 0) ? 1 : -1; 
+            final int coef = (s > 0 || s % 2 == 0) ? 1 : -1;
             final int ss = (s > 0) ? s : -s;
             final double num = FastMath.pow(-1, (n - ss) / 2) *
                                CombinatoricsUtils.factorialDouble(n + ss) *

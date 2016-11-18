@@ -431,7 +431,7 @@ public class OrbitDetermination {
                 public int compare(final ParameterDriver pd1, final ParameterDriver pd2) {
                     return pd1.getName().compareTo(pd2.getName());
                 }
-            
+
             });
         }
 

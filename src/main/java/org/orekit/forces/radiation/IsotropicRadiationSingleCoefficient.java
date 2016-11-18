@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.radiation;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -27,6 +28,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -122,6 +124,17 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
         }
 
         return new FieldVector3D<DerivativeStructure>(crDS.multiply(crossSection / mass), flux);
+
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T>
+        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
+                                      final FieldVector3D<T> position,
+                                      final FieldRotation<T> rotation, final T mass,
+                                      final FieldVector3D<T> flux)
+        throws OrekitException {
+        return new FieldVector3D<T>(mass.reciprocal().multiply(crossSection * cr), flux);
 
     }
 

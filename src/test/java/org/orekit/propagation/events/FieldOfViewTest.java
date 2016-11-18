@@ -129,7 +129,7 @@ public class FieldOfViewTest {
                     // the offsetFromBoundary method may use the fast approximate
                     // method, so we cannot check the error accurately
                     // we know however that the fast method will underestimate the offset
-                    
+
                     Assert.assertTrue(offset > 0);
                     Assert.assertTrue(offset <= theoreticalOffset + 5e-16);
                 } else {
@@ -383,7 +383,7 @@ public class FieldOfViewTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(fov);
 
-        
+
         Assert.assertTrue(bos.size() > 400);
         Assert.assertTrue(bos.size() < 450);
 
@@ -393,7 +393,7 @@ public class FieldOfViewTest {
         Assert.assertEquals(0.5 * FastMath.PI, deserialized.getZone().getSize(),         1.0e-15);
         Assert.assertEquals(1.5 * FastMath.PI, deserialized.getZone().getBoundarySize(), 1.0e-15);
         Assert.assertEquals(0.001,  deserialized.getMargin(), 1.0e-15);
-        
+
     }
 
 }

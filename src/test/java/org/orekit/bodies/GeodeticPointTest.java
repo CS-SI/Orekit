@@ -23,9 +23,9 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link GeodeticPoint}.
- * 
+ *
  * @author Evan Ward
- * 
+ *
  */
 public class GeodeticPointTest {
 

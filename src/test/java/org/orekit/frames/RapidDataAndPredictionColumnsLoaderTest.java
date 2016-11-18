@@ -190,7 +190,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-post-2070\\.daily$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2075, 4, 16, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, history, true).getEndDate());
-        
+
     }
 
     @Test
@@ -249,7 +249,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assert.assertEquals(lineNumber, ((Integer) oe.getParts()[0]).intValue());
-        }        
+        }
     }
 
 }

@@ -329,9 +329,9 @@ public class GroundStationTest {
         double maxENDirDerivativeError = 0;
         double maxZDirValueError       = 0;
         double maxZDirDerivativeError  = 0;
-        for (double dEast = -2; dEast <= 2; dEast += 0.5) { 
-            for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) { 
-                for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) { 
+        for (double dEast = -2; dEast <= 2; dEast += 0.5) {
+            for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) {
+                for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) {
                     station.getEastOffsetDriver().setValue(dEast);
                     station.getNorthOffsetDriver().setValue(dNorth);
                     station.getZenithOffsetDriver().setValue(dZenith);

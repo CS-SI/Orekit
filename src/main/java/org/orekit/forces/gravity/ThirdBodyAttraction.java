@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -26,8 +27,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -153,10 +157,38 @@ public class ThirdBodyAttraction extends AbstractForceModel {
     public EventDetector[] getEventsDetectors() {
         return new EventDetector[0];
     }
+    @Override
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors() {
+        return new FieldEventDetector[0];
+    }
 
     /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {
         return parametersDrivers.clone();
+    }
+
+    /**{@inheritDoc} */
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s,
+                        final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+        final T zero = s.getA().getField().getZero();
+        // compute bodies separation vectors and squared norm
+        final FieldVector3D<T> centralToBody = new FieldVector3D<T>(zero.add(body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition().getX()),
+                                                                    zero.add(body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition().getY()),
+                                                                    zero.add(body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition().getZ())
+                                                                    );
+        final T r2Central       = centralToBody.getNormSq();
+        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getFieldPVCoordinates().getPosition());
+        final T r2Sat           = satToBody.getNormSq();
+
+        // compute relative acceleration
+        final FieldVector3D<T> gamma =
+            new FieldVector3D<T>(r2Sat.multiply(r2Sat.sqrt()).reciprocal().multiply(gm), satToBody,
+                            r2Central.multiply(r2Central.sqrt()).reciprocal().multiply(-gm), centralToBody);
+
+        adder.addXYZAcceleration(gamma.getX(), gamma.getY(), gamma.getZ());
     }
 
 }

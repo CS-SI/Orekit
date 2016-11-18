@@ -410,7 +410,7 @@ public class FramesFactoryTest {
             // its Z axis is much better aligned with CIRF Z axis
             Vector3D zConverted  = tConverted.transformVector(Vector3D.PLUS_K);
             Assert.assertTrue(Vector3D.angle(zConverted, Vector3D.PLUS_K) < 6e-12);
-  
+
         }
 
     }

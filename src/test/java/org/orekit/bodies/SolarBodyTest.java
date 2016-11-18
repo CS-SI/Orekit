@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -43,9 +44,12 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -94,7 +98,7 @@ public class SolarBodyTest {
                 Assert.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
                 final PVCoordinates pv = CelestialBodyFactory.getBody(name).getPVCoordinates(date2,
                                                                                              refFrame);
-                                                  
+
                 Assert.assertEquals(0.0, Vector3D.distance(pRef, pv.getPosition()), 15.0);
                 Assert.assertEquals(0.0, Vector3D.distance(vRef, pv.getVelocity()), 1.0e-5);
             }
@@ -352,7 +356,7 @@ public class SolarBodyTest {
         final CelestialBody sun     = CelestialBodyFactory.getSun();
         final CelestialBody mercury = CelestialBodyFactory.getMercury();
         final CelestialBody venus   = CelestialBodyFactory.getVenus();
-        final CelestialBody earth   = CelestialBodyFactory.getEarth();  
+        final CelestialBody earth   = CelestialBodyFactory.getEarth();
         final CelestialBody mars    = CelestialBodyFactory.getMars();
         final CelestialBody jupiter = CelestialBodyFactory.getJupiter();
         final CelestialBody saturn  = CelestialBodyFactory.getSaturn();
@@ -380,15 +384,15 @@ public class SolarBodyTest {
         propag.setMu(negligibleMu);
 
         //Creation of the ForceModels
-        propag.addForceModel(new BodyAttraction(sun)); 
+        propag.addForceModel(new BodyAttraction(sun));
         propag.addForceModel(new BodyAttraction(mercury));
-        propag.addForceModel(new BodyAttraction(earth)); 
-        propag.addForceModel(new BodyAttraction(mars)); 
+        propag.addForceModel(new BodyAttraction(earth));
+        propag.addForceModel(new BodyAttraction(mars));
         propag.addForceModel(new BodyAttraction(jupiter));
         propag.addForceModel(new BodyAttraction(saturn));
         propag.addForceModel(new BodyAttraction(uranus));
         propag.addForceModel(new BodyAttraction(neptune));
-        propag.addForceModel(new BodyAttraction(pluto)); 
+        propag.addForceModel(new BodyAttraction(pluto));
 
         // checks are done within the step handler
         propag.setMasterMode(1000.0, new OrekitFixedStepHandler() {
@@ -464,6 +468,14 @@ public class SolarBodyTest {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s,
+                                                                    final FieldTimeDerivativesEquations<T> adder) {
+            throw new UnsupportedOperationException();
+        }
+
+
+        /** {@inheritDoc} */
         public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
                                                                           final FieldVector3D<DerivativeStructure> position,
                                                                           final FieldVector3D<DerivativeStructure> velocity,
@@ -502,6 +514,11 @@ public class SolarBodyTest {
         /** {@inheritDoc} */
         public EventDetector[] getEventsDetectors() {
             return new EventDetector[0];
+        }
+
+        /** {@inheritDoc} */
+        public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors() {
+            return new FieldEventDetector[0];
         }
 
         /** {@inheritDoc} */

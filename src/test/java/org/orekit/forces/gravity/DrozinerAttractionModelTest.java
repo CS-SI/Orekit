@@ -226,7 +226,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
         propagator.removeForceModels();
         propagator.addForceModel(new DrozinerAttractionModel(itrf2008, unnormalized, 1.0));
-                                                             
+
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));

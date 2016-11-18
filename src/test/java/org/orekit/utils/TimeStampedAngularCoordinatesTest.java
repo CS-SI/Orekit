@@ -323,9 +323,9 @@ public class TimeStampedAngularCoordinatesTest {
         }));
 
         double[] y = new double[] {
-            reference.getRotation().getQ0(), 
-            reference.getRotation().getQ1(), 
-            reference.getRotation().getQ2(), 
+            reference.getRotation().getQ0(),
+            reference.getRotation().getQ1(),
+            reference.getRotation().getQ2(),
             reference.getRotation().getQ3()
         };
         integrator.integrate(ode, new ODEState(0, y), dt);
@@ -350,7 +350,7 @@ public class TimeStampedAngularCoordinatesTest {
         }
 
         return new double[] {
-          maxRotationError, maxRateError, maxAccelerationError  
+          maxRotationError, maxRateError, maxAccelerationError
         };
 
     }

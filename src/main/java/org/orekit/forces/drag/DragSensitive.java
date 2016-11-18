@@ -19,6 +19,7 @@ package org.orekit.forces.drag;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -28,6 +29,7 @@ import org.hipparchus.ode.LocalizedODEFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Interface for spacecraft that are sensitive to atmospheric drag forces.
@@ -68,6 +70,28 @@ public interface DragSensitive {
                               double density, Vector3D relativeVelocity)
         throws OrekitException;
 
+    /** Compute the acceleration due to drag.
+     * <p>
+     * The computation includes all spacecraft specific characteristics
+     * like shape, area and coefficients.
+     * </p>
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in reference frame
+     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
+     * @param mass current mass
+     * @param density atmospheric density at spacecraft position
+     * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,
+     * in the same inertial frame as spacecraft orbit (m/s)
+     * @param <T> instance of a RealFieldElement
+     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
+     * @throws OrekitException if acceleration cannot be computed
+     */
+    <T extends RealFieldElement<T>> FieldVector3D<T> dragAcceleration(FieldAbsoluteDate<T> date, Frame frame,
+                                                                      FieldVector3D<T> position,
+                                                                      FieldRotation<T> rotation, T mass,
+                                                                      T density, FieldVector3D<T> relativeVelocity)
+        throws OrekitException;
     /** Compute the acceleration due to drag, with state derivatives.
      * <p>
      * The computation includes all spacecraft specific characteristics

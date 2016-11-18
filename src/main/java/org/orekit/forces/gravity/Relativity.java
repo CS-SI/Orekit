@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -25,11 +26,15 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -165,10 +170,40 @@ public class Relativity extends AbstractForceModel {
     public EventDetector[] getEventsDetectors() {
         return null;
     }
+    @Override
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors() {
+        return null;
+    }
+
 
     /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {
         return parametersDrivers.clone();
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s,
+                        final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+        final FieldPVCoordinates<T> pv = s.getFieldPVCoordinates();
+        final FieldVector3D<T> p = pv.getPosition();
+        final FieldVector3D<T> v = pv.getVelocity();
+        //radius
+        final T r2 = p.getNormSq();
+        final T r = r2.sqrt();
+        //speed
+        final T s2 = v.getNormSq();
+        final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
+        //eq. 3.146
+        final FieldVector3D<T> accel = new FieldVector3D<T>(
+                 r.reciprocal().multiply(4 * this.gm).subtract(s2),
+                p,
+                p.dotProduct(v).multiply(4),
+                v)
+                .scalarMultiply(r2.multiply(r).multiply(c2).reciprocal().multiply(this.gm));
+        adder.addAcceleration(accel, s.getFrame()); //TODO NOT TESTED
     }
 
 }

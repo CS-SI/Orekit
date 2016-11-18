@@ -133,7 +133,7 @@ public class BulletinAFilesLoaderTest extends AbstractFilesLoaderTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(expected, oe.getSpecifier());
             Assert.assertTrue(((String) oe.getParts()[0]).endsWith(name));
-        } 
+        }
     }
 
     @Test

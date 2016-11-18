@@ -156,7 +156,7 @@ public class TODProviderTest {
         PVCoordinates pvMODiau76 =
             new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
                               new Vector3D(837.708020, -2957.480117, -0.814253));
-          
+
 
         // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
         // was not taken into account in the reference paper, so we fix it here for the test
@@ -261,7 +261,7 @@ public class TODProviderTest {
         //       10                          86400s /  8 =  3h        5.86e-15 rad
         //       10                          86400s / 12 =  2h        5.76e-15 rad
         //
-        // 
+        //
         // We don't see anymore the peak at 00h00 so this confirms it is related to EOP
         // sampling. All values between 3e-15 and 6e-15 are really equivalent: it is
         // mostly numerical noise. The best settings are 6 or 8 points every 2 or 3 hours.
@@ -300,7 +300,7 @@ public class TODProviderTest {
         // http://www.iausofa.org/2012_0301_C.html, with the following code
         //
         //        double utc1, utc2, tai1, tai2, tt1, tt2, rmatpn[3][3];
-        //        
+        //
         //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
         //        utc1  = DJM0 + 53049.0;
         //        utc2  = 0.0;
@@ -382,7 +382,7 @@ public class TODProviderTest {
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         TODProvider provider = new TODProvider(IERSConventions.IERS_2010,
                                                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);

@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.drag.atmosphere;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
@@ -24,6 +26,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -756,6 +759,15 @@ public class JB2006 implements Atmosphere {
                           inputParams.getAp(date), inputParams.getS10(date),
                           inputParams.getS10B(date), inputParams.getXM10(date),
                           inputParams.getXM10B(date));
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T
+        getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
+                   final Frame frame)
+            throws OrekitException {
+        // TODO: field implementation
+        throw new UnsupportedOperationException();
     }
 
 }

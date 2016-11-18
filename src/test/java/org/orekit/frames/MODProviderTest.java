@@ -222,7 +222,7 @@ public class MODProviderTest {
         // http://www.iausofa.org/2012_0301_C.html, with the following code
         //
         //        double utc1, utc2, tai1, tai2, tt1, tt2, rmatp[3][3];
-        //        
+        //
         //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
         //        utc1  = DJM0 + 53049.0;
         //        utc2  = 0.0;
@@ -274,7 +274,7 @@ public class MODProviderTest {
         // http://www.iausofa.org/2012_0301_C.html, with the following code
         //
         //        double utc1, utc2, tai1, tai2, tt1, tt2, rb[3][3], rp[3][3], rbp[3][3];
-        //        
+        //
         //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
         //        utc1  = DJM0 + 53049.0;
         //        utc2  = 0.0;
@@ -329,7 +329,7 @@ public class MODProviderTest {
         // http://www.iausofa.org/2012_0301_C.html, with the following code
         //
         //        double utc1, utc2, tai1, tai2, tt1, tt2, rb[3][3], rp[3][3], rbp[3][3];
-        //        
+        //
         //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
         //        utc1  = DJM0 + 53049.0;
         //        utc2  = 0.0;
@@ -406,7 +406,7 @@ public class MODProviderTest {
     @Test
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         MODProvider provider = new MODProvider(IERSConventions.IERS_2010);
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);

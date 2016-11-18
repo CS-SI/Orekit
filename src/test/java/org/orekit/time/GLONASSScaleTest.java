@@ -139,7 +139,7 @@ public class GLONASSScaleTest {
                 Assert.assertEquals(61, glonass.minuteDuration(t0.shiftedBy(dt)));
             } else {
                 // after the minute of the leap
-                Assert.assertEquals(60, glonass.minuteDuration(t0.shiftedBy(dt)));                
+                Assert.assertEquals(60, glonass.minuteDuration(t0.shiftedBy(dt)));
             }
         }
     }

@@ -216,7 +216,7 @@ public class EventEnablingPredicateFilterTest {
         Assert.assertEquals(7 * 3600, reset.get(1).durationFrom(orbit.getDate()), 1.0e-6);
         Assert.assertEquals(8 * 3600, reset.get(2).durationFrom(orbit.getDate()), 1.0e-6);
         Assert.assertEquals(9 * 3600, reset.get(3).durationFrom(orbit.getDate()), 1.0e-6);
-        
+
     }
 
     @Test
@@ -348,7 +348,7 @@ public class EventEnablingPredicateFilterTest {
                                       final double g) {
             return true;
         }
-        
+
     }
 
     @Test
@@ -385,7 +385,7 @@ public class EventEnablingPredicateFilterTest {
                                       final double g) {
             return true;
         }
-        
+
     }
 
     @Before

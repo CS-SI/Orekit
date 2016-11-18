@@ -99,7 +99,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testReplayBackward() throws OrekitException {   
+    public void testReplayBackward() throws OrekitException {
         EclipseDetector detector =
                 new EclipseDetector(60., 1.e-3,
                                      CelestialBodyFactory.getSun(), sunRadius,
@@ -119,7 +119,7 @@ public class EventSlopeFilterTest {
 
         propagator.clearEventsDetectors();
         propagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
-            
+
             @Override
             public void handleStep(SpacecraftState currentState, boolean isLast)
                 throws OrekitException {

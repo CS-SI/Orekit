@@ -51,7 +51,7 @@ public class IERSConventionsTest {
         // http://www.iausofa.org/2012_0301_C.html, with the following code
         //
         //        double utc1, utc2, tai1, tai2, tt1, tt2, dpsi, deps, epsa;
-        //        
+        //
         //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
         //        utc1  = DJM0 + 53049.0;
         //        utc2  = 0.0;
@@ -872,7 +872,7 @@ public class IERSConventionsTest {
                                  final double h, final double tolerance) {
 
         UnivariateDifferentiableFunction differentiated =
-                new FiniteDifferencesDifferentiator(4, h).differentiate(new UnivariateFunction() {                   
+                new FiniteDifferencesDifferentiator(4, h).differentiate(new UnivariateFunction() {
                     @Override
                     public double value(final double dt) {
                         return function.value(date.shiftedBy(dt)).getValue();

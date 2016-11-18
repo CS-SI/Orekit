@@ -761,7 +761,7 @@ public class DSSTPropagatorTest {
         propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
         final SpacecraftState stateConfigNull = propagator.propagate(finalDate);
         Assert.assertEquals(0, stateConfigNull.getAdditionalStates().size());
-        
+
     }
 
     @Test

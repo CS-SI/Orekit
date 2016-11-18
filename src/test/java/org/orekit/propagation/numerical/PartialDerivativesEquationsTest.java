@@ -19,6 +19,7 @@ package org.orekit.propagation.numerical;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -32,8 +33,10 @@ import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -116,7 +119,12 @@ public class PartialDerivativesEquationsTest {
 
         @Override
         public void addContribution(SpacecraftState s, TimeDerivativesEquations adder) throws OrekitException {
+        }
 
+        @Override
+        public <T extends RealFieldElement<T>> void
+            addContribution(FieldSpacecraftState<T> s,
+                            FieldTimeDerivativesEquations<T> adder) {
         }
 
         @Override
@@ -139,6 +147,13 @@ public class PartialDerivativesEquationsTest {
         @Override
         public ParameterDriver[] getParametersDrivers() {
             return new ParameterDriver[0];
+        }
+
+        @Override
+        public <T extends RealFieldElement<T>> FieldEventDetector<T>[]
+            getFieldEventsDetectors() {
+            // TODO Auto-generated method stub
+            return null;
         }
 
     }

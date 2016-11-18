@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.drag.atmosphere;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -24,6 +26,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 
@@ -320,6 +323,60 @@ public class HarrisPriester implements Atmosphere {
 
     }
 
+    /** Get the local density.
+     * @param sunInEarth position of the Sun in Earth frame (m)
+     * @param posInEarth target position in Earth frame (m)
+     * @return the local density (kg/m³)
+     * @param <T> instance of RealFieldElement<T>
+     * @exception OrekitException if altitude is below the model minimal altitude
+     */
+    public <T extends RealFieldElement<T>> T getDensity(final Vector3D sunInEarth, final FieldVector3D<T> posInEarth)
+        throws OrekitException {
+        final T zero = posInEarth.getX().getField().getZero();
+        final T posAlt = getHeight(posInEarth);
+        // Check for height boundaries
+        if (posAlt.getReal() < getMinAlt()) {
+            throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, posAlt, getMinAlt());
+        }
+        if (posAlt.getReal() > getMaxAlt()) {
+            return zero;
+        }
+
+        // Diurnal bulge apex direction
+        final Vector3D sunDir = sunInEarth.normalize();
+        final Vector3D bulDir = new Vector3D(sunDir.getX() * COSLAG - sunDir.getY() * SINLAG,
+                                             sunDir.getX() * SINLAG + sunDir.getY() * COSLAG,
+                                             sunDir.getZ());
+
+        // Cosine of angle Psi between the diurnal bulge apex and the satellite
+        final T cosPsi = posInEarth.normalize().dotProduct(bulDir.normalize());
+        // (1 + cos(Psi))/2 = cos²(Psi/2)
+        final T c2Psi2 = cosPsi.add(1.).divide(2);
+        final T cPsi2  = c2Psi2.sqrt();
+        final T cosPow = (cPsi2.getReal() > MIN_COS) ? c2Psi2.multiply(cPsi2.pow(n - 2)) : zero;
+
+        // Search altitude index in density table
+        int ia = 0;
+        while (ia < tabAltRho.length - 2 && posAlt.getReal() > tabAltRho[ia + 1][0]) {
+            ia++;
+        }
+
+        // Fractional satellite height
+        final T dH = posAlt.negate().add(tabAltRho[ia][0]).divide(tabAltRho[ia][0] - tabAltRho[ia + 1][0]);
+
+        // Min exponential density interpolation
+        final T rhoMin = zero.add(tabAltRho[ia + 1][1] / tabAltRho[ia][1]).pow(dH).multiply(tabAltRho[ia][1]);
+
+        if (Precision.equals(cosPow.getReal(), 0.)) {
+            return zero.add(rhoMin);
+        } else {
+            // Max exponential density interpolation
+            final T rhoMax = zero.add(tabAltRho[ia + 1][2] / tabAltRho[ia][2]).pow(dH).multiply(tabAltRho[ia][2]);
+            return rhoMin.add(rhoMax.subtract(rhoMin).multiply(cosPow));
+        }
+
+    }
+
     /** Get the local density at some position.
      * @param date current date
      * @param position current position
@@ -336,6 +393,28 @@ public class HarrisPriester implements Atmosphere {
 
         // Target position in earth frame
         final Vector3D posInEarth = frame.getTransformTo(earth.getBodyFrame(), date).transformPosition(position);
+
+        return getDensity(sunInEarth, posInEarth);
+    }
+
+    /** Get the local density at some position.
+     * @param date current date
+     * @param position current position
+     * @param <T> implements a RealFieldElement
+     * @param frame the frame in which is defined the position
+     * @return local density (kg/m³)
+     * @exception OrekitException if some frame conversion cannot be performed
+     *            or if altitude is below the model minimal altitude
+     */
+    public <T extends RealFieldElement<T>> T getDensity(final FieldAbsoluteDate<T> date,
+                                                        final FieldVector3D<T> position,
+                                                        final Frame frame)
+            throws OrekitException {
+        // Sun position in earth frame
+        final Vector3D sunInEarth = sun.getPVCoordinates(date.toAbsoluteDate(), earth.getBodyFrame()).getPosition();
+
+        // Target position in earth frame
+        final FieldVector3D<T> posInEarth = frame.getTransformTo(earth.getBodyFrame(), date.toAbsoluteDate()).transformPosition(position);
 
         return getDensity(sunInEarth, posInEarth);
     }
@@ -357,6 +436,26 @@ public class HarrisPriester implements Atmosphere {
         final double coef = FastMath.sqrt((1. - e2) / (1. - e2 * cl2));
 
         return r - a * coef;
+    }
+
+    /** Get the height above the Earth for the given position.
+     *  <p>
+     *  The height computation is an approximation valid for the considered atmosphere.
+     *  </p>
+     *  @param position current position in Earth frame
+     *  @param <T> instance of RealFieldElement<T>
+     *  @return height (m)
+     */
+    private <T extends RealFieldElement<T>> T getHeight(final FieldVector3D<T> position) {
+        final double a    = earth.getEquatorialRadius();
+        final double f    = earth.getFlattening();
+        final double e2   = f * (2. - f);
+        final T r    = position.getNorm();
+        final T sl   = position.getZ().divide(r);
+        final T cl2  = sl.multiply(sl).negate().add(1.);
+        final T coef = cl2.multiply(-e2).add(1.).reciprocal().multiply(1. - e2).sqrt();
+
+        return r.subtract(coef.multiply(a));
     }
 
 }

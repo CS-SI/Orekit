@@ -18,6 +18,8 @@ package org.orekit.forces.drag.atmosphere;
 
 import java.util.Arrays;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
@@ -27,6 +29,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -1077,6 +1080,15 @@ public class NRLMSISE00 implements Atmosphere {
 
         // return the local density
         return out.getDensity(Output.TOTAL_MASS);
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T
+        getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
+                   final Frame frame)
+            throws OrekitException {
+        // TODO: field implementation
+        throw new UnsupportedOperationException();
     }
 
     /** Get local solar time.

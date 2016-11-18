@@ -143,7 +143,7 @@ public class UT1ScaleTest {
     @Test
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(ut1);

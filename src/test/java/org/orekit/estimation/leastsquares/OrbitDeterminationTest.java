@@ -799,10 +799,10 @@ public class OrbitDeterminationTest {
                                                          "transponder delay bias",
                                                      },
                                                      new double[] {
-                                                         transponderDelayBias             
+                                                         transponderDelayBias
                                                      },
                                                      new double[] {
-                                                         1.0             
+                                                         1.0
                                                      },
                                                      new double[] {
                                                          transponderDelayBiasMin
@@ -936,7 +936,7 @@ public class OrbitDeterminationTest {
                                              },
                                              new double[] {
                                                  stationAzimuthBias[i],
-                                                 stationElevationBias[i]             
+                                                 stationElevationBias[i]
                                              },
                                              azELSigma,
                                              new double[] {

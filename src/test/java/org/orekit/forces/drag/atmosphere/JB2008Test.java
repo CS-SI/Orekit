@@ -100,7 +100,7 @@ public class JB2008Test {
         }
 
     }
-    
+
 
     @Test
     public void testAltitude() throws OrekitException {
@@ -203,7 +203,7 @@ public class JB2008Test {
      * @param rho computed density
      * @param tInf computed exospheric temperature
      * @param tAlt computed local temperature
-     * @param print if true print else check 
+     * @param print if true print else check
      */
     private void checkLegacy(final int id, final double rho, final double tInf, final double tAlt, final boolean print) {
         final double[] rhoRef  = {0.18730056e-11, 0.25650339e-11, 0.57428913e-11,
@@ -237,7 +237,7 @@ public class JB2008Test {
      * @param rho computed density
      * @param tInf computed exospheric temperature
      * @param tAlt computed local temperature
-     * @param print if true print else check 
+     * @param print if true print else check
      */
     private void checkAltitude(final int id, final double rho, final double tInf, final double tAlt, final boolean print) {
         final double[] rhoRef  = {0.27945654e-05, 0.94115202e-07, 0.15025977e-07, 0.21128330e-08,
@@ -457,7 +457,7 @@ public class JB2008Test {
             }
             return Double.NaN;
         }
-        
+
     }
 
 }

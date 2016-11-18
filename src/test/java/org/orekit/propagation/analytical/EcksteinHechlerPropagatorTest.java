@@ -825,7 +825,7 @@ public class EcksteinHechlerPropagatorTest {
         propagator.addAdditionalStateProvider(new SevenProvider());
         propagator.setEphemerisMode();
         propagator.propagate(initial.getDate().shiftedBy(40000));
-        
+
         BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
 
         Assert.assertSame(poleAligned, ephemeris.getFrame());
@@ -847,7 +847,7 @@ public class EcksteinHechlerPropagatorTest {
         Assert.assertEquals(1, additional.size());
         Assert.assertEquals(1, additional.get("seven").length);
         Assert.assertEquals(7, additional.get("seven")[0], 1.0e-15);
-        
+
 
     }
 

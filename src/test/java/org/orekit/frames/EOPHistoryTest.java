@@ -91,7 +91,7 @@ public class EOPHistoryTest {
     @Test
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(history);

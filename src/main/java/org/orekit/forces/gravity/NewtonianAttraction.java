@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -25,8 +26,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -116,8 +120,26 @@ public class NewtonianAttraction extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+        adder.addKeplerContribution(mu);
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> void addContribution(final SpacecraftState s, final FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+        adder.addKeplerContribution(mu);
+    }
+
+    /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return new EventDetector[0];
+    }
+
+    @Override
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors() {
+        return new FieldEventDetector[0];
     }
 
     /** {@inheritDoc} */

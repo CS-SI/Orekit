@@ -86,13 +86,13 @@ public class OEMParserTest {
         Assert.assertEquals(ephemeridesDataLinesComment, file.getEphemeridesBlocks().get(0).getEphemeridesDataLinesComment());
         CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates
                                                   (new Vector3D(2789.619 * 1000, -280.045 * 1000, -1746.755 * 1000),
-                                                   new Vector3D(4.73372 * 1000, -2.49586 * 1000, -1.04195 * 1000)), 
-                                                   FramesFactory.getEME2000(), 
-                                                   new AbsoluteDate("1996-12-18T12:00:00.331",TimeScalesFactory.getUTC()), 
+                                                   new Vector3D(4.73372 * 1000, -2.49586 * 1000, -1.04195 * 1000)),
+                                                   FramesFactory.getEME2000(),
+                                                   new AbsoluteDate("1996-12-18T12:00:00.331",TimeScalesFactory.getUTC()),
                                                    CelestialBodyFactory.getEarth().getGM());
         Assert.assertArrayEquals(orbit.getPVCoordinates().getPosition().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getPosition().toArray(),1e-10);
         Assert.assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getVelocity().toArray(),1e-10);
-        Assert.assertArrayEquals((new Vector3D(1, 1, 1)).toArray(), file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(0).getAcceleration().toArray(), 1e-10);        
+        Assert.assertArrayEquals((new Vector3D(1, 1, 1)).toArray(), file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(0).getAcceleration().toArray(), 1e-10);
         final Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         final double[] column1 = {
             3.331349476038534e-04, 4.618927349220216e-04,
@@ -149,7 +149,7 @@ public class OEMParserTest {
 
     @Test
     public void testParseOEM1OrbitFile() throws OrekitException, IOException {
- 
+
         final String ex = "/ccsds/OEMExample3.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser()
@@ -211,7 +211,7 @@ public class OEMParserTest {
     }
 
     @Test
-    public void testParseOEM2() 
+    public void testParseOEM2()
             throws OrekitException, URISyntaxException {
 
         final String name = getClass().getResource("/ccsds/OEMExample2.txt").toURI().getPath();

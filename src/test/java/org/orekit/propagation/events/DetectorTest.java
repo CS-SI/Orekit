@@ -278,22 +278,22 @@ public class DetectorTest {
             public double getThreshold() {
                 return 1.0e-10;
             }
-            
+
             @Override
             public int getMaxIterationCount() {
                 return 100;
             }
-            
+
             @Override
             public double getMaxCheckInterval() {
                 return 60;
             }
-            
+
             @Override
             public double g(SpacecraftState s) {
                 return s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH);
             }
-            
+
             @Override
             public Action eventOccurred(SpacecraftState s, boolean increasing) {
                 return Action.RESET_STATE;

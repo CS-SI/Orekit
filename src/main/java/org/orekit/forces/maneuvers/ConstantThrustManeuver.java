@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.maneuvers;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -26,10 +27,13 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -298,6 +302,22 @@ public class ConstantThrustManeuver extends AbstractForceModel {
             return EventHandler.Action.RESET_DERIVATIVES;
         }
 
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s,
+                        final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+        // TODO: field implementation
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> FieldEventDetector<T>[]
+        getFieldEventsDetectors() {
+        // TODO: field implementation
+        throw new UnsupportedOperationException();
     }
 
 }

@@ -57,7 +57,7 @@ public class OPMParserTest {
         final OPMParser parser = new OPMParser().withMu(398600e9).
                 withConventions(IERSConventions.IERS_2010).
                 withSimpleEOP(true);
-        
+
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
         final OPMFile file = parser.parse(inEntry, "OPMExample.txt");
@@ -69,9 +69,9 @@ public class OPMParserTest {
                                              TimeScalesFactory.getUTC()), file
             .getCreationDate());
         Assert.assertEquals("JAXA", file.getOriginator());
-        
+
         // Check Metadata Block;
-        
+
         Assert.assertEquals("GODZILLA 5", file.getMetaData().getObjectName());
         Assert.assertEquals("1998-057A", file.getMetaData().getObjectID());
         Assert.assertEquals(1998, file.getMetaData().getLaunchYear());
@@ -83,7 +83,7 @@ public class OPMParserTest {
         Assert.assertEquals(CCSDSFrame.ITRF97.toString(), file.getMetaData().getFrame().getName());
         Assert.assertEquals(CcsdsTimeScale.TAI, file.getMetaData().getTimeSystem());
         Assert.assertFalse(file.hasCovarianceMatrix());
-        
+
         // Check State Vector data Block;
         Assert.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getTAI()), file.getEpoch());
@@ -147,7 +147,7 @@ public class OPMParserTest {
         Assert.assertEquals(file.getOriginator(), "GSOC");
 
         // Check Metadata Block;
-        
+
         Assert.assertEquals("EUTELSAT W4", file.getMetaData().getObjectName());
         Assert.assertEquals("2000-028A", file.getMetaData().getObjectID());
         Assert.assertEquals("EARTH", file.getMetaData().getCenterName());
@@ -185,7 +185,7 @@ public class OPMParserTest {
         // Check Data Spacecraft block
         ArrayList<String> spacecraftComment = new ArrayList<String>();
         spacecraftComment.add("Spacecraft parameters");
-        Assert.assertEquals(spacecraftComment, file.getSpacecraftComment());        
+        Assert.assertEquals(spacecraftComment, file.getSpacecraftComment());
         Assert.assertEquals(1913.000, file.getMass(), 1e-10);
         Assert.assertEquals(10.000, file.getSolarRadArea(), 1e-10);
         Assert.assertEquals(1.300, file.getSolarRadCoeff(), 1e-10);
@@ -290,7 +290,7 @@ public class OPMParserTest {
         // Check Data Covariance matrix Block
         ArrayList<String> dataCovMatrixComment = new ArrayList<String>();
         dataCovMatrixComment.add("toto");
-        dataCovMatrixComment.add("tata");        
+        dataCovMatrixComment.add("tata");
         Assert.assertEquals(dataCovMatrixComment, file.getCovarianceComment());
         Assert.assertTrue(file.hasCovarianceMatrix());
         Assert.assertEquals(file.getCovRefFrame(), FramesFactory.getTEME());
@@ -366,7 +366,7 @@ public class OPMParserTest {
     @Test
     public void testParseOPM4()
         throws OrekitException {
-        // 
+        //
         final String ex = "/ccsds/OPMExample4.txt";
         OPMParser parser =
                 new OPMParser().

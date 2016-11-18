@@ -150,7 +150,7 @@ public class GTODProviderTest {
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
                                                  FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);

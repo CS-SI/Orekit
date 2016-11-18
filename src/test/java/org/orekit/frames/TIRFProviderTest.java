@@ -150,7 +150,7 @@ public class TIRFProviderTest {
     @Test
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         TIRFProvider provider = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);

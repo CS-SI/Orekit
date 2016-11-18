@@ -145,7 +145,7 @@ public class ElevationDetectorTest {
         }
 
     }
-    
+
     @Test
     public void testEventForMask() throws OrekitException {
 
@@ -195,7 +195,7 @@ public class ElevationDetectorTest {
 
     }
 
-    
+
     @Test
     public void testHorizon() throws OrekitException {
 
@@ -379,17 +379,17 @@ public class ElevationDetectorTest {
         AbsoluteDate initialDate = new AbsoluteDate("2012-01-26T07:00:00.000", TimeScalesFactory.getUTC());
 
         Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
-        
+
         Orbit initialOrbit = new KeplerianOrbit(6828137.5, 7.322641060181212E-8, 1.7082667003713938, 0.0, 1.658054062748353, 1.2231496082116026E-4, PositionAngle.TRUE , inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
-        
+
         Propagator propagator =
-                new EcksteinHechlerPropagator(initialOrbit, 
+                new EcksteinHechlerPropagator(initialOrbit,
                         Constants.EGM96_EARTH_EQUATORIAL_RADIUS,
                         Constants.EGM96_EARTH_MU,
-                        Constants.EGM96_EARTH_C20, 
-                        Constants.EGM96_EARTH_C30, 
-                        Constants.EGM96_EARTH_C40, 
-                        Constants.EGM96_EARTH_C50, 
+                        Constants.EGM96_EARTH_C20,
+                        Constants.EGM96_EARTH_C30,
+                        Constants.EGM96_EARTH_C40,
+                        Constants.EGM96_EARTH_C50,
                         Constants.EGM96_EARTH_C60);
 
         // Earth and frame
@@ -402,7 +402,7 @@ public class ElevationDetectorTest {
         final double longitude = FastMath.toRadians(21.0);
         final double latitude  = FastMath.toRadians(67.9);
         final double altitude  = 300.0;
-        
+
         final GeodeticPoint station1 = new GeodeticPoint(latitude, longitude, altitude);
         final TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 
@@ -486,8 +486,8 @@ public class ElevationDetectorTest {
             {2.6354471705114375, 0.06632251157578452}, {2.652900463031381, 0.06283185307179587},
             {2.670353755551324, 0.06632251157578452}, {2.6878070480712677, 0.0645771823237902}};
         ElevationMask mask = new ElevationMask(maskValues);
-        
-      
+
+
         final AbsoluteDate start = new AbsoluteDate("2012-02-10T22:00:00.000", TimeScalesFactory.getUTC());
         final AbsoluteDate end   = initialDate.shiftedBy(1000 * Constants.JULIAN_DAY);
 

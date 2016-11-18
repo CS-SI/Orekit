@@ -142,7 +142,7 @@ public class Frames3 {
                                                        ioe.getLocalizedMessage());
                     }
                 }
-                
+
                 public void handleStep(SpacecraftState currentState, boolean isLast)
                     throws OrekitException {
 

@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.drag;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -26,10 +27,14 @@ import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
@@ -89,11 +94,35 @@ public class DragForce extends AbstractForceModel {
 
     }
 
+    @Override
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s,
+                        final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+        final FieldAbsoluteDate<T> date     = s.getDate();
+        final Frame        frame    = s.getFrame();
+        final FieldVector3D<T>     position = s.getFieldPVCoordinates().getPosition();
+
+        final T rho    = atmosphere.getDensity(date, position, frame);
+        final FieldVector3D<T> vAtm = atmosphere.getVelocity(date, position, frame);
+        final FieldVector3D<T> relativeVelocity = s.getFieldPVCoordinates().getVelocity().negate().add(vAtm);
+
+        // Addition of calculated acceleration to adder
+        adder.addAcceleration(spacecraft.dragAcceleration(date, frame, position, s.getFieldAttitude().getRotation(),
+                                                          s.getMass(), rho, relativeVelocity), frame);
+    }
+
     /** There are no discrete events for this model.
      * @return an empty array
      */
     public EventDetector[] getEventsDetectors() {
         return new EventDetector[0];
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> FieldEventDetector<T>[]
+        getFieldEventsDetectors() {
+        return new FieldEventDetector[0];
     }
 
     /** {@inheritDoc} */
@@ -108,7 +137,6 @@ public class DragForce extends AbstractForceModel {
                                                                       final FieldRotation<DerivativeStructure> rotation,
                                                                       final DerivativeStructure mass)
         throws OrekitException {
-
         // retrieve derivation properties
         final int parameters = mass.getFreeParameters();
         final int order      = mass.getOrder();

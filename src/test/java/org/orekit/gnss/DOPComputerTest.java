@@ -40,7 +40,7 @@ import org.orekit.utils.IERSConventions;
 
 
 public class DOPComputerTest {
-    
+
     private static OneAxisEllipsoid earth;
     private static GeodeticPoint location;
 
@@ -68,7 +68,7 @@ public class DOPComputerTest {
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 2, 0, 0.,
                                                    TimeScalesFactory.getUTC());
 
-        // Computes the DOP with all the SV from the GPS constellation 
+        // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: expected values come from Trimble Planning software
@@ -95,7 +95,7 @@ public class DOPComputerTest {
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 13, 0, 0.,
                                                    TimeScalesFactory.getUTC());
 
-        // Computes the DOP with all the SV from the GPS constellation 
+        // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: expected values come from Trimble Planning software
@@ -121,7 +121,7 @@ public class DOPComputerTest {
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 7, 0, 0.,
                                                    TimeScalesFactory.getUTC());
 
-        // Computes the DOP with all the SV from the GPS constellation 
+        // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: expected values come from Trimble Planning software
@@ -147,7 +147,7 @@ public class DOPComputerTest {
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 10, 0, 0.,
                                                    TimeScalesFactory.getUTC());
 
-        // Computes the DOP with all the SV from the GPS constellation 
+        // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: comparison is made with results from Trimble Planning software
@@ -173,7 +173,7 @@ public class DOPComputerTest {
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0.,
                                                    TimeScalesFactory.getUTC());
 
-        // Computes the DOP with all the SV from the GPS constellation 
+        // Computes the DOP with all the SV from the GPS constellation
         final DOP dop = computer.compute(date, getTlePropagators());
 
         // Checks
@@ -206,7 +206,7 @@ public class DOPComputerTest {
         // Defines the computation date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0.,
                                                    TimeScalesFactory.getUTC());
-        // Computes the DOP with all the SV from the GPS constellation 
+        // Computes the DOP with all the SV from the GPS constellation
         computer.compute(date, gps);
     }
 
@@ -215,7 +215,7 @@ public class DOPComputerTest {
         final YUMAParser reader = new YUMAParser(null);
         reader.loadData();
         final List<GPSAlmanac> almanacs = reader.getAlmanacs();
-        
+
         // Creates the GPS propagators from the almanacs
         final List<Propagator> propagators = new ArrayList<Propagator>();
         for (GPSAlmanac almanac: almanacs) {

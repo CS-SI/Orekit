@@ -119,7 +119,7 @@ public class DEFile {
                 displayUsage(System.err);
                 System.exit(1);
             }
-            DEFile de = new DEFile(inName, outName);                
+            DEFile de = new DEFile(inName, outName);
 
             de.processHeader();
             System.out.println("header label 1     " + de.label1);

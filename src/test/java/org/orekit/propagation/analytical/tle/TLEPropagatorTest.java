@@ -45,14 +45,14 @@ public class TLEPropagatorTest {
 
     private TLE tle;
     private double period;
-    
+
     @Test
     public void testSlaveMode() throws OrekitException {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         AbsoluteDate initDate = tle.getDate();
         SpacecraftState initialState = propagator.getInitialState();
-        
+
         // Simulate a full period of a GPS satellite
         // -----------------------------------------
         SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(period));
@@ -72,22 +72,22 @@ public class TLEPropagatorTest {
 
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
         propagator.setEphemerisMode();
-        
+
         AbsoluteDate initDate = tle.getDate();
         SpacecraftState initialState = propagator.getInitialState();
-        
+
         // Simulate a full period of a GPS satellite
         // -----------------------------------------
         AbsoluteDate endDate = initDate.shiftedBy(period);
         propagator.propagate(endDate);
-        
-        // get the ephemeris 
+
+        // get the ephemeris
         BoundedPropagator boundedProp = propagator.getGeneratedEphemeris();
 
         // get the initial state from the ephemeris and check if it is the same as
         // the initial state from the TLE
         SpacecraftState boundedState = boundedProp.propagate(initDate);
-        
+
         // Check results
         Assert.assertEquals(initialState.getA(), boundedState.getA(), 0.);
         Assert.assertEquals(initialState.getEquinoctialEx(), boundedState.getEquinoctialEx(), 0.);
@@ -191,13 +191,13 @@ public class TLEPropagatorTest {
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
-        
+
         // setup a TLE for a GPS satellite
         String line1 = "1 37753U 11036A   12090.13205652 -.00000006  00000-0  00000+0 0  2272";
         String line2 = "2 37753  55.0032 176.5796 0004733  13.2285 346.8266  2.00565440  5153";
-        
+
         tle = new TLE(line1, line2);
-        
+
         // the period of the GPS satellite
         period = 717.97 * 60.0;
     }

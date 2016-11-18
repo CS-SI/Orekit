@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.drag.atmosphere;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.BodyShape;
@@ -23,6 +25,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 
 /** Simple exponential atmospheric model.
@@ -72,6 +75,15 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
         throws OrekitException {
         final GeodeticPoint gp = shape.transform(position, frame, date);
         return rho0 * FastMath.exp((h0 - gp.getAltitude()) / hscale);
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> T
+        getDensity(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position,
+                   final Frame frame)
+            throws OrekitException {
+        // TODO: field implementation
+        throw new UnsupportedOperationException();
     }
 
 }

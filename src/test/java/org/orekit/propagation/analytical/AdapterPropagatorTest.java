@@ -251,7 +251,7 @@ public class AdapterPropagatorTest {
             double nominal           = new PVCoordinates(pvWithout, pvWith).getPosition().getNorm();
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
             maxDelta = FastMath.max(maxDelta, revertError);
-            maxNominal = FastMath.max(maxNominal, nominal);           
+            maxNominal = FastMath.max(maxNominal, nominal);
             Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
             Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
             Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);

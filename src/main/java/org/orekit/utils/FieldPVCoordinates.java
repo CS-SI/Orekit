@@ -404,6 +404,25 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         return new FieldPVCoordinates<T>(u, uDot, uDotDot);
     }
 
+    /** Compute the cross-product of two instances.
+     * @param pv2 second instances
+     * @return the cross product v1 ^ v2 as a new instance
+     */
+    public FieldPVCoordinates<T> crossProduct(final FieldPVCoordinates<T> pv2) {
+        final FieldVector3D<T> p1 = position;
+        final FieldVector3D<T> v1 = velocity;
+        final FieldVector3D<T> a1 = acceleration;
+        final FieldVector3D<T> p2 = pv2.position;
+        final FieldVector3D<T> v2 = pv2.velocity;
+        final FieldVector3D<T> a2 = pv2.acceleration;
+        return new FieldPVCoordinates<T>(FieldVector3D.crossProduct(p1, p2),
+                                 new FieldVector3D<T>(1, FieldVector3D.crossProduct(p1, v2),
+                                                      1, FieldVector3D.crossProduct(v1, p2)),
+                                 new FieldVector3D<T>(1, FieldVector3D.crossProduct(p1, a2),
+                                                      2, FieldVector3D.crossProduct(v1, v2),
+                                                      1, FieldVector3D.crossProduct(a1, p2)));
+    }
+
     /** Convert to a constant position-velocity without derivatives.
      * @return a constant position-velocity
      */

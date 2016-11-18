@@ -20,9 +20,11 @@ import java.util.Collection;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -30,6 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link FieldAngularCoordinates}.
@@ -39,13 +42,76 @@ import org.orekit.time.TimeStamped;
  * @since 7.0
  */
 public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
-    extends FieldAngularCoordinates<T> implements TimeStamped {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140723L;
+    extends FieldAngularCoordinates<T> {
 
     /** The date. */
-    private final AbsoluteDate date;
+    private final FieldAbsoluteDate<T> date;
+
+    /** Build the rotation that transforms a pair of pv coordinates into another pair.
+
+     * <p><em>WARNING</em>! This method requires much more stringent assumptions on
+     * its parameters than the similar {@link Rotation#Rotation(Vector3D, Vector3D,
+     * Vector3D, Vector3D) constructor} from the {@link Rotation Rotation} class.
+     * As far as the Rotation constructor is concerned, the {@code v₂} vector from
+     * the second pair can be slightly misaligned. The Rotation constructor will
+     * compensate for this misalignment and create a rotation that ensure {@code
+     * v₁ = r(u₁)} and {@code v₂ ∈ plane (r(u₁), r(u₂))}. <em>THIS IS NOT
+     * TRUE ANYMORE IN THIS CLASS</em>! As derivatives are involved and must be
+     * preserved, this constructor works <em>only</em> if the two pairs are fully
+     * consistent, i.e. if a rotation exists that fulfill all the requirements: {@code
+     * v₁ = r(u₁)}, {@code v₂ = r(u₂)}, {@code dv₁/dt = dr(u₁)/dt}, {@code dv₂/dt
+     * = dr(u₂)/dt}, {@code d²v₁/dt² = d²r(u₁)/dt²}, {@code d²v₂/dt² = d²r(u₂)/dt²}.</p>
+
+     * @param date coordinates date
+     * @param u1 first vector of the origin pair
+     * @param u2 second vector of the origin pair
+     * @param v1 desired image of u1 by the rotation
+     * @param v2 desired image of u2 by the rotation
+     * @param tolerance relative tolerance factor used to check singularities
+     * @exception OrekitException if the vectors components cannot be converted to
+     * {@link DerivativeStructure} with proper order
+     */
+    public TimeStampedFieldAngularCoordinates (final AbsoluteDate date,
+                                               final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
+                                               final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
+                                               final double tolerance)
+        throws OrekitException {
+        this(new FieldAbsoluteDate<>(u1.getPosition().getX().getField(), date),
+             u1, u2, v1, v2, tolerance);
+    }
+
+    /** Build the rotation that transforms a pair of pv coordinates into another pair.
+
+     * <p><em>WARNING</em>! This method requires much more stringent assumptions on
+     * its parameters than the similar {@link Rotation#Rotation(Vector3D, Vector3D,
+     * Vector3D, Vector3D) constructor} from the {@link Rotation Rotation} class.
+     * As far as the Rotation constructor is concerned, the {@code v₂} vector from
+     * the second pair can be slightly misaligned. The Rotation constructor will
+     * compensate for this misalignment and create a rotation that ensure {@code
+     * v₁ = r(u₁)} and {@code v₂ ∈ plane (r(u₁), r(u₂))}. <em>THIS IS NOT
+     * TRUE ANYMORE IN THIS CLASS</em>! As derivatives are involved and must be
+     * preserved, this constructor works <em>only</em> if the two pairs are fully
+     * consistent, i.e. if a rotation exists that fulfill all the requirements: {@code
+     * v₁ = r(u₁)}, {@code v₂ = r(u₂)}, {@code dv₁/dt = dr(u₁)/dt}, {@code dv₂/dt
+     * = dr(u₂)/dt}, {@code d²v₁/dt² = d²r(u₁)/dt²}, {@code d²v₂/dt² = d²r(u₂)/dt²}.</p>
+
+     * @param date coordinates date
+     * @param u1 first vector of the origin pair
+     * @param u2 second vector of the origin pair
+     * @param v1 desired image of u1 by the rotation
+     * @param v2 desired image of u2 by the rotation
+     * @param tolerance relative tolerance factor used to check singularities
+     * @exception OrekitException if the vectors components cannot be converted to
+     * {@link DerivativeStructure} with proper order
+     */
+    public TimeStampedFieldAngularCoordinates (final FieldAbsoluteDate<T> date,
+                                               final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
+                                               final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
+                                               final double tolerance)
+        throws OrekitException {
+        super(u1, u2, v1, v2, tolerance);
+        this.date = date;
+    }
 
     /** Builds a rotation/rotation rate pair.
      * @param date coordinates date
@@ -57,13 +123,22 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                                               final FieldRotation<T> rotation,
                                               final FieldVector3D<T> rotationRate,
                                               final FieldVector3D<T> rotationAcceleration) {
-        super(rotation, rotationRate, rotationAcceleration);
-        this.date = date;
+        this(new FieldAbsoluteDate<>(rotation.getQ0().getField(), date),
+             rotation, rotationRate, rotationAcceleration);
     }
 
-    /** {@inheritDoc} */
-    public AbsoluteDate getDate() {
-        return date;
+    /** Builds a rotation/rotation rate pair.
+     * @param date coordinates date
+     * @param rotation rotation
+     * @param rotationRate rotation rate Ω (rad/s)
+     * @param rotationAcceleration rotation acceleration dΩ/dt (rad²/s²)
+     */
+    public TimeStampedFieldAngularCoordinates(final FieldAbsoluteDate<T> date,
+                                              final FieldRotation<T> rotation,
+                                              final FieldVector3D<T> rotationRate,
+                                              final FieldVector3D<T> rotationAcceleration) {
+        super(rotation, rotationRate, rotationAcceleration);
+        this.date = date;
     }
 
     /** Revert a rotation/rotation rate pair.
@@ -78,6 +153,13 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                                                          getRotation().applyInverseTo(getRotationAcceleration().negate()));
     }
 
+    /** Get the date.
+     * @return date
+     */
+    public FieldAbsoluteDate<T> getDate() {
+        return date;
+    }
+
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
@@ -89,6 +171,20 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public TimeStampedFieldAngularCoordinates<T> shiftedBy(final double dt) {
+        return shiftedBy(getDate().getField().getZero().add(dt));
+    }
+
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple linear model. It is <em>not</em> intended as a replacement for
+     * proper attitude propagation but should be sufficient for either small
+     * time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     */
+    public TimeStampedFieldAngularCoordinates<T> shiftedBy(final T dt) {
         final FieldAngularCoordinates<T> sac = super.shiftedBy(dt);
         return new TimeStampedFieldAngularCoordinates<T>(date.shiftedBy(dt),
                                                          sac.getRotation(), sac.getRotationRate(), sac.getRotationAcceleration());
@@ -182,6 +278,46 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                                                           final AngularDerivativesFilter filter,
                                                           final Collection<TimeStampedFieldAngularCoordinates<T>> sample)
         throws OrekitException {
+        return interpolate(new FieldAbsoluteDate<>(sample.iterator().next().getRotation().getQ0().getField(), date),
+                           filter, sample);
+    }
+
+    /** Interpolate angular coordinates.
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
+     * </p>
+     * <p>
+     * This method is based on Sergei Tanygin's paper <a
+     * href="http://www.agi.com/downloads/resources/white-papers/Attitude-interpolation.pdf">Attitude
+     * Interpolation</a>, changing the norm of the vector to match the modified Rodrigues
+     * vector as described in Malcolm D. Shuster's paper <a
+     * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
+     * Survey of Attitude Representations</a>. This change avoids the singularity at π.
+     * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
+     * when this singularity is detected.
+     * </p>
+     * <p>
+     * Note that even if first time derivatives (rotation rates)
+     * from sample can be ignored, the interpolated instance always includes
+     * interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the rotations.
+     * </p>
+     * @param date interpolation date
+     * @param filter filter for derivatives from the sample to use in interpolation
+     * @param sample sample points on which interpolation should be done
+     * @param <T> the type of the field elements
+     * @return a new position-velocity, interpolated at specified date
+     * @exception OrekitException if the number of point is too small for interpolating
+     */
+    public static <T extends RealFieldElement<T>>
+        TimeStampedFieldAngularCoordinates<T> interpolate(final FieldAbsoluteDate<T> date,
+                                                          final AngularDerivativesFilter filter,
+                                                          final Collection<TimeStampedFieldAngularCoordinates<T>> sample)
+        throws OrekitException {
 
         // get field properties
         final Field<T> field = sample.iterator().next().getRotation().getQ0().getField();
@@ -238,7 +374,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
 
                 // remove linear offset from the current coordinates
                 final T dt = zero.add(ac.date.durationFrom(date));
-                final TimeStampedFieldAngularCoordinates<T> fixed = ac.subtractOffset(offset.shiftedBy(dt.getReal()));
+                final TimeStampedFieldAngularCoordinates<T> fixed = ac.subtractOffset(offset.shiftedBy(dt));
 
                 final T[][] rodrigues = getModifiedRodrigues(fixed, previous, threshold);
                 if (rodrigues == null) {

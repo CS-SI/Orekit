@@ -19,6 +19,7 @@ package org.orekit.forces;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -33,6 +34,7 @@ import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -405,6 +407,42 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
     }
 
+    /** Get solar array normal in spacecraft frame.
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in reference frame
+     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
+     * @return solar array normal in spacecraft frame
+     * @param <T> extends RealFieldElement
+     * @exception OrekitException if sun direction cannot be computed in best lighting
+     * configuration
+     */
+    public synchronized <T extends RealFieldElement<T>> FieldVector3D<T> getNormal(final FieldAbsoluteDate<T> date, final Frame frame,
+                                           final FieldVector3D<T> position, final FieldRotation<T> rotation)
+        throws OrekitException {
+
+        if (referenceDate != null) {
+            // use a simple rotation at fixed rate
+            final T alpha = date.durationFrom(referenceDate).multiply(rotationRate);
+            return new FieldVector3D<T>(alpha.cos(), saX, alpha.sin(), saY);
+        }
+
+        // compute orientation for best lighting
+        final FieldVector3D<T> sunInert = position.subtract(sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition()).negate().normalize();
+        final FieldVector3D<T> sunSpacecraft = rotation.applyTo(sunInert);
+        final T d = FieldVector3D.dotProduct(sunSpacecraft, saZ);
+        final T f = d.multiply(d).subtract(1).negate();
+        if (f.getReal() < Precision.EPSILON) {
+            // extremely rare case: the sun is along solar array rotation axis
+            // (there will not be much output power ...)
+            // we set up an arbitrary normal
+            return new FieldVector3D<T>(f.getField().getOne(), saZ.orthogonal());
+        }
+
+        final T s = f.sqrt().reciprocal();
+        return new FieldVector3D<T>(s, sunSpacecraft).subtract(new FieldVector3D<T>(s.multiply(d), saZ));
+
+    }
 
     /** Get solar array normal in spacecraft frame.
      * @param date current date
@@ -420,11 +458,11 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
                                                                      final FieldRotation<DerivativeStructure> rotation)
         throws OrekitException {
 
-        final DerivativeStructure one = position.getX().getField().getOne();
+        final DerivativeStructure zero = position.getX().getField().getZero();
 
         if (referenceDate != null) {
             // use a simple rotation at fixed rate
-            final DerivativeStructure alpha = one.multiply(rotationRate * date.durationFrom(referenceDate));
+            final DerivativeStructure alpha = zero.add(rotationRate * date.durationFrom(referenceDate));
             return new FieldVector3D<DerivativeStructure>(alpha.cos(), saX, alpha.sin(), saY);
         }
 
@@ -438,7 +476,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             // extremely rare case: the sun is along solar array rotation axis
             // (there will not be much output power ...)
             // we set up an arbitrary normal
-            return new FieldVector3D<DerivativeStructure>(one, saZ.orthogonal());
+            return new FieldVector3D<DerivativeStructure>(position.getX().getField().getOne(), saZ.orthogonal());
         }
 
         final DerivativeStructure s = f.sqrt().reciprocal();
@@ -827,6 +865,43 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             }
         }
         return filtered;
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T>
+        dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
+                         final FieldVector3D<T> position, final FieldRotation<T> rotation,
+                         final T mass, final  T density, final FieldVector3D<T> relativeVelocity)
+            throws OrekitException {
+        // relative velocity in spacecraft frame
+        final FieldVector3D<T> v = rotation.applyTo(relativeVelocity);
+
+        // solar array contribution
+        final FieldVector3D<T> solarArrayFacet = new FieldVector3D<T>(solarArrayArea, getNormal(date, frame, position, rotation));
+        T sv = FieldVector3D.dotProduct(solarArrayFacet, v).abs();
+
+        // body facets contribution
+        for (final Facet facet : facets) {
+            final T dot = FieldVector3D.dotProduct(facet.getNormal(), v);
+            if (dot.getReal() < 0) {
+                // the facet intercepts the incoming flux
+                sv = sv.subtract(dot.multiply(facet.getArea()));
+            }
+        }
+
+        return new FieldVector3D<T>(sv.multiply(density).multiply(dragCoeff / 2.0).divide(mass), relativeVelocity);
+
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T>
+        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
+                                      final FieldVector3D<T> position,
+                                      final FieldRotation<T> rotation, final T mass,
+                                      final FieldVector3D<T> flux)
+            throws OrekitException {
+        // TODO: field implementation
+        throw new UnsupportedOperationException();
     }
 
 }

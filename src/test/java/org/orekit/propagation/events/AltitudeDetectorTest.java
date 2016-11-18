@@ -41,7 +41,7 @@ public class AltitudeDetectorTest {
     public void testBackAndForth() throws OrekitException {
 
         final Frame EME2000 = FramesFactory.getEME2000();
-        final AbsoluteDate initialDate = new AbsoluteDate(2009,1,1,TimeScalesFactory.getUTC()); 
+        final AbsoluteDate initialDate = new AbsoluteDate(2009,1,1,TimeScalesFactory.getUTC());
         final double a = 8000000;
         final double e = 0.1;
         final double earthRadius = 6378137.0;

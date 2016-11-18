@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.gravity;
 
-
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -29,11 +29,13 @@ import org.orekit.forces.AbstractForceModel;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.Jacobianizer;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
@@ -140,7 +142,7 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
 
         // get the position in body frame
         final AbsoluteDate date = s.getDate();
-        final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
+        final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date);
         final Transform toBodyFrame   = fromBodyFrame.getInverse();
         final Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
@@ -398,9 +400,25 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
         return new EventDetector[0];
     }
 
+    @Override
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors() {
+        return new FieldEventDetector[0];
+    }
+
+
     /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {
         return parametersDrivers.clone();
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s,
+                        final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+        // TODO: field implementation
+        throw new UnsupportedOperationException();
     }
 
 }

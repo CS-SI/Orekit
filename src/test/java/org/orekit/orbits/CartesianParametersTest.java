@@ -351,7 +351,7 @@ public class CartesianParametersTest {
             maxShiftVError                   = FastMath.max(maxShiftVError,
                                                             shiftError.getVelocity().getNorm());
             maxInterpolationVError           = FastMath.max(maxInterpolationVError,
-                                                            interpolationError.getVelocity().getNorm());                    
+                                                            interpolationError.getVelocity().getNorm());
         }
         Assert.assertTrue(maxShiftPError         > 390.0);
         Assert.assertTrue(maxInterpolationPError < 3.0e-8);

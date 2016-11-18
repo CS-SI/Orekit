@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -72,12 +73,14 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.EventHandler.Action;
@@ -414,6 +417,22 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
+     // setup
+        AbsoluteDate         initDate  = new AbsoluteDate();
+        SpacecraftState     initialState;
+        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        initDate = AbsoluteDate.J2000_EPOCH;
+
+        final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
+                                                 FramesFactory.getEME2000(), initDate, mu);
+        initialState = new SpacecraftState(orbit);
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit, OrbitType.EQUINOCTIAL);
+        AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(60);
+        propagator = new NumericalPropagator(integrator);
+        propagator.setInitialState(initialState);
 
         ForceModel gravityField =
             new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
@@ -625,11 +644,11 @@ public class NumericalPropagatorTest {
     @Test
     public void testAdditionalStateEvent() throws OrekitException {
         propagator.addAdditionalEquations(new AdditionalEquations() {
-            
+
             public String getName() {
                 return "linear";
             }
-            
+
             public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
                 pDot[0] = 1.0;
                 return new double[7];
@@ -637,11 +656,11 @@ public class NumericalPropagatorTest {
         });
         try {
             propagator.addAdditionalEquations(new AdditionalEquations() {
-                
+
                 public String getName() {
                     return "linear";
                 }
-                
+
                 public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
                     pDot[0] = 1.0;
                     return new double[7];
@@ -656,7 +675,7 @@ public class NumericalPropagatorTest {
                public String getName() {
                     return "linear";
                 }
-                
+
                 public double[] getAdditionalState(SpacecraftState state) {
                     return null;
                 }
@@ -701,12 +720,12 @@ public class NumericalPropagatorTest {
         public AdditionalStateLinearDetector(double maxCheck, double threshold) {
             this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<AdditionalStateLinearDetector>());
         }
-        
+
         private AdditionalStateLinearDetector(double maxCheck, double threshold, int maxIter,
                                               EventHandler<? super AdditionalStateLinearDetector> handler) {
             super(maxCheck, threshold, maxIter, handler);
         }
-        
+
         protected AdditionalStateLinearDetector create(final double newMaxCheck, final double newThreshold,
                                                        final int newMaxIter,
                                                        final EventHandler<? super AdditionalStateLinearDetector> newHandler) {
@@ -716,17 +735,17 @@ public class NumericalPropagatorTest {
         public double g(SpacecraftState s) throws OrekitException {
             return s.getAdditionalState("linear")[0] - 3.0;
         }
-        
+
     }
 
     @Test
     public void testResetAdditionalStateEvent() throws OrekitException {
         propagator.addAdditionalEquations(new AdditionalEquations() {
-            
+
             public String getName() {
                 return "linear";
             }
-            
+
             public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
                 pDot[0] = 1.0;
                 return null;
@@ -999,7 +1018,7 @@ public class NumericalPropagatorTest {
 
     /**
      * Assume we have 5 epochs, we will propagate from the input epoch to all the following epochs.
-     *   If we have [0,1,2,3,4], and input is 2, then we will do 2->3, 2->4. 
+     *   If we have [0,1,2,3,4], and input is 2, then we will do 2->3, 2->4.
      * @param startIndex index of start state
      * @param states all states
      * @return position error for recomputed following points
@@ -1028,7 +1047,7 @@ public class NumericalPropagatorTest {
         final int order                              = 20;
         final double spacecraftArea                  = 1.0;
         final double spacecraftDragCoefficient       = 2.0;
-        final double spacecraftReflectionCoefficient = 2.0; 
+        final double spacecraftReflectionCoefficient = 2.0;
 
         // propagator main configuration
         final double[][] tol           = NumericalPropagator.tolerances(positionTolerance, spacecraftState.getOrbit(), type);
@@ -1142,6 +1161,12 @@ public class NumericalPropagatorTest {
         }
 
         @Override
+        public <T extends RealFieldElement<T>> void
+        addContribution(FieldSpacecraftState<T> s,
+                        FieldTimeDerivativesEquations<T> adder) {
+        }
+
+        @Override
         public FieldVector3D<DerivativeStructure> accelerationDerivatives(
                 AbsoluteDate date,
                 Frame frame,
@@ -1155,6 +1180,12 @@ public class NumericalPropagatorTest {
         @Override
         public EventDetector[] getEventsDetectors() {
             return new EventDetector[0];
+        }
+
+        @Override
+        public <T extends RealFieldElement<T>> FieldEventDetector<T>[]
+                        getFieldEventsDetectors() {
+            return new FieldEventDetector[0];
         }
 
         @Override

@@ -43,7 +43,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
     }
 
     /**
-     * @param currentState  spacecraft state at the signal reception date 
+     * @param currentState  spacecraft state at the signal reception date
      */
     public void handleStep(final SpacecraftState currentState, final boolean isLast)
         throws OrekitException {
@@ -100,7 +100,7 @@ public class RangeRateMeasurementCreator extends MeasurementCreator {
                 // relative velocity, spacecraft-station, at the date of emission
                 final Vector3D deltaVe = velocity.subtract(stationAtEmission.getVelocity());
 
-                // range rate at the date of reception 
+                // range rate at the date of reception
                 final double rr = twoWay ?
                                           0.5 * (deltaVr.dotProduct(receptionLOS) + deltaVe.dotProduct(emissionLOS)) :
                                               deltaVr.dotProduct(receptionLOS);
