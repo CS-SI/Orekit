@@ -34,7 +34,6 @@ public class FieldOrekitStepHandlerMultiplexer<T extends RealFieldElement<T>> im
     private final List<FieldOrekitStepHandler<T>> handlers;
 
     /** Simple constructor.
-     * @param fieldN used by default.
      */
     public FieldOrekitStepHandlerMultiplexer() {
         handlers = new ArrayList<FieldOrekitStepHandler<T>>();
