@@ -19,10 +19,13 @@ package org.orekit.utils;
 
 import java.util.Random;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -171,8 +174,53 @@ public class FieldAngularCoordinatesTest {
             Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripAS.getRotation()).getReal(), 1.0e-15);
             Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()).getReal(), 2.0e-17);
             Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()).getReal(), 2.0e-17);
-
         }
+    }
+    
+    @Test 
+    public void testResultAngularCoordinates() throws OrekitException{
+        Field<Decimal64> field = Decimal64Field.getInstance();
+        Decimal64 zero = field.getZero();
+        FieldVector3D<Decimal64> pos_B = new FieldVector3D<Decimal64> (zero.add(-0.23723922134606962    )  ,
+                                                       zero.add(-0.9628700341496187     ),
+                                                       zero.add(0.1288365211879871      ));
+        FieldVector3D<Decimal64> vel_B = new FieldVector3D<Decimal64> (zero.add(2.6031808214929053E-7   ),
+                                                       zero.add(-8.141147978260352E-8   ),
+                                                       zero.add(-1.2908618653852553E-7  ));
+        FieldVector3D<Decimal64> acc_B = new FieldVector3D<Decimal64>(zero.add( -1.395403347295246E-10  ),
+                                                      zero.add( -2.7451871050415643E-12 ),
+                                                      zero.add( -2.781723303703499E-10  ) );
+       
+        FieldPVCoordinates<Decimal64> B = new FieldPVCoordinates<Decimal64>(pos_B, vel_B, acc_B);
+       
+       
+        FieldVector3D<Decimal64> pos_A = new FieldVector3D<Decimal64> (zero.add(-0.44665912825286425    ),
+                                                       zero.add(-0.00965737694923173    ),
+                                                       zero.add(-0.894652087807798      ));
+        FieldVector3D<Decimal64> vel_A = new FieldVector3D<Decimal64> (zero.add(-8.897373390367405E-4   )    ,
+                                                       zero.add(2.7825509772757976E-4   )  ,
+                                                       zero.add(4.412017757970883E-4    )   );
+        FieldVector3D<Decimal64> acc_A = new FieldVector3D<Decimal64>(zero.add( 4.743595125825107E-7    ),
+                                                      zero.add( 1.01875177357042E-8     ),
+                                                      zero.add( 9.520371766790574E-7    ) );
+
+        FieldPVCoordinates<Decimal64> A = new FieldPVCoordinates<Decimal64>(pos_A, vel_A, acc_A);
+       
+        FieldPVCoordinates<Decimal64> PLUS_K = new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getOne()),
+                                                                 new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getZero()),
+                                                                 new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getZero()));
+       
+        FieldPVCoordinates<Decimal64> PLUS_J = new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(field.getZero(), field.getOne(), field.getZero()),
+                                                                 new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getZero()),
+                                                                 new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getZero()));
+       
+       
+        FieldAngularCoordinates<Decimal64> fac = new FieldAngularCoordinates<Decimal64>(A, B, PLUS_K, PLUS_J, 1.0e-6);
+       
+        AngularCoordinates ac = new AngularCoordinates(A.toPVCoordinates(), B.toPVCoordinates(), PLUS_K.toPVCoordinates(), PLUS_J.toPVCoordinates(), 1.0e-6);
+
+        Assert.assertTrue( fac.getRotationRate().toVector3D().equals(ac.getRotationRate()));
+        
     }
 
     private FieldVector3D<DerivativeStructure> randomVector(Random random, double norm) {

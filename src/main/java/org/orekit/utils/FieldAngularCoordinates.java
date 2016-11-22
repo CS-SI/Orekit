@@ -23,8 +23,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.linear.FieldDecompositionSolver;
-import org.hipparchus.linear.FieldLUDecomposition;
 import org.hipparchus.linear.FieldMatrix;
+import org.hipparchus.linear.FieldQRDecomposition;
 import org.hipparchus.linear.FieldVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.MathArrays;
@@ -184,38 +184,19 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
 
         try {
             // create the over-determined linear system representing the two cross products
-
-            final T[][] mm = MathArrays.buildArray(v12.getField(), 6, 6);
-
-            mm[0][1] = v1.getZ();
-            mm[0][2] = v1.getY().multiply(-1);
-            mm[1][0] = v1.getZ().multiply(-1);
-            mm[1][2] = v1.getX();
-            mm[2][0] = v1.getY();
-            mm[2][1] = v1.getX().multiply(-1);
-            mm[3][1] = v2.getZ();
-            mm[3][2] = v2.getY().multiply(-1);
-            mm[4][0] = v2.getZ().multiply(-1);
-            mm[4][2] = v2.getX();
-            mm[5][0] = v2.getY();
-            mm[5][1] = v2.getX().multiply(-1);
-            //TODO CHECK THIS
-            mm[0][3] = threshold.getField().getZero();
-            mm[0][4] = threshold.getField().getZero();
-            mm[1][5] = threshold.getField().getZero();
-            mm[1][4] = threshold.getField().getZero();
-            mm[1][3] = threshold.getField().getZero();
-            mm[2][3] = threshold.getField().getZero();
-            mm[2][4] = threshold.getField().getZero();
-            mm[2][5] = threshold.getField().getZero();
-            mm[3][5] = threshold.getField().getZero();
-            mm[3][4] = threshold.getField().getZero();
-            mm[4][3] = threshold.getField().getZero();
-            mm[4][5] = threshold.getField().getZero();
-            mm[5][3] = threshold.getField().getZero();
-            mm[5][4] = threshold.getField().getZero();
-
-            final FieldMatrix<T> m = MatrixUtils.createFieldMatrix(mm);
+            final FieldMatrix<T> m = MatrixUtils.createFieldMatrix(v12.getField(), 6, 3);
+            m.setEntry(0, 1, v1.getZ());
+            m.setEntry(0, 2, v1.getY().negate());
+            m.setEntry(1, 0, v1.getZ().negate());
+            m.setEntry(1, 2, v1.getX());
+            m.setEntry(2, 0, v1.getY());
+            m.setEntry(2, 1, v1.getX().negate());
+            m.setEntry(3, 1, v2.getZ());
+            m.setEntry(3, 2, v2.getY().negate());
+            m.setEntry(4, 0, v2.getZ().negate());
+            m.setEntry(4, 2, v2.getX());
+            m.setEntry(5, 0, v2.getY());
+            m.setEntry(5, 1, v2.getX().negate());
 
             final T[] kk = MathArrays.buildArray(v2n.getField(), 6);
             kk[0] = c1.getX();
@@ -227,8 +208,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
             final FieldVector<T> rhs = MatrixUtils.createFieldVector(kk);
 
             // find the best solution we can
-
-            final FieldDecompositionSolver<T> solver = new FieldLUDecomposition<T>(m).getSolver();
+            final FieldDecompositionSolver<T> solver = new FieldQRDecomposition<T>(m).getSolver();
             final FieldVector<T> v = solver.solve(rhs);
             omega = new FieldVector3D<T>(v.getEntry(0), v.getEntry(1), v.getEntry(2));
 
