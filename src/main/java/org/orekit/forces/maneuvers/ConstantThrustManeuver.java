@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.maneuvers;
 
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -31,11 +34,14 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
@@ -249,59 +255,27 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        return new EventDetector[] {
-            new DateDetector(startDate).withHandler(new FiringStartHandler()),
-            new DateDetector(endDate).withHandler(new FiringStopHandler())
-        };
+    public Stream<EventDetector> getEventsDetectors() {
+        // in forward propagation direction, firing must be enabled
+        // at start time and disabled at end time; in backward
+        // propagation direction, firing must be enabled
+        // at end time and disabled at start time
+        final DateDetector startDetector = new DateDetector(startDate).
+            withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
+                firing = d.isForward();
+                return EventHandler.Action.RESET_DERIVATIVES;
+            });
+        final DateDetector endDetector = new DateDetector(endDate).
+            withHandler((SpacecraftState state, DateDetector d, boolean increasing) -> {
+                firing = !d.isForward();
+                return EventHandler.Action.RESET_DERIVATIVES;
+            });
+        return Stream.of(startDetector, endDetector);
     }
 
     /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {
         return parametersDrivers.clone();
-    }
-
-    /** Handler for start of maneuver. */
-    private class FiringStartHandler implements EventHandler<DateDetector> {
-
-        /** {@inheritDoc} */
-        @Override
-        public EventHandler.Action eventOccurred(final SpacecraftState s,
-                                                 final DateDetector detector,
-                                                 final boolean increasing) {
-            if (detector.isForward()) {
-                // we are in the forward direction,
-                // starting now, the maneuver is ON as it has just started
-                firing = true;
-            } else {
-                // we are in the backward direction,
-                // starting now, the maneuver is OFF as it has not started yet
-                firing = false;
-            }
-            return EventHandler.Action.RESET_DERIVATIVES;
-        }
-
-    }
-
-    /** Handler for end of maneuver. */
-    private class FiringStopHandler implements EventHandler<DateDetector> {
-
-        /** {@inheritDoc} */
-        public EventHandler.Action eventOccurred(final SpacecraftState s,
-                                                 final DateDetector detector,
-                                                 final boolean increasing) {
-            if (detector.isForward()) {
-                // we are in the forward direction,
-                // starting now, the maneuver is OFF as it has just ended
-                firing = false;
-            } else {
-                // we are in the backward direction,
-                // starting now, the maneuver is ON as it has not ended yet
-                firing = true;
-            }
-            return EventHandler.Action.RESET_DERIVATIVES;
-        }
-
     }
 
     @Override
@@ -314,10 +288,22 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     }
 
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[]
-        getFieldEventsDetectors() {
-        // TODO: field implementation
-        throw new UnsupportedOperationException();
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        // in forward propagation direction, firing must be enabled
+        // at start time and disabled at end time; in backward
+        // propagation direction, firing must be enabled
+        // at end time and disabled at start time
+        final FieldDateDetector<T> startDetector = new FieldDateDetector<T>(new FieldAbsoluteDate<>(field, startDate)).
+            withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
+                firing = d.isForward();
+                return FieldEventHandler.Action.RESET_DERIVATIVES;
+            });
+        final FieldDateDetector<T> endDetector = new FieldDateDetector<T>(new FieldAbsoluteDate<>(field, endDate)).
+            withHandler((FieldSpacecraftState<T> state, FieldDateDetector<T> d, boolean increasing) -> {
+                firing = !d.isForward();
+                return FieldEventHandler.Action.RESET_DERIVATIVES;
+            });
+        return Stream.of(startDetector, endDetector);
     }
 
 }

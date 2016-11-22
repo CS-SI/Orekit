@@ -513,12 +513,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             this.jacobian = new double[6][6];
 
             for (final ForceModel forceModel : forceModels) {
-                final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
-                if (modelDetectors != null) {
-                    for (final EventDetector detector : modelDetectors) {
-                        setUpEventDetector(integrator, detector);
-                    }
-                }
+                forceModel.getEventsDetectors().forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
         }

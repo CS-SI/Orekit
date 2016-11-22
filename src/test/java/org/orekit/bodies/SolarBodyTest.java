@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.stream.Stream;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -512,13 +514,13 @@ public class SolarBodyTest {
         }
 
         /** {@inheritDoc} */
-        public EventDetector[] getEventsDetectors() {
-            return new EventDetector[0];
+        public Stream<EventDetector> getEventsDetectors() {
+            return Stream.empty();
         }
 
         /** {@inheritDoc} */
-        public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors() {
-            return new FieldEventDetector[0];
+        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+            return Stream.empty();
         }
 
         /** {@inheritDoc} */

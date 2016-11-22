@@ -17,7 +17,9 @@
 package org.orekit.forces;
 
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -138,17 +140,16 @@ public interface ForceModel {
         throws OrekitException;
 
     /** Get the discrete events related to the model.
-     * @return array of events detectors or null if the model is not
-     * related to any discrete events
+     * @return stream of events detectors
      */
-    EventDetector[] getEventsDetectors();
+    Stream<EventDetector> getEventsDetectors();
 
     /** Get the discrete events related to the model.
+     * @param field field to which the state belongs
      * @param <T> extends RealFieldElement<T>
-     * @return array of events detectors or null if the model is not
-     * related to any discrete events
+     * @return stream of events detectors
      */
-    <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors();
+    <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
 
     /** Get the drivers for force model parameters.
      * @return drivers for force model parameters

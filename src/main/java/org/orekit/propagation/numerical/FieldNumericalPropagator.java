@@ -26,12 +26,12 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.util.MathArrays;
-import org.orekit.fieldattitudes.FieldAttitude;
-import org.orekit.fieldattitudes.FieldAttitudeProvider;
-import org.orekit.fieldattitudes.FieldInertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.fieldattitudes.FieldAttitude;
+import org.orekit.fieldattitudes.FieldAttitudeProvider;
+import org.orekit.fieldattitudes.FieldInertialProvider;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
@@ -40,7 +40,6 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.FieldOrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.time.FieldAbsoluteDate;
@@ -352,12 +351,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
             this.yDot     = MathArrays.buildArray(getField(),  7);
             this.jacobian = MathArrays.buildArray(getField(),  6, 6);
             for (final ForceModel forceModel : forceModels) {
-                final FieldEventDetector<T>[] modelDetectors = forceModel.getFieldEventsDetectors();
-                if (modelDetectors != null) {
-                    for (final FieldEventDetector<T> detector : modelDetectors) {
-                        setUpEventDetector(integrator, detector);
-                    }
-                }
+                forceModel.getFieldEventsDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
             }
 
         }

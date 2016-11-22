@@ -18,7 +18,9 @@ package org.orekit.forces.gravity;
 
 
 import java.io.Serializable;
+import java.util.stream.Stream;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -1065,14 +1067,14 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        return new EventDetector[0];
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
     }
 
     @Override
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors() {
-        return new FieldEventDetector[0];
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
     }
 
     /** {@inheritDoc} */

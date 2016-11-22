@@ -62,7 +62,7 @@ public class ConstantThrustManeuverTest {
                                              TimeScalesFactory.getUTC());
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, 10.0, 400.0, 300.0, Vector3D.PLUS_K);
-        EventDetector[] switches = maneuver.getEventsDetectors();
+        EventDetector[] switches = maneuver.getEventsDetectors().toArray(EventDetector[]::new);
 
         Orbit o1 = dummyOrbit(date.shiftedBy(- 1.0));
         Assert.assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
@@ -81,7 +81,7 @@ public class ConstantThrustManeuverTest {
                                              TimeScalesFactory.getUTC());
         ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(date, -10.0, 400.0, 300.0, Vector3D.PLUS_K);
-        EventDetector[] switches = maneuver.getEventsDetectors();
+        EventDetector[] switches = maneuver.getEventsDetectors().toArray(EventDetector[]::new);
 
         Orbit o1 = dummyOrbit(date.shiftedBy(-11.0));
         Assert.assertTrue(switches[0].g(new SpacecraftState(o1)) < 0);
@@ -143,7 +143,7 @@ public class ConstantThrustManeuverTest {
         final SpacecraftState finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 
         final double massTolerance =
-                FastMath.abs(maneuver.getFlowRate()) * maneuver.getEventsDetectors()[0].getThreshold();
+                FastMath.abs(maneuver.getFlowRate()) * maneuver.getEventsDetectors().findFirst().get().getThreshold();
         Assert.assertEquals(2007.8824544261233, finalorb.getMass(), massTolerance);
         Assert.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
         Assert.assertEquals(28970, finalorb.getA()/1000, 1);

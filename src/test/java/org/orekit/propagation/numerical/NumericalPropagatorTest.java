@@ -24,9 +24,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -1178,14 +1180,13 @@ public class NumericalPropagatorTest {
         }
 
         @Override
-        public EventDetector[] getEventsDetectors() {
-            return new EventDetector[0];
+        public Stream<EventDetector> getEventsDetectors() {
+            return Stream.empty();
         }
 
         @Override
-        public <T extends RealFieldElement<T>> FieldEventDetector<T>[]
-                        getFieldEventsDetectors() {
-            return new FieldEventDetector[0];
+        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+            return Stream.empty();
         }
 
         @Override

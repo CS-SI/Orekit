@@ -19,6 +19,9 @@ package org.orekit.propagation.numerical;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -128,7 +131,13 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position, FieldVector3D<DerivativeStructure> velocity, FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass) throws OrekitException {
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date,
+                                                                          Frame frame,
+                                                                          FieldVector3D<DerivativeStructure> position,
+                                                                          FieldVector3D<DerivativeStructure> velocity,
+                                                                          FieldRotation<DerivativeStructure> rotation,
+                                                                          DerivativeStructure mass)
+            throws OrekitException {
             this.accelerationDerivativesPosition = position;
             this.accelerationDerivativesVelocity = velocity;
             return position;
@@ -140,8 +149,8 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public EventDetector[] getEventsDetectors() {
-            return new EventDetector[0];
+        public Stream<EventDetector> getEventsDetectors() {
+            return Stream.empty();
         }
 
         @Override
@@ -150,10 +159,8 @@ public class PartialDerivativesEquationsTest {
         }
 
         @Override
-        public <T extends RealFieldElement<T>> FieldEventDetector<T>[]
-            getFieldEventsDetectors() {
-            // TODO Auto-generated method stub
-            return null;
+        public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+            return Stream.empty();
         }
 
     }

@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.radiation;
 
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -246,10 +249,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        return new EventDetector[] {
-            new UmbraDetector(), new PenumbraDetector()
-        };
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.of(new UmbraDetector(), new PenumbraDetector());
     }
 
     /** {@inheritDoc} */
@@ -499,10 +500,8 @@ public class SolarRadiationPressure extends AbstractForceModel {
     }
 
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[]
-        getFieldEventsDetectors() {
-        // TODO Auto-generated method stub
-        return null;
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
     }
 
 }

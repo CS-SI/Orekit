@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -115,14 +118,13 @@ public class DragForce extends AbstractForceModel {
     /** There are no discrete events for this model.
      * @return an empty array
      */
-    public EventDetector[] getEventsDetectors() {
-        return new EventDetector[0];
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
     }
 
     @Override
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[]
-        getFieldEventsDetectors() {
-        return new FieldEventDetector[0];
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
     }
 
     /** {@inheritDoc} */

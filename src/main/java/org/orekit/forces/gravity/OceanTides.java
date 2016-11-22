@@ -17,7 +17,9 @@
 package org.orekit.forces.gravity;
 
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -164,15 +166,15 @@ public class OceanTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public EventDetector[] getEventsDetectors() {
+    public Stream<EventDetector> getEventsDetectors() {
         // delegate to underlying attraction model
         return attractionModel.getEventsDetectors();
     }
 
     @Override
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> FieldEventDetector<T>[] getFieldEventsDetectors() {
-        return attractionModel.getFieldEventsDetectors();
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return attractionModel.getFieldEventsDetectors(field);
     }
 
     @Override
