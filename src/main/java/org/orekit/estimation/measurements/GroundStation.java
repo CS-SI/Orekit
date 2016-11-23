@@ -200,6 +200,49 @@ public class GroundStation {
 
     }
 
+    /** Compute propagation delay on the downlink leg.
+     * @param position spacecraft position
+     * @param velocity spacecraft velocity
+     * @param acceleration {@link SpacecraftState} acceleration
+     * @param stationPosition station position
+     * @param stateDate at which spacecraft state has been computed
+     * @param groundArrivalDate date at which the associated measurement
+     * is received on ground
+     * @return positive delay between emission date on spacecraft and
+     * signal reception date on ground
+     * @exception OrekitException if some frame transforms fails
+     */
+    public DerivativeStructure downlinkTimeOfFlightWithDerivatives(final FieldVector3D<DerivativeStructure> position,
+                                                                   final FieldVector3D<DerivativeStructure> velocity,
+                                                                   final FieldVector3D<DerivativeStructure> acceleration,
+                                                                   final FieldVector3D<DerivativeStructure> stationPosition,
+                                                                   final AbsoluteDate stateDate,
+                                                                   final AbsoluteDate groundArrivalDate)
+        throws OrekitException {
+
+        // Initialize emission date search loop assuming the state is already correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge very fast
+        final int parameters = position.getX().getFreeParameters();
+        final double offset = groundArrivalDate.durationFrom(stateDate);
+        DerivativeStructure delay = new DerivativeStructure(parameters, 1, offset);
+
+        // search signal transit date, computing the signal travel in inertial frame
+        double delta;
+        int count = 0;
+        do {
+            final double previous  = delay.getValue();
+            final FieldVector3D<DerivativeStructure> transit = position.
+                            add(velocity.scalarMultiply(delay.negate().add(offset))).
+                            add(acceleration.scalarMultiply((delay.negate().add(offset)).pow(2)).scalarMultiply(0.5));
+            delay                  = transit.distance(stationPosition).multiply(1.0 / Constants.SPEED_OF_LIGHT);
+            delta                  = FastMath.abs(delay.getValue() - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getValue()));
+
+        return delay;
+
+    }
+
     /** Compute propagation delay on the uplink leg.
      * @param state of the spacecraft at signal transit date on board
      * @return positive delay between emission date on ground and
@@ -226,6 +269,42 @@ public class GroundStation {
             delay = Vector3D.distance(departure, transit) / Constants.SPEED_OF_LIGHT;
             delta = FastMath.abs(delay - previous);
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
+
+        return delay;
+
+    }
+
+     /** Compute propagation delay on the uplink leg.
+     * @param position spacecraft position at signal transit time on board
+     * @param stationPosition {@link GroundStation} position at signal arrival time
+     * @param rotationRateTopoToInert rotation rate of the body on which station is defined
+     * @param tauD downlink delay
+     * @param stateDate date of the signal transit time on board
+     * @return positive delay between emission date on ground and
+     * signal reception date on board
+     * @exception OrekitException if some frame transforms fails
+     */
+    public DerivativeStructure uplinkTimeOfFlightWithDerivatives(final FieldVector3D<DerivativeStructure> position,
+                                                                 final FieldVector3D<DerivativeStructure> stationPosition,
+                                                                 final Vector3D rotationRateTopoToInert,
+                                                                 final DerivativeStructure tauD,
+                                                                 final AbsoluteDate stateDate)
+        throws OrekitException {
+
+        // Search signal departure date, computing the signal travel in inertial frame
+        final int parameters = position.getX().getFreeParameters();
+        double delta;
+        DerivativeStructure delay = new DerivativeStructure(parameters, 1, 0.0);
+        int count = 0;
+        do {
+            final double       previous      = delay.getValue();
+            final FieldVector3D<DerivativeStructure> Qdeparture =
+                            stationPosition.subtract
+                            (stationPosition.crossProduct(rotationRateTopoToInert).
+                             scalarMultiply(tauD.add(delay)));
+            delay = Qdeparture.distance(position).multiply(1.0 / Constants.SPEED_OF_LIGHT);
+            delta = FastMath.abs(delay.getValue() - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getValue()));
 
         return delay;
 
@@ -264,7 +343,7 @@ public class GroundStation {
 
         // offset frame origin
         final Transform offsetToBody = frame.getTransformTo(baseFrame.getParent(), null);
-        final Vector3D  offsetOrigin  = offsetToBody.transformPosition(Vector3D.ZERO);
+        final Vector3D  offsetOrigin = offsetToBody.transformPosition(Vector3D.ZERO);
         final FieldVector3D<DerivativeStructure> zeroEast =
                         new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, eastOffsetIndex,   0.0),
                                                                baseFrame.getEast());

@@ -194,7 +194,7 @@ public class RangeTest {
 
             final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
             ((Range) measurement).addModifier(modifier);
-                        
+
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
             // compensating only part of the downlink delay. This is done
@@ -259,7 +259,7 @@ public class RangeTest {
 
             final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
             ((Range) measurement).addModifier(modifier);
-            
+
             // parameter corresponding to station position offset
             final GroundStation stationParameter = ((Range) measurement).getStation();
 
