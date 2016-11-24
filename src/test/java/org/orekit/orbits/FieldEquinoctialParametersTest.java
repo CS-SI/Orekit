@@ -55,22 +55,70 @@ public class FieldEquinoctialParametersTest {
     }
 
     @Test
-    public <T extends RealFieldElement<T>> void testing() throws OrekitException{
+    public void doEquinToEquinTest() throws OrekitException{
         testEquinoctialToEquinoctialEll(Decimal64Field.getInstance());
-        testEquinoctialToEquinoctialCirc(Decimal64Field.getInstance());
-        testEquinoctialToCartesian(Decimal64Field.getInstance());
-        testEquinoctialToKeplerian(Decimal64Field.getInstance());
-        testNumericalIssue25(Decimal64Field.getInstance());
-        testAnomaly(Decimal64Field.getInstance());
-        testPositionVelocityNorms(Decimal64Field.getInstance());
-        testGeometry(Decimal64Field.getInstance());
-        testRadiusOfCurvature(Decimal64Field.getInstance());
-        testSymmetry(Decimal64Field.getInstance());
-        testJacobianReference(Decimal64Field.getInstance());
-        testJacobianFinitedifferences(Decimal64Field.getInstance());
-        testInterpolation(Decimal64Field.getInstance());
     }
 
+    @Test
+    public void doEquinToEquinCircTest() throws OrekitException{
+        testEquinoctialToEquinoctialCirc(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doEquinToCartTest() throws OrekitException{
+        testEquinoctialToCartesian(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doEquinToKeplTest() throws OrekitException{
+        testEquinoctialToKeplerian(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doNumerialIssue25Test() throws OrekitException{
+        testNumericalIssue25(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doAnomalyTest() throws OrekitException{
+        testAnomaly(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doPositionVelocityTest() throws OrekitException{
+        testPositionVelocityNorms(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doGeometryTest() throws OrekitException{
+        testGeometry(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doRadiusOfCurvTest() throws OrekitException{
+        testRadiusOfCurvature(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doSymmetryTest() throws OrekitException{
+        testSymmetry(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doJacobianReferenceTest() throws OrekitException{
+        testJacobianReference(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doJacobianFinitedDiffTest() throws OrekitException{
+        testJacobianFinitedifferences(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doInterpolationTest() throws OrekitException{
+        testInterpolation(Decimal64Field.getInstance());
+    }
+    
     @Test(expected=IllegalArgumentException.class)
     public <T extends RealFieldElement<T>> void testErr1(){
         testHyperbolic(Decimal64Field.getInstance());

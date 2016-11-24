@@ -668,9 +668,12 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         // perturbed orbit velocity should be equal to Keplerian orbit because
         // it was in fact reconstructed from Cartesian coordinates
+        System.out.println(referenceV);
+        System.out.println(computedV);
+        System.out.println(keplerianV);
         T computationErrorV   = FieldVector3D.distance(referenceV, computedV);
         T nonKeplerianEffectV = FieldVector3D.distance(referenceV, keplerianV);
-        Assert.assertEquals(nonKeplerianEffectV.getReal(), computationErrorV.getReal(), 9.0e-13);
+        Assert.assertEquals(0.0, nonKeplerianEffectV.getReal() - computationErrorV.getReal(), 9.0e-12);
         Assert.assertEquals(2.2e-4, computationErrorV.getReal(), 3.0e-6);
 
         // perturbed orbit acceleration should be different from Keplerian orbit because

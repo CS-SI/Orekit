@@ -232,7 +232,7 @@ public class FieldEclipseDetector<T extends RealFieldElement<T>> extends FieldAb
         if (Double.isNaN(rs)) {
             return s.getOrbit().getA().getField().getZero().add(FastMath.PI);
         }
-        final double ro     = FastMath.asin(occultingRadius / ps.getNorm());
+        final double ro     = FastMath.asin(occultingRadius / po.getNorm());
         if (Double.isNaN(ro)) {
             return s.getOrbit().getA().getField().getZero().add(-FastMath.PI);
         }

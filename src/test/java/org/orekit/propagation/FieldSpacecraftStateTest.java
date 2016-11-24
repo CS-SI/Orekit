@@ -67,15 +67,32 @@ import org.orekit.utils.PVCoordinates;
 public class FieldSpacecraftStateTest {
 
     @Test
-    public void test() throws OrekitException, ParseException {
-//    testFieldVsReal(Decimal64Field.getInstance());
-    testShiftError(Decimal64Field.getInstance());
-//    testDatesConsistency(Decimal64Field.getInstance());
-    testDateConsistencyClose(Decimal64Field.getInstance());
-//    testFramesConsistency(Decimal64Field.getInstance());
-    testTransform(Decimal64Field.getInstance());
-    testAdditionalStates(Decimal64Field.getInstance());
-
+    public void doFieldVSRealTest() throws OrekitException, ParseException {
+        testFieldVsReal(Decimal64Field.getInstance());
+    }
+    @Test
+    public void doShiftErrorTest() throws OrekitException, ParseException {
+        testShiftError(Decimal64Field.getInstance());
+    }
+    @Test(expected=IllegalArgumentException.class)
+    public void doDatesConsistencyTest() throws OrekitException, ParseException {
+        testDatesConsistency(Decimal64Field.getInstance());
+    }
+    @Test
+    public void doDateConsistencyCloseTest() throws OrekitException, ParseException {
+        testDateConsistencyClose(Decimal64Field.getInstance());
+    }
+    @Test(expected=IllegalArgumentException.class)
+    public void doFramesConsistencyTest() throws OrekitException, ParseException {
+        testFramesConsistency(Decimal64Field.getInstance());
+    }
+    @Test
+    public void doTransformTest() throws OrekitException, ParseException {   
+        testTransform(Decimal64Field.getInstance());
+    }
+    @Test
+    public void doAdditionalStatesTest() throws OrekitException, ParseException {
+        testAdditionalStates(Decimal64Field.getInstance());
     }
 
     public <T extends RealFieldElement<T>> void testFieldVsReal(final Field<T> field) throws OrekitException{
@@ -199,7 +216,6 @@ public class FieldSpacecraftStateTest {
                                                                      rPropagated.getAttitude().getRotation())) -
                                 FastMath.toDegrees(FieldRotation.distance(shifted.getFieldAttitude().getRotation(),
                                                                     propagated.getFieldAttitude().getRotation()).getReal());
-            //TODO
             Assert.assertEquals(0, residualP, 5e-4);
             Assert.assertEquals(0, residualV, 5e-4);
             Assert.assertEquals(0, residualA, 5e-4);

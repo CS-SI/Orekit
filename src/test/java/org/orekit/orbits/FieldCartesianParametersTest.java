@@ -53,23 +53,67 @@ public class FieldCartesianParametersTest {
         mu = 3.9860047e14;
     }
     @Test
-    public void test() throws OrekitException{
+    public void doCartToCartTest() throws OrekitException{
         testCartesianToCartesian(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doCartToEquinTest() throws OrekitException{
         testCartesianToEquinoctial(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doCartToKeplTest() throws OrekitException{
         testCartesianToKeplerian(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doPositionToVelocityNormsTest() throws OrekitException{
         testPositionVelocityNorms(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doGeometryTest() throws OrekitException{
         testGeometry(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doNumericalIssue25Test() throws OrekitException{
         testNumericalIssue25(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doShiftEllipticTest() throws OrekitException{
         testShiftElliptic(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doShiftCircularTest() throws OrekitException{
         testShiftCircular(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doShiftHyperbolicTest() throws OrekitException{
         testShiftHyperbolic(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doNumericalIssue135Test() throws OrekitException{
         testNumericalIssue135(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doJacobianReferenceTest() throws OrekitException{
         testJacobianReference(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doInteroplationTest() throws OrekitException{
         testInterpolation(Decimal64Field.getInstance());
     }
 
     @Test(expected=IllegalArgumentException.class)
-public void testErr1(){
+    public void testErr1(){
         test(Decimal64Field.getInstance());
     }
 

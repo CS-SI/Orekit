@@ -70,18 +70,72 @@ public class FieldKeplerianPropagatorTest {
     private double mu;
 
     @Test
-    public void test() throws OrekitException, ClassNotFoundException, IOException{
+    public void doSameDateCartesianTest() throws OrekitException, ClassNotFoundException, IOException{
         sameDateCartesian(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doSameDateKeplerianTest() throws OrekitException, ClassNotFoundException, IOException{
         sameDateKeplerian(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doPropagatedCartesianTest() throws OrekitException, ClassNotFoundException, IOException{
         propagatedCartesian(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doPropagatedKeplerianTest() throws OrekitException, ClassNotFoundException, IOException{
         propagatedKeplerian(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doAscendingNodeTest() throws OrekitException, ClassNotFoundException, IOException{
         ascendingNode(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doStopAtTargetDateTest() throws OrekitException, ClassNotFoundException, IOException{
         stopAtTargetDate(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doFixedStepTest() throws OrekitException, ClassNotFoundException, IOException{
         fixedStep(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doVariableStepTest() throws OrekitException, ClassNotFoundException, IOException{
         variableStep(Decimal64Field.getInstance());
-        ephemeris(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doEphemerisTest() throws OrekitException, ClassNotFoundException, IOException{
+        ephemeris(Decimal64Field.getInstance());}
+    
+
+    @Test
+    public void doIssue14Test() throws OrekitException, ClassNotFoundException, IOException{
         testIssue14(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doIssue107Test() throws OrekitException, ClassNotFoundException, IOException{
         testIssue107(Decimal64Field.getInstance());
+    }
+    
+
+    @Test
+    public void doMuTest() throws OrekitException, ClassNotFoundException, IOException{
         testMu(Decimal64Field.getInstance());
     }
 
@@ -385,7 +439,7 @@ public class FieldKeplerianPropagatorTest {
             new FieldKeplerianOrbit<T>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
                                FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field), 3.986004415e14);
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<T>(orbit);
-        FieldOrekitStepHandlerMultiplexer<T> multiplexer = new FieldOrekitStepHandlerMultiplexer<T>();
+        FieldOrekitStepHandlerMultiplexer<T> multiplexer = new FieldOrekitStepHandlerMultiplexer<T>(field );
         propagator.setMasterMode(multiplexer);
         multiplexer.add(new FieldOrekitStepHandler<T>() {
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
@@ -540,7 +594,7 @@ public class FieldKeplerianPropagatorTest {
             }
         });
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<T>(field).shiftedBy(10000.0);
-        propagator.propagate(farTarget); // TODO I dont understand why it shouldn't propagate
+        propagator.propagate(farTarget);
     }
 
     public <T extends RealFieldElement<T>> void variableStep(Field<T> field) throws OrekitException {
@@ -647,180 +701,6 @@ public class FieldKeplerianPropagatorTest {
         Assert.assertEquals(0.0,      FieldVector3D.distance(pv1.getPosition(), pvWithMu1.getPosition()).getReal(), 1.0e-15);
     }
 
-
-
-    //ARE THEY SERIALIZATION TESTS? //TODO
-//    public <T extends RealFieldElement<T>> void testIssue223(Field<T> field)
-//        throws OrekitException, IOException, ClassNotFoundException {
-//        T zero = field.getZero();
-//        // Inertial frame
-//        Frame inertialFrame = FramesFactory.getEME2000();
-//
-//        // Initial date
-//        TimeScale utc = TimeScalesFactory.getUTC();
-//        FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<T>(field, 2004, 01, 01, 23, 30, 00.000,utc);
-//
-//        // Central attraction coefficient
-//        double mu =  3.986004415e+14;
-//
-//        // Initial orbit
-//        T a = zero.add(42100);                       // semi major axis in meters
-//        T e = zero.add(0.01);                        // eccentricity
-//        T i = zero.add(FastMath.toRadians(6));       // inclination
-//        T omega = zero.add(FastMath.toRadians(180)); // perigee argument
-//        T raan = zero.add(FastMath.toRadians(261));  // right ascention of ascending node
-//        T lM = zero;                          // mean anomaly
-//        FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<T>(a, e, i, omega, raan, lM, PositionAngle.MEAN, inertialFrame, initialDate, mu);
-//
-//        // Initial state definition
-//        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(initialOrbit);
-//
-//        // FieldPropagator<T>
-//        FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<T>(initialOrbit);
-//        propagator.addAdditionalStateProvider(new SevenProvider<T>());
-//        propagator.setEphemerisMode();
-//        propagator.propagate(initialState.getDate().shiftedBy(40000));
-//
-//        FieldBoundedPropagator<T> ephemeris = propagator.getGeneratedEphemeris();
-//
-//        Assert.assertSame(inertialFrame, ephemeris.getFrame());
-//
-//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-//        oos.writeObject(ephemeris);
-//
-//        Assert.assertTrue(bos.size() > 2250);
-//        Assert.assertTrue(bos.size() < 2350);
-//
-//        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-//        ObjectInputStream     ois = new ObjectInputStream(bis);
-//        FieldBoundedPropagator<T> deserialized  = (FieldBoundedPropagator<T>) ois.readObject();
-//        Assert.assertEquals(initialOrbit.getA().getReal(), deserialized.getInitialState().getA().getReal(), 1.0e-10);
-//        Assert.assertEquals(initialOrbit.getEquinoctialEx().getReal(), deserialized.getInitialState().getEquinoctialEx().getReal(), 1.0e-10);
-//        FieldSpacecraftState<T> s = deserialized.propagate(initialState.getDate().shiftedBy(20000));
-//        Map<String, T[]> additional = s.getAdditionalStates();
-//        Assert.assertEquals(1, additional.size());
-//        Assert.assertEquals(1, additional.get("seven").length);
-//        Assert.assertEquals(7, additional.get("seven")[0].getReal(), 1.0e-15);
-//
-//
-//    }
-//
-//    private static class SevenProvider <T extends RealFieldElement<T>> implements FieldAdditionalStateProvider<T> {
-//        public String getName() {
-//            return "seven";
-//        }
-//        public T[] getFieldAdditionalState(final FieldSpacecraftState<T> state) {
-//            Field<T> field = state.getA().getField();
-//            T[] ret = MathArrays.buildArray(field, 1);
-//            return ret;
-//        }
-//    }
-//
-//    public <T extends RealFieldElement<T>> void testIssue224(Field<T> field)
-//        throws OrekitException, IOException, ClassNotFoundException {
-//        T zero = field.getZero();
-//        // Inertial frame
-//        Frame inertialFrame = FramesFactory.getEME2000();
-//
-//        // Initial date
-//        TimeScale utc = TimeScalesFactory.getUTC();
-//        FieldAbsoluteDate<T> initialDate = new FieldAbsoluteDate<T>(2004, 01, 01, 23, 30, 00.000, utc);
-//
-//        // Central attraction coefficient
-//        double mu =  3.986004415e+14;
-//
-//        // Initial orbit
-//        T a = 42100;                       // semi major axis in meters
-//        T e = 0.01;                        // eccentricity
-//        T i = FastMath.toRadians(6);       // inclination
-//        T omega = FastMath.toRadians(180); // perigee argument
-//        T raan = FastMath.toRadians(261);  // right ascention of ascending node
-//        T lM = 0;                          // mean anomaly
-//        FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<T>(a, e, i, omega, raan, lM, PositionAngle.MEAN, inertialFrame, initialDate, mu);
-//
-//        // Initial state definition
-//        FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(initialOrbit);
-//
-//        // FieldPropagator<T>
-//        FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<T>(initialOrbit,
-//                                                                 new LofOffset(inertialFrame,
-//                                                                               LOFType.VVLH));
-//        propagator.addAdditionalStateProvider(new SevenProvider<T>());
-//        propagator.setEphemerisMode();
-//
-//        // Impulsive burn 1
-//        final FieldAbsoluteDate<T> burn1Date = initialState.getDate().shiftedBy(200);
-//        ImpulseManeuver<DateDetector> impulsiveBurn1 =
-//                new ImpulseManeuver<DateDetector>(new DateDetector(burn1Date), new FieldVector3D<T>(1000, 0, 0), 320);
-//        propagator.addEventDetector(impulsiveBurn1);
-//
-//        // Impulsive burn 2
-//        final FieldAbsoluteDate<T> burn2Date = initialState.getDate().shiftedBy(300);
-//        ImpulseManeuver<DateDetector> impulsiveBurn2 =
-//                new ImpulseManeuver<DateDetector>(new DateDetector(burn2Date), new FieldVector3D<T>(1000, 0, 0), 320);
-//        propagator.addEventDetector(impulsiveBurn2);
-//
-//        propagator.propagate(initialState.getDate().shiftedBy(400));
-//
-//        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-//        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-//        oos.writeObject(propagator.getGeneratedEphemeris());
-//
-//        Assert.assertTrue(bos.size() > 2300);
-//        Assert.assertTrue(bos.size() < 2400);
-//
-//        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-//        ObjectInputStream     ois = new ObjectInputStream(bis);
-//        FieldBoundedPropagator<T> ephemeris  = (FieldBoundedPropagator<T>) ois.readObject();
-//
-//        ephemeris.setMasterMode(10, new OrekitFixedStepHandler() {
-//            public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
-//            }
-//            public void handleStep(FieldSpacecraftState<T> currentState, boolean isLast) {
-//                if (currentState.getDate().durationFrom(burn1Date) < -0.001) {
-//                    Assert.assertEquals(42100.0, currentState.getA(), 1.0e-3);
-//                } else if (currentState.getDate().durationFrom(burn1Date) > 0.001 &&
-//                        currentState.getDate().durationFrom(burn2Date) < -0.001) {
-//                    Assert.assertEquals(42979.962, currentState.getA(), 1.0e-3);
-//                } else if (currentState.getDate().durationFrom(burn2Date) > 0.001) {
-//                    Assert.assertEquals(43887.339, currentState.getA(), 1.0e-3);
-//                }
-//            }
-//        });
-//        ephemeris.propagate(ephemeris.getMaxDate());
-//
-//    }
-//
-//    public <T extends RealFieldElement<T>> void testNonSerializableStateProvider(Field<T> field) throws OrekitException, IOException {
-//        T zero = field.getZero();
-//        FieldKeplerianPropagator<T> propagator =
-//                        new FieldKeplerianPropagator<T>(new FieldKeplerianOrbit(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
-//                                                                   FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field),
-//                                                                   Constants.WGS84_EARTH_MU));
-//
-//        // this serialization should work
-//        new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(propagator);
-//
-//        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
-//            public String getName() {
-//                return "not serializable";
-//            }
-//            public T[] getAdditionalState(FieldSpacecraftState<T> state) {
-//                return new T[] { 0 };
-//            }
-//        });
-//
-//        try {
-//            // this serialization should not work
-//            new ObjectOutputStream(new ByteArrayOutputStream()).writeObject(propagator);
-//            Assert.fail("an exception should have been thrown");
-//        } catch (NotSerializableException nse) {
-//            // expected
-//        }
-//
-//    }
-//
     private <T extends RealFieldElement<T>> T tangLEmLv(T Lv,T ex,T ey){
         // tan ((LE - Lv) /2)) =
         return ey.multiply(Lv.cos()).subtract(ex.multiply(Lv.sin())).divide(

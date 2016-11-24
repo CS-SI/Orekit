@@ -501,13 +501,10 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         }
 
         Arrays.fill(relTol, dP.divide(r2.sqrt()).getReal());
-        final double[][] ret = new double[7][2];
 
-        for (int i = 0; i < 7; i++) {
-            ret[i][0] = absTol[i];
-            ret[i][1] = relTol[i];
-        }
-        return ret;
+        return new double[][]{
+            absTol, relTol
+        };
 
     }
 

@@ -465,9 +465,11 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             // mathematical integration
             final FieldODEStateAndDerivative<T> mathFinalState;
             try {
+
                 beforeIntegration(getInitialState(), tEnd);
                 mathFinalState = integrator.integrate(mathODE, mathInitialState,
                                                       tEnd.durationFrom(getInitialState().getDate()));
+
                 afterIntegration();
             } catch (OrekitExceptionWrapper oew) {
                 throw oew.getException();
@@ -519,12 +521,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
         stateMapper.mapStateToArray(initialState, primary);
 
         // secondary part of the ODE
-        final T[][] secondary = MathArrays.buildArray(initialState.getA().getField(), additionalEquations.size(), additionalEquations.size());
+        final T[][] secondary = MathArrays.buildArray(initialState.getA().getField(), additionalEquations.size(), -1);
         for (int i = 0; i < additionalEquations.size(); ++i) {
             final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
-            for (int jj = 0; jj < additionalEquations.size(); jj++) {
-                secondary[jj][i] = getInitialState().getAdditionalState(additional.getName())[jj];
-            }
+            final T[] addState = getInitialState().getAdditionalState(additional.getName());
+            secondary[i] = MathArrays.buildArray(initialState.getA().getField(), addState.length);
+            for (int j = 0; j < addState.length; j++)
+                secondary[i][j] = addState[j];
+           //TODO secondary[i] = ;
         }
 
         return new FieldODEState<T>(initialState.getA().getField().getZero(), primary, secondary);
@@ -823,9 +827,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
                 stateMapper.mapStateToArray(newState, primary);
 
                 // secondary part
-                final T[][] secondary    = MathArrays.buildArray(getField(), additionalEquations.size(), additionalEquations.size() );
+                final T[][] secondary    = MathArrays.buildArray(getField(), additionalEquations.size(), -1);
+
                 for (int i = 0; i < additionalEquations.size(); ++i) {
-                    secondary[i] = newState.getAdditionalState(additionalEquations.get(i).getName());
+                    final FieldAdditionalEquations<T> additional = additionalEquations.get(i);
+                    final T[] NState = newState.getAdditionalState(additional.getName());
+                    secondary[i] = MathArrays.buildArray(getField(), NState.length);
+                    for (int j = 0; j < NState.length; j++)
+                        secondary[i][j] = NState[j];
                 }
 
                 return new FieldODEState<T>(newState.getDate().durationFrom(getStartDate()),

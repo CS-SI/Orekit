@@ -359,7 +359,7 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
             // tolerance is set to less than 1 ulp
             // assume tolerance is 1 ulp
             if (beforeRootT.equals(afterRootT)) {
-//                afterRootT = (afterRootT);
+                afterRootT = nextAfter(afterRootT);
                 afterRootG = g(interpolator.getInterpolatedState(afterRootT));
             }
             // check loop is making some progress

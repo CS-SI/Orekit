@@ -59,25 +59,90 @@ public class FieldCircularParametersTest {
     }
 
     @Test
-    public void testDecimal64() throws OrekitException {
+    public void doCircularToEquinocTest() throws OrekitException {
           testCircularToEquinoctialEll(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doCircToEquinocTest() throws OrekitException {
           testCircularToEquinoctialCirc(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doAnomalyCircTest() throws OrekitException {
           testAnomalyCirc(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doAnomalyEllTest() throws OrekitException {
           testAnomalyEll(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doCircToCartTest() throws OrekitException {
           testCircularToCartesian(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doCircToKeplTest() throws OrekitException {
           testCircularToKeplerian(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doGeometryCircTest() throws OrekitException {
           testGeometryCirc(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doGeometryEllTest() throws OrekitException {
           testGeometryEll(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doInterpolationTest() throws OrekitException {
           testInterpolation(Decimal64Field.getInstance());
-          testJacobianFinitedifferences(Decimal64Field.getInstance()); //TODO RESOLVE THIS
+    }
+
+    @Test
+    public void doJacobianFinitedTest() throws OrekitException {
+          testJacobianFinitedifferences(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doJacoabianReferenceTest() throws OrekitException { 
           testJacobianReference(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doNumericalIssue25Test() throws OrekitException { 
           testNumericalIssue25(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doPerfectlyEquatorialTest() throws OrekitException { 
           testPerfectlyEquatorial(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doPositionVelocityNormsCircTest() throws OrekitException { 
           testPositionVelocityNormsCirc(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doPositionVelocityTest() throws OrekitException { 
           testPositionVelocityNormsEll(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doSymmetryCirTest() throws OrekitException { 
           testSymmetryCir(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void doSymmetryEllTest() throws OrekitException { 
           testSymmetryEll(Decimal64Field.getInstance());
     }
+
     @Test(expected=IllegalArgumentException.class)
     public void testErrors()  {
         testNonInertialFrame(Decimal64Field.getInstance());   //(expected=IllegalArgumentException.class)
@@ -674,8 +739,7 @@ public class FieldCircularParametersTest {
                                                  zero.add(0.7), PositionAngle.MEAN,
                                                  FramesFactory.getEME2000(), dateTca, mu);
 
-        //for (PositionAngle type : PositionAngle.values()) {
-        PositionAngle type = PositionAngle.ECCENTRIC;
+        for (PositionAngle type : PositionAngle.values()) {
             T hP = zero.add(2.0);
             T[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbCir, hP);
             T[][] jacobian = MathArrays.buildArray(field, 6, 6);
@@ -689,7 +753,7 @@ public class FieldCircularParametersTest {
                     Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 8.0e-9);
                 }
 
-          //  }
+           }
         }
 
     }
