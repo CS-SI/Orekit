@@ -114,13 +114,13 @@ public class GroundStationTest {
         moved.getZenithOffsetDriver().setSelected(true);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 7.3e-6,
-                                     0.0, 1.7e-5,
-                                     0.0, 7.2e-5,
-                                     0.0, 3.8e-8);
-        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   2.4e-5);
-        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  1.6e-7);
-        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 7.4e-6);
+                                     0.0, 7.6e-7,
+                                     0.0, 1.9e-6,
+                                     0.0, 4.6e-7,
+                                     0.0, 1.9e-10);
+        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   3.1e-7);
+        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
+        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
 
     }
 

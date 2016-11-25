@@ -333,6 +333,22 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
                                                     spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
     }
 
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple linear model. It is <em>not</em> intended as a replacement for
+     * proper orbit propagation (it is not even Keplerian!) but should be sufficient
+     * for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     */
+    public TimeStampedFieldPVCoordinates<T> shiftedBy(final T dt) {
+        final FieldPVCoordinates<T> spv = super.shiftedBy(dt);
+        return new TimeStampedFieldPVCoordinates<T>(date.shiftedBy(dt.getReal()),
+                                                    spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
+    }
+
     /** Interpolate position-velocity.
      * <p>
      * The interpolated instance is created by polynomial Hermite interpolation

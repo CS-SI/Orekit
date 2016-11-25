@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -81,7 +82,8 @@ public class AngularTest {
             // not on the current velocity.
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            final double       meanDelay = stationParameter.downlinkTimeOfFlight(state, datemeas);
+            final Vector3D     stationP  = stationParameter.getOffsetFrame().getPVCoordinates(datemeas, state.getFrame()).getPosition();
+            final double       meanDelay = stationParameter.signalTimeOfFlight(state.getPVCoordinates(), stationP, datemeas);
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -181,7 +183,8 @@ public class AngularTest {
             // not on the current velocity.
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
-            final double          meanDelay = stationParameter.downlinkTimeOfFlight(stateini, datemeas);
+            final Vector3D        stationP  = stationParameter.getOffsetFrame().getPVCoordinates(datemeas, stateini.getFrame()).getPosition();
+            final double          meanDelay = stationParameter.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
             
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);

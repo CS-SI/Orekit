@@ -321,6 +321,26 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
                                          acceleration);
     }
 
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple quadratic model. It is <em>not</em> intended as a replacement for
+     * proper orbit propagation (it is not even Keplerian!) but should be sufficient
+     * for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     */
+    public FieldPVCoordinates<T> shiftedBy(final T dt) {
+        final T one = dt.getField().getOne();
+        return new FieldPVCoordinates<T>(new FieldVector3D<T>(one, position,
+                                                              dt, velocity,
+                                                              dt.multiply(dt).multiply(0.5), acceleration),
+                                         new FieldVector3D<T>(one, velocity,
+                                                              dt, acceleration),
+                                         acceleration);
+    }
+
     /** Gets the position.
      * @return the position vector (m).
      */

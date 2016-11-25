@@ -232,15 +232,14 @@ public class EstimationTestUtils {
         Optimum optimum = estimator.getOptimum();
         Assert.assertEquals(iterations, optimum.getIterations());
         Assert.assertEquals(evaluations, optimum.getEvaluations());
-        
 
         int    k   = 0;
         double sum = 0;
         double max = 0;
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry :
              estimator.getLastEstimations().entrySet()) {
-            final ObservedMeasurement<?> m        = entry.getKey();
-            final EstimatedMeasurement<?>  e        = entry.getValue();
+            final ObservedMeasurement<?>  m = entry.getKey();
+            final EstimatedMeasurement<?> e = entry.getValue();
             final double[]    weight      = m.getBaseWeight();
             final double[]    sigma       = m.getTheoreticalStandardDeviation();
             final double[]    observed    = m.getObservedValue();
