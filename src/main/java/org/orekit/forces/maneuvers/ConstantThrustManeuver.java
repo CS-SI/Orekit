@@ -283,8 +283,19 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder)
             throws OrekitException {
-        // TODO: field implementation
-        throw new UnsupportedOperationException();
+        final T zero = s.getA().getField().getZero();
+        if (firing) {
+
+            // compute thrust acceleration in inertial frame
+            adder.addAcceleration(new FieldVector3D<T>(s.getMass().reciprocal().multiply(thrust),
+                                               s.getFieldAttitude().getRotation().applyInverseTo(direction)),
+                                  s.getFrame());
+
+            // compute flow rate
+            adder.addMassDerivative(zero.add(flowRate));
+
+        }
+
     }
 
     @Override

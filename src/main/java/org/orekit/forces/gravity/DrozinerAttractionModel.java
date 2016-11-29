@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2016 CS Systèmes d'Informatiupj
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,6 +43,7 @@ import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.Jacobianizer;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -338,8 +339,163 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
         addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder)
             throws OrekitException {
-        // TODO: field implementation
-        throw new UnsupportedOperationException();
+     // Get the position in body frame
+        final FieldAbsoluteDate<T> date = s.getDate();
+        final Field<T> field = date.getField();
+        final T zero = field.getZero();
+        final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date.toAbsoluteDate());
+        final Transform bodyToInertial = centralBodyFrame.getTransformTo(s.getFrame(), date.toAbsoluteDate());
+        final FieldVector3D<T> posInBody =
+            bodyToInertial.getInverse().transformVector(s.getFieldPVCoordinates().getPosition());
+        final T xBody = posInBody.getX();
+        final T yBody = posInBody.getY();
+        final T zBody = posInBody.getZ();
+
+        // Computation of intermediate variables
+        final T r12 = xBody.multiply(xBody).add(yBody.multiply(yBody));
+        final T r1 = r12.sqrt();
+        if (r1.getReal() <= 10e-2) {
+            throw new OrekitException(OrekitMessages.POLAR_TRAJECTORY, r1);
+        }
+        final T r2 = r12.add(zBody.multiply(zBody));
+        final T r  = r2.sqrt();
+        final double equatorialRadius = provider.getAe();
+        if (r.getReal() <= equatorialRadius) {
+            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
+        }
+        final T r3    = r2.multiply(r);
+        final T aeOnr = r.reciprocal().multiply(equatorialRadius);
+        final T zOnr  = zBody.divide(r);
+        final T r1Onr = r1.divide(r);
+
+        // Definition of the first acceleration terms
+        final T mMuOnr3  = r3.reciprocal().multiply(-mu);
+        final T xDotDotk = xBody.multiply(mMuOnr3);
+        final T yDotDotk = yBody.multiply(mMuOnr3);
+
+        // Zonal part of acceleration
+        T sumA = zero;
+        T sumB = zero;
+        T bk1 = zOnr;
+        T bk0 = aeOnr.multiply(bk1.multiply(3).multiply(bk1).subtract(1.0));
+        double jk = -harmonics.getUnnormalizedCnm(1, 0);
+
+        // first zonal term
+        sumA = sumA.add(aeOnr.multiply(2).multiply(bk1).subtract(zOnr.multiply(bk0)).multiply(jk));
+        sumB = sumB.add(bk0.multiply(jk));
+
+        // other terms
+        for (int k = 2; k <= provider.getMaxDegree(); k++) {
+            final T bk2 = bk1;
+            bk1 = bk0;
+            final double p = (1.0 + k) / k;
+            bk0 = aeOnr.multiply(zOnr.multiply(1 + p).multiply(bk1).subtract(aeOnr.multiply(k).multiply(bk2).divide(k - 1)));
+            final T ak0 = aeOnr.multiply(p).multiply(bk1).subtract(zOnr.multiply(bk0));
+            jk = -harmonics.getUnnormalizedCnm(k, 0);
+            sumA = sumA.add(ak0.multiply(jk));
+            sumB = sumA.add(bk0.multiply(jk));
+        }
+
+        // calculate the acceleration
+        final T p = sumA.negate().divide(r1Onr.multiply(r1Onr));
+        T aX = xDotDotk.multiply(p);
+        T aY = yDotDotk.multiply(p);
+        T aZ = sumB.multiply(mu).divide(r2);
+
+
+        // Tessereal-sectorial part of acceleration
+        if (provider.getMaxOrder() > 0) {
+            // latitude and longitude in body frame
+            final T cosL = xBody.divide(r1);
+            final T sinL = yBody.divide(r1);
+            // intermediate variables
+            T betaKminus1 = aeOnr;
+
+            T cosjm1L = cosL;
+            T sinjm1L = sinL;
+
+            T sinjL = sinL;
+            T cosjL = cosL;
+            T betaK = zero;
+            T Bkj = zero;
+            T Bkm1j = betaKminus1.multiply(3).multiply(zOnr).multiply(r1Onr);
+            T Bkm2j = zero;
+            T Bkminus1kminus1 = Bkm1j;
+
+            // first terms
+            final double c11 = harmonics.getUnnormalizedCnm(1, 1);
+            final double s11 = harmonics.getUnnormalizedSnm(1, 1);
+            T Gkj  = cosL.multiply(c11).add(sinL.multiply(s11));
+            T Hkj  = sinL.multiply(c11).add(cosL.multiply(s11));
+            T Akj  = r1Onr.multiply(2).multiply(betaKminus1).subtract(zOnr.multiply(Bkminus1kminus1));
+            T Dkj  = Akj.add(zOnr.multiply(Bkminus1kminus1)).multiply(0.5);
+            T sum1 = Akj.multiply(Gkj);
+            T sum2 = Bkminus1kminus1.multiply(Gkj);
+            T sum3 = Dkj.multiply(Hkj);
+
+            // the other terms
+            for (int j = 1; j <= provider.getMaxOrder(); ++j) {
+
+                T innerSum1 = zero;
+                T innerSum2 = zero;
+                T innerSum3 = zero;
+
+                for (int k = FastMath.max(2, j); k <= provider.getMaxDegree(); ++k) {
+
+                    final double ckj = harmonics.getUnnormalizedCnm(k, j);
+                    final double skj = harmonics.getUnnormalizedSnm(k, j);
+                    Gkj = cosjL.multiply(ckj).add(sinjL.multiply(skj));
+                    Hkj = sinjL.multiply(ckj).subtract(cosjL.multiply(skj));
+
+                    if (j <= (k - 2)) {
+                        Bkj = aeOnr.multiply(zOnr.multiply(Bkm1j).multiply((2.0 * k + 1.0) / (k - j)).subtract(
+                                aeOnr.multiply(Bkm2j).multiply((k + j) / (k - 1 - j))));
+                        Akj = aeOnr.multiply(Bkm1j).multiply((k + 1.0) / (k - j)).subtract(zOnr.multiply(Bkj));
+                    } else if (j == (k - 1)) {
+                        betaK =  aeOnr.multiply(2.0 * k - 1.0).multiply(r1Onr).multiply(betaKminus1);
+                        Bkj = aeOnr.multiply(2.0 * k + 1.0).multiply(zOnr).multiply(Bkm1j).subtract(betaK);
+                        Akj = aeOnr.multiply(k + 1.0).multiply(Bkm1j).subtract(zOnr.multiply(Bkj));
+                        betaKminus1 = betaK;
+                    } else if (j == k) {
+                        Bkj = aeOnr.multiply(2 * k + 1).multiply(r1Onr).multiply(Bkminus1kminus1);
+                        Akj = r1Onr.multiply(k + 1).multiply(betaK).subtract(zOnr.multiply(Bkj));
+                        Bkminus1kminus1 = Bkj;
+                    }
+
+                    Dkj =  Akj.add(zOnr.multiply(Bkj)).multiply(j / (k + 1.0));
+
+                    Bkm2j = Bkm1j;
+                    Bkm1j = Bkj;
+
+                    innerSum1 = innerSum1.add(Akj.multiply(Gkj));
+                    innerSum2 = innerSum2.add(Bkj.multiply(Gkj));
+                    innerSum3 = innerSum3.add(Dkj.multiply(Hkj));
+                }
+
+                sum1 = sum1.add(innerSum1);
+                sum2 = sum2.add(innerSum2);
+                sum3 = sum3.add(innerSum3);
+
+                sinjL = sinjm1L.add(cosL).add(cosjm1L.multiply(sinL));
+                cosjL = cosjm1L.add(cosL).subtract(sinjm1L.multiply(sinL));
+                sinjm1L = sinjL;
+                cosjm1L = cosjL;
+            }
+
+            // compute the acceleration
+            final T r2Onr12 = r2.divide(r1.multiply(r1));
+            final T p1 = r2Onr12.multiply(xDotDotk);
+            final T p2 = r2Onr12.multiply(yDotDotk);
+            aX = aX.add(p1.multiply(sum1).subtract(p2.multiply(sum3)));
+            aY = aY.add(p2.multiply(sum1).add(p1.multiply(sum3)));
+            aZ = aZ.subtract(sum2.multiply(mu).divide(r2));
+
+        }
+
+        // provide the perturbing acceleration to the derivatives adder in inertial frame
+        final FieldVector3D<T> accInInert =
+            bodyToInertial.transformVector(new FieldVector3D<T>(aX, aY, aZ));
+        adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
     }
 
 }
