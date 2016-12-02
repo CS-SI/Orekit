@@ -26,6 +26,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.random.GaussianRandomGenerator;
@@ -46,9 +48,11 @@ import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere;
+import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -255,15 +259,19 @@ public class DragForceTest extends AbstractForceModelTest {
         }
 
     }
-    
+    /**Testing if the propagation between the FieldPropagation and the propagation
+     * is equivalent.
+     * Also testing if propagating X+dX with the propagation is equivalent to 
+     * propagation X with the FieldPropagation and then applying the taylor
+     * expansion of dX to the result.*/
     @Test
     public void RealFieldTest() throws OrekitException{
-        DerivativeStructure a_0 = new DerivativeStructure(6, 5, 0, 7e7);
-        DerivativeStructure e_0 = new DerivativeStructure(6, 5, 1, 0.4);
-        DerivativeStructure i_0 = new DerivativeStructure(6, 5, 2, 1.2);
-        DerivativeStructure R_0 = new DerivativeStructure(6, 5, 3, 0.7);
-        DerivativeStructure O_0 = new DerivativeStructure(6, 5, 4, 0.5);
-        DerivativeStructure n_0 = new DerivativeStructure(6, 5, 5, 0.1);
+        DerivativeStructure a_0 = new DerivativeStructure(6, 4, 0, 7e6);
+        DerivativeStructure e_0 = new DerivativeStructure(6, 4, 1, 0.01);
+        DerivativeStructure i_0 = new DerivativeStructure(6, 4, 2, 1.2);
+        DerivativeStructure R_0 = new DerivativeStructure(6, 4, 3, 0.7);
+        DerivativeStructure O_0 = new DerivativeStructure(6, 4, 4, 0.5);
+        DerivativeStructure n_0 = new DerivativeStructure(6, 4, 5, 0.1);
         
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
@@ -279,6 +287,9 @@ public class DragForceTest extends AbstractForceModelTest {
                                                                                                     J2000,
                                                                                                     Constants.EIGEN5C_EARTH_MU);
         
+        FieldCartesianOrbit<DerivativeStructure> FCO = new FieldCartesianOrbit<DerivativeStructure>(FKO.getFieldPVCoordinates(),
+                                                                                                    EME,
+                                                                                                    Constants.EIGEN5C_EARTH_MU);
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
@@ -286,16 +297,14 @@ public class DragForceTest extends AbstractForceModelTest {
         double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
         
         
-        AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
-                        new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
-        integrator.setInitialStepSize(zero.add(60));
-        AdaptiveStepsizeIntegrator RIntegrator =
-                        new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
-        RIntegrator.setInitialStepSize(60);
+        ClassicalRungeKuttaFieldIntegrator<DerivativeStructure> integrator =
+                        new ClassicalRungeKuttaFieldIntegrator<DerivativeStructure>(field, zero.add(6));
+        ClassicalRungeKuttaIntegrator RIntegrator =
+                        new ClassicalRungeKuttaIntegrator(6);
                 
         FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
         FNP.setInitialState(initialState);
-                
+
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
         NP.setInitialState(iSR);
         
@@ -306,24 +315,24 @@ public class DragForceTest extends AbstractForceModelTest {
                                                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
                                       new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                                      Vector3D.PLUS_J, 1.2, 0.7, 0.2));
-    //    FNP.addForceModel(forceModel);
+        FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
         
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
+        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getFieldPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().subtract(finPVC_R.getPosition()).getX(), 0.0, 1e-13);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().subtract(finPVC_R.getPosition()).getY(), 0.0, 1e-13);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().subtract(finPVC_R.getPosition()).getZ(), 0.0, 1e-13);
+        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
         
         long number = 23091991;
         RandomGenerator RG = new Well19937a(number);
         GaussianRandomGenerator NGG = new GaussianRandomGenerator(RG);
         UncorrelatedRandomVectorGenerator URVG = new UncorrelatedRandomVectorGenerator(new double[] {0.0 , 0.0 , 0.0 , 0.0 , 0.0 , 0.0 }, 
-                                                                                       new double[] {1e3, 0.01, 0.01, 0.01, 0.01, 0.01}, 
+                                                                                       new double[] {1e3, 0.005, 0.005, 0.01, 0.01, 0.01}, 
                                                                                        NGG);
         double a_R = a_0.getReal();
         double e_R = e_0.getReal();
@@ -372,10 +381,9 @@ public class DragForceTest extends AbstractForceModelTest {
             double x = finPVC_shift.getPosition().getX();
             double y = finPVC_shift.getPosition().getY();
             double z = finPVC_shift.getPosition().getZ();
-            double accept_err_pos = pos_DS.toVector3D().distance(finPVC_shift.getPosition()) * 1e-9;
-            Assert.assertEquals(x_DS, x, accept_err_pos);
-            Assert.assertEquals(y_DS, y, accept_err_pos);
-            Assert.assertEquals(z_DS, z, accept_err_pos);
+            Assert.assertEquals(x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 1e-5);
+            Assert.assertEquals(y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 1e-5);
+            Assert.assertEquals(z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 1e-5);
             
             //velocity check
             
@@ -386,10 +394,9 @@ public class DragForceTest extends AbstractForceModelTest {
             double vx = finPVC_shift.getVelocity().getX();
             double vy = finPVC_shift.getVelocity().getY();
             double vz = finPVC_shift.getVelocity().getZ();
-            double accept_err_vel = vel_DS.toVector3D().distance(finPVC_shift.getVelocity()) * 5e-8;
-            Assert.assertEquals(vx_DS, vx, accept_err_vel);
-            Assert.assertEquals(vy_DS, vy, accept_err_vel);
-            Assert.assertEquals(vz_DS, vz, accept_err_vel);
+            Assert.assertEquals(vx_DS, vx, FastMath.abs(vx) * 1e-7);
+            Assert.assertEquals(vy_DS, vy, FastMath.abs(vy) * 1e-7);
+            Assert.assertEquals(vz_DS, vz, FastMath.abs(vz) * 1e-7);
             //acceleration check
             
             FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
@@ -399,13 +406,80 @@ public class DragForceTest extends AbstractForceModelTest {
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            double accept_err_acc = acc_DS.toVector3D().distance(finPVC_shift.getAcceleration()) * 5e-8;
-            Assert.assertEquals(ax_DS, ax, accept_err_acc);
-            Assert.assertEquals(ay_DS, ay, accept_err_acc);
-            Assert.assertEquals(az_DS, az, accept_err_acc);
+            Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 1e-5);
+            Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 1e-5);
+            Assert.assertEquals(az_DS, az, FastMath.abs(az) * 1e-5);
         }
         
         
+    }
+    
+
+    /**Same test as the previous one but not adding the ForceModel to the NumericalPropagator
+    it is a test to validate the previous test. 
+    (to test if the ForceModel it's actually
+    doing something in the Propagator and the FieldPropagator)*/
+    @Test
+    public void RealFieldExpectErrorTest() throws OrekitException{
+        DerivativeStructure a_0 = new DerivativeStructure(6, 0, 0, 7e6);
+        DerivativeStructure e_0 = new DerivativeStructure(6, 0, 1, 0.01);
+        DerivativeStructure i_0 = new DerivativeStructure(6, 0, 2, 85 * FastMath.PI / 180);
+        DerivativeStructure R_0 = new DerivativeStructure(6, 0, 3, 0.7);
+        DerivativeStructure O_0 = new DerivativeStructure(6, 0, 4, 0.5);
+        DerivativeStructure n_0 = new DerivativeStructure(6, 0, 5, 0.1);
+        
+        Field<DerivativeStructure> field = a_0.getField();
+        DerivativeStructure zero = field.getZero();
+        
+        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        
+        Frame EME = FramesFactory.getEME2000();
+        
+        FieldKeplerianOrbit<DerivativeStructure> FKO = new FieldKeplerianOrbit<DerivativeStructure>(a_0, e_0, i_0, R_0, O_0, n_0,
+                                                                                                    PositionAngle.MEAN,
+                                                                                                    EME,
+                                                                                                    J2000,
+                                                                                                    Constants.EIGEN5C_EARTH_MU);
+        
+        FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
+        
+        SpacecraftState iSR = initialState.toSpacecraftState();
+        
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+        
+        
+        AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
+                        new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(zero.add(60));
+        AdaptiveStepsizeIntegrator RIntegrator =
+                        new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
+        RIntegrator.setInitialStepSize(60);
+                
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FNP.setInitialState(initialState);
+                
+        NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setInitialState(iSR);
+        
+        final DragForce forceModel =
+                        new DragForce(new HarrisPriester(CelestialBodyFactory.getSun(),
+                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                              Constants.WGS84_EARTH_FLATTENING,
+                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true))),
+                                      new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
+                                                                     Vector3D.PLUS_J, 1.2, 0.7, 0.2));
+        FNP.addForceModel(forceModel);
+     //NOT ADDING THE FORCE MODEL TO THE NUMERICAL PROPAGATOR   NP.addForceModel(forceModel);
+        
+        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
+        FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
+        SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
+        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getFieldPVCoordinates();
+        PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
+    
+        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
 
     @Before

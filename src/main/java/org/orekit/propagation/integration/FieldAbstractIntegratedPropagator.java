@@ -447,15 +447,6 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
             // convert space flight dynamics API to math API
             final FieldODEState<T> mathInitialState = createInitialState(getInitialIntegrationState());
             final FieldExpandableODE<T> mathODE = createODE(integrator, mathInitialState);
-//            T zero = tEnd.getField().getZero();
-//            T[] ttt = mathInitialState.getPrimaryState();
-//            System.out.println(mathODE.computeDerivatives(zero.add(0.5), ttt)[0]);
-//            System.out.println(mathODE.computeDerivatives(zero.add(0.5), ttt)[1]);
-//            System.out.println(mathODE.computeDerivatives(zero.add(0.5), ttt)[2]);
-//            System.out.println(mathODE.computeDerivatives(zero.add(0.5), ttt)[3]);
-//            System.out.println(mathODE.computeDerivatives(zero.add(0.5), ttt)[4]);
-//            System.out.println(mathODE.computeDerivatives(zero.add(0.5), ttt)[5]);
-//            System.out.println(mathODE.computeDerivatives(zero.add(0.5), ttt)[6]);
             equationsMapper = mathODE.getMapper();
             mathInterpolator = null;
             // initialize mode handler

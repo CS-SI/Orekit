@@ -293,7 +293,6 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
             aZ -= mu * sum2 / r2;
 
         }
-
         // provide the perturbing acceleration to the derivatives adder in inertial frame
         final Vector3D accInInert =
             bodyToInertial.transformVector(new Vector3D(aX, aY, aZ));
@@ -339,6 +338,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
         addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder)
             throws OrekitException {
+
      // Get the position in body frame
         final FieldAbsoluteDate<T> date = s.getDate();
         final Field<T> field = date.getField();
@@ -393,7 +393,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
             final T ak0 = aeOnr.multiply(p).multiply(bk1).subtract(zOnr.multiply(bk0));
             jk = -harmonics.getUnnormalizedCnm(k, 0);
             sumA = sumA.add(ak0.multiply(jk));
-            sumB = sumA.add(bk0.multiply(jk));
+            sumB = sumB.add(bk0.multiply(jk));
         }
 
         // calculate the acceleration
@@ -481,7 +481,6 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
                 sinjm1L = sinjL;
                 cosjm1L = cosjL;
             }
-
             // compute the acceleration
             final T r2Onr12 = r2.divide(r1.multiply(r1));
             final T p1 = r2Onr12.multiply(xDotDotk);
@@ -491,7 +490,6 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
             aZ = aZ.subtract(sum2.multiply(mu).divide(r2));
 
         }
-
         // provide the perturbing acceleration to the derivatives adder in inertial frame
         final FieldVector3D<T> accInInert =
             bodyToInertial.transformVector(new FieldVector3D<T>(aX, aY, aZ));

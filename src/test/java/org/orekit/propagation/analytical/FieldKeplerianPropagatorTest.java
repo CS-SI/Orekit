@@ -439,7 +439,7 @@ public class FieldKeplerianPropagatorTest {
             new FieldKeplerianOrbit<T>(zero.add(7.8e6), zero.add(0.032), zero.add(0.4), zero.add(0.1), zero.add(0.2), zero.add(0.3), PositionAngle.TRUE,
                                FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field), 3.986004415e14);
         FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<T>(orbit);
-        FieldOrekitStepHandlerMultiplexer<T> multiplexer = new FieldOrekitStepHandlerMultiplexer<T>(field );
+        FieldOrekitStepHandlerMultiplexer<T> multiplexer = new FieldOrekitStepHandlerMultiplexer<T>();
         propagator.setMasterMode(multiplexer);
         multiplexer.add(new FieldOrekitStepHandler<T>() {
             public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
