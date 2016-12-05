@@ -25,8 +25,8 @@ import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling one-way or two-way range rate measurement between two vehicles.
  * One-way range rate (or Doppler) measurements generally apply to specific satellites
@@ -91,18 +91,28 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have offset == downlinkDelay and compensatedState will be
         //  the same as state)
-        final double          downlinkDelay    = station.downlinkTimeOfFlight(state, getDate());
+        final Vector3D        stationP         = station.getOffsetFrame().getPVCoordinates(getDate(), state.getFrame()).getPosition();
+        final double          downlinkDelay    = station.signalTimeOfFlight(state.getPVCoordinates(), stationP, getDate());
         final double          offset           = getDate().durationFrom(state.getDate());
         final SpacecraftState compensatedState = state.shiftedBy(offset - downlinkDelay);
 
+        final TimeStampedPVCoordinates stationAtArrival = station.getOffsetFrame().getPVCoordinates(getDate(),
+                                                                                                    state.getFrame());
         final EstimatedMeasurement<RangeRate> estimated =
-                        oneWayTheoreticalEvaluation(iteration, evaluation, state.getDate(), compensatedState);
+                        oneWayTheoreticalEvaluation(iteration, evaluation, stationAtArrival, compensatedState);
         if (twoway) {
             // one-way (uplink) light time correction
-            final double uplinkDelay = station.uplinkTimeOfFlight(compensatedState);
+            final AbsoluteDate approxUplinkDate = getDate().shiftedBy(-2 * downlinkDelay);
+            final TimeStampedPVCoordinates stationUplink =
+                            station.getOffsetFrame().getPVCoordinates(approxUplinkDate, state.getFrame());
+
+            final double uplinkDelay = station.signalTimeOfFlight(stationUplink,
+                                                                  compensatedState.getPVCoordinates().getPosition(),
+                                                                  compensatedState.getDate());
             final AbsoluteDate date = compensatedState.getDate().shiftedBy(uplinkDelay);
+            final TimeStampedPVCoordinates  stationAtEmission = station.getOffsetFrame().getPVCoordinates(date, state.getFrame());
             final EstimatedMeasurement<RangeRate> evalOneWay2 =
-                            oneWayTheoreticalEvaluation(iteration, evaluation, date, compensatedState);
+                            oneWayTheoreticalEvaluation(iteration, evaluation, stationAtEmission, compensatedState);
 
             //evaluation
             estimated.setEstimatedValue(0.5 * (estimated.getEstimatedValue()[0] + evalOneWay2.getEstimatedValue()[0]));
@@ -137,27 +147,25 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
     /** Evaluate measurement in one-way.
      * @param iteration iteration number
      * @param count evaluations counter
-     * @param date date at which signal is on ground station
+     * @param stationPV station coordinates when signal is at station
      * @param compensatedState orbital state used for measurement
      * @return theoretical value
      * @exception OrekitException if value cannot be computed
      * @see #evaluate(SpacecraftStatet)
      */
-    private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int count, final AbsoluteDate date,
+    private EstimatedMeasurement<RangeRate> oneWayTheoreticalEvaluation(final int iteration, final int count,
+                                                                        final TimeStampedPVCoordinates stationPV,
                                                                         final SpacecraftState compensatedState)
         throws OrekitException {
         // prepare the evaluation
         final EstimatedMeasurement<RangeRate> evaluation =
                         new EstimatedMeasurement<RangeRate>(this, iteration, count, compensatedState);
 
-        // station coordinates at date in state frame
-        final PVCoordinates pvStation = station.getOffsetFrame().getPVCoordinates(date, compensatedState.getFrame());
-
         // range rate value
-        final Vector3D stationPosition = pvStation.getPosition();
+        final Vector3D stationPosition = stationPV.getPosition();
         final Vector3D relativePosition = compensatedState.getPVCoordinates().getPosition().subtract(stationPosition);
 
-        final Vector3D stationVelocity = pvStation.getVelocity();
+        final Vector3D stationVelocity = stationPV.getVelocity();
         final Vector3D relativeVelocity = compensatedState.getPVCoordinates().getVelocity()
                                                 .subtract(stationVelocity);
         // line of sight direction
@@ -168,12 +176,11 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         evaluation.setEstimatedValue(rr);
 
         // compute partial derivatives of (rr) with respect to spacecraft state Cartesian coordinates.
-        final double relnorm = relativePosition.getNorm();
-        final double den1 = relnorm; //relativePosition.getNorm();
-        final double den2 = FastMath.pow(relativePosition.getNorm(), 2);
-        final double fRx = 1. / den2 * relativeVelocity.dotProduct(Vector3D.PLUS_I.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getX() / den1)));
-        final double fRy = 1. / den2 * relativeVelocity.dotProduct(Vector3D.PLUS_J.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getY() / den1)));
-        final double fRz = 1. / den2 * relativeVelocity.dotProduct(Vector3D.PLUS_K.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getZ() / den1)));
+        final double relnorm2 = relativePosition.getNormSq();
+        final double relnorm  = FastMath.sqrt(relnorm2);
+        final double fRx = 1. / relnorm2 * relativeVelocity.dotProduct(Vector3D.PLUS_I.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getX() / relnorm)));
+        final double fRy = 1. / relnorm2 * relativeVelocity.dotProduct(Vector3D.PLUS_J.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getY() / relnorm)));
+        final double fRz = 1. / relnorm2 * relativeVelocity.dotProduct(Vector3D.PLUS_K.scalarMultiply(relnorm).subtract( relativePosition.scalarMultiply(relativePosition.getZ() / relnorm)));
         final double fVx = lineOfSight.getX();
         final double fVy = lineOfSight.getY();
         final double fVz = lineOfSight.getZ();
@@ -195,13 +202,13 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
             final AngularCoordinates ac = topoToInert.getAngular().revert();
 
             //
-            final Transform tt = compensatedState.getFrame().getTransformTo(station.getBaseFrame().getParent(), date);
+            final Transform tt = compensatedState.getFrame().getTransformTo(station.getBaseFrame().getParent(),
+                                                                            stationPV.getDate());
             final Vector3D omega        = tt.getRotationRate(); // earth angular velocity
 
             // derivative of lineOfSight wrt rSta,
             //    d (relPos / ||relPos||) / d rStation
             //
-            final double relnorm2 = relnorm * relnorm;
             final double[][] m = new double[][] {
                 {
                     relativePosition.getX() * relativePosition.getX() / relnorm2 - 1.0,

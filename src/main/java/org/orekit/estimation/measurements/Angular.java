@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation.OffsetDerivatives;
+import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -76,13 +77,15 @@ public class Angular extends AbstractMeasurement<Angular> {
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have offset == downlinkDelay and transitState will be
         //  the same as state)
-        final double          tauD         = station.downlinkTimeOfFlight(state, getDate());
+        final Vector3D        stationP     = station.getOffsetFrame().getPVCoordinates(getDate(), state.getFrame()).getPosition();
+        final double          tauD         = station.signalTimeOfFlight(state.getPVCoordinates(), stationP, getDate());
         final double          delta        = getDate().durationFrom(state.getDate());
         final double          dt           = delta - tauD;
         final SpacecraftState transitState = state.shiftedBy(dt);
 
         // transformation from inertial frame to station parent frame
-        final Transform iner2Body = state.getFrame().getTransformTo(station.getOffsetFrame().getParent(), getDate());
+        final Frame     bodyFrame = station.getOffsetFrame().getParentShape().getBodyFrame();
+        final Transform iner2Body = state.getFrame().getTransformTo(bodyFrame, getDate());
 
         // station topocentric frame (east-north-zenith) in station parent frame expressed as DerivativeStructures
         final OffsetDerivatives od = station.getOffsetDerivatives(6, 3, 4, 5);

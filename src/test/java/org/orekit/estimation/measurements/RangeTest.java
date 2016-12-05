@@ -103,7 +103,7 @@ public class RangeTest {
         }
 
         // median errors
-        Assert.assertEquals(0.0, new Median().evaluate(errorsP), 2.2e-8);
+        Assert.assertEquals(0.0, new Median().evaluate(errorsP), 2.1e-7);
         Assert.assertEquals(0.0, new Median().evaluate(errorsV), 6.9e-4);
 
     }

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="update" due-to="Maxime Journot">
+        Use DerivativeStructure to compute derivatives for Range measurements.
+      </action>
       <action dev="luc" type="update">
         Improved conversion speed from Cartesian coordinates to geodetic coordinates
         by about 15%.

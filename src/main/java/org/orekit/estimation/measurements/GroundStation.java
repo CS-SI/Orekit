@@ -16,12 +16,15 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.Ellipse;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -30,11 +33,13 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a ground station that can perform some measurements.
  * <p>
@@ -147,85 +152,84 @@ public class GroundStation {
     public TopocentricFrame getOffsetFrame() throws OrekitException {
         if (offsetFrame == null) {
             // lazy evaluation of offset frame, in body frame
-            final Frame     bodyFrame    = baseFrame.getParent();
+            final BodyShape bodyShape    = baseFrame.getParentShape();
+            final Frame     bodyFrame    = bodyShape.getBodyFrame();
             final Transform baseToBody   = baseFrame.getTransformTo(bodyFrame, null);
             final double    x            = eastOffsetDriver.getValue();
             final double    y            = northOffsetDriver.getValue();
             final double    z            = zenithOffsetDriver.getValue();
             final Vector3D  origin       = baseToBody.transformPosition(new Vector3D(x, y, z));
-            final GeodeticPoint originGP = baseFrame.getParentShape().transform(origin, bodyFrame, null);
+            final GeodeticPoint originGP = bodyShape.transform(origin, bodyFrame, null);
 
             // create a new topocentric frame at parameterized origin
-            offsetFrame = new TopocentricFrame(baseFrame.getParentShape(), originGP,
+            offsetFrame = new TopocentricFrame(bodyShape, originGP,
                                                baseFrame.getName() + OFFSET_SUFFIX);
 
         }
         return offsetFrame;
     }
 
-    /** Compute propagation delay on the downlink leg.
-     * @param state of the spacecraft, close to reception date
-     * @param groundArrivalDate date at which the associated measurement
-     * is received on ground
-     * @return positive delay between emission date on spacecraft and
-     * signal reception date on ground
-     * @exception OrekitException if some frame transforms fails
+    /** Compute propagation delay on a link leg (either downlink or uplink).
+     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
+     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
+     * in the same frame as {@code adjustableEmitterPV}
+     * @param signalArrivalDate date at which the signal arrives to receiver
+     * @return <em>positive</em> delay between signal emission and signal reception dates
      */
-    public double downlinkTimeOfFlight(final SpacecraftState state, final AbsoluteDate groundArrivalDate)
-        throws OrekitException {
-
-        // station position at signal arrival date, in inertial frame
-        // (the station is not there at signal departure date, but will
-        //  be there at the signal arrival)
-        final Transform t = getOffsetFrame().getTransformTo(state.getFrame(), groundArrivalDate);
-        final Vector3D arrival = t.transformPosition(Vector3D.ZERO);
+    public double signalTimeOfFlight(final TimeStampedPVCoordinates adjustableEmitterPV,
+                                     final Vector3D receiverPosition,
+                                     final AbsoluteDate signalArrivalDate) {
 
         // initialize emission date search loop assuming the state is already correct
         // this will be true for all but the first orbit determination iteration,
         // and even for the first iteration the loop will converge very fast
-        final double offset = groundArrivalDate.durationFrom(state.getDate());
+        final double offset = signalArrivalDate.durationFrom(adjustableEmitterPV.getDate());
         double delay = offset;
 
         // search signal transit date, computing the signal travel in inertial frame
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
         double delta;
         int count = 0;
         do {
-            final double previous  = delay;
-            final Vector3D transit = state.shiftedBy(offset - delay).getPVCoordinates().getPosition();
-            delay                  = Vector3D.distance(transit, arrival) / Constants.SPEED_OF_LIGHT;
-            delta                  = FastMath.abs(delay - previous);
+            final double previous   = delay;
+            final Vector3D transitP = adjustableEmitterPV.shiftedBy(offset - delay).getPosition();
+            delay                   = receiverPosition.distance(transitP) * cReciprocal;
+            delta                   = FastMath.abs(delay - previous);
         } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
 
         return delay;
 
     }
 
-    /** Compute propagation delay on the uplink leg.
-     * @param state of the spacecraft at signal transit date on board
-     * @return positive delay between emission date on ground and
-     * signal reception date on board
-     * @exception OrekitException if some frame transforms fails
+    /** Compute propagation delay on a link leg (either downlink or uplink).
+     * @param adjustableEmitterPV position/velocity of emitter that may be adjusted
+     * @param receiverPosition fixed position of receiver at {@code signalArrivalDate},
+     * in the same frame as {@code adjustableEmitterPV}
+     * @param signalArrivalDate date at which the signal arrives to receiver
+     * @return <em>positive</em> delay between signal emission and signal reception dates
+     * @param <T> the type of the components
      */
-    public double uplinkTimeOfFlight(final SpacecraftState state)
-        throws OrekitException {
+    public <T extends RealFieldElement<T>> T signalTimeOfFlight(final TimeStampedFieldPVCoordinates<T> adjustableEmitterPV,
+                                                                final FieldVector3D<T> receiverPosition,
+                                                                final AbsoluteDate signalArrivalDate) {
 
-        // spacecraft position at signal transit date, in inertial frame
-        // (the spacecraft is not there at signal departure date, but will
-        //  be there at the signal transit)
-        final Vector3D transit = state.getPVCoordinates().getPosition();
+        // Initialize emission date search loop assuming the emitter PV is almost correct
+        // this will be true for all but the first orbit determination iteration,
+        // and even for the first iteration the loop will converge extremely fast
+        final Field<T> field = receiverPosition.getX().getField();
+        final T offset = new FieldAbsoluteDate<>(field, signalArrivalDate).durationFrom(adjustableEmitterPV.getDate());
+        T delay = offset;
 
-        // search signal departure date, computing the signal travel in inertial frame
+        // search signal transit date, computing the signal travel in the frame shared by emitter and receiver
+        final double cReciprocal = 1.0 / Constants.SPEED_OF_LIGHT;
         double delta;
-        double delay = 0;
         int count = 0;
         do {
-            final double       previous      = delay;
-            final AbsoluteDate departureDate = state.getDate().shiftedBy(-delay);
-            final Transform    t             = getOffsetFrame().getTransformTo(state.getFrame(), departureDate);
-            final Vector3D     departure     = t.transformPosition(Vector3D.ZERO);
-            delay = Vector3D.distance(departure, transit) / Constants.SPEED_OF_LIGHT;
-            delta = FastMath.abs(delay - previous);
-        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay));
+            final double previous           = delay.getReal();
+            final FieldVector3D<T> transitP = adjustableEmitterPV.shiftedBy(delay.negate().add(offset)).getPosition();
+            delay                           = receiverPosition.distance(transitP).multiply(cReciprocal);
+            delta                           = FastMath.abs(delay.getReal() - previous);
+        } while (count++ < 10 && delta >= 2 * FastMath.ulp(delay.getReal()));
 
         return delay;
 
@@ -264,7 +268,7 @@ public class GroundStation {
 
         // offset frame origin
         final Transform offsetToBody = frame.getTransformTo(baseFrame.getParent(), null);
-        final Vector3D  offsetOrigin  = offsetToBody.transformPosition(Vector3D.ZERO);
+        final Vector3D  offsetOrigin = offsetToBody.transformPosition(Vector3D.ZERO);
         final FieldVector3D<DerivativeStructure> zeroEast =
                         new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, eastOffsetIndex,   0.0),
                                                                baseFrame.getEast());
@@ -311,12 +315,17 @@ public class GroundStation {
         }
         final FieldVector3D<DerivativeStructure> transverseN = FieldVector3D.crossProduct(transverseZ, transverseE);
 
+        // zero vector
+        final DerivativeStructure zeroDS = offsetOriginDS.getX().getField().getZero();
+        final FieldVector3D<DerivativeStructure> zero = new FieldVector3D<DerivativeStructure>(zeroDS, zeroDS, zeroDS);
+
         // compose the value from the offset frame and the derivatives
         // (the derivatives along the two orthogonal directions of principal curvatures are additive)
         return new OffsetDerivatives(offsetOriginDS,
                                      combine(frame.getEast(),   meridianE, transverseE),
                                      combine(frame.getNorth(),  meridianN, transverseN),
-                                     combine(frame.getZenith(), meridianZ, transverseZ));
+                                     combine(frame.getZenith(), meridianZ, transverseZ),
+                                     zero);
 
     }
 
@@ -399,20 +408,26 @@ public class GroundStation {
         /** Offset frame Zenith vector. */
         private final FieldVector3D<DerivativeStructure> zenith;
 
+        /** Zero vector. */
+        private final FieldVector3D<DerivativeStructure> zero;
+
         /** Simple constructor.
          * @param origin offset frame origin
          * @param east offset frame East vector
          * @param north offset frame North vector
          * @param zenith offset frame Zenith vector
+         * @param zero vector with all components set to zero
          */
         private OffsetDerivatives(final FieldVector3D<DerivativeStructure> origin,
                                   final FieldVector3D<DerivativeStructure> east,
                                   final FieldVector3D<DerivativeStructure> north,
-                                  final FieldVector3D<DerivativeStructure> zenith) {
+                                  final FieldVector3D<DerivativeStructure> zenith,
+                                  final FieldVector3D<DerivativeStructure> zero) {
             this.origin = origin;
             this.east   = east;
             this.north  = north;
             this.zenith = zenith;
+            this.zero   = zero;
         }
 
         /** Get the offset frame origin.
@@ -441,6 +456,13 @@ public class GroundStation {
          */
         public FieldVector3D<DerivativeStructure> getZenith() {
             return zenith;
+        }
+
+        /** Get the zero vector.
+         * @return vector with all components set to zero
+         */
+        public FieldVector3D<DerivativeStructure> getZero() {
+            return zero;
         }
 
     }
