@@ -18,7 +18,8 @@ package org.orekit.propagation.analytical;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.orekit.utils.FieldTimeDerivative;
+import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -74,6 +75,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Guylaine Prat
  */
 public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
+
+    /** Factory for the derivatives. */
+    private final FDSFactory<T> factory;
 
     /** Initial Eckstein-Hechler model. */
     private FieldEHModel<T> initialModel;
@@ -296,6 +300,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         super(mass.getField(), attitudeProv);
         final Field<T> field = mass.getField();
         final T zero = field.getZero();
+        factory = new FDSFactory<>(field, 1, 2);
         try {
 
             // store model coefficients
@@ -364,7 +369,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         final T one = field.getOne();
         final T zero = field.getZero();
         // rough initialization of the mean parameters
-        FieldEHModel<T> current = new FieldEHModel<T>(osculating, mass, referenceRadius, mu, ck0);
+        FieldEHModel<T> current = new FieldEHModel<T>(factory, osculating, mass, referenceRadius, mu, ck0);
         // threshold for each parameter
         final T epsilon         = one .multiply(1.0e-13);
         final T thresholdA      = epsilon.multiply(current.mean.getA().abs().add(1.0));
@@ -376,18 +381,19 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         while (i++ < 100) {
 
             // recompute the osculating parameters from the current mean parameters
-            final FieldTimeDerivative<T>[] parameters = current.propagateParameters(current.mean.getDate());
+            final FieldDerivativeStructure<T>[] parameters = current.propagateParameters(current.mean.getDate());
             // adapted parameters residuals
-            final T deltaA      = osculating.getA()         .subtract(parameters[0].getPosition());
-            final T deltaEx     = osculating.getCircularEx().subtract(parameters[1].getPosition());
-            final T deltaEy     = osculating.getCircularEy().subtract(parameters[2].getPosition());
-            final T deltaI      = osculating.getI()         .subtract(parameters[3].getPosition());
+            final T deltaA      = osculating.getA()         .subtract(parameters[0].getValue());
+            final T deltaEx     = osculating.getCircularEx().subtract(parameters[1].getValue());
+            final T deltaEy     = osculating.getCircularEy().subtract(parameters[2].getValue());
+            final T deltaI      = osculating.getI()         .subtract(parameters[3].getValue());
             final T deltaRAAN   = normalizeAngle(osculating.getRightAscensionOfAscendingNode().subtract(
-                                                                parameters[4].getPosition()),
+                                                                parameters[4].getValue()),
                                                                 zero);
-            final T deltaAlphaM = normalizeAngle(osculating.getAlphaM().subtract(parameters[5].getPosition()), zero);
+            final T deltaAlphaM = normalizeAngle(osculating.getAlphaM().subtract(parameters[5].getValue()), zero);
             // update mean parameters
-            current = new FieldEHModel<T>(new FieldCircularOrbit<T>(current.mean.getA().add(deltaA),
+            current = new FieldEHModel<T>(factory,
+                                          new FieldCircularOrbit<T>(current.mean.getA().add(deltaA),
                                                     current.mean.getCircularEx().add( deltaEx),
                                                     current.mean.getCircularEy().add( deltaEy),
                                                     current.mean.getI()         .add( deltaI ),
@@ -420,11 +426,15 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         // to make sure velocity and acceleration are consistent
         final FieldEHModel<T> current = models.get(date);
         return new FieldCartesianOrbit<T>(toCartesian(date, current.propagateParameters(date)),
-                                  current.mean.getFrame(), mu);
+                                          current.mean.getFrame(), mu);
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
     private static class FieldEHModel<T extends RealFieldElement<T>> {
+
+        /** Factory for the derivatives. */
+        private final FDSFactory<T> factory;
+
         /** Mean FieldOrbit<T>. */
         private final FieldCircularOrbit<T> mean;
 
@@ -489,6 +499,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
         // CHECKSTYLE: resume JavadocVariable check
 
         /** Create a model for specified mean FieldOrbit<T>.
+         * @param factory factory for the derivatives
          * @param mean mean FieldOrbit<T>
          * @param mass constant mass
          * @param referenceRadius reference radius of the central body attraction model (m)
@@ -496,10 +507,11 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
          * @param ck0 un-normalized zonal coefficients
          * @exception OrekitException if mean FieldOrbit<T> is not within model supported domain
          */
-        FieldEHModel(final FieldCircularOrbit<T> mean, final T mass,
-                final double referenceRadius, final double mu, final T[] ck0)
+        FieldEHModel(final FDSFactory<T> factory, final FieldCircularOrbit<T> mean, final T mass,
+                     final double referenceRadius, final double mu, final T[] ck0)
             throws OrekitException {
 
+            this.factory         = factory;
             this.mean            = mean;
             this.mass            = mass;
             final T zero = mass.getField().getZero();
@@ -632,76 +644,76 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
          * @return propagated parameters
          * @exception OrekitException if some parameters are out of bounds
          */
-        public FieldTimeDerivative<T>[] propagateParameters(final FieldAbsoluteDate<T> date)
+        public FieldDerivativeStructure<T>[] propagateParameters(final FieldAbsoluteDate<T> date)
             throws OrekitException {
             final Field<T> field = date.durationFrom(mean.getDate()).getField();
             final T one = field.getOne();
             final T zero = field.getZero();
             // keplerian evolution
-            final FieldTimeDerivative<T> dt =
-                    new FieldTimeDerivative<T>(date.durationFrom(mean.getDate()), one, zero);
-            final FieldTimeDerivative<T> xnot = dt.multiply(xnotDot);
+            final FieldDerivativeStructure<T> dt =
+                    factory.build(date.durationFrom(mean.getDate()), one, zero);
+            final FieldDerivativeStructure<T> xnot = dt.multiply(xnotDot);
 
             // secular effects
 
             // eccentricity
-            final FieldTimeDerivative<T> x   = xnot.multiply(rdpom.add(rdpomp));
-            final FieldTimeDerivative<T> cx  = x.cos();
-            final FieldTimeDerivative<T> sx  = x.sin();
-            final FieldTimeDerivative<T> exm = cx.multiply(mean.getCircularEx()).
+            final FieldDerivativeStructure<T> x   = xnot.multiply(rdpom.add(rdpomp));
+            final FieldDerivativeStructure<T> cx  = x.cos();
+            final FieldDerivativeStructure<T> sx  = x.sin();
+            final FieldDerivativeStructure<T> exm = cx.multiply(mean.getCircularEx()).
                                             add(sx.multiply(eps2.subtract(one.subtract(eps1).multiply(mean.getCircularEy()))));
-            final FieldTimeDerivative<T> eym = sx.multiply(eps1.add(1.0).multiply(mean.getCircularEx())).
+            final FieldDerivativeStructure<T> eym = sx.multiply(eps1.add(1.0).multiply(mean.getCircularEx())).
                                             add(cx.multiply(mean.getCircularEy().subtract(eps2))).
                                             add(eps2);
             // no secular effect on inclination
 
             // right ascension of ascending node
-            final FieldTimeDerivative<T> omm =
-                    new FieldTimeDerivative<T>(normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getPosition())),
-                                                                     zero.add(FastMath.PI)),
-                                            ommD.multiply(xnotDot),
-                                            zero);
+            final FieldDerivativeStructure<T> omm =
+                            factory.build(normalizeAngle(mean.getRightAscensionOfAscendingNode().add(ommD.multiply(xnot.getValue())),
+                                                         zero.add(FastMath.PI)),
+                                          ommD.multiply(xnotDot),
+                                          zero);
             // latitude argument
-            final FieldTimeDerivative<T> xlm =
-                    new FieldTimeDerivative<T>(normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getPosition())), zero.add(FastMath.PI)),
-                                            aMD.multiply(xnotDot),
-                                            zero);
+            final FieldDerivativeStructure<T> xlm =
+                            factory.build(normalizeAngle(mean.getAlphaM().add(aMD.multiply(xnot.getValue())), zero.add(FastMath.PI)),
+                                          aMD.multiply(xnotDot),
+                                          zero);
 
             // periodical terms
-            final FieldTimeDerivative<T> cl1 = xlm.cos();
-            final FieldTimeDerivative<T> sl1 = xlm.sin();
-            final FieldTimeDerivative<T> cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
-            final FieldTimeDerivative<T> sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
-            final FieldTimeDerivative<T> cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
-            final FieldTimeDerivative<T> sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
-            final FieldTimeDerivative<T> cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
-            final FieldTimeDerivative<T> sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
-            final FieldTimeDerivative<T> cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
-            final FieldTimeDerivative<T> sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
-            final FieldTimeDerivative<T> cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
+            final FieldDerivativeStructure<T> cl1 = xlm.cos();
+            final FieldDerivativeStructure<T> sl1 = xlm.sin();
+            final FieldDerivativeStructure<T> cl2 = cl1.multiply(cl1).subtract(sl1.multiply(sl1));
+            final FieldDerivativeStructure<T> sl2 = cl1.multiply(sl1).add(sl1.multiply(cl1));
+            final FieldDerivativeStructure<T> cl3 = cl2.multiply(cl1).subtract(sl2.multiply(sl1));
+            final FieldDerivativeStructure<T> sl3 = cl2.multiply(sl1).add(sl2.multiply(cl1));
+            final FieldDerivativeStructure<T> cl4 = cl3.multiply(cl1).subtract(sl3.multiply(sl1));
+            final FieldDerivativeStructure<T> sl4 = cl3.multiply(sl1).add(sl3.multiply(cl1));
+            final FieldDerivativeStructure<T> cl5 = cl4.multiply(cl1).subtract(sl4.multiply(sl1));
+            final FieldDerivativeStructure<T> sl5 = cl4.multiply(sl1).add(sl4.multiply(cl1));
+            final FieldDerivativeStructure<T> cl6 = cl5.multiply(cl1).subtract(sl5.multiply(sl1));
 
-            final FieldTimeDerivative<T> qh  = eym.subtract(eps2).multiply(kh);
-            final FieldTimeDerivative<T> ql  = exm.multiply(kl);
+            final FieldDerivativeStructure<T> qh  = eym.subtract(eps2).multiply(kh);
+            final FieldDerivativeStructure<T> ql  = exm.multiply(kl);
 
-            final FieldTimeDerivative<T> exmCl1 = exm.multiply(cl1);
-            final FieldTimeDerivative<T> exmSl1 = exm.multiply(sl1);
-            final FieldTimeDerivative<T> eymCl1 = eym.multiply(cl1);
-            final FieldTimeDerivative<T> eymSl1 = eym.multiply(sl1);
-            final FieldTimeDerivative<T> exmCl2 = exm.multiply(cl2);
-            final FieldTimeDerivative<T> exmSl2 = exm.multiply(sl2);
-            final FieldTimeDerivative<T> eymCl2 = eym.multiply(cl2);
-            final FieldTimeDerivative<T> eymSl2 = eym.multiply(sl2);
-            final FieldTimeDerivative<T> exmCl3 = exm.multiply(cl3);
-            final FieldTimeDerivative<T> exmSl3 = exm.multiply(sl3);
-            final FieldTimeDerivative<T> eymCl3 = eym.multiply(cl3);
-            final FieldTimeDerivative<T> eymSl3 = eym.multiply(sl3);
-            final FieldTimeDerivative<T> exmCl4 = exm.multiply(cl4);
-            final FieldTimeDerivative<T> exmSl4 = exm.multiply(sl4);
-            final FieldTimeDerivative<T> eymCl4 = eym.multiply(cl4);
-            final FieldTimeDerivative<T> eymSl4 = eym.multiply(sl4);
+            final FieldDerivativeStructure<T> exmCl1 = exm.multiply(cl1);
+            final FieldDerivativeStructure<T> exmSl1 = exm.multiply(sl1);
+            final FieldDerivativeStructure<T> eymCl1 = eym.multiply(cl1);
+            final FieldDerivativeStructure<T> eymSl1 = eym.multiply(sl1);
+            final FieldDerivativeStructure<T> exmCl2 = exm.multiply(cl2);
+            final FieldDerivativeStructure<T> exmSl2 = exm.multiply(sl2);
+            final FieldDerivativeStructure<T> eymCl2 = eym.multiply(cl2);
+            final FieldDerivativeStructure<T> eymSl2 = eym.multiply(sl2);
+            final FieldDerivativeStructure<T> exmCl3 = exm.multiply(cl3);
+            final FieldDerivativeStructure<T> exmSl3 = exm.multiply(sl3);
+            final FieldDerivativeStructure<T> eymCl3 = eym.multiply(cl3);
+            final FieldDerivativeStructure<T> eymSl3 = eym.multiply(sl3);
+            final FieldDerivativeStructure<T> exmCl4 = exm.multiply(cl4);
+            final FieldDerivativeStructure<T> exmSl4 = exm.multiply(sl4);
+            final FieldDerivativeStructure<T> eymCl4 = eym.multiply(cl4);
+            final FieldDerivativeStructure<T> eymSl4 = eym.multiply(sl4);
 
             // semi major axis
-            final FieldTimeDerivative<T> rda = exmCl1.multiply(ax1).
+            final FieldDerivativeStructure<T> rda = exmCl1.multiply(ax1).
                                             add(eymSl1.multiply(ay1)).
                                             add(sl1.multiply(as1)).
                                             add(cl2.multiply(ac2)).
@@ -712,39 +724,39 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
                                             add(cl6.multiply(ac6));
 
             // eccentricity
-            final FieldTimeDerivative<T> rdex = cl1.multiply(ex1).
+            final FieldDerivativeStructure<T> rdex = cl1.multiply(ex1).
                                              add(exmCl2.multiply(exx2)).
                                              add(eymSl2.multiply(exy2)).
                                              add(cl3.multiply(ex3)).
                                              add(exmCl4.add(eymSl4).multiply(ex4));
-            final FieldTimeDerivative<T> rdey = sl1.multiply(ey1).
+            final FieldDerivativeStructure<T> rdey = sl1.multiply(ey1).
                                              add(exmSl2.multiply(eyx2)).
                                              add(eymCl2.multiply(eyy2)).
                                              add(sl3.multiply(ey3)).
                                              add(exmSl4.subtract(eymCl4).multiply(ey4));
 
             // ascending node
-            final FieldTimeDerivative<T> rdom = exmSl1.multiply(rx1).
+            final FieldDerivativeStructure<T> rdom = exmSl1.multiply(rx1).
                                              add(eymCl1.multiply(ry1)).
                                              add(sl2.multiply(r2)).
                                              add(eymCl3.subtract(exmSl3).multiply(r3)).
                                              add(ql.multiply(rl));
 
             // inclination
-            final FieldTimeDerivative<T> rdxi = eymSl1.multiply(iy1).
+            final FieldDerivativeStructure<T> rdxi = eymSl1.multiply(iy1).
                                              add(exmCl1.multiply(ix1)).
                                              add(cl2.multiply(i2)).
                                              add(exmCl3.add(eymSl3).multiply(i3)).
                                              add(qh.multiply(ih));
 
             // latitude argument
-            final FieldTimeDerivative<T> rdxl = exmSl1.multiply(lx1).
+            final FieldDerivativeStructure<T> rdxl = exmSl1.multiply(lx1).
                                              add(eymCl1.multiply(ly1)).
                                              add(sl2.multiply(l2)).
                                              add(exmSl3.subtract(eymCl3).multiply(l3)).
                                              add(ql.multiply(ll));
             // osculating parameters
-            final FieldTimeDerivative<T>[] FTD = MathArrays.buildArray(rdxl.getField(), 6);
+            final FieldDerivativeStructure<T>[] FTD = MathArrays.buildArray(rdxl.getField(), 6);
 
             FTD[0] = rda.add(1.0).multiply(mean.getA());
             FTD[1] = rdex.add(exm);
@@ -763,45 +775,45 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param parameters circular parameters (a, ex, ey, i, raan, alphaM)
      * @return Cartesian coordinates consistent with values and derivatives
      */
-    private TimeStampedFieldPVCoordinates<T> toCartesian(final FieldAbsoluteDate<T> date, final FieldTimeDerivative<T>[] parameters) {
+    private TimeStampedFieldPVCoordinates<T> toCartesian(final FieldAbsoluteDate<T> date, final FieldDerivativeStructure<T>[] parameters) {
 
         // evaluate coordinates in the FieldOrbit<T> canonical reference frame
-        final FieldTimeDerivative<T> cosOmega = parameters[4].cos();
-        final FieldTimeDerivative<T> sinOmega = parameters[4].sin();
-        final FieldTimeDerivative<T> cosI     = parameters[3].cos();
-        final FieldTimeDerivative<T> sinI     = parameters[3].sin();
-        final FieldTimeDerivative<T> alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
-        final FieldTimeDerivative<T> cosAE    = alphaE.cos();
-        final FieldTimeDerivative<T> sinAE    = alphaE.sin();
-        final FieldTimeDerivative<T> ex2      = parameters[1].multiply(parameters[1]);
-        final FieldTimeDerivative<T> ey2      = parameters[2].multiply(parameters[2]);
-        final FieldTimeDerivative<T> exy      = parameters[1].multiply(parameters[2]);
-        final FieldTimeDerivative<T> q        = ex2.add(ey2).subtract(1).negate().sqrt();
-        final FieldTimeDerivative<T> beta     = q.add(1).reciprocal();
-        final FieldTimeDerivative<T> bx2      = beta.multiply(ex2);
-        final FieldTimeDerivative<T> by2      = beta.multiply(ey2);
-        final FieldTimeDerivative<T> bxy      = beta.multiply(exy);
-        final FieldTimeDerivative<T> u        = bxy.multiply(sinAE).subtract(parameters[1].add(by2.subtract(1).multiply(cosAE)));
-        final FieldTimeDerivative<T> v        = bxy.multiply(cosAE).subtract(parameters[2].add(bx2.subtract(1).multiply(sinAE)));
-        final FieldTimeDerivative<T> x        = parameters[0].multiply(u);
-        final FieldTimeDerivative<T> y        = parameters[0].multiply(v);
+        final FieldDerivativeStructure<T> cosOmega = parameters[4].cos();
+        final FieldDerivativeStructure<T> sinOmega = parameters[4].sin();
+        final FieldDerivativeStructure<T> cosI     = parameters[3].cos();
+        final FieldDerivativeStructure<T> sinI     = parameters[3].sin();
+        final FieldDerivativeStructure<T> alphaE   = meanToEccentric(parameters[5], parameters[1], parameters[2]);
+        final FieldDerivativeStructure<T> cosAE    = alphaE.cos();
+        final FieldDerivativeStructure<T> sinAE    = alphaE.sin();
+        final FieldDerivativeStructure<T> ex2      = parameters[1].multiply(parameters[1]);
+        final FieldDerivativeStructure<T> ey2      = parameters[2].multiply(parameters[2]);
+        final FieldDerivativeStructure<T> exy      = parameters[1].multiply(parameters[2]);
+        final FieldDerivativeStructure<T> q        = ex2.add(ey2).subtract(1).negate().sqrt();
+        final FieldDerivativeStructure<T> beta     = q.add(1).reciprocal();
+        final FieldDerivativeStructure<T> bx2      = beta.multiply(ex2);
+        final FieldDerivativeStructure<T> by2      = beta.multiply(ey2);
+        final FieldDerivativeStructure<T> bxy      = beta.multiply(exy);
+        final FieldDerivativeStructure<T> u        = bxy.multiply(sinAE).subtract(parameters[1].add(by2.subtract(1).multiply(cosAE)));
+        final FieldDerivativeStructure<T> v        = bxy.multiply(cosAE).subtract(parameters[2].add(bx2.subtract(1).multiply(sinAE)));
+        final FieldDerivativeStructure<T> x        = parameters[0].multiply(u);
+        final FieldDerivativeStructure<T> y        = parameters[0].multiply(v);
 
         // canonical FieldOrbit<T> reference frame
-        final FieldVector3D<FieldTimeDerivative<T>> p =
-                new FieldVector3D<FieldTimeDerivative<T>>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
+        final FieldVector3D<FieldDerivativeStructure<T>> p =
+                new FieldVector3D<FieldDerivativeStructure<T>>(x.multiply(cosOmega).subtract(y.multiply(cosI.multiply(sinOmega))),
                                                        x.multiply(sinOmega).add(y.multiply(cosI.multiply(cosOmega))),
                                                        y.multiply(sinI));
 
         // dispatch derivatives
-        final FieldVector3D<T> p0 = new FieldVector3D<T>(p.getX().getPosition(),
-                                         p.getY().getPosition(),
-                                         p.getZ().getPosition());
-        final FieldVector3D<T> p1 = new FieldVector3D<T>(p.getX().getVelocity(),
-                                         p.getY().getVelocity(),
-                                         p.getZ().getVelocity());
-        final FieldVector3D<T> p2 = new FieldVector3D<T>(p.getX().getAcceleration(),
-                                         p.getY().getAcceleration(),
-                                         p.getZ().getAcceleration());
+        final FieldVector3D<T> p0 = new FieldVector3D<T>(p.getX().getValue(),
+                                                         p.getY().getValue(),
+                                                         p.getZ().getValue());
+        final FieldVector3D<T> p1 = new FieldVector3D<T>(p.getX().getPartialDerivative(1),
+                                                         p.getY().getPartialDerivative(1),
+                                                         p.getZ().getPartialDerivative(1));
+        final FieldVector3D<T> p2 = new FieldVector3D<T>(p.getX().getPartialDerivative(2),
+                                                         p.getY().getPartialDerivative(2),
+                                                         p.getZ().getPartialDerivative(2));
         return new TimeStampedFieldPVCoordinates<T>(date, p0, p1, p2);
 
     }
@@ -812,24 +824,24 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
      * @param ey e sin(Ω), second component of circular eccentricity vector
      * @return the eccentric latitude argument.
      */
-    private FieldTimeDerivative<T> meanToEccentric(final FieldTimeDerivative<T> alphaM,
-                                                final FieldTimeDerivative<T> ex,
-                                                final FieldTimeDerivative<T> ey) {
+    private FieldDerivativeStructure<T> meanToEccentric(final FieldDerivativeStructure<T> alphaM,
+                                                final FieldDerivativeStructure<T> ex,
+                                                final FieldDerivativeStructure<T> ey) {
         // Generalization of Kepler equation to circular parameters
         // with alphaE = PA + E and
         //      alphaM = PA + M = alphaE - ex.sin(alphaE) + ey.cos(alphaE)
-        FieldTimeDerivative<T> alphaE        = alphaM;
-        FieldTimeDerivative<T> shift         = alphaM.getField().getZero();
-        FieldTimeDerivative<T> alphaEMalphaM = alphaM.getField().getZero();
-        FieldTimeDerivative<T> cosAlphaE     = alphaE.cos();
-        FieldTimeDerivative<T> sinAlphaE     = alphaE.sin();
+        FieldDerivativeStructure<T> alphaE        = alphaM;
+        FieldDerivativeStructure<T> shift         = alphaM.getField().getZero();
+        FieldDerivativeStructure<T> alphaEMalphaM = alphaM.getField().getZero();
+        FieldDerivativeStructure<T> cosAlphaE     = alphaE.cos();
+        FieldDerivativeStructure<T> sinAlphaE     = alphaE.sin();
         int                 iter          = 0;
         do {
-            final FieldTimeDerivative<T> f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
-            final FieldTimeDerivative<T> f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
-            final FieldTimeDerivative<T> f0 = alphaEMalphaM.subtract(f2);
+            final FieldDerivativeStructure<T> f2 = ex.multiply(sinAlphaE).subtract(ey.multiply(cosAlphaE));
+            final FieldDerivativeStructure<T> f1 = alphaM.getField().getOne().subtract(ex.multiply(cosAlphaE)).subtract(ey.multiply(sinAlphaE));
+            final FieldDerivativeStructure<T> f0 = alphaEMalphaM.subtract(f2);
 
-            final FieldTimeDerivative<T> f12 = f1.multiply(2);
+            final FieldDerivativeStructure<T> f12 = f1.multiply(2);
             shift = f0.multiply(f12).divide(f1.multiply(f12).subtract(f0.multiply(f2)));
 
             alphaEMalphaM  = alphaEMalphaM.subtract(shift);
@@ -837,7 +849,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
             cosAlphaE      = alphaE.cos();
             sinAlphaE      = alphaE.sin();
 
-        } while ((++iter < 50) && (FastMath.abs(shift.getPosition().getReal()) > 1.0e-12));
+        } while ((++iter < 50) && (FastMath.abs(shift.getValue().getReal()) > 1.0e-12));
 
         return alphaE;
 
