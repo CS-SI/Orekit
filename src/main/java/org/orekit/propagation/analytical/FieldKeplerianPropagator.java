@@ -19,8 +19,8 @@ package org.orekit.propagation.analytical;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.MathArrays;
-import org.orekit.fieldattitudes.FieldAttitudeProvider;
-import org.orekit.fieldattitudes.FieldInertialProvider;
+import org.orekit.attitudes.FieldAttitudeProvider;
+import org.orekit.attitudes.FieldInertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.FieldOrbitType;

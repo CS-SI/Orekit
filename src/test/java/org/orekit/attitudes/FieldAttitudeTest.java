@@ -31,8 +31,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.fieldattitudes.FieldAttitude;
-import org.orekit.fieldattitudes.FieldBodyCenterPointing;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;

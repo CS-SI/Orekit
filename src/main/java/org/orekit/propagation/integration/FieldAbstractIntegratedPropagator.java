@@ -41,7 +41,7 @@ import org.hipparchus.ode.sampling.FieldODEStateInterpolator;
 import org.hipparchus.ode.sampling.FieldODEStepHandler;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
-import org.orekit.fieldattitudes.FieldAttitudeProvider;
+import org.orekit.attitudes.FieldAttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;

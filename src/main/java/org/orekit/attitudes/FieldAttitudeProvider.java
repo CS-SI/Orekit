@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.fieldattitudes;
+package org.orekit.attitudes;
 
 
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;

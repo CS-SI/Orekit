@@ -24,9 +24,9 @@ import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.orekit.attitudes.FieldAttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.fieldattitudes.FieldAttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;

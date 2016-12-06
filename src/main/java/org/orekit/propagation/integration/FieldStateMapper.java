@@ -17,7 +17,7 @@
 package org.orekit.propagation.integration;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.fieldattitudes.FieldAttitudeProvider;
+import org.orekit.attitudes.FieldAttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbitType;
