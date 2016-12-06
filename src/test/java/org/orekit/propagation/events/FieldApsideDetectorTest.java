@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -29,28 +28,18 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.FieldOrbitType;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
-import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
-import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVCoordinates;
 
 public class FieldApsideDetectorTest {
     

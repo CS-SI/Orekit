@@ -19,36 +19,25 @@ package org.orekit.propagation.events;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
-import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
-import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Decimal64Field;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.ContinueOnEvent;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVCoordinates;
 
 public class FieldDateDetectorTest {
 

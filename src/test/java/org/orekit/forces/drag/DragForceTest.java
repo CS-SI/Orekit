@@ -48,11 +48,9 @@ import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.drag.atmosphere.SimpleExponentialAtmosphere;
-import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -277,7 +275,6 @@ public class DragForceTest extends AbstractForceModelTest {
         DerivativeStructure zero = field.getZero();
         
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
-        AbsoluteDate J2000r = J2000.toAbsoluteDate();
         
         Frame EME = FramesFactory.getEME2000();
         
@@ -287,15 +284,9 @@ public class DragForceTest extends AbstractForceModelTest {
                                                                                                     J2000,
                                                                                                     Constants.EIGEN5C_EARTH_MU);
         
-        FieldCartesianOrbit<DerivativeStructure> FCO = new FieldCartesianOrbit<DerivativeStructure>(FKO.getFieldPVCoordinates(),
-                                                                                                    EME,
-                                                                                                    Constants.EIGEN5C_EARTH_MU);
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
-        
         
         ClassicalRungeKuttaFieldIntegrator<DerivativeStructure> integrator =
                         new ClassicalRungeKuttaFieldIntegrator<DerivativeStructure>(field, zero.add(6));

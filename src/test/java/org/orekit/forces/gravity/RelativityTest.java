@@ -37,8 +37,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
-import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;

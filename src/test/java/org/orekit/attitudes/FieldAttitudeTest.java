@@ -35,7 +35,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;

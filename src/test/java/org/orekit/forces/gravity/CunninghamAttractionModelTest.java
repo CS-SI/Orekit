@@ -45,17 +45,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
-import org.orekit.forces.BoxAndSolarArraySpacecraft;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
-import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
@@ -324,7 +319,6 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         DerivativeStructure zero = field.getZero();
         
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
-        AbsoluteDate J2000r = J2000.toAbsoluteDate();
         
         Frame EME = FramesFactory.getEME2000();
         

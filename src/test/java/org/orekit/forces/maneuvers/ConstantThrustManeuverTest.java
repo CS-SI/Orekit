@@ -39,7 +39,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.Relativity;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;

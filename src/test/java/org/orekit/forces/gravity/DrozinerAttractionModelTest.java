@@ -43,12 +43,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractForceModelTest;
-import org.orekit.forces.BoxAndSolarArraySpacecraft;
-import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -59,7 +55,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -162,7 +157,6 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         DerivativeStructure zero = field.getZero();
         
         FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
-        AbsoluteDate J2000r = J2000.toAbsoluteDate();
         
         Frame EME = FramesFactory.getEME2000();
         
@@ -172,15 +166,9 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
                                                                                                     J2000,
                                                                                                     Constants.EIGEN5C_EARTH_MU);
         
-        FieldCartesianOrbit<DerivativeStructure> FCO = new FieldCartesianOrbit<DerivativeStructure>(FKO.getFieldPVCoordinates(),
-                                                                                                    EME,
-                                                                                                    Constants.EIGEN5C_EARTH_MU);
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
-        
         
         ClassicalRungeKuttaFieldIntegrator<DerivativeStructure> integrator =
                         new ClassicalRungeKuttaFieldIntegrator<DerivativeStructure>(field, zero.add(6));
@@ -295,7 +283,6 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            double accept_err_acc = finPVC_shift.getAcceleration().getNorm() * 1e-10;
             Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 1e-9);
             Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 1e-9);
             Assert.assertEquals(az_DS, az, FastMath.abs(az) * 1e-9);

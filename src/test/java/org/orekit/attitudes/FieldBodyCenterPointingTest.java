@@ -204,8 +204,6 @@ public class FieldBodyCenterPointingTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        // Transform from EME2000 to ITRF2008
-        Transform eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earth.getBodyFrame(), date_comp.toAbsoluteDate());
 
         // Earth center pointing attitude provider
         FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<T>(circ.getFrame(), earth);
@@ -298,10 +296,8 @@ public class FieldBodyCenterPointingTest {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        // Transform from EME2000 to ITRF2008
-        Transform eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(earth.getBodyFrame(), date_R.toAbsoluteDate());
 
-        // Earth center pointing attitude provider
+       // Earth center pointing attitude provider
         FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<T>(circ.getFrame(), earth);
 
 

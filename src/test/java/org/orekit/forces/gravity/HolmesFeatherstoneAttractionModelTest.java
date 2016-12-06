@@ -48,7 +48,6 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
-import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
