@@ -28,6 +28,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.linear.FieldMatrixPreservingVisitor;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -445,7 +447,7 @@ public class FieldKeplerianParametersTest {
         Assert.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
                      pCirEqua.getFieldPVCoordinates().getVelocity().getNorm().getReal(),
                      Utils.epsilonTest * FastMath.abs(pCirEqua.getFieldPVCoordinates().getVelocity().getNorm().getReal()));
-  }
+    }
 
     public <T extends RealFieldElement<T>> void testGeometry(final Field<T> field) {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
@@ -743,502 +745,551 @@ public class FieldKeplerianParametersTest {
                         field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
                         FramesFactory.getEME2000(), dateTca, mu);
 
- // the following reference values have been computed using the free software
- // version 6.2 of the MSLIB fortran library by the following program:
- //        program kep_jacobian
- //
- //        use mslib
- //        implicit none
- //
- //        integer, parameter :: nb = 11
- //        integer :: i,j
- //        type(tm_code_retour)      ::  code_retour
- //
- //        real(pm_reel), parameter :: mu= 3.986004415e+14_pm_reel
- //        real(pm_reel),dimension(3)::vit_car,pos_car
- //        type(tm_orb_kep)::kep
- //        real(pm_reel), dimension(6,6)::jacob
- //        real(pm_reel)::norme
- //
- //        kep%a=7000000_pm_reel
- //        kep%e=0.01_pm_reel
- //        kep%i=80_pm_reel*pm_deg_rad
- //        kep%pom=80_pm_reel*pm_deg_rad
- //        kep%gom=20_pm_reel*pm_deg_rad
- //        kep%M=40_pm_reel*pm_deg_rad
- //
- //        call mv_kep_car(mu,kep,pos_car,vit_car,code_retour)
- //        write(*,*)code_retour%valeur
- //        write(*,1000)pos_car,vit_car
- //
- //
- //        call mu_norme(pos_car,norme,code_retour)
- //        write(*,*)norme
- //
- //        call mv_car_kep (mu, pos_car, vit_car, kep, code_retour, jacob)
- //        write(*,*)code_retour%valeur
- //
- //        write(*,*)"kep = ", kep%a, kep%e, kep%i*pm_rad_deg,&
- //                            kep%pom*pm_rad_deg, kep%gom*pm_rad_deg, kep%M*pm_rad_deg
- //
- //        do i = 1,6
- //           write(*,*) " ",(jacob(i,j),j=1,6)
- //        end do
- //
- //        1000 format (6(f24.15,1x))
- //        end program kep_jacobian
- FieldVector3D<T> pRef = new FieldVector3D<T>(field.getZero().add(-3691555.569874833337963), field.getZero().add(-240330.253992714860942), field.getZero().add(5879700.285850423388183));
- FieldVector3D<T> vRef = new FieldVector3D<T>(field.getZero().add(-5936.229884450408463), field.getZero().add(-2871.067660163344044), field.getZero().add(-3786.209549192726627));
+        // the following reference values have been computed using the free software
+        // version 6.2 of the MSLIB fortran library by the following program:
+        //        program kep_jacobian
+        //
+        //        use mslib
+        //        implicit none
+        //
+        //        integer, parameter :: nb = 11
+        //        integer :: i,j
+        //        type(tm_code_retour)      ::  code_retour
+        //
+        //        real(pm_reel), parameter :: mu= 3.986004415e+14_pm_reel
+        //        real(pm_reel),dimension(3)::vit_car,pos_car
+        //        type(tm_orb_kep)::kep
+        //        real(pm_reel), dimension(6,6)::jacob
+        //        real(pm_reel)::norme
+        //
+        //        kep%a=7000000_pm_reel
+        //        kep%e=0.01_pm_reel
+        //        kep%i=80_pm_reel*pm_deg_rad
+        //        kep%pom=80_pm_reel*pm_deg_rad
+        //        kep%gom=20_pm_reel*pm_deg_rad
+        //        kep%M=40_pm_reel*pm_deg_rad
+        //
+        //        call mv_kep_car(mu,kep,pos_car,vit_car,code_retour)
+        //        write(*,*)code_retour%valeur
+        //        write(*,1000)pos_car,vit_car
+        //
+        //
+        //        call mu_norme(pos_car,norme,code_retour)
+        //        write(*,*)norme
+        //
+        //        call mv_car_kep (mu, pos_car, vit_car, kep, code_retour, jacob)
+        //        write(*,*)code_retour%valeur
+        //
+        //        write(*,*)"kep = ", kep%a, kep%e, kep%i*pm_rad_deg,&
+        //                            kep%pom*pm_rad_deg, kep%gom*pm_rad_deg, kep%M*pm_rad_deg
+        //
+        //        do i = 1,6
+        //           write(*,*) " ",(jacob(i,j),j=1,6)
+        //        end do
+        //
+        //        1000 format (6(f24.15,1x))
+        //        end program kep_jacobian
+        FieldVector3D<T> pRef = new FieldVector3D<T>(field.getZero().add(-3691555.569874833337963), field.getZero().add(-240330.253992714860942), field.getZero().add(5879700.285850423388183));
+        FieldVector3D<T> vRef = new FieldVector3D<T>(field.getZero().add(-5936.229884450408463), field.getZero().add(-2871.067660163344044), field.getZero().add(-3786.209549192726627));
 
- double[][] jRef = {
-                    { -1.0792090588217809,       -7.02594292049818631E-002,  1.7189029642216496,       -1459.4829009393857,       -705.88138246206040,       -930.87838644776593       },
-                    { -1.31195762636625214E-007, -3.90087231593959271E-008,  4.65917592901869866E-008, -2.02467187867647177E-004, -7.89767994436215424E-005, -2.81639203329454407E-005 },
-                    {  4.18334478744371316E-008, -1.14936453412947957E-007,  2.15670500707930151E-008, -2.26450325965329431E-005,  6.22167157217876380E-005, -1.16745469637130306E-005 },
-                    {  3.52735168061691945E-006,  3.82555734454450974E-006,  1.34715077236557634E-005, -8.06586262922115264E-003, -6.13725651685311825E-003, -1.71765290503914092E-002 },
-                    {  2.48948022169790885E-008, -6.83979069529389238E-008,  1.28344057971888544E-008,  3.86597661353874888E-005, -1.06216834498373629E-004,  1.99308724078785540E-005 },
-                    { -3.41911705254704525E-006, -3.75913623359912437E-006, -1.34013845492518465E-005,  8.19851888816422458E-003,  6.16449264680494959E-003,  1.69495878276556648E-002 }
-                };
-
-
-
-
- FieldPVCoordinates<T> pv = orbKep.getFieldPVCoordinates();
- Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal(), 1.0e-15 * pRef.getNorm().getReal());
- Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal(), 1.0e-16 * vRef.getNorm().getReal());
-
- T[][] jacobian = MathArrays.buildArray(field, 6 , 6);
- orbKep.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
-
-for (int i = 0; i < jacobian.length; i++) {
-     T[] row    = jacobian[i];
-     double[] rowRef = jRef[i];
-     for (int j = 0; j < row.length; j++) {
-         Assert.assertEquals(0, (row[j].getReal() - rowRef[j]) / rowRef[j], 2.0e-12);
-     }
- }
-
-}
-
-
-public <T extends RealFieldElement<T>>void testJacobianFinitedifferencesEllipse(final Field<T> field) throws OrekitException {
-
- FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<T>(field,2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
- double mu =  3.986004415e+14;
- FieldKeplerianOrbit<T> orbKep = new FieldKeplerianOrbit<T>(field.getZero().add(7000000.0), field.getZero().add(0.01), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(20.)),
-                                     field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
-                                     FramesFactory.getEME2000(), dateTca, mu);
-
- for (PositionAngle type : PositionAngle.values()) {
-     T hP = field.getZero().add(2.0);
-     T[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbKep, hP, field);
-     T[][] jacobian = MathArrays.buildArray(field, 6, 6);
-     orbKep.getJacobianWrtCartesian(type, jacobian);
+        double[][] jRef = {
+                           { -1.0792090588217809,       -7.02594292049818631E-002,  1.7189029642216496,       -1459.4829009393857,       -705.88138246206040,       -930.87838644776593       },
+                           { -1.31195762636625214E-007, -3.90087231593959271E-008,  4.65917592901869866E-008, -2.02467187867647177E-004, -7.89767994436215424E-005, -2.81639203329454407E-005 },
+                           {  4.18334478744371316E-008, -1.14936453412947957E-007,  2.15670500707930151E-008, -2.26450325965329431E-005,  6.22167157217876380E-005, -1.16745469637130306E-005 },
+                           {  3.52735168061691945E-006,  3.82555734454450974E-006,  1.34715077236557634E-005, -8.06586262922115264E-003, -6.13725651685311825E-003, -1.71765290503914092E-002 },
+                           {  2.48948022169790885E-008, -6.83979069529389238E-008,  1.28344057971888544E-008,  3.86597661353874888E-005, -1.06216834498373629E-004,  1.99308724078785540E-005 },
+                           { -3.41911705254704525E-006, -3.75913623359912437E-006, -1.34013845492518465E-005,  8.19851888816422458E-003,  6.16449264680494959E-003,  1.69495878276556648E-002 }
+        };
 
 
 
-     for (int i = 0; i < jacobian.length; i++) {
-         T[] row    = jacobian[i];
-         T[] rowRef = finiteDiffJacobian[i];
-         for (int j = 0; j < row.length; j++) {
-             Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 2.0e-7);
-         }
-     }
- }
 
-}
+        FieldPVCoordinates<T> pv = orbKep.getFieldPVCoordinates();
+        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal(), 1.0e-15 * pRef.getNorm().getReal());
+        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal(), 1.0e-16 * vRef.getNorm().getReal());
 
+        T[][] jacobian = MathArrays.buildArray(field, 6 , 6);
+        orbKep.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
 
-public <T extends RealFieldElement<T>> void testJacobianReferenceHyperbola(final Field<T> field) throws OrekitException {
+        for (int i = 0; i < jacobian.length; i++) {
+            T[] row    = jacobian[i];
+            double[] rowRef = jRef[i];
+            for (int j = 0; j < row.length; j++) {
+                Assert.assertEquals(0, (row[j].getReal() - rowRef[j]) / rowRef[j], 2.0e-12);
+            }
+        }
 
- FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<T>(field,2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
- double mu =  3.986004415e+14;
- FieldKeplerianOrbit<T> orbKep = new FieldKeplerianOrbit<T>(field.getZero().add(-7000000.0), field.getZero().add(1.2), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(20.)),
-                 field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
-                                   FramesFactory.getEME2000(), dateTca, mu);
-
- // the following reference values have been computed using the free software
- // version 6.2 of the MSLIB fortran library by the following program:
- //        program kep_hyperb_jacobian
- //
- //        use mslib
- //        implicit none
- //
- //        integer, parameter :: nb = 11
- //        integer :: i,j
- //        type(tm_code_retour)      ::  code_retour
- //
- //        real(pm_reel), parameter :: mu= 3.986004415e+14_pm_reel
- //        real(pm_reel),dimension(3)::vit_car,pos_car
- //        type(tm_orb_kep)::kep
- //        real(pm_reel), dimension(6,6)::jacob
- //        real(pm_reel)::norme
- //
- //        kep%a=7000000_pm_reel
- //        kep%e=1.2_pm_reel
- //        kep%i=80_pm_reel*pm_deg_rad
- //        kep%pom=80_pm_reel*pm_deg_rad
- //        kep%gom=20_pm_reel*pm_deg_rad
- //        kep%M=40_pm_reel*pm_deg_rad
- //
- //        call mv_kep_car(mu,kep,pos_car,vit_car,code_retour)
- //        write(*,*)code_retour%valeur
- //        write(*,1000)pos_car,vit_car
- //
- //
- //        call mu_norme(pos_car,norme,code_retour)
- //        write(*,*)norme
- //
- //        call mv_car_kep (mu, pos_car, vit_car, kep, code_retour, jacob)
- //        write(*,*)code_retour%valeur
- //
- //        write(*,*)"kep = ", kep%a, kep%e, kep%i*pm_rad_deg,&
- //                            kep%pom*pm_rad_deg, kep%gom*pm_rad_deg, kep%M*pm_rad_deg
- //
- //        ! convert the sign of da row since mslib uses a > 0 for all orbits
- //        ! whereas we use a < 0 for hyperbolic orbits
- //        write(*,*) " ",(-jacob(1,j),j=1,6)
- //        do i = 2,6
- //           write(*,*) " ",(jacob(i,j),j=1,6)
- //        end do
- //
- //        1000 format (6(f24.15,1x))
- //        end program kep_hyperb_jacobian
-
- FieldVector3D<T> pRef = new FieldVector3D<T>(field.getZero().add(-7654711.206549182534218), field.getZero().add(-3460171.872979687992483), field.getZero().add(-3592374.514463655184954));
- FieldVector3D<T> vRef = new FieldVector3D<T>(field.getZero().add(-7886.368091820805603), field.getZero().add(-4359.739012331759113),  field.getZero().add(  -7937.060044548694350));
- double[][] jRef = {
-     {  -0.98364725131848019,      -0.44463970750901238,      -0.46162803814668391,       -1938.9443476028839,       -1071.8864775981751,       -1951.4074832397598      },
-     {  -1.10548813242982574E-007, -2.52906747183730431E-008,  7.96500937398593591E-008, -9.70479823470940108E-006, -2.93209076428001017E-005, -1.37434463892791042E-004 },
-     {   8.55737680891616672E-008, -2.35111995522618220E-007,  4.41171797903162743E-008, -8.05235180390949802E-005,  2.21236547547460423E-004, -4.15135455876865407E-005 },
-     {  -1.52641427784095578E-007,  1.10250447958827901E-008,  1.21265251605359894E-007,  7.63347077200903542E-005, -3.54738331412232378E-005, -2.31400737283033359E-004 },
-     {   7.86711766048035274E-008, -2.16147281283624453E-007,  4.05585791077187359E-008, -3.56071805267582894E-005,  9.78299244677127374E-005, -1.83571253224293247E-005 },
-     {  -2.41488884881911384E-007, -1.00119615610276537E-007, -6.51494225096757969E-008, -2.43295075073248163E-004, -1.43273725071890463E-004, -2.91625510452094873E-004 }
- };
-
- FieldPVCoordinates<T> pv = orbKep.getFieldPVCoordinates();
- Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal() / pRef.getNorm().getReal(), 1.0e-16);
-// Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm() / pRef.getNorm(), 2.0e-15);
- Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal() / vRef.getNorm().getReal(), 3.0e-16);
-
- T[][] jacobian = MathArrays.buildArray(field, 6, 6);
- orbKep.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
-
- for (int i = 0; i < jacobian.length; i++) {
-
- T[] row    = jacobian[i];
-     double[] rowRef = jRef[i];
-     for (int j = 0; j < row.length; j++) {
+    }
 
 
-         Assert.assertEquals(0, (row[j].getReal() - rowRef[j]) / rowRef[j], 1.0e-14);
-     }
+    public <T extends RealFieldElement<T>>void testJacobianFinitedifferencesEllipse(final Field<T> field) throws OrekitException {
 
- }
+        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<T>(field,2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        FieldKeplerianOrbit<T> orbKep = new FieldKeplerianOrbit<T>(field.getZero().add(7000000.0), field.getZero().add(0.01), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(20.)),
+                        field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
+                        FramesFactory.getEME2000(), dateTca, mu);
 
-}
+        for (PositionAngle type : PositionAngle.values()) {
+            T hP = field.getZero().add(2.0);
+            T[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbKep, hP, field);
+            T[][] jacobian = MathArrays.buildArray(field, 6, 6);
+            orbKep.getJacobianWrtCartesian(type, jacobian);
 
-public <T extends RealFieldElement<T>>void testJacobianFinitedifferencesHyperbola(final Field<T> field) throws OrekitException {
 
- FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<T>(field,2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
- double mu =  3.986004415e+14;
- FieldKeplerianOrbit<T> orbKep = new FieldKeplerianOrbit<T>(field.getZero().add(-7000000.0), field.getZero().add(1.2), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(20.)),
-                                     field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
-                                     FramesFactory.getEME2000(), dateTca, mu);
 
- for (PositionAngle type : PositionAngle.values()) {
-     T hP =field.getZero().add(2.0);
-     T[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbKep, hP, field);
-     T[][] jacobian = MathArrays.buildArray(field, 6, 6);
-     orbKep.getJacobianWrtCartesian(type, jacobian);
-     for (int i = 0; i < jacobian.length; i++) {
-         T[] row    = jacobian[i];
-         T[] rowRef = finiteDiffJacobian[i];
+            for (int i = 0; i < jacobian.length; i++) {
+                T[] row    = jacobian[i];
+                T[] rowRef = finiteDiffJacobian[i];
+                for (int j = 0; j < row.length; j++) {
+                    Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 2.0e-7);
+                }
+            }
 
-       for (int j = 0; j < row.length; j++) {
-             Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 3.0e-8);
-       }
-     }
- }
+            T[][] invJacobian = MathArrays.buildArray(field, 6, 6);
+            orbKep.getJacobianWrtParameters(type, invJacobian);
+            MatrixUtils.createFieldMatrix(jacobian).
+            multiply(MatrixUtils.createFieldMatrix(invJacobian)).
+            walkInRowOrder(new FieldMatrixPreservingVisitor<T>() {
+                public void start(int rows, int columns,
+                                  int startRow, int endRow, int startColumn, int endColumn) {
+                }
 
-}
+                public void visit(int row, int column, T value) {
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.0e-9);
+                }
 
-private <T extends RealFieldElement<T>> T[][] finiteDifferencesJacobian(PositionAngle type, FieldKeplerianOrbit<T> orbit, T hP, final Field<T> field)
- throws OrekitException {
- T[][] jacobian = MathArrays.buildArray(field, 6, 6);
- for (int i = 0; i < 6; ++i) {
-     fillColumn(type, i, orbit, hP, jacobian);
- }
- return jacobian;
-}
+                public T end() {
+                    return null;
+                }
+            });
+        }
 
-private <T extends RealFieldElement<T>> void fillColumn(PositionAngle type, int i, FieldKeplerianOrbit<T> orbit, T hP, T[][] jacobian) {
+    }
 
- // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
- // we use this to compute a velocity step size from the position step size
- FieldVector3D<T> p = orbit.getFieldPVCoordinates().getPosition();
- FieldVector3D<T> v = orbit.getFieldPVCoordinates().getVelocity();
- T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
- T h;
- FieldVector3D<T> dP = new FieldVector3D<T>(p.getX().getField().getZero(),p.getX().getField().getZero(),p.getX().getField().getZero());
- FieldVector3D<T> dV = new FieldVector3D<T>(p.getX().getField().getZero(),p.getX().getField().getZero(),p.getX().getField().getZero());
- switch (i) {
- case 0:
-     h = hP;
-     dP = new FieldVector3D<T>(hP,p.getX().getField().getZero(),p.getX().getField().getZero());
-     break;
- case 1:
-     h = hP;
-     dP = new FieldVector3D<T>(p.getX().getField().getZero(), hP,p.getX().getField().getZero());
-     break;
- case 2:
-     h = hP;
-     dP = new FieldVector3D<T>(p.getX().getField().getZero(), p.getX().getField().getZero(), hP);
-     break;
- case 3:
-     h = hV;
-     dV = new FieldVector3D<T>(hV, p.getX().getField().getZero(),p.getX().getField().getZero());
-     break;
- case 4:
-     h = hV;
-     dV = new FieldVector3D<T>(p.getX().getField().getZero(), hV, p.getX().getField().getZero());
-     break;
- default:
-     h = hV;
-     dV = new FieldVector3D<T>(p.getX().getField().getZero(),p.getX().getField().getZero(), hV);
-     break;
- }
 
- FieldKeplerianOrbit<T> oM4h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, -4, dP), new FieldVector3D<T>(1, v, -4, dV)),
-                                          orbit.getFrame(), orbit.getDate(), orbit.getMu());
- FieldKeplerianOrbit<T> oM3h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, -3, dP), new FieldVector3D<T>(1, v, -3, dV)),
-                                          orbit.getFrame(), orbit.getDate(), orbit.getMu());
- FieldKeplerianOrbit<T> oM2h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, -2, dP), new FieldVector3D<T>(1, v, -2, dV)),
-                                          orbit.getFrame(), orbit.getDate(), orbit.getMu());
- FieldKeplerianOrbit<T> oM1h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, -1, dP), new FieldVector3D<T>(1, v, -1, dV)),
-                                          orbit.getFrame(), orbit.getDate(), orbit.getMu());
- FieldKeplerianOrbit<T> oP1h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, +1, dP), new FieldVector3D<T>(1, v, +1, dV)),
-                                          orbit.getFrame(), orbit.getDate(), orbit.getMu());
- FieldKeplerianOrbit<T> oP2h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, +2, dP), new FieldVector3D<T>(1, v, +2, dV)),
-                                          orbit.getFrame(), orbit.getDate(), orbit.getMu());
- FieldKeplerianOrbit<T> oP3h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, +3, dP), new FieldVector3D<T>(1, v, +3, dV)),
-                                          orbit.getFrame(), orbit.getDate(), orbit.getMu());
- FieldKeplerianOrbit<T> oP4h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, +4, dP), new FieldVector3D<T>(1, v, +4, dV)),
-                                          orbit.getFrame(), orbit.getDate(), orbit.getMu());
+    public <T extends RealFieldElement<T>> void testJacobianReferenceHyperbola(final Field<T> field) throws OrekitException {
 
- jacobian[0][i] = (oP4h.getA().subtract(oM4h.getA()).multiply(-3)).add(
-                   oP3h.getA().subtract(oM3h.getA()).multiply(32)).subtract(
-                   oP2h.getA().subtract(oM2h.getA()).multiply(168)).add(
-                   oP1h.getA().subtract(oM1h.getA()).multiply(672)).divide(h.multiply(840));
+        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<T>(field,2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        FieldKeplerianOrbit<T> orbKep = new FieldKeplerianOrbit<T>(field.getZero().add(-7000000.0), field.getZero().add(1.2), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(20.)),
+                        field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
+                        FramesFactory.getEME2000(), dateTca, mu);
 
- jacobian[1][i] = (oP4h.getE().subtract(oM4h.getE()).multiply(-3)).add(
-                   oP3h.getE().subtract(oM3h.getE()).multiply(32)).subtract(
-                   oP2h.getE().subtract(oM2h.getE()).multiply(168)).add(
-                   oP1h.getE().subtract(oM1h.getE()).multiply(672)).divide(h.multiply(840));
+        // the following reference values have been computed using the free software
+        // version 6.2 of the MSLIB fortran library by the following program:
+        //        program kep_hyperb_jacobian
+        //
+        //        use mslib
+        //        implicit none
+        //
+        //        integer, parameter :: nb = 11
+        //        integer :: i,j
+        //        type(tm_code_retour)      ::  code_retour
+        //
+        //        real(pm_reel), parameter :: mu= 3.986004415e+14_pm_reel
+        //        real(pm_reel),dimension(3)::vit_car,pos_car
+        //        type(tm_orb_kep)::kep
+        //        real(pm_reel), dimension(6,6)::jacob
+        //        real(pm_reel)::norme
+        //
+        //        kep%a=7000000_pm_reel
+        //        kep%e=1.2_pm_reel
+        //        kep%i=80_pm_reel*pm_deg_rad
+        //        kep%pom=80_pm_reel*pm_deg_rad
+        //        kep%gom=20_pm_reel*pm_deg_rad
+        //        kep%M=40_pm_reel*pm_deg_rad
+        //
+        //        call mv_kep_car(mu,kep,pos_car,vit_car,code_retour)
+        //        write(*,*)code_retour%valeur
+        //        write(*,1000)pos_car,vit_car
+        //
+        //
+        //        call mu_norme(pos_car,norme,code_retour)
+        //        write(*,*)norme
+        //
+        //        call mv_car_kep (mu, pos_car, vit_car, kep, code_retour, jacob)
+        //        write(*,*)code_retour%valeur
+        //
+        //        write(*,*)"kep = ", kep%a, kep%e, kep%i*pm_rad_deg,&
+        //                            kep%pom*pm_rad_deg, kep%gom*pm_rad_deg, kep%M*pm_rad_deg
+        //
+        //        ! convert the sign of da row since mslib uses a > 0 for all orbits
+        //        ! whereas we use a < 0 for hyperbolic orbits
+        //        write(*,*) " ",(-jacob(1,j),j=1,6)
+        //        do i = 2,6
+        //           write(*,*) " ",(jacob(i,j),j=1,6)
+        //        end do
+        //
+        //        1000 format (6(f24.15,1x))
+        //        end program kep_hyperb_jacobian
 
- jacobian[2][i] = (oP4h.getI().subtract(oM4h.getI()).multiply(-3)).add(
-                   oP3h.getI().subtract(oM3h.getI()).multiply(32)).subtract(
-                   oP2h.getI().subtract(oM2h.getI()).multiply(168)).add(
-                   oP1h.getI().subtract(oM1h.getI()).multiply(672)).divide(h.multiply(840));
- jacobian[3][i] = (oP4h.getPerigeeArgument().subtract(oM4h.getPerigeeArgument()).multiply(-3)).add(
-                   oP3h.getPerigeeArgument().subtract(oM3h.getPerigeeArgument()).multiply(32)).subtract(
-                   oP2h.getPerigeeArgument().subtract(oM2h.getPerigeeArgument()).multiply(168)).add(
-                   oP1h.getPerigeeArgument().subtract(oM1h.getPerigeeArgument()).multiply(672)).divide(h.multiply(840));
+        FieldVector3D<T> pRef = new FieldVector3D<T>(field.getZero().add(-7654711.206549182534218), field.getZero().add(-3460171.872979687992483), field.getZero().add(-3592374.514463655184954));
+        FieldVector3D<T> vRef = new FieldVector3D<T>(field.getZero().add(-7886.368091820805603), field.getZero().add(-4359.739012331759113),  field.getZero().add(  -7937.060044548694350));
+        double[][] jRef = {
+                           {  -0.98364725131848019,      -0.44463970750901238,      -0.46162803814668391,       -1938.9443476028839,       -1071.8864775981751,       -1951.4074832397598      },
+                           {  -1.10548813242982574E-007, -2.52906747183730431E-008,  7.96500937398593591E-008, -9.70479823470940108E-006, -2.93209076428001017E-005, -1.37434463892791042E-004 },
+                           {   8.55737680891616672E-008, -2.35111995522618220E-007,  4.41171797903162743E-008, -8.05235180390949802E-005,  2.21236547547460423E-004, -4.15135455876865407E-005 },
+                           {  -1.52641427784095578E-007,  1.10250447958827901E-008,  1.21265251605359894E-007,  7.63347077200903542E-005, -3.54738331412232378E-005, -2.31400737283033359E-004 },
+                           {   7.86711766048035274E-008, -2.16147281283624453E-007,  4.05585791077187359E-008, -3.56071805267582894E-005,  9.78299244677127374E-005, -1.83571253224293247E-005 },
+                           {  -2.41488884881911384E-007, -1.00119615610276537E-007, -6.51494225096757969E-008, -2.43295075073248163E-004, -1.43273725071890463E-004, -2.91625510452094873E-004 }
+        };
 
- jacobian[4][i] =  (oP4h.getRightAscensionOfAscendingNode().subtract(oM4h.getRightAscensionOfAscendingNode()).multiply(-3)).add(
-                    oP3h.getRightAscensionOfAscendingNode().subtract(oM3h.getRightAscensionOfAscendingNode()).multiply(32)).subtract(
-                    oP2h.getRightAscensionOfAscendingNode().subtract(oM2h.getRightAscensionOfAscendingNode()).multiply(168)).add(
-                    oP1h.getRightAscensionOfAscendingNode().subtract(oM1h.getRightAscensionOfAscendingNode()).multiply(672)).divide(h.multiply(840));
- jacobian[5][i] = (oP4h.getAnomaly(type).subtract(oM4h.getAnomaly(type)).multiply(-3)).add(
-                   oP3h.getAnomaly(type).subtract(oM3h.getAnomaly(type)).multiply(32)).subtract(
-                   oP2h.getAnomaly(type).subtract(oM2h.getAnomaly(type)).multiply(168)).add(
-                   oP1h.getAnomaly(type).subtract(oM1h.getAnomaly(type)).multiply(672)).divide(h.multiply(840));
+        FieldPVCoordinates<T> pv = orbKep.getFieldPVCoordinates();
+        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal() / pRef.getNorm().getReal(), 1.0e-16);
+        // Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm() / pRef.getNorm(), 2.0e-15);
+        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal() / vRef.getNorm().getReal(), 3.0e-16);
 
-}
+        T[][] jacobian = MathArrays.buildArray(field, 6, 6);
+        orbKep.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
 
-public <T extends RealFieldElement<T>> void testInterpolation(final Field<T> field) throws OrekitException {
-     final T zero = field.getZero();
-     final double ehMu  = 3.9860047e14;
-     final double ae  = 6.378137e6;
-     final T c20 = zero.add(-1.08263e-3);
-     final T c30 = zero.add(2.54e-6);
-     final T c40 = zero.add( 1.62e-6);
-     final T c50 = zero.add(2.3e-7);
-     final T c60 = zero.add(-5.5e-7);
-    
-     final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
-     final FieldVector3D<T> position = new FieldVector3D<T>(field.getZero().add(3220103.), field.getZero().add(69623.), field.getZero().add(6449822.));
-     final FieldVector3D<T> velocity = new FieldVector3D<T>(field.getZero().add(6414.7), field.getZero().add(-2006.), field.getZero().add(-3180.));
-     final FieldKeplerianOrbit<T> initialOrbit = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
-                                                            FramesFactory.getEME2000(), date, ehMu);
-    
-     FieldEcksteinHechlerPropagator<T> propagator =
-             new FieldEcksteinHechlerPropagator<T>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
-    
-     // set up a 5 points sample
-     List<FieldOrbit<T>> sample = new ArrayList<FieldOrbit<T>>();
-     for (double dt = 0; dt < 300.0; dt += 60.0) {
-         sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
-     }
-    
-     // well inside the sample, interpolation should be slightly better than Keplerian shift
-     // the relative bad behaviour here is due to eccentricity, which cannot be
-     // accurately interpolated with a polynomial in this case
-     T maxShiftPositionError = zero;
-     T maxInterpolationPositionError = zero;
-     T maxShiftEccentricityError = zero;
-     T maxInterpolationEccentricityError = zero;
-     for (double dt = 0; dt < 241.0; dt += 1.0) {
-         FieldAbsoluteDate<T> t         = initialOrbit.getDate().shiftedBy(dt);
-         FieldVector3D<T> shiftedP      = initialOrbit.shiftedBy(zero.add(dt)).getFieldPVCoordinates().getPosition();
-         FieldVector3D<T> interpolatedP = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
-         FieldVector3D<T> propagatedP   = propagator.propagate(t).getFieldPVCoordinates().getPosition();
-         T shiftedE        = initialOrbit.shiftedBy(zero.add(dt)).getE();
-         T interpolatedE   = initialOrbit.interpolate(t, sample).getE();
-         T propagatedE     = propagator.propagate(t).getE();
-         maxShiftPositionError =  maxShiftPositionError.getReal() > shiftedP.subtract(propagatedP).getNorm().getReal() ?
-                                  maxShiftPositionError       :     shiftedP.subtract(propagatedP).getNorm();                                                                        ;
-         maxInterpolationPositionError = maxInterpolationPositionError.getReal() > interpolatedP.subtract(propagatedP).getNorm().getReal() ?
-                                            maxInterpolationPositionError : interpolatedP.subtract(propagatedP).getNorm();                                                                                         ;
-         maxShiftEccentricityError = maxShiftEccentricityError.getReal()  > FastMath.abs(shiftedE.getReal() - propagatedE.getReal()) ? 
+        for (int i = 0; i < jacobian.length; i++) {
+
+            T[] row    = jacobian[i];
+            double[] rowRef = jRef[i];
+            for (int j = 0; j < row.length; j++) {
+
+
+                Assert.assertEquals(0, (row[j].getReal() - rowRef[j]) / rowRef[j], 1.0e-14);
+            }
+
+        }
+
+    }
+
+    public <T extends RealFieldElement<T>>void testJacobianFinitedifferencesHyperbola(final Field<T> field) throws OrekitException {
+
+        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<T>(field,2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
+        double mu =  3.986004415e+14;
+        FieldKeplerianOrbit<T> orbKep = new FieldKeplerianOrbit<T>(field.getZero().add(-7000000.0), field.getZero().add(1.2), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(80.)), field.getZero().add(FastMath.toRadians(20.)),
+                        field.getZero().add(FastMath.toRadians(40.)), PositionAngle.MEAN,
+                        FramesFactory.getEME2000(), dateTca, mu);
+
+        for (PositionAngle type : PositionAngle.values()) {
+            T hP =field.getZero().add(2.0);
+            T[][] finiteDiffJacobian = finiteDifferencesJacobian(type, orbKep, hP, field);
+            T[][] jacobian = MathArrays.buildArray(field, 6, 6);
+            orbKep.getJacobianWrtCartesian(type, jacobian);
+            for (int i = 0; i < jacobian.length; i++) {
+                T[] row    = jacobian[i];
+                T[] rowRef = finiteDiffJacobian[i];
+
+                for (int j = 0; j < row.length; j++) {
+                    Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 3.0e-8);
+                }
+            }
+
+            T[][] invJacobian = MathArrays.buildArray(field, 6, 6);
+            orbKep.getJacobianWrtParameters(type, invJacobian);
+            MatrixUtils.createFieldMatrix(jacobian).
+            multiply(MatrixUtils.createFieldMatrix(invJacobian)).
+            walkInRowOrder(new FieldMatrixPreservingVisitor<T>() {
+                public void start(int rows, int columns,
+                                  int startRow, int endRow, int startColumn, int endColumn) {
+                }
+
+                public void visit(int row, int column, T value) {
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 2.0e-8);
+                }
+
+                public T end() {
+                    return null;
+                }
+            });
+        }
+
+    }
+
+    private <T extends RealFieldElement<T>> T[][] finiteDifferencesJacobian(PositionAngle type, FieldKeplerianOrbit<T> orbit, T hP, final Field<T> field)
+                    throws OrekitException {
+        T[][] jacobian = MathArrays.buildArray(field, 6, 6);
+        for (int i = 0; i < 6; ++i) {
+            fillColumn(type, i, orbit, hP, jacobian);
+        }
+        return jacobian;
+    }
+
+    private <T extends RealFieldElement<T>> void fillColumn(PositionAngle type, int i, FieldKeplerianOrbit<T> orbit, T hP, T[][] jacobian) {
+
+        // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
+        // we use this to compute a velocity step size from the position step size
+        FieldVector3D<T> p = orbit.getFieldPVCoordinates().getPosition();
+        FieldVector3D<T> v = orbit.getFieldPVCoordinates().getVelocity();
+        T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
+        T h;
+        FieldVector3D<T> dP = new FieldVector3D<T>(p.getX().getField().getZero(),p.getX().getField().getZero(),p.getX().getField().getZero());
+        FieldVector3D<T> dV = new FieldVector3D<T>(p.getX().getField().getZero(),p.getX().getField().getZero(),p.getX().getField().getZero());
+        switch (i) {
+            case 0:
+                h = hP;
+                dP = new FieldVector3D<T>(hP,p.getX().getField().getZero(),p.getX().getField().getZero());
+                break;
+            case 1:
+                h = hP;
+                dP = new FieldVector3D<T>(p.getX().getField().getZero(), hP,p.getX().getField().getZero());
+                break;
+            case 2:
+                h = hP;
+                dP = new FieldVector3D<T>(p.getX().getField().getZero(), p.getX().getField().getZero(), hP);
+                break;
+            case 3:
+                h = hV;
+                dV = new FieldVector3D<T>(hV, p.getX().getField().getZero(),p.getX().getField().getZero());
+                break;
+            case 4:
+                h = hV;
+                dV = new FieldVector3D<T>(p.getX().getField().getZero(), hV, p.getX().getField().getZero());
+                break;
+            default:
+                h = hV;
+                dV = new FieldVector3D<T>(p.getX().getField().getZero(),p.getX().getField().getZero(), hV);
+                break;
+        }
+
+        FieldKeplerianOrbit<T> oM4h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, -4, dP), new FieldVector3D<T>(1, v, -4, dV)),
+                        orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        FieldKeplerianOrbit<T> oM3h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, -3, dP), new FieldVector3D<T>(1, v, -3, dV)),
+                        orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        FieldKeplerianOrbit<T> oM2h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, -2, dP), new FieldVector3D<T>(1, v, -2, dV)),
+                        orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        FieldKeplerianOrbit<T> oM1h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, -1, dP), new FieldVector3D<T>(1, v, -1, dV)),
+                        orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        FieldKeplerianOrbit<T> oP1h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, +1, dP), new FieldVector3D<T>(1, v, +1, dV)),
+                        orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        FieldKeplerianOrbit<T> oP2h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, +2, dP), new FieldVector3D<T>(1, v, +2, dV)),
+                        orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        FieldKeplerianOrbit<T> oP3h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, +3, dP), new FieldVector3D<T>(1, v, +3, dV)),
+                        orbit.getFrame(), orbit.getDate(), orbit.getMu());
+        FieldKeplerianOrbit<T> oP4h = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(1, p, +4, dP), new FieldVector3D<T>(1, v, +4, dV)),
+                        orbit.getFrame(), orbit.getDate(), orbit.getMu());
+
+        jacobian[0][i] = (oP4h.getA().subtract(oM4h.getA()).multiply(-3)).
+                        add(oP3h.getA().subtract(oM3h.getA()).multiply(32)).
+                        subtract(oP2h.getA().subtract(oM2h.getA()).multiply(168)).
+                        add(oP1h.getA().subtract(oM1h.getA()).multiply(672)).
+                        divide(h.multiply(840));
+
+        jacobian[1][i] = (oP4h.getE().subtract(oM4h.getE()).multiply(-3)).
+                        add(oP3h.getE().subtract(oM3h.getE()).multiply(32)).
+                        subtract(oP2h.getE().subtract(oM2h.getE()).multiply(168)).
+                        add(oP1h.getE().subtract(oM1h.getE()).multiply(672)).
+                        divide(h.multiply(840));
+
+        jacobian[2][i] = (oP4h.getI().subtract(oM4h.getI()).multiply(-3)).
+                        add(oP3h.getI().subtract(oM3h.getI()).multiply(32)).
+                        subtract(oP2h.getI().subtract(oM2h.getI()).multiply(168)).
+                        add(oP1h.getI().subtract(oM1h.getI()).multiply(672)).
+                        divide(h.multiply(840));
+        jacobian[3][i] = (oP4h.getPerigeeArgument().subtract(oM4h.getPerigeeArgument()).multiply(-3)).
+                        add(oP3h.getPerigeeArgument().subtract(oM3h.getPerigeeArgument()).multiply(32)).
+                        subtract(oP2h.getPerigeeArgument().subtract(oM2h.getPerigeeArgument()).multiply(168)).
+                        add(oP1h.getPerigeeArgument().subtract(oM1h.getPerigeeArgument()).multiply(672)).
+                        divide(h.multiply(840));
+
+        jacobian[4][i] =  (oP4h.getRightAscensionOfAscendingNode().subtract(oM4h.getRightAscensionOfAscendingNode()).multiply(-3)).
+                        add(oP3h.getRightAscensionOfAscendingNode().subtract(oM3h.getRightAscensionOfAscendingNode()).multiply(32)).
+                        subtract(oP2h.getRightAscensionOfAscendingNode().subtract(oM2h.getRightAscensionOfAscendingNode()).multiply(168)).
+                        add(oP1h.getRightAscensionOfAscendingNode().subtract(oM1h.getRightAscensionOfAscendingNode()).multiply(672)).
+                        divide(h.multiply(840));
+        jacobian[5][i] = (oP4h.getAnomaly(type).subtract(oM4h.getAnomaly(type)).multiply(-3)).
+                        add(oP3h.getAnomaly(type).subtract(oM3h.getAnomaly(type)).multiply(32)).
+                        subtract(oP2h.getAnomaly(type).subtract(oM2h.getAnomaly(type)).multiply(168)).
+                        add(oP1h.getAnomaly(type).subtract(oM1h.getAnomaly(type)).multiply(672)).
+                        divide(h.multiply(840));
+
+    }
+
+    public <T extends RealFieldElement<T>> void testInterpolation(final Field<T> field) throws OrekitException {
+        final T zero = field.getZero();
+        final double ehMu  = 3.9860047e14;
+        final double ae  = 6.378137e6;
+        final T c20 = zero.add(-1.08263e-3);
+        final T c30 = zero.add(2.54e-6);
+        final T c40 = zero.add( 1.62e-6);
+        final T c50 = zero.add(2.3e-7);
+        final T c60 = zero.add(-5.5e-7);
+
+        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
+        final FieldVector3D<T> position = new FieldVector3D<T>(field.getZero().add(3220103.), field.getZero().add(69623.), field.getZero().add(6449822.));
+        final FieldVector3D<T> velocity = new FieldVector3D<T>(field.getZero().add(6414.7), field.getZero().add(-2006.), field.getZero().add(-3180.));
+        final FieldKeplerianOrbit<T> initialOrbit = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
+                        FramesFactory.getEME2000(), date, ehMu);
+
+        FieldEcksteinHechlerPropagator<T> propagator =
+                        new FieldEcksteinHechlerPropagator<T>(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+
+        // set up a 5 points sample
+        List<FieldOrbit<T>> sample = new ArrayList<FieldOrbit<T>>();
+        for (double dt = 0; dt < 300.0; dt += 60.0) {
+            sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+        }
+
+        // well inside the sample, interpolation should be slightly better than Keplerian shift
+        // the relative bad behaviour here is due to eccentricity, which cannot be
+        // accurately interpolated with a polynomial in this case
+        T maxShiftPositionError = zero;
+        T maxInterpolationPositionError = zero;
+        T maxShiftEccentricityError = zero;
+        T maxInterpolationEccentricityError = zero;
+        for (double dt = 0; dt < 241.0; dt += 1.0) {
+            FieldAbsoluteDate<T> t         = initialOrbit.getDate().shiftedBy(dt);
+            FieldVector3D<T> shiftedP      = initialOrbit.shiftedBy(zero.add(dt)).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> interpolatedP = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> propagatedP   = propagator.propagate(t).getFieldPVCoordinates().getPosition();
+            T shiftedE        = initialOrbit.shiftedBy(zero.add(dt)).getE();
+            T interpolatedE   = initialOrbit.interpolate(t, sample).getE();
+            T propagatedE     = propagator.propagate(t).getE();
+            maxShiftPositionError =  maxShiftPositionError.getReal() > shiftedP.subtract(propagatedP).getNorm().getReal() ?
+                                        maxShiftPositionError       :     shiftedP.subtract(propagatedP).getNorm();
+            maxInterpolationPositionError = maxInterpolationPositionError.getReal() > interpolatedP.subtract(propagatedP).getNorm().getReal() ?
+                                               maxInterpolationPositionError : interpolatedP.subtract(propagatedP).getNorm();
+            maxShiftEccentricityError = maxShiftEccentricityError.getReal()  > FastMath.abs(shiftedE.getReal() - propagatedE.getReal()) ?
                                            maxShiftEccentricityError     : shiftedE.subtract(propagatedE).abs();
-         maxInterpolationEccentricityError = maxInterpolationEccentricityError.getReal() > FastMath.abs(interpolatedE.getReal() - propagatedE.getReal()) ?
-                                               maxInterpolationEccentricityError   :  interpolatedE.subtract(propagatedE).abs()  ;
-     }
-     Assert.assertTrue(maxShiftPositionError.getReal()             > 390.0);
-     Assert.assertTrue(maxInterpolationPositionError.getReal()    < 62.0);
-     Assert.assertTrue(maxShiftEccentricityError.getReal()         > 4.5e-4);
-     Assert.assertTrue(maxInterpolationEccentricityError.getReal() < 2.6e-5);
-    
-     // slightly past sample end, bad eccentricity interpolation shows up
-     // (in this case, interpolated eccentricity exceeds 1.0 btween 1900
-     // and 1910s, while semi-majaxis remains positive, so this is not
-     // even a proper hyperbolic orbit...)
-     maxShiftPositionError = zero;
-     maxInterpolationPositionError = zero;
-     maxShiftEccentricityError = zero;
-     maxInterpolationEccentricityError = zero;
-     for (double dt = 240; dt < 600; dt += 1.0) {
-         FieldAbsoluteDate<T> t         = initialOrbit.getDate().shiftedBy(dt);
-         FieldVector3D<T> shiftedP      = initialOrbit.shiftedBy(zero.add(dt)).getFieldPVCoordinates().getPosition();
-         FieldVector3D<T> interpolatedP = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
-         FieldVector3D<T> propagatedP   = propagator.propagate(t).getFieldPVCoordinates().getPosition();
-         T shiftedE        = initialOrbit.shiftedBy(zero.add(dt)).getE();
-         T interpolatedE   = initialOrbit.interpolate(t, sample).getE();
-         T propagatedE     = propagator.propagate(t).getE();
-         maxShiftPositionError =  maxShiftPositionError.getReal() > shiftedP.subtract(propagatedP).getNorm().getReal() ?
-                                  maxShiftPositionError       :     shiftedP.subtract(propagatedP).getNorm();                                                                        ;
-         maxInterpolationPositionError = maxInterpolationPositionError.getReal() > interpolatedP.subtract(propagatedP).getNorm().getReal() ?
-                                            maxInterpolationPositionError : interpolatedP.subtract(propagatedP).getNorm();                                                                                         ;
-         maxShiftEccentricityError = maxShiftEccentricityError.getReal()  > FastMath.abs(shiftedE.getReal() - propagatedE.getReal()) ? 
-                                           maxShiftEccentricityError     : shiftedE.subtract(propagatedE).abs();
-         maxInterpolationEccentricityError = maxInterpolationEccentricityError.getReal() > FastMath.abs(interpolatedE.getReal() - propagatedE.getReal()) ?
-                                               maxInterpolationEccentricityError   :  interpolatedE.subtract(propagatedE).abs()  ;
-     }
-     Assert.assertTrue(maxShiftPositionError.getReal()            <  2200.0);
-     Assert.assertTrue(maxInterpolationPositionError.getReal()    > 72000.0);
-     Assert.assertTrue(maxShiftEccentricityError.getReal()         <  1.2e-3);
-     Assert.assertTrue(maxInterpolationEccentricityError.getReal() >  3.8e-3);
+            maxInterpolationEccentricityError = maxInterpolationEccentricityError.getReal() > FastMath.abs(interpolatedE.getReal() - propagatedE.getReal()) ?
+                                                   maxInterpolationEccentricityError   :  interpolatedE.subtract(propagatedE).abs()  ;
+        }
+        Assert.assertTrue(maxShiftPositionError.getReal()             > 390.0);
+        Assert.assertTrue(maxInterpolationPositionError.getReal()    < 62.0);
+        Assert.assertTrue(maxShiftEccentricityError.getReal()         > 4.5e-4);
+        Assert.assertTrue(maxInterpolationEccentricityError.getReal() < 2.6e-5);
 
-}
+        // slightly past sample end, bad eccentricity interpolation shows up
+        // (in this case, interpolated eccentricity exceeds 1.0 btween 1900
+        // and 1910s, while semi-majaxis remains positive, so this is not
+        // even a proper hyperbolic orbit...)
+        maxShiftPositionError = zero;
+        maxInterpolationPositionError = zero;
+        maxShiftEccentricityError = zero;
+        maxInterpolationEccentricityError = zero;
+        for (double dt = 240; dt < 600; dt += 1.0) {
+            FieldAbsoluteDate<T> t         = initialOrbit.getDate().shiftedBy(dt);
+            FieldVector3D<T> shiftedP      = initialOrbit.shiftedBy(zero.add(dt)).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> interpolatedP = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> propagatedP   = propagator.propagate(t).getFieldPVCoordinates().getPosition();
+            T shiftedE        = initialOrbit.shiftedBy(zero.add(dt)).getE();
+            T interpolatedE   = initialOrbit.interpolate(t, sample).getE();
+            T propagatedE     = propagator.propagate(t).getE();
+            maxShiftPositionError         =  maxShiftPositionError.getReal() > shiftedP.subtract(propagatedP).getNorm().getReal() ?
+                                               maxShiftPositionError       :     shiftedP.subtract(propagatedP).getNorm();
+            maxInterpolationPositionError = maxInterpolationPositionError.getReal() > interpolatedP.subtract(propagatedP).getNorm().getReal() ?
+                                               maxInterpolationPositionError : interpolatedP.subtract(propagatedP).getNorm();
+            maxShiftEccentricityError = maxShiftEccentricityError.getReal()  > FastMath.abs(shiftedE.getReal() - propagatedE.getReal()) ?
+                                               maxShiftEccentricityError     : shiftedE.subtract(propagatedE).abs();
+            maxInterpolationEccentricityError = maxInterpolationEccentricityError.getReal() > FastMath.abs(interpolatedE.getReal() - propagatedE.getReal()) ?
+                                                   maxInterpolationEccentricityError   :  interpolatedE.subtract(propagatedE).abs();
+        }
+        Assert.assertTrue(maxShiftPositionError.getReal()            <  2200.0);
+        Assert.assertTrue(maxInterpolationPositionError.getReal()    > 72000.0);
+        Assert.assertTrue(maxShiftEccentricityError.getReal()         <  1.2e-3);
+        Assert.assertTrue(maxInterpolationEccentricityError.getReal() >  3.8e-3);
 
-
-public <T extends RealFieldElement<T>>void testPerfectlyEquatorialConversion(final Field<T> field) throws OrekitException {
-    FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<T>(field,2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
-    
-    FieldKeplerianOrbit<T> initial = new FieldKeplerianOrbit<T>(field.getZero().add(13378000.0), field.getZero().add(0.05), field.getZero().add(0.0), field.getZero().add(0.0), field.getZero().add(FastMath.PI),
-                                             field.getZero().add(0.0), PositionAngle.MEAN,
-                                             FramesFactory.getEME2000(), dateTca,
-                                             Constants.EIGEN5C_EARTH_MU);
-     FieldEquinoctialOrbit<T> equ = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(initial);
-     FieldKeplerianOrbit<T> converted = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equ);
-     Assert.assertEquals(FastMath.PI,
-                         MathUtils.normalizeAngle(converted.getRightAscensionOfAscendingNode().getReal() +
-                                                  converted.getPerigeeArgument().getReal(), FastMath.PI),
-                         1.0e-10);
-}
-
-public <T extends RealFieldElement<T>>void testKeplerianDerivatives(final Field<T> field) {
-    FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
-    final FieldKeplerianOrbit<T> o = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(field.getZero().add(-4947831.), field.getZero().add(-3765382.), field.getZero().add(-3708221.)),
-                                                               new FieldVector3D<T>(field.getZero().add(-2079.), field.getZero().add(5291.), field.getZero().add(-7842.))),
-                                                                 FramesFactory.getEME2000(), date, 3.9860047e14);
- final FieldVector3D<T> p = o.getFieldPVCoordinates().getPosition();
- final FieldVector3D<T> v = o.getFieldPVCoordinates().getVelocity();
- final FieldVector3D<T> a = o.getFieldPVCoordinates().getAcceleration();
-
- // check that despite we did not provide acceleration, it got recomputed
- Assert.assertEquals(7.605422, a.getNorm().getReal(), 1.0e-6);
-
- FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
-
- // check velocity is the derivative of position
- double vx = differentiator.differentiate(new UnivariateFunction() {
-     public double value(double dt) {
-         return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getPosition().getX().getReal();
-     }
- }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
- Assert.assertEquals(o.getFieldPVCoordinates().getVelocity().getX().getReal(), vx, 3.0e-12 * v.getNorm().getReal());
- double vy = differentiator.differentiate(new UnivariateFunction() {
-     public double value(double dt) {
-         return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getPosition().getY().getReal();
-     }
- }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
- Assert.assertEquals(o.getFieldPVCoordinates().getVelocity().getY().getReal(), vy, 3.0e-12 * v.getNorm().getReal());
- double vz = differentiator.differentiate(new UnivariateFunction() {
-     public double value(double dt) {
-         return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getPosition().getZ().getReal();
-     }
- }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
- Assert.assertEquals(o.getFieldPVCoordinates().getVelocity().getZ().getReal(), vz, 3.0e-12 * v.getNorm().getReal());
-
- // check acceleration is the derivative of velocity
- double ax = differentiator.differentiate(new UnivariateFunction() {
-     public double value(double dt) {
-         return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getVelocity().getX().getReal();
-     }
- }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
- Assert.assertEquals(o.getFieldPVCoordinates().getAcceleration().getX().getReal(), ax, 3.0e-12 * a.getNorm().getReal());
- double ay = differentiator.differentiate(new UnivariateFunction() {
-     public double value(double dt) {
-         return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getVelocity().getY().getReal();
-     }
- }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
-Assert.assertEquals(o.getFieldPVCoordinates().getAcceleration().getY().getReal(), ay, 3.0e-12 * a.getNorm().getReal());
- double az = differentiator.differentiate(new UnivariateFunction() {
-     public double value(double dt) {
-         return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getVelocity().getZ().getReal();
-     }
- }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
-Assert.assertEquals(o.getFieldPVCoordinates().getAcceleration().getZ().getReal(), az, 3.0e-12 * a.getNorm().getReal());
-
- // check jerk is the derivative of acceleration
- final T r2 = p.getNormSq();
- final T r  = r2.sqrt();
- FieldVector3D<T> keplerianJerk = new FieldVector3D<T>(FieldVector3D.dotProduct(p, v).multiply(-3).divide(r2), a, a.getNorm().divide(r).multiply(-1), v);
- double jx = differentiator.differentiate(new UnivariateFunction() {
-     public double value(double dt) {
-         return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getAcceleration().getX().getReal();
-     }
- }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+    }
 
 
-Assert.assertEquals(keplerianJerk.getX().getReal(), jx, 4.0e-12 * keplerianJerk.getNorm().getReal());
- double jy = differentiator.differentiate(new UnivariateFunction() {
-     public double value(double dt) {
-         return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getAcceleration().getY().getReal();
-     }
- }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
-Assert.assertEquals(keplerianJerk.getY().getReal(), jy, 4.0e-12 * keplerianJerk.getNorm().getReal());
- double jz = differentiator.differentiate(new UnivariateFunction() {
-     public double value(double dt) {
-         return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getAcceleration().getZ().getReal();
-     }
- }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
- Assert.assertEquals(keplerianJerk.getZ().getReal(), jz, 4.0e-12 * keplerianJerk.getNorm().getReal());
+    public <T extends RealFieldElement<T>>void testPerfectlyEquatorialConversion(final Field<T> field) throws OrekitException {
+        FieldAbsoluteDate<T> dateTca = new FieldAbsoluteDate<T>(field,2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());
 
-}
+        FieldKeplerianOrbit<T> initial = new FieldKeplerianOrbit<T>(field.getZero().add(13378000.0),
+                                                                    field.getZero().add(0.05),
+                                                                    field.getZero().add(0.0),
+                                                                    field.getZero().add(0.0),
+                                                                    field.getZero().add(FastMath.PI),
+                                                                    field.getZero().add(0.0), PositionAngle.MEAN,
+                                                                    FramesFactory.getEME2000(), dateTca,
+                                                                    Constants.EIGEN5C_EARTH_MU);
+        FieldEquinoctialOrbit<T> equ = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(initial);
+        FieldKeplerianOrbit<T> converted = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equ);
+        Assert.assertEquals(FastMath.PI,
+                            MathUtils.normalizeAngle(converted.getRightAscensionOfAscendingNode().getReal() +
+                                                     converted.getPerigeeArgument().getReal(), FastMath.PI),
+                            1.0e-10);
+    }
+
+    public <T extends RealFieldElement<T>>void testKeplerianDerivatives(final Field<T> field) {
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
+        final FieldKeplerianOrbit<T> o = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(field.getZero().add(-4947831.),
+                                                                                                                   field.getZero().add(-3765382.),
+                                                                                                                   field.getZero().add(-3708221.)),
+                                                                                              new FieldVector3D<T>(field.getZero().add(-2079.),
+                                                                                                                   field.getZero().add(5291.),
+                                                                                                                   field.getZero().add(-7842.))),
+                                                                    FramesFactory.getEME2000(), date, 3.9860047e14);
+        final FieldVector3D<T> p = o.getFieldPVCoordinates().getPosition();
+        final FieldVector3D<T> v = o.getFieldPVCoordinates().getVelocity();
+        final FieldVector3D<T> a = o.getFieldPVCoordinates().getAcceleration();
+
+        // check that despite we did not provide acceleration, it got recomputed
+        Assert.assertEquals(7.605422, a.getNorm().getReal(), 1.0e-6);
+
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
+
+        // check velocity is the derivative of position
+        double vx = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getPosition().getX().getReal();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getFieldPVCoordinates().getVelocity().getX().getReal(), vx, 3.0e-12 * v.getNorm().getReal());
+        double vy = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getPosition().getY().getReal();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getFieldPVCoordinates().getVelocity().getY().getReal(), vy, 3.0e-12 * v.getNorm().getReal());
+        double vz = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getPosition().getZ().getReal();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getFieldPVCoordinates().getVelocity().getZ().getReal(), vz, 3.0e-12 * v.getNorm().getReal());
+
+        // check acceleration is the derivative of velocity
+        double ax = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getVelocity().getX().getReal();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getFieldPVCoordinates().getAcceleration().getX().getReal(), ax, 3.0e-12 * a.getNorm().getReal());
+        double ay = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getVelocity().getY().getReal();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getFieldPVCoordinates().getAcceleration().getY().getReal(), ay, 3.0e-12 * a.getNorm().getReal());
+        double az = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getVelocity().getZ().getReal();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(o.getFieldPVCoordinates().getAcceleration().getZ().getReal(), az, 3.0e-12 * a.getNorm().getReal());
+
+        // check jerk is the derivative of acceleration
+        final T r2 = p.getNormSq();
+        final T r  = r2.sqrt();
+        FieldVector3D<T> keplerianJerk = new FieldVector3D<T>(FieldVector3D.dotProduct(p, v).multiply(-3).divide(r2), a,
+                                                              a.getNorm().divide(r).multiply(-1), v);
+        double jx = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getAcceleration().getX().getReal();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
 
 
+        Assert.assertEquals(keplerianJerk.getX().getReal(), jx, 4.0e-12 * keplerianJerk.getNorm().getReal());
+        double jy = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getAcceleration().getY().getReal();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(keplerianJerk.getY().getReal(), jy, 4.0e-12 * keplerianJerk.getNorm().getReal());
+        double jz = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return o.shiftedBy(field.getZero().add(dt)).getFieldPVCoordinates().getAcceleration().getZ().getReal();
+            }
+        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        Assert.assertEquals(keplerianJerk.getZ().getReal(), jz, 4.0e-12 * keplerianJerk.getNorm().getReal());
+
+    }
 
     @Before
     public void setUp() {
@@ -1249,7 +1300,5 @@ Assert.assertEquals(keplerianJerk.getY().getReal(), jy, 4.0e-12 * keplerianJerk.
         mu = 3.9860047e14;
 
     }
-
-
 
 }

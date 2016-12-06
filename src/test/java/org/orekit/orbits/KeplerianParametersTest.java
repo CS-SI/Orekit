@@ -28,6 +28,8 @@ import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.After;
@@ -656,6 +658,25 @@ public class KeplerianParametersTest {
                     Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 2.0e-7);
                 }
             }
+
+            double[][] invJacobian = new double[6][6];
+            orbKep.getJacobianWrtParameters(type, invJacobian);
+            MatrixUtils.createRealMatrix(jacobian).
+                            multiply(MatrixUtils.createRealMatrix(invJacobian)).
+            walkInRowOrder(new RealMatrixPreservingVisitor() {
+                public void start(int rows, int columns,
+                                  int startRow, int endRow, int startColumn, int endColumn) {
+                }
+
+                public void visit(int row, int column, double value) {
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value, 5.0e-9);
+                }
+
+                public double end() {
+                    return Double.NaN;
+                }
+            });
+
         }
 
     }
@@ -766,6 +787,25 @@ public class KeplerianParametersTest {
                     Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 3.0e-8);
                 }
             }
+
+            double[][] invJacobian = new double[6][6];
+            orbKep.getJacobianWrtParameters(type, invJacobian);
+            MatrixUtils.createRealMatrix(jacobian).
+                            multiply(MatrixUtils.createRealMatrix(invJacobian)).
+            walkInRowOrder(new RealMatrixPreservingVisitor() {
+                public void start(int rows, int columns,
+                                  int startRow, int endRow, int startColumn, int endColumn) {
+                }
+
+                public void visit(int row, int column, double value) {
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value, 2.0e-8);
+                }
+
+                public double end() {
+                    return Double.NaN;
+                }
+            });
+
         }
 
     }

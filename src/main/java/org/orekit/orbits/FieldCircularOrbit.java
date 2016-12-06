@@ -114,9 +114,9 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldCircularOrbit(final T a, final T ex, final T ey,
-                         final T i, final T raan,
-                         final T alpha, final PositionAngle type,
-                         final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                              final T i, final T raan,
+                              final T alpha, final PositionAngle type,
+                              final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         if (ex.getReal() * ex.getReal() + ey.getReal() * ey.getReal() >= 1.0) {
@@ -149,57 +149,6 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
     }
 
-    /** Creates a new instance.
-     * @param a  semi-major axis (m)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param i inclination (rad)
-     * @param raan right ascension of ascending node (Ω, rad)
-     * @param alpha  an + ω, mean, eccentric or true latitude argument (rad)
-     * @param type type of latitude argument
-     * @param PVCoordinates  the {@link FieldPVCoordinates<T>} in inertial frame
-     * @param frame the frame in which are defined the parameters
-     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param mu central attraction coefficient (m³/s²)
-     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
-     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
-     */
-    public FieldCircularOrbit(final T a, final T ex, final T ey,
-                         final T i, final T raan,
-                         final T alpha, final PositionAngle type,
-                         final TimeStampedFieldPVCoordinates<T> PVCoordinates, final Frame frame,
-                         final double mu)
-        throws IllegalArgumentException {
-        super(PVCoordinates, frame, mu);
-        if (ex.getReal() * ex.getReal() + ey.getReal() * ey.getReal() >= 1.0) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
-                                                     getClass().getName());
-        }
-        this.a    =  a;
-        this.ex   = ex;
-        this.ey   = ey;
-        this.i    = i;
-        this.raan = raan;
-
-        one = a.getField().getOne();
-        zero = a.getField().getZero();
-
-        switch (type) {
-            case MEAN :
-                this.alphaV = eccentricToTrue(meanToEccentric(alpha));
-                break;
-            case ECCENTRIC :
-                this.alphaV = eccentricToTrue(alpha);
-                break;
-            case TRUE :
-                this.alphaV = alpha;
-                break;
-            default :
-                throw new OrekitInternalError(null);
-        }
-
-    }
-
     /** Constructor from cartesian parameters.
      *
      * <p> The acceleration provided in {@code FieldPVCoordinates<T>} is accessible using
@@ -214,7 +163,8 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public FieldCircularOrbit(final TimeStampedFieldPVCoordinates<T> PVCoordinates, final Frame frame, final double mu)
+    public FieldCircularOrbit(final TimeStampedFieldPVCoordinates<T> PVCoordinates,
+                              final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(PVCoordinates, frame, mu);
 

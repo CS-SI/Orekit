@@ -22,6 +22,8 @@ import java.util.List;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.linear.FieldMatrixPreservingVisitor;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -739,6 +741,25 @@ public class FieldEquinoctialParametersTest {
                     Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 4.0e-9);
                 }
             }
+
+            T[][] invJacobian = MathArrays.buildArray(field, 6, 6);
+            orbEqu.getJacobianWrtParameters(type, invJacobian);
+            MatrixUtils.createFieldMatrix(jacobian).
+                            multiply(MatrixUtils.createFieldMatrix(invJacobian)).
+            walkInRowOrder(new FieldMatrixPreservingVisitor<T>() {
+                public void start(int rows, int columns,
+                                  int startRow, int endRow, int startColumn, int endColumn) {
+                }
+
+                public void visit(int row, int column, T value) {
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value.getReal(), 1.0e-9);
+                }
+
+                public T end() {
+                    return null;
+                }
+            });
+
         }
 
     }

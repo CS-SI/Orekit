@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.After;
@@ -300,6 +302,24 @@ public class CartesianParametersTest {
                 Assert.assertEquals((i == j) ? 1 : 0, row[j], 1.0e-15);
             }
         }
+
+        double[][] invJacobian = new double[6][6];
+        orbit.getJacobianWrtParameters(PositionAngle.MEAN, invJacobian);
+        MatrixUtils.createRealMatrix(jacobian).
+                        multiply(MatrixUtils.createRealMatrix(invJacobian)).
+        walkInRowOrder(new RealMatrixPreservingVisitor() {
+            public void start(int rows, int columns,
+                              int startRow, int endRow, int startColumn, int endColumn) {
+            }
+
+            public void visit(int row, int column, double value) {
+                Assert.assertEquals(row == column ? 1.0 : 0.0, value, 1.0e-15);
+            }
+
+            public double end() {
+                return Double.NaN;
+            }
+        });
 
     }
 
