@@ -111,7 +111,7 @@ public class DragForce extends AbstractForceModel {
         final FieldVector3D<T> relativeVelocity = s.getFieldPVCoordinates().getVelocity().negate().add(vAtm);
 
         // Addition of calculated acceleration to adder
-        adder.addAcceleration(spacecraft.dragAcceleration(date, frame, position, s.getFieldAttitude().getRotation(),
+        adder.addAcceleration(spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
                                                           s.getMass(), rho, relativeVelocity), frame);
     }
 

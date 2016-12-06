@@ -143,17 +143,17 @@ public class FieldSpacecraftStateTest {
             Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getX(),control_f.getFieldPVCoordinates().toPVCoordinates().getAcceleration().getX(), 1e-10);
             Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getY(),control_f.getFieldPVCoordinates().toPVCoordinates().getAcceleration().getY(), 1e-10);
             Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getZ(),control_f.getFieldPVCoordinates().toPVCoordinates().getAcceleration().getZ(), 1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ0(),control_f.getFieldAttitude().getOrientation().getRotation().getQ0().getReal(),1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ1(),control_f.getFieldAttitude().getOrientation().getRotation().getQ1().getReal(),1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ2(),control_f.getFieldAttitude().getOrientation().getRotation().getQ2().getReal(),1e-10);
-            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ3(),control_f.getFieldAttitude().getOrientation().getRotation().getQ3().getReal(),1e-10);
+            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ0(),control_f.getAttitude().getOrientation().getRotation().getQ0().getReal(),1e-10);
+            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ1(),control_f.getAttitude().getOrientation().getRotation().getQ1().getReal(),1e-10);
+            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ2(),control_f.getAttitude().getOrientation().getRotation().getQ2().getReal(),1e-10);
+            Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ3(),control_f.getAttitude().getOrientation().getRotation().getQ3().getReal(),1e-10);
 
-            Assert.assertEquals(control_r.getAttitude().getSpin().getAlpha(),control_f.getFieldAttitude().getSpin().getAlpha().getReal(),1e-10);
-            Assert.assertEquals(control_r.getAttitude().getSpin().getDelta(),control_f.getFieldAttitude().getSpin().getDelta().getReal(),1e-10);
-            Assert.assertEquals(control_r.getAttitude().getSpin().getNorm(),control_f.getFieldAttitude().getSpin().getNorm().getReal(),1e-10);
+            Assert.assertEquals(control_r.getAttitude().getSpin().getAlpha(),control_f.getAttitude().getSpin().getAlpha().getReal(),1e-10);
+            Assert.assertEquals(control_r.getAttitude().getSpin().getDelta(),control_f.getAttitude().getSpin().getDelta().getReal(),1e-10);
+            Assert.assertEquals(control_r.getAttitude().getSpin().getNorm(),control_f.getAttitude().getSpin().getNorm().getReal(),1e-10);
 
-            Assert.assertEquals(control_r.getAttitude().getReferenceFrame().isPseudoInertial(),control_f.getFieldAttitude().getReferenceFrame().isPseudoInertial());
-            Assert.assertEquals(control_r.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH),control_f.getFieldAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH).getReal(), 1e-10);
+            Assert.assertEquals(control_r.getAttitude().getReferenceFrame().isPseudoInertial(),control_f.getAttitude().getReferenceFrame().isPseudoInertial());
+            Assert.assertEquals(control_r.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH),control_f.getAttitude().getDate().durationFrom(AbsoluteDate.J2000_EPOCH).getReal(), 1e-10);
 
 
         }
@@ -214,8 +214,8 @@ public class FieldSpacecraftStateTest {
             double residualA = rdpv.getAcceleration().getNorm() - dpv.getAcceleration().getNorm().getReal();
             double residualR =  FastMath.toDegrees(Rotation.     distance(rShifted.getAttitude().getRotation(),
                                                                      rPropagated.getAttitude().getRotation())) -
-                                FastMath.toDegrees(FieldRotation.distance(shifted.getFieldAttitude().getRotation(),
-                                                                    propagated.getFieldAttitude().getRotation()).getReal());
+                                FastMath.toDegrees(FieldRotation.distance(shifted.getAttitude().getRotation(),
+                                                                    propagated.getAttitude().getRotation()).getReal());
             Assert.assertEquals(0, residualP, 5e-4);
             Assert.assertEquals(0, residualV, 5e-4);
             Assert.assertEquals(0, residualA, 5e-4);
@@ -448,11 +448,11 @@ public class FieldSpacecraftStateTest {
         map.put("test-3",dd);
         FieldSpacecraftState<T> sO = new FieldSpacecraftState<T>(state.getOrbit(), map);
         Assert.assertEquals(-6.0, sO.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOA = new FieldSpacecraftState<T>(state.getOrbit(), state.getFieldAttitude(), map);
+        FieldSpacecraftState<T> sOA = new FieldSpacecraftState<T>(state.getOrbit(), state.getAttitude(), map);
         Assert.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
         FieldSpacecraftState<T> sOM = new FieldSpacecraftState<T>(state.getOrbit(), state.getMass(), map);
         Assert.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
-        FieldSpacecraftState<T> sOAM = new FieldSpacecraftState<T>(state.getOrbit(), state.getFieldAttitude(), state.getMass(), map);
+        FieldSpacecraftState<T> sOAM = new FieldSpacecraftState<T>(state.getOrbit(), state.getAttitude(), state.getMass(), map);
         Assert.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0].getReal(), 1.0e-15);
 
     }

@@ -43,21 +43,21 @@ import org.orekit.utils.IERSConventions;
 public class FieldAttitudeTest {
 
     @Test
-    public void doShiftTest() throws OrekitException {
-        testShift(Decimal64Field.getInstance());
+    public void testShift() throws OrekitException {
+        doTestShift(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doSpinTest() throws OrekitException {
-        testSpin(Decimal64Field.getInstance());
+    public void testSpin() throws OrekitException {
+        doTestSpin(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doInterpolationTest() throws OrekitException {
-        testInterpolation(Decimal64Field.getInstance());
+    public void testInterpolation() throws OrekitException {
+        doTestInterpolation(Decimal64Field.getInstance());
     }
 
-    public <T extends RealFieldElement<T>> void testShift(final Field<T> field){
+    public <T extends RealFieldElement<T>> void doTestShift(final Field<T> field){
         T zero = field.getZero();
         T one = field.getOne();
         T rate = one.multiply(2 * FastMath.PI / (12 * 60));
@@ -83,7 +83,7 @@ public class FieldAttitudeTest {
     }
 
 
-    public <T extends RealFieldElement<T>> void testSpin(final Field<T> field) throws OrekitException {
+    public <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) throws OrekitException {
         T zero = field.getZero();
         T one = field.getOne();
         T rate = one.multiply(2 * FastMath.PI / (12 * 60));
@@ -120,7 +120,7 @@ public class FieldAttitudeTest {
 
     }
     
-    public <T extends RealFieldElement<T>> void testInterpolation(final Field<T> field) throws OrekitException {
+    public <T extends RealFieldElement<T>> void doTestInterpolation(final Field<T> field) throws OrekitException {
         
         T zero = field.getZero();
         
@@ -145,13 +145,13 @@ public class FieldAttitudeTest {
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         propagator.setAttitudeProvider(new FieldBodyCenterPointing<T>(initialOrbit.getFrame(), earth));
-        FieldAttitude<T> initialAttitude = propagator.propagate(initialOrbit.getDate()).getFieldAttitude();
+        FieldAttitude<T> initialAttitude = propagator.propagate(initialOrbit.getDate()).getAttitude();
 
 
         // set up a 5 points sample
         List<FieldAttitude<T>> sample = new ArrayList<FieldAttitude<T>>();
         for (double dt = 0; dt < 251.0; dt += 60.0) {
-            sample.add(propagator.propagate(date.shiftedBy(dt)).getFieldAttitude());
+            sample.add(propagator.propagate(date.shiftedBy(dt)).getAttitude());
         }
 
         // well inside the sample, interpolation should be better than quadratic shift
@@ -162,7 +162,7 @@ public class FieldAttitudeTest {
         for (double dt_R = 0; dt_R < 1.0; dt_R += 1.0) {
             T dt = zero.add(dt_R);
             FieldAbsoluteDate<T> t                 = initialOrbit.getDate().shiftedBy(dt);
-            FieldAttitude<T> propagated            = propagator.propagate(t).getFieldAttitude();
+            FieldAttitude<T> propagated            = propagator.propagate(t).getAttitude();
             T shiftAngleError         = FieldRotation.distance(propagated.getRotation(),
                                                                initialAttitude.shiftedBy(dt).getRotation());
             T interpolationAngleError = FieldRotation.distance(propagated.getRotation(),
@@ -185,7 +185,7 @@ public class FieldAttitudeTest {
         for (double dt_R = 250.0; dt_R < 300.0; dt_R += 1.0) {
             T dt = zero.add(dt_R);
             FieldAbsoluteDate<T> t                 = initialOrbit.getDate().shiftedBy(dt);
-            FieldAttitude<T> propagated            = propagator.propagate(t).getFieldAttitude();
+            FieldAttitude<T> propagated            = propagator.propagate(t).getAttitude();
             T shiftAngleError         = FieldRotation.distance(propagated.getRotation(),
                                                          initialAttitude.shiftedBy(dt).getRotation());
             T interpolationAngleError = FieldRotation.distance(propagated.getRotation(),

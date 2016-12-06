@@ -288,7 +288,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
             // compute thrust acceleration in inertial frame
             adder.addAcceleration(new FieldVector3D<T>(s.getMass().reciprocal().multiply(thrust),
-                                               s.getFieldAttitude().getRotation().applyInverseTo(direction)),
+                                               s.getAttitude().getRotation().applyInverseTo(direction)),
                                   s.getFrame());
 
             // compute flow rate

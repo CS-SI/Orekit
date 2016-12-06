@@ -59,31 +59,32 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 public class FieldBodyCenterPointingTest {
 
+    private double mu;
 
     /** Test if target is on Earth surface
      * @throws OrekitException
      */
 
     @Test
-    public void doTargetTest() throws OrekitException{
-        testTarget(Decimal64Field.getInstance());
+    public void testTarget() throws OrekitException{
+        doTestTarget(Decimal64Field.getInstance());
     }
     @Test
-    public void doBodyCenterInPointingDirectionTest() throws OrekitException{
-        testBodyCenterInPointingDirection(Decimal64Field.getInstance());
+    public void doxBodyCenterInPointingDirectionTest() throws OrekitException{
+        doTestBodyCenterInPointingDirection(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doQDotTest() throws OrekitException{
-        testQDot(Decimal64Field.getInstance());
+    public void testQDot() throws OrekitException{
+        doTestQDot(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doSpinTest() throws OrekitException {
-        testSpin(Decimal64Field.getInstance());
+    public void testSpin() throws OrekitException {
+        doTestSpin(Decimal64Field.getInstance());
     }
 
-    public <T extends RealFieldElement<T>>void testTarget(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>void doTestTarget(final Field<T> field) throws OrekitException {
 
         mu = 3.9860047e14;
         T zero = field.getZero();
@@ -121,7 +122,7 @@ public class FieldBodyCenterPointingTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testBodyCenterInPointingDirection(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestBodyCenterInPointingDirection(final Field<T> field) throws OrekitException {
         mu = 3.9860047e14;
         T zero = field.getZero();
         // Satellite position as circular parameters
@@ -181,7 +182,7 @@ public class FieldBodyCenterPointingTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testQDot(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestQDot(final Field<T> field) throws OrekitException {
 
         T zero = field.getZero();
         // Satellite position as circular parameters
@@ -239,7 +240,7 @@ public class FieldBodyCenterPointingTest {
         List<WeightedObservedPoint> w2 = new ArrayList<WeightedObservedPoint>();
         List<WeightedObservedPoint> w3 = new ArrayList<WeightedObservedPoint>();
         for (double dt = -1; dt < 1; dt += 0.01) {
-            FieldRotation<T> rP = propagator.propagate(date.shiftedBy(dt)).getFieldAttitude().getRotation();
+            FieldRotation<T> rP = propagator.propagate(date.shiftedBy(dt)).getAttitude().getRotation();
             w0.add(new WeightedObservedPoint(1, dt, rP.getQ0().getReal()));
             w1.add(new WeightedObservedPoint(1, dt, rP.getQ1().getReal()));
             w2.add(new WeightedObservedPoint(1, dt, rP.getQ2().getReal()));
@@ -251,7 +252,7 @@ public class FieldBodyCenterPointingTest {
         double q2DotRef = PolynomialCurveFitter.create(2).fit(w2)[1];
         double q3DotRef = PolynomialCurveFitter.create(2).fit(w3)[1];
 
-        FieldAttitude<T> a0 = propagator.propagate(date).getFieldAttitude();
+        FieldAttitude<T> a0 = propagator.propagate(date).getAttitude();
         T   q0 = a0.getRotation().getQ0();
         T   q1 = a0.getRotation().getQ1();
         T   q2 = a0.getRotation().getQ2();
@@ -273,7 +274,7 @@ public class FieldBodyCenterPointingTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testSpin(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) throws OrekitException {
 
         T zero = field.getZero();
         // Satellite position as circular parameters
@@ -331,20 +332,20 @@ public class FieldBodyCenterPointingTest {
         FieldSpacecraftState<T> sPlus  = propagator.propagate(date.shiftedBy(h));
 
         // check spin is consistent with attitude evolution
-        T errorAngleMinus     = FieldRotation.distance(sMinus.shiftedBy(zero.add(h)).getFieldAttitude().getRotation(),
-                                                       s0.getFieldAttitude().getRotation());
-        T evolutionAngleMinus = FieldRotation.distance(sMinus.getFieldAttitude().getRotation(),
-                                                       s0.getFieldAttitude().getRotation());
+        T errorAngleMinus     = FieldRotation.distance(sMinus.shiftedBy(zero.add(h)).getAttitude().getRotation(),
+                                                       s0.getAttitude().getRotation());
+        T evolutionAngleMinus = FieldRotation.distance(sMinus.getAttitude().getRotation(),
+                                                       s0.getAttitude().getRotation());
         Assert.assertEquals(0.0, errorAngleMinus.getReal(), 1.0e-6 * evolutionAngleMinus.getReal());
-        T errorAnglePlus      = FieldRotation.distance(s0.getFieldAttitude().getRotation(),
-                                                       sPlus.shiftedBy(zero.add(-h)).getFieldAttitude().getRotation());
-        T evolutionAnglePlus  = FieldRotation.distance(s0.getFieldAttitude().getRotation(),
-                                                       sPlus.getFieldAttitude().getRotation());
+        T errorAnglePlus      = FieldRotation.distance(s0.getAttitude().getRotation(),
+                                                       sPlus.shiftedBy(zero.add(-h)).getAttitude().getRotation());
+        T evolutionAnglePlus  = FieldRotation.distance(s0.getAttitude().getRotation(),
+                                                       sPlus.getAttitude().getRotation());
         Assert.assertEquals(0.0, errorAnglePlus.getReal(), 1.0e-6 * evolutionAnglePlus.getReal());
 
-        FieldVector3D<T> spin0 = s0.getFieldAttitude().getSpin();
-        FieldVector3D<T> reference = FieldAngularCoordinates.estimateRate(sMinus.getFieldAttitude().getRotation(),
-                                                             sPlus.getFieldAttitude().getRotation(),
+        FieldVector3D<T> spin0 = s0.getAttitude().getSpin();
+        FieldVector3D<T> reference = FieldAngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
+                                                             sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm().getReal() > 1.0e-3);
         Assert.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.0e-13);
@@ -354,10 +355,7 @@ public class FieldBodyCenterPointingTest {
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
-
     }
-
-    private double mu;
 
     @After
     public void tearDown() {

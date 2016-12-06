@@ -769,7 +769,7 @@ public class FieldNumericalPropagatorTest {
         final FieldAbsoluteDate<T> resetDate = initDate.shiftedBy(1000);
         CheckingHandler<FieldDateDetector<T>, T> checking = new CheckingHandler<FieldDateDetector<T>, T>(Action.RESET_STATE) {
             public FieldSpacecraftState<T> resetState(FieldDateDetector<T> detector, FieldSpacecraftState<T> oldState) {
-                return new FieldSpacecraftState<T>(oldState.getOrbit(), oldState.getFieldAttitude(), oldState.getMass().subtract(200.0));
+                return new FieldSpacecraftState<T>(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass().subtract(200.0));
             }
         };
         propagator.addEventDetector(new FieldDateDetector<T>(resetDate).withHandler(checking));

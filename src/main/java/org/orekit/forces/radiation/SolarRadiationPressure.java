@@ -492,7 +492,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
         final T   rawP = getLightingRatio(position, frame, date).divide(r2).multiply(kRef);
         final FieldVector3D<T> flux = new FieldVector3D<T>(rawP.divide(r2.sqrt()), sunSatVector);
 
-        final FieldVector3D<T> acceleration = spacecraft.radiationPressureAcceleration(date, frame, position, s.getFieldAttitude().getRotation(),
+        final FieldVector3D<T> acceleration = spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
                                                                                s.getMass(), flux);
 
         // provide the perturbing acceleration to the derivatives adder

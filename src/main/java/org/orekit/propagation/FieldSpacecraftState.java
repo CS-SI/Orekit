@@ -37,10 +37,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
-//import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.time.FieldAbsoluteDate;
-//import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
@@ -89,7 +87,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
     /** Current mass (kg). */
     private final T mass;
 
-    /** Additional states. //TODO whats that?*/
+    /** Additional states. */
     private final Map<String, T[]> additional;
 
     /** Build a spacecraft state from orbit only.
@@ -325,7 +323,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
         for (final FieldSpacecraftState<T> state : sample) {
             final T deltaT = state.getDate().durationFrom(date);
             orbits.add(state.getOrbit());
-            attitudes.add(state.getFieldAttitude());
+            attitudes.add(state.getAttitude());
             final T[] mm = MathArrays.buildArray(orbit.getA().getField(), 1);
             mm[0] = state.getMass();
             massInterpolator.addSamplePoint(deltaT,
@@ -605,7 +603,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
     /** Get the attitude.
      * @return the attitude.
      */
-    public FieldAttitude<T> getFieldAttitude() {
+    public FieldAttitude<T> getAttitude() {
         return attitude;
     }
 
