@@ -312,8 +312,8 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public FieldOrbitType getType() {
-        return FieldOrbitType.CIRCULAR;
+    public OrbitType getType() {
+        return OrbitType.CIRCULAR;
     }
 
     /** {@inheritDoc} */
@@ -560,7 +560,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         T previousRAAN   = zero.add(Double.NaN);
         T previousAlphaM = zero.add(Double.NaN);
         for (final FieldOrbit<T> orbit : sample) {
-            final FieldCircularOrbit<T> circ = (FieldCircularOrbit<T>) FieldOrbitType.CIRCULAR.convertType(orbit);
+            final FieldCircularOrbit<T> circ = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(orbit);
             final T continuousRAAN;
             final T continuousAlphaM;
             if (previousDate == null) {

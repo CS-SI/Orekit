@@ -44,7 +44,6 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldOrbitType;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldAdditionalStateProvider;
@@ -469,7 +468,7 @@ public class FieldNumericalPropagatorTest {
 
         // Propagation of the initial at t + dt
         final T dt = zero.add(3200);
-        propagator.setOrbitType(FieldOrbitType.CARTESIAN);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
         final FieldPVCoordinates<T> finalState =
             propagator.propagate(initDate.shiftedBy(dt)).getFieldPVCoordinates();
         final FieldVector3D<T> pFin = finalState.getPosition();
@@ -525,20 +524,20 @@ public class FieldNumericalPropagatorTest {
         final T dP = zero.add(0.001);
         final T dV = pv.getPosition().getNormSq().multiply(pv.getVelocity().getNorm()).reciprocal().multiply(dP.multiply(initialState.getMu()));
 
-        final FieldPVCoordinates<T> pvcM = propagateInType(initialState, dP, FieldOrbitType.CARTESIAN,   PositionAngle.MEAN, propagator);
-        final FieldPVCoordinates<T> pviM = propagateInType(initialState, dP, FieldOrbitType.CIRCULAR,    PositionAngle.MEAN, propagator);
-        final FieldPVCoordinates<T> pveM = propagateInType(initialState, dP, FieldOrbitType.EQUINOCTIAL, PositionAngle.MEAN, propagator);
-        final FieldPVCoordinates<T> pvkM = propagateInType(initialState, dP, FieldOrbitType.KEPLERIAN,   PositionAngle.MEAN, propagator);
+        final FieldPVCoordinates<T> pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.MEAN, propagator);
+        final FieldPVCoordinates<T> pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.MEAN, propagator);
+        final FieldPVCoordinates<T> pveM = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.MEAN, propagator);
+        final FieldPVCoordinates<T> pvkM = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.MEAN, propagator);
 
-        final FieldPVCoordinates<T> pvcE = propagateInType(initialState, dP, FieldOrbitType.CARTESIAN,   PositionAngle.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pviE = propagateInType(initialState, dP, FieldOrbitType.CIRCULAR,    PositionAngle.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pveE = propagateInType(initialState, dP, FieldOrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pvkE = propagateInType(initialState, dP, FieldOrbitType.KEPLERIAN,   PositionAngle.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvcE = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pviE = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pveE = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvkE = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.ECCENTRIC, propagator);
 
-        final FieldPVCoordinates<T> pvcT = propagateInType(initialState, dP, FieldOrbitType.CARTESIAN,   PositionAngle.TRUE, propagator);
-        final FieldPVCoordinates<T> pviT = propagateInType(initialState, dP, FieldOrbitType.CIRCULAR,    PositionAngle.TRUE, propagator);
-        final FieldPVCoordinates<T> pveT = propagateInType(initialState, dP, FieldOrbitType.EQUINOCTIAL, PositionAngle.TRUE, propagator);
-        final FieldPVCoordinates<T> pvkT = propagateInType(initialState, dP, FieldOrbitType.KEPLERIAN,   PositionAngle.TRUE, propagator);
+        final FieldPVCoordinates<T> pvcT = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngle.TRUE, propagator);
+        final FieldPVCoordinates<T> pviT = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngle.TRUE, propagator);
+        final FieldPVCoordinates<T> pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE, propagator);
+        final FieldPVCoordinates<T> pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.TRUE, propagator);
         Assert.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 3.0);
         Assert.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 2.0);
         Assert.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.6);
@@ -608,14 +607,14 @@ public class FieldNumericalPropagatorTest {
         final T dV = dP.multiply(state.getMu()).divide(
                           pv.getPosition().getNormSq().multiply(pv.getVelocity().getNorm()));
 
-        final FieldPVCoordinates<T> pvcM = propagateInType(state, dP, FieldOrbitType.CARTESIAN, PositionAngle.MEAN, propagator);
-        final FieldPVCoordinates<T> pvkM = propagateInType(state, dP, FieldOrbitType.KEPLERIAN, PositionAngle.MEAN, propagator);
+        final FieldPVCoordinates<T> pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.MEAN, propagator);
+        final FieldPVCoordinates<T> pvkM = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.MEAN, propagator);
 
-        final FieldPVCoordinates<T> pvcE = propagateInType(state, dP, FieldOrbitType.CARTESIAN, PositionAngle.ECCENTRIC, propagator);
-        final FieldPVCoordinates<T> pvkE = propagateInType(state, dP, FieldOrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvcE = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, propagator);
+        final FieldPVCoordinates<T> pvkE = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, propagator);
 
-        final FieldPVCoordinates<T> pvcT = propagateInType(state, dP, FieldOrbitType.CARTESIAN, PositionAngle.TRUE, propagator);
-        final FieldPVCoordinates<T> pvkT = propagateInType(state, dP, FieldOrbitType.KEPLERIAN, PositionAngle.TRUE, propagator);
+        final FieldPVCoordinates<T> pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngle.TRUE, propagator);
+        final FieldPVCoordinates<T> pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngle.TRUE, propagator);
 
         Assert.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.3);
         Assert.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.4);
@@ -631,7 +630,7 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> FieldPVCoordinates<T> propagateInType(FieldSpacecraftState<T> state, T dP,
-                                          FieldOrbitType type , PositionAngle angle, FieldNumericalPropagator<T> propagator)
+                                          OrbitType type , PositionAngle angle, FieldNumericalPropagator<T> propagator)
         throws OrekitException {
         T zero = dP.getField().getZero();
         final T dt = zero.add(3200);
@@ -1080,7 +1079,7 @@ public class FieldNumericalPropagatorTest {
         T mass = field.getZero().add(1000.0);
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<T>(geo, mass);
         propagator.setInitialState(initialState);
-        propagator.setOrbitType(FieldOrbitType.CARTESIAN);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
 
 
         // Set the events Detectors
@@ -1110,7 +1109,7 @@ public class FieldNumericalPropagatorTest {
         final double dt = 3200;
         final FieldAbsoluteDate<T> initDate = propagator.getInitialState().getDate();
 
-        propagator.setOrbitType(FieldOrbitType.CARTESIAN);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
         propagator.setEphemerisMode();
         propagator.propagate(initDate.shiftedBy(dt));
         final FieldBoundedPropagator<T> ephemeris1 = propagator.getGeneratedEphemeris();
@@ -1169,7 +1168,7 @@ public class FieldNumericalPropagatorTest {
         });
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", field.getZero().add(1.5)));
 
-        propagator.setOrbitType(FieldOrbitType.CARTESIAN);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
         propagator.setEphemerisMode();
         propagator.propagate(initDate.shiftedBy(dt));
         final FieldBoundedPropagator<T> ephemeris1 = propagator.getGeneratedEphemeris();
@@ -1222,7 +1221,7 @@ public class FieldNumericalPropagatorTest {
                                                              FramesFactory.getTOD(false),
                                                              new FieldAbsoluteDate<T>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
                                                              Constants.EIGEN5C_EARTH_MU);
-            FieldNumericalPropagator.tolerances(field.getZero().add(1.0), orbit, FieldOrbitType.KEPLERIAN);
+            FieldNumericalPropagator.tolerances(field.getZero().add(1.0), orbit, OrbitType.KEPLERIAN);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, oe.getSpecifier());
@@ -1263,7 +1262,7 @@ public class FieldNumericalPropagatorTest {
         final FieldOrbit<T> orbit = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position,  velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
-        double[][] tolerance = FieldNumericalPropagator.tolerances(zero.add(0.001), orbit, FieldOrbitType.EQUINOCTIAL);
+        double[][] tolerance = FieldNumericalPropagator.tolerances(zero.add(0.001), orbit, OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
 

@@ -1149,8 +1149,8 @@ public <T extends RealFieldElement<T>>void testPerfectlyEquatorialConversion(fin
                                              field.getZero().add(0.0), PositionAngle.MEAN,
                                              FramesFactory.getEME2000(), dateTca,
                                              Constants.EIGEN5C_EARTH_MU);
-     FieldEquinoctialOrbit<T> equ = (FieldEquinoctialOrbit<T>) FieldOrbitType.EQUINOCTIAL.convertType(initial);
-     FieldKeplerianOrbit<T> converted = (FieldKeplerianOrbit<T>) FieldOrbitType.KEPLERIAN.convertType(equ);
+     FieldEquinoctialOrbit<T> equ = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(initial);
+     FieldKeplerianOrbit<T> converted = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(equ);
      Assert.assertEquals(FastMath.PI,
                          MathUtils.normalizeAngle(converted.getRightAscensionOfAscendingNode().getReal() +
                                                   converted.getPerigeeArgument().getReal(), FastMath.PI),

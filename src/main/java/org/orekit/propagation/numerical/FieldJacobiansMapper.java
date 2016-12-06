@@ -25,7 +25,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldOrbitType;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 
@@ -54,7 +54,7 @@ public class FieldJacobiansMapper<T extends RealFieldElement<T>> {
     private final int parameters;
 
     /** FieldOrbit<T> type. */
-    private final FieldOrbitType fieldOrbitType;
+    private final OrbitType fieldOrbitType;
 
     /** Position angle type. */
     private final PositionAngle angleType;
@@ -67,16 +67,16 @@ public class FieldJacobiansMapper<T extends RealFieldElement<T>> {
      * @param stateDimension dimension of the state (either 6 or 7 depending on mass
      * being included or not)
      * @param parameters number of parameters
-     * @param FieldOrbitType FieldOrbit<T> type
+     * @param OrbitType FieldOrbit<T> type
      * @param angleType position angle type
      */
     FieldJacobiansMapper(final Field<T> field, final String name, final int stateDimension, final int parameters,
-                    final FieldOrbitType FieldOrbitType, final PositionAngle angleType) {
+                    final OrbitType OrbitType, final PositionAngle angleType) {
         this.field          = field;
         this.name           = name;
         this.stateDimension = stateDimension;
         this.parameters     = parameters;
-        this.fieldOrbitType      = FieldOrbitType;
+        this.fieldOrbitType      = OrbitType;
         this.angleType      = angleType;
     }
 

@@ -16,15 +16,20 @@
  */
 package org.orekit.orbits;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /** Enumerate for {@link Orbit orbital} parameters types.
  */
@@ -34,11 +39,13 @@ public enum OrbitType {
     CARTESIAN {
 
         /** {@inheritDoc} */
+        @Override
         public Orbit convertType(final Orbit orbit) {
             return (orbit.getType() == this) ? orbit : new CartesianOrbit(orbit);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
                                     final double[] stateVector) {
 
@@ -56,6 +63,7 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
+        @Override
         public Orbit mapArrayToOrbit(final double[] stateVector, final PositionAngle type,
                                      final AbsoluteDate date, final double mu, final Frame frame) {
 
@@ -68,6 +76,46 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit) {
+            return (orbit.getType() == this) ? orbit : new FieldCartesianOrbit<T>(orbit);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
+                                                                    final PositionAngle type,
+                                                                    final T[] stateVector) {
+
+            final TimeStampedFieldPVCoordinates<T> pv = orbit.getFieldPVCoordinates();
+            final FieldVector3D<T>      p  = pv.getPosition();
+            final FieldVector3D<T>      v  = pv.getVelocity();
+
+            stateVector[0] = p.getX();
+            stateVector[1] = p.getY();
+            stateVector[2] = p.getZ();
+            stateVector[3] = v.getX();
+            stateVector[4] = v.getY();
+            stateVector[5] = v.getZ();
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector, final PositionAngle type,
+                                                                             final FieldAbsoluteDate<T> date,
+                                                                             final double mu, final Frame frame) {
+            final T zero = stateVector[0].getField().getZero();
+            final FieldVector3D<T> p     = new FieldVector3D<T>(stateVector[0], stateVector[1], stateVector[2]);
+            final T r2      = p.getNormSq();
+            final FieldVector3D<T> v     = new FieldVector3D<T>(stateVector[3], stateVector[4], stateVector[5]);
+            final FieldVector3D<T> a     = new FieldVector3D<T>(zero.add(-mu).divide(r2.sqrt().multiply(r2)), p);
+            return new FieldCartesianOrbit<T>(new FieldPVCoordinates<T>(p, v, a), frame, date, mu);
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
             throws OrekitException {
             final ParameterDriversList drivers = new ParameterDriversList();
@@ -89,11 +137,13 @@ public enum OrbitType {
     CIRCULAR {
 
         /** {@inheritDoc} */
+        @Override
         public Orbit convertType(final Orbit orbit) {
             return (orbit.getType() == this) ? orbit : new CircularOrbit(orbit);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
                                     final double[] stateVector) {
 
@@ -109,6 +159,7 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
+        @Override
         public Orbit mapArrayToOrbit(final double[] stateVector, final PositionAngle type,
                                      final AbsoluteDate date, final double mu, final Frame frame) {
             return new CircularOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
@@ -117,6 +168,40 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit) {
+            return (orbit.getType() == this) ? orbit : new FieldCircularOrbit<T>(orbit);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
+                                                                    final PositionAngle type,
+                                                                    final T[] stateVector) {
+
+            final FieldCircularOrbit<T> circularOrbit = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(orbit);
+
+            stateVector[0] = circularOrbit.getA();
+            stateVector[1] = circularOrbit.getCircularEx();
+            stateVector[2] = circularOrbit.getCircularEy();
+            stateVector[3] = circularOrbit.getI();
+            stateVector[4] = circularOrbit.getRightAscensionOfAscendingNode();
+            stateVector[5] = circularOrbit.getAlpha(type);
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector, final PositionAngle type,
+                                                                             final FieldAbsoluteDate<T> date,
+                                                                             final double mu, final Frame frame) {
+            return new FieldCircularOrbit<T>(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
+                                     stateVector[4], stateVector[5], type,
+                                     frame, date, mu);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
             throws OrekitException {
             final ParameterDriversList drivers = new ParameterDriversList();
@@ -141,12 +226,14 @@ public enum OrbitType {
     EQUINOCTIAL {
 
         /** {@inheritDoc} */
+        @Override
         public Orbit convertType(final Orbit orbit) {
             return (orbit.getType() == this) ? orbit : new EquinoctialOrbit(orbit);
         }
 
         /** {@inheritDoc} */
-        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
+        @Override
+       public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
                                     final double[] stateVector) {
 
             final EquinoctialOrbit equinoctialOrbit =
@@ -162,6 +249,7 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
+        @Override
         public Orbit mapArrayToOrbit(final double[] stateVector, final PositionAngle type,
                                      final AbsoluteDate date, final double mu, final Frame frame) {
             return new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
@@ -170,6 +258,41 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit) {
+            return (orbit.getType() == this) ? orbit : new FieldEquinoctialOrbit<T>(orbit);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
+                                                                    final PositionAngle type,
+                                                                    final T[] stateVector) {
+
+            final FieldEquinoctialOrbit<T> equinoctialOrbit =
+                (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
+
+            stateVector[0] = equinoctialOrbit.getA();
+            stateVector[1] = equinoctialOrbit.getEquinoctialEx();
+            stateVector[2] = equinoctialOrbit.getEquinoctialEy();
+            stateVector[3] = equinoctialOrbit.getHx();
+            stateVector[4] = equinoctialOrbit.getHy();
+            stateVector[5] = equinoctialOrbit.getL(type);
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector, final PositionAngle type,
+                                                                             final FieldAbsoluteDate<T> date,
+                                                                             final double mu, final Frame frame) {
+            return new FieldEquinoctialOrbit<T>(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
+                                                stateVector[4], stateVector[5], type,
+                                                frame, date, mu);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
             throws OrekitException {
             final ParameterDriversList drivers = new ParameterDriversList();
@@ -195,11 +318,13 @@ public enum OrbitType {
     KEPLERIAN {
 
         /** {@inheritDoc} */
+        @Override
         public Orbit convertType(final Orbit orbit) {
             return (orbit.getType() == this) ? orbit : new KeplerianOrbit(orbit);
         }
 
         /** {@inheritDoc} */
+        @Override
         public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
                                     final double[] stateVector) {
 
@@ -216,6 +341,7 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
+        @Override
         public Orbit mapArrayToOrbit(final double[] stateVector, final PositionAngle type,
                                      final AbsoluteDate date, final double mu, final Frame frame) {
             return new KeplerianOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
@@ -224,6 +350,39 @@ public enum OrbitType {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit) {
+            return (orbit.getType() == this) ? orbit : new FieldKeplerianOrbit<T>(orbit);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
+                                                                    final PositionAngle type,
+                                                                    final T[] stateVector) {
+            final FieldKeplerianOrbit<T> keplerianOrbit =
+                            (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
+
+            stateVector[0] = keplerianOrbit.getA();
+            stateVector[1] = keplerianOrbit.getE();
+            stateVector[2] = keplerianOrbit.getI();
+            stateVector[3] = keplerianOrbit.getPerigeeArgument();
+            stateVector[4] = keplerianOrbit.getRightAscensionOfAscendingNode();
+            stateVector[5] = keplerianOrbit.getAnomaly(type);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector, final PositionAngle type,
+                                                                             final FieldAbsoluteDate<T> date,
+                                                                             final double mu, final Frame frame) {
+            return new FieldKeplerianOrbit<T>(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
+                                              stateVector[4], stateVector[5], type,
+                                              frame, date, mu);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public ParameterDriversList getDrivers(final double dP, final Orbit orbit, final PositionAngle type)
             throws OrekitException {
             final ParameterDriversList drivers = new ParameterDriversList();
@@ -358,6 +517,53 @@ public enum OrbitType {
     public abstract Orbit mapArrayToOrbit(double[] array, PositionAngle type,
                                           AbsoluteDate date, double mu, Frame frame);
 
+    /** Convert an orbit to the instance type.
+     * <p>
+     * The returned orbit is the specified instance itself if its type already matches,
+     * otherwise, a new orbit of the proper type created
+     * </p>
+     * @param <T> RealFieldElement used
+     * @param orbit orbit to convert
+     * @return converted orbit with type guaranteed to match (so it can be cast safely)
+     */
+    public abstract <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit);
+
+    /** Convert orbit to state array.
+     * <p>
+     * Note that all implementations of this method <em>must</em> be consistent with the
+     * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
+     * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * method for the corresponding orbit type in terms of parameters order and meaning.
+     * </p>
+     * @param <T> RealFieldElement used
+     * @param orbit orbit to map
+     * @param type type of the angle
+     * @param stateVector flat array into which the state vector should be mapped
+     * (it can have more than 6 elements, extra elements are untouched)
+     */
+    public abstract <T extends RealFieldElement<T>>void mapOrbitToArray(FieldOrbit<T> orbit, PositionAngle type, T[] stateVector);
+
+
+    /** Convert state array to orbital parameters.
+     * <p>
+     * Note that all implementations of this method <em>must</em> be consistent with the
+     * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
+     * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * method for the corresponding orbit type in terms of parameters order and meaning.
+     * </p>
+     * @param <T> RealFieldElement used
+     * @param array state as a flat array
+     * (it can have more than 6 elements, extra elements are ignored)
+     * @param type type of the angle
+     * @param date integration date
+     * @param mu central attraction coefficient used for propagation (m³/s²)
+     * @param frame frame in which integration is performed
+     * @return orbit corresponding to the flat array as a space dynamics object
+     */
+    public abstract <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(T[] array, PositionAngle type,
+                                                                                  FieldAbsoluteDate<T> date,
+                                                                                  double mu, Frame frame);
+
     /** Get parameters drivers initialized from a reference orbit.
      * @param dP user specified position error
      * @param orbit reference orbit
@@ -406,11 +612,11 @@ public enum OrbitType {
         for (int i = 0; i < 6; ++i) {
             final double[] row = jacobian[i];
             scale[i] = FastMath.abs(row[0]) * dP +
-                            FastMath.abs(row[1]) * dP +
-                            FastMath.abs(row[2]) * dP +
-                            FastMath.abs(row[3]) * dV +
-                            FastMath.abs(row[4]) * dV +
-                            FastMath.abs(row[5]) * dV;
+                       FastMath.abs(row[1]) * dP +
+                       FastMath.abs(row[2]) * dP +
+                       FastMath.abs(row[3]) * dV +
+                       FastMath.abs(row[4]) * dV +
+                       FastMath.abs(row[5]) * dV;
             if (Double.isNaN(scale[i])) {
                 throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, this);
             }

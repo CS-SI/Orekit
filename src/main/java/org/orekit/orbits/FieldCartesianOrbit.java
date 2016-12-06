@@ -154,8 +154,8 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
-    public FieldOrbitType getType() {
-        return FieldOrbitType.CARTESIAN;
+    public OrbitType getType() {
+        return OrbitType.CARTESIAN;
     }
 
     /** Lazy evaluation of equinoctial parameters. */

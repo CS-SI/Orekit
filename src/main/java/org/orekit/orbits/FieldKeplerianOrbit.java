@@ -294,8 +294,8 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
-    public FieldOrbitType getType() {
-        return FieldOrbitType.KEPLERIAN;
+    public OrbitType getType() {
+        return OrbitType.KEPLERIAN;
     }
 
     /** {@inheritDoc} */

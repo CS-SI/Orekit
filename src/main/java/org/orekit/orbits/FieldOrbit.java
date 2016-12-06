@@ -69,9 +69,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
     /** Date of the orbital parameters. */
     private final FieldAbsoluteDate<T> date;
 
-    /** Value of mu used to compute position and velocity (m³/s²).
-     * */
-
+    /** Value of mu used to compute position and velocity (m³/s²). */
     private final double mu;
 
     /** Computed PVCoordinates. */
@@ -156,7 +154,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
     /** Get the orbit type.
      * @return orbit type
      */
-    public abstract FieldOrbitType getType();
+    public abstract OrbitType getType();
 
     /** Ensure the defining frame is a pseudo-inertial frame.
      * @param frame frame to check

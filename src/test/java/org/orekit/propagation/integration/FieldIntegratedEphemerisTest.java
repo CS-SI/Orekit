@@ -104,7 +104,7 @@ public class FieldIntegratedEphemerisTest {
 //
 //        final String eqName = "derivatives";
 //        numericalPropagator.setEphemerisMode();
-//        numericalPropagator.setOrbitType(FieldOrbitType.CARTESIAN);
+//        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
 //        final PartialDerivativesEquations derivatives =
 //            new PartialDerivativesEquations(eqName, numericalPropagator);
 //        final FieldSpacecraftState<T> initialState =

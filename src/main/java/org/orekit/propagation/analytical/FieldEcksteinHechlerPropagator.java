@@ -31,7 +31,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldOrbitType;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
@@ -332,7 +332,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     public void resetInitialState(final FieldSpacecraftState<T> state)
         throws OrekitException {
         super.resetInitialState(state);
-        this.initialModel = computeMeanParameters((FieldCircularOrbit<T>) FieldOrbitType.CIRCULAR.convertType(state.getOrbit()),
+        this.initialModel = computeMeanParameters((FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                   state.getMass());
         this.models       = new FieldTimeSpanMap<FieldEHModel<T>, T>(initialModel, state.getA().getField());
     }
@@ -340,7 +340,7 @@ public class FieldEcksteinHechlerPropagator<T extends RealFieldElement<T>> exten
     /** {@inheritDoc} */
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward)
         throws OrekitException {
-        final FieldEHModel<T> newModel = computeMeanParameters((FieldCircularOrbit<T>) FieldOrbitType.CIRCULAR.convertType(state.getOrbit()),
+        final FieldEHModel<T> newModel = computeMeanParameters((FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(state.getOrbit()),
                                                        state.getMass());
         if (forward) {
             models.addValidAfter(newModel, state.getDate());

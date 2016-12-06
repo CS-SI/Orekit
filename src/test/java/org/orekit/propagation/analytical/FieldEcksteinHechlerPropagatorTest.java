@@ -53,7 +53,7 @@ import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldOrbitType;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
@@ -649,7 +649,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldVector3D<T> referenceV    = interpolated.getVelocity();
         FieldVector3D<T> computedA     = sample.get(1).getAcceleration();
         FieldVector3D<T> referenceA    = interpolated.getAcceleration();
-        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) FieldOrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target));
+        final FieldCircularOrbit<T> propagated = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(propagator.propagateOrbit(target));
         final FieldCircularOrbit<T> keplerian =
                 new FieldCircularOrbit<T>(propagated.getA(),
                                   propagated.getCircularEx(),

@@ -20,7 +20,7 @@ import org.hipparchus.RealFieldElement;
 import org.orekit.attitudes.FieldAttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.FieldOrbitType;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
@@ -35,7 +35,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     private final FieldAbsoluteDate<T> referenceDate;
 
     /** Propagation orbit type. */
-    private final FieldOrbitType orbitType;
+    private final OrbitType orbitType;
 
     /** Position angle type. */
     private final PositionAngle angleType;
@@ -52,9 +52,9 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     /** Simple constructor.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #get FieldOrbitType() propagation orbit type}
+     * #get OrbitType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link  FieldOrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link  OrbitType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param referenceDate reference date
      * @param mu central attraction coefficient (m³/s²)
@@ -64,7 +64,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @param frame inertial frame
      */
     protected FieldStateMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
-                          final FieldOrbitType orbitType, final PositionAngle positionAngleType,
+                          final OrbitType orbitType, final PositionAngle positionAngleType,
                           final FieldAttitudeProvider<T> attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
         this.mu               = mu;
@@ -84,7 +84,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
-    public  FieldOrbitType getOrbitType() {
+    public  OrbitType getOrbitType() {
         return orbitType;
     }
 

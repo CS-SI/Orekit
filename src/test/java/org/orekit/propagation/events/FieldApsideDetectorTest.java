@@ -31,7 +31,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldOrbitType;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.events.FieldEventsLogger.FieldLoggedEvent;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
@@ -84,7 +84,7 @@ public class FieldApsideDetectorTest {
 
         Assert.assertEquals(30, logger.getLoggedEvents().size());
         for (FieldLoggedEvent<T> e : logger.getLoggedEvents()) {
-            FieldKeplerianOrbit<T> o = (FieldKeplerianOrbit<T>) FieldOrbitType.KEPLERIAN.convertType(e.getState().getOrbit());
+            FieldKeplerianOrbit<T> o = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(e.getState().getOrbit());
             double expected = e.isIncreasing() ? 0.0 : FastMath.PI;
             Assert.assertEquals(expected, MathUtils.normalizeAngle(o.getMeanAnomaly().getReal(), expected), 4.0e-14);
         }

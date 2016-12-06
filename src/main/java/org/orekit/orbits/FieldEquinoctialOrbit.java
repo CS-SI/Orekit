@@ -250,8 +250,8 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     }
 
     /** {@inheritDoc} */
-    public FieldOrbitType getType() {
-        return FieldOrbitType.EQUINOCTIAL;
+    public OrbitType getType() {
+        return OrbitType.EQUINOCTIAL;
     }
 
     /** {@inheritDoc} */
@@ -459,7 +459,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         FieldAbsoluteDate<T> previousDate = null;
         T previousLm = zero.add(Double.NaN);
         for (final FieldOrbit<T> orbit : sample) {
-            final FieldEquinoctialOrbit<T> equi = (FieldEquinoctialOrbit<T>) FieldOrbitType.EQUINOCTIAL.convertType(orbit);
+            final FieldEquinoctialOrbit<T> equi = (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
             final T continuousLm;
             if (previousDate == null) {
                 continuousLm = (T) equi.getLM();

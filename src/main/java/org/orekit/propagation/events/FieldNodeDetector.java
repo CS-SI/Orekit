@@ -22,7 +22,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldOrbitType;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -121,7 +121,7 @@ public class FieldNodeDetector<T extends RealFieldElement<T>> extends FieldAbstr
      */
     private static double estimateNodesTimeSeparation(final Orbit orbit) {
 
-        final KeplerianOrbit keplerian = (KeplerianOrbit) FieldOrbitType.KEPLERIAN.convertType(orbit);
+        final KeplerianOrbit keplerian = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
 
         // mean anomaly of ascending node
         final double ascendingM  =  new KeplerianOrbit(keplerian.getA(), keplerian.getE(),

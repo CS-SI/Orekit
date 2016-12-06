@@ -23,7 +23,7 @@ import org.orekit.attitudes.FieldAttitudeProvider;
 import org.orekit.attitudes.FieldInertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldOrbitType;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
@@ -111,7 +111,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
         try {
 
             // ensure the orbit use the specified mu
-            final FieldOrbitType type = initialFieldOrbit.getType();
+            final OrbitType type = initialFieldOrbit.getType();
             final T[] stateVector = MathArrays.buildArray(initialFieldOrbit.getA().getField(), 6);
             type.mapOrbitToArray(initialFieldOrbit, PositionAngle.TRUE, stateVector);
             final FieldOrbit<T> orbit = type.mapArrayToOrbit(stateVector, PositionAngle.TRUE,

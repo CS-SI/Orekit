@@ -48,7 +48,7 @@ import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldOrbitType;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldAbstractPropagator;
 import org.orekit.propagation.FieldBoundedPropagator;
@@ -127,7 +127,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */
-    protected void setOrbitType(final FieldOrbitType orbitType) {
+    protected void setOrbitType(final OrbitType orbitType) {
         stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
                                    orbitType, stateMapper.getPositionAngleType(),
                                    stateMapper.getAttitudeProvider(), stateMapper.getFrame());
@@ -136,7 +136,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
-    protected FieldOrbitType getOrbitType() {
+    protected OrbitType getOrbitType() {
         return stateMapper.getOrbitType();
     }
 
@@ -152,7 +152,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * The position parameter type is meaningful only if {@link
      * #getOrbitType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link FieldOrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
@@ -336,7 +336,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * The position parameter type is meaningful only if {@link
      * #getOrbitType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link FieldOrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param referenceDate reference date
      * @param mu central attraction coefficient (m³/s²)
@@ -347,7 +347,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @return new mapper
      */
     protected abstract FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
-                                                final FieldOrbitType orbitType, final PositionAngle positionAngleType,
+                                                final OrbitType orbitType, final PositionAngle positionAngleType,
                                                 final FieldAttitudeProvider<T> attitudeProvider, final Frame frame);
 
     /** Get the differential equations to integrate (for main state only).

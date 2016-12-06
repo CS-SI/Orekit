@@ -37,7 +37,7 @@ import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldOrbitType;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
@@ -62,8 +62,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the central attraction coefficient ({@link #setMu(double)})</li>
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
- *   <li>the {@link FieldOrbitType type} of orbital parameters to be used for propagation
- *   ({@link #setOrbitType(FieldOrbitType)}),
+ *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
+ *   ({@link #setOrbitType(OrbitType)}),
  *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngle)}),
@@ -79,7 +79,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
- * propagation settings are in {@link FieldOrbitType#EQUINOCTIAL equinoctial} parameters with
+ * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
  * {@link PositionAngle#TRUE true} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
@@ -113,7 +113,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * final double minStep  = 0.001;
  * final double maxStep  = 500;
  * final double initStep = 60;
- * final double[][] tolerance = NumericalPropagator.tolerances(dP, orbit, FieldOrbitType.EQUINOCTIAL);
+ * final double[][] tolerance = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
  * AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
  * propagator = new NumericalPropagator(integrator);
@@ -149,8 +149,8 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a keplerian
-     * evolution only. The defaults are {@link FieldOrbitType#EQUINOCTIAL}
-     * for {@link #setOrbitType(FieldOrbitType) propagation
+     * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
+     * for {@link #setOrbitType(OrbitType) propagation
      * orbit type} and {@link PositionAngle#TRUE} for {@link
      * #setPositionAngleType(PositionAngle) position angle type}.
      * @param integrator numerical integrator to use for propagation.
@@ -165,7 +165,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         setAttitudeProvider(default_law);
         setMu(Double.NaN);
         setSlaveMode();
-        setOrbitType(FieldOrbitType.EQUINOCTIAL);
+        setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }
 
@@ -220,14 +220,14 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */
-    public void setOrbitType(final FieldOrbitType orbitType) {
+    public void setOrbitType(final OrbitType orbitType) {
         super.setOrbitType(orbitType);
     }
 
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
-    public FieldOrbitType getOrbitType() {
+    public OrbitType getOrbitType() {
         return super.getOrbitType();
     }
 
@@ -236,7 +236,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * The position parameter type is meaningful only if {@link
      * #getOrbitType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
-     * in {@link FieldOrbitType#CARTESIAN Cartesian} parameters.
+     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
      * </p>
      * @param positionAngleType angle type to use for propagation
      */
@@ -276,7 +276,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
 
     /** {@inheritDoc} */
     protected FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
-                                       final FieldOrbitType orbitType, final PositionAngle positionAngleType,
+                                       final OrbitType orbitType, final PositionAngle positionAngleType,
                                        final FieldAttitudeProvider<T> attitudeProvider, final Frame frame) {
         return new FieldOsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
     }
@@ -289,7 +289,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
          * The position parameter type is meaningful only if {@link
          * #getOrbitType() propagation orbit type}
          * support it. As an example, it is not meaningful for propagation
-         * in {@link FieldOrbitType#CARTESIAN Cartesian} parameters.
+         * in {@link OrbitType#CARTESIAN Cartesian} parameters.
          * </p>
          * @param referenceDate reference date
          * @param mu central attraction coefficient (m³/s²)
@@ -299,7 +299,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
          * @param frame inertial frame
          */
         FieldOsculatingMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
-                         final FieldOrbitType orbitType, final PositionAngle positionAngleType,
+                         final OrbitType orbitType, final PositionAngle positionAngleType,
                          final FieldAttitudeProvider<T> attitudeProvider, final Frame frame) {
             super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
         }
@@ -454,7 +454,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
      * @exception OrekitException if Jacobian is singular
      * @param <T> elements type
      */
-    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final FieldOrbitType type)
+    public static <T extends RealFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type)
         throws OrekitException {
 
         // estimate the scalar velocity error
@@ -470,7 +470,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         // with trust, this often has no influence at all on propagation
         absTol[6] = 1.0e-6;
 
-        if (type == FieldOrbitType.CARTESIAN) {
+        if (type == OrbitType.CARTESIAN) {
             absTol[0] = dP.getReal();
             absTol[1] = dP.getReal();
             absTol[2] = dP.getReal();
