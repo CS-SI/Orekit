@@ -18,6 +18,7 @@ package org.orekit.files.sp3;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -43,13 +44,13 @@ import org.orekit.utils.PVCoordinates;
 public class SP3ParserTest {
 
     @Test
-    public void testParseSP3a1() throws OrekitException, IOException {
+    public void testParseSP3a1() throws OrekitException, IOException, URISyntaxException {
         // simple test for version sp3-a, only contains position entries
         final String ex = "/sp3/sp3_a_example1.txt";
 
         final SP3Parser parser = new SP3Parser();
-        final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final SP3File file = parser.parse(inEntry);
+        final String fileName = getClass().getResource(ex).toURI().getPath();
+        final SP3File file = (SP3File) parser.parse(fileName);
 
         Assert.assertEquals(SP3OrbitType.FIT, file.getOrbitType());
         Assert.assertEquals(TimeSystem.GPS, file.getTimeSystem());
