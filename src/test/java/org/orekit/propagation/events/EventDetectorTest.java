@@ -48,7 +48,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class DetectorTest {
+public class EventDetectorTest {
 
     private double mu;
 
@@ -128,7 +128,7 @@ public class DetectorTest {
         final int    n    = 100;
         NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(step));
         propagator.resetInitialState(new SpacecraftState(orbit));
-        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<DetectorTest.GCallsCounter>());
+        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<GCallsCounter>());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(n * step));
         Assert.assertEquals(n + 1, counter.getCount());
@@ -145,7 +145,7 @@ public class DetectorTest {
         final double step = 60.0;
         final int    n    = 100;
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<DetectorTest.GCallsCounter>());
+        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<GCallsCounter>());
         propagator.addEventDetector(counter);
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
             public void handleStep(SpacecraftState currentState, boolean isLast) {
