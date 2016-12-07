@@ -59,27 +59,27 @@ public class FieldEventsLoggerTest {
 
 
     @Test
-    public void doLogUmbraTest() throws OrekitException{
-        testLogUmbra(Decimal64Field.getInstance());
+    public void testLogUmbra() throws OrekitException{
+        doTestLogUmbra(Decimal64Field.getInstance());
     }
     @Test
-    public void doLogPenumbraTest() throws OrekitException{
-        testLogPenumbra(Decimal64Field.getInstance());
+    public void testLogPenumbra() throws OrekitException{
+        doTestLogPenumbra(Decimal64Field.getInstance());
     }
     @Test
-    public void doLogAllTest() throws OrekitException{
-        testLogAll(Decimal64Field.getInstance());
+    public void testLogAll() throws OrekitException{
+        doTestLogAll(Decimal64Field.getInstance());
     }
     @Test
-    public void doImmutableListTest() throws OrekitException{
-        testImmutableList(Decimal64Field.getInstance());
+    public void testImmutableList() throws OrekitException{
+        doTestImmutableList(Decimal64Field.getInstance());
     }
     @Test
-    public void doClearLogTest() throws OrekitException{
-        testClearLog(Decimal64Field.getInstance());
+    public void testClearLog() throws OrekitException{
+        doTestClearLog(Decimal64Field.getInstance());
     }
 
-    private <T extends RealFieldElement<T>> void testLogUmbra(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestLogUmbra(Field<T> field) throws OrekitException {
 
         T zero = field.getZero();
 
@@ -122,7 +122,7 @@ public class FieldEventsLoggerTest {
         checkCounts(logger, 3, 3, 0, 0, umbraDetector, penumbraDetector);
     }
 
-    private <T extends RealFieldElement<T>> void testLogPenumbra(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestLogPenumbra(final Field<T> field) throws OrekitException {
         
 
         T zero = field.getZero();
@@ -158,7 +158,7 @@ public class FieldEventsLoggerTest {
         checkCounts(logger, 0, 0, 2, 3, umbraDetector, penumbraDetector);
     }
 
-    private <T extends RealFieldElement<T>> void testLogAll(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestLogAll(final Field<T> field) throws OrekitException {
 
         T zero = field.getZero();
 
@@ -200,7 +200,7 @@ public class FieldEventsLoggerTest {
         checkCounts(logger, 3, 3, 2, 3, umbraDetector, penumbraDetector);
     }
 
-    private <T extends RealFieldElement<T>> void testImmutableList(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestImmutableList(final Field<T> field) throws OrekitException {
         
 
         T zero = field.getZero();
@@ -226,15 +226,6 @@ public class FieldEventsLoggerTest {
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
         FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
-
-
-        
-        
-        
-        
-        
-        
-        
         
         FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
@@ -262,7 +253,7 @@ public class FieldEventsLoggerTest {
         }
     }
 
-    private <T extends RealFieldElement<T>> void testClearLog(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestClearLog(final Field<T> field) throws OrekitException {
         
         
         

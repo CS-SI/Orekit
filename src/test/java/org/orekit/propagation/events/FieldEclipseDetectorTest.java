@@ -70,34 +70,34 @@ public class FieldEclipseDetectorTest {
     }
 
     @Test
-    public void doEclipseTest() throws OrekitException{
-        testEclipse(Decimal64Field.getInstance());
+    public void testEclipse() throws OrekitException{
+        doTestEclipse(Decimal64Field.getInstance());
     }
     @Test
-    public void doPenumbraTest() throws OrekitException{
-        testPenumbra(Decimal64Field.getInstance());
+    public void testPenumbra() throws OrekitException{
+        doTestPenumbra(Decimal64Field.getInstance());
     }
     @Test
-    public void doWithMethodsTest() throws OrekitException{
-        testWithMethods(Decimal64Field.getInstance());
+    public void testWithMethods() throws OrekitException{
+        doTestWithMethods(Decimal64Field.getInstance());
     }
     
     @Test
-    public void doInsideOccultingTest() throws OrekitException{
-        testInsideOcculting(Decimal64Field.getInstance());
+    public void testInsideOcculting() throws OrekitException{
+        doTestInsideOcculting(Decimal64Field.getInstance());
     }    
     @Test
-    public void doInsideOccultedTest() throws OrekitException{
-        testInsideOcculted(Decimal64Field.getInstance());
+    public void testInsideOcculted() throws OrekitException{
+        doTestInsideOcculted(Decimal64Field.getInstance());
     }
     @Test
-    public void doTooSmallMaxIterationCountTest() throws OrekitException{
+    public void testTooSmallMaxIterationCount() throws OrekitException{
         testTooSmallMaxIterationCount(Decimal64Field.getInstance());
     }
  
     
     
-    private <T extends RealFieldElement<T>> void testEclipse(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestEclipse(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -126,7 +126,7 @@ public class FieldEclipseDetectorTest {
         Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate).getReal(), 1.0e-3);
     }
 
-    private <T extends RealFieldElement<T>> void testPenumbra(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestPenumbra(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -159,7 +159,7 @@ public class FieldEclipseDetectorTest {
         Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate).getReal(), 2.0e-6);
     }
    
-    private <T extends RealFieldElement<T>> void testWithMethods(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestWithMethods(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -199,7 +199,7 @@ public class FieldEclipseDetectorTest {
 
     }
 
-    private <T extends RealFieldElement<T>> void testInsideOcculting(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestInsideOcculting(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -235,7 +235,7 @@ public class FieldEclipseDetectorTest {
         Assert.assertEquals(-FastMath.PI, e.g(s).getReal(), 1.0e-15);
     }
 
-    private <T extends RealFieldElement<T>> void testInsideOcculted(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestInsideOcculted(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));

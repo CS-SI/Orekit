@@ -49,27 +49,27 @@ public class FieldDateDetectorTest {
     private AbsoluteDate nodeDate;
 
     @Test
-    public void doSimpleTimerTest() throws OrekitException{
-        testSimpleTimer(Decimal64Field.getInstance());
+    public void testSimpleTimer() throws OrekitException{
+        doTestSimpleTimer(Decimal64Field.getInstance());
     }
     @Test
-    public void doEmbeddedTimerTest() throws OrekitException{
-        testEmbeddedTimer(Decimal64Field.getInstance());
+    public void testEmbeddedTimer() throws OrekitException{
+        doTestEmbeddedTimer(Decimal64Field.getInstance());
     }
     @Test
-    public void doAutoEmbeddedTimerTest() throws OrekitException{
-        testAutoEmbeddedTimer(Decimal64Field.getInstance());
+    public void testAutoEmbeddedTimer() throws OrekitException{
+        doTestAutoEmbeddedTimer(Decimal64Field.getInstance());
     }
     @Test(expected=IllegalArgumentException.class)
-    public void doExceptionTimerTest() throws OrekitException{
-        testExceptionTimer(Decimal64Field.getInstance());
+    public void testExceptionTimer() throws OrekitException{
+        doTestExceptionTimer(Decimal64Field.getInstance());
     }
     @Test
-    public void doGenericHandlerTest() throws OrekitException{
-        testGenericHandler(Decimal64Field.getInstance());
+    public void testGenericHandler() throws OrekitException{
+        doTestGenericHandler(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void testSimpleTimer(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSimpleTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -98,7 +98,7 @@ public class FieldDateDetectorTest {
     }
 
     
-    private <T extends RealFieldElement<T>> void testEmbeddedTimer(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestEmbeddedTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -139,7 +139,7 @@ public class FieldDateDetectorTest {
     }
 
     
-    private <T extends RealFieldElement<T>> void testAutoEmbeddedTimer(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestAutoEmbeddedTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -175,7 +175,7 @@ public class FieldDateDetectorTest {
         Assert.assertEquals(100, evtno);
     }
 
-    private <T extends RealFieldElement<T>> void testExceptionTimer(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestExceptionTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));
@@ -216,7 +216,7 @@ public class FieldDateDetectorTest {
      * @throws OrekitException on error.
      */
     
-    private <T extends RealFieldElement<T>> void testGenericHandler(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestGenericHandler(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
         final FieldVector3D<T> velocity  = new FieldVector3D<T>(zero.add(505.8479685), zero.add(942.7809215), zero.add(7435.922231));

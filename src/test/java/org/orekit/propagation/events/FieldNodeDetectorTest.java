@@ -40,12 +40,16 @@ import org.orekit.utils.Constants;
 public class FieldNodeDetectorTest {
 
     @Test
-    public void test() throws OrekitException{
-        testIssue138(Decimal64Field.getInstance());
-        testIssue158(Decimal64Field.getInstance());
+    public void testIssue138() throws OrekitException{
+        doTestIssue138(Decimal64Field.getInstance());
     }
 
-    public <T extends RealFieldElement<T>>void testIssue138(Field<T> field) throws OrekitException {
+    @Test
+    public void testIssue158() throws OrekitException{
+        doTestIssue158(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>>void doTestIssue138(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         T a = zero.add(800000 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
         T e = zero.add(0.0001);
@@ -92,7 +96,7 @@ public class FieldNodeDetectorTest {
 
     }
 
-    public <T extends RealFieldElement<T>>void testIssue158(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>>void doTestIssue158(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
 

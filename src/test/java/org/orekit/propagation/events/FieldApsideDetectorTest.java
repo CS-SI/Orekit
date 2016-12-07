@@ -44,11 +44,11 @@ import org.orekit.utils.FieldPVCoordinates;
 public class FieldApsideDetectorTest {
     
     @Test
-    public void doSimpleTest() throws OrekitException{
-        testSimple(Decimal64Field.getInstance());
+    public void testSimple() throws OrekitException{
+        doTestSimple(Decimal64Field.getInstance());
     }
     
-    private <T extends RealFieldElement<T>> void testSimple(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSimple(Field<T> field) throws OrekitException {
         final T zero = field.getZero();
 
         final TimeScale utc = TimeScalesFactory.getUTC();
