@@ -198,7 +198,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(1000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
-        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getFieldPVCoordinates();
+        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
         Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
@@ -354,7 +354,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
-        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getFieldPVCoordinates();
+        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
     
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);

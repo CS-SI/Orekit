@@ -71,7 +71,7 @@ public class FieldBodyCenterPointing<T extends RealFieldElement<T>> extends Fiel
         throws OrekitException {
 
         // spacecraft coordinates in body frame
-        final TimeStampedFieldPVCoordinates<T> scInBodyFrame = pvProv.getFieldPVCoordinates(date, getBodyFrame());
+        final TimeStampedFieldPVCoordinates<T> scInBodyFrame = pvProv.getPVCoordinates(date, getBodyFrame());
 
         // central projection to ground (NOT the classical nadir point)
         final T u     = scInBodyFrame.getPosition().getX().divide(ellipsoid.getA());

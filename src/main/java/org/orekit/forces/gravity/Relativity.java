@@ -191,7 +191,7 @@ public class Relativity extends AbstractForceModel {
         addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder)
             throws OrekitException {
-        final FieldPVCoordinates<T> pv = s.getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pv = s.getPVCoordinates();
         final FieldVector3D<T> p = pv.getPosition();
         final FieldVector3D<T> v = pv.getVelocity();
         //radius

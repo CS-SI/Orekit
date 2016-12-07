@@ -219,7 +219,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
             throws OrekitException {
             FieldAbsoluteDate<T> current = currentState.getDate();
             Vector3D sunPos = sun.getPVCoordinates(current.toAbsoluteDate() , FramesFactory.getEME2000()).getPosition();
-            FieldVector3D<T> normal = currentState.getFieldPVCoordinates().getMomentum();
+            FieldVector3D<T> normal = currentState.getPVCoordinates().getMomentum();
             T angle = FieldVector3D.angle(sunPos , normal);
             if (! Double.isNaN(previous.getReal())) {
                 Assert.assertEquals(previous.getReal(), angle.getReal(), 0.0013);
@@ -366,7 +366,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
-        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getFieldPVCoordinates();
+        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
         Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
@@ -521,7 +521,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
-        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getFieldPVCoordinates();
+        FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
     
         Assert.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);

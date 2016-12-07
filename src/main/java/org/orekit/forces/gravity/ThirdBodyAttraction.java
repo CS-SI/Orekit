@@ -184,7 +184,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
                                                                     zero.add(body.getPVCoordinates(s.getDate().toAbsoluteDate(), s.getFrame()).getPosition().getZ())
                                                                     );
         final T r2Central       = centralToBody.getNormSq();
-        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getFieldPVCoordinates().getPosition());
+        final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
         final T r2Sat           = satToBody.getNormSq();
 
         // compute relative acceleration

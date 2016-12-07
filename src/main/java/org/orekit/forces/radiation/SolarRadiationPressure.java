@@ -484,7 +484,7 @@ public class SolarRadiationPressure extends AbstractForceModel {
 
         final FieldAbsoluteDate<T> date         = s.getDate();
         final Frame        frame        = s.getFrame();
-        final FieldVector3D<T>     position     = s.getFieldPVCoordinates().getPosition();
+        final FieldVector3D<T>     position     = s.getPVCoordinates().getPosition();
         final FieldVector3D<T>     sunSatVector = position.subtract(sun.getPVCoordinates(date.toAbsoluteDate(), frame).getPosition());
         final T     r2           = sunSatVector.getNormSq();
 

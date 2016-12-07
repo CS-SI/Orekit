@@ -122,7 +122,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // positions match perfectly
         Assert.assertEquals(0.0,
                             FieldVector3D.distance(initialOrbit.getFieldPVCoordinates().getPosition(),
-                                              finalOrbit.getFieldPVCoordinates().getPosition()).getReal(),
+                                              finalOrbit.getPVCoordinates().getPosition()).getReal(),
                             1.0e-8);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
@@ -137,7 +137,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         Assert.assertEquals(0.137,
                             FieldVector3D.distance(initialOrbit.getFieldPVCoordinates().getVelocity(),
-                                              finalOrbit.getFieldPVCoordinates().getVelocity()).getReal(),
+                                              finalOrbit.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-3);
         Assert.assertEquals(125.2, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
 
@@ -172,7 +172,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // positions match perfectly
         Assert.assertEquals(0.0,
                             FieldVector3D.distance(initialOrbit.getFieldPVCoordinates().getPosition(),
-                                              finalOrbit.getFieldPVCoordinates().getPosition()).getReal(),
+                                              finalOrbit.getPVCoordinates().getPosition()).getReal(),
                             3.0e-8);
 
         // velocity and circular parameters do *not* match, this is EXPECTED!
@@ -186,7 +186,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // fit is used to check initialization
         Assert.assertEquals(0.137,
                             FieldVector3D.distance(initialOrbit.getFieldPVCoordinates().getVelocity(),
-                                              finalOrbit.getFieldPVCoordinates().getVelocity()).getReal(),
+                                              finalOrbit.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-3);
         Assert.assertEquals(126.8, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
 
@@ -353,7 +353,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<T>(finalOrbit.getA(), (new FieldVector3D<T>(x3, U, y3, V)));
 
-        Assert.assertEquals(finalOrbit.getFieldPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(),
+        Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(),
                      Utils.epsilonTest * r.getNorm().getReal());
 
     }
@@ -443,7 +443,7 @@ public class FieldEcksteinHechlerPropagatorTest {
                                                   hx.multiply(2).divide(h2p1));
         FieldVector3D<T> r = new FieldVector3D<T>(finalOrbit.getA(), (new FieldVector3D<T>(x3, U, y3, V)));
 
-        Assert.assertEquals(finalOrbit.getFieldPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(),
+        Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(),
                      Utils.epsilonTest * r.getNorm().getReal());
 
     }
@@ -639,7 +639,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldAbsoluteDate<T> target = date.shiftedBy(10000.0);
         List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<TimeStampedFieldPVCoordinates<T>>();
         for (double dt : Arrays.asList(-0.5, 0.0, 0.5)) {
-            sample.add(propagator.propagate(target.shiftedBy(dt)).getFieldPVCoordinates());
+            sample.add(propagator.propagate(target.shiftedBy(dt)).getPVCoordinates());
         }
         TimeStampedFieldPVCoordinates<T> interpolated =
                 TimeStampedFieldPVCoordinates.interpolate(target, CartesianDerivativesFilter.USE_P, sample);
@@ -707,7 +707,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
 
-        FieldPVCoordinates<T> pv = propagated.getFieldPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        FieldPVCoordinates<T> pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3500.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 4000.0);
 
@@ -756,7 +756,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         propagator.addEventDetector(new FieldApsideDetector<T>(orbit));
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        FieldPVCoordinates<T> pv = propagated.getFieldPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        FieldPVCoordinates<T> pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3000.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 3500.0);
         Assert.assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), pv.getPosition().getNorm().getReal(), 410);
@@ -840,10 +840,10 @@ public class FieldEcksteinHechlerPropagatorTest {
         
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        final double elevation = topo.getElevation(propagated.getFieldPVCoordinates().getPosition().toVector3D(),
+        final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition().toVector3D(),
                                                    propagated.getFrame(),
                                                    propagated.getDate().toAbsoluteDate());
-        final double zVelocity = propagated.getFieldPVCoordinates(topo).getVelocity().getZ().getReal();
+        final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ().getReal();
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 7800.0);
         Assert.assertTrue("Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900",
                           farTarget.durationFrom(propagated.getDate()).getReal() < 7900.0);

@@ -176,7 +176,7 @@ public class FieldElevationDetector<T extends RealFieldElement<T>> extends Field
     public T g(final FieldSpacecraftState<T> s) throws OrekitException {
 
         final Transform t = s.getFrame().getTransformTo(topo, s.getDate().toAbsoluteDate());
-        final FieldVector3D<T> extPointTopo = t.transformPosition(s.getFieldPVCoordinates().getPosition());
+        final FieldVector3D<T> extPointTopo = t.transformPosition(s.getPVCoordinates().getPosition());
         final T trueElevation = extPointTopo.getDelta();
 
         final T calculatedElevation;

@@ -269,9 +269,9 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
         throws OrekitException {
-        return propagate(date).getFieldPVCoordinates(frame);
+        return propagate(date).getPVCoordinates(frame);
     }
 
     /** {@inheritDoc} */

@@ -293,8 +293,8 @@ public class FieldNumericalPropagatorTest {
         FieldBoundedPropagator<T> ephemeris = prop.getGeneratedEphemeris();
 
         //verify
-        TimeStampedFieldPVCoordinates<T> actualPV = ephemeris.getFieldPVCoordinates(startDate, eci);
-        TimeStampedFieldPVCoordinates<T> expectedPV = orbit.getFieldPVCoordinates(startDate, eci);
+        TimeStampedFieldPVCoordinates<T> actualPV = ephemeris.getPVCoordinates(startDate, eci);
+        TimeStampedFieldPVCoordinates<T> expectedPV = orbit.getPVCoordinates(startDate, eci);
         MatcherAssert.assertThat(actualPV.getPosition().toVector3D(),
                 OrekitMatchers.vectorCloseTo(expectedPV.getPosition().toVector3D(), 1.0));
         MatcherAssert.assertThat(actualPV.getVelocity().toVector3D(),
@@ -337,8 +337,8 @@ public class FieldNumericalPropagatorTest {
         FieldBoundedPropagator<T> ephemeris = prop.getGeneratedEphemeris();
 
         //verify
-        TimeStampedFieldPVCoordinates<T> actualPV = ephemeris.getFieldPVCoordinates(startDate, eci);
-        TimeStampedFieldPVCoordinates<T> expectedPV = orbit.getFieldPVCoordinates(startDate, eci);
+        TimeStampedFieldPVCoordinates<T> actualPV = ephemeris.getPVCoordinates(startDate, eci);
+        TimeStampedFieldPVCoordinates<T> expectedPV = orbit.getPVCoordinates(startDate, eci);
         MatcherAssert.assertThat(actualPV.getPosition().toVector3D(),
                 OrekitMatchers.vectorCloseTo(expectedPV.getPosition().toVector3D(), 1.0));
         MatcherAssert.assertThat(actualPV.getVelocity().toVector3D(),
@@ -385,12 +385,12 @@ public class FieldNumericalPropagatorTest {
         // Propagate of the initial at the initial date
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate);
         // Initial orbit definition
-        final FieldVector3D<T> initialPosition = initialState.getFieldPVCoordinates().getPosition();
-        final FieldVector3D<T> initialVelocity = initialState.getFieldPVCoordinates().getVelocity();
+        final FieldVector3D<T> initialPosition = initialState.getPVCoordinates().getPosition();
+        final FieldVector3D<T> initialVelocity = initialState.getPVCoordinates().getVelocity();
 
         // Final orbit definition
-        final FieldVector3D<T> finalPosition   = finalState.getFieldPVCoordinates().getPosition();
-        final FieldVector3D<T> finalVelocity   = finalState.getFieldPVCoordinates().getVelocity();
+        final FieldVector3D<T> finalPosition   = finalState.getPVCoordinates().getPosition();
+        final FieldVector3D<T> finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
         Assert.assertEquals(initialPosition.getX().getReal(), finalPosition.getX().getReal(), 1.0e-10);
@@ -470,12 +470,12 @@ public class FieldNumericalPropagatorTest {
         final T dt = zero.add(3200);
         propagator.setOrbitType(OrbitType.CARTESIAN);
         final FieldPVCoordinates<T> finalState =
-            propagator.propagate(initDate.shiftedBy(dt)).getFieldPVCoordinates();
+            propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
         final FieldVector3D<T> pFin = finalState.getPosition();
         final FieldVector3D<T> vFin = finalState.getVelocity();
 
         // Check results
-        final FieldPVCoordinates<T> reference = initialState.shiftedBy(dt).getFieldPVCoordinates();
+        final FieldPVCoordinates<T> reference = initialState.shiftedBy(dt).getPVCoordinates();
         final FieldVector3D<T> pRef = reference.getPosition();
         final FieldVector3D<T> vRef = reference.getVelocity();
         Assert.assertEquals(0, pRef.subtract(pFin).getNorm().getReal(), 2e-4);
@@ -520,7 +520,7 @@ public class FieldNumericalPropagatorTest {
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt
-        final FieldPVCoordinates<T> pv = initialState.getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pv = initialState.getPVCoordinates();
         final T dP = zero.add(0.001);
         final T dV = pv.getPosition().getNormSq().multiply(pv.getVelocity().getNorm()).reciprocal().multiply(dP.multiply(initialState.getMu()));
 
@@ -602,7 +602,7 @@ public class FieldNumericalPropagatorTest {
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt
-        final FieldPVCoordinates<T> pv = state.getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pv = state.getPVCoordinates();
         final T dP = zero.add(0.001);
         final T dV = dP.multiply(state.getMu()).divide(
                           pv.getPosition().getNormSq().multiply(pv.getVelocity().getNorm()));
@@ -658,7 +658,7 @@ public class FieldNumericalPropagatorTest {
         for (ForceModel force: propagator.getForceModels()) {
             newPropagator.addForceModel(force);
         }
-        return newPropagator.propagate(state.getDate().shiftedBy(dt)).getFieldPVCoordinates();
+        return newPropagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
 
     }
 
@@ -1116,8 +1116,8 @@ public class FieldNumericalPropagatorTest {
         Assert.assertEquals(initDate, ephemeris1.getMinDate());
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
 
-        propagator.getFieldPVCoordinates(initDate.shiftedBy( 2 * dt), FramesFactory.getEME2000());
-        propagator.getFieldPVCoordinates(initDate.shiftedBy(-2 * dt), FramesFactory.getEME2000());
+        propagator.getPVCoordinates(initDate.shiftedBy( 2 * dt), FramesFactory.getEME2000());
+        propagator.getPVCoordinates(initDate.shiftedBy(-2 * dt), FramesFactory.getEME2000());
 
         // the new propagations should not have changed ephemeris1
         Assert.assertEquals(initDate, ephemeris1.getMinDate());

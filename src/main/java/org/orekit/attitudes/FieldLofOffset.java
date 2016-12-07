@@ -116,7 +116,7 @@ public class FieldLofOffset<T extends RealFieldElement<T>> implements FieldAttit
         throws OrekitException {
 
         // construction of the local orbital frame, using PV from inertial frame
-        final FieldPVCoordinates<T> pv = pvProv.getFieldPVCoordinates(date, inertialFrame);
+        final FieldPVCoordinates<T> pv = pvProv.getPVCoordinates(date, inertialFrame);
         final Transform inertialToLof = type.transformFromInertial(date.toAbsoluteDate(), pv.toPVCoordinates());
 
         // take into account the specified start frame (which may not be an inertial one)

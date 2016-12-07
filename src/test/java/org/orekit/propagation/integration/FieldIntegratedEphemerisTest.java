@@ -78,8 +78,8 @@ public class FieldIntegratedEphemerisTest {
             FieldAbsoluteDate<T> intermediateDate = initialOrbit.getDate().shiftedBy(i);
             FieldSpacecraftState<T> keplerIntermediateOrbit = keplerEx.propagate(intermediateDate);
             FieldSpacecraftState<T> numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
-            FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> numPosition = numericIntermediateOrbit.getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
+            FieldVector3D<T> numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
 
             Assert.assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 0.06);
         }
@@ -93,8 +93,8 @@ public class FieldIntegratedEphemerisTest {
         numericalPropagator.propagate(initialOrbit.getDate());
         FieldBoundedPropagator<T> invEphemeris = numericalPropagator.getGeneratedEphemeris();
         FieldSpacecraftState<T> numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
-        FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> numPosition = numericIntermediateOrbit.getFieldPVCoordinates().getPosition();
+        FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getPVCoordinates().getPosition();
+        FieldVector3D<T> numPosition = numericIntermediateOrbit.getPVCoordinates().getPosition();
 
         Assert.assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 10e-2);
 

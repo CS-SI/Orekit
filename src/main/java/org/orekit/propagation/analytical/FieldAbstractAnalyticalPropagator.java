@@ -380,7 +380,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
     private class FieldLocalPVProvider implements FieldPVCoordinatesProvider<T> {
 
         /** {@inheritDoc} */
-        public TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
+        public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
             throws OrekitException {
             return propagateOrbit(date).getFieldPVCoordinates(frame);
         }
@@ -446,9 +446,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         }
 
         /** {@inheritDoc} */
-        public TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
+        public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
             throws OrekitException {
-            return propagate(date).getFieldPVCoordinates(frame);
+            return propagate(date).getPVCoordinates(frame);
         }
 
         /** {@inheritDoc} */

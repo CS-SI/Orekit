@@ -581,7 +581,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      * {@link TimeStampedFieldPVCoordinates} if it needs to keep the value for a while.
      * @return pvCoordinates in orbit definition frame
      */
-    public TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates() {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
         return orbit.getFieldPVCoordinates();
     }
 
@@ -595,7 +595,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      * @return pvCoordinates in orbit definition frame
      * @exception OrekitException if the transformation between frames cannot be computed
      */
-    public TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates(final Frame outputFrame)
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
         return orbit.getFieldPVCoordinates(outputFrame);
     }

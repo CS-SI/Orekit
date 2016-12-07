@@ -242,8 +242,8 @@ public class FieldEventsLoggerTest {
 
             FieldEventsLogger.FieldLoggedEvent<T> e1 = firstList.get(i);
             FieldEventsLogger.FieldLoggedEvent<T> e2 = secondList.get(i);
-            FieldPVCoordinates<T> pv1 = e1.getState().getFieldPVCoordinates();
-            FieldPVCoordinates<T> pv2 = e2.getState().getFieldPVCoordinates();
+            FieldPVCoordinates<T> pv1 = e1.getState().getPVCoordinates();
+            FieldPVCoordinates<T> pv2 = e2.getState().getPVCoordinates();
 
             Assert.assertTrue(e1.getEventDetector() == e2.getEventDetector());
             Assert.assertEquals(0, pv1.getPosition().subtract(pv2.getPosition()).getNorm().getReal(), 1.0e-10);

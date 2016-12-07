@@ -95,7 +95,7 @@ public class FieldApsideDetector<T extends RealFieldElement<T>> extends FieldAbs
      * @exception OrekitException if some specific error occurs
      */
     public T g(final FieldSpacecraftState<T> s) throws OrekitException {
-        final FieldPVCoordinates<T> pv = s.getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pv = s.getPVCoordinates();
         return FieldVector3D.dotProduct(pv.getPosition(), pv.getVelocity());
     }
 

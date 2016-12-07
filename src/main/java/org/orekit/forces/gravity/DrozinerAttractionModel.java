@@ -346,7 +346,7 @@ public class DrozinerAttractionModel extends AbstractForceModel implements TideS
         final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date.toAbsoluteDate());
         final Transform bodyToInertial = centralBodyFrame.getTransformTo(s.getFrame(), date.toAbsoluteDate());
         final FieldVector3D<T> posInBody =
-            bodyToInertial.getInverse().transformVector(s.getFieldPVCoordinates().getPosition());
+            bodyToInertial.getInverse().transformVector(s.getPVCoordinates().getPosition());
         final T xBody = posInBody.getX();
         final T yBody = posInBody.getY();
         final T zBody = posInBody.getZ();

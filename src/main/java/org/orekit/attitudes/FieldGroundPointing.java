@@ -132,7 +132,7 @@ public abstract class FieldGroundPointing<T extends RealFieldElement<T>> impleme
         throws OrekitException {
 
         // satellite-target relative vector
-        final FieldPVCoordinates<T> pva  = pvProv.getFieldPVCoordinates(date, inertialFrame);
+        final FieldPVCoordinates<T> pva  = pvProv.getPVCoordinates(date, inertialFrame);
         final TimeStampedFieldPVCoordinates<T> delta =
                 new TimeStampedFieldPVCoordinates<T> (date, pva, getTargetPV(pvProv, date, inertialFrame));
 

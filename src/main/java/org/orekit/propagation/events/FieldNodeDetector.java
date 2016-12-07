@@ -164,7 +164,7 @@ public class FieldNodeDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * @exception OrekitException if some specific error occurs
      */
     public T g(final FieldSpacecraftState<T> s) throws OrekitException {
-        return s.getFieldPVCoordinates(frame).getPosition().getZ();
+        return s.getPVCoordinates(frame).getPosition().getZ();
     }
 
 //    public NodeDetector toNoField() {

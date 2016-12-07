@@ -427,7 +427,7 @@ public class CunninghamAttractionModel extends AbstractForceModel implements Tid
         final UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics harmonics = provider.onDate(date.toAbsoluteDate());
         final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date.toAbsoluteDate());
         final Transform toBodyFrame   = fromBodyFrame.getInverse();
-        final FieldVector3D<T> relative = toBodyFrame.transformPosition(s.getFieldPVCoordinates().getPosition());
+        final FieldVector3D<T> relative = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         final T x = relative.getX();
         final T y = relative.getY();

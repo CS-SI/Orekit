@@ -324,7 +324,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<T>(finalOrbit.getA(),(new FieldVector3D<T>(x3,U,y3,V)));
 
-        Assert.assertEquals(finalOrbit.getFieldPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
+        Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
@@ -414,7 +414,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<T>(finalOrbit.getA(),(new FieldVector3D<T>(x3,U,y3,V)));
 
-        Assert.assertEquals(finalOrbit.getFieldPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
+        Assert.assertEquals(finalOrbit.getPVCoordinates().getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
@@ -482,7 +482,7 @@ public class FieldKeplerianPropagatorTest {
         propagator.addEventDetector(new FieldNodeDetector<T>(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<T>(field).shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        FieldPVCoordinates<T> pv = propagated.getFieldPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        FieldPVCoordinates<T> pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3500.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 4000.0);
         Assert.assertEquals(0, pv.getPosition().getZ().getReal(), 2.0e-6);
@@ -645,11 +645,11 @@ public class FieldKeplerianPropagatorTest {
 
         propagator.setEphemerisMode();
         propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
-        FieldPVCoordinates<T> pv1 = propagator.getFieldPVCoordinates(initialDate, FramesFactory.getEME2000());
+        FieldPVCoordinates<T> pv1 = propagator.getPVCoordinates(initialDate, FramesFactory.getEME2000());
 
         propagator.setEphemerisMode();
         propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
-        FieldPVCoordinates<T> pv2 = propagator.getGeneratedEphemeris().getFieldPVCoordinates(initialDate, FramesFactory.getEME2000());
+        FieldPVCoordinates<T> pv2 = propagator.getGeneratedEphemeris().getPVCoordinates(initialDate, FramesFactory.getEME2000());
 
         Assert.assertEquals(0.0, pv1.getPosition().subtract(pv2.getPosition()).getNorm().getReal(), 1.0e-15);
         Assert.assertEquals(0.0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm().getReal(), 1.0e-15);
@@ -694,9 +694,9 @@ public class FieldKeplerianPropagatorTest {
                                    FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field),
                                    Constants.EIGEN5C_EARTH_MU);
         final FieldAbsoluteDate<T> target = orbit1.getDate().shiftedBy(10000.0);
-        FieldPVCoordinates<T> pv1       = new FieldKeplerianPropagator<T>(orbit1).propagate(target).getFieldPVCoordinates();
-        FieldPVCoordinates<T> pv2       = new FieldKeplerianPropagator<T>(orbit2).propagate(target).getFieldPVCoordinates();
-        FieldPVCoordinates<T> pvWithMu1 = new FieldKeplerianPropagator<T>(orbit2, orbit1.getMu()).propagate(target).getFieldPVCoordinates();
+        FieldPVCoordinates<T> pv1       = new FieldKeplerianPropagator<T>(orbit1).propagate(target).getPVCoordinates();
+        FieldPVCoordinates<T> pv2       = new FieldKeplerianPropagator<T>(orbit2).propagate(target).getPVCoordinates();
+        FieldPVCoordinates<T> pvWithMu1 = new FieldKeplerianPropagator<T>(orbit2, orbit1.getMu()).propagate(target).getPVCoordinates();
         Assert.assertEquals(0.026054, FieldVector3D.distance(pv1.getPosition(), pv2.getPosition()).getReal(),       1.0e-6);
         Assert.assertEquals(0.0,      FieldVector3D.distance(pv1.getPosition(), pvWithMu1.getPosition()).getReal(), 1.0e-15);
     }

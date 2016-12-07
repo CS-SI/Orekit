@@ -134,15 +134,15 @@ public class FieldSpacecraftStateTest {
             Assert.assertEquals(control_r.getE(),control_f.getE().getReal(), 1e-10);
             Assert.assertEquals(control_r.getEquinoctialEx(),control_f.getEquinoctialEx().getReal(), 1e-10);
             Assert.assertEquals(control_r.getEquinoctialEy(),control_f.getEquinoctialEy().getReal(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getX(),control_f.getFieldPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getY(),control_f.getFieldPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getZ(),control_f.getFieldPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getX(),control_f.getFieldPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getY(),control_f.getFieldPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getZ(),control_f.getFieldPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getX(),control_f.getFieldPVCoordinates().toPVCoordinates().getAcceleration().getX(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getY(),control_f.getFieldPVCoordinates().toPVCoordinates().getAcceleration().getY(), 1e-10);
-            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getZ(),control_f.getFieldPVCoordinates().toPVCoordinates().getAcceleration().getZ(), 1e-10);
+            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getX(),control_f.getPVCoordinates().toPVCoordinates().getPosition().getX(), 1e-10);
+            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getY(),control_f.getPVCoordinates().toPVCoordinates().getPosition().getY(), 1e-10);
+            Assert.assertEquals(control_r.getPVCoordinates().getPosition().getZ(),control_f.getPVCoordinates().toPVCoordinates().getPosition().getZ(), 1e-10);
+            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getX(),control_f.getPVCoordinates().toPVCoordinates().getVelocity().getX(), 1e-10);
+            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getY(),control_f.getPVCoordinates().toPVCoordinates().getVelocity().getY(), 1e-10);
+            Assert.assertEquals(control_r.getPVCoordinates().getVelocity().getZ(),control_f.getPVCoordinates().toPVCoordinates().getVelocity().getZ(), 1e-10);
+            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getX(),control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getX(), 1e-10);
+            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getY(),control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getY(), 1e-10);
+            Assert.assertEquals(control_r.getPVCoordinates().getAcceleration().getZ(),control_f.getPVCoordinates().toPVCoordinates().getAcceleration().getZ(), 1e-10);
             Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ0(),control_f.getAttitude().getOrientation().getRotation().getQ0().getReal(),1e-10);
             Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ1(),control_f.getAttitude().getOrientation().getRotation().getQ1().getReal(),1e-10);
             Assert.assertEquals(control_r.getAttitude().getOrientation().getRotation().getQ2(),control_f.getAttitude().getOrientation().getRotation().getQ2().getReal(),1e-10);
@@ -206,7 +206,7 @@ public class FieldSpacecraftStateTest {
 
 
             PVCoordinates        rdpv = new PVCoordinates(rPropagated.getPVCoordinates(),rShifted.getPVCoordinates());
-            FieldPVCoordinates<T> dpv = new FieldPVCoordinates<T>(propagated.getFieldPVCoordinates(), shifted.getFieldPVCoordinates());
+            FieldPVCoordinates<T> dpv = new FieldPVCoordinates<T>(propagated.getPVCoordinates(), shifted.getPVCoordinates());
 
 
             double residualP = rdpv.getPosition().getNorm()     - dpv.getPosition().getNorm().getReal();
@@ -356,9 +356,9 @@ public class FieldSpacecraftStateTest {
             final FieldSpacecraftState<T> state = propagator.propagate(orbit.getDate().shiftedBy(zero.add(t)));
             final Transform transform = state.toSpacecraftState().toTransform().getInverse();
             PVCoordinates pv = transform.transformPVCoordinates(PVCoordinates.ZERO);
-            PVCoordinates dPV = new PVCoordinates(pv, state.getFieldPVCoordinates().toPVCoordinates());
+            PVCoordinates dPV = new PVCoordinates(pv, state.getPVCoordinates().toPVCoordinates());
             Vector3D mZDirection = transform.transformVector(Vector3D.MINUS_K);
-            double alpha = Vector3D.angle(mZDirection, state.getFieldPVCoordinates().toPVCoordinates().getPosition());
+            double alpha = Vector3D.angle(mZDirection, state.getPVCoordinates().toPVCoordinates().getPosition());
             maxDP = FastMath.max(maxDP, dPV.getPosition().getNorm());
             maxDV = FastMath.max(maxDV, dPV.getVelocity().getNorm());
             maxDA = FastMath.max(maxDA, FastMath.toDegrees(alpha));

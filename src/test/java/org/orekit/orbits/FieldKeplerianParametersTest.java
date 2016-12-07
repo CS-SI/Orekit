@@ -1135,7 +1135,7 @@ public class FieldKeplerianParametersTest {
             FieldAbsoluteDate<T> t         = initialOrbit.getDate().shiftedBy(dt);
             FieldVector3D<T> shiftedP      = initialOrbit.shiftedBy(zero.add(dt)).getFieldPVCoordinates().getPosition();
             FieldVector3D<T> interpolatedP = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> propagatedP   = propagator.propagate(t).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> propagatedP   = propagator.propagate(t).getPVCoordinates().getPosition();
             T shiftedE        = initialOrbit.shiftedBy(zero.add(dt)).getE();
             T interpolatedE   = initialOrbit.interpolate(t, sample).getE();
             T propagatedE     = propagator.propagate(t).getE();
@@ -1165,7 +1165,7 @@ public class FieldKeplerianParametersTest {
             FieldAbsoluteDate<T> t         = initialOrbit.getDate().shiftedBy(dt);
             FieldVector3D<T> shiftedP      = initialOrbit.shiftedBy(zero.add(dt)).getFieldPVCoordinates().getPosition();
             FieldVector3D<T> interpolatedP = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> propagatedP   = propagator.propagate(t).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> propagatedP   = propagator.propagate(t).getPVCoordinates().getPosition();
             T shiftedE        = initialOrbit.shiftedBy(zero.add(dt)).getE();
             T interpolatedE   = initialOrbit.interpolate(t, sample).getE();
             T propagatedE     = propagator.propagate(t).getE();

@@ -203,9 +203,9 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
         throws OrekitException {
-        return propagate(date).getFieldPVCoordinates(frame);
+        return propagate(date).getPVCoordinates(frame);
     }
 
     /** Get the first date of the range.

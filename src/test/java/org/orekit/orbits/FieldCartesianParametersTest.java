@@ -410,7 +410,7 @@ public class FieldCartesianParametersTest {
         double maxInterpolationVError = 0;
         for (T dt = zero; dt.getReal() < 240.0; dt = dt.add(1.0)) {
             FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
-            FieldPVCoordinates<T> propagated         = propagator.propagate(t).getFieldPVCoordinates();
+            FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
             FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<T>(propagated,
                                                                  initialOrbit.shiftedBy(dt).getFieldPVCoordinates());
             FieldPVCoordinates<T> interpolationError = new FieldPVCoordinates<T>(propagated,
@@ -436,7 +436,7 @@ public class FieldCartesianParametersTest {
         maxInterpolationVError = 0;
         for (T dt = zero.add(500.0); dt.getReal() < 725.0; dt = dt.add(1.0)) {
             FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
-            FieldPVCoordinates<T> propagated         = propagator.propagate(t).getFieldPVCoordinates();
+            FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
             FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<T>(propagated,
                                                                  initialOrbit.shiftedBy(dt).getFieldPVCoordinates());
             FieldPVCoordinates<T> interpolationError = new FieldPVCoordinates<T>(propagated,

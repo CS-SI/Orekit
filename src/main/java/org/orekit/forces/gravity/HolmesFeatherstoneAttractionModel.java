@@ -1059,7 +1059,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final FieldAbsoluteDate<T> date       = s.getDate();
         final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date.toAbsoluteDate());
         final Transform toBodyFrame   = fromBodyFrame.getInverse();
-        final FieldVector3D<T> position       = toBodyFrame.transformPosition(s.getFieldPVCoordinates().getPosition());
+        final FieldVector3D<T> position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
         // gradient of the non-central part of the gravity field
         final FieldVector3D<T> gInertial = fromBodyFrame.transformVector(new FieldVector3D<T>(gradient(date, position)));

@@ -66,7 +66,7 @@ public class FieldInertialProvider<T extends RealFieldElement<T>> implements Fie
     public FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
                                 final FieldAbsoluteDate<T> date, final Frame frame)
         throws OrekitException {
-        final Field<T> field = pvProv.getFieldPVCoordinates(date, frame).getPosition().getAlpha().getField();
+        final Field<T> field = pvProv.getPVCoordinates(date, frame).getPosition().getAlpha().getField();
         final Transform t = frame.getTransformTo(satelliteFrame, date.toAbsoluteDate());
         return new FieldAttitude<T>(date, frame, t.getRotation(), t.getRotationRate(), t.getRotationAcceleration(), field);
     }

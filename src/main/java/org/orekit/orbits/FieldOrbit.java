@@ -293,7 +293,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
     }
 
     /** {@inheritDoc} */
-    public TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame)
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame)
         throws OrekitException {
         return shiftedBy(otherDate.durationFrom(getDate())).getFieldPVCoordinates(otherFrame);
     }

@@ -891,7 +891,7 @@ public class FieldEquinoctialParametersTest {
             FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
             FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getFieldPVCoordinates().getPosition();
             FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> propagated   = propagator.propagate(t).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
         }
@@ -905,7 +905,7 @@ public class FieldEquinoctialParametersTest {
             FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
             FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getFieldPVCoordinates().getPosition();
             FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> propagated   = propagator.propagate(t).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
         }
@@ -920,7 +920,7 @@ public class FieldEquinoctialParametersTest {
             FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
             FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getFieldPVCoordinates().getPosition();
             FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> propagated   = propagator.propagate(t).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
         }

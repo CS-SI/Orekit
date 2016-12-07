@@ -38,7 +38,7 @@ public interface FieldPVCoordinatesProvider<T extends RealFieldElement<T>> {
      * @return time-stamped position/velocity of the body (m and m/s)
      * @exception OrekitException if position cannot be computed in given frame
      */
-    TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates(FieldAbsoluteDate<T> date,
-                                              Frame frame) throws OrekitException;
+    TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame)
+        throws OrekitException;
 
 }

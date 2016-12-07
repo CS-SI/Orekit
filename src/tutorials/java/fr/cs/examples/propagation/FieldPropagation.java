@@ -201,7 +201,7 @@ public class FieldPropagation {
         public void handleStep(FieldSpacecraftState<T> currentState,
                                boolean isLast)
             throws OrekitException {
-            TimeStampedFieldPVCoordinates<DerivativeStructure> PV_t = (TimeStampedFieldPVCoordinates<DerivativeStructure>) currentState.getFieldPVCoordinates();
+            TimeStampedFieldPVCoordinates<DerivativeStructure> PV_t = (TimeStampedFieldPVCoordinates<DerivativeStructure>) currentState.getPVCoordinates();
 
             //getting the propagated poisition and velocity(to find the cross track and long track error)
             FieldVector3D<DerivativeStructure> P_t = PV_t.getPosition();
