@@ -60,7 +60,7 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * @param handler event handler to call at event occurrences
      */
     protected FieldAbstractDetector(final T maxCheck, final T threshold, final int maxIter,
-                               final FieldEventHandler<? super D, T> handler) {
+                                    final FieldEventHandler<? super D, T> handler) {
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
         this.maxIter   = maxIter;
