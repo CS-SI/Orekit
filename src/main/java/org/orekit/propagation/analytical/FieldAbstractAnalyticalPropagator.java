@@ -129,7 +129,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
                 if (Double.isNaN(getFixedStepSize().getReal())) {
                     stepSize = state.getKeplerianPeriod().divide(100).copySign(dt);
                 } else {
-                    stepSize =  state.getKeplerianPeriod().copySign(dt);
+                    stepSize = getFixedStepSize().copySign(dt);
                 }
             } else {
                 stepSize = dt;
