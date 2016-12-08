@@ -82,7 +82,7 @@ public class EphemerisTest {
         //First test that we got position, velocity and attitude nailed
         int numberEphemTestIntervals = 2880;
         deltaT = finalDate.durationFrom(initDate)/((double)numberEphemTestIntervals);
-        for(int j = 0; j <= numberEphemTestIntervals; j++) {
+        for (int j = 0; j <= numberEphemTestIntervals; j++) {
             AbsoluteDate currentDate = initDate.shiftedBy(j * deltaT);
             SpacecraftState ephemState = ephemPropagator.propagate(currentDate);
             SpacecraftState keplerState = propagator.propagate(currentDate);
@@ -101,7 +101,7 @@ public class EphemerisTest {
         propagator.setAttitudeProvider(new LofOffset(inertialFrame, LOFType.QSW));
 
         ephemPropagator.setAttitudeProvider(new LofOffset(inertialFrame,LOFType.QSW));
-        for(int j = 0; j <= numberEphemTestIntervals; j++) {
+        for (int j = 0; j <= numberEphemTestIntervals; j++) {
             AbsoluteDate currentDate = initDate.shiftedBy(j * deltaT);
             SpacecraftState ephemState = ephemPropagator.propagate(currentDate);
             SpacecraftState keplerState = propagator.propagate(currentDate);
