@@ -177,11 +177,7 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
             }
             return state;
         } catch (OrekitExceptionWrapper oew) {
-            if (oew.getException() instanceof OrekitException) {
-                throw (OrekitException) oew.getException();
-            } else {
-                throw new OrekitException(oew.getException());
-            }
+            throw new OrekitException(oew.getException());
         }
     }
 
