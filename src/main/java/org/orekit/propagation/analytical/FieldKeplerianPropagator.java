@@ -29,8 +29,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 
-/** Simple keplerian orbit propagator.
- * @see FieldOrbit<T>
+/** Simple Keplerian orbit propagator.
+ * @see FieldOrbit
  * @author Guylaine Prat
  */
 public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {

@@ -31,9 +31,9 @@ import org.orekit.propagation.FieldSpacecraftState;
  * </p>
  * <p>
  * This interface allows users to add such equations to a {@link
- * org.orekit.propagation.numerical.NumericalPropagator numerical propagator}. Users provide the
+ * org.orekit.propagation.numerical.FieldNumericalPropagator numerical propagator}. Users provide the
  * equations as an implementation of this interface and register it to the propagator thanks to
- * its {@link org.orekit.propagation.numerical.NumericalPropagator#addAdditionalEquations(FieldAdditionalEquations)}
+ * its {@link org.orekit.propagation.numerical.FieldNumericalPropagator#addAdditionalEquations(FieldAdditionalEquations)}
  * method. Several such objects can be registered with each numerical propagator, but it is
  * recommended to gather in the same object the sets of parameters which equations can interact
  * on each others states.
@@ -43,7 +43,7 @@ import org.orekit.propagation.FieldSpacecraftState;
  * the pDot array, which is the time-derivative of the p array. Since the additional parameters
  * p may also have an influence on the equations of motion themselves that should be accumulated
  * to the main state derivatives (for example an equation linked to a complex thrust model may
- * induce an acceleration and a mass change), the {@link #computeDerivatives(SpacecraftState, double[])
+ * induce an acceleration and a mass change), the {@link #computeDerivatives(FieldSpacecraftState, RealFieldElement[])
  * computeDerivatives} method can return a double array that will be
  * <em>added</em> to the main state derivatives. This means these equations can be used as an
  * additional force model if needed. If the additional parameters have no influence at all on
@@ -51,9 +51,9 @@ import org.orekit.propagation.FieldSpacecraftState;
  * </p>
  * <p>
  * This interface is the numerical (read not already integrated) counterpart of
- * the {@link org.orekit.propagation.AdditionalStateProvider} interface.
+ * the {@link org.orekit.propagation.FieldAdditionalStateProvider} interface.
  * It allows to append various additional state parameters to any {@link
- * org.orekit.propagation.numerical.NumericalPropagator numerical propagator}.
+ * org.orekit.propagation.numerical.FieldNumericalPropagator numerical propagator}.
  * </p>
  * @see AbstractIntegratedPropagator
  * @see org.orekit.propagation.AdditionalStateProvider

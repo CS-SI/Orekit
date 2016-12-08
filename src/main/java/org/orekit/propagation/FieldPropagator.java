@@ -66,8 +66,8 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @return one of {@link #SLAVE_MODE}, {@link #MASTER_MODE},
      * {@link #EPHEMERIS_GENERATION_MODE}
      * @see #setSlaveMode()
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setMasterMode(OrekitStepHandler)
+     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
+     * @see #setMasterMode(FieldOrekitStepHandler)
      * @see #setEphemerisMode()
      */
     int getMode();
@@ -77,8 +77,8 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      *  The (slave) propagator computes this result and return it to the calling
      *  (master) application, without any intermediate feedback.<p>
      * <p>This is the default mode.</p>
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setMasterMode(OrekitStepHandler)
+     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
+     * @see #setMasterMode(FieldOrekitStepHandler)
      * @see #setEphemerisMode()
      * @see #getMode()
      * @see #SLAVE_MODE
@@ -92,7 +92,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @param h fixed stepsize (s)
      * @param handler handler called at the end of each finalized step
      * @see #setSlaveMode()
-     * @see #setMasterMode(OrekitStepHandler)
+     * @see #setMasterMode(FieldOrekitStepHandler)
      * @see #setEphemerisMode()
      * @see #getMode()
      * @see #MASTER_MODE
@@ -105,7 +105,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * loop calls the (slave) application callback methods at each finalized step.</p>
      * @param handler handler called at the end of each finalized step
      * @see #setSlaveMode()
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
+     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
      * @see #setEphemerisMode()
      * @see #getMode()
      * @see #MASTER_MODE
@@ -122,8 +122,8 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      *  time steps.</p>
      * @see #getGeneratedEphemeris()
      * @see #setSlaveMode()
-     * @see #setMasterMode(double, OrekitFixedStepHandler)
-     * @see #setMasterMode(OrekitStepHandler)
+     * @see #setMasterMode(RealFieldElement, FieldOrekitFixedStepHandler)
+     * @see #setMasterMode(FieldOrekitStepHandler)
      * @see #getMode()
      * @see #EPHEMERIS_GENERATION_MODE
      */
@@ -166,15 +166,15 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * <p>
      * Managed states are states for which the propagators know how to compute
      * its evolution. They correspond to additional states for which an
-     * {@link AdditionalStateProvider additional state provider} has been registered
-     * by calling the {@link #addAdditionalStateProvider(AdditionalStateProvider)
+     * {@link FieldAdditionalStateProvider additional state provider} has been registered
+     * by calling the {@link #addAdditionalStateProvider(FieldAdditionalStateProvider)
      * addAdditionalStateProvider} method. If the propagator is an {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator integrator-based
+     * org.orekit.propagation.integration.FieldAbstractIntegratedPropagator integrator-based
      * propagator}, the states for which a set of {@link
-     * org.orekit.propagation.integration.AdditionalEquations additional equations} has
+     * org.orekit.propagation.integration.FieldAdditionalEquations additional equations} has
      * been registered by calling the {@link
-     * org.orekit.propagation.integration.AbstractIntegratedPropagator#addAdditionalEquations(
-     * org.orekit.propagation.integration.AdditionalEquations) addAdditionalEquations}
+     * org.orekit.propagation.integration.FieldAbstractIntegratedPropagator#addAdditionalEquations(
+     * org.orekit.propagation.integration.FieldAdditionalEquations) addAdditionalEquations}
      * method are also counted as managed additional states.
      * </p>
      * <p>
@@ -203,13 +203,13 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
 
     /** Get all the events detectors that have been added.
      * @return an unmodifiable collection of the added detectors
-     * @see #addEventDetector(EventDetector)
+     * @see #addEventDetector(FieldEventDetector)
      * @see #clearEventsDetectors()
      */
     Collection<FieldEventDetector<T>> getEventsDetectors();
 
     /** Remove all events detectors.
-     * @see #addEventDetector(EventDetector)
+     * @see #addEventDetector(FieldEventDetector)
      * @see #getEventsDetectors()
      */
     void clearEventsDetectors();
@@ -231,7 +231,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * been set, otherwise it may return null.
      * </p>
      * @return frame in which the orbit is propagated
-     * @see #resetInitialState(SpacecraftState)
+     * @see #resetInitialState(FieldSpacecraftState)
      */
     Frame getFrame();
 

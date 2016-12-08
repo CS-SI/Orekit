@@ -155,17 +155,17 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(T)} and {@link #getPVCoordinates(FieldAbsoluteDate<T>, Frame)}.
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvCoordinates the position, velocity and acceleration
-     * @param frame the frame in which are defined the {@link FieldPVCoordinates<T>}
+     * @param frame the frame in which are defined the {@link FieldPVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldEquinoctialOrbit(final TimeStampedFieldPVCoordinates<T> pvCoordinates,
-                            final Frame frame, final double mu)
+                                 final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
 
@@ -217,10 +217,10 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(T)} and {@link #getPVCoordinates(FieldAbsoluteDate<T>, Frame)}.
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvCoordinates the position end velocity
-     * @param frame the frame in which are defined the {@link FieldPVCoordinates<T>}
+     * @param frame the frame in which are defined the {@link FieldPVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m³/s²)

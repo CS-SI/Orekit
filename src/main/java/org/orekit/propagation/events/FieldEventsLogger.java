@@ -28,18 +28,18 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** This class logs events detectors events during propagation.
  *
- * <p>As {@link FieldEventDetector<T> events detectors} are triggered during
+ * <p>As {@link FieldEventDetector events detectors} are triggered during
  * orbit propagation, an event specific {@link
- * FieldEventDetector<T>#eventOccurred(FieldSpacecraftState<T>, boolean) eventOccurred}
+ * FieldEventDetector#eventOccurred(FieldSpacecraftState, boolean) eventOccurred}
  * method is called. This class can be used to add a global logging
  * feature registering all events with their corresponding states in
  * a chronological sequence (or reverse-chronological if propagation
  * occurs backward).<p>
- * <p>This class works by wrapping user-provided {@link FieldEventDetector<T>
+ * <p>This class works by wrapping user-provided {@link FieldEventDetector
  * events detectors} before they are registered to the propagator. The
  * wrapper monitor the calls to {@link
- * FieldEventDetector<T>#eventOccurred(FieldSpacecraftState<T>, boolean) eventOccurred}
- * and store the corresponding events as {@link FieldLoggedEvent<T>} instances.
+ * FieldEventDetector#eventOccurred(FieldSpacecraftState, boolean) eventOccurred}
+ * and store the corresponding events as {@link FieldLoggedEvent} instances.
  * After propagation is complete, the user can retrieve all the events
  * that have occurred at once by calling method {@link #getLoggedEvents()}.</p>
  *
@@ -74,8 +74,8 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
      * </pre>
      * <p>
      * Note that the event detector returned by the {@link
-     * FieldLoggedEvent<T>#getEventDetector() getEventDetector} method in
-     * {@link FieldLoggedEvent<T> FieldLoggedEvent<T>} instances returned by {@link
+     * FieldLoggedEvent#getEventDetector() getEventDetector} method in
+     * {@link FieldLoggedEvent FieldLoggedEvent} instances returned by {@link
      * #getLoggedEvents()} are the {@code monitoredDetector} instances
      * themselves, not the wrapping detector returned by this method.
      * </p>
@@ -138,7 +138,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
 
         /** Get the triggering state.
          * @return triggering state
-         * @see FieldEventDetector<T>#eventOccurred(FieldSpacecraftState<T>, boolean)
+         * @see FieldEventDetector#eventOccurred(FieldSpacecraftState, boolean)
          */
         public FieldSpacecraftState<T> getState() {
             return state;
@@ -146,7 +146,7 @@ public class FieldEventsLogger<T extends RealFieldElement<T>> {
 
         /** Get the Increasing/decreasing status of the event.
          * @return increasing/decreasing status of the event
-         * @see FieldEventDetector<T>#eventOccurred(FieldSpacecraftState<T>, boolean)
+         * @see FieldEventDetector#eventOccurred(FieldSpacecraftState, boolean)
          */
         public boolean isIncreasing() {
             return increasing;

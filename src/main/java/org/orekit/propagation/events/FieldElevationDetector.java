@@ -25,7 +25,6 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnDecreasing;
 import org.orekit.utils.ElevationMask;
@@ -37,13 +36,12 @@ import org.orekit.utils.ElevationMask;
  * mask input. Each calculation be configured to use atmospheric refraction
  * as well.
  * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * org.orekit.propagation.events.handlers.FieldEventHandler.Action#CONTINUE continue}
  * propagation at raising and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP stop} propagation
  * at setting. This can be changed by calling
- * {@link #withHandler(EventHandler)} after construction.</p>
+ * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * @author Hank Grabowski
- * @since 6.1
  */
 public class FieldElevationDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldElevationDetector<T>, T> {
 

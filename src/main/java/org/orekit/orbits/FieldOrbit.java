@@ -122,7 +122,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(double)} and {@link #getPVCoordinates(FieldAbsoluteDate<T>, Frame)}.
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param FieldPVCoordinates the position and velocity in the inertial frame
      * @param frame the frame in which the {@link TimeStampedPVCoordinates} are defined

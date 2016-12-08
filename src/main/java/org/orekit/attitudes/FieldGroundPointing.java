@@ -70,22 +70,6 @@ public abstract class FieldGroundPointing<T extends RealFieldElement<T>> impleme
     }
 
 
-    /** Default constructor.
-     * Build a new instance with arbitrary default elements.
-     * @param bodyFrame the frame that rotates with the body
-     * @deprecated as of 7.1 replaced with {@link #GroundPointing(Frame, Frame)}
-     */
-    @Deprecated
-    protected FieldGroundPointing(final Frame bodyFrame) {
-        Frame frame = bodyFrame;
-        while (!frame.isPseudoInertial()) {
-            frame = frame.getParent();
-        }
-        this.inertialFrame = frame;
-        this.bodyFrame     = bodyFrame;
-    }
-
-
     /** J axis.
      * @param field field used by default
      * @return J axis in FieldPVCoordinates

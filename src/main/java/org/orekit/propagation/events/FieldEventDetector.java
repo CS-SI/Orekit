@@ -24,8 +24,8 @@ import org.orekit.time.FieldAbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
  *
- * <p>It mirrors the {@link org.hipparchus.ode.events.ODEEventHandler
- * ODEEventHandler} interface from <a href="https://hipparchus.org/">
+ * <p>It mirrors the {@link org.hipparchus.ode.events.FieldODEEventHandler
+ * FieldODEEventHandler} interface from <a href="https://hipparchus.org/">
  * Hipparchus</a> but provides a space-dynamics interface to the
  * methods.</p>
  *
@@ -37,7 +37,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * boundaries.</p>
  *
  * <p>When step ends exactly at a switching function sign change, the corresponding
- * event is triggered, by calling the {@link #eventOccurred(SpacecraftState, boolean)}
+ * event is triggered, by calling the {@link #eventOccurred(FieldSpacecraftState, boolean)}
  * method. The method can do whatever it needs with the event (logging it, performing
  * some processing, ignore it ...). The return value of the method will be used by
  * the propagator to stop or resume propagation, possibly changing the state vector.<p>

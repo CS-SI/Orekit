@@ -198,10 +198,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(T)} and {@link #getPVCoordinates(FieldAbsoluteDate<T>, Frame)}.
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param FieldPVCoordinates the PVCoordinates of the satellite
-     * @param frame the frame in which are defined the {@link PVCoordinates}
+     * @param frame the frame in which are defined the {@link FieldPVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if frame is not a {@link
@@ -268,10 +268,10 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(T)} and {@link #getPVCoordinates(FieldAbsoluteDate<T>, Frame)}.
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param FieldPVCoordinates the PVCoordinates of the satellite
-     * @param frame the frame in which are defined the {@link PVCoordinates}
+     * @param frame the frame in which are defined the {@link FieldPVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m³/s²)

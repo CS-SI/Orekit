@@ -45,9 +45,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 /** This class is the representation of a complete state holding orbit, attitude
  * and mass information at a given date.
  *
- * <p>It contains an {@link FieldOrbit<T> orbital state} at a current
- * {@link FieldAbsoluteDate<T>} both handled by an {@link FieldOrbit<T>}, plus the current
- * mass and attitude. FieldOrbit<T> and state are guaranteed to be consistent in terms
+ * <p>It contains an {@link FieldOrbit orbital state} at a current
+ * {@link FieldAbsoluteDate} both handled by an {@link FieldOrbit}, plus the current
+ * mass and attitude. FieldOrbitand state are guaranteed to be consistent in terms
  * of date and reference frame. The spacecraft state may also contain additional
  * states, which are simply named double arrays which can hold any user-defined
  * data.
@@ -60,7 +60,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * should be sufficient for either small time shifts or coarse accuracy.
  * </p>
  * <p>
- * The instance <code>SpacecraftState</code> is guaranteed to be immutable.
+ * The instance {@code FieldSpacecraftState} is guaranteed to be immutable.
  * </p>
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Fabien Maussion
@@ -291,7 +291,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
                                    mass, additional);
     }
 
-    /** {@inheritDoc}
+    /** Get an interpolated instance.
      * <p>
      * The additional states that are interpolated are the ones already present
      * in the instance. The sample instances must therefore have at least the same
@@ -304,9 +304,13 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
      * and numerical problems (including NaN appearing).
      * </p>
+     * @param date interpolation date
+     * @param sample sample points on which interpolation should be done
+     * @return a new instance, interpolated at specified date
+     * @exception OrekitException if the number of point is too small for interpolating
      */
     public FieldSpacecraftState<T> interpolate(final FieldAbsoluteDate<T> date,
-                                       final Collection<FieldSpacecraftState<T>> sample)
+                                               final Collection<FieldSpacecraftState<T>> sample)
         throws OrekitException {
 
         // prepare interpolators
@@ -377,7 +381,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
     /** Check if an additional state is available.
      * @param name name of the additional state
      * @return true if the additional state is available
-     * @see #addAdditionalState(String, double[])
+     * @see #addAdditionalState(String, RealFieldElement...)
      * @see #getAdditionalState(String)
      * @see #getAdditionalStates()
      */
@@ -428,7 +432,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      * @param name name of the additional state
      * @return value of the additional state
      * @exception OrekitException if no additional state with that name exists
-     * @see #addAdditionalState(String, double[])
+     * @see #addAdditionalState(String, RealFieldElement...)
      * @see #hasAdditionalState(String)
      * @see #getAdditionalStates()
      */
@@ -441,7 +445,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
 
     /** Get an unmodifiable map of additional states.
      * @return unmodifiable map of additional states
-     * @see #addAdditionalState(String, double[])
+     * @see #addAdditionalState(String, RealFieldElement...)
      * @see #hasAdditionalState(String)
      * @see #getAdditionalState(String)
      */

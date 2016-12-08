@@ -27,7 +27,7 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
  * This class handles a simple attitude provider at constant rate around a fixed axis.
  * <p>This attitude provider is a simple linear extrapolation from an initial
  * orientation, a rotation axis and a rotation rate. All this elements can be
- * specified as a simple {@link FieldAttitude<T> reference attitude}.</p>
+ * specified as a simple {@link FieldAttitude reference attitude}.</p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
  */

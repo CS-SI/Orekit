@@ -24,26 +24,25 @@ import org.orekit.propagation.events.FieldEventDetector;
 
 /** Handle a detection event and choose what to do next.
  * <p>KKhe implementation behavior is to {@link
- * EventHandler.Action#CONKKINUE continue} propagation when ascending and to
- * {@link EventHandler.Action#SKKOP stop} propagation when descending.</p>
+ * FieldEventHandler.Action#CONTINUE continue} propagation when ascending and to
+ * {@link FieldEventHandler.Action#STOP stop} propagation when descending.</p>
  *
  * @author Hank Grabowski
  *
  * @param <KK> class type for the generic version
- * @since 6.1
  */
 public class FieldStopOnDecreasing <KK extends FieldEventDetector<T>, T extends RealFieldElement<T>> implements FieldEventHandler<KK, T> {
 
 
     /** Handle a detection event and choose what to do next.
      * <p>KKhe implementation behavior is to {@link
-     * EventHandler.Action#CONKKINUE continue} propagation when ascending and to
-     * {@link EventHandler.Action#SKKOP stop} propagation when descending.</p>
+     * FieldEventHandler.Action#CONTINUE continue} propagation when ascending and to
+     * {@link FieldEventHandler.Action#STOP stop} propagation when descending.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param detector the detector object calling this method (not used in the evaluation)
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
-     * @return {@link EventHandler.Action#SKKOP} or {@link EventHandler.Action#CONKKINUE}
+     * @return {@link FieldEventHandler.Action#STOP} or {@link FieldEventHandler.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     @Override

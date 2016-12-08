@@ -22,12 +22,11 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
 
@@ -35,18 +34,18 @@ import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
  * <p>This class finds equator crossing events (i.e. ascending
  * or descending node crossing).</p>
  * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * org.orekit.propagation.events.handlers.FieldEventHandler.Action#CONTINUE continue}
  * propagation at descending node crossing and to {@link
- * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP stop} propagation
  * at ascending node crossing. This can be changed by calling
- * {@link #withHandler(EventHandler)} after construction.</p>
+ * {@link #withHandler(FieldEventHandler)} after construction.</p>
  * <p>Beware that node detection will fail for almost equatorial orbits. If
  * for example a node detector is used to trigger an {@link
  * org.orekit.forces.maneuvers.ImpulseManeuver ImpulseManeuver} and the maneuver
  * turn the orbit plane to equator, then the detector may completely fail just
  * after the maneuver has been performed! This is a real case that has been
  * encountered during validation ...</p>
- * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
+ * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
  */
 public class FieldNodeDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldNodeDetector<T>, T> {

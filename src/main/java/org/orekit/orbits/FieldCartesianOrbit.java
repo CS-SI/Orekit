@@ -93,7 +93,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(T)} and {@link #getPVCoordinates(AbsoluteDate, Frame)}.
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position, velocity and acceleration of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
@@ -117,7 +117,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * <p> The acceleration provided in {@code pvCoordinates} is accessible using
      * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(T)} and {@link #getPVCoordinates(AbsoluteDate, Frame)}.
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
      * @param pvaCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined

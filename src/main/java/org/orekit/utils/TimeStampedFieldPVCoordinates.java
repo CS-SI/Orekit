@@ -35,9 +35,6 @@ import org.orekit.time.TimeStamped;
 public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
     extends FieldPVCoordinates<T> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140611L;
-
     /** The date. */
     private final FieldAbsoluteDate<T> date;
 

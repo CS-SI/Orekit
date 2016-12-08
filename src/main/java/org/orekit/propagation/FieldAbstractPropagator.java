@@ -184,7 +184,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
      * @param original original state
      * @return updated state, with all additional states included
      * @exception OrekitException if one of the providers throws one
-     * @see #addAdditionalStateProvider(FieldAdditionalStateProvider<T>)
+     * @see #addAdditionalStateProvider(FieldAdditionalStateProvider)
      */
     protected FieldSpacecraftState<T> updateAdditionalStates(final FieldSpacecraftState<T> original)
         throws OrekitException {

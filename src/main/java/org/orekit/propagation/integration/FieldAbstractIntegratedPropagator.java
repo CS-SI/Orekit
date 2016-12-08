@@ -60,7 +60,7 @@ import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 
 
-/** Common handling of {@link org.orekit.propagation.Propagator Propagator}
+/** Common handling of {@link org.orekit.propagation.FieldPropagator FieldPropagator}
  *  methods for both numerical and semi-analytical propagators.
  *  @author Luc Maisonobe
  */
@@ -187,7 +187,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     }
 
     /** Get the number of calls to the differential equations computation method.
-     * <p>The number of calls is reset each time the {@link #propagate(FieldAbsoluteDate<T>)}
+     * <p>The number of calls is reset each time the {@link #propagate(FieldAbsoluteDate)}
      * method is called.</p>
      * @return number of calls to the differential equations computation method
      */
@@ -282,7 +282,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(FieldODEIntegrator<T>, boolean) constructor}. So if a specific
+     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -296,8 +296,8 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(FieldODEIntegrator<T>, boolean) constructor}. So if a specific
-     * step handler is needed, it should be added after this method has been callled.</p>
+     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, boolean) constructor}. So if a specific
+     * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setMasterMode(final FieldOrekitStepHandler<T> handler) {
         super.setMasterMode(handler);
@@ -310,7 +310,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(FieldODEIntegrator<T>, boolean) constructor}. So if a specific
+     * #FieldAbstractIntegratedPropagator(Field, FieldODEIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {

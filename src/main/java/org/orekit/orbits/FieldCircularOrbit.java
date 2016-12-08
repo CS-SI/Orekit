@@ -151,13 +151,13 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
     /** Constructor from cartesian parameters.
      *
-     * <p> The acceleration provided in {@code FieldPVCoordinates<T>} is accessible using
-     * {@link #getFieldPVCoordinates<T>()} and {@link #getFieldPVCoordinates<T>(Frame)}. All other methods
+     * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
+     * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(T)} and {@link #getFieldPVCoordinates<T>(FieldAbsoluteDate<T>, Frame)}.
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
-     * @param PVCoordinates the {@link FieldPVCoordinates<T>} in inertial frame
-     * @param frame the frame in which are defined the {@link FieldPVCoordinates<T>}
+     * @param PVCoordinates the {@link FieldPVCoordinates} in inertial frame
+     * @param frame the frame in which are defined the {@link FieldPVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if frame is not a {@link
@@ -223,13 +223,13 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
     /** Constructor from cartesian parameters.
      *
-     * <p> The acceleration provided in {@code FieldPVCoordinates<T>} is accessible using
-     * {@link #getFieldPVCoordinates<T>()} and {@link #getFieldPVCoordinates<T>(Frame)}. All other methods
+     * <p> The acceleration provided in {@code FieldPVCoordinates} is accessible using
+     * {@link #getPVCoordinates()} and {@link #getPVCoordinates(Frame)}. All other methods
      * use {@code mu} and the position to compute the acceleration, including
-     * {@link #shiftedBy(T)} and {@link #getFieldPVCoordinates<T>(FieldAbsoluteDate<T>, Frame)}.
+     * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
-     * @param PVCoordinates the {@link FieldPVCoordinates<T>} in inertial frame
-     * @param frame the frame in which are defined the {@link FieldPVCoordinates<T>}
+     * @param PVCoordinates the {@link FieldPVCoordinates} in inertial frame
+     * @param frame the frame in which are defined the {@link FieldPVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m³/s²)
@@ -237,7 +237,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldCircularOrbit(final FieldPVCoordinates<T> PVCoordinates, final Frame frame,
-                         final FieldAbsoluteDate<T> date, final double mu)
+                              final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
         this(new TimeStampedFieldPVCoordinates<T>(date, PVCoordinates), frame, mu);
     }

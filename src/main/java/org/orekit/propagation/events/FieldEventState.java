@@ -29,19 +29,18 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler.Action;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** This class handles the state for one {@link EventDetector
+/** This class handles the state for one {@link FieldEventDetector
  * event detector} during integration steps.
  *
  * <p>This class is heavily based on the class with the same name from the
  * Hipparchus library. The changes performed consist in replacing
  * raw types (double and double arrays) with space dynamics types
- * ({@link FieldAbsoluteDate<T>}, {@link SpacecraftState}).</p>
+ * ({@link FieldAbsoluteDate}, {@link FieldSpacecraftState}).</p>
  * <p>Each time the propagator proposes a step, the event detector
  * should be checked. This class handles the state of one detector
  * during one propagation step, with references to the state at the
@@ -418,8 +417,8 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
      * Try to accept the current history up to the given time.
      *
      * <p> It is not necessary to call this method before calling {@link
-     * #doEvent(SpacecraftState)} with the same state. It is necessary to call this
-     * method before you call {@link #doEvent(SpacecraftState)} on some other event
+     * #doEvent(FieldSpacecraftState)} with the same state. It is necessary to call this
+     * method before you call {@link #doEvent(FieldSpacecraftState)} on some other event
      * detector.
      *
      * @param state        to try to accept.
@@ -460,14 +459,15 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends RealFiel
 
     /**
      * Notify the user's listener of the event. The event occurs wholly within this method
-     * call including a call to {@link EventDetector#resetState(SpacecraftState)}
+     * call including a call to {@link FieldEventDetector#resetState(FieldSpacecraftState)}
      * if necessary.
      *
      * @param state the state at the time of the event. This must be at the same time as
      *              the current value of {@link #getEventDate()}.
      * @return the user's requested action and the new state if the action is {@link
-     * EventHandler.Action#RESET_STATE}. Otherwise the new state is {@code state}. The stop time
-     * indicates what time propagation should stop if the action is {@link EventHandler.Action#STOP}.
+     * org.orekit.propagation.events.handlers.FieldEventHandler.Action#RESET_STATE}. Otherwise
+     * the new state is {@code state}. The stop time indicates what time propagation should
+     * stop if the action is {@link org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP}.
      * This guarantees the integration will stop on or after the root, so that integration
      * may be restarted safely.
      * @exception OrekitException if the event detector throws one

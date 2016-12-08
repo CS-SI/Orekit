@@ -406,10 +406,10 @@ public class FieldAbsoluteDateTest {
         for (int i = -10; i < 10; ++i) {
             final double dt = 1.1 * (2 * i - 1);
             FieldAbsoluteDate<T> d1 = leapStart.shiftedBy(dt);
-            FieldAbsoluteDate<T> d2 = new FieldAbsoluteDate<T>(field,leapStart, dt, tai);
-            FieldAbsoluteDate<T> d3 = new FieldAbsoluteDate<T>(field,leapStart, dt, utc);
-            FieldAbsoluteDate<T> d4 = new FieldAbsoluteDate<T>(field,leapEnd,   dt, tai);
-            FieldAbsoluteDate<T> d5 = new FieldAbsoluteDate<T>(field,leapEnd,   dt, utc);
+            FieldAbsoluteDate<T> d2 = new FieldAbsoluteDate<T>(leapStart,dt, tai);
+            FieldAbsoluteDate<T> d3 = new FieldAbsoluteDate<T>(leapStart,dt, utc);
+            FieldAbsoluteDate<T> d4 = new FieldAbsoluteDate<T>(leapEnd,dt,   tai);
+            FieldAbsoluteDate<T> d5 = new FieldAbsoluteDate<T>(leapEnd,dt,   utc);
             Assert.assertTrue(FastMath.abs(d1.durationFrom(d2).getReal()) < 1.0e-10);
             if (dt < 0) {
                 Assert.assertTrue(FastMath.abs(d2.durationFrom(d3).getReal()) < 1.0e-10);
@@ -426,8 +426,8 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> leapStart = new FieldAbsoluteDate<T>(field,1977,  1,  1,  0,  0, 14, tai);
         for (int i = -10; i < 10; ++i) {
             final double dt = 1.1 * (2 * i - 1);
-            Assert.assertEquals(dt, new FieldAbsoluteDate<T>(field,leapStart, dt, utc).offsetFrom(leapStart, utc).getReal(), 1.0e-10);
-            Assert.assertEquals(dt, new FieldAbsoluteDate<T>(field,leapStart, dt, tai).offsetFrom(leapStart, tai).getReal(), 1.0e-10);
+            Assert.assertEquals(dt, new FieldAbsoluteDate<T>(leapStart,dt, utc).offsetFrom(leapStart, utc).getReal(), 1.0e-10);
+            Assert.assertEquals(dt, new FieldAbsoluteDate<T>(leapStart,dt, tai).offsetFrom(leapStart, tai).getReal(), 1.0e-10);
             Assert.assertEquals(dt, leapStart.shiftedBy(dt).durationFrom(leapStart).getReal(), 1.0e-10);
         }
     }
@@ -540,7 +540,6 @@ public class FieldAbsoluteDateTest {
     }
 
     public <T extends RealFieldElement<T>> void testCCSDSDaySegmented(final Field<T> field) throws OrekitException {
-        FieldAbsoluteDate<T> FAD = new FieldAbsoluteDate<T>(field);
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<T>(field,"2002-05-23T12:34:56.789012345678", TimeScalesFactory.getUTC());
         double lsb = 1.0e-13;
         byte[] timeCCSDSEpoch = new byte[] { 0x3F, 0x55, 0x02, -0x4D, 0x2C, -0x6B, 0x00, -0x44, 0x61, 0x4E };
@@ -550,11 +549,11 @@ public class FieldAbsoluteDateTest {
                 // using CCSDS reference epoch
 
                 FieldAbsoluteDate<T> ccsds1 =
-                    FAD.parseCCSDSDaySegmentedTimeCode((byte) preamble, timeCCSDSEpoch, null);
+                                FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) preamble, timeCCSDSEpoch, null);
                 Assert.assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
             } else {
                 try {
-                    FAD.parseCCSDSDaySegmentedTimeCode((byte) preamble, timeCCSDSEpoch, null);
+                    FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) preamble, timeCCSDSEpoch, null);
                     Assert.fail("an exception should have been thrown");
                 } catch (OrekitException iae) {
                     // expected
@@ -566,7 +565,7 @@ public class FieldAbsoluteDateTest {
         // missing epoch
         byte[] timeJ2000Epoch = new byte[] { 0x03, 0x69, 0x02, -0x4D, 0x2C, -0x6B, 0x00, -0x44, 0x61, 0x4E };
         try {
-            FAD.parseCCSDSDaySegmentedTimeCode((byte) 0x4A, timeJ2000Epoch, null);
+            FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) 0x4A, timeJ2000Epoch, null);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException iae) {
             // expected
@@ -574,13 +573,13 @@ public class FieldAbsoluteDateTest {
 
         // using J2000.0 epoch
         FieldAbsoluteDate<T> ccsds3 =
-            FAD.parseCCSDSDaySegmentedTimeCode((byte) 0x4A, timeJ2000Epoch, DateComponents.J2000_EPOCH);
+                        FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) 0x4A, timeJ2000Epoch, DateComponents.J2000_EPOCH);
         Assert.assertEquals(0, ccsds3.durationFrom(reference).getReal(), lsb / 2);
 
         // limit to microsecond
         byte[] timeMicrosecond = new byte[] { 0x03, 0x69, 0x02, -0x4D, 0x2C, -0x6B, 0x00, 0x0C };
         FieldAbsoluteDate<T> ccsds4 =
-            FAD.parseCCSDSDaySegmentedTimeCode((byte) 0x49, timeMicrosecond, DateComponents.J2000_EPOCH);
+                        FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) 0x49, timeMicrosecond, DateComponents.J2000_EPOCH);
         Assert.assertEquals(-0.345678e-6, ccsds4.durationFrom(reference).getReal(), lsb / 2);
 
     }
@@ -732,7 +731,7 @@ public class FieldAbsoluteDateTest {
 
         //Milliseconds - April 1, 2006, in UTC
         long msOffset = 1143849600000l;
-        final FieldAbsoluteDate<T> ad = new FieldAbsoluteDate<T>(field,epoch, msOffset/1000, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> ad = new FieldAbsoluteDate<T>(epoch,msOffset/1000, TimeScalesFactory.getUTC());
         Assert.assertEquals("2006-04-01T00:00:00.000", ad.toString(utc));
     }
 

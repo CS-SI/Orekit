@@ -32,15 +32,15 @@ import org.orekit.time.FieldTimeStamped;
  * <p>This class finds date events (i.e. occurrence of some predefined dates).</p>
  * <p>As of version 5.1, it is an enhanced date detector:</p>
  * <ul>
- *   <li>it can be defined without prior date ({@link #DateDetector(T, T, TimeStamped...)})</li>
- *   <li>several dates can be added ({@link #addEventDate(FieldAbsoluteDate<T>)})</li>
+ *   <li>it can be defined without prior date ({@link #FieldDateDetector(RealFieldElement, RealFieldElement, FieldTimeStamped...)})</li>
+ *   <li>several dates can be added ({@link #addEventDate(FieldAbsoluteDate)})</li>
  * </ul>
  * <p>The gap between the added dates must be more than the maxCheck.</p>
  * <p>The default implementation behavior is to {@link
- * org.orekit.propagation.events.handlers.FieldEventHandler<T>.Action#STOP stop}
+ * org.orekit.propagation.events.handlers.FieldEventHandler.Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
- * {@link #withHandler(FieldEventHandler<T>)} after construction.</p>
- * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
+ * {@link #withHandler(FieldEventHandler)} after construction.</p>
+ * @see org.orekit.propagation.FieldPropagator#addEventDetector(FieldEventDetector)
  * @author Luc Maisonobe
  * @author Pascal Parraud
  */
@@ -58,11 +58,11 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
 
     /** Build a new instance.
      * <p>First event dates are set here, but others can be
-     * added later with {@link #addEventDate(FieldAbsoluteDate<T>)}.</p>
+     * added later with {@link #addEventDate(FieldAbsoluteDate)}.</p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
      * @param dates list of event dates
-     * @see #addEventDate(FieldAbsoluteDate<T>)
+     * @see #addEventDate(FieldAbsoluteDate)
      */
     @SafeVarargs
     public FieldDateDetector(final T maxCheck, final T threshold, final FieldTimeStamped<T> ... dates) {
@@ -74,7 +74,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * {@link #getMaxCheckInterval() max check interval} is set to 1.0e10, so almost
      * no other date can be added. Tolerance is set to 1.0e-9.</p>
      * @param target target date
-     * @see #addEventDate(FieldAbsoluteDate<T>)
+     * @see #addEventDate(FieldAbsoluteDate)
      */
     public FieldDateDetector(final FieldAbsoluteDate<T> target) {
         this(target.getField().getZero().add(1.0e10), target.getField().getZero().add(1.e-9), target);
@@ -91,7 +91,6 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param dates list of event dates
-     * @since 6.1
      */
     @SafeVarargs
     private FieldDateDetector(final T maxCheck, final T threshold,
@@ -146,7 +145,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * </ul>
      * @param target target date
      * @throws IllegalArgumentException if the date is too close from already defined interval
-     * @see #DateDetector(T, T, TimeStamped...)
+     * @see #FieldDateDetector(RealFieldElement, RealFieldElement, FieldTimeStamped...)
      */
     public void addEventDate(final FieldAbsoluteDate<T> target) throws IllegalArgumentException {
         final boolean increasing;

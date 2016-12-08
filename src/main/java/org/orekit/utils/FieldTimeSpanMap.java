@@ -46,8 +46,8 @@ public class FieldTimeSpanMap<T, D extends RealFieldElement<D>> {
     /** Create a map containing a single object, initially valid throughout the timeline.
      * <p>
      * The real validity of this first entry will be truncated as other
-     * entries are either {@link #addValidBefore(Object, FieldAbsoluteDate<D>)
-     * added before} it or {@link #addValidAfter(Object, FieldAbsoluteDate<D>)
+     * entries are either {@link #addValidBefore(Object, FieldAbsoluteDate)
+     * added before} it or {@link #addValidAfter(Object, FieldAbsoluteDate)
      * added after} it.
      * </p>
      * @param entry entry (initially valid throughout the timeline)
@@ -67,7 +67,7 @@ public class FieldTimeSpanMap<T, D extends RealFieldElement<D>> {
      * <p>
      * The transition dates should be entered only once, either
      * by a call to this method or by a call to {@link #addValidAfter(Object,
-     * FieldAbsoluteDate<D>)}. Repeating a transition date will lead to unexpected
+     * FieldAbsoluteDate)}. Repeating a transition date will lead to unexpected
      * result and is not supported.
      * </p>
      * @param entry entry to add
@@ -109,7 +109,7 @@ public class FieldTimeSpanMap<T, D extends RealFieldElement<D>> {
      * <p>
      * The transition dates should be entered only once, either
      * by a call to this method or by a call to {@link #addValidBefore(Object,
-     * FieldAbsoluteDate<D>)}. Repeating a transition date will lead to unexpected
+     * FieldAbsoluteDate)}. Repeating a transition date will lead to unexpected
      * result and is not supported.
      * </p>
      * @param entry entry to add

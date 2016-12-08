@@ -47,13 +47,13 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-/** Common handling of {@link org.orekit.propagation.Propagator} methods for analytical propagators.
+/** Common handling of {@link org.orekit.propagation.FieldPropagator} methods for analytical propagators.
  * <p>
  * This abstract class allows to provide easily the full set of {@link
- * org.orekit.propagation.Propagator Propagator} methods, including all propagation
+ * org.orekit.propagation.FieldPropagator FieldPropagator} methods, including all propagation
  * modes support and discrete events support for any simple propagation method. Only
- * two methods must be implemented by derived classes: {@link #propagateOrbit(FieldAbsoluteDate<T>)}
- * and {@link #getMass(FieldAbsoluteDate<T>)}. The first method should perform straightforward
+ * two methods must be implemented by derived classes: {@link #propagateOrbit(FieldAbsoluteDate)}
+ * and {@link #getMass(FieldAbsoluteDate)}. The first method should perform straightforward
  * propagation starting from some internally stored initial state up to the specified target date.
  * </p>
  * @author Luc Maisonobe

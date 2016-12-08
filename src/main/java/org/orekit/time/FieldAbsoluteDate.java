@@ -57,10 +57,10 @@ import org.orekit.utils.Constants;
  *   <li><p>location view (mainly for input/output or conversions)</p>
  *   <p>locations represent the coordinate of one event with respect to a
  *   {@link TimeScale time scale}. The related methods are {@link
- *   #FieldAbsoluteDate<T>(DateComponents, TimeComponents, TimeScale)}, {@link
- *   #FieldAbsoluteDate<T>(int, int, int, int, int, double, TimeScale)}, {@link
- *   #FieldAbsoluteDate<T>(int, int, int, TimeScale)}, {@link #FieldAbsoluteDate<T>(Date,
- *   TimeScale)}, {@link #createGPSDate(int, double)}, {@link
+ *   #FieldAbsoluteDate(Field, DateComponents, TimeComponents, TimeScale)}, {@link
+ *   #FieldAbsoluteDate(Field, int, int, int, int, int, double, TimeScale)}, {@link
+ *   #FieldAbsoluteDate(Field, int, int, int, TimeScale)}, {@link #FieldAbsoluteDate(Field,
+ *   Date, TimeScale)}, {@link #createGPSDate(int, RealFieldElement)}, {@link
  *   #parseCCSDSCalendarSegmentedTimeCode(byte, byte[])}, toString(){@link
  *   #toDate(TimeScale)}, {@link #toString(TimeScale) toString(timeScale)},
  *   {@link #toString()}, and {@link #timeScalesOffset}.</p>
@@ -69,9 +69,9 @@ import org.orekit.utils.Constants;
  *   <p>offsets represent either the flow of time between two events
  *   (two instances of the class) or durations. They are counted in seconds,
  *   are continuous and could be measured using only a virtually perfect stopwatch.
- *   The related methods are {@link #FieldAbsoluteDate<T>(FieldAbsoluteDate, double)},
- *   {@link #parseCCSDSUnsegmentedTimeCode(byte, byte, byte[], FieldAbsoluteDate)},
- *   {@link #parseCCSDSDaySegmentedTimeCode(byte, byte[], DateComponents)},
+ *   The related methods are {@link #FieldAbsoluteDate(FieldAbsoluteDate, double)},
+ *   {@link #parseCCSDSUnsegmentedTimeCode(Field, byte, byte, byte[], FieldAbsoluteDate)},
+ *   {@link #parseCCSDSDaySegmentedTimeCode(Field, byte, byte[], DateComponents)},
  *   {@link #durationFrom(FieldAbsoluteDate)}, {@link #compareTo(FieldAbsoluteDate)}, {@link #equals(Object)}
  *   and {@link #hashCode()}.</p>
  *   </li>
@@ -79,14 +79,14 @@ import org.orekit.utils.Constants;
  * <p>
  * A few reference epochs which are commonly used in space systems have been defined. These
  * epochs can be used as the basis for offset computation. The supported epochs are:
- * {@link #JULIAN_EPOCH}, {@link #MODIFIED_JULIAN_EPOCH}, {@link #FIFTIES_EPOCH},
- * {@link #CCSDS_EPOCH}, {@link #GALILEO_EPOCH}, {@link #GPS_EPOCH}, {@link #J2000_EPOCH},
- * {@link #JAVA_EPOCH}. There are also two factory methods {@link #createJulianEpoch(double)}
- * and {@link #createBesselianEpoch(double)} that can be used to compute other reference
- * epochs like J1900.0 or B1950.0.
+ * {@link #getJulianEpoch(Field)}, {@link #getModifiedJulianEpoch(Field)}, {@link #getFiftiesEpoch(Field)},
+ * {@link #getCCSDSEpoch(Field)}, {@link #getGalileoEpoch(Field)}, {@link #getGPSEpoch(Field)},
+ * {@link #getJ2000Epoch(Field)}, {@link #getJavaEpoch(Field)}. There are also two factory methods
+ * {@link #createJulianEpoch(RealFieldElement)} and {@link #createBesselianEpoch(RealFieldElement)}
+ * that can be used to compute other reference epochs like J1900.0 or B1950.0.
  * In addition to these reference epochs, two other constants are defined for convenience:
- * {@link #PAST_INFINITY} and {@link #FUTURE_INFINITY}, which can be used either as dummy
- * dates when a date is not yet initialized, or for initialization of loops searching for
+ * {@link #getPastInfinity(Field)} and {@link #getFutureInfinity(Field)}, which can be used either
+ * as dummy dates when a date is not yet initialized, or for initialization of loops searching for
  * a min or max date.
  * </p>
  * <p>
@@ -105,7 +105,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
         new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
 
     /** Reference epoch in seconds from 2000-01-01T12:00:00 TAI.
-     * <p>Beware, it is not {@link #J2000_EPOCH} since it is in TAI and not in TT.</p> */
+     * <p>Beware, it is not {@link #getJ2000Epoch(Field)} since it is in TAI and not in TT.</p> */
     private final long epoch;
 
     /** Offset from the reference epoch in seconds. */
@@ -124,7 +124,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
         this.offset = field.getZero().add(date.durationFrom(REFERENCE_ZERO.shiftedBy(epoch)));
     }
 
-    /** Create an instance with a default value ({@link #J2000_EPOCH}).
+    /** Create an instance with a default value ({@link #getJ2000Epoch(Field)}).
      * @param field field used by default
      */
     public FieldAbsoluteDate(final Field<T> field) {
@@ -366,16 +366,14 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * time scale.</p>
      * <p>This constructor is the reverse of the {@link #offsetFrom(FieldAbsoluteDate,
      * TimeScale)} method.</p>
-     * @param field field utilized as default
      * @param reference reference instant
      * @param apparentOffset apparent clock offset from the reference instant
      * (difference between two readings in the specified time scale)
      * @param timeScale time scale with respect to which the offset is defined
      * @see #offsetFrom(FieldAbsoluteDate, TimeScale)
      */
-    public FieldAbsoluteDate(final Field<T> field, final FieldAbsoluteDate<T> reference, final double apparentOffset,
-                             final TimeScale timeScale) {
-        this(field, new DateTimeComponents(reference.getComponents(timeScale), apparentOffset),
+    public FieldAbsoluteDate(final FieldAbsoluteDate<T> reference, final double apparentOffset, final TimeScale timeScale) {
+        this(reference.field, new DateTimeComponents(reference.getComponents(timeScale), apparentOffset),
              timeScale);
     }
 
@@ -399,7 +397,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * not signaled in {@code preambleField1})
      * @param timeField byte array containing the time code
      * @param agencyDefinedEpoch reference epoch, ignored if the preamble field
-     * specifies the {@link #CCSDS_EPOCH CCSDS reference epoch} is used (and hence
+     * specifies the {@link #getCCSDSEpoch(Field) CCSDS reference epoch} is used (and hence
      * may be null in this case)
      * @return an instance corresponding to the specified date
      * @throws OrekitException if preamble is inconsistent with Unsegmented Time Code,
@@ -464,19 +462,22 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * CCSDS Day Segmented Time Code is defined in the blue book:
      * CCSDS Time Code Format (CCSDS 301.0-B-4) published in November 2010
      * </p>
+     * @param field field for the components
      * @param preambleField field specifying the format, often not transmitted in
      * data interfaces, as it is constant for a given data interface
      * @param timeField byte array containing the time code
      * @param agencyDefinedEpoch reference epoch, ignored if the preamble field
-     * specifies the {@link #CCSDS_EPOCH CCSDS reference epoch} is used (and hence
+     * specifies the {@link #getCCSDSEpoch(Field) CCSDS reference epoch} is used (and hence
      * may be null in this case)
      * @return an instance corresponding to the specified date
      * @throws OrekitException if preamble is inconsistent with Day Segmented Time Code,
      * or if it is inconsistent with time field, or if agency epoch is needed but not provided,
      * or it UTC time scale cannot be retrieved
+     * @param <T> the type of the field elements
      */
-    public FieldAbsoluteDate<T> parseCCSDSDaySegmentedTimeCode(final byte preambleField, final byte[] timeField,
-                                                              final DateComponents agencyDefinedEpoch)
+    public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> parseCCSDSDaySegmentedTimeCode(final Field<T> field,
+                                                                                                      final byte preambleField, final byte[] timeField,
+                                                                                                      final DateComponents agencyDefinedEpoch)
         throws OrekitException {
 
         // time code identification
@@ -644,9 +645,9 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
     /** Build an instance corresponding to a GPS date.
      * <p>GPS dates are provided as a week number starting at
-     * {@link #GPS_EPOCH GPS epoch} and as a number of milliseconds
+     * {@link #getGPSEpoch(Field) GPS epoch} and as a number of milliseconds
      * since week start.</p>
-     * @param weekNumber week number since {@link #GPS_EPOCH GPS epoch}
+     * @param weekNumber week number since {@link #getGPSEpoch(Field) GPS epoch}
      * @param milliInWeek number of milliseconds since week start
      * @return a new instant
      * @param <T> the type of the field elements
@@ -671,8 +672,8 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * </p>
      * @param julianEpoch Julian epoch, like 2000.0 for defining the classical reference J2000.0
      * @return a new instant
-     * @see #J2000_EPOCH
-     * @see #createBesselianEpoch(double)
+     * @see #getJ2000Epoch(Field)
+     * @see #createBesselianEpoch(RealFieldElement)
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createJulianEpoch(final T julianEpoch) {
@@ -693,7 +694,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * </p>
      * @param besselianEpoch Besselian epoch, like 1950 for defining the classical reference B1950.0
      * @return a new instant
-     * @see #createJulianEpoch(double)
+     * @see #createJulianEpoch(RealFieldElement)
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createBesselianEpoch(final T besselianEpoch) {
@@ -709,7 +710,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * in year -4713 as can be seen in other documents or programs that obey
      * a different convention (for example the <code>convcal</code> utility).</p>
      * @param field field for the components
-     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#JULIAN EPOCH}
+     * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#JULIAN_EPOCH}
      * @param <T> the type of the field elements
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> getJulianEpoch(final Field<T> field) {
@@ -763,8 +764,8 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
 
     /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
      * @param field field for the components
-     * @see #createJulianEpoch(double)
-     * @see #createBesselianEpoch(double)
+     * @see #createJulianEpoch(RealFieldElement)
+     * @see #createBesselianEpoch(RealFieldElement)
      * @return FieldAbsoluteDate<T> FieldAbsoluteDate<T> representing {@link AbsoluteDate#J2000_EPOCH}
      * @param <T> the type of the field elements
      */
@@ -829,13 +830,13 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * as calling {@link #offsetFrom(FieldAbsoluteDate, TimeScale)}
      * with a second argument set to one of the regular scales cited
      * above.</p>
-     * <p>This method is the reverse of the {@link #FieldAbsoluteDate<T>(FieldAbsoluteDate,
+     * <p>This method is the reverse of the {@link #FieldAbsoluteDate(FieldAbsoluteDate,
      * double)} constructor.</p>
      * @param instant instant to subtract from the instance
      * @return offset in seconds between the two instants (positive
      * if the instance is posterior to the argument)
      * @see #offsetFrom(FieldAbsoluteDate, TimeScale)
-     * @see #FieldAbsoluteDate<T>(FieldAbsoluteDate, double)
+     * @see #FieldAbsoluteDate(FieldAbsoluteDate, double)
      */
     public T durationFrom(final FieldAbsoluteDate<T> instant) {
         return offset.subtract(instant.offset).add(epoch - instant.epoch);
@@ -852,13 +853,13 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * as calling {@link #offsetFrom(FieldAbsoluteDate, TimeScale)}
      * with a second argument set to one of the regular scales cited
      * above.</p>
-     * <p>This method is the reverse of the {@link #FieldAbsoluteDate<T>(FieldAbsoluteDate,
+     * <p>This method is the reverse of the {@link #FieldAbsoluteDate(FieldAbsoluteDate,
      * double)} constructor.</p>
      * @param instant instant to subtract from the instance
      * @return offset in seconds between the two instants (positive
      * if the instance is posterior to the argument)
      * @see #offsetFrom(FieldAbsoluteDate, TimeScale)
-     * @see #FieldAbsoluteDate<T>(FieldAbsoluteDate, double)
+     * @see #FieldAbsoluteDate(FieldAbsoluteDate, double)
      */
     public T durationFrom(final AbsoluteDate instant) {
         return offset.add(REFERENCE_ZERO.durationFrom(instant)).add(epoch);
@@ -876,7 +877,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * and 2006-01-01T00:00:00 is 1 second, but the physical duration
      * of the corresponding time interval as returned by the {@link
      * #durationFrom(FieldAbsoluteDate)} method is 2 seconds.</p>
-     * <p>This method is the reverse of the {@link #FieldAbsoluteDate<T>(FieldAbsoluteDate,
+     * <p>This method is the reverse of the {@link #FieldAbsoluteDate(FieldAbsoluteDate,
      * double, TimeScale)} constructor.</p>
      * @param instant instant to subtract from the instance
      * @param timeScale time scale with respect to which the offset should
@@ -884,7 +885,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @return apparent clock offset in seconds between the two instants
      * (positive if the instance is posterior to the argument)
      * @see #durationFrom(FieldAbsoluteDate)
-     * @see #FieldAbsoluteDate<T>(FieldAbsoluteDate, double, TimeScale)
+     * @see #FieldAbsoluteDate(FieldAbsoluteDate, double, TimeScale)
      */
     public T offsetFrom(final FieldAbsoluteDate<T> instant, final TimeScale timeScale) {
         final long   elapsedDurationA = epoch - instant.epoch;
@@ -901,9 +902,9 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @param scale2 second time scale
      * @return offset in seconds between the two time scales at the
      * current instant
-     * Still not implemented the Field in the TimeScale TODO
      */
     public double timeScalesOffset(final TimeScale scale1, final TimeScale scale2) {
+        // TODO still not implemented the Field in the TimeScale
         return scale1.offsetFromTAI(toAbsoluteDate()) - scale2.offsetFromTAI(toAbsoluteDate());
     }
 
@@ -923,9 +924,10 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     /** Split the instance into date/time components.
      * @param timeScale time scale to use
      * @return date/time components
-     *Still not implemented the Field in the TimeScale TODO
      */
     public DateTimeComponents getComponents(final TimeScale timeScale) {
+
+        // TODO still not implemented the Field in the TimeScale
 
         // compute offset from 2000-01-01T00:00:00 in specified time scale exactly,
         // using Møller-Knuth TwoSum algorithm without branching

@@ -46,7 +46,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-/** This class propagates {@link org.orekit.orbits.FieldOrbit<T> orbits} using
+/** This class propagates {@link org.orekit.orbits.FieldOrbit orbits} using
  * numerical integration.
  * <p>Numerical propagation is much more accurate than analytical propagation
  * like for example {@link org.orekit.propagation.analytical.KeplerianPropagator
@@ -58,7 +58,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * and propagation time.</p>
  * <p>The configuration parameters that can be set are:</p>
  * <ul>
- *   <li>the initial spacecraft state ({@link #setInitialState(FieldSpacecraftState<T>)})</li>
+ *   <li>the initial spacecraft state ({@link #setInitialState(FieldSpacecraftState)})</li>
  *   <li>the central attraction coefficient ({@link #setMu(double)})</li>
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
@@ -67,15 +67,15 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngle)}),
- *   <li>whether {@link org.orekit.propagation.integration.AdditionalEquations additional equations}
- *   (for example {@link PartialDerivativesEquations Jacobians}) should be propagated along with orbital state
- *   ({@link #addAdditionalEquations(org.orekit.propagation.integration.AdditionalEquations)}),
+ *   <li>whether {@link org.orekit.propagation.integration.FieldAdditionalEquations additional equations}
+ *   should be propagated along with orbital state
+ *   ({@link #addAdditionalEquations(org.orekit.propagation.integration.FieldAdditionalEquations)}),
  *   <li>the discrete events that should be triggered during propagation
- *   ({@link #addEventDetector(FieldEventDetector<T>)},
+ *   ({@link #addEventDetector(FieldEventDetector)},
  *   {@link #clearEventsDetectors()})</li>
  *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- *   {@link #setMasterMode(double, org.orekit.propagation.sampling.OrekitFixedStepHandler)},
- *   {@link #setMasterMode(org.orekit.propagation.sampling.OrekitStepHandler)},
+ *   {@link #setMasterMode(RealFieldElement, org.orekit.propagation.sampling.FieldOrekitFixedStepHandler)},
+ *   {@link #setMasterMode(org.orekit.propagation.sampling.FieldOrekitStepHandler)},
  *   {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
@@ -93,42 +93,43 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * <p>The state that is seen by the integrator is a simple seven elements double array.
  * The six first elements are either:
  * <ul>
- *   <li>the {@link org.orekit.orbits.EquinoctialOrbit equinoctial orbit parameters} (a, e<sub>x</sub>,
+ *   <li>the {@link org.orekit.orbits.FieldEquinoctialOrbit equinoctial orbit parameters} (a, e<sub>x</sub>,
  *   e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, λ<sub>M</sub> or λ<sub>E</sub>
  *   or λ<sub>v</sub>) in meters and radians,</li>
- *   <li>the {@link org.orekit.orbits.KeplerianOrbit Keplerian orbit parameters} (a, e, i, ω, Ω,
+ *   <li>the {@link org.orekit.orbits.FieldKeplerianOrbit Keplerian orbit parameters} (a, e, i, ω, Ω,
  *   M or E or v) in meters and radians,</li>
- *   <li>the {@link org.orekit.orbits.CircularOrbit circular orbit parameters} (a, e<sub>x</sub>, e<sub>y</sub>, i,
+ *   <li>the {@link org.orekit.orbits.FieldCircularOrbit circular orbit parameters} (a, e<sub>x</sub>, e<sub>y</sub>, i,
  *   Ω, α<sub>M</sub> or α<sub>E</sub> or α<sub>v</sub>) in meters
  *   and radians,</li>
- *   <li>the {@link org.orekit.orbits.CartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
+ *   <li>the {@link org.orekit.orbits.FieldCartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
  *   v<sub>y</sub>, v<sub>z</sub>) in meters and meters per seconds.
  * </ul>
  * The last element is the mass in kilograms.
  * </p>
- * <p>The following code snippet shows a typical setting for Low Earth FieldOrbit<T> propagation in
+ * <p>The following code snippet shows a typical setting for Low Earth Orbit propagation in
  * equinoctial parameters and true longitude argument:</p>
  * <pre>
- * final double dP       = 0.001;
- * final double minStep  = 0.001;
- * final double maxStep  = 500;
- * final double initStep = 60;
- * final double[][] tolerance = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
- * AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]);
+ * final T          zero      = field.getZero();
+ * final T          dP        = zero.add(0.001);
+ * final T          minStep   = zero.add(0.001);
+ * final T          maxStep   = zero.add(500);
+ * final T          initStep  = zero.add(60);
+ * final double[][] tolerance = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+ * AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
- * propagator = new NumericalPropagator(integrator);
+ * propagator = new FieldNumericalPropagator<>(field, integrator);
  * </pre>
  * <p>The same propagator can be reused for several orbit extrapolations, by resetting
  * the initial state without modifying the other configuration parameters. However, the
  * same instance cannot be used simultaneously by different threads, the class is <em>not</em>
  * thread-safe.</p>
 
- * @see FieldSpacecraftState<T>
+ * @see FieldSpacecraftState
  * @see ForceModel
- * @see org.orekit.propagation.sampling.OrekitStepHandler
- * @see org.orekit.propagation.sampling.OrekitFixedStepHandler
- * @see org.orekit.propagation.integration.IntegratedEphemeris
- * @see TimeDerivativesEquations
+ * @see org.orekit.propagation.sampling.FieldOrekitStepHandler
+ * @see org.orekit.propagation.sampling.FieldOrekitFixedStepHandler
+ * @see org.orekit.propagation.integration.FieldIntegratedEphemeris
+ * @see FieldTimeDerivativesEquations
  *
  * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe

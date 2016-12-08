@@ -17,9 +17,9 @@
 /**
  * Top level package for various parsers.
  *
- * <p>The interfaces for ephemeris file parsers and writers are in the {@link general}
+ * <p>The interfaces for ephemeris file parsers and writers are in the {@link org.orekit.files.general}
  * package. Specifically, see {@link org.orekit.files.general.EphemerisFile
- * EphemerisFile}. Each format is handled by a separate sub-package: {@link ccsds}, {@link
- * sp3}.</p>
+ * EphemerisFile}. Each format is handled by a separate sub-package: {@link org.orekit.files.ccsds}, {@link
+ * org.orekit.files.sp3}.</p>
  */
 package org.orekit.files;

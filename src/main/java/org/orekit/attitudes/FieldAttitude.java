@@ -218,7 +218,7 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
         return orientation.getRotationAcceleration();
     }
 
-    /** {@inheritDoc}
+    /** Get an interpolated instance.
      * <p>
      * The interpolated instance is created by polynomial Hermite interpolation
      * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
@@ -229,6 +229,9 @@ public class FieldAttitude<T extends RealFieldElement<T>> {
      * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
      * and numerical problems (including NaN appearing).
      * </p>
+     * @param interpolationDate interpolation date
+     * @param sample sample points on which interpolation should be done
+     * @return a new instance, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
      */
     public FieldAttitude<T> interpolate(final FieldAbsoluteDate<T> interpolationDate, final Collection<FieldAttitude<T>> sample)

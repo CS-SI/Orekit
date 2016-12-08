@@ -25,9 +25,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** This class maps between raw double elements and {@link FieldSpacecraftState<T>} instances.
+/** This class maps between raw double elements and {@link FieldSpacecraftState} instances.
  * @author Luc Maisonobe
- * @since 6.0
  */
 public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
 
@@ -52,7 +51,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
     /** Simple constructor.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #get OrbitType() propagation orbit type}
+     * #getOrbitType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
      * in {@link  OrbitType#CARTESIAN Cartesian} parameters.
      * </p>

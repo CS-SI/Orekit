@@ -33,7 +33,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
-/** Simple keplerian orbit propagator.
+/** Simple Keplerian orbit propagator.
  * @see Orbit
  * @author Guylaine Prat
  */

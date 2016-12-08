@@ -222,7 +222,9 @@ public class SP3File implements EphemerisFile {
         this.type = fileType;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the {@link TimeSystem} used to time-stamp position entries.
+     * @return the {@link TimeSystem} of the orbit file
+     */
     public TimeSystem getTimeSystem() {
         return timeSystem;
     }
@@ -248,7 +250,9 @@ public class SP3File implements EphemerisFile {
         this.dataUsed = data;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the start epoch of the orbit file.
+     * @return the start epoch
+     */
     public AbsoluteDate getEpoch() {
         return epoch;
     }
@@ -316,7 +320,9 @@ public class SP3File implements EphemerisFile {
         this.dayFraction = fraction;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the time interval between epochs (in seconds).
+     * @return the time interval between epochs
+     */
     public double getEpochInterval() {
         return epochInterval;
     }
@@ -328,7 +334,9 @@ public class SP3File implements EphemerisFile {
         this.epochInterval = interval;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the number of epochs contained in this orbit file.
+     * @return the number of epochs
+     */
     public int getNumberOfEpochs() {
         return numberOfEpochs;
     }
@@ -340,7 +348,9 @@ public class SP3File implements EphemerisFile {
         this.numberOfEpochs = epochCount;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the coordinate system of the entries in this orbit file.
+     * @return the coordinate system
+     */
     public String getCoordinateSystem() {
         return coordinateSystem;
     }
@@ -394,7 +404,9 @@ public class SP3File implements EphemerisFile {
         return Collections.unmodifiableMap(satellites);
     }
 
-    /** {@inheritDoc} */
+    /** Get the number of satellites contained in this orbit file.
+     * @return the number of satellites
+     */
     public int getSatelliteCount() {
         return satellites.size();
     }
@@ -416,7 +428,12 @@ public class SP3File implements EphemerisFile {
         }
     }
 
-    /** {@inheritDoc} */
+    /** Tests whether a satellite with the given id is contained in this orbit
+     * file.
+     * @param satId the satellite id
+     * @return {@code true} if the satellite is contained in the file,
+     *         {@code false} otherwise
+     */
     public boolean containsSatellite(final String satId) {
         return satellites.containsKey(satId);
     }

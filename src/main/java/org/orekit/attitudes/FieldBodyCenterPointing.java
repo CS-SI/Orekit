@@ -43,16 +43,6 @@ public class FieldBodyCenterPointing<T extends RealFieldElement<T>> extends Fiel
     private final Ellipsoid ellipsoid;
 
     /** Creates new instance.
-     * @param bodyFrame Body frame
-     * @deprecated as of 7.1, replaced with {@link #BodyCenterPointing(Frame, Ellipsoid)}
-     */
-    @Deprecated
-    public FieldBodyCenterPointing(final Frame bodyFrame) {
-        super(bodyFrame);
-        this.ellipsoid = new Ellipsoid(bodyFrame, 0.0, 0.0, 0.0);
-    }
-
-    /** Creates new instance.
      * @param inertialFrame frame in which orbital velocities are computed
      * @param shape Body shape
      * @exception OrekitException if the frame specified is not a pseudo-inertial frame
