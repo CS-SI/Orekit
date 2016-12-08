@@ -104,6 +104,12 @@
     <Local name="HP" />
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
+  <Match>
+    <Class name="~.*\.OneAxisEllipsoid$"/>
+    <Method name="transform" />
+    <Local name="epsPhi" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
 
   <!-- the approximate constants do belong to the models -->
   <Match>
@@ -174,6 +180,14 @@
     <Class name="~.*\.DirectoryCrawler$"/>
     <Method name="feed"   params="java.util.regex.Pattern,org.orekit.data.DataLoader,java.io.File" returns="boolean" />
     <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" />
+  </Match>
+
+  <!-- the following is a false positive as the inverseCrossProducts method either
+        returns eatly, throws an exception or sets the omega variable to non-null  -->
+  <Match>
+    <Class name="~.*\.FieldAngularCoordinates$"/>
+    <Method name="inverseCrossProducts" />
+    <Bug pattern="NP_NULL_ON_SOME_PATH_EXCEPTION" />
   </Match>
 
   <!-- the following is a false positive as the Direction.next() always return non-null

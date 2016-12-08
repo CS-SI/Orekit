@@ -16,8 +16,6 @@
  */
 package org.orekit.utils;
 
-import java.io.Serializable;
-
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.time.TimeShiftable;
@@ -39,10 +37,7 @@ import org.orekit.time.TimeShiftable;
  * @see PVCoordinates
  */
 public class FieldPVCoordinates<T extends RealFieldElement<T>>
-    implements TimeShiftable<FieldPVCoordinates<T>>, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140411L;
+    implements TimeShiftable<FieldPVCoordinates<T>> {
 
     /** The position. */
     private final FieldVector3D<T> position;

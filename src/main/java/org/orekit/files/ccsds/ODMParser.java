@@ -16,20 +16,19 @@
  */
 package org.orekit.files.ccsds;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Base class for all CCSDS Orbit Data Message parsers.
@@ -198,24 +197,11 @@ public abstract class ODMParser {
      */
     public ODMFile parse(final String fileName)
         throws OrekitException {
-
-        InputStream stream = null;
-
-        try {
-            stream = new FileInputStream(fileName);
+        try (InputStream stream = new FileInputStream(fileName)) {
             return parse(stream, fileName);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException e) {
-                // ignore
-            }
         }
-
     }
 
     /** Parse a CCSDS Orbit Data Message.

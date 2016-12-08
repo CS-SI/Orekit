@@ -16,7 +16,6 @@
  */
 package org.orekit.files.sp3;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -39,10 +38,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Thomas Neidhart
  * @author Evan Ward
  */
-public class SP3File implements EphemerisFile, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 3333652174843017655L;
+public class SP3File implements EphemerisFile {
 
     /** File type indicator. */
     public enum SP3FileType {
