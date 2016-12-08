@@ -121,7 +121,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         // positions match perfectly
         Assert.assertEquals(0.0,
-                            FieldVector3D.distance(initialOrbit.getFieldPVCoordinates().getPosition(),
+                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()).getReal(),
                             1.0e-8);
 
@@ -136,7 +136,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // fit is used to check initialization
 
         Assert.assertEquals(0.137,
-                            FieldVector3D.distance(initialOrbit.getFieldPVCoordinates().getVelocity(),
+                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-3);
         Assert.assertEquals(125.2, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
@@ -171,7 +171,7 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         // positions match perfectly
         Assert.assertEquals(0.0,
-                            FieldVector3D.distance(initialOrbit.getFieldPVCoordinates().getPosition(),
+                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()).getReal(),
                             3.0e-8);
 
@@ -185,7 +185,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         // This is shown in the testInitializationCorrectness() where a numerical
         // fit is used to check initialization
         Assert.assertEquals(0.137,
-                            FieldVector3D.distance(initialOrbit.getFieldPVCoordinates().getVelocity(),
+                            FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-3);
         Assert.assertEquals(126.8, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
@@ -660,9 +660,9 @@ public class FieldEcksteinHechlerPropagatorTest {
                                   propagated.getFrame(),
                                   propagated.getDate(),
                                   propagated.getMu());
-        FieldVector3D<T> keplerianP    = keplerian.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> keplerianV    = keplerian.getFieldPVCoordinates().getVelocity();
-        FieldVector3D<T> keplerianA    = keplerian.getFieldPVCoordinates().getAcceleration();
+        FieldVector3D<T> keplerianP    = keplerian.getPVCoordinates().getPosition();
+        FieldVector3D<T> keplerianV    = keplerian.getPVCoordinates().getVelocity();
+        FieldVector3D<T> keplerianA    = keplerian.getPVCoordinates().getAcceleration();
 
         // perturbed orbit position should be similar to Keplerian orbit position
         Assert.assertEquals(0.0, FieldVector3D.distance(referenceP, computedP).getReal(), 1.0e-15);

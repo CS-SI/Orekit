@@ -497,8 +497,8 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T[][] jacobian = MathArrays.buildArray(field, 6, 6);
 
         // compute various intermediate parameters
-        final FieldVector3D<T> position = getFieldPVCoordinates().getPosition();
-        final FieldVector3D<T> velocity = getFieldPVCoordinates().getVelocity();
+        final FieldVector3D<T> position = getPVCoordinates().getPosition();
+        final FieldVector3D<T> velocity = getPVCoordinates().getVelocity();
         final T r2         = position.getNormSq();
         final T r          = r2.sqrt();
         final T r3         = r.multiply(r2);

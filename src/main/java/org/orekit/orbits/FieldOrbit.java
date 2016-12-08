@@ -303,7 +303,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
      * @return FieldPVCoordinates in the definition frame
      * @see #getPVCoordinates(Frame)
      */
-    public TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates() {
+    public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
         if (FieldPVCoordinates == null) {
             FieldPVCoordinates = initFieldPVCoordinates();
 

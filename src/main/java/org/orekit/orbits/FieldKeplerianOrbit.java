@@ -290,7 +290,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param op orbital parameters to copy
      */
     public FieldKeplerianOrbit(final FieldOrbit<T> op) {
-        this(op.getFieldPVCoordinates(), op.getFrame(), op.getDate(), op.getMu());
+        this(op.getPVCoordinates(), op.getFrame(), op.getDate(), op.getMu());
     }
 
     /** {@inheritDoc} */
@@ -761,7 +761,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T[][] jacobian = MathArrays.buildArray(getA().getField(), 6, 6);
 
         // compute various intermediate parameters
-        final FieldPVCoordinates<T> pvc = getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pvc = getPVCoordinates();
         final FieldVector3D<T> position = pvc.getPosition();
         final FieldVector3D<T> velocity = pvc.getVelocity();
         final FieldVector3D<T> momentum = pvc.getMomentum();
@@ -899,7 +899,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T[][] jacobian = MathArrays.buildArray(getA().getField(), 6, 6);
 
         // compute various intermediate parameters
-        final FieldPVCoordinates<T> pvc = getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pvc = getPVCoordinates();
         final FieldVector3D<T> position = pvc.getPosition();
         final FieldVector3D<T> velocity = pvc.getVelocity();
         final FieldVector3D<T> momentum = pvc.getMomentum();

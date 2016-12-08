@@ -148,8 +148,8 @@ public class FieldEquinoctialParametersTest {
             new FieldEquinoctialOrbit<T>(zero.add(42166.712),zero.add( 0.5), zero.add(-0.5), hx, hy,
                                  zero.add(5.300), PositionAngle.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
-        FieldVector3D<T> pos = equi.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> vit = equi.getFieldPVCoordinates().getVelocity();
+        FieldVector3D<T> pos = equi.getPVCoordinates().getPosition();
+        FieldVector3D<T> vit = equi.getPVCoordinates().getVelocity();
 
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<T>(pos,vit);
 
@@ -183,8 +183,8 @@ public class FieldEquinoctialParametersTest {
             new FieldEquinoctialOrbit<T>(zero.add(42166.712), zero.add(0.1e-10), zero.add(-0.1e-10), hx, hy,
                             zero.add(5.300), PositionAngle.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
-        FieldVector3D<T> posCir = equiCir.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> vitCir = equiCir.getFieldPVCoordinates().getVelocity();
+        FieldVector3D<T> posCir = equiCir.getPVCoordinates().getPosition();
+        FieldVector3D<T> vitCir = equiCir.getPVCoordinates().getVelocity();
 
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<T>(posCir,vitCir);
 
@@ -219,8 +219,8 @@ public class FieldEquinoctialParametersTest {
                         new FieldEquinoctialOrbit<T>(zero.add(42166.712), zero.add(-7.900e-06), zero.add(1.100e-04), hx, hy,
                                         zero.add(5.300), PositionAngle.MEAN,
                                                   FramesFactory.getEME2000(), date, mu);
-        FieldVector3D<T> pos = equi.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> vit = equi.getFieldPVCoordinates().getVelocity();
+        FieldVector3D<T> pos = equi.getPVCoordinates().getPosition();
+        FieldVector3D<T> vit = equi.getPVCoordinates().getVelocity();
 
         // verif of 1/a = 2/X - V2/mu
         T oneovera = (pos.getNorm().reciprocal().multiply(2)).subtract(vit.getNorm().multiply(vit.getNorm()).divide(mu));
@@ -400,11 +400,11 @@ public class FieldEquinoctialParametersTest {
         T na = a.reciprocal().multiply(p.getMu()).sqrt();
 
         Assert.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(),
-                            p.getFieldPVCoordinates().getPosition().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(p.getFieldPVCoordinates().getPosition().getNorm().getReal()));
+                            p.getPVCoordinates().getPosition().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getPosition().getNorm().getReal()));
         Assert.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                            p.getFieldPVCoordinates().getVelocity().getNorm().getReal(),
-                            Utils.epsilonTest * FastMath.abs(p.getFieldPVCoordinates().getVelocity().getNorm().getReal()));
+                            p.getPVCoordinates().getVelocity().getNorm().getReal(),
+                            Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm().getReal()));
 
         // circular and equatorial orbit
         FieldEquinoctialOrbit<T> pCirEqua =
@@ -422,12 +422,12 @@ public class FieldEquinoctialParametersTest {
         a = pCirEqua.getA();
         na = a.reciprocal().multiply(p.getMu()).sqrt();
 
-        Assert.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(), pCirEqua.getFieldPVCoordinates().getPosition()
+        Assert.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(), pCirEqua.getPVCoordinates().getPosition()
                             .getNorm().getReal(), Utils.epsilonTest
-                            * FastMath.abs(pCirEqua.getFieldPVCoordinates().getPosition().getNorm().getReal()));
+                            * FastMath.abs(pCirEqua.getPVCoordinates().getPosition().getNorm().getReal()));
         Assert.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                            pCirEqua.getFieldPVCoordinates().getVelocity().getNorm().getReal(), Utils.epsilonTest
-                            * FastMath.abs(pCirEqua.getFieldPVCoordinates().getVelocity().getNorm().getReal()));
+                            pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal(), Utils.epsilonTest
+                            * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal()));
     }
 
     public <T extends RealFieldElement<T>>  void testGeometry(Field<T> field) {
@@ -444,9 +444,9 @@ public class FieldEquinoctialParametersTest {
                             zero.add(0.67), PositionAngle.TRUE,
                                       FramesFactory.getEME2000(), date, mu);
 
-        FieldVector3D<T> position = p.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> velocity = p.getFieldPVCoordinates().getVelocity();
-        FieldVector3D<T> momentum = p.getFieldPVCoordinates().getMomentum().normalize();
+        FieldVector3D<T> position = p.getPVCoordinates().getPosition();
+        FieldVector3D<T> velocity = p.getPVCoordinates().getVelocity();
+        FieldVector3D<T> momentum = p.getPVCoordinates().getMomentum().normalize();
 
         T apogeeRadius = p.getA().multiply(p.getE().add(1.0));
         T perigeeRadius = p.getA().multiply(one.subtract(p.getE()));
@@ -455,7 +455,7 @@ public class FieldEquinoctialParametersTest {
             p = new FieldEquinoctialOrbit<T>(p.getA() ,p.getEquinoctialEx(),
                                           p.getEquinoctialEy() , p.getHx(), p.getHy() , lv , PositionAngle.TRUE,
                                           p.getFrame(), p.getDate(), p.getMu());
-            position = p.getFieldPVCoordinates().getPosition();
+            position = p.getPVCoordinates().getPosition();
 
             // test if the norm of the position is in the range [perigee radius,
             // apogee radius]
@@ -464,7 +464,7 @@ public class FieldEquinoctialParametersTest {
             Assert.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = p.getFieldPVCoordinates().getVelocity();
+            velocity = p.getPVCoordinates().getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and
@@ -483,8 +483,8 @@ public class FieldEquinoctialParametersTest {
                             zero.add(0.67), PositionAngle.TRUE,
                                       FramesFactory.getEME2000(), date, mu);
 
-        position = pCirEqua.getFieldPVCoordinates().getPosition();
-        velocity = pCirEqua.getFieldPVCoordinates().getVelocity();
+        position = pCirEqua.getPVCoordinates().getPosition();
+        velocity = pCirEqua.getPVCoordinates().getVelocity();
 
         momentum = FieldVector3D.crossProduct(position, velocity).normalize();
 
@@ -498,7 +498,7 @@ public class FieldEquinoctialParametersTest {
             pCirEqua = new FieldEquinoctialOrbit<T>(pCirEqua.getA() ,pCirEqua.getEquinoctialEx(),
                                                  pCirEqua.getEquinoctialEy() , pCirEqua.getHx(), pCirEqua.getHy() , lv , PositionAngle.TRUE,
                                                  pCirEqua.getFrame(), p.getDate(), p.getMu());
-            position = pCirEqua.getFieldPVCoordinates().getPosition();
+            position = pCirEqua.getPVCoordinates().getPosition();
 
             // test if the norm pf the position is in the range [perigee radius,
             // apogee radius]
@@ -506,7 +506,7 @@ public class FieldEquinoctialParametersTest {
             Assert.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (-perigeeRadius.getReal() * Utils.epsilonTest));
 
             position = position.normalize();
-            velocity = pCirEqua.getFieldPVCoordinates().getVelocity();
+            velocity = pCirEqua.getPVCoordinates().getVelocity();
             velocity = velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and
@@ -531,14 +531,14 @@ public class FieldEquinoctialParametersTest {
                                       FramesFactory.getEME2000(), date, mu);
 
         // arbitrary orthogonal vectors in the orbital plane
-        FieldVector3D<T> u = p.getFieldPVCoordinates().getMomentum().orthogonal();
-        FieldVector3D<T> v = FieldVector3D.crossProduct(p.getFieldPVCoordinates().getMomentum(), u).normalize();
+        FieldVector3D<T> u = p.getPVCoordinates().getMomentum().orthogonal();
+        FieldVector3D<T> v = FieldVector3D.crossProduct(p.getPVCoordinates().getMomentum(), u).normalize();
 
         // compute radius of curvature in the orbital plane from Cartesian coordinates
-        T xDot    = FieldVector3D.dotProduct(p.getFieldPVCoordinates().getVelocity(),     u);
-        T yDot    = FieldVector3D.dotProduct(p.getFieldPVCoordinates().getVelocity(),     v);
-        T xDotDot = FieldVector3D.dotProduct(p.getFieldPVCoordinates().getAcceleration(), u);
-        T yDotDot = FieldVector3D.dotProduct(p.getFieldPVCoordinates().getAcceleration(), v);
+        T xDot    = FieldVector3D.dotProduct(p.getPVCoordinates().getVelocity(),     u);
+        T yDot    = FieldVector3D.dotProduct(p.getPVCoordinates().getVelocity(),     v);
+        T xDotDot = FieldVector3D.dotProduct(p.getPVCoordinates().getAcceleration(), u);
+        T yDotDot = FieldVector3D.dotProduct(p.getPVCoordinates().getAcceleration(), v);
         T dot2    = xDot.multiply(xDot).add(yDot.multiply(yDot));
         T rCart   = dot2.multiply(dot2.sqrt()).divide(
                          xDot.multiply(yDotDot).subtract(yDot.multiply(xDotDot).abs()));
@@ -574,8 +574,8 @@ public class FieldEquinoctialParametersTest {
         FieldEquinoctialOrbit<T> p = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
                                                   FramesFactory.getEME2000(), date, mu);
 
-        FieldVector3D<T> positionOffset = p.getFieldPVCoordinates().getPosition().subtract(position);
-        FieldVector3D<T> velocityOffset = p.getFieldPVCoordinates().getVelocity().subtract(velocity);
+        FieldVector3D<T> positionOffset = p.getPVCoordinates().getPosition().subtract(position);
+        FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
         Assert.assertTrue(positionOffset.getNorm().getReal() < Utils.epsilonTest);
         Assert.assertTrue(velocityOffset.getNorm().getReal() < Utils.epsilonTest);
@@ -587,8 +587,8 @@ public class FieldEquinoctialParametersTest {
         p = new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
                                  FramesFactory.getEME2000(), date, mu);
 
-        positionOffset = p.getFieldPVCoordinates().getPosition().subtract(position);
-        velocityOffset = p.getFieldPVCoordinates().getVelocity().subtract(velocity);
+        positionOffset = p.getPVCoordinates().getPosition().subtract(position);
+        velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
         Assert.assertTrue(positionOffset.getNorm().getReal() < Utils.epsilonTest);
         Assert.assertTrue(velocityOffset.getNorm().getReal() < Utils.epsilonTest);
@@ -701,7 +701,7 @@ public class FieldEquinoctialParametersTest {
                 jRef[ii][jj] = zero.add(jRefR[ii][jj]);
             }
         }
-        FieldPVCoordinates<T> pv = orbEqu.getFieldPVCoordinates();
+        FieldPVCoordinates<T> pv = orbEqu.getPVCoordinates();
         Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal(), 2.0e-16 * pRef.getNorm().getReal());
         Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal(), 2.0e-16 * vRef.getNorm().getReal());
 
@@ -778,8 +778,8 @@ public class FieldEquinoctialParametersTest {
         T zero = hP.getField().getZero();
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
-        FieldVector3D<T> p = orbit.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> v = orbit.getFieldPVCoordinates().getVelocity();
+        FieldVector3D<T> p = orbit.getPVCoordinates().getPosition();
+        FieldVector3D<T> v = orbit.getPVCoordinates().getVelocity();
         T hV = hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
 
         T h;
@@ -889,8 +889,8 @@ public class FieldEquinoctialParametersTest {
         double maxInterpolationError = 0;
         for (T dt = zero; dt.getReal() < 241.0; dt = dt.add(1.0)) {
             FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
+            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
             FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
@@ -903,8 +903,8 @@ public class FieldEquinoctialParametersTest {
         maxInterpolationError = 0;
         for (T dt = zero.add(240); dt.getReal() < 300.0; dt = dt.add(1.0)) {
             FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
+            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
             FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
@@ -918,8 +918,8 @@ public class FieldEquinoctialParametersTest {
         maxInterpolationError = 0;
         for (T dt = zero.add(300); dt.getReal() < 1000; dt = dt.add(1.0)) {
             FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
+            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
             FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());

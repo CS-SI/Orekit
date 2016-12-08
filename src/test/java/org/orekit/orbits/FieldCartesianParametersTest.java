@@ -131,12 +131,12 @@ public class FieldCartesianParametersTest {
 
         FieldCartesianOrbit<T> p = new FieldCartesianOrbit<T>(FieldPVCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        Assert.assertEquals(p.getFieldPVCoordinates().getPosition().getX().getReal(), FieldPVCoordinates.getPosition().getX().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getX().getReal()));
-        Assert.assertEquals(p.getFieldPVCoordinates().getPosition().getY().getReal(), FieldPVCoordinates.getPosition().getY().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getY().getReal()));
-        Assert.assertEquals(p.getFieldPVCoordinates().getPosition().getZ().getReal(), FieldPVCoordinates.getPosition().getZ().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getZ().getReal()));
-        Assert.assertEquals(p.getFieldPVCoordinates().getVelocity().getX().getReal(), FieldPVCoordinates.getVelocity().getX().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getX().getReal()));
-        Assert.assertEquals(p.getFieldPVCoordinates().getVelocity().getY().getReal(), FieldPVCoordinates.getVelocity().getY().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getY().getReal()));
-        Assert.assertEquals(p.getFieldPVCoordinates().getVelocity().getZ().getReal(), FieldPVCoordinates.getVelocity().getZ().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getZ().getReal()));
+        Assert.assertEquals(p.getPVCoordinates().getPosition().getX().getReal(), FieldPVCoordinates.getPosition().getX().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getX().getReal()));
+        Assert.assertEquals(p.getPVCoordinates().getPosition().getY().getReal(), FieldPVCoordinates.getPosition().getY().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getY().getReal()));
+        Assert.assertEquals(p.getPVCoordinates().getPosition().getZ().getReal(), FieldPVCoordinates.getPosition().getZ().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getPosition().getZ().getReal()));
+        Assert.assertEquals(p.getPVCoordinates().getVelocity().getX().getReal(), FieldPVCoordinates.getVelocity().getX().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getX().getReal()));
+        Assert.assertEquals(p.getPVCoordinates().getVelocity().getY().getReal(), FieldPVCoordinates.getVelocity().getY().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getY().getReal()));
+        Assert.assertEquals(p.getPVCoordinates().getVelocity().getZ().getReal(), FieldPVCoordinates.getVelocity().getZ().getReal(), Utils.epsilonTest * FastMath.abs(FieldPVCoordinates.getVelocity().getZ().getReal()));
     }
 
     public <T extends RealFieldElement<T>> void testCartesianToEquinoctial(Field<T> field) {
@@ -202,13 +202,13 @@ public class FieldCartesianParametersTest {
 
         // validation of: r = a .(1 - e2) / (1 + e.cos(v))
         Assert.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(),
-                     p.getFieldPVCoordinates().getPosition().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(p.getFieldPVCoordinates().getPosition().getNorm().getReal()));
+                     p.getPVCoordinates().getPosition().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getPosition().getNorm().getReal()));
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
         Assert.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu .getReal()* nu.getReal()) / epsilon.getReal(),
-                     p.getFieldPVCoordinates().getVelocity().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(p.getFieldPVCoordinates().getVelocity().getNorm().getReal()));
+                     p.getPVCoordinates().getVelocity().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm().getReal()));
 
     }
 
@@ -231,7 +231,7 @@ public class FieldCartesianParametersTest {
             p = new FieldEquinoctialOrbit<T>(p.getA(), p.getEquinoctialEx(), p.getEquinoctialEy(),
                                              p.getHx(), p.getHy(), lv, PositionAngle.TRUE, p.getFrame(),
                                              FieldAbsoluteDate.getJ2000Epoch(field), mu);
-            position = p.getFieldPVCoordinates().getPosition();
+            position = p.getPVCoordinates().getPosition();
 
             // test if the norm of the position is in the range [perigee radius, apogee radius]
             // Warning: these tests are without absolute value by choice
@@ -241,7 +241,7 @@ public class FieldCartesianParametersTest {
             // Assert.assertTrue(position.getNorm() >= perigeeRadius);
 
             position= position.normalize();
-            velocity = p.getFieldPVCoordinates().getVelocity().normalize();
+            velocity = p.getPVCoordinates().getVelocity().normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
 
@@ -310,11 +310,11 @@ public class FieldCartesianParametersTest {
         T zero = field.getZero();
         for (T dt = zero.add(- 1000); dt.getReal() < 1000; dt = dt.add(10.0)) {
 
-            FieldPVCoordinates<T> pvTested    = tested.shiftedBy(dt).getFieldPVCoordinates();
+            FieldPVCoordinates<T> pvTested    = tested.shiftedBy(dt).getPVCoordinates();
             FieldVector3D<T>      pTested     = pvTested.getPosition();
             FieldVector3D<T>      vTested     = pvTested.getVelocity();
 
-            FieldPVCoordinates<T> pvReference = reference.shiftedBy(dt).getFieldPVCoordinates();
+            FieldPVCoordinates<T> pvReference = reference.shiftedBy(dt).getPVCoordinates();
             FieldVector3D<T>      pReference  = pvReference.getPosition();
             FieldVector3D<T>      vReference  = pvReference.getVelocity();
             Assert.assertEquals(0, pTested.subtract(pReference).getNorm().getReal(), threshold * pReference.getNorm().getReal());
@@ -412,9 +412,9 @@ public class FieldCartesianParametersTest {
             FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
             FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
             FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<T>(propagated,
-                                                                 initialOrbit.shiftedBy(dt).getFieldPVCoordinates());
+                                                                 initialOrbit.shiftedBy(dt).getPVCoordinates());
             FieldPVCoordinates<T> interpolationError = new FieldPVCoordinates<T>(propagated,
-                                                                 initialOrbit.interpolate(t, sample).getFieldPVCoordinates());
+                                                                 initialOrbit.interpolate(t, sample).getPVCoordinates());
             maxShiftPError                   = FastMath.max(maxShiftPError,
                                                             shiftError.getPosition().getNorm().getReal());
             maxInterpolationPError           = FastMath.max(maxInterpolationPError,
@@ -438,9 +438,9 @@ public class FieldCartesianParametersTest {
             FieldAbsoluteDate<T> t                   = initialOrbit.getDate().shiftedBy(dt);
             FieldPVCoordinates<T> propagated         = propagator.propagate(t).getPVCoordinates();
             FieldPVCoordinates<T> shiftError         = new FieldPVCoordinates<T>(propagated,
-                                                                 initialOrbit.shiftedBy(dt).getFieldPVCoordinates());
+                                                                 initialOrbit.shiftedBy(dt).getPVCoordinates());
             FieldPVCoordinates<T> interpolationError = new FieldPVCoordinates<T>(propagated,
-                                                                 initialOrbit.interpolate(t, sample).getFieldPVCoordinates());
+                                                                 initialOrbit.interpolate(t, sample).getPVCoordinates());
             maxShiftPError                   = FastMath.max(maxShiftPError,
                                                             shiftError.getPosition().getNorm().getReal());
             maxInterpolationPError           = FastMath.max(maxInterpolationPError,

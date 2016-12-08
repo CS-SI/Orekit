@@ -582,7 +582,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
-        return orbit.getFieldPVCoordinates();
+        return orbit.getPVCoordinates();
     }
 
     /** Get the {@link TimeStampedFieldPVCoordinates} in given output frame.

@@ -171,8 +171,8 @@ public class FieldCircularParametersTest {
             new FieldCircularOrbit<T>(zero.add(42166.712), zero.add(0.5), zero.add(-0.5), i, raan,
                                    zero.add(5.300).subtract(raan), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        FieldVector3D<T> pos = circ.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> vit = circ.getFieldPVCoordinates().getVelocity();
+        FieldVector3D<T> pos = circ.getPVCoordinates().getPosition();
+        FieldVector3D<T> vit = circ.getPVCoordinates().getVelocity();
 
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<T>( pos, vit);
 
@@ -206,8 +206,8 @@ public class FieldCircularParametersTest {
             new FieldEquinoctialOrbit<T>(zero.add(42166.712), zero.add(0.1e-10), zero.add(-0.1e-10), i, raan,
                                       raan.negate().add(5.300), PositionAngle.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
-        FieldVector3D<T> posCir = circCir.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> vitCir = circCir.getFieldPVCoordinates().getVelocity();
+        FieldVector3D<T> posCir = circCir.getPVCoordinates().getPosition();
+        FieldVector3D<T> vitCir = circCir.getPVCoordinates().getVelocity();
 
         FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<T>( posCir, vitCir);
 
@@ -240,8 +240,8 @@ public class FieldCircularParametersTest {
             new FieldCircularOrbit<T>(zero.add(42166.712), ex, ey, i, raan,
                                    raan.negate().add(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        FieldVector3D<T> pos = circ.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> vel = circ.getFieldPVCoordinates().getVelocity();
+        FieldVector3D<T> pos = circ.getPVCoordinates().getPosition();
+        FieldVector3D<T> vel = circ.getPVCoordinates().getVelocity();
 
         // check 1/a = 2/r  - V2/mu
         T r = pos.getNorm();
@@ -430,11 +430,11 @@ public class FieldCircularParametersTest {
         T na = a.reciprocal().multiply(mu).sqrt();
 
         Assert.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(),
-                     p.getFieldPVCoordinates().getPosition().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(p.getFieldPVCoordinates().getPosition().getNorm().getReal()));
+                     p.getPVCoordinates().getPosition().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getPosition().getNorm().getReal()));
         Assert.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                     p.getFieldPVCoordinates().getVelocity().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(p.getFieldPVCoordinates().getVelocity().getNorm().getReal()));
+                     p.getPVCoordinates().getVelocity().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm().getReal()));
 
     }
 
@@ -490,11 +490,11 @@ public class FieldCircularParametersTest {
         T na = a.reciprocal().multiply(mu).sqrt();
 
         Assert.assertEquals(a.getReal() * epsilon.getReal() * epsilon.getReal() / ksi.getReal(),
-                     pCirEqua.getFieldPVCoordinates().getPosition().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(pCirEqua.getFieldPVCoordinates().getPosition().getNorm().getReal()));
+                     pCirEqua.getPVCoordinates().getPosition().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(pCirEqua.getPVCoordinates().getPosition().getNorm().getReal()));
         Assert.assertEquals(na.getReal() * FastMath.sqrt(ksi.getReal() * ksi.getReal() + nu.getReal() * nu.getReal()) / epsilon.getReal(),
-                     pCirEqua.getFieldPVCoordinates().getVelocity().getNorm().getReal(),
-                     Utils.epsilonTest * FastMath.abs(pCirEqua.getFieldPVCoordinates().getVelocity().getNorm().getReal()));
+                     pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal(),
+                     Utils.epsilonTest * FastMath.abs(pCirEqua.getPVCoordinates().getVelocity().getNorm().getReal()));
     }
 
     public <T extends RealFieldElement<T>> void testGeometryEll(Field<T> field) {
@@ -511,9 +511,9 @@ public class FieldCircularParametersTest {
                                    raan.negate().add(0.67), PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
-        FieldVector3D<T> position = p.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> velocity = p.getFieldPVCoordinates().getVelocity();
-        FieldVector3D<T> momentum = p.getFieldPVCoordinates().getMomentum().normalize();
+        FieldVector3D<T> position = p.getPVCoordinates().getPosition();
+        FieldVector3D<T> velocity = p.getPVCoordinates().getVelocity();
+        FieldVector3D<T> momentum = p.getPVCoordinates().getMomentum().normalize();
 
         T apogeeRadius  = p.getA().multiply( p.getE().add(1));
         T perigeeRadius = p.getA().multiply(p.getE().negate().add(1));
@@ -522,14 +522,14 @@ public class FieldCircularParametersTest {
             p = new FieldCircularOrbit<T>(p.getA() , p.getCircularEx(), p.getCircularEy(), p.getI(),
                                        p.getRightAscensionOfAscendingNode(),
                                        alphaV, PositionAngle.TRUE, p.getFrame(), date, mu);
-            position = p.getFieldPVCoordinates().getPosition();
+            position = p.getPVCoordinates().getPosition();
             // test if the norm of the position is in the range [perigee radius, apogee radius]
             // Warning: these tests are without absolute value by choice
             Assert.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal())  <= (  apogeeRadius.getReal() * Utils.epsilonTest));
             Assert.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
 
             position= position.normalize();
-            velocity = p.getFieldPVCoordinates().getVelocity();
+            velocity = p.getPVCoordinates().getVelocity();
             velocity= velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -557,9 +557,9 @@ public class FieldCircularParametersTest {
                                    raan.negate().add(0.67), PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
-        FieldVector3D<T> position = pCirEqua.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> velocity = pCirEqua.getFieldPVCoordinates().getVelocity();
-        FieldVector3D<T> momentum = pCirEqua.getFieldPVCoordinates().getMomentum().normalize();
+        FieldVector3D<T> position = pCirEqua.getPVCoordinates().getPosition();
+        FieldVector3D<T> velocity = pCirEqua.getPVCoordinates().getVelocity();
+        FieldVector3D<T> momentum = pCirEqua.getPVCoordinates().getMomentum().normalize();
 
         T apogeeRadius  = pCirEqua.getA().multiply( pCirEqua.getE().add(1));
         T perigeeRadius = pCirEqua.getA().multiply(pCirEqua.getE().negate().add(1));
@@ -570,14 +570,14 @@ public class FieldCircularParametersTest {
             pCirEqua = new FieldCircularOrbit<T>(pCirEqua.getA() , pCirEqua.getCircularEx(), pCirEqua.getCircularEy(), pCirEqua.getI(),
                                               pCirEqua.getRightAscensionOfAscendingNode(),
                                               alphaV, PositionAngle.TRUE, pCirEqua.getFrame(), date, mu);
-            position = pCirEqua.getFieldPVCoordinates().getPosition();
+            position = pCirEqua.getPVCoordinates().getPosition();
 
             // test if the norm pf the position is in the range [perigee radius, apogee radius]
             Assert.assertTrue((position.getNorm().getReal() - apogeeRadius.getReal())  <= (  apogeeRadius.getReal() * Utils.epsilonTest));
             Assert.assertTrue((position.getNorm().getReal() - perigeeRadius.getReal()) >= (- perigeeRadius.getReal() * Utils.epsilonTest));
 
             position= position.normalize();
-            velocity = pCirEqua.getFieldPVCoordinates().getVelocity();
+            velocity = pCirEqua.getPVCoordinates().getVelocity();
             velocity= velocity.normalize();
 
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
@@ -601,8 +601,8 @@ public class FieldCircularParametersTest {
 
         FieldCircularOrbit<T> p = new FieldCircularOrbit<T>(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        FieldVector3D<T> positionOffset = p.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> velocityOffset = p.getFieldPVCoordinates().getVelocity();
+        FieldVector3D<T> positionOffset = p.getPVCoordinates().getPosition();
+        FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity();
 
         positionOffset = positionOffset.subtract(position);
         velocityOffset = velocityOffset.subtract(velocity);
@@ -623,8 +623,8 @@ public class FieldCircularParametersTest {
 
         FieldCircularOrbit<T> p = new FieldCircularOrbit<T>(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        FieldVector3D<T> positionOffset = p.getFieldPVCoordinates().getPosition().subtract(position);
-        FieldVector3D<T> velocityOffset = p.getFieldPVCoordinates().getVelocity().subtract(velocity);
+        FieldVector3D<T> positionOffset = p.getPVCoordinates().getPosition().subtract(position);
+        FieldVector3D<T> velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
 
         Assert.assertEquals(0.0, positionOffset.getNorm().getReal(), position.getNorm().getReal() * Utils.epsilonTest);
         Assert.assertEquals(0.0, velocityOffset.getNorm().getReal(), velocity.getNorm().getReal() * Utils.epsilonTest);
@@ -714,7 +714,7 @@ public class FieldCircularParametersTest {
             }
         }
 
-        FieldPVCoordinates<T> pv = orbCir.getFieldPVCoordinates();
+        FieldPVCoordinates<T> pv = orbCir.getPVCoordinates();
         Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal(), 3.0e-16 * pRef.getNorm().getReal());
         Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal(), 2.0e-12 * vRef.getNorm().getReal());
 
@@ -794,8 +794,8 @@ public class FieldCircularParametersTest {
         T zero = hP.getField().getZero();
         // at constant energy (i.e. constant semi major axis), we have dV = -mu dP / (V * r^2)
         // we use this to compute a velocity step size from the position step size
-        FieldVector3D<T> p = orbit.getFieldPVCoordinates().getPosition();
-        FieldVector3D<T> v = orbit.getFieldPVCoordinates().getVelocity();
+        FieldVector3D<T> p = orbit.getPVCoordinates().getPosition();
+        FieldVector3D<T> v = orbit.getPVCoordinates().getVelocity();
         T hV =  hP.multiply(orbit.getMu()).divide(v.getNorm().multiply(p.getNormSq()));
 
         T h;
@@ -905,8 +905,8 @@ public class FieldCircularParametersTest {
         double maxInterpolationError = 0.0;
         for (T dt = zero; dt.getReal() < 241.0; dt = dt.add(1.0)) {
             FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
+            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
             FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
@@ -919,8 +919,8 @@ public class FieldCircularParametersTest {
         maxInterpolationError = 0;
         for (T dt = zero.add(240); dt.getReal() < 300.0; dt = dt.add(1.0)) {
             FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
+            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
             FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());
@@ -934,8 +934,8 @@ public class FieldCircularParametersTest {
         maxInterpolationError = 0;
         for (T dt = zero.add(300); dt.getReal() < 1000; dt = dt.add(1.0)) {
             FieldAbsoluteDate<T> t        = initialOrbit.getDate().shiftedBy(dt);
-            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getFieldPVCoordinates().getPosition();
-            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getFieldPVCoordinates().getPosition();
+            FieldVector3D<T> shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
+            FieldVector3D<T> interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
             FieldVector3D<T> propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm().getReal());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm().getReal());

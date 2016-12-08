@@ -553,7 +553,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         final T[][] jacobian = MathArrays.buildArray(one.getField(), 6, 6);
 
         // compute various intermediate parameters
-        final FieldPVCoordinates<T> pvc = getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pvc = getPVCoordinates();
         final FieldVector3D<T> position = pvc.getPosition();
         final FieldVector3D<T> velocity = pvc.getVelocity();
 

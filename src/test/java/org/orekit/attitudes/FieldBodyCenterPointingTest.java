@@ -153,7 +153,7 @@ public class FieldBodyCenterPointingTest {
         // Earth center pointing attitude provider
         FieldBodyCenterPointing<T> earthCenterAttitudeLaw= new FieldBodyCenterPointing<T>(circ.getFrame(), earth);
         // Transform satellite position to position/velocity parameters in EME2000 frame
-        FieldPVCoordinates<T> pvSatEME2000 = circ.getFieldPVCoordinates();
+        FieldPVCoordinates<T> pvSatEME2000 = circ.getPVCoordinates();
 
         //  Pointing direction
         // ********************

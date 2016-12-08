@@ -87,7 +87,7 @@ public enum OrbitType {
                                                                     final PositionAngle type,
                                                                     final T[] stateVector) {
 
-            final TimeStampedFieldPVCoordinates<T> pv = orbit.getFieldPVCoordinates();
+            final TimeStampedFieldPVCoordinates<T> pv = orbit.getPVCoordinates();
             final FieldVector3D<T>      p  = pv.getPosition();
             final FieldVector3D<T>      v  = pv.getVelocity();
 

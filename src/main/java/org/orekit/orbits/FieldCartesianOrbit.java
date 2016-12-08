@@ -128,7 +128,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
     public FieldCartesianOrbit(final FieldPVCoordinates<T> pvaCoordinates, final Frame frame,
-                          final FieldAbsoluteDate<T> date, final double mu)
+                               final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
         this(new TimeStampedFieldPVCoordinates<T>(date, pvaCoordinates), frame, mu);
         field = pvaCoordinates.getPosition().getX().getField();
@@ -140,7 +140,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param op orbital parameters to copy
      */
     public FieldCartesianOrbit(final FieldOrbit<T> op) {
-        super(op.getFieldPVCoordinates(), op.getFrame(), op.getMu());
+        super(op.getPVCoordinates(), op.getFrame(), op.getMu());
         if (op instanceof FieldEquinoctialOrbit) {
             equinoctial = (FieldEquinoctialOrbit<T>) op;
         } else if (op instanceof FieldCartesianOrbit) {
@@ -161,22 +161,22 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** Lazy evaluation of equinoctial parameters. */
     private void initEquinoctial() {
         if (equinoctial == null) {
-            equinoctial = new FieldEquinoctialOrbit<T>(getFieldPVCoordinates(), getFrame(), getDate(), getMu());
+            equinoctial = new FieldEquinoctialOrbit<T>(getPVCoordinates(), getFrame(), getDate(), getMu());
         }
     }
 
     /** {@inheritDoc} */
     public T getA() {
         // lazy evaluation of semi-major axis
-        final T r  = getFieldPVCoordinates().getPosition().getNorm();
-        final T V2 = getFieldPVCoordinates().getVelocity().getNormSq();
+        final T r  = getPVCoordinates().getPosition().getNorm();
+        final T V2 = getPVCoordinates().getVelocity().getNormSq();
         return r.divide(r.negate().multiply(V2).divide(getMu()).add(2));
     }
 
     /** {@inheritDoc} */
     public T getE() {
-        final FieldVector3D<T> pvP   = getFieldPVCoordinates().getPosition();
-        final FieldVector3D<T> pvV   = getFieldPVCoordinates().getVelocity();
+        final FieldVector3D<T> pvP   = getPVCoordinates().getPosition();
+        final FieldVector3D<T> pvV   = getPVCoordinates().getVelocity();
         final T rV2OnMu = pvP.getNorm().multiply(pvV.getNormSq()).divide(getMu());
         final T eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(getA().multiply(getMu()).sqrt());
         final T eCE     = rV2OnMu.subtract(1);
@@ -185,7 +185,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** {@inheritDoc} */
     public T getI() {
-        return FieldVector3D.angle(new FieldVector3D<T>(zero, zero, one), getFieldPVCoordinates().getMomentum());
+        return FieldVector3D.angle(new FieldVector3D<T>(zero, zero, one), getPVCoordinates().getMomentum());
     }
 
     /** {@inheritDoc} */
@@ -202,7 +202,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** {@inheritDoc} */
     public T getHx() {
-        final FieldVector3D<T> w = getFieldPVCoordinates().getMomentum().normalize();
+        final FieldVector3D<T> w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
         if (((w.getX().getReal() * w.getX().getReal() + w.getY().getReal() * w.getY().getReal()) == 0) && w.getZ().getReal() < 0) {
             return zero.add(Double.NaN);
@@ -212,7 +212,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** {@inheritDoc} */
     public T getHy() {
-        final FieldVector3D<T> w = getFieldPVCoordinates().getMomentum().normalize();
+        final FieldVector3D<T> w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
         if (((w.getX().getReal() * w.getX().getReal() + w.getY().getReal() * w.getY().getReal()) == 0) && w.getZ().getReal() < 0) {
             return zero.add(Double.NaN);
@@ -241,7 +241,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** {@inheritDoc} */
     protected TimeStampedFieldPVCoordinates<T> initFieldPVCoordinates() {
         // nothing to do here, as the canonical elements are already the cartesian ones
-        return getFieldPVCoordinates();
+        return getPVCoordinates();
     }
 
     /** {@inheritDoc} */
@@ -273,9 +273,9 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final List<TimeStampedFieldPVCoordinates<T>> datedPV = new ArrayList<TimeStampedFieldPVCoordinates<T>>(sample.size());
         for (final FieldOrbit<T> o : sample) {
             datedPV.add(new TimeStampedFieldPVCoordinates<T>(o.getDate(),
-                                                     o.getFieldPVCoordinates().getPosition(),
-                                                     o.getFieldPVCoordinates().getVelocity(),
-                                                     o.getFieldPVCoordinates().getAcceleration()));
+                                                     o.getPVCoordinates().getPosition(),
+                                                     o.getPVCoordinates().getVelocity(),
+                                                     o.getPVCoordinates().getAcceleration()));
         }
         final TimeStampedFieldPVCoordinates<T> interpolated =
                 TimeStampedFieldPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA, datedPV);
@@ -289,8 +289,8 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     private FieldPVCoordinates<T> shiftPVElliptic(final T dt) {
 
         // preliminary computation
-        final FieldVector3D<T> pvP   = getFieldPVCoordinates().getPosition();
-        final FieldVector3D<T> pvV   = getFieldPVCoordinates().getVelocity();
+        final FieldVector3D<T> pvP   = getPVCoordinates().getPosition();
+        final FieldVector3D<T> pvV   = getPVCoordinates().getVelocity();
         final T r       = pvP.getNorm();
         final T rV2OnMu = r.multiply(pvV.getNormSq()).divide(getMu());
         final T a       = getA();
@@ -301,7 +301,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         // we can use any arbitrary reference 2D frame in the orbital plane
         // in order to simplify some equations below, we use the current position as the u axis
         final FieldVector3D<T> u     = pvP.normalize();
-        final FieldVector3D<T> v     = FieldVector3D.crossProduct(getFieldPVCoordinates().getMomentum(), u).normalize();
+        final FieldVector3D<T> v     = FieldVector3D.crossProduct(getPVCoordinates().getMomentum(), u).normalize();
 
         // the following equations rely on the specific choice of u explained above,
         // some coefficients that vanish to 0 in this case have already been removed here
@@ -340,7 +340,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      */
     private FieldPVCoordinates<T> shiftPVHyperbolic(final T dt) {
 
-        final FieldPVCoordinates<T> pv = getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pv = getPVCoordinates();
         final FieldVector3D<T> pvP   = pv.getPosition();
         final FieldVector3D<T> pvV   = pv.getVelocity();
         final FieldVector3D<T> pvM   = pv.getMomentum();
@@ -511,7 +511,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     public void addKeplerContribution(final PositionAngle type, final double gm,
                                       final T[] pDot) {
 
-        final FieldPVCoordinates<T> pv = getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pv = getPVCoordinates();
 
         // position derivative is velocity
         final FieldVector3D<T> velocity = pv.getVelocity();
@@ -533,13 +533,13 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @return a string representation of this object
      */
     public String toString() {
-        return "cartesian parameters: " + getFieldPVCoordinates().toString();
+        return "cartesian parameters: " + getPVCoordinates().toString();
     }
 
     @Override
     public CartesianOrbit toOrbit() {
-        final PVCoordinates PVC = getFieldPVCoordinates().toPVCoordinates();
-        final AbsoluteDate AD = getFieldPVCoordinates().getDate().toAbsoluteDate();
+        final PVCoordinates PVC = getPVCoordinates().toPVCoordinates();
+        final AbsoluteDate AD = getPVCoordinates().getDate().toAbsoluteDate();
         final TimeStampedPVCoordinates TSPVC = new TimeStampedPVCoordinates(AD, PVC);
         return new CartesianOrbit(TSPVC, getFrame(), getMu());
     }

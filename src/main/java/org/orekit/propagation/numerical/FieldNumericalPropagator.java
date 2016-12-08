@@ -458,7 +458,7 @@ public class FieldNumericalPropagator<T extends RealFieldElement<T>> extends Fie
         throws OrekitException {
 
         // estimate the scalar velocity error
-        final FieldPVCoordinates<T> pv = orbit.getFieldPVCoordinates();
+        final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
         final T r2 = pv.getPosition().getNormSq();
         final T v  = pv.getVelocity().getNorm();
         final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
