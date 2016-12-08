@@ -275,7 +275,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
      * @exception OrekitException if transformation between frames cannot be computed
      * @see #getPVCoordinates()
      */
-    public TimeStampedFieldPVCoordinates<T> getFieldPVCoordinates(final Frame outputFrame)
+    public TimeStampedFieldPVCoordinates<T> gePVCoordinates(final Frame outputFrame)
         throws OrekitException {
         if (FieldPVCoordinates == null) {
             FieldPVCoordinates = initFieldPVCoordinates();
@@ -295,7 +295,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
     /** {@inheritDoc} */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame)
         throws OrekitException {
-        return shiftedBy(otherDate.durationFrom(getDate())).getFieldPVCoordinates(otherFrame);
+        return shiftedBy(otherDate.durationFrom(getDate())).gePVCoordinates(otherFrame);
     }
 
 

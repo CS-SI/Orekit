@@ -597,7 +597,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
-        return orbit.getFieldPVCoordinates(outputFrame);
+        return orbit.gePVCoordinates(outputFrame);
     }
 
     /** Get the attitude.
