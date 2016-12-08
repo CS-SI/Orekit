@@ -382,7 +382,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
         /** {@inheritDoc} */
         public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame)
             throws OrekitException {
-            return propagateOrbit(date).gePVCoordinates(frame);
+            return propagateOrbit(date).getPVCoordinates(frame);
         }
 
     }
