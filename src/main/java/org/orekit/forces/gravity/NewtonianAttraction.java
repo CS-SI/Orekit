@@ -129,12 +129,6 @@ public class NewtonianAttraction extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public <T extends RealFieldElement<T>> void addContribution(final SpacecraftState s, final FieldTimeDerivativesEquations<T> adder)
-        throws OrekitException {
-        adder.addKeplerContribution(mu);
-    }
-
-    /** {@inheritDoc} */
     public Stream<EventDetector> getEventsDetectors() {
         return Stream.empty();
     }
