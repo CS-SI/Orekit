@@ -52,7 +52,7 @@ public interface FieldOrekitFixedStepHandler<T extends RealFieldElement<T>> {
      * @param isLast if true, this is the last integration step
      * @exception OrekitException if step cannot be handled
      */
-    void handleStep(final FieldSpacecraftState<T> currentState, final boolean isLast)
+    void handleStep(FieldSpacecraftState<T> currentState, boolean isLast)
         throws OrekitException;
 
 }

@@ -138,8 +138,7 @@ public class OEMParser extends ODMParser implements EphemerisFileParser {
 
     /** {@inheritDoc} */
     public OEMFile parse(final InputStream stream, final String fileName) throws OrekitException {
-        try (final BufferedReader reader =
-                     new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"))) {
             return parse(reader, fileName);
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

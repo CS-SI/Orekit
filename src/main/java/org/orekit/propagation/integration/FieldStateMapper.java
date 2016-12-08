@@ -174,7 +174,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public abstract FieldSpacecraftState<T> mapArrayToState(final FieldAbsoluteDate<T> date, final T[] y, final boolean meanOnly)
+    public abstract FieldSpacecraftState<T> mapArrayToState(FieldAbsoluteDate<T> date, T[] y, boolean meanOnly)
         throws OrekitException;
 
     /** Map a spacecraft state to raw double components.
@@ -182,7 +182,7 @@ public abstract class FieldStateMapper<T extends RealFieldElement<T>> {
      * @param y placeholder where to put the components
      * @exception OrekitException if state is inconsistent or cannot be mapped
      */
-    public abstract void mapStateToArray(final FieldSpacecraftState<T> state, final T[] y)
+    public abstract void mapStateToArray(FieldSpacecraftState<T> state, T[] y)
         throws OrekitException;
 
 }

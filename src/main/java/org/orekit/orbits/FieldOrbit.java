@@ -326,7 +326,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
      * @param dt time shift in seconds
      * @return a new orbit, shifted with respect to the instance (which is immutable)
      */
-    public abstract FieldOrbit<T> shiftedBy(final T dt);
+    public abstract FieldOrbit<T> shiftedBy(T dt);
 
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
@@ -488,7 +488,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(final PositionAngle type, final double gm, T[] pDot);
+    public abstract void addKeplerContribution(PositionAngle type, double gm, T[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector

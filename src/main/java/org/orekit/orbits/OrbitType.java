@@ -526,7 +526,7 @@ public enum OrbitType {
      * @param orbit orbit to convert
      * @return converted orbit with type guaranteed to match (so it can be cast safely)
      */
-    public abstract <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit);
+    public abstract <T extends RealFieldElement<T>> FieldOrbit<T> convertType(FieldOrbit<T> orbit);
 
     /** Convert orbit to state array.
      * <p>

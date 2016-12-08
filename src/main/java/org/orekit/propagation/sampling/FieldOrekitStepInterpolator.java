@@ -50,7 +50,7 @@ public interface FieldOrekitStepInterpolator<T extends RealFieldElement<T>> {
      * @exception OrekitException if underlying interpolator cannot handle
      * the date
      */
-    FieldSpacecraftState<T> getInterpolatedState(final FieldAbsoluteDate<T> date)
+    FieldSpacecraftState<T> getInterpolatedState(FieldAbsoluteDate<T> date)
         throws OrekitException;
 
     /** Check is integration direction is forward in date.

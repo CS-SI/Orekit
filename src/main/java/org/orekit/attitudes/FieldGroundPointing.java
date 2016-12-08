@@ -122,8 +122,8 @@ public abstract class FieldGroundPointing<T extends RealFieldElement<T>> impleme
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected abstract TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                            final FieldAbsoluteDate<T> date, final Frame frame)
+    protected abstract TimeStampedFieldPVCoordinates<T> getTargetPV(FieldPVCoordinatesProvider<T> pvProv,
+                                                                    FieldAbsoluteDate<T> date, Frame frame)
         throws OrekitException;
 
     /** {@inheritDoc} */

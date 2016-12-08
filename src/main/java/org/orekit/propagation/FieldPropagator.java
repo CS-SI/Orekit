@@ -147,14 +147,14 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @param state new initial state to consider
      * @exception OrekitException if initial state cannot be reset
      */
-    void resetInitialState(final FieldSpacecraftState<T> state)
+    void resetInitialState(FieldSpacecraftState<T> state)
         throws OrekitException;
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
      * @exception OrekitException if an additional state with the same name is already present
      */
-    void addAdditionalStateProvider(final FieldAdditionalStateProvider<T> additionalStateProvider)
+    void addAdditionalStateProvider(FieldAdditionalStateProvider<T> additionalStateProvider)
         throws OrekitException;
 
     /** Get an unmodifiable list of providers for additional state.
@@ -186,7 +186,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @param name name of the additional state
      * @return true if the additional state is managed
      */
-    boolean isAdditionalStateManaged(final String name);
+    boolean isAdditionalStateManaged(String name);
 
     /** Get all the names of all managed states.
      * @return names of all managed states
@@ -199,7 +199,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
      * @see #getEventsDetectors()
      * @param <D> class type for the generic version
      */
-    <D extends FieldEventDetector<T>> void addEventDetector(final D detector);
+    <D extends FieldEventDetector<T>> void addEventDetector(D detector);
 
     /** Get all the events detectors that have been added.
      * @return an unmodifiable collection of the added detectors
@@ -222,7 +222,7 @@ public interface FieldPropagator<T extends RealFieldElement<T>> extends FieldPVC
     /** Set attitude provider.
      * @param attitudeProvider attitude provider
      */
-    void setAttitudeProvider(final FieldAttitudeProvider<T> attitudeProvider);
+    void setAttitudeProvider(FieldAttitudeProvider<T> attitudeProvider);
 
     /** Get the frame in which the orbit is propagated.
      * <p>

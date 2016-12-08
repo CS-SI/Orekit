@@ -346,15 +346,15 @@ public abstract class FieldAbstractIntegratedPropagator<T extends RealFieldEleme
      * @param frame inertial frame
      * @return new mapper
      */
-    protected abstract FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final double mu,
-                                                final OrbitType orbitType, final PositionAngle positionAngleType,
-                                                final FieldAttitudeProvider<T> attitudeProvider, final Frame frame);
+    protected abstract FieldStateMapper<T> createMapper(FieldAbsoluteDate<T> referenceDate, double mu,
+                                                        OrbitType orbitType, PositionAngle positionAngleType,
+                                                        FieldAttitudeProvider<T> attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
      * @param integ numerical integrator to use for propagation.
      * @return differential equations for main state
      */
-    protected abstract MainStateEquations<T> getMainStateEquations(final FieldODEIntegrator<T> integ);
+    protected abstract MainStateEquations<T> getMainStateEquations(FieldODEIntegrator<T> integ);
 
     /** {@inheritDoc} */
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> target) throws OrekitException {

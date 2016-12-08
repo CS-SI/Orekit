@@ -45,7 +45,7 @@ public interface FieldTimeDerivativesEquations<T extends RealFieldElement<T>> {
      * numerical accuracy.</p>
      * @param mu central body gravitational constant
      */
-    void addKeplerContribution(final double mu);
+    void addKeplerContribution(double mu);
 
     /** Add the contribution of an acceleration expressed in the inertial frame
      *  (it is important to make sure this acceleration is defined in the
@@ -54,20 +54,20 @@ public interface FieldTimeDerivativesEquations<T extends RealFieldElement<T>> {
      * @param y acceleration along the Y axis (m/s²)
      * @param z acceleration along the Z axis (m/s²)
      */
-    void addXYZAcceleration(final T x, final T y, final T z);
+    void addXYZAcceleration(T x, T y, T z);
 
     /** Add the contribution of an acceleration expressed in some inertial frame.
      * @param gamma acceleration vector (m/s²)
      * @param frame frame in which acceleration is defined (must be an inertial frame)
      * @exception OrekitException if frame transforms cannot be computed
      */
-    void addAcceleration(final FieldVector3D<T> gamma, final Frame frame) throws OrekitException;
+    void addAcceleration(FieldVector3D<T> gamma, Frame frame) throws OrekitException;
 
     /** Add the contribution of the flow rate (dm/dt).
      * @param q the flow rate, must be negative (dm/dt)
      * @exception IllegalArgumentException if flow-rate is positive
      */
-    void addMassDerivative(final T q);
+    void addMassDerivative(T q);
 
 
 }

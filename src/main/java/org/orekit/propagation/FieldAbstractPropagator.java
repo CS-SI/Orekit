@@ -255,7 +255,7 @@ public abstract class FieldAbstractPropagator<T extends RealFieldElement<T>> imp
     public abstract FieldBoundedPropagator<T> getGeneratedEphemeris();
 
     /** {@inheritDoc} */
-    public abstract <D extends FieldEventDetector<T>> void addEventDetector(final D detector);
+    public abstract <D extends FieldEventDetector<T>> void addEventDetector(D detector);
 
     /** {@inheritDoc} */
     public abstract Collection<FieldEventDetector<T>> getEventsDetectors();

@@ -172,8 +172,8 @@ public abstract class FieldAbstractDetector<D extends FieldEventDetector<T>,
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
      */
-    protected abstract D create(final T newMaxCheck, final T newThreshold,
-                                final int newMaxIter, final FieldEventHandler<? super D, T> newHandler);
+    protected abstract D create(T newMaxCheck, T newThreshold,
+                                int newMaxIter, FieldEventHandler<? super D, T> newHandler);
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

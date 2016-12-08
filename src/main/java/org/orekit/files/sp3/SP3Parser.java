@@ -120,8 +120,7 @@ public class SP3Parser implements EphemerisFileParser {
      * @see #parse(BufferedReader, String)
      */
     public SP3File parse(final InputStream stream) throws OrekitException, IOException {
-        try (final BufferedReader reader = new BufferedReader(
-                new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, stream.toString());
         }
     }

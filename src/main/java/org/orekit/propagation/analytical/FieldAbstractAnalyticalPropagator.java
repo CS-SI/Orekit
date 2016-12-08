@@ -317,7 +317,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      * @return mass mass
      * @exception OrekitException if some parameters are out of bounds
      */
-    protected abstract T getMass(final FieldAbsoluteDate<T> date)
+    protected abstract T getMass(FieldAbsoluteDate<T> date)
         throws OrekitException;
 
     /** Get PV coordinates provider.
@@ -338,7 +338,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      * propagations after itself
      * @exception OrekitException if initial state cannot be reset
      */
-    protected abstract void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward)
+    protected abstract void resetIntermediateState(FieldSpacecraftState<T> state, boolean forward)
         throws OrekitException;
 
     /** Extrapolate an orbit up to a specific target date.
@@ -346,7 +346,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends RealFieldEleme
      * @return extrapolated parameters
      * @exception OrekitException if some parameters are out of bounds
      */
-    protected abstract FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date)
+    protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date)
         throws OrekitException;
 
     /** Propagate an orbit without any fancy features.

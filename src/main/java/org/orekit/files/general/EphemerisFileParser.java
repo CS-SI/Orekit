@@ -53,7 +53,7 @@ public interface EphemerisFileParser {
      */
     default EphemerisFile parse(final String fileName)
             throws IOException, OrekitException {
-        try (final BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
             return parse(reader, fileName);
         }
     }
