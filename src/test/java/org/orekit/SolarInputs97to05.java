@@ -251,7 +251,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
             cal.setTimeZone(TimeZone.getTimeZone("UTC"));
             cal.setTime(date.toDate(TimeScalesFactory.getUTC()));
             int hour = cal.get(Calendar.HOUR_OF_DAY);
-            for(int i= 0; i<8; i++) {
+            for (int i= 0; i<8; i++) {
                 if ((hour >= (i * 3)) && (hour < ((i + 1) * 3))) {
                     result = currentParam.ap[i];
                 }
@@ -347,7 +347,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
         double result = 0;
         AbsoluteDate myDate = date;
 
-        for(int i=0; i<8; i++) {
+        for (int i=0; i<8; i++) {
             result += getThreeHourlyKP(date);
             myDate = myDate.shiftedBy(3 * 3600);
         }
@@ -385,7 +385,7 @@ public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputPar
         double ap = getAp(date);
         int i = 0;
         for ( i= 0; ap>=apTab[i]; i++) {
-            if(i==apTab.length-1) {
+            if (i==apTab.length-1) {
                 i++;
                 break;
             }

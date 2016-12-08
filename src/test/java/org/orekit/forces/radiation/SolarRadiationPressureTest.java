@@ -118,16 +118,16 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         double changed = 1;
         int count=0;
 
-        for(int t=1;t<3*period;t+=1000) {
+        for (int t=1;t<3*period;t+=1000) {
             currentDate = date.shiftedBy(t);
             try {
 
                 double ratio = SRP.getLightingRatio(k.propagate(currentDate).getPVCoordinates().getPosition(),
                                                     FramesFactory.getEME2000(), currentDate);
 
-                if(FastMath.floor(ratio)!=changed) {
+                if (FastMath.floor(ratio)!=changed) {
                     changed = FastMath.floor(ratio);
-                    if(changed == 0) {
+                    if (changed == 0) {
                         count++;
                     }
                 }
