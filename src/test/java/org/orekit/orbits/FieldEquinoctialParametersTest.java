@@ -697,7 +697,7 @@ public class FieldEquinoctialParametersTest {
         };
         T[][] jRef = MathArrays.buildArray(field, 6, 6);
         for (int ii = 0; ii<6; ii++){
-            for(int jj = 0; jj< 6; jj++){
+            for (int jj = 0; jj< 6; jj++){
                 jRef[ii][jj] = zero.add(jRefR[ii][jj]);
             }
         }

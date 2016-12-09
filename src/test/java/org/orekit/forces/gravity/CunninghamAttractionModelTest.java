@@ -385,7 +385,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         double R_R = R_0.getReal();
         double O_R = O_0.getReal();
         double n_R = n_0.getReal();
-        for(int ii = 0; ii < 1; ii++){
+        for (int ii = 0; ii < 1; ii++){
             double[] rand_next = URVG.nextVector();
             double a_shift = a_R + rand_next[0];
             double e_shift = e_R + rand_next[1];
