@@ -18,8 +18,8 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.geometry.euclidean.oned.Vector1D;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -146,7 +146,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
         final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
         final Vector3D closeInBodyFrame = frameToBodyFrame.transformPosition(close);
-        final double closeAbscissa = lineInBodyFrame.toSubSpace(closeInBodyFrame).getX();
+        final double closeAbscissa = lineInBodyFrame.getAbscissa(closeInBodyFrame);
 
         // compute some miscellaneous variables outside of the loop
         final Vector3D point    = lineInBodyFrame.getOrigin();
@@ -179,7 +179,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         // select the right point
         final double k =
             (FastMath.abs(k1 - closeAbscissa) < FastMath.abs(k2 - closeAbscissa)) ? k1 : k2;
-        final Vector3D intersection = lineInBodyFrame.toSpace(new Vector1D(k));
+        final Vector3D intersection = lineInBodyFrame.pointAt(k);
         final double ix = intersection.getX();
         final double iy = intersection.getY();
         final double iz = intersection.getZ();
@@ -207,23 +207,24 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
     /** Transform a surface-relative point to a Cartesian point.
      * @param point surface-relative point, using time as the single derivation parameter
      * @return point at the same location but as a Cartesian point including derivatives
+     * @param <T> the type of the field elements
      */
-    public PVCoordinates transform(final FieldGeodeticPoint<DerivativeStructure> point) {
+    public <T extends RealFieldElement<T>> FieldVector3D<T> transform(final FieldGeodeticPoint<T> point) {
 
-        final DerivativeStructure latitude  = point.getLatitude();
-        final DerivativeStructure longitude = point.getLongitude();
-        final DerivativeStructure altitude  = point.getAltitude();
+        final T latitude  = point.getLatitude();
+        final T longitude = point.getLongitude();
+        final T altitude  = point.getAltitude();
 
-        final DerivativeStructure cLambda = longitude.cos();
-        final DerivativeStructure sLambda = longitude.sin();
-        final DerivativeStructure cPhi    = latitude.cos();
-        final DerivativeStructure sPhi    = latitude.sin();
-        final DerivativeStructure n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
-        final DerivativeStructure r       = n.add(altitude).multiply(cPhi);
+        final T cLambda = longitude.cos();
+        final T sLambda = longitude.sin();
+        final T cPhi    = latitude.cos();
+        final T sPhi    = latitude.sin();
+        final T n       = sPhi.multiply(sPhi).multiply(e2).subtract(1.0).negate().sqrt().reciprocal().multiply(getA());
+        final T r       = n.add(altitude).multiply(cPhi);
 
-        return new PVCoordinates(new FieldVector3D<DerivativeStructure>(r.multiply(cLambda),
-                                                                        r.multiply(sLambda),
-                                                                        sPhi.multiply(altitude.add(n.multiply(g2)))));
+        return new FieldVector3D<>(r.multiply(cLambda),
+                                   r.multiply(sLambda),
+                                   sPhi.multiply(altitude.add(n.multiply(g2))));
     }
 
     /** {@inheritDoc} */

@@ -627,7 +627,7 @@ public class OneAxisEllipsoidTest {
         final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
 
         // direct computation of position, velocity and acceleration
-        PVCoordinates pv = earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS));
+        PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS)));
         FieldGeodeticPoint<DerivativeStructure> rebuilt = earth.transform(pv, earth.getBodyFrame(),null);
         Assert.assertEquals(lat0, rebuilt.getLatitude().getReal(),                1.0e-16);
         Assert.assertEquals(lat1, rebuilt.getLatitude().getPartialDerivative(1),  5.0e-19);
@@ -661,7 +661,7 @@ public class OneAxisEllipsoidTest {
         final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
 
         // direct computation of position, velocity and acceleration
-        PVCoordinates pv = earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS));
+        PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS)));
 
         // finite differences computation
         FiniteDifferencesDifferentiator differentiator =
