@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -27,9 +28,11 @@ import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -187,6 +190,75 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final double lambda = FastMath.atan2(iy, ix);
         final double phi    = FastMath.atan2(iz, g2 * FastMath.sqrt(ix * ix + iy * iy));
         return new GeodeticPoint(phi, lambda, 0.0);
+
+    }
+
+    /** Get the intersection point of a line with the surface of the body.
+     * <p>A line may have several intersection points with a closed
+     * surface (we consider the one point case as a degenerated two
+     * points case). The close parameter is used to select which of
+     * these points should be returned. The selected point is the one
+     * that is closest to the close point.</p>
+     * @param line test line (may intersect the body or not)
+     * @param close point used for intersections selection
+     * @param frame frame in which line is expressed
+     * @param date date of the line in given frame
+     * @return intersection point at altitude zero or null if the line does
+     * not intersect the surface
+     * @exception OrekitException if line cannot be converted to body frame
+     * @param <T> the type of the field elements
+     */
+    public <T extends RealFieldElement<T>> FieldGeodeticPoint<T> getIntersectionPoint(final FieldLine<T> line,
+                                                                                      final FieldVector3D<T> close,
+                                                                                      final Frame frame,
+                                                                                      final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // transform line and close to body frame
+        final FieldTransform<T> frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
+        final FieldLine<T> lineInBodyFrame = frameToBodyFrame.transformLine(line);
+        final FieldVector3D<T> closeInBodyFrame = frameToBodyFrame.transformPosition(close);
+        final T closeAbscissa = lineInBodyFrame.getAbscissa(closeInBodyFrame);
+
+        // compute some miscellaneous variables outside of the loop
+        final FieldVector3D<T> point    = lineInBodyFrame.getOrigin();
+        final T x          = point.getX();
+        final T y          = point.getY();
+        final T z          = point.getZ();
+        final T z2         = z.multiply(z);
+        final T r2         = x.multiply(x).add(y.multiply(y));
+
+        final FieldVector3D<T> direction = lineInBodyFrame.getDirection();
+        final T dx         = direction.getX();
+        final T dy         = direction.getY();
+        final T dz         = direction.getZ();
+        final T cz2        = dx.multiply(dx).add(dy.multiply(dy));
+
+        // abscissa of the intersection as a root of a 2nd degree polynomial :
+        // a k^2 - 2 b k + c = 0
+        final T a  = cz2.multiply(e2).subtract(1.0).negate();
+        final T b  = x.multiply(dx).add(y.multiply(dy)).multiply(g2).add(z.multiply(dz)).negate();
+        final T c  = r2.subtract(ae2).multiply(g2).add(z2);
+        final T b2 = b.multiply(b);
+        final T ac = a.multiply(c);
+        if (b2.getReal() < ac.getReal()) {
+            return null;
+        }
+        final T s  = b2.subtract(ac).sqrt();
+        final T k1 = (b.getReal() < 0) ? b.subtract(s).divide(a) : c.divide(b.add(s));
+        final T k2 = c.divide(a.multiply(k1));
+
+        // select the right point
+        final T k =
+                        (FastMath.abs(k1.getReal() - closeAbscissa.getReal()) < FastMath.abs(k2.getReal() - closeAbscissa.getReal())) ? k1 : k2;
+        final FieldVector3D<T> intersection = lineInBodyFrame.pointAt(k);
+        final T ix = intersection.getX();
+        final T iy = intersection.getY();
+        final T iz = intersection.getZ();
+
+        final T lambda = iy.atan2(ix);
+        final T phi    = iz.atan2(ix.multiply(ix).add(iy.multiply(iy)).sqrt().multiply(g2));
+        return new FieldGeodeticPoint<>(phi, lambda, phi.getField().getZero());
 
     }
 
