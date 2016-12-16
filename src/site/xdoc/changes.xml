@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Completed field-based Cartesian and angular coordinates with missing
+        features that were only in the double based versions.
+      </action>
       <action dev="luc" type="update" due-to="Maxime Journot">
         Use DerivativeStructure to compute derivatives for Range measurements.
       </action>

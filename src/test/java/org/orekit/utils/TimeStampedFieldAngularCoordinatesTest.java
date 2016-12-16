@@ -17,20 +17,16 @@
 package org.orekit.utils;
 
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -197,117 +193,6 @@ public class TimeStampedFieldAngularCoordinatesTest {
             Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()).getReal(), 2.0e-17);
 
         }
-    }
-
-    @Test
-    public void testRodriguesSymmetry()
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        // use reflection to test the private static methods
-        Method getter  = TimeStampedFieldAngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
-                                                                                    new Class<?>[] {
-                                                                                        TimeStampedFieldAngularCoordinates.class,
-                                                                                        double[].class, double.class
-        });
-        getter.setAccessible(true);
-        Method factory = TimeStampedFieldAngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
-                                                                                    new Class<?>[] {
-                                                                                        RealFieldElement[][].class,
-                                                                                        TimeStampedFieldAngularCoordinates.class
-        });
-        factory.setAccessible(true);
-
-        // check the two-way conversion result in identity
-        Random random = new Random(0xb1e615aaa8236b52l);
-        double[] previous = new double[] { 1.0, 0.0, 0.0, 0.0 };
-        for (int i = 0; i < 1000; ++i) {
-            FieldRotation<DerivativeStructure> offsetRotation    = randomRotation(random);
-            FieldVector3D<DerivativeStructure> offsetRate        = randomVector(random, 0.01);
-            TimeStampedFieldAngularCoordinates<DerivativeStructure> offset  =
-        new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
-                                                                            offsetRotation, offsetRate, createVector(0, 0, 0, 4));
-            FieldRotation<DerivativeStructure> rotation             = randomRotation(random);
-            FieldVector3D<DerivativeStructure> rotationRate         = randomVector(random, 0.01);
-            FieldVector3D<DerivativeStructure> rotationAcceleration = randomVector(random, 0.01);
-            TimeStampedFieldAngularCoordinates<DerivativeStructure> ac      =
-        new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, rotation, rotationRate, rotationAcceleration);
-            double dt                  = 10.0 * random.nextDouble();
-            DerivativeStructure[][] rodrigues =
-                    (DerivativeStructure[][]) getter.invoke(null,
-                                                            ac.subtractOffset(offset.shiftedBy(dt)), previous, -0.9999);
-            @SuppressWarnings("unchecked")
-            TimeStampedFieldAngularCoordinates<DerivativeStructure> rebuilt =
-            (TimeStampedFieldAngularCoordinates<DerivativeStructure>) factory.invoke(null, rodrigues, offset.shiftedBy(dt));
-            Assert.assertEquals(0.0, FieldRotation.distance(rotation, rebuilt.getRotation()).getReal(), 1.0e-14);
-            Assert.assertEquals(0.0, FieldVector3D.distance(rotationRate, rebuilt.getRotationRate()).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(rotationAcceleration, rebuilt.getRotationAcceleration()).getReal(), 1.0e-15);
-        }
-
-    }
-
-    @Test
-    public void testRodriguesSpecialCases()
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        // use reflection to test the private static methods
-        Method getter  = TimeStampedFieldAngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
-                                                                                    new Class<?>[] {
-                                                                                        TimeStampedFieldAngularCoordinates.class,
-                                                                                        double[].class, double.class
-        });
-        getter.setAccessible(true);
-        Method factory = TimeStampedFieldAngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
-                                                                                    new Class<?>[] {
-                                                                                        RealFieldElement[][].class,
-                                                                                        TimeStampedFieldAngularCoordinates.class
-        });
-        factory.setAccessible(true);
-
-        // identity
-        DerivativeStructure[][] identity =
-                (DerivativeStructure[][]) getter.invoke(null,
-                                                        identity(), new double[] { 1.0, 0.0, 0.0, 0.0 }, -0.9999);
-        @SuppressWarnings("unchecked")
-        TimeStampedFieldAngularCoordinates<DerivativeStructure> acId =
-                (TimeStampedFieldAngularCoordinates<DerivativeStructure>) factory.invoke(null, identity, identity());
-        for (DerivativeStructure element : identity[0]) {
-            Assert.assertEquals(0.0, element.getReal(), Precision.SAFE_MIN);
-        }
-        for (DerivativeStructure element : identity[1]) {
-            Assert.assertEquals(0.0, element.getReal(), Precision.SAFE_MIN);
-        }
-        Assert.assertEquals(0.0, acId.getRotation().getAngle().getReal(), Precision.SAFE_MIN);
-        Assert.assertEquals(0.0, acId.getRotationRate().getNorm().getReal(), Precision.SAFE_MIN);
-
-        // PI angle FieldRotation<DerivativeStructure> (which is singular for non-modified Rodrigues vector)
-        Random random = new Random(0x2158523e6accb859l);
-        double[] previous = new double[] { 1.0, 0.0, 0.0, 0.0 };
-        for (int i = 0; i < 100; ++i) {
-            FieldVector3D<DerivativeStructure> axis = randomVector(random, 1.0);
-            DerivativeStructure[][] piRotation =
-                    (DerivativeStructure[][]) getter.invoke(null,
-                                                            new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
-                                                                                                                        createRotation(axis, FastMath.PI),
-                                                                                                                        createVector(0, 0, 0, 4),
-                                                                                                                        createVector(0, 0, 0, 4)),
-                                                            previous, -0.9999);
-            @SuppressWarnings("unchecked")
-            TimeStampedFieldAngularCoordinates<DerivativeStructure> acPi =
-                    (TimeStampedFieldAngularCoordinates<DerivativeStructure>) factory.invoke(null, piRotation, identity());
-            Assert.assertEquals(FastMath.PI, acPi.getRotation().getAngle().getReal(), 1.0e-15);
-            Assert.assertEquals(0.0,
-                                FieldVector3D.angle(axis,
-                                                    acPi.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR)).sin().getReal(),
-                                1.0e-15);
-            Assert.assertEquals(0.0, acPi.getRotationRate().getNorm().getReal(), 1.0e-16);
-        }
-
-        // 2 PI angle FieldRotation<DerivativeStructure> (which is singular for modified Rodrigues vector)
-        Assert.assertNull(getter.invoke(null,
-                                        identity(), new double[] { -1.0, 0.0, 0.0, 0.0 }, -0.9999));
-        Assert.assertNotNull(getter.invoke(null,
-                                           identity(), new double[] { +1.0, 0.0, 0.0, 0.0 }, -0.9999));
-
     }
 
     @Test
@@ -484,13 +369,6 @@ public class TimeStampedFieldAngularCoordinatesTest {
         double q3 = random.nextDouble() * 2 - 1;
         double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
         return createRotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
-    }
-
-    private TimeStampedFieldAngularCoordinates<DerivativeStructure> identity() {
-        return new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
-                                                                           createRotation(1, 0, 0, 0, false),
-                                                                           createVector(0, 0, 0, 4),
-                                                                           createVector(0, 0, 0, 4));
     }
 
     private FieldRotation<DerivativeStructure> createRotation(FieldVector3D<DerivativeStructure> axis, double angle) {

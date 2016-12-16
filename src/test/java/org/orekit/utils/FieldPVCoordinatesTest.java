@@ -17,12 +17,16 @@
 package org.orekit.utils;
 
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -77,6 +81,34 @@ public class FieldPVCoordinatesTest {
                                     new DerivativeStructure(6, 1, 2), pv3.toPVCoordinates(),
                                     new DerivativeStructure(6, 1, 1), pv4.toPVCoordinates()),
                 1.0e-15);
+    }
+
+    @Test
+    public void testConversionConstructor() {
+        PVCoordinates pv = new PVCoordinates(new Vector3D(1, 2, 3), new Vector3D(4, 5, 6), new Vector3D(7, 8, 9));
+        FieldPVCoordinates<Decimal64> pv64 = new FieldPVCoordinates<>(Decimal64Field.getInstance(), pv);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(pv.getPosition(), pv64.getPosition().toVector3D()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(pv.getVelocity(), pv64.getVelocity().toVector3D()),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(pv.getAcceleration(), pv64.getAcceleration().toVector3D()),
+                            1.0e-15);
+    }
+
+    @Test
+    public void testZero() {
+        Assert.assertEquals(0.0,
+                            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).getPosition().getNorm().getReal(),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).getVelocity().getNorm().getReal(),
+                            1.0e-15);
+        Assert.assertEquals(0.0,
+                            FieldPVCoordinates.getZero(Decimal64Field.getInstance()).getAcceleration().getNorm().getReal(),
+                            1.0e-15);
     }
 
     @Test
@@ -241,11 +273,11 @@ public class FieldPVCoordinatesTest {
 
     private FieldVector3D<DerivativeStructure> createVector(double x, double y, double z, int params) {
         return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(params, 1, 0, x),
-                              new DerivativeStructure(params, 1, 1, y),
-                              new DerivativeStructure(params, 1, 2, z));
+                                                      new DerivativeStructure(params, 1, 1, y),
+                                                      new DerivativeStructure(params, 1, 2, z));
     }
 
-    private void checkPV(FieldPVCoordinates<DerivativeStructure> expected, FieldPVCoordinates<DerivativeStructure> real, double epsilon) {
+    private <T extends RealFieldElement<T>> void checkPV(FieldPVCoordinates<T> expected, FieldPVCoordinates<T> real, double epsilon) {
         Assert.assertEquals(expected.getPosition().getX().getReal(), real.getPosition().getX().getReal(), epsilon);
         Assert.assertEquals(expected.getPosition().getY().getReal(), real.getPosition().getY().getReal(), epsilon);
         Assert.assertEquals(expected.getPosition().getZ().getReal(), real.getPosition().getZ().getReal(), epsilon);

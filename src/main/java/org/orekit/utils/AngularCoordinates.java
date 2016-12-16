@@ -18,11 +18,13 @@ package org.orekit.utils;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -598,6 +600,52 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                                                    -1, crossDotP);
 
         return new TimeStampedPVCoordinates(pv.getDate(), transformedP, transformedV, transformedA);
+
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @param <T> type of the field elements
+     * @return a new pv coordinates which is the image of u by the rotation
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
+
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = FieldRotation.applyTo(rotation, pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, FieldRotation.applyTo(rotation, pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new FieldPVCoordinates<>(transformedP, transformedV, transformedA);
+
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @param <T> type of the field elements
+     * @return a new pv coordinates which is the image of u by the rotation
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
+
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = FieldRotation.applyTo(rotation, pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, FieldRotation.applyTo(rotation, pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new TimeStampedFieldPVCoordinates<>(pv.getDate(), transformedP, transformedV, transformedA);
 
     }
 

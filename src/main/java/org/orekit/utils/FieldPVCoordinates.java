@@ -16,6 +16,7 @@
  */
 package org.orekit.utils;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.time.TimeShiftable;
@@ -48,7 +49,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
     /** The acceleration. */
     private final FieldVector3D<T> acceleration;
 
-    /** Builds a PVCoordinates triplet with zero acceleration.
+    /** Builds a FieldPVCoordinates triplet with zero acceleration.
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
      */
@@ -59,7 +60,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         this.acceleration = new FieldVector3D<T>(zero, zero, zero);
     }
 
-    /** Builds a PVCoordinates triplet.
+    /** Builds a FieldPVCoordinates triplet.
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
      * @param acceleration the acceleration vector (m/s²)
@@ -71,7 +72,17 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         this.acceleration = acceleration;
     }
 
-    /** Multiplicative constructor
+    /** Builds a FieldPVCoordinates from a field and a regular PVCoordinates.
+     * @param field field for the components
+     * @param pv PVCoordinates triplet to convert
+     */
+    public FieldPVCoordinates(final Field<T> field, final PVCoordinates pv) {
+        this.position     = new FieldVector3D<T>(field, pv.getPosition());
+        this.velocity     = new FieldVector3D<T>(field, pv.getVelocity());
+        this.acceleration = new FieldVector3D<T>(field, pv.getAcceleration());
+    }
+
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param a scale factor
@@ -83,7 +94,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a, pv.acceleration);
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param a scale factor
@@ -95,7 +106,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a, pv.acceleration);
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param a scale factor
@@ -107,7 +118,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a, pv.getAcceleration());
     }
 
-    /** Subtractive constructor
+    /** Subtractive constructor.
      * <p>Build a relative PVCoordinates from a start and an end position.</p>
      * <p>The PVCoordinates built will be end - start.</p>
      * @param start Starting PVCoordinates
@@ -119,7 +130,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         this.acceleration = end.acceleration.subtract(start.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param a1 first scale factor
@@ -134,7 +145,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a1, pv1.acceleration, a2, pv2.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param a1 first scale factor
@@ -149,7 +160,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a1, pv1.acceleration, a2, pv2.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param a1 first scale factor
@@ -164,7 +175,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration());
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param a1 first scale factor
@@ -175,14 +186,14 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv3 third base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
-                           final double a2, final FieldPVCoordinates<T> pv2,
-                           final double a3, final FieldPVCoordinates<T> pv3) {
+                              final double a2, final FieldPVCoordinates<T> pv2,
+                              final double a3, final FieldPVCoordinates<T> pv3) {
         position     = new FieldVector3D<T>(a1, pv1.position,     a2, pv2.position,     a3, pv3.position);
         velocity     = new FieldVector3D<T>(a1, pv1.velocity,     a2, pv2.velocity,     a3, pv3.velocity);
         acceleration = new FieldVector3D<T>(a1, pv1.acceleration, a2, pv2.acceleration, a3, pv3.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param a1 first scale factor
@@ -200,7 +211,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a1, pv1.acceleration, a2, pv2.acceleration, a3, pv3.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param a1 first scale factor
@@ -218,7 +229,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration());
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param a1 first scale factor
@@ -239,7 +250,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a1, pv1.acceleration, a2, pv2.acceleration, a3, pv3.acceleration, a4, pv4.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param a1 first scale factor
@@ -260,7 +271,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         acceleration = new FieldVector3D<T>(a1, pv1.acceleration, a2, pv2.acceleration, a3, pv3.acceleration, a4, pv4.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param a1 first scale factor
@@ -282,6 +293,15 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
                                             a3, pv3.getVelocity(),     a4, pv4.getVelocity());
         acceleration = new FieldVector3D<T>(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(),
                                             a3, pv3.getAcceleration(), a4, pv4.getAcceleration());
+    }
+
+    /** Get fixed position/velocity at origin (both p, v and a are zero vectors).
+     * @param field field for the components
+     * @param <T> the type of the field elements
+     * @return a new fixed position/velocity at origin
+     */
+    public static <T extends RealFieldElement<T>> FieldPVCoordinates<T> getZero(final Field<T> field) {
+        return new FieldPVCoordinates<>(field, PVCoordinates.ZERO);
     }
 
     /** Estimate velocity between two positions.
