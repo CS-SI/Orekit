@@ -436,7 +436,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             // extremely rare case: the sun is along solar array rotation axis
             // (there will not be much output power ...)
             // we set up an arbitrary normal
-            return new FieldVector3D<T>(f.getField().getOne(), saZ.orthogonal());
+            return new FieldVector3D<T>(f.getField(), saZ.orthogonal());
         }
 
         final T s = f.sqrt().reciprocal();
@@ -476,7 +476,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             // extremely rare case: the sun is along solar array rotation axis
             // (there will not be much output power ...)
             // we set up an arbitrary normal
-            return new FieldVector3D<DerivativeStructure>(position.getX().getField().getOne(), saZ.orthogonal());
+            return new FieldVector3D<DerivativeStructure>(position.getX().getField(), saZ.orthogonal());
         }
 
         final DerivativeStructure s = f.sqrt().reciprocal();
@@ -572,8 +572,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             }
         }
 
-        return new FieldVector3D<DerivativeStructure>(dragCoeffDS.multiply(sv * density / (2.0 * mass)),
-                                                      relativeVelocity);
+        return new FieldVector3D<>(dragCoeffDS.multiply(sv * density / (2.0 * mass)),
+                                   relativeVelocity);
 
     }
 
@@ -645,7 +645,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
 
         // body facets contribution
         for (final Facet bodyFacet : facets) {
-            normal = new FieldVector3D<DerivativeStructure>(mass.getField().getOne(), bodyFacet.getNormal());
+            normal = new FieldVector3D<DerivativeStructure>(mass.getField(), bodyFacet.getNormal());
             dot = FieldVector3D.dotProduct(normal, fluxSat);
             if (dot.getValue() < 0) {
                 // the facet intercepts the incoming flux

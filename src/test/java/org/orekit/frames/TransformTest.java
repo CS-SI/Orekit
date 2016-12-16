@@ -30,6 +30,7 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -163,7 +164,7 @@ public class TransformTest {
             // check the composition
             for (int j = 0; j < 10; ++j) {
                 Vector3D a = randomVector(1.0, random);
-                FieldVector3D<Decimal64> aF = new FieldVector3D<Decimal64>(Decimal64.ONE, a);
+                FieldVector3D<Decimal64> aF = new FieldVector3D<>(Decimal64Field.getInstance(), a);
                 Vector3D b = randomVector(1.0e3, random);
                 PVCoordinates c = new PVCoordinates(randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random));
                 Vector3D                 aRef  = a;
@@ -203,6 +204,31 @@ public class TransformTest {
 
         }
 
+    }
+
+    @Test
+    public void testIdentityJacobianP() {
+        doTestIdentityJacobian(3, CartesianDerivativesFilter.USE_P);
+    }
+
+    @Test
+    public void testIdentityJacobianPV() {
+        doTestIdentityJacobian(6, CartesianDerivativesFilter.USE_PV);
+    }
+
+    @Test
+    public void testIdentityJacobianPVA() {
+        doTestIdentityJacobian(9, CartesianDerivativesFilter.USE_PVA);
+    }
+
+    private void doTestIdentityJacobian(int n, CartesianDerivativesFilter filter) {
+        double[][] jacobian = new double[n][n];
+        Transform.IDENTITY.getJacobian(filter, jacobian);
+        for (int i = 0; i < n; ++i) {
+            for (int j = 0; j < n; ++j) {
+                Assert.assertEquals(i == j ? 1.0 : 0.0, jacobian[i][j], 1.0e-15);
+            }
+        }
     }
 
     @Test
@@ -402,9 +428,9 @@ public class TransformTest {
             checkVector(good, result, 1.0e-15);
 
             FieldPVCoordinates<Decimal64> fieldPVOne =
-                            new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getPosition()),
-                                                              new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getVelocity()),
-                                                              new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getAcceleration()));
+                            new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getPosition()),
+                                                              new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getVelocity()),
+                                                              new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getAcceleration()));
             FieldPVCoordinates<Decimal64> fieldPVTwo = tr.transformPVCoordinates(fieldPVOne);
             FieldVector3D<Decimal64> fieldResult  =
                             fieldPVTwo.getPosition().add(new FieldVector3D<Decimal64>(dt, fieldPVTwo.getVelocity()));
@@ -412,9 +438,9 @@ public class TransformTest {
 
             TimeStampedFieldPVCoordinates<Decimal64> fieldTPVOne =
                             new TimeStampedFieldPVCoordinates<Decimal64>(tr.getDate(),
-                                            new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getPosition()),
-                                            new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getVelocity()),
-                                            new FieldVector3D<Decimal64>(Decimal64.ONE, pvOne.getAcceleration()));
+                                            new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getPosition()),
+                                            new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getVelocity()),
+                                            new FieldVector3D<Decimal64>(Decimal64Field.getInstance(), pvOne.getAcceleration()));
             TimeStampedFieldPVCoordinates<Decimal64> fieldTPVTwo = tr.transformPVCoordinates(fieldTPVOne);
             FieldVector3D<Decimal64> fieldTResult  =
                             fieldTPVTwo.getPosition().add(new FieldVector3D<Decimal64>(dt, fieldTPVTwo.getVelocity()));

@@ -123,8 +123,8 @@ public class IsotropicDrag implements DragSensitive {
 
         final DerivativeStructure dragCoeffDS = new DerivativeStructure(1, 1, 0, dragCoeff);
 
-        return new FieldVector3D<DerivativeStructure>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
-                              relativeVelocity);
+        return new FieldVector3D<>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
+                                   relativeVelocity);
 
     }
 
@@ -135,8 +135,8 @@ public class IsotropicDrag implements DragSensitive {
                          final T mass, final T density,
                          final FieldVector3D<T> relativeVelocity)
             throws OrekitException {
-        return new FieldVector3D<T>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
-                        relativeVelocity);
+        return new FieldVector3D<>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
+                                   relativeVelocity);
     }
 
 }
