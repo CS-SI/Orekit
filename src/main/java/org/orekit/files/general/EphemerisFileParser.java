@@ -46,7 +46,7 @@ public interface EphemerisFileParser {
      * Parse an ephemeris file from a file on the local file system.
      *
      * @param fileName path to the ephemeris file.
-     * @return parsed ephemeris fiale.
+     * @return parsed ephemeris file.
      * @throws OrekitException if the ephemeris file cannot be parsed.
      * @throws IOException     if one is thrown while opening or reading from {@code
      *                         fileName}.

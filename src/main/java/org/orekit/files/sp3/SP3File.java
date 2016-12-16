@@ -576,7 +576,7 @@ public class SP3File implements EphemerisFile {
         SP3Coordinate(final AbsoluteDate date,
                       final Vector3D position,
                       final double clock) {
-            this(date, position, Vector3D.ZERO, clock, 0);
+            this(date, position, Vector3D.NaN, clock, 0);
         }
 
         /**
@@ -593,7 +593,7 @@ public class SP3File implements EphemerisFile {
                       final Vector3D velocity,
                       final double clock,
                       final double clockRate) {
-            super(date, position, velocity, Vector3D.ZERO);
+            super(date, position, velocity, Vector3D.NaN);
             this.clock = clock;
             this.clockRate = clockRate;
         }
