@@ -42,6 +42,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * of this interface to provide access to the additional information.
  *
  * @author Evan Ward
+ * @see SatelliteEphemeris
+ * @see EphemerisSegment
  */
 public interface EphemerisFile {
 
@@ -61,6 +63,8 @@ public interface EphemerisFile {
      * as a maneuver.
      *
      * @author Evan Ward
+     * @see EphemerisFile
+     * @see EphemerisSegment
      */
     interface SatelliteEphemeris {
 
@@ -146,6 +150,10 @@ public interface EphemerisFile {
      *
      * <p> Segments are typically used to split an ephemeris around discontinuous events
      * such as maneuvers.
+     *
+     * @author Evan Ward
+     * @see EphemerisFile
+     * @see SatelliteEphemeris
      */
     interface EphemerisSegment {
 
