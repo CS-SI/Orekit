@@ -31,7 +31,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.files.sp3.SP3File.SP3Coordinate;
 import org.orekit.files.sp3.SP3File.SP3FileType;

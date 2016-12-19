@@ -18,8 +18,6 @@ package org.orekit.files.general;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.orekit.errors.OrekitException;
 
