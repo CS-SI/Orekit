@@ -1,6 +1,7 @@
 package org.orekit.propagation.analytical;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -14,6 +15,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -50,6 +52,7 @@ public class AggregateBoundedPropagatorTest {
 
         //verify
         int ulps = 0;
+        Assert.assertThat(actual.getFrame(), CoreMatchers.is(p1.getFrame()));
         Assert.assertThat(actual.getMinDate(), CoreMatchers.is(date));
         Assert.assertThat(actual.getMaxDate(), CoreMatchers.is(date.shiftedBy(20)));
         Assert.assertThat(
@@ -87,6 +90,7 @@ public class AggregateBoundedPropagatorTest {
 
         //verify
         int ulps = 0;
+        Assert.assertThat(actual.getFrame(), CoreMatchers.is(p1.getFrame()));
         Assert.assertThat(actual.getMinDate(), CoreMatchers.is(date));
         Assert.assertThat(actual.getMaxDate(), CoreMatchers.is(date.shiftedBy(20)));
         Assert.assertThat(
@@ -124,6 +128,7 @@ public class AggregateBoundedPropagatorTest {
 
         //verify
         int ulps = 0;
+        Assert.assertThat(actual.getFrame(), CoreMatchers.is(p1.getFrame()));
         Assert.assertThat(actual.getMinDate(), CoreMatchers.is(date));
         Assert.assertThat(actual.getMaxDate(), CoreMatchers.is(date.shiftedBy(20)));
         Assert.assertThat(
@@ -195,6 +200,48 @@ public class AggregateBoundedPropagatorTest {
             // expected
         }
 
+    }
+
+    /**
+     * Check that resetting the state is prohibited.
+     *
+     * @throws OrekitException on error.
+     */
+    @Test
+    public void testResetState() throws OrekitException {
+        // setup
+        AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
+        BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
+        BoundedPropagator p2 = createPropagator(date.shiftedBy(10), date.shiftedBy(20), 1);
+        SpacecraftState ic = p2.getInitialState();
+
+        // action
+        BoundedPropagator actual = new AggregateBoundedPropagator(Arrays.asList(p1, p2));
+
+        // verify
+        try {
+            actual.resetInitialState(ic);
+            Assert.fail("Expected Exception");
+        } catch (OrekitException e) {
+            // expected
+        }
+    }
+
+    /**
+     * Check that creating an aggregate propagator from an empty list of propagators is
+     * prohibited.
+     *
+     * @throws OrekitException on error.
+     */
+    @Test
+    public void testEmptyList() throws OrekitException {
+        // action + verify
+        try {
+            new AggregateBoundedPropagator(Collections.emptyList());
+            Assert.fail("Expected Exception");
+        } catch (OrekitException e) {
+            // expected
+        }
     }
 
     /**
