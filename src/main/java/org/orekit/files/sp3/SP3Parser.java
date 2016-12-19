@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.function.Function;
@@ -29,6 +31,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.files.sp3.SP3File.SP3Coordinate;
 import org.orekit.files.sp3.SP3File.SP3FileType;
@@ -122,6 +125,13 @@ public class SP3Parser implements EphemerisFileParser {
     public SP3File parse(final InputStream stream) throws OrekitException, IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, stream.toString());
+        }
+    }
+
+    @Override
+    public SP3File parse(final String fileName) throws IOException, OrekitException {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
+            return parse(reader, fileName);
         }
     }
 
