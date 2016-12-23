@@ -25,7 +25,7 @@ import java.util.List;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
@@ -1206,6 +1206,7 @@ public class FieldKeplerianParametersTest {
     }
 
     public <T extends RealFieldElement<T>>void testKeplerianDerivatives(final Field<T> field) {
+        final DSFactory factory = new DSFactory(1, 1);
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
         final FieldKeplerianOrbit<T> o = new FieldKeplerianOrbit<T>(new FieldPVCoordinates<T>(new FieldVector3D<T>(field.getZero().add(-4947831.),
                                                                                                                    field.getZero().add(-3765382.),
@@ -1228,19 +1229,19 @@ public class FieldKeplerianParametersTest {
             public double value(double dt) {
                 return o.shiftedBy(field.getZero().add(dt)).getPVCoordinates().getPosition().getX().getReal();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getVelocity().getX().getReal(), vx, 3.0e-12 * v.getNorm().getReal());
         double vy = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(field.getZero().add(dt)).getPVCoordinates().getPosition().getY().getReal();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getVelocity().getY().getReal(), vy, 3.0e-12 * v.getNorm().getReal());
         double vz = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(field.getZero().add(dt)).getPVCoordinates().getPosition().getZ().getReal();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getVelocity().getZ().getReal(), vz, 3.0e-12 * v.getNorm().getReal());
 
         // check acceleration is the derivative of velocity
@@ -1248,19 +1249,19 @@ public class FieldKeplerianParametersTest {
             public double value(double dt) {
                 return o.shiftedBy(field.getZero().add(dt)).getPVCoordinates().getVelocity().getX().getReal();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getAcceleration().getX().getReal(), ax, 3.0e-12 * a.getNorm().getReal());
         double ay = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(field.getZero().add(dt)).getPVCoordinates().getVelocity().getY().getReal();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getAcceleration().getY().getReal(), ay, 3.0e-12 * a.getNorm().getReal());
         double az = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(field.getZero().add(dt)).getPVCoordinates().getVelocity().getZ().getReal();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getAcceleration().getZ().getReal(), az, 3.0e-12 * a.getNorm().getReal());
 
         // check jerk is the derivative of acceleration
@@ -1272,7 +1273,7 @@ public class FieldKeplerianParametersTest {
             public double value(double dt) {
                 return o.shiftedBy(field.getZero().add(dt)).getPVCoordinates().getAcceleration().getX().getReal();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
 
 
         Assert.assertEquals(keplerianJerk.getX().getReal(), jx, 4.0e-12 * keplerianJerk.getNorm().getReal());
@@ -1280,13 +1281,13 @@ public class FieldKeplerianParametersTest {
             public double value(double dt) {
                 return o.shiftedBy(field.getZero().add(dt)).getPVCoordinates().getAcceleration().getY().getReal();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(keplerianJerk.getY().getReal(), jy, 4.0e-12 * keplerianJerk.getNorm().getReal());
         double jz = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(field.getZero().add(dt)).getPVCoordinates().getAcceleration().getZ().getReal();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(keplerianJerk.getZ().getReal(), jz, 4.0e-12 * keplerianJerk.getNorm().getReal());
 
     }

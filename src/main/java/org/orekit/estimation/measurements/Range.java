@@ -16,6 +16,7 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -47,6 +48,9 @@ public class Range extends AbstractMeasurement<Range> {
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
@@ -64,6 +68,7 @@ public class Range extends AbstractMeasurement<Range> {
               station.getNorthOffsetDriver(),
               station.getZenithOffsetDriver());
         this.station = station;
+        this.factory = new DSFactory(9, 1);
     }
 
     /** Get the ground station from which measurement is performed.
@@ -88,39 +93,37 @@ public class Range extends AbstractMeasurement<Range> {
         //  - 0..2 - Px, Py, Pz   : Position of the spacecraft in inertial frame
         //  - 3..5 - Vx, Vy, Vz   : Velocity of the spacecraft in inertial frame
         //  - 6..8 - QTx, QTy, QTz: Position of the station in station's offset frame
-        final int parameters = 9;
-        final int order      = 1;
 
         // Position of the spacecraft expressed as a derivative structure
         // The components of the position are the 3 first derivative parameters
         final Vector3D stateP = state.getPVCoordinates().getPosition();
         final FieldVector3D<DerivativeStructure> pDS =
-                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, 0, stateP.getX()),
-                                                               new DerivativeStructure(parameters, order, 1, stateP.getY()),
-                                                               new DerivativeStructure(parameters, order, 2, stateP.getZ()));
+                        new FieldVector3D<DerivativeStructure>(factory.variable(0, stateP.getX()),
+                                                               factory.variable(1, stateP.getY()),
+                                                               factory.variable(2, stateP.getZ()));
 
         // Velocity of the spacecraft expressed as a derivative structure
         // The components of the velocity are the 3 second derivative parameters
         final Vector3D stateV = state.getPVCoordinates().getVelocity();
         final FieldVector3D<DerivativeStructure> vDS =
-                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, 3, stateV.getX()),
-                                                               new DerivativeStructure(parameters, order, 4, stateV.getY()),
-                                                               new DerivativeStructure(parameters, order, 5, stateV.getZ()));
+                        new FieldVector3D<DerivativeStructure>(factory.variable(3, stateV.getX()),
+                                                               factory.variable(4, stateV.getY()),
+                                                               factory.variable(5, stateV.getZ()));
 
         // Acceleration of the spacecraft
         // The components of the acceleration are not derivative parameters
         final Vector3D stateA = state.getPVCoordinates().getAcceleration();
         final FieldVector3D<DerivativeStructure> aDS =
-                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, stateA.getX()),
-                                                               new DerivativeStructure(parameters, order, stateA.getY()),
-                                                               new DerivativeStructure(parameters, order, stateA.getZ()));
+                        new FieldVector3D<DerivativeStructure>(factory.constant(stateA.getX()),
+                                                               factory.constant(stateA.getY()),
+                                                               factory.constant(stateA.getZ()));
 
         final TimeStampedFieldPVCoordinates<DerivativeStructure> pvaDS =
                         new TimeStampedFieldPVCoordinates<DerivativeStructure>(state.getDate(), pDS, vDS, aDS);
 
         // Station position in body frame, expressed as a derivative structure
         // The components of station's position in offset frame are the 3 last derivative parameters
-        final GroundStation.OffsetDerivatives od = station.getOffsetDerivatives(parameters, 6, 7, 8);
+        final GroundStation.OffsetDerivatives od = station.getOffsetDerivatives(factory, 6, 7, 8);
         final Frame bodyframe = station.getOffsetFrame().getParentShape().getBodyFrame();
 
         // Station position in inertial frame at end of the downlink leg

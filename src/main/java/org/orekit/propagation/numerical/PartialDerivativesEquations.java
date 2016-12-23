@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -388,35 +389,35 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         }
 
         // prepare derivation variables, 3 for position, 3 for velocity and optionally 1 for mass
-        final int nbVars = (dAccdM == null) ? 6 : 7;
+        final DSFactory factory = new DSFactory((dAccdM == null) ? 6 : 7, 1);
 
         // position corresponds three free parameters
         final Vector3D position = s.getPVCoordinates().getPosition();
         final FieldVector3D<DerivativeStructure> dsP =
-                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(nbVars, 1, 0, position.getX()),
-                                                               new DerivativeStructure(nbVars, 1, 1, position.getY()),
-                                                               new DerivativeStructure(nbVars, 1, 2, position.getZ()));
+                        new FieldVector3D<DerivativeStructure>(factory.variable(0, position.getX()),
+                                                               factory.variable(1, position.getY()),
+                                                               factory.variable(2, position.getZ()));
 
         // velocity corresponds three free parameters
         final Vector3D velocity = s.getPVCoordinates().getVelocity();
         final FieldVector3D<DerivativeStructure> dsV =
-                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(nbVars, 1, 3, velocity.getX()),
-                                                               new DerivativeStructure(nbVars, 1, 4, velocity.getY()),
-                                                               new DerivativeStructure(nbVars, 1, 5, velocity.getZ()));
+                        new FieldVector3D<DerivativeStructure>(factory.variable(3, velocity.getX()),
+                                                               factory.variable(4, velocity.getY()),
+                                                               factory.variable(5, velocity.getZ()));
 
         // mass corresponds either to a constant or to one free parameter
         final DerivativeStructure dsM = (dAccdM == null) ?
-                                        new DerivativeStructure(nbVars, 1,    s.getMass()) :
-                                        new DerivativeStructure(nbVars, 1, 6, s.getMass());
+                                        factory.constant(s.getMass()) :
+                                        factory.variable(6, s.getMass());
 
         // we should compute attitude partial derivatives with respect to position/velocity
         // see issue #200
         final Rotation rotation = s.getAttitude().getRotation();
         final FieldRotation<DerivativeStructure> dsR =
-                new FieldRotation<DerivativeStructure>(new DerivativeStructure(nbVars, 1, rotation.getQ0()),
-                                                       new DerivativeStructure(nbVars, 1, rotation.getQ1()),
-                                                       new DerivativeStructure(nbVars, 1, rotation.getQ2()),
-                                                       new DerivativeStructure(nbVars, 1, rotation.getQ3()),
+                new FieldRotation<DerivativeStructure>(factory.constant(rotation.getQ0()),
+                                                       factory.constant(rotation.getQ1()),
+                                                       factory.constant(rotation.getQ2()),
+                                                       factory.constant(rotation.getQ3()),
                                                        false);
 
         // compute acceleration Jacobians, finishing with the largest force: Newtonian attraction

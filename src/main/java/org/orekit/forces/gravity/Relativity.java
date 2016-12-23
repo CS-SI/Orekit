@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -68,6 +69,9 @@ public class Relativity extends AbstractForceModel {
     /** Earth's gravitational parameter. */
     private double gm;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /**
      * Create a force model to add post-Newtonian acceleration corrections to an Earth
      * orbit.
@@ -87,6 +91,7 @@ public class Relativity extends AbstractForceModel {
                     Relativity.this.gm = driver.getValue();
                 }
             });
+            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -149,7 +154,7 @@ public class Relativity extends AbstractForceModel {
             final String paramName) throws OrekitException {
 
         complainIfNotSupported(paramName);
-        final DerivativeStructure gmDS = new DerivativeStructure(1, 1, 0, this.gm);
+        final DerivativeStructure gmDS = factory.variable(0, this.gm);
 
         final PVCoordinates pv = s.getPVCoordinates();
         final Vector3D p = pv.getPosition();
@@ -161,12 +166,9 @@ public class Relativity extends AbstractForceModel {
         final double s2 = v.getNormSq();
         final double c2 = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT;
         //eq. 3.146
-        return new FieldVector3D<DerivativeStructure>(
-                gmDS.multiply(4 / r).subtract(s2),
-                p,
-                new DerivativeStructure(1, 1, 4 * p.dotProduct(v)),
-                v)
-                .scalarMultiply(gmDS.divide(r2 * r * c2));
+        return new FieldVector3D<>(gmDS.multiply(4 / r).subtract(s2),     p,
+                                   factory.constant(4 * p.dotProduct(v)), v).
+               scalarMultiply(gmDS.divide(r2 * r * c2));
     }
 
     @Override

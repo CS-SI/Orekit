@@ -19,6 +19,7 @@ package org.orekit.utils;
 import java.io.Serializable;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -375,28 +376,32 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             oZDot, oYDot, oXDot, oZ, oY, oX
         });
 
+        final DSFactory factory;
         final DerivativeStructure q0DS;
         final DerivativeStructure q1DS;
         final DerivativeStructure q2DS;
         final DerivativeStructure q3DS;
         switch(order) {
             case 0 :
-                q0DS = new DerivativeStructure(1, 0, q0);
-                q1DS = new DerivativeStructure(1, 0, q1);
-                q2DS = new DerivativeStructure(1, 0, q2);
-                q3DS = new DerivativeStructure(1, 0, q3);
+                factory = new DSFactory(1, order);
+                q0DS = factory.build(q0);
+                q1DS = factory.build(q1);
+                q2DS = factory.build(q2);
+                q3DS = factory.build(q3);
                 break;
             case 1 :
-                q0DS = new DerivativeStructure(1, 1, q0, q0Dot);
-                q1DS = new DerivativeStructure(1, 1, q1, q1Dot);
-                q2DS = new DerivativeStructure(1, 1, q2, q2Dot);
-                q3DS = new DerivativeStructure(1, 1, q3, q3Dot);
+                factory = new DSFactory(1, order);
+                q0DS = factory.build(q0, q0Dot);
+                q1DS = factory.build(q1, q1Dot);
+                q2DS = factory.build(q2, q2Dot);
+                q3DS = factory.build(q3, q3Dot);
                 break;
             case 2 :
-                q0DS = new DerivativeStructure(1, 2, q0, q0Dot, q0DotDot);
-                q1DS = new DerivativeStructure(1, 2, q1, q1Dot, q1DotDot);
-                q2DS = new DerivativeStructure(1, 2, q2, q2Dot, q2DotDot);
-                q3DS = new DerivativeStructure(1, 2, q3, q3Dot, q3DotDot);
+                factory = new DSFactory(1, order);
+                q0DS = factory.build(q0, q0Dot, q0DotDot);
+                q1DS = factory.build(q1, q1Dot, q1DotDot);
+                q2DS = factory.build(q2, q2Dot, q2DotDot);
+                q3DS = factory.build(q3, q3Dot, q3DotDot);
                 break;
             default :
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);

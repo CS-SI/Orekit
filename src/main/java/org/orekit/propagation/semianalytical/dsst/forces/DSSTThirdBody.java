@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -192,6 +193,9 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** k * &Chi;³. */
     private double kXXX;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @see org.orekit.bodies.CelestialBodyFactory
@@ -218,6 +222,8 @@ public class DSSTThirdBody implements DSSTForceModel {
         for (int s = 0; s <= MAX_POWER; s++) {
             this.hansenObjects[s] = new HansenThirdBodyLinear(MAX_POWER, s);
         }
+
+        this.factory = new DSFactory(1, 1);
 
     }
 
@@ -1144,7 +1150,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
             final DerivativeStructure jac =
-                    JacobiPolynomials.getValue(l, absJmS, absJpS, new DerivativeStructure(1, 1, 0, X));
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, factory.variable(0, X));
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);

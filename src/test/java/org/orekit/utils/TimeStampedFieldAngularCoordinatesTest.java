@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -261,6 +262,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
     @Test
     public void testInterpolationAroundPI() throws OrekitException {
 
+        DSFactory factory = new DSFactory(4, 1);
         List<TimeStampedFieldAngularCoordinates<DerivativeStructure>> sample =
                 new ArrayList<TimeStampedFieldAngularCoordinates<DerivativeStructure>>();
 
@@ -269,7 +271,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> ac0 =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(t0,
                                                                             new FieldRotation<DerivativeStructure>(createVector(1, 0, 0, 4),
-                                                                                                                   new DerivativeStructure(4, 1, 3, FastMath.toRadians(179.999)),
+                                                                                                                   factory.variable(3, FastMath.toRadians(179.999)),
                                                                                                                    RotationConvention.VECTOR_OPERATOR),
                                                                             createVector(FastMath.toRadians(0), 0, 0, 4),
                                                                             createVector(0, 0, 0, 4));
@@ -280,7 +282,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> ac1 =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(t1,
                                                                             new FieldRotation<DerivativeStructure>(createVector(1, 0, 0, 4),
-                                                                                                                   new DerivativeStructure(4, 1, 3, FastMath.toRadians(-179.999)),
+                                                                                            factory.variable(3, FastMath.toRadians(-179.999)),
                                                                                                                    RotationConvention.VECTOR_OPERATOR),
                                                                             createVector(FastMath.toRadians(0), 0, 0, 4),
                                                                             createVector(0, 0, 0, 4));
@@ -297,13 +299,14 @@ public class TimeStampedFieldAngularCoordinatesTest {
 
     @Test
     public void testInterpolationTooSmallSample() throws OrekitException {
+        DSFactory factory = new DSFactory(4, 1);
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
         TimeStampedFieldAngularCoordinates<DerivativeStructure>  reference =
                 new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date,
                                                                             new FieldRotation<DerivativeStructure>(createVector(0, 0, 1, 4),
-                                                                                                                   new DerivativeStructure(4, 1, 3, alpha0),
+                                                                                                                   factory.variable(3, alpha0),
                                                                                                                    RotationConvention.VECTOR_OPERATOR),
                                                                             createVector(0, 0, -omega, 4),
                                                                             createVector(0, 0, 0, 4));
@@ -373,23 +376,25 @@ public class TimeStampedFieldAngularCoordinatesTest {
 
     private FieldRotation<DerivativeStructure> createRotation(FieldVector3D<DerivativeStructure> axis, double angle) {
         return new FieldRotation<DerivativeStructure>(axis,
-                                                      new DerivativeStructure(4, 1, angle),
+                                                      new DSFactory(4, 1).constant(angle),
                                                       RotationConvention.VECTOR_OPERATOR);
     }
 
     private FieldRotation<DerivativeStructure> createRotation(double q0, double q1, double q2, double q3,
                                       boolean needsNormalization) {
-        return new FieldRotation<DerivativeStructure>(new DerivativeStructure(4, 1, 0, q0),
-                                                      new DerivativeStructure(4, 1, 1, q1),
-                                                      new DerivativeStructure(4, 1, 2, q2),
-                                                      new DerivativeStructure(4, 1, 3, q3),
-                                                      needsNormalization);
+        DSFactory factory = new DSFactory(4, 1);
+        return new FieldRotation<>(factory.variable(0, q0),
+                                   factory.variable(1, q1),
+                                   factory.variable(2, q2),
+                                   factory.variable(3, q3),
+                                   needsNormalization);
     }
 
     private FieldVector3D<DerivativeStructure> createVector(double x, double y, double z, int params) {
-        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(params, 1, 0, x),
-                                                      new DerivativeStructure(params, 1, 1, y),
-                                                      new DerivativeStructure(params, 1, 2, z));
+        DSFactory factory = new DSFactory(params, 1);
+        return new FieldVector3D<>(factory.variable(0, x),
+                                   factory.variable(1, y),
+                                   factory.variable(2, z));
     }
 
 }

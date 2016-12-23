@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -506,7 +507,7 @@ public class SolarBodyTest {
             final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
             final double r2Sat           = Vector3D.dotProduct(satToBody, satToBody);
 
-            final DerivativeStructure gmds = new DerivativeStructure(1, 1, 0, gm);
+            final DerivativeStructure gmds = new DSFactory(1, 1).variable(0, gm);
 
             // compute relative acceleration
             return new FieldVector3D<DerivativeStructure>(gmds.multiply(FastMath.pow(r2Sat, -1.5)), satToBody);

@@ -17,6 +17,7 @@
 package org.orekit.forces.gravity;
 
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -67,13 +68,7 @@ public class RelativityTest extends AbstractForceModelTest {
     private static final Frame frame = FramesFactory.getGCRF();
     /** identity rotation */
     private static final FieldRotation<DerivativeStructure> identity =
-            new FieldRotation<DerivativeStructure>(
-                    new DerivativeStructure(1, 1, 1),
-                    new DerivativeStructure(1, 1, 0),
-                    new DerivativeStructure(1, 1, 0),
-                    new DerivativeStructure(1, 1, 0),
-                    false
-            );
+            FieldRotation.getIdentity(new DSFactory(1, 1).getDerivativeField());
 
     /** set orekit data */
     @BeforeClass
@@ -82,7 +77,7 @@ public class RelativityTest extends AbstractForceModelTest {
     }
 
     /**
-     * check the acceleration from relitivity
+     * check the acceleration from relativity
      *
      * @throws OrekitException on error
      */
@@ -113,7 +108,7 @@ public class RelativityTest extends AbstractForceModelTest {
                 adder.getAcceleration().subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
-        final DerivativeStructure mass = new DerivativeStructure(7, 1, 0);
+        final DerivativeStructure mass = new DSFactory(7, 1).constant(0.0);
         final Vector3D actualDerivatives = relativity
                 .accelerationDerivatives(date, frame, ds(p, 0), ds(v, 3), identity, mass)
                 .toVector3D();
@@ -158,7 +153,7 @@ public class RelativityTest extends AbstractForceModelTest {
                 adder.getAcceleration().subtract(circularApproximation).getNorm(),
                 tol);
         //check derivatives
-        DerivativeStructure mass = new DerivativeStructure(7, 1, 6, 1);
+        DerivativeStructure mass = new DSFactory(7, 1).variable(6, 1);
         final FieldVector3D<DerivativeStructure> pDS = ds(p, 0);
         final FieldVector3D<DerivativeStructure> vDS = ds(v, 3);
         FieldVector3D<DerivativeStructure> gradient =
@@ -185,10 +180,11 @@ public class RelativityTest extends AbstractForceModelTest {
      * @return v as a DS vector
      */
     private static FieldVector3D<DerivativeStructure> ds(Vector3D v, int i) {
+        DSFactory factory = new DSFactory(7, 1);
         return new FieldVector3D<DerivativeStructure>(
-                new DerivativeStructure(7, 1, i, v.getX()),
-                new DerivativeStructure(7, 1, i + 1, v.getY()),
-                new DerivativeStructure(7, 1, i + 2, v.getZ())
+                factory.variable(i, v.getX()),
+                factory.variable(i + 1, v.getY()),
+                factory.variable(i + 2, v.getZ())
         );
     }
 
@@ -198,13 +194,14 @@ public class RelativityTest extends AbstractForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() throws OrekitException{
-        DerivativeStructure a_0 = new DerivativeStructure(6, 5, 0, 7e7);
-        DerivativeStructure e_0 = new DerivativeStructure(6, 5, 1, 0.4);
-        DerivativeStructure i_0 = new DerivativeStructure(6, 5, 2, 85 * FastMath.PI / 180);
-        DerivativeStructure R_0 = new DerivativeStructure(6, 5, 3, 0.7);
-        DerivativeStructure O_0 = new DerivativeStructure(6, 5, 4, 0.5);
-        DerivativeStructure n_0 = new DerivativeStructure(6, 5, 5, 0.1);
+    public void RealFieldTest() throws OrekitException {
+        DSFactory factory = new DSFactory(6, 5);
+        DerivativeStructure a_0 = factory.variable(0, 7e7);
+        DerivativeStructure e_0 = factory.variable(1, 0.4);
+        DerivativeStructure i_0 = factory.variable(2, 85 * FastMath.PI / 180);
+        DerivativeStructure R_0 = factory.variable(3, 0.7);
+        DerivativeStructure O_0 = factory.variable(4, 0.5);
+        DerivativeStructure n_0 = factory.variable(5, 0.1);
         
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
@@ -343,13 +340,14 @@ public class RelativityTest extends AbstractForceModelTest {
         (to test if the ForceModel it's actually
         doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException{
-        DerivativeStructure a_0 = new DerivativeStructure(6, 0, 0, 7e7);
-        DerivativeStructure e_0 = new DerivativeStructure(6, 0, 1, 0.4);
-        DerivativeStructure i_0 = new DerivativeStructure(6, 0, 2, 85 * FastMath.PI / 180);
-        DerivativeStructure R_0 = new DerivativeStructure(6, 0, 3, 0.7);
-        DerivativeStructure O_0 = new DerivativeStructure(6, 0, 4, 0.5);
-        DerivativeStructure n_0 = new DerivativeStructure(6, 0, 5, 0.1);
+    public void RealFieldExpectErrorTest() throws OrekitException {
+        DSFactory factory = new DSFactory(6, 0);
+        DerivativeStructure a_0 = factory.variable(0, 7e7);
+        DerivativeStructure e_0 = factory.variable(1, 0.4);
+        DerivativeStructure i_0 = factory.variable(2, 85 * FastMath.PI / 180);
+        DerivativeStructure R_0 = factory.variable(3, 0.7);
+        DerivativeStructure O_0 = factory.variable(4, 0.5);
+        DerivativeStructure n_0 = factory.variable(5, 0.1);
         
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();

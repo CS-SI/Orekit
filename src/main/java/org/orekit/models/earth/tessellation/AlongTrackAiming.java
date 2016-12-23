@@ -18,6 +18,7 @@ package org.orekit.models.earth.tessellation;
 
 import java.util.List;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -46,6 +47,9 @@ public class AlongTrackAiming implements TileAiming {
     /** Ground track over one half orbit. */
     private final List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> halfTrack;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param ellipsoid ellipsoid body on which the zone is defined
      * @param orbit orbit along which tiles should be aligned
@@ -55,7 +59,8 @@ public class AlongTrackAiming implements TileAiming {
      */
     public AlongTrackAiming(final OneAxisEllipsoid ellipsoid, final Orbit orbit, final boolean isAscending)
         throws OrekitException {
-        this.halfTrack      = findHalfTrack(orbit, ellipsoid, isAscending);
+        this.halfTrack = findHalfTrack(orbit, ellipsoid, isAscending);
+        this.factory   = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
@@ -101,7 +106,7 @@ public class AlongTrackAiming implements TileAiming {
                                             velocity.getX(), velocity.getY(), velocity.getZ()
                                         });
         }
-        final DerivativeStructure[] p  = interpolator.value(new DerivativeStructure(1, 1, 0, gp.getLatitude()));
+        final DerivativeStructure[] p  = interpolator.value(factory.variable(0, gp.getLatitude()));
 
         // extract interpolated ground position/velocity
         final Vector3D position = new Vector3D(p[0].getValue(),

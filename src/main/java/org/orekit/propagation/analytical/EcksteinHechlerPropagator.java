@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -643,9 +644,10 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
         public DerivativeStructure[] propagateParameters(final AbsoluteDate date)
             throws OrekitException {
 
+            final DSFactory factory = new DSFactory(1, 2);
+
             // keplerian evolution
-            final DerivativeStructure dt =
-                    new DerivativeStructure(1, 2, 0, date.durationFrom(mean.getDate()));
+            final DerivativeStructure dt = factory.variable(0, date.durationFrom(mean.getDate()));
             final DerivativeStructure xnot = dt.multiply(xnotDot);
 
             // secular effects
@@ -664,18 +666,16 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator impl
 
             // right ascension of ascending node
             final DerivativeStructure omm =
-                    new DerivativeStructure(1, 2,
-                                            MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
-                                                                     FastMath.PI),
-                                            ommD * xnotDot,
-                                            0.0);
+                    factory.build(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ommD * xnot.getValue(),
+                                                           FastMath.PI),
+                                  ommD * xnotDot,
+                                  0.0);
 
             // latitude argument
             final DerivativeStructure xlm =
-                    new DerivativeStructure(1, 2,
-                                            MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
-                                            aMD * xnotDot,
-                                            0.0);
+                    factory.build(MathUtils.normalizeAngle(mean.getAlphaM() + aMD * xnot.getValue(), FastMath.PI),
+                                  aMD * xnotDot,
+                                  0.0);
 
             // periodical terms
             final DerivativeStructure cl1 = xlm.cos();

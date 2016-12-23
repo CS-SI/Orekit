@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -582,7 +583,7 @@ public class PoissonSeriesParserTest {
             DerivativeStructure zDirect = zSeries.value(elements);
 
             // finite differences computation of derivatives
-            DerivativeStructure zero = new DerivativeStructure(1, 1, 0, 0.0);
+            DerivativeStructure zero = new DSFactory(1, 1).variable(0, 0.0);
             xCoordinate.setDate(date);
             DerivativeStructure xFinite = dx.value(zero);
             yCoordinate.setDate(date);

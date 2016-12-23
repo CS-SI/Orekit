@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -61,6 +62,9 @@ public class NewtonianAttraction extends AbstractForceModel {
     /** Central attraction coefficient (m^3/s^2). */
     private double mu;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
    /** Simple constructor.
      * @param mu central attraction coefficient (m^3/s^2)
      */
@@ -83,6 +87,7 @@ public class NewtonianAttraction extends AbstractForceModel {
         };
 
         this.mu = mu;
+        this.factory = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
@@ -104,7 +109,7 @@ public class NewtonianAttraction extends AbstractForceModel {
 
         final Vector3D            position = s.getPVCoordinates().getPosition();
         final double              r2       = position.getNormSq();
-        final DerivativeStructure muds     = new DerivativeStructure(1, 1, 0, mu);
+        final DerivativeStructure muds     = factory.variable(0, mu);
         return new FieldVector3D<DerivativeStructure>(muds.divide(-r2 * FastMath.sqrt(r2)), position);
 
     }

@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -102,6 +103,9 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** Direction of the acceleration in satellite frame. */
     private final Vector3D direction;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor for a constant direction and constant thrust.
      * @param date maneuver date
      * @param duration the duration of the thrust (s) (if negative,
@@ -147,6 +151,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
                     ConstantThrustManeuver.this.flowRate = driver.getValue();
                 }
             });
+            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -214,13 +219,10 @@ public class ConstantThrustManeuver extends AbstractForceModel {
                                                                       final DerivativeStructure mass)
         throws OrekitException {
         if (firing) {
-            return new FieldVector3D<DerivativeStructure>(mass.reciprocal().multiply(thrust),
-                    rotation.applyInverseTo(direction));
+            return new FieldVector3D<>(mass.reciprocal().multiply(thrust), rotation.applyInverseTo(direction));
         } else {
             // constant (and null) acceleration when not firing
-            final int parameters = mass.getFreeParameters();
-            final int order      = mass.getOrder();
-            final DerivativeStructure zero = new DerivativeStructure(parameters, order, 0.0);
+            final DerivativeStructure zero = mass.getField().getZero();
             return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
         }
     }
@@ -234,12 +236,12 @@ public class ConstantThrustManeuver extends AbstractForceModel {
         if (firing) {
 
             if (THRUST.equals(paramName)) {
-                final DerivativeStructure thrustDS = new DerivativeStructure(1, 1, 0, thrust);
+                final DerivativeStructure thrustDS = factory.variable(0, thrust);
                 return new FieldVector3D<DerivativeStructure>(thrustDS.divide(s.getMass()),
                                                               s.getAttitude().getRotation().applyInverseTo(direction));
             } else if (FLOW_RATE.equals(paramName)) {
                 // acceleration does not depend on flow rate (only mass decrease does)
-                final DerivativeStructure zero = new DerivativeStructure(1, 1, 0.0);
+                final DerivativeStructure zero = factory.getDerivativeField().getZero();
                 return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
             } else {
                 throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
@@ -248,7 +250,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
         } else {
             // constant (and null) acceleration when not firing
-            final DerivativeStructure zero = new DerivativeStructure(1, 1, 0.0);
+            final DerivativeStructure zero = factory.getDerivativeField().getZero();
             return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
         }
 

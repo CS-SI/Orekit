@@ -18,6 +18,7 @@ package org.orekit.utils;
 
 
 import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -879,8 +880,9 @@ public class IERSConventionsTest {
                     }
                 });
 
+        DSFactory factory = new DSFactory(1, 1);
         for (double dt = 0; dt < span; dt += sampleStep) {
-            DerivativeStructure yRef = differentiated.value(new DerivativeStructure(1, 1, 0, dt));
+            DerivativeStructure yRef = differentiated.value(factory.variable(0, dt));
             DerivativeStructure y    = function.value(date.shiftedBy(dt));
             Assert.assertEquals(yRef.getPartialDerivative(1), y.getPartialDerivative(1), tolerance);
         }

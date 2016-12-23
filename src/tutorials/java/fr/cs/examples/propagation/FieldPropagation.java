@@ -7,6 +7,7 @@ import java.util.Locale;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -74,26 +75,32 @@ public class FieldPropagation {
 
         //setting the parameters of the simulation
         //Order of derivation of the DerivativeStructures
-        int ord = 3;
+        int params = 3;
+        int order = 3;
+        DSFactory factory = new DSFactory(params, order);
 
         //number of samples of the montecarlo simulation
         int montecarlo_size = 100;
 
         //nominal values of the Orbital parameters
-        double a_nominal = 7.278E6;
-        double e_nominal = 1e-3;
-        double i_nominal = FastMath.toRadians(98.3);
-        double pa_nominal = FastMath.PI / 2;
+        double a_nominal    = 7.278E6;
+        double e_nominal    = 1e-3;
+        double i_nominal    = FastMath.toRadians(98.3);
+        double pa_nominal   = FastMath.PI / 2;
         double raan_nominal = 0.0 ;
-        double ni_nominal = 0.0 ;
+        double ni_nominal   = 0.0 ;
 
         //mean of the gaussian curve for each of the errors around the nominal values
         //{a,i,RAAN}
-        double[] mean = {0 , 0, 0};
+        double[] mean = {
+            0 , 0, 0
+        };
 
         //standard deviation of the gaussian curve for each of the errors around the nominal values
         //{dA,dI, dRaan}
-        double[] dAdIdRaan = {5 , FastMath.toRadians(1e-3), FastMath.toRadians(1e-3)};
+        double[] dAdIdRaan = {
+            5 , FastMath.toRadians(1e-3), FastMath.toRadians(1e-3)
+        };
 
         //time of integration
         double final_Dt = 1 * 60 * 60;
@@ -101,12 +108,12 @@ public class FieldPropagation {
         double num_step_orbit = 10;
 
 
-        DerivativeStructure a_0 = new DerivativeStructure(3, ord, 0, a_nominal );
-        DerivativeStructure e_0 = new DerivativeStructure(3, ord, e_nominal );
-        DerivativeStructure i_0 = new DerivativeStructure(3, ord, 1, i_nominal );
-        DerivativeStructure pa_0 = new DerivativeStructure(3, ord, pa_nominal) ;
-        DerivativeStructure raan_0 = new DerivativeStructure(3, ord, 2, raan_nominal);
-        DerivativeStructure ni_0 = new DerivativeStructure(3, ord, ni_nominal );
+        DerivativeStructure a_0    = factory.variable(0, a_nominal );
+        DerivativeStructure e_0    = factory.constant(e_nominal );
+        DerivativeStructure i_0    = factory.variable(1, i_nominal );
+        DerivativeStructure pa_0   = factory.constant(pa_nominal) ;
+        DerivativeStructure raan_0 = factory.variable(2, raan_nominal);
+        DerivativeStructure ni_0   = factory.constant(ni_nominal );
 
         //sometimes we will need the field of the DerivativeStructure to build new instances
         Field<DerivativeStructure> field = a_0.getField();
@@ -201,6 +208,7 @@ public class FieldPropagation {
         public void handleStep(FieldSpacecraftState<T> currentState,
                                boolean isLast)
             throws OrekitException {
+            @SuppressWarnings("unchecked")
             TimeStampedFieldPVCoordinates<DerivativeStructure> PV_t = (TimeStampedFieldPVCoordinates<DerivativeStructure>) currentState.getPVCoordinates();
 
             //getting the propagated poisition and velocity(to find the cross track and long track error)

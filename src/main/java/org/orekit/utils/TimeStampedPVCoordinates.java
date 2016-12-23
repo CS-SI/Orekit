@@ -19,6 +19,7 @@ package org.orekit.utils;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -301,7 +302,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         }
 
         // interpolate
-        final DerivativeStructure zero = new DerivativeStructure(1, 2, 0, 0.0);
+        final DerivativeStructure zero = new DSFactory(1, 2).variable(0, 0.0);
         final DerivativeStructure[] p  = interpolator.value(zero);
 
         // build a new interpolated instance

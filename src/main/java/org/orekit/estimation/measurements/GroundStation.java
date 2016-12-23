@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -247,7 +248,7 @@ public class GroundStation {
      * So this method should not be used for stations less than 0.0001 degree from
      * either poles.
      * </p>
-     * @param parameters number of free parameters in derivatives computations
+     * @param factory factory for the derivatives
      * @param eastOffsetIndex index of the East offset in the set of
      * free parameters in derivatives computations
      * @param northOffsetIndex index of the North offset in the set of
@@ -258,7 +259,7 @@ public class GroundStation {
      * @exception OrekitException if some frame transforms cannot be computed
      * or if the ground station is not defined on a {@link OneAxisEllipsoid ellipsoid}.
      */
-    public OffsetDerivatives getOffsetDerivatives(final int parameters,
+    public OffsetDerivatives getOffsetDerivatives(final DSFactory factory,
                                                   final int eastOffsetIndex,
                                                   final int northOffsetIndex,
                                                   final int zenithOffsetIndex)
@@ -270,13 +271,13 @@ public class GroundStation {
         final Transform offsetToBody = frame.getTransformTo(baseFrame.getParent(), null);
         final Vector3D  offsetOrigin = offsetToBody.transformPosition(Vector3D.ZERO);
         final FieldVector3D<DerivativeStructure> zeroEast =
-                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, eastOffsetIndex,   0.0),
+                        new FieldVector3D<DerivativeStructure>(factory.variable(eastOffsetIndex,   0.0),
                                                                baseFrame.getEast());
         final FieldVector3D<DerivativeStructure> zeroNorth =
-                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, northOffsetIndex,  0.0),
+                        new FieldVector3D<DerivativeStructure>(factory.variable(northOffsetIndex,  0.0),
                                                                baseFrame.getNorth());
         final FieldVector3D<DerivativeStructure> zeroZenith =
-                        new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, zenithOffsetIndex, 0.0),
+                        new FieldVector3D<DerivativeStructure>(factory.variable(zenithOffsetIndex, 0.0),
                                                                baseFrame.getZenith());
         final FieldVector3D<DerivativeStructure> offsetOriginDS =
                 zeroEast.add(zeroNorth).add(zeroZenith).add(offsetOrigin);
@@ -290,9 +291,9 @@ public class GroundStation {
         FieldVector3D<DerivativeStructure>       meridianE = FieldVector3D.crossProduct(Vector3D.PLUS_K, meridianZ);
         if (meridianE.getNormSq().getValue() < Precision.SAFE_MIN) {
             // this should never happen, this case is present only for the sake of defensive programming
-            meridianE = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, 0.0),
-                                                               new DerivativeStructure(parameters, 1, 1.0),
-                                                               new DerivativeStructure(parameters, 1, 0.0));
+            meridianE = new FieldVector3D<>(factory.getDerivativeField().getZero(),
+                                            factory.getDerivativeField().getOne(),
+                                            factory.getDerivativeField().getZero());
         } else {
             meridianE = meridianE.normalize();
         }
@@ -307,9 +308,9 @@ public class GroundStation {
         FieldVector3D<DerivativeStructure>       transverseE = FieldVector3D.crossProduct(Vector3D.PLUS_K, transverseZ);
         if (transverseE.getNormSq().getValue() < Precision.SAFE_MIN) {
             // this should never happen, this case is present only for the sake of defensive programming
-            transverseE = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, 1, 0.0),
-                                                                 new DerivativeStructure(parameters, 1, 1.0),
-                                                                 new DerivativeStructure(parameters, 1, 0.0));
+            transverseE = new FieldVector3D<>(factory.getDerivativeField().getZero(),
+                                              factory.getDerivativeField().getOne(),
+                                              factory.getDerivativeField().getZero());
         } else {
             transverseE = transverseE.normalize();
         }
@@ -376,11 +377,9 @@ public class GroundStation {
         z[0] = v.getZ();
 
         // build the combined vector
-        final int parameters = d1.getX().getFreeParameters();
-        final int order      = d1.getX().getOrder();
-        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, x),
-                                                      new DerivativeStructure(parameters, order, y),
-                                                      new DerivativeStructure(parameters, order, z));
+        return new FieldVector3D<>(d1.getX().getFactory().build(x),
+                                   d1.getX().getFactory().build(y),
+                                   d1.getX().getFactory().build(z));
 
     }
 

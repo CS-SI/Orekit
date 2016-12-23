@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -363,7 +364,7 @@ public class FieldAngularCoordinatesTest {
     public void testRodriguesSpecialCases() {
 
         // identity
-        DerivativeStructure[][] identity = FieldAngularCoordinates.getIdentity(new DerivativeStructure(2, 2).getField()).getModifiedRodrigues(1.0);
+        DerivativeStructure[][] identity = FieldAngularCoordinates.getIdentity(new DSFactory(2, 2).getDerivativeField()).getModifiedRodrigues(1.0);
         for (DerivativeStructure[] row : identity) {
             for (DerivativeStructure element : row) {
                 Assert.assertEquals(0.0, element.getReal(), Precision.SAFE_MIN);
@@ -548,17 +549,19 @@ public class FieldAngularCoordinatesTest {
 
     private FieldRotation<DerivativeStructure> createRotation(double q0, double q1, double q2, double q3,
                                                               boolean needsNormalization) {
-        return new FieldRotation<DerivativeStructure>(new DerivativeStructure(4, 1, 0, q0),
-                              new DerivativeStructure(4, 1, 1, q1),
-                              new DerivativeStructure(4, 1, 2, q2),
-                              new DerivativeStructure(4, 1, 3, q3),
-                              needsNormalization);
+        DSFactory factory = new DSFactory(4, 1);
+        return new FieldRotation<>(factory.variable(0, q0),
+                                   factory.variable(1, q1),
+                                   factory.variable(2, q2),
+                                   factory.variable(3, q3),
+                                   needsNormalization);
     }
 
     private FieldVector3D<DerivativeStructure> createVector(double x, double y, double z, int params) {
-        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(params, 1, 0, x),
-                                                      new DerivativeStructure(params, 1, 1, y),
-                                                      new DerivativeStructure(params, 1, 2, z));
+        DSFactory factory = new DSFactory(params, 1);
+        return new FieldVector3D<>(factory.variable(0, x),
+                                   factory.variable(1, y),
+                                   factory.variable(2, z));
     }
 
 }

@@ -28,6 +28,7 @@ import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -622,9 +623,10 @@ public class OneAxisEllipsoidTest {
         double lat2 =  -1.0e-5;
         double lon2 =  -3.0e-5;
         double alt2 =  -0.01;
-        final DerivativeStructure latDS = new DerivativeStructure(1, 2, lat0, lat1, lat2);
-        final DerivativeStructure lonDS = new DerivativeStructure(1, 2, lon0, lon1, lon2);
-        final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
+        final DSFactory factory = new DSFactory(1, 2);
+        final DerivativeStructure latDS = factory.build(lat0, lat1, lat2);
+        final DerivativeStructure lonDS = factory.build(lon0, lon1, lon2);
+        final DerivativeStructure altDS = factory.build(alt0, alt1, alt2);
 
         // direct computation of position, velocity and acceleration
         PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS)));
@@ -656,9 +658,10 @@ public class OneAxisEllipsoidTest {
         double lat2 =  -1.0e-5;
         double lon2 =  -3.0e-5;
         double alt2 =  -0.01;
-        final DerivativeStructure latDS = new DerivativeStructure(1, 2, lat0, lat1, lat2);
-        final DerivativeStructure lonDS = new DerivativeStructure(1, 2, lon0, lon1, lon2);
-        final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
+        final DSFactory factory = new DSFactory(1, 2);
+        final DerivativeStructure latDS = factory.build(lat0, lat1, lat2);
+        final DerivativeStructure lonDS = factory.build(lon0, lon1, lon2);
+        final DerivativeStructure altDS = factory.build(alt0, alt1, alt2);
 
         // direct computation of position, velocity and acceleration
         PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS)));
@@ -690,7 +693,7 @@ public class OneAxisEllipsoidTest {
                         return earth.transform(gp).getZ();
                     }
                 });
-        DerivativeStructure dtZero = new DerivativeStructure(1, 2, 0, 0.0);
+        DerivativeStructure dtZero = factory.variable(0, 0.0);
         DerivativeStructure xDS    = fx.value(dtZero);
         DerivativeStructure yDS    = fy.value(dtZero);
         DerivativeStructure zDS    = fz.value(dtZero);

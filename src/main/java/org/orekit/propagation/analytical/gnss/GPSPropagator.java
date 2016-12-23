@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
@@ -77,6 +78,9 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
 
     /** The ECEF frame used for GPS propagation. */
     private final Frame ecef;
+
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
 
     /**
      * This nested class aims at building a GPSPropagator.
@@ -190,6 +194,9 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
         this.eci  = builder.eci;
         // Sets the Earth Centered Earth Fixed frame
         this.ecef = builder.ecef;
+
+        this.factory = new DSFactory(1, 2);
+
     }
 
     /**
@@ -204,7 +211,7 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
      */
     public PVCoordinates propagateInEcef(final AbsoluteDate date) {
         // Duration from GPS ephemeris Reference date
-        final DerivativeStructure tk = new DerivativeStructure(1, 2, 0, getTk(date));
+        final DerivativeStructure tk = factory.variable(0, getTk(date));
         // Mean anomaly
         final DerivativeStructure mk = tk.multiply(gpsOrbit.getMeanMotion()).add(gpsOrbit.getM0());
         // Eccentric Anomaly
@@ -281,9 +288,7 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
         // reduce M to [-PI PI] interval
         final double[] mlDerivatives = mk.getAllDerivatives();
         mlDerivatives[0] = MathUtils.normalizeAngle(mlDerivatives[0], 0.0);
-        final DerivativeStructure reducedM = new DerivativeStructure(mk.getFreeParameters(),
-                                                                     mk.getOrder(),
-                                                                     mlDerivatives);
+        final DerivativeStructure reducedM = mk.getFactory().build(mlDerivatives);
 
         // compute start value according to A. W. Odell and R. H. Gooding S12 starter
         DerivativeStructure ek;

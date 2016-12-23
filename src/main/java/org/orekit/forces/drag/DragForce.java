@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -140,8 +141,7 @@ public class DragForce extends AbstractForceModel {
                                                                       final DerivativeStructure mass)
         throws OrekitException {
         // retrieve derivation properties
-        final int parameters = mass.getFreeParameters();
-        final int order      = mass.getOrder();
+        final DSFactory factory = mass.getFactory();
 
         // get atmosphere properties in atmosphere own frame
         final Frame      atmFrame  = atmosphere.getFrame();
@@ -155,8 +155,8 @@ public class DragForce extends AbstractForceModel {
         // this could be improved by adding a new method
         // getDensity(AbsoluteDate, DerivativeStructure, Frame)
         // to the Atmosphere interface
-        if (order > 1) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        if (factory.getCompiler().getOrder() > 1) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, factory.getCompiler().getOrder());
         }
         final double delta  = 1.0;
         final double x      = posBody.getX();
@@ -174,7 +174,7 @@ public class DragForce extends AbstractForceModel {
         for (int i = 1; i < rhoAll.length; ++i) {
             rhoAll[i] = dRhodX * dXdQ[i] + dRhodY * dYdQ[i] + dRhodZ * dZdQ[i];
         }
-        final DerivativeStructure rho = new DerivativeStructure(parameters, order, rhoAll);
+        final DerivativeStructure rho = factory.build(rhoAll);
 
         // we consider that at first order the atmosphere velocity in atmosphere frame
         // does not depend on local position; however atmosphere velocity in inertial
@@ -182,10 +182,10 @@ public class DragForce extends AbstractForceModel {
         // on it, due to central body rotation rate and velocity composition.
         // So we use the transform to get the correct partial derivatives on vAtm
         final FieldVector3D<DerivativeStructure> vAtmBodyDS =
-                new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, vAtmBody.getX()),
-                                                       new DerivativeStructure(parameters, order, vAtmBody.getY()),
-                                                       new DerivativeStructure(parameters, order, vAtmBody.getZ()));
-        final FieldPVCoordinates<DerivativeStructure> pvAtmBody = new FieldPVCoordinates<DerivativeStructure>(posBodyDS, vAtmBodyDS);
+                new FieldVector3D<>(factory.constant(vAtmBody.getX()),
+                                    factory.constant(vAtmBody.getY()),
+                                    factory.constant(vAtmBody.getZ()));
+        final FieldPVCoordinates<DerivativeStructure> pvAtmBody = new FieldPVCoordinates<>(posBodyDS, vAtmBodyDS);
         final FieldPVCoordinates<DerivativeStructure> pvAtm     = toBody.getInverse().transformPVCoordinates(pvAtmBody);
 
         // now we can compute relative velocity, it takes into account partial derivatives with respect to position
