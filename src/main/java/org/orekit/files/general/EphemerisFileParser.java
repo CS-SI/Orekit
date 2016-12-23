@@ -18,8 +18,6 @@ package org.orekit.files.general;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.orekit.errors.OrekitException;
 
@@ -45,17 +43,22 @@ public interface EphemerisFileParser {
     /**
      * Parse an ephemeris file from a file on the local file system.
      *
+     * <p> For Implementors: Most subclasses should implement this method as follows, but
+     * there is no default implementation because most subclasses should use a specialized
+     * return type.
+     *
+     * <code><pre>
+     * try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
+     *     return parse(reader, fileName);
+     * }
+     * </pre></code>
+     *
      * @param fileName path to the ephemeris file.
      * @return parsed ephemeris file.
      * @throws OrekitException if the ephemeris file cannot be parsed.
      * @throws IOException     if one is thrown while opening or reading from {@code
      *                         fileName}.
      */
-    default EphemerisFile parse(final String fileName)
-            throws IOException, OrekitException {
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
-            return parse(reader, fileName);
-        }
-    }
+    EphemerisFile parse(String fileName) throws IOException, OrekitException;
 
 }

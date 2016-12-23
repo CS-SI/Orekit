@@ -15,6 +15,7 @@ import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -108,6 +109,7 @@ public class EphemerisSegmentPropagatorTest {
         //verify
         Assert.assertThat(propagator.getMinDate(), CoreMatchers.is(start));
         Assert.assertThat(propagator.getMaxDate(), CoreMatchers.is(end));
+        Assert.assertThat(propagator.getFrame(), CoreMatchers.is(frame));
         int ulps = 0;
         PVCoordinates expected = new PVCoordinates(
                 new Vector3D(6778137, 0, 0),
@@ -136,6 +138,14 @@ public class EphemerisSegmentPropagatorTest {
         Assert.assertThat(
                 propagator.getPVCoordinates(end, frame),
                 OrekitMatchers.pvCloseTo(expected, ulps));
+        // check reset state is prohibited
+        SpacecraftState ic = propagator.propagate(start);
+        try {
+            propagator.resetInitialState(ic);
+            Assert.fail("Expected Exception");
+        } catch (OrekitException e) {
+            // expected
+        }
 
     }
 

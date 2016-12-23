@@ -84,6 +84,23 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
         } else {
             this.inertialFrame = DEFAULT_INERTIAL_FRAME;
         }
+        // set the initial state so getFrame() works
+        final TimeStampedPVCoordinates ic = cache.getEarliest();
+        final TimeStampedPVCoordinates icInertial = ephemerisFrame
+                .getTransformTo(inertialFrame, ic.getDate())
+                .transformPVCoordinates(ic);
+        super.resetInitialState(
+                new SpacecraftState(
+                        new CartesianOrbit(
+                                icInertial, inertialFrame, ephemeris.getMu()
+                        ),
+                        DEFAULT_LAW.getAttitude(
+                                icInertial.toTaylorProvider(inertialFrame),
+                                ic.getDate(),
+                                inertialFrame),
+                        DEFAULT_MASS
+                )
+        );
     }
 
     @Override
@@ -124,6 +141,11 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     @Override
     protected void resetIntermediateState(final SpacecraftState state,
                                           final boolean forward) throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    @Override
+    public void resetInitialState(final SpacecraftState state) throws OrekitException {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 

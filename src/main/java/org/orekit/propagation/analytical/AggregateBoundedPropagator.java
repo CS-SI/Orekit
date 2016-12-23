@@ -46,8 +46,9 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     /**
      * Create a propagator by concatenating several {@link BoundedPropagator}s.
      *
-     * @param propagators that provide the backing data for this instance. If there are
-     *                    gaps between the {@link BoundedPropagator#getMaxDate()} of one
+     * @param propagators that provide the backing data for this instance. There must be
+     *                    at least one propagator in the collection. If there are gaps
+     *                    between the {@link BoundedPropagator#getMaxDate()} of one
      *                    propagator and the {@link BoundedPropagator#getMinDate()} of the
      *                    next propagator an exception may be thrown by any method of this
      *                    class at any time. If there are overlaps between the the {@link
@@ -55,14 +56,20 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
      *                    BoundedPropagator#getMinDate()} of the next propagator then the
      *                    propagator with the latest {@link BoundedPropagator#getMinDate()}
      *                    is used.
+     * @throws OrekitException if {@code propagators} does not have at least one element.
      */
     public AggregateBoundedPropagator(
-            final Collection<? extends BoundedPropagator> propagators) {
+            final Collection<? extends BoundedPropagator> propagators) throws OrekitException {
         super(DEFAULT_LAW);
+        if (propagators.isEmpty()) {
+            throw new OrekitException(OrekitMessages.NOT_ENOUGH_PROPAGATORS);
+        }
         this.propagators = new TreeMap<>();
         for (final BoundedPropagator propagator : propagators) {
             this.propagators.put(propagator.getMinDate(), propagator);
         }
+        super.resetInitialState(
+                this.propagators.firstEntry().getValue().getInitialState());
     }
 
 
@@ -101,6 +108,11 @@ public class AggregateBoundedPropagator extends AbstractAnalyticalPropagator
     @Override
     protected void resetIntermediateState(final SpacecraftState state,
                                           final boolean forward) throws OrekitException {
+        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+    }
+
+    @Override
+    public void resetInitialState(final SpacecraftState state) throws OrekitException {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
