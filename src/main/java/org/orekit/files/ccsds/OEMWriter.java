@@ -18,6 +18,7 @@ package org.orekit.files.ccsds;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Date;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -40,7 +41,7 @@ public class OEMWriter implements EphemerisFileWriter {
     public static final String CCSDS_OEM_VERS = "2.0";
 
     /** Default interpolation method if the user specifies none. **/
-    public static final InterpolationMethod DEFAULT_INTERPOLATION_METHOD = InterpolationMethod.Lagrange;
+    public static final InterpolationMethod DEFAULT_INTERPOLATION_METHOD = InterpolationMethod.LAGRANGE;
 
     /** Default originator field value if user specifies none. **/
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
@@ -190,7 +191,7 @@ public class OEMWriter implements EphemerisFileWriter {
         writer.write(String.format(KV_FORMAT, "CCSDS_OEM_VERS", CCSDS_OEM_VERS));
         writer.newLine();
         writer.write(
-                String.format(KV_FORMAT, "CREATION_DATE", new AbsoluteDate().toString(TimeScalesFactory.getUTC())));
+                String.format(KV_FORMAT, "CREATION_DATE", new AbsoluteDate(new Date(), TimeScalesFactory.getUTC())));
         writer.newLine();
         writer.write(String.format(KV_FORMAT, "ORIGINATOR", originator));
         writer.newLine();
@@ -213,33 +214,48 @@ public class OEMWriter implements EphemerisFileWriter {
     private void writeMetadata(final BufferedWriter writer, final EphemerisSegment segment, final String objectName,
             final String objectId) throws IOException, OrekitException {
         writer.write("META_START");
+        writer.newLine();
         writer.write(String.format(KV_FORMAT, "OBJECT_NAME", objectName));
+        writer.newLine();
         writer.write(String.format(KV_FORMAT, "OBJECT_ID", objectId));
+        writer.newLine();
         writer.write(String.format(KV_FORMAT, "CENTER_NAME", segment.getFrameCenterString()));
+        writer.newLine();
         writer.write(String.format(KV_FORMAT, "REF_FRAME", segment.getFrameString()));
+        writer.newLine();
         writer.write(String.format(KV_FORMAT, "TIME_SYSTEM", segment.getTimeScaleString()));
+        writer.newLine();
         writer.write(String.format(KV_FORMAT, "START_TIME", segment.getStart().toString(segment.getTimeScale())));
+        writer.newLine();
+        writer.write(String.format(KV_FORMAT, "USEABLE_START_TIME", segment.getStart().toString(segment.getTimeScale())));
+        writer.newLine();
+        writer.write(String.format(KV_FORMAT, "USEABLE_STOP_TIME", segment.getStop().toString(segment.getTimeScale())));
+        writer.newLine();
         writer.write(String.format(KV_FORMAT, "STOP_TIME", segment.getStop().toString(segment.getTimeScale())));
+        writer.newLine();
         writer.write(String.format(KV_FORMAT, "INTERPOLATION", this.interpolationMethod));
-        if (this.interpolationMethod != InterpolationMethod.Linear) {
-            writer.write(String.format(KV_FORMAT, "INTERPOLATION_DEGREE", segment.getInterpolationSamples()));
+        writer.newLine();
+        if (this.interpolationMethod != InterpolationMethod.LINEAR) {
+            writer.write(String.format(KV_FORMAT, "INTERPOLATION_DEGREE", segment.getInterpolationSamples() - 1));
+            writer.newLine();
         }
         writer.write("META_STOP");
+        writer.newLine();
     }
 
     public enum InterpolationMethod {
         /**
          * Hermite interpolation.
          */
-        Hermite,
+        HERMITE,
         /**
          * Lagrange interpolation.
          */
-        Lagrange,
+        LAGRANGE,
         /**
          * Linear interpolation.
          */
-        Linear
+        LINEAR
     }
 
 }
