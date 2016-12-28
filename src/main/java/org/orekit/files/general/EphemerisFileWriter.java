@@ -36,6 +36,7 @@ import org.orekit.errors.OrekitException;
  * configured to be compliant with their formats.
  *
  * @author Hank Grabowski
+ * @since 9.0
  *
  */
 public interface EphemerisFileWriter {
@@ -74,7 +75,7 @@ public interface EphemerisFileWriter {
      *             (for example having multiple satellites in one file, having
      *             the origin at an unspecified celestial body, etc.)
      */
-    default void write(final String outputFilePath, final EphemerisFile ephemerisFile)
+    default void write(final String outputFilePath, EphemerisFile ephemerisFile)
             throws OrekitException, IOException {
         try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputFilePath))) {
             write(writer, ephemerisFile);
