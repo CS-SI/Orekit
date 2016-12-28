@@ -39,6 +39,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Evan Ward
  */
 public class SP3File implements EphemerisFile {
+    /** String representation of the center of ephemeris coordinate system. **/
+    public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
     /** File type indicator. */
     public enum SP3FileType {
@@ -476,6 +478,11 @@ public class SP3File implements EphemerisFile {
         @Override
         public double getMu() {
             return mu;
+        }
+
+        @Override
+        public String getFrameCenterString() {
+            return SP3_FRAME_CENTER_STRING;
         }
 
         @Override
