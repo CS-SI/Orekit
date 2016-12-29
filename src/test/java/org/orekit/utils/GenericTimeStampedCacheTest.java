@@ -320,14 +320,14 @@ public class GenericTimeStampedCacheTest {
                         do {
                             t = t.shiftedBy(-step);
                             list.add(0, t);
-                        } while (t.compareTo(date) >= 0);         
+                        } while (t.compareTo(date) >= 0);
                     }
                 }
                 return list;
             }
 
         };
- 
+
         final GenericTimeStampedCache<AbsoluteDate> cache =
                 new GenericTimeStampedCache<AbsoluteDate>(5, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    duplicatingGenerator, AbsoluteDate.class);
@@ -459,7 +459,7 @@ public class GenericTimeStampedCacheTest {
             for (int i = 1; i < dates.length; ++i) {
                 builder.append("    ").append(dates[i]).append(eol);
             }
-            Assert.fail(builder.toString());                
+            Assert.fail(builder.toString());
         }
 
         return centralDates.size();

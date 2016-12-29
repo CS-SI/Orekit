@@ -93,8 +93,8 @@ public abstract class GroundPointing implements AttitudeProvider {
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
-    protected abstract TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
-                                                            final AbsoluteDate date, final Frame frame)
+    protected abstract TimeStampedPVCoordinates getTargetPV(PVCoordinatesProvider pvProv,
+                                                            AbsoluteDate date, Frame frame)
         throws OrekitException;
 
     /** {@inheritDoc} */

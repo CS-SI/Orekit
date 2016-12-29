@@ -160,6 +160,6 @@ public enum LOFType {
      * @param pv position-velocity of the spacecraft in some inertial frame
      * @return rotation from inertial frame to local orbital frame
      */
-    protected abstract Rotation rotationFromInertial(final PVCoordinates pv);
+    protected abstract Rotation rotationFromInertial(PVCoordinates pv);
 
 }

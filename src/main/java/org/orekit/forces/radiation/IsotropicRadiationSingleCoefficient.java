@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.radiation;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -27,6 +29,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -60,6 +63,9 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     /** Reflection coefficient. */
     private double cr;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param crossSection Surface (m²)
      * @param cr reflection coefficient
@@ -79,6 +85,7 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
                     IsotropicRadiationSingleCoefficient.this.cr = driver.getValue();
                 }
             });
+            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -115,13 +122,24 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
 
         final DerivativeStructure crDS;
         if (REFLECTION_COEFFICIENT.equals(paramName)) {
-            crDS = new DerivativeStructure(1, 1, 0, cr);
+            crDS = factory.variable(0, cr);
         } else {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
                                       ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);
         }
 
         return new FieldVector3D<DerivativeStructure>(crDS.multiply(crossSection / mass), flux);
+
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T>
+        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
+                                      final FieldVector3D<T> position,
+                                      final FieldRotation<T> rotation, final T mass,
+                                      final FieldVector3D<T> flux)
+        throws OrekitException {
+        return new FieldVector3D<T>(mass.reciprocal().multiply(crossSection * cr), flux);
 
     }
 

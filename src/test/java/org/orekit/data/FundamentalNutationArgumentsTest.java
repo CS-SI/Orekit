@@ -125,7 +125,7 @@ public class FundamentalNutationArgumentsTest {
 
     private void checkSerialization(int low, int high, FundamentalNutationArguments nutation)
         throws OrekitException, IOException, ClassNotFoundException {
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(nutation);

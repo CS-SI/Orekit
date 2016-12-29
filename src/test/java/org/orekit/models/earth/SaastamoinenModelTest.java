@@ -63,7 +63,7 @@ public class SaastamoinenModelTest {
             lastDelay = delay;
         }
     }
-    
+
     @Test
     public void NoFile() {
         Utils.setDataRoot("atmosphere");
@@ -147,7 +147,7 @@ public class SaastamoinenModelTest {
             }
         }
     }
-    
+
     @Test
     public void compareExpectedValues() throws OrekitException {
         Utils.setDataRoot("atmosphere");

@@ -429,7 +429,7 @@ public class EllipsoidTessellator {
         }
 
         // ensure the taxicab boundary follows the built tile sides
-        // this is done outside of the previous loop because in order
+        // this is done outside of the previous loop in order
         // to avoid one tile changing the min/max indices of the
         // neighboring tile as they share some nodes that will be enabled here
         for (final RangePair rangePair : rangePairs) {
@@ -511,7 +511,7 @@ public class EllipsoidTessellator {
     /** Merge two meshes together.
      * @param mesh1 first mesh
      * @param mesh2 second mesh
-     * @param mergingSeeds collection were to put the nodes created during the merge
+     * @param mergingSeeds collection where to put the nodes created during the merge
      * @return merged mesh (really one of the instances)
      * @exception OrekitException if tile direction cannot be computed
      */

@@ -30,6 +30,6 @@ public interface AtmosphericRefractionModel extends Serializable {
      * @param trueElevation true elevation (rad)
      * @return refraction angle (rad)
      */
-    double getRefraction(final double trueElevation);
+    double getRefraction(double trueElevation);
 
 }

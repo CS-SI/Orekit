@@ -17,36 +17,33 @@
 
 package org.orekit.files.ccsds;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFile;
-import org.orekit.files.general.SatelliteInformation;
-import org.orekit.files.general.SatelliteTimeCoordinate;
+import org.orekit.files.general.EphemerisFile;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
-import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class stocks all the information of the OEM File parsed by OEMParser. It
  * contains the header and a list of Ephemerides Blocks each containing
  * metadata, a list of ephemerides data lines and optional covariance matrices
  * (and their metadata).
  * @author sports
+ * @author Evan Ward
  * @since 6.1
  */
-public class OEMFile extends ODMFile {
+public class OEMFile extends ODMFile implements EphemerisFile {
 
     /** List of ephemeris blocks. */
     private List<EphemeridesBlock> ephemeridesBlocks;
@@ -72,7 +69,7 @@ public class OEMFile extends ODMFile {
      *  @exception OrekitException if some blocks do not have the same time system
      */
     void checkTimeSystems() throws OrekitException {
-        final OrbitFile.TimeSystem timeSystem = getEphemeridesBlocks().get(0).getMetaData().getTimeSystem();
+        final CcsdsTimeScale timeSystem = getEphemeridesBlocks().get(0).getMetaData().getTimeSystem();
         for (final EphemeridesBlock block : ephemeridesBlocks) {
             if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {
                 throw new OrekitException(OrekitMessages.CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS,
@@ -81,131 +78,20 @@ public class OEMFile extends ODMFile {
         }
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * We return here only the coordinate systems of the first ephemerides block.
-     * </p>
-     */
     @Override
-    public String getCoordinateSystem() {
-        return ephemeridesBlocks.get(0).getMetaData().getFrame().toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OrbitFile.TimeSystem getTimeSystem() {
-        return ephemeridesBlocks.get(0).getMetaData().getTimeSystem();
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * We return here only the start time of the first ephemerides block.
-     * </p>
-     */
-    @Override
-    public AbsoluteDate getEpoch() {
-        return ephemeridesBlocks.get(0).getStartTime();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Collection<SatelliteInformation> getSatellites() {
-        final Set<String> availableSatellites = getAvailableSatelliteIds();
-        final List<SatelliteInformation> satellites =
-                new ArrayList<SatelliteInformation>(availableSatellites.size());
-        for (String satId : availableSatellites) {
-            satellites.add(new SatelliteInformation(satId));
+    public Map<String, OemSatelliteEphemeris> getSatellites() {
+        final Map<String, List<EphemeridesBlock>> satellites = new HashMap<>();
+        for (final EphemeridesBlock ephemeridesBlock : ephemeridesBlocks) {
+            final String id = ephemeridesBlock.getMetaData().getObjectID();
+            satellites.putIfAbsent(id, new ArrayList<>());
+            satellites.get(id).add(ephemeridesBlock);
         }
-        return satellites;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getSatelliteCount() {
-        return getAvailableSatelliteIds().size();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public SatelliteInformation getSatellite(final String satId) {
-        final Set<String> availableSatellites = getAvailableSatelliteIds();
-        if (availableSatellites.contains(satId)) {
-            return new SatelliteInformation(satId);
-        } else {
-            return null;
+        final Map<String, OemSatelliteEphemeris> ret = new HashMap<>();
+        for (final Entry<String, List<EphemeridesBlock>> entry : satellites.entrySet()) {
+            final String id = entry.getKey();
+            ret.put(id, new OemSatelliteEphemeris(id, getMuUsed(), entry.getValue()));
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
-        // first we collect all available EphemeridesBlocks for this satellite
-        // and return a list view of the actual EphemeridesBlocks transforming the
-        // EphemeridesDataLines into SatelliteTimeCoordinates in a lazy manner.
-        final List<Pair<Integer, Integer>> ephemeridesBlockMapping = new ArrayList<Pair<Integer, Integer>>();
-        final ListIterator<EphemeridesBlock> it = ephemeridesBlocks.listIterator();
-        int totalDataLines = 0;
-        while (it.hasNext()) {
-            final int index = it.nextIndex();
-            final EphemeridesBlock block = it.next();
-
-            if (block.getMetaData().getObjectID().equals(satId)) {
-                final int dataLines = block.getEphemeridesDataLines().size();
-                totalDataLines += dataLines;
-                ephemeridesBlockMapping.add(new Pair<Integer, Integer>(index, dataLines));
-            }
-        }
-
-        // the total number of coordinates for this satellite
-        final int totalNumberOfCoordinates = totalDataLines;
-
-        return new AbstractList<SatelliteTimeCoordinate>() {
-
-            @Override
-            public SatelliteTimeCoordinate get(final int index) {
-                if (index < 0 || index >= size()) {
-                    throw new IndexOutOfBoundsException();
-                }
-
-                // find the corresponding ephemerides block and data line
-                int ephemeridesBlockIndex = -1;
-                int dataLineIndex = index;
-                for (Pair<Integer, Integer> pair : ephemeridesBlockMapping) {
-                    if (dataLineIndex < pair.getValue()) {
-                        ephemeridesBlockIndex = pair.getKey();
-                        break;
-                    } else {
-                        dataLineIndex -= pair.getValue();
-                    }
-                }
-
-                if (ephemeridesBlockIndex == -1 || dataLineIndex == -1) {
-                    throw new IndexOutOfBoundsException();
-                }
-
-                final EphemeridesDataLine dataLine =
-                        ephemeridesBlocks.get(ephemeridesBlockIndex).getEphemeridesDataLines().get(dataLineIndex);
-                final CartesianOrbit orbit = dataLine.getOrbit();
-                return new SatelliteTimeCoordinate(orbit.getDate(), orbit.getPVCoordinates());
-            }
-
-            @Override
-            public int size() {
-                return totalNumberOfCoordinates;
-            }
-
-        };
-    }
-
-    /** Returns a set of all available satellite Ids in this OEMFile.
-     * @return a set of all available satellite Ids
-     */
-    private Set<String> getAvailableSatelliteIds() {
-        final Set<String> availableSatellites = new LinkedHashSet<String>();
-        for (EphemeridesBlock block : ephemeridesBlocks) {
-            availableSatellites.add(block.getMetaData().getObjectID());
-        }
-        return availableSatellites;
+        return ret;
     }
 
     /** The Ephemerides Blocks class contain metadata, the list of ephemerides data
@@ -214,7 +100,7 @@ public class OEMFile extends ODMFile {
      * ephemerides of two different blocks are not suited for interpolation.
      * @author sports
      */
-    public class EphemeridesBlock {
+    public class EphemeridesBlock implements EphemerisSegment {
 
         /** Meta-data for the block. */
         private ODMMetaData metaData;
@@ -242,7 +128,10 @@ public class OEMFile extends ODMFile {
         private int interpolationDegree;
 
         /** List of ephemerides data lines. */
-        private List<EphemeridesDataLine> ephemeridesDataLines;
+        private List<TimeStampedPVCoordinates> ephemeridesDataLines;
+
+        /** True iff all data points in this block have accelleration data. */
+        private boolean hasAcceleration;
 
         /** List of covariance matrices. */
         private List<CovarianceMatrix> covarianceMatrices;
@@ -257,15 +146,37 @@ public class OEMFile extends ODMFile {
         /** EphemeridesBlock constructor. */
         public EphemeridesBlock() {
             metaData = new ODMMetaData(OEMFile.this);
-            ephemeridesDataLines = new ArrayList<EphemeridesDataLine>();
+            ephemeridesDataLines = new ArrayList<>();
             covarianceMatrices = new ArrayList<CovarianceMatrix>();
+            hasAcceleration = true;
         }
 
         /** Get the list of Ephemerides data lines.
-         * @return the list of Ephemerides data lines
+         * @return a reference to the internal list of Ephemerides data lines
          */
-        public List<EphemeridesDataLine> getEphemeridesDataLines() {
-            return ephemeridesDataLines;
+        List<TimeStampedPVCoordinates> getEphemeridesDataLines() {
+            return this.ephemeridesDataLines;
+        }
+
+        @Override
+        public CartesianDerivativesFilter getAvailableDerivatives() {
+            return hasAcceleration ? CartesianDerivativesFilter.USE_PVA :
+                    CartesianDerivativesFilter.USE_PV;
+        }
+
+        /**
+         * Update the value of {@link #hasAcceleration}.
+         *
+         * @param pointHasAcceleration true iff the current data point has acceleration
+         *                             data.
+         */
+        void updateHasAcceleration(final boolean pointHasAcceleration) {
+            this.hasAcceleration = this.hasAcceleration && pointHasAcceleration;
+        }
+
+        @Override
+        public List<TimeStampedPVCoordinates> getCoordinates() {
+            return Collections.unmodifiableList(this.ephemeridesDataLines);
         }
 
         /** Get the list of Covariance Matrices.
@@ -280,6 +191,31 @@ public class OEMFile extends ODMFile {
          */
         public ODMMetaData getMetaData() {
             return metaData;
+        }
+
+        @Override
+        public double getMu() {
+            return getMuUsed();
+        }
+
+        @Override
+        public String getFrameString() {
+            return this.getMetaData().getFrameString();
+        }
+
+        @Override
+        public Frame getFrame() throws OrekitException {
+            return this.getMetaData().getFrame();
+        }
+
+        @Override
+        public String getTimeScaleString() {
+            return this.getMetaData().getTimeSystem().toString();
+        }
+
+        @Override
+        public TimeScale getTimeScale() throws OrekitException {
+            return this.getMetaData().getTimeSystem().getTimeScale(getConventions());
         }
 
         /** Get start of total time span covered by ephemerides data and
@@ -346,6 +282,16 @@ public class OEMFile extends ODMFile {
             this.useableStopTime = useableStopTime;
         }
 
+        @Override
+        public AbsoluteDate getStart() {
+            return this.getUseableStartTime();
+        }
+
+        @Override
+        public AbsoluteDate getStop() {
+            return this.getUseableStopTime();
+        }
+
         /** Get the interpolation method to be used.
          * @return the interpolation method
          */
@@ -372,6 +318,12 @@ public class OEMFile extends ODMFile {
          */
         void setInterpolationDegree(final int interpolationDegree) {
             this.interpolationDegree = interpolationDegree;
+        }
+
+        @Override
+        public int getInterpolationSamples() {
+            // From the standard it is not entirely clear how to interpret the degree.
+            return getInterpolationDegree() + 1;
         }
 
         /** Get boolean testing whether the reference frame has an epoch associated to it.
@@ -401,43 +353,6 @@ public class OEMFile extends ODMFile {
          */
         void setEphemeridesDataLinesComment(final List<String> ephemeridesDataLinesComment) {
             this.ephemeridesDataLinesComment = new ArrayList<String>(ephemeridesDataLinesComment);
-        }
-    }
-
-    /** The EphemeridesDataLine class represents the content of an OEM ephemerides
-     * data line and consists of a cartesian orbit and an optional acceleration
-     * vector.
-     * @author sports
-     */
-    public static class EphemeridesDataLine {
-
-        /** The cartesian orbit relative to the ephemeris. */
-        private CartesianOrbit orbit;
-
-        /** The acceleration vector. */
-        private Vector3D acceleration;
-
-        /** The EphemeridesDataLine constructor.
-         * @param orbit the orbit corresponding to the ephemeris
-         * @param acceleration the acceleration vector
-         */
-        EphemeridesDataLine(final CartesianOrbit orbit, final Vector3D acceleration) {
-            this.acceleration = acceleration;
-            this.orbit = orbit;
-        }
-
-        /** Get the ephemerides data line orbit.
-         * @return the orbit
-         */
-        public CartesianOrbit getOrbit() {
-            return orbit;
-        }
-
-        /** Get the ephemerides data line acceleration vector.
-         * @return the acceleration vector
-         */
-        public Vector3D getAcceleration() {
-            return acceleration;
         }
 
     }
@@ -518,5 +433,58 @@ public class OEMFile extends ODMFile {
 
     }
 
+    /** OEM ephemeris blocks for a single satellite. */
+    public static class OemSatelliteEphemeris implements SatelliteEphemeris {
+
+        /** ID of the satellite. */
+        private final String id;
+        /** Gravitational prameter for the satellite, in m^3 / s^2. */
+        private final double mu;
+        /** The ephemeris data for the satellite. */
+        private final List<EphemeridesBlock> blocks;
+
+        /**
+         * Create a container for the set of ephemeris blocks in the file that pertain to
+         * a single satellite.
+         *
+         * @param id     of the satellite.
+         * @param mu     standard gravitational parameter used to create orbits for the
+         *               satellite, in m^3 / s^2.
+         * @param blocks containing ephemeris data for the satellite.
+         */
+        OemSatelliteEphemeris(final String id,
+                              final double mu,
+                              final List<EphemeridesBlock> blocks) {
+            this.id = id;
+            this.mu = mu;
+            this.blocks = blocks;
+        }
+
+        @Override
+        public String getId() {
+            return this.id;
+        }
+
+        @Override
+        public double getMu() {
+            return this.mu;
+        }
+
+        @Override
+        public List<EphemeridesBlock> getSegments() {
+            return Collections.unmodifiableList(blocks);
+        }
+
+        @Override
+        public AbsoluteDate getStart() {
+            return blocks.get(0).getStart();
+        }
+
+        @Override
+        public AbsoluteDate getStop() {
+            return blocks.get(blocks.size() - 1).getStop();
+        }
+
+    }
 
 }

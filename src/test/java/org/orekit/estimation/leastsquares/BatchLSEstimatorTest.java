@@ -39,6 +39,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 public class BatchLSEstimatorTest {
@@ -72,7 +73,7 @@ public class BatchLSEstimatorTest {
 
         EstimationTestUtils.checkFit(context, estimator, 1, 4,
                                      0.0, 1.2e-8,
-                                     0.0, 5.6e-8,
+                                     0.0, 5.5e-8,
                                      0.0, 8.4e-9,
                                      0.0, 3.2e-12);
 
@@ -145,11 +146,14 @@ public class BatchLSEstimatorTest {
             }
         });
 
-        EstimationTestUtils.checkFit(context, estimator, 1, 2,
+        ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
+        Assert.assertEquals("a", aDriver.getName());
+        aDriver.setValue(aDriver.getValue() + 1.2);
+        EstimationTestUtils.checkFit(context, estimator, 2, 3,
+                                     0.0, 3.1e-7,
+                                     0.0, 6.4e-7,
                                      0.0, 1.3e-7,
-                                     0.0, 2.8e-7,
-                                     0.0, 1.1e-7,
-                                     0.0, 4.1e-11);
+                                     0.0, 5.2e-11);
 
     }
 
@@ -231,7 +235,7 @@ public class BatchLSEstimatorTest {
 
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         measurements.addAll(measurements1);
-        
+
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());
@@ -242,11 +246,11 @@ public class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 3, 9,
-                                     0.0, 1.5e-2,
-                                     0.0, 3.2e-2,
+        EstimationTestUtils.checkFit(context, estimator, 3, 4,
+                                     0.0, 1.6e-2,
+                                     0.0, 3.4e-2,
                                      0.0, 170.0,  // we only have range rate...
-                                     0.0, 6.1e-2);
+                                     0.0, 6.5e-2);
     }
 
     @Test
@@ -275,7 +279,7 @@ public class BatchLSEstimatorTest {
         final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
         measurements.addAll(measurementsRange);
         measurements.addAll(measurementsRangeRate);
-        
+
         // create orbit estimator
         final BatchLSEstimator estimator = new BatchLSEstimator(propagatorBuilder,
                                                                 new LevenbergMarquardtOptimizer());

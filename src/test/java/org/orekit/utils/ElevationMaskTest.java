@@ -43,7 +43,7 @@ public class ElevationMaskTest {
                                   {FastMath.toRadians(-90),FastMath.toRadians(4)}};
 
         ElevationMask mask = new ElevationMask(masqueData);
-        
+
         Assert.assertNotNull(mask);
     }
 
@@ -51,7 +51,7 @@ public class ElevationMaskTest {
     public void testMaskException() throws OrekitException {
         double [][] masque = {{FastMath.toRadians(   0),FastMath.toRadians(5)},
                               {FastMath.toRadians( 360),FastMath.toRadians(4)}};
-        
+
         new ElevationMask(masque);
     }
 

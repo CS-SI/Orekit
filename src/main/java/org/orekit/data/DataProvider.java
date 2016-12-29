@@ -72,7 +72,7 @@ public interface DataProvider {
      * @exception OrekitException if the data loader cannot be fed
      * (read error ...)
      */
-    boolean feed(final Pattern supported, final DataLoader visitor)
+    boolean feed(Pattern supported, DataLoader visitor)
         throws OrekitException;
 
 }

@@ -27,7 +27,6 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -35,7 +34,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OMMParser extends ODMParser implements OrbitFileParser {
+public class OMMParser extends ODMParser {
 
     /** Simple constructor.
      * <p>

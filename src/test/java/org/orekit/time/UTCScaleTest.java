@@ -142,7 +142,7 @@ public class UTCScaleTest {
                 Assert.assertEquals(61, utc.minuteDuration(t0.shiftedBy(dt)));
             } else {
                 // after the minute of the leap
-                Assert.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));                
+                Assert.assertEquals(60, utc.minuteDuration(t0.shiftedBy(dt)));
             }
         }
     }
@@ -298,7 +298,7 @@ public class UTCScaleTest {
             datesList.add(randomDate);
             offsetsList.add(utc.offsetFromTAI(randomDate));
         }
-        
+
         // check the offsets in multi-threaded mode
         ExecutorService executorService = Executors.newFixedThreadPool(100);
 
@@ -359,7 +359,7 @@ public class UTCScaleTest {
     @Test
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         UTCScale utc = TimeScalesFactory.getUTC();
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(utc);

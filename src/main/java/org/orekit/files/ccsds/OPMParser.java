@@ -27,7 +27,6 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFileParser;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -35,7 +34,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public class OPMParser extends ODMParser implements OrbitFileParser {
+public class OPMParser extends ODMParser {
 
     /** Simple constructor.
      * <p>
@@ -191,7 +190,7 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
                             file.addManeuver(pi.maneuver);
                         }
                         pi.maneuver = new OPMFile.Maneuver();
-                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getTimeSystem()));
+                        pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getMetaData().getTimeSystem()));
                         if (!pi.commentTmp.isEmpty()) {
                             pi.maneuver.setComment(pi.commentTmp);
                             pi.commentTmp.clear();

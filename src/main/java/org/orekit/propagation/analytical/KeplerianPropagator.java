@@ -33,7 +33,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
-/** Simple keplerian orbit propagator.
+/** Simple Keplerian orbit propagator.
  * @see Orbit
  * @author Guylaine Prat
  */
@@ -157,7 +157,7 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
             // we use a loop here to compensate for very small date shifts error
             // that occur with long propagation time
             orbit = orbit.shiftedBy(date.durationFrom(orbit.getDate()));
-        } while(!date.equals(orbit.getDate()));
+        } while (!date.equals(orbit.getDate()));
 
         return orbit;
 

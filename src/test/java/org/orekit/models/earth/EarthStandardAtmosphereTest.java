@@ -40,7 +40,7 @@ public class EarthStandardAtmosphereTest {
     @Test
     public void testEarthStandardAtmosphereRefraction() {
         EarthStandardAtmosphereRefraction model = new EarthStandardAtmosphereRefraction();
-        
+
         Assert.assertEquals(model.getPressure(), EarthStandardAtmosphereRefraction.DEFAULT_PRESSURE, epsilon);
         Assert.assertEquals(model.getTemperature(), EarthStandardAtmosphereRefraction.DEFAULT_TEMPERATURE, epsilon);
     }
@@ -50,7 +50,7 @@ public class EarthStandardAtmosphereTest {
         final double pressure = 100e3;
         final double temperature = 270;
         EarthStandardAtmosphereRefraction model = new EarthStandardAtmosphereRefraction(pressure, temperature);
-        
+
         Assert.assertEquals(model.getPressure(), pressure, epsilon);
         Assert.assertEquals(model.getTemperature(), temperature, epsilon);
     }
@@ -60,12 +60,12 @@ public class EarthStandardAtmosphereTest {
         double pressure = 100e3;
         double temperature = 270;
         EarthStandardAtmosphereRefraction model = new EarthStandardAtmosphereRefraction(pressure, temperature);
-        
+
         Assert.assertEquals(model.getPressure(), pressure, epsilon);
-        
+
         pressure = 105389.2;
         model.setPressure(pressure);
-        
+
         Assert.assertEquals(model.getPressure(), pressure, epsilon);
     }
 
@@ -74,14 +74,14 @@ public class EarthStandardAtmosphereTest {
         double pressure = 100e3;
         double temperature = 270;
         EarthStandardAtmosphereRefraction model = new EarthStandardAtmosphereRefraction(pressure, temperature);
-        
+
         Assert.assertEquals(model.getTemperature(), temperature, epsilon);
-        
+
         temperature = 273;
         model.setTemperature(temperature);
-        
+
         Assert.assertEquals(model.getTemperature(), temperature, epsilon);
-        
+
     }
 
     @Test
@@ -91,7 +91,7 @@ public class EarthStandardAtmosphereTest {
         EarthStandardAtmosphereRefraction model = new EarthStandardAtmosphereRefraction(pressure, temperature);
 
         double refractedElevation = model.getRefraction(FastMath.toRadians(1.0));
-        
+
         Assert.assertEquals(0.0061922285, refractedElevation, 1e-9);
     }
 

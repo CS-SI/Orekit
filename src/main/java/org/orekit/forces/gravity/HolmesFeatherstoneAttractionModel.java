@@ -18,7 +18,11 @@ package org.orekit.forces.gravity;
 
 
 import java.io.Serializable;
+import java.util.stream.Stream;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -27,6 +31,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
@@ -36,10 +41,14 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -111,6 +120,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
     /** Scaled sectorial Pbar<sub>m,m</sub>/u<sup>m</sup> &times; 2<sup>-SCALING</sup>. */
     private final double[] sectorial;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Creates a new instance.
      * @param centralBodyFrame rotating body frame
      * @param provider provider for spherical harmonics
@@ -170,6 +182,8 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         for (int m = 2; m < sectorial.length; ++m) {
             sectorial[m] = FastMath.sqrt((2 * m + 1) / (2.0 * m)) * sectorial[m - 1];
         }
+
+        factory = new DSFactory(1, 1);
 
     }
 
@@ -380,6 +394,148 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
         // convert gradient from spherical to Cartesian
         return new SphericalCoordinates(position).toCartesianGradient(gradient);
+
+    }
+
+    /** Compute the gradient of the non-central part of the gravity field.
+     * @param date current date
+     * @param position position at which gravity field is desired in body frame
+     * @param <T> type of field used
+     * @return gradient of the non-central part of the gravity field
+     * @exception OrekitException if position cannot be converted to central body frame
+     */
+    public <T extends RealFieldElement<T>> T[] gradient(final FieldAbsoluteDate<T> date, final FieldVector3D<T> position)
+        throws OrekitException {
+
+        final int degree = provider.getMaxDegree();
+        final int order  = provider.getMaxOrder();
+        final NormalizedSphericalHarmonics harmonics = provider.onDate(date.toAbsoluteDate());
+        final T zero = date.getField().getZero();
+        // allocate the columns for recursion
+        T[] pnm0Plus2  = MathArrays.buildArray(date.getField(), degree + 1);
+        T[] pnm0Plus1  = MathArrays.buildArray(date.getField(), degree + 1);
+        T[] pnm0       = MathArrays.buildArray(date.getField(), degree + 1);
+        final T[] pnm1 = MathArrays.buildArray(date.getField(), degree + 1);
+
+        // compute polar coordinates
+        final T x    = position.getX();
+        final T y    = position.getY();
+        final T z    = position.getZ();
+        final T x2   = x.multiply(x);
+        final T y2   = y.multiply(y);
+        final T z2   = z.multiply(z);
+        final T r2   = x2.add(y2).add(z2);
+        final T r    = r2.sqrt();
+        final T rho2 = x2.add(y2);
+        final T rho  = rho2.sqrt();
+        final T t    = z.divide(r);   // cos(theta), where theta is the polar angle
+        final T u    = rho.divide(r); // sin(theta), where theta is the polar angle
+        final T tOu  = z.divide(rho);
+
+        // compute distance powers
+        final T[] aOrN = createDistancePowersArray(r.reciprocal().multiply(provider.getAe()));
+
+        // compute longitude cosines/sines
+        final T[][] cosSinLambda = createCosSinArrays(rho.reciprocal().multiply(position.getX()), rho.reciprocal().multiply(position.getY()));
+        // outer summation over order
+        int    index = 0;
+        T value = zero;
+        final T[] gradient = MathArrays.buildArray(zero.getField(), 3);
+        for (int m = degree; m >= 0; --m) {
+
+            // compute tesseral terms with derivatives
+            index = computeTesseral(m, degree, index, t, u, tOu,
+                                    pnm0Plus2, pnm0Plus1, null, pnm0, pnm1, null);
+            if (m <= order) {
+                // compute contribution of current order to field (equation 5 of the paper)
+
+                // inner summation over degree, for fixed order
+                T sumDegreeS        = zero;
+                T sumDegreeC        = zero;
+                T dSumDegreeSdR     = zero;
+                T dSumDegreeCdR     = zero;
+                T dSumDegreeSdTheta = zero;
+                T dSumDegreeCdTheta = zero;
+                for (int n = FastMath.max(2, m); n <= degree; ++n) {
+                    final T qSnm  = aOrN[n].multiply(harmonics.getNormalizedSnm(n, m));
+                    final T qCnm  = aOrN[n].multiply(harmonics.getNormalizedCnm(n, m));
+                    final T nOr   = r.reciprocal().multiply(n);
+                    final T s0    = pnm0[n].multiply(qSnm);
+                    final T c0    = pnm0[n].multiply(qCnm);
+                    final T s1    = pnm1[n].multiply(qSnm);
+                    final T c1    = pnm1[n].multiply(qCnm);
+                    sumDegreeS        = sumDegreeS       .add(s0);
+                    sumDegreeC        = sumDegreeC       .add(c0);
+                    dSumDegreeSdR     = dSumDegreeSdR    .subtract(nOr.multiply(s0));
+                    dSumDegreeCdR     = dSumDegreeCdR    .subtract(nOr.multiply(c0));
+                    dSumDegreeSdTheta = dSumDegreeSdTheta.add(s1);
+                    dSumDegreeCdTheta = dSumDegreeCdTheta.add(c1);
+                }
+
+                // contribution to outer summation over order
+                // beware that we need to order gradient using the mathematical conventions
+                // compliant with the SphericalCoordinates class, so our lambda is its theta
+                // (and hence at index 1) and our theta is its phi (and hence at index 2)
+                final T sML = cosSinLambda[1][m];
+                final T cML = cosSinLambda[0][m];
+                value            = value      .multiply(u).add(sML.multiply(sumDegreeS   )).add(cML.multiply(sumDegreeC));
+                gradient[0]      = gradient[0].multiply(u).add(sML.multiply(dSumDegreeSdR)).add(cML.multiply(dSumDegreeCdR));
+                gradient[1]      = gradient[1].multiply(u).add(cML.multiply(sumDegreeS).subtract(sML.multiply(sumDegreeC)).multiply(m));
+                gradient[2]      = gradient[2].multiply(u).add(sML.multiply(dSumDegreeSdTheta)).add(cML.multiply(dSumDegreeCdTheta));
+            }
+            // rotate the recursion arrays
+            final T[] tmp = pnm0Plus2;
+            pnm0Plus2 = pnm0Plus1;
+            pnm0Plus1 = pnm0;
+            pnm0      = tmp;
+
+        }
+        // scale back
+        value       = value.scalb(SCALING);
+        gradient[0] = gradient[0].scalb(SCALING);
+        gradient[1] = gradient[1].scalb(SCALING);
+        gradient[2] = gradient[2].scalb(SCALING);
+
+        // apply the global mu/r factor
+        final T muOr = r.reciprocal().multiply(mu);
+        value            = value.multiply(muOr);
+        gradient[0]       = muOr.multiply(gradient[0]).subtract(value.divide(r));
+        gradient[1]      = gradient[1].multiply(muOr);
+        gradient[2]      = gradient[2].multiply(muOr);
+
+        // convert gradient from spherical to Cartesian
+        // Cartesian coordinates
+        // remaining spherical coordinates
+        final T rPos     = position.getNorm();
+        // intermediate variables
+        final T xPos    = position.getX();
+        final T yPos    = position.getY();
+        final T zPos    = position.getZ();
+        final T rho2Pos = x.multiply(x).add(y.multiply(y));
+        final T rhoPos  = rho2.sqrt();
+        final T r2Pos   = rho2.add(z.multiply(z));
+
+        final T[][] jacobianPos = MathArrays.buildArray(zero.getField(), 3, 3);
+
+        // row representing the gradient of r
+        jacobianPos[0][0] = xPos.divide(rPos);
+        jacobianPos[0][1] = yPos.divide(rPos);
+        jacobianPos[0][2] = zPos.divide(rPos);
+
+        // row representing the gradient of theta
+        jacobianPos[1][0] =  yPos.negate().divide(rho2Pos);
+        jacobianPos[1][1] =  xPos.divide(rho2Pos);
+        // jacobian[1][2] is already set to 0 at allocation time
+
+        // row representing the gradient of phi
+        jacobianPos[2][0] = xPos.multiply(zPos).divide(rhoPos.multiply(r2Pos));
+        jacobianPos[2][1] = yPos.multiply(zPos).divide(rhoPos.multiply(r2Pos));
+        jacobianPos[2][2] = rhoPos.negate().divide(r2Pos);
+        final T[] cartGradPos = MathArrays.buildArray(zero.getField(), 3);
+        cartGradPos[0] = gradient[0].multiply(jacobianPos[0][0]).add(gradient[1].multiply(jacobianPos[1][0])).add(gradient[2].multiply(jacobianPos[2][0]));
+        cartGradPos[1] = gradient[0].multiply(jacobianPos[0][1]).add(gradient[1].multiply(jacobianPos[1][1])).add(gradient[2].multiply(jacobianPos[2][1]));
+        cartGradPos[2] = gradient[0].multiply(jacobianPos[0][2])                                      .add(gradient[2].multiply(jacobianPos[2][2]));
+        return cartGradPos;
 
     }
 
@@ -596,6 +752,28 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         return aOrN;
 
     }
+    /** Compute a/r powers array.
+     * @param aOr a/r
+     * @param <T> type of field used
+     * @return array containing (a/r)<sup>n</sup>
+     */
+    private <T extends RealFieldElement<T>> T[] createDistancePowersArray(final T aOr) {
+
+        // initialize array
+        final T[] aOrN = MathArrays.buildArray(aOr.getField(), provider.getMaxDegree() + 1);
+        aOrN[0] = aOr.getField().getOne();
+        aOrN[1] = aOr;
+
+        // fill up array
+        for (int n = 2; n < aOrN.length; ++n) {
+            final int p = n / 2;
+            final int q = n - p;
+            aOrN[n] = aOrN[p].multiply(aOrN[q]);
+        }
+
+        return aOrN;
+
+    }
 
     /** Compute longitude cosines and sines.
      * @param cosLambda cos(λ)
@@ -626,6 +804,45 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
                 cosSin[0][m] = cosSin[0][p] * cosSin[0][q] - cosSin[1][p] * cosSin[1][q];
                 cosSin[1][m] = cosSin[1][p] * cosSin[0][q] + cosSin[0][p] * cosSin[1][q];
+            }
+        }
+
+        return cosSin;
+
+    }
+
+    /** Compute longitude cosines and sines.
+     * @param cosLambda cos(λ)
+     * @param sinLambda sin(λ)
+     * @param <T> type of field used
+     * @return array containing cos(m &times; λ) in row 0
+     * and sin(m &times; λ) in row 1
+     */
+    private <T extends RealFieldElement<T>> T[][] createCosSinArrays(final T cosLambda, final T sinLambda) {
+
+        final T one = cosLambda.getField().getOne();
+        final T zero = cosLambda.getField().getZero();
+        // initialize arrays
+        final T[][] cosSin = MathArrays.buildArray(one.getField(), 2, provider.getMaxOrder() + 1);
+        cosSin[0][0] = one;
+        cosSin[1][0] = zero;
+        if (provider.getMaxOrder() > 0) {
+            cosSin[0][1] = cosLambda;
+            cosSin[1][1] = sinLambda;
+
+            // fill up array
+            for (int m = 2; m < cosSin[0].length; ++m) {
+
+                // m * lambda is split as p * lambda + q * lambda, trying to avoid
+                // p or q being much larger than the other. This reduces the number of
+                // intermediate results reused to compute each value, and hence should limit
+                // as much as possible roundoff error accumulation
+                // (this does not change the number of floating point operations)
+                final int p = m / 2;
+                final int q = m - p;
+
+                cosSin[0][m] = cosSin[0][p].multiply(cosSin[0][q]).subtract(cosSin[1][p].multiply(cosSin[1][q]));
+                cosSin[1][m] = cosSin[1][p].multiply(cosSin[0][q]).add(cosSin[0][p].multiply(cosSin[1][q]));
 
             }
         }
@@ -731,6 +948,100 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
     }
 
+    /** Compute one order of tesseral terms.
+     * <p>
+     * This corresponds to equations 27 and 30 of the paper.
+     * </p>
+     * @param m current order
+     * @param degree max degree
+     * @param index index in the flattened array
+     * @param t cos(θ), where θ is the polar angle
+     * @param u sin(θ), where θ is the polar angle
+     * @param tOu t/u
+     * @param pnm0Plus2 array containing scaled P<sub>n,m+2</sub>/u<sup>m+2</sup>
+     * @param pnm0Plus1 array containing scaled P<sub>n,m+1</sub>/u<sup>m+1</sup>
+     * @param pnm1Plus1 array containing scaled dP<sub>n,m+1</sub>/u<sup>m+1</sup>
+     * (may be null if second derivatives are not needed)
+     * @param pnm0 array to fill with scaled P<sub>n,m</sub>/u<sup>m</sup>
+     * @param pnm1 array to fill with scaled dP<sub>n,m</sub>/u<sup>m</sup>
+     * (may be null if first derivatives are not needed)
+     * @param pnm2 array to fill with scaled d²P<sub>n,m</sub>/u<sup>m</sup>
+     * (may be null if second derivatives are not needed)
+     * @param <T> instance of field element
+     * @return new value for index
+     */
+    private <T extends RealFieldElement<T>> int computeTesseral(final int m, final int degree, final int index,
+                                final T t, final T u, final T tOu,
+                                final T[] pnm0Plus2, final T[] pnm0Plus1, final T[] pnm1Plus1,
+                                final T[] pnm0, final T[] pnm1, final T[] pnm2) {
+
+        final T u2 = u.multiply(u);
+        final T zero = u.getField().getZero();
+        // initialize recursion from sectorial terms
+        int n = FastMath.max(2, m);
+        if (n == m) {
+            pnm0[n] = zero.add(sectorial[n]);
+            ++n;
+        }
+
+        // compute tesseral values
+        int localIndex = index;
+        while (n <= degree) {
+
+            // value (equation 27 of the paper)
+            pnm0[n] = t.multiply(gnmOj[localIndex]).multiply(pnm0Plus1[n]).subtract(u2.multiply(pnm0Plus2[n]).multiply(hnmOj[localIndex]));
+            ++localIndex;
+            ++n;
+
+        }
+        if (pnm1 != null) {
+
+            // initialize recursion from sectorial terms
+            n = FastMath.max(2, m);
+            if (n == m) {
+                pnm1[n] = tOu.multiply(m).multiply(pnm0[n]);
+                ++n;
+            }
+
+            // compute tesseral values and derivatives with respect to polar angle
+            localIndex = index;
+            while (n <= degree) {
+
+                // first derivative (equation 30 of the paper)
+                pnm1[n] = tOu.multiply(m).multiply(pnm0[n]).subtract(u.multiply(enm[localIndex]).multiply(pnm0Plus1[n]));
+
+                ++localIndex;
+                ++n;
+
+            }
+
+            if (pnm2 != null) {
+
+                // initialize recursion from sectorial terms
+                n = FastMath.max(2, m);
+                if (n == m) {
+                    pnm2[n] =   tOu.multiply(pnm1[n]).subtract(pnm0[n].divide(u2)).multiply(m);
+                    ++n;
+                }
+
+                // compute tesseral values and derivatives with respect to polar angle
+                localIndex = index;
+                while (n <= degree) {
+
+                    // second derivative (differential of equation 30 with respect to theta)
+                    pnm2[n] = tOu.multiply(pnm1[n]).subtract(pnm0[n].divide(u2)).multiply(m).subtract(u.multiply(pnm1Plus1[n]).multiply(enm[localIndex]));
+                    ++localIndex;
+                    ++n;
+
+                }
+
+            }
+
+        }
+        return localIndex;
+
+    }
+
     /** {@inheritDoc} */
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
@@ -743,14 +1054,33 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
         // gradient of the non-central part of the gravity field
         final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
-
         adder.addXYZAcceleration(gInertial.getX(), gInertial.getY(), gInertial.getZ());
-
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        return new EventDetector[0];
+    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+
+        // get the position in body frame
+        final FieldAbsoluteDate<T> date       = s.getDate();
+        final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date.toAbsoluteDate());
+        final Transform toBodyFrame   = fromBodyFrame.getInverse();
+        final FieldVector3D<T> position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+
+        // gradient of the non-central part of the gravity field
+        final FieldVector3D<T> gInertial = fromBodyFrame.transformVector(new FieldVector3D<T>(gradient(date, position)));
+        adder.addXYZAcceleration(gInertial.getX(), gInertial.getY(), gInertial.getZ());
+    }
+
+    /** {@inheritDoc} */
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
+    }
+
+    @Override
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
     }
 
     /** {@inheritDoc} */
@@ -776,9 +1106,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
 
         // distribute all partial derivatives in a compact acceleration vector
-        final int parameters       = mass.getFreeParameters();
-        final int order            = mass.getOrder();
-        final double[] derivatives = new double[1 + parameters];
+        final double[] derivatives = new double[1 + mass.getFreeParameters()];
         final DerivativeStructure[] accDer = new DerivativeStructure[3];
         for (int i = 0; i < 3; ++i) {
 
@@ -792,7 +1120,7 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
 
             // next elements (three or four depending on mass being used or not) are left as 0
 
-            accDer[i] = new DerivativeStructure(parameters, order, derivatives);
+            accDer[i] = mass.getFactory().build(derivatives);
 
         }
 
@@ -815,9 +1143,9 @@ public class HolmesFeatherstoneAttractionModel extends AbstractForceModel implem
         // gradient of the non-central part of the gravity field
         final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
 
-        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1, 1, gInertial.getX(), gInertial.getX() / mu),
-                                                      new DerivativeStructure(1, 1, gInertial.getY(), gInertial.getY() / mu),
-                                                      new DerivativeStructure(1, 1, gInertial.getZ(), gInertial.getZ() / mu));
+        return new FieldVector3D<DerivativeStructure>(factory.build(gInertial.getX(), gInertial.getX() / mu),
+                                                      factory.build(gInertial.getY(), gInertial.getY() / mu),
+                                                      factory.build(gInertial.getZ(), gInertial.getZ() / mu));
 
     }
 

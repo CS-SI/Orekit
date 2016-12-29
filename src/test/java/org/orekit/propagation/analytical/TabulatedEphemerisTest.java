@@ -111,11 +111,11 @@ public class TabulatedEphemerisTest {
             new EcksteinHechlerPropagator(transPar, mass,
                                           ae, mu, c20, c30, c40, c50, c60);
         AdditionalStateProvider provider = new AdditionalStateProvider() {
-            
+
             public String getName() {
                 return "dt";
             }
-            
+
            public double[] getAdditionalState(SpacecraftState state) {
                 return new double[] { state.getDate().durationFrom(initDate) };
             }

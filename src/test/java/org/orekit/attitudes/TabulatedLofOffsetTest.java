@@ -127,9 +127,6 @@ public class TabulatedLofOffsetTest {
         final Propagator originalPropagator = new KeplerianPropagator(orbit);
         originalPropagator.setAttitudeProvider(yawCompensLaw);
         originalPropagator.setMasterMode(1.0, new OrekitFixedStepHandler() {
-            public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            }
-            
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
                 throws OrekitException {
                 Rotation  offsetAtt    = currentState.getAttitude().getRotation();
@@ -150,9 +147,6 @@ public class TabulatedLofOffsetTest {
         final Propagator rebuildingPropagator = new KeplerianPropagator(orbit);
         rebuildingPropagator.setAttitudeProvider(tabulated);
         rebuildingPropagator.setMasterMode(0.3, new OrekitFixedStepHandler() {
-            public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            }
-            
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
                 throws OrekitException {
                 final SpacecraftState rebuilt = originalPropagator.propagate(currentState.getDate());
@@ -176,9 +170,6 @@ public class TabulatedLofOffsetTest {
         final Propagator originalPropagator = new KeplerianPropagator(orbit);
         originalPropagator.setAttitudeProvider(yawCompensLaw);
         originalPropagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
-            public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            }
-            
             public void handleStep(final SpacecraftState currentState, final boolean isLast)
                 throws OrekitException {
                 Rotation  offsetAtt    = currentState.getAttitude().getRotation();

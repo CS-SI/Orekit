@@ -657,8 +657,6 @@ public class EcksteinHechlerPropagatorTest {
         final double step = 100.0;
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
             private AbsoluteDate previous;
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
             public void handleStep(SpacecraftState currentState, boolean isLast)
             throws OrekitException {
                 if (previous != null) {
@@ -827,7 +825,7 @@ public class EcksteinHechlerPropagatorTest {
         propagator.addAdditionalStateProvider(new SevenProvider());
         propagator.setEphemerisMode();
         propagator.propagate(initial.getDate().shiftedBy(40000));
-        
+
         BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
 
         Assert.assertSame(poleAligned, ephemeris.getFrame());
@@ -849,7 +847,7 @@ public class EcksteinHechlerPropagatorTest {
         Assert.assertEquals(1, additional.size());
         Assert.assertEquals(1, additional.get("seven").length);
         Assert.assertEquals(7, additional.get("seven")[0], 1.0e-15);
-        
+
 
     }
 
@@ -902,8 +900,6 @@ public class EcksteinHechlerPropagatorTest {
         BoundedPropagator ephemeris  = (BoundedPropagator) ois.readObject();
 
         ephemeris.setMasterMode(10, new OrekitFixedStepHandler() {
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
             public void handleStep(SpacecraftState currentState, boolean isLast) {
                 if (currentState.getDate().durationFrom(burn1Date) < -0.001) {
                     Assert.assertEquals(97.402, FastMath.toDegrees(currentState.getI()), 1.0e-3);
@@ -968,8 +964,6 @@ public class EcksteinHechlerPropagatorTest {
         BoundedPropagator ephemeris  = (BoundedPropagator) ois.readObject();
 
         ephemeris.setMasterMode(10, new OrekitFixedStepHandler() {
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
             public void handleStep(SpacecraftState currentState, boolean isLast) {
                 if (currentState.getDate().durationFrom(burn1Date) > 0.001) {
                     Assert.assertEquals(97.402, FastMath.toDegrees(currentState.getI()), 1.0e-3);

@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.hipparchus.analysis.UnivariateMatrixFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableMatrixFunction;
@@ -114,20 +115,20 @@ public class GroundStationTest {
         moved.getZenithOffsetDriver().setSelected(true);
 
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 1.6e-6,
-                                     0.0, 3.4e-6,
-                                     0.0, 4.5e-7,
-                                     0.0, 2.2e-10);
-        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   6.0e-8);
-        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  1.6e-7);
-        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 1.9e-7);
+                                     0.0, 7.6e-7,
+                                     0.0, 1.9e-6,
+                                     0.0, 4.6e-7,
+                                     0.0, 1.9e-10);
+        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   3.1e-7);
+        Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
+        Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
 
     }
 
     @Test
     public void testOffsetDerivativesOctantPxPyPz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 9.8e-9;
+        double tolerancePositionDerivative    = 2.5e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.7e-14;
         double toleranceZDirectionValue       = 1.0e-20;
@@ -141,7 +142,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantPxPyMz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 4.6e-9;
+        double tolerancePositionDerivative    = 2.5e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.7e-14;
         double toleranceZDirectionValue       = 1.0e-20;
@@ -155,7 +156,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantPxMyPz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 6.6e-9;
+        double tolerancePositionDerivative    = 2.3e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.7e-14;
         double toleranceZDirectionValue       = 1.0e-20;
@@ -169,7 +170,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantPxMyMz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 4.6e-9;
+        double tolerancePositionDerivative    = 2.5e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.7e-14;
         double toleranceZDirectionValue       = 1.0e-20;
@@ -183,7 +184,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantMxPyPz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 6.1e-9;
+        double tolerancePositionDerivative    = 2.2e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.4e-14;
         double toleranceZDirectionValue       = 1.2e-16;
@@ -197,7 +198,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantMxPyMz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 6.1e-9;
+        double tolerancePositionDerivative    = 2.2e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.4e-14;
         double toleranceZDirectionValue       = 1.2e-16;
@@ -211,7 +212,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantMxMyPz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 5.9e-9;
+        double tolerancePositionDerivative    = 2.2e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.4e-14;
         double toleranceZDirectionValue       = 5.6e-17;
@@ -225,7 +226,7 @@ public class GroundStationTest {
     @Test
     public void testOffsetDerivativesOctantMxMyMz() throws OrekitException {
         double tolerancePositionValue         = 1.0e-20;
-        double tolerancePositionDerivative    = 5.9e-9;
+        double tolerancePositionDerivative    = 2.2e-7;
         double toleranceENDirectionValue      = 1.0e-20;
         double toleranceENDirectionDerivative = 5.4e-14;
         double toleranceZDirectionValue       = 5.6e-17;
@@ -263,11 +264,12 @@ public class GroundStationTest {
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
                                                                              "dummy"));
-        final int parameters  = 3;
+        final DSFactory factory = new DSFactory(3, 1);
         final int eastIndex   = 0;
         final int northIndex  = 1;
         final int zenithIndex = 2;
-        UnivariateDifferentiableMatrixFunction[] dF = new UnivariateDifferentiableMatrixFunction[parameters];
+        UnivariateDifferentiableMatrixFunction[] dF =
+                        new UnivariateDifferentiableMatrixFunction[factory.getCompiler().getFreeParameters()];
         for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
             final FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0);
             dF[k] = differentiator.differentiate(new UnivariateMatrixFunction() {
@@ -329,15 +331,15 @@ public class GroundStationTest {
         double maxENDirDerivativeError = 0;
         double maxZDirValueError       = 0;
         double maxZDirDerivativeError  = 0;
-        for (double dEast = -2; dEast <= 2; dEast += 0.5) { 
-            for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) { 
-                for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) { 
+        for (double dEast = -2; dEast <= 2; dEast += 0.5) {
+            for (double dNorth = -2; dNorth <= 2; dNorth += 0.5) {
+                for (double dZenith = -2; dZenith <= 2; dZenith += 0.5) {
                     station.getEastOffsetDriver().setValue(dEast);
                     station.getNorthOffsetDriver().setValue(dNorth);
                     station.getZenithOffsetDriver().setValue(dZenith);
-                    OffsetDerivatives od = station.getOffsetDerivatives(parameters, eastIndex, northIndex, zenithIndex);
+                    OffsetDerivatives od = station.getOffsetDerivatives(factory, eastIndex, northIndex, zenithIndex);
                     for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
-                        DerivativeStructure[][] result = dF[k].value(new DerivativeStructure(1, 1, 0, 0.0));
+                        DerivativeStructure[][] result = dF[k].value(new DSFactory(1, 1).variable(0, 0.0));
                         int[] orders = new int[3];
                         orders[k] = 1;
 
@@ -424,7 +426,7 @@ public class GroundStationTest {
                                                                  new GeodeticPoint(0, 0, 0),
                                                                  "dummy"));
         try {
-            g.getOffsetDerivatives(3, 0, 1, 2);
+            g.getOffsetDerivatives(new DSFactory(3, 0), 0, 1, 2);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.BODY_SHAPE_IS_NOT_AN_ELLIPSOID, oe.getSpecifier());

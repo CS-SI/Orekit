@@ -41,7 +41,7 @@ public class MariniMurrayModelTest {
         // ruby laser with wavelength 694.3 nm
         model = MariniMurrayModel.getStandardModel(FastMath.toRadians(45.0), 694.3);
     }
-    
+
     @Test
     public void testDelay() {
         final double elevation = 10d;
@@ -63,15 +63,15 @@ public class MariniMurrayModelTest {
             lastDelay = delay;
         }
     }
-    
+
     @Test
     public void compareExpectedValues() {
-     
+
         double height = 0;
         double elevation = 10;
         double expectedValue = 13.919144625789874;
         double actualValue = model.pathDelay(FastMath.toRadians(elevation), height);
-        
+
         Assert.assertEquals(expectedValue, actualValue, epsilon);
     }
 }

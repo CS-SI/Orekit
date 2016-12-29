@@ -58,6 +58,30 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
+    public void testOnePair() throws OrekitException, java.io.IOException {
+        RandomGenerator random = new Well1024a(0xed7dd911a44c5197l);
+
+        for (int i = 0; i < 20; ++i) {
+
+            Rotation r = randomRotation(random);
+            Vector3D o = randomVector(random, 1.0e-2);
+            Vector3D a = randomVector(random, 1.0e-2);
+            TimeStampedAngularCoordinates reference = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, r, o, a);
+
+            PVCoordinates u = randomPVCoordinates(random, 1000, 1.0, 0.001);
+            PVCoordinates v = reference.applyTo(u);
+            TimeStampedAngularCoordinates ac =
+                    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, u, v);
+
+            Assert.assertEquals(0, Vector3D.distance(v.getPosition().normalize(), ac.applyTo(u).getPosition().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v.getVelocity().normalize(), ac.applyTo(u).getVelocity().normalize()), 4.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v.getAcceleration().normalize(), ac.applyTo(u).getAcceleration().normalize()), 1.0e-14);
+
+        }
+
+    }
+
+    @Test
     public void testTwoPairs() throws OrekitException, java.io.IOException {
         RandomGenerator random = new Well1024a(0x976ad943966c9f00l);
 
@@ -323,9 +347,9 @@ public class TimeStampedAngularCoordinatesTest {
         }));
 
         double[] y = new double[] {
-            reference.getRotation().getQ0(), 
-            reference.getRotation().getQ1(), 
-            reference.getRotation().getQ2(), 
+            reference.getRotation().getQ0(),
+            reference.getRotation().getQ1(),
+            reference.getRotation().getQ2(),
             reference.getRotation().getQ3()
         };
         integrator.integrate(ode, new ODEState(0, y), dt);
@@ -350,7 +374,7 @@ public class TimeStampedAngularCoordinatesTest {
         }
 
         return new double[] {
-          maxRotationError, maxRateError, maxAccelerationError  
+          maxRotationError, maxRateError, maxAccelerationError
         };
 
     }

@@ -88,31 +88,18 @@ public class EventSlopeFilterTest {
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
-        propagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
-            
-            @Override
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-            
-            @Override
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws OrekitException {
-                try {
-                    // we exceed the events history in the past,
-                    // and in this example get stuck with Transformer.MAX
-                    // transformer, hence the g function is always positive
-                    // in the test range
-                    Assert.assertTrue(filter.g(currentState) > 0);
-                } catch (OrekitException oe) {
-                    throw new OrekitException(oe);
-                }
-            }
+        propagator.setMasterMode(10.0, (currentState, isLast) -> {
+            // we exceed the events history in the past,
+            // and in this example get stuck with Transformer.MAX
+            // transformer, hence the g function is always positive
+            // in the test range
+            Assert.assertTrue(filter.g(currentState) > 0);
         });
         propagator.propagate(iniDate.shiftedBy(-3600), iniDate.shiftedBy(Constants.JULIAN_DAY + 3600));
     }
 
     @Test
-    public void testReplayBackward() throws OrekitException {   
+    public void testReplayBackward() throws OrekitException {
         EclipseDetector detector =
                 new EclipseDetector(60., 1.e-3,
                                      CelestialBodyFactory.getSun(), sunRadius,
@@ -132,7 +119,7 @@ public class EventSlopeFilterTest {
 
         propagator.clearEventsDetectors();
         propagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
-            
+
             @Override
             public void handleStep(SpacecraftState currentState, boolean isLast)
                 throws OrekitException {

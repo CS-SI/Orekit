@@ -84,12 +84,8 @@ public class OrekitStepHandlerTest {
         final Propagator kepler = new KeplerianPropagator(initialOrbit);
 
         kepler.setMasterMode(fixedStepSize, new OrekitFixedStepHandler() {
-
             @Override
-            public void handleStep(SpacecraftState currentState, boolean isLast)
-                throws OrekitException {
-                // System.out.println("Step stopped at: " +
-                // currentState.getDate());;
+            public void handleStep(SpacecraftState currentState, boolean isLast) {
             }
         });
 

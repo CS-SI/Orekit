@@ -338,7 +338,7 @@ public class TimeStampedPVCoordinatesTest {
                                                                    new Vector3D(1, 2, 3),
                                                                    new Vector3D(4, 5, 6),
                                                                    new Vector3D(7, 8, 9));
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(pv);

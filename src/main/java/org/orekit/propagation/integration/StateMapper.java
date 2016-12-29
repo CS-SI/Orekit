@@ -173,7 +173,7 @@ public abstract class StateMapper {
      * @return spacecraft state
      * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public abstract SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
+    public abstract SpacecraftState mapArrayToState(AbsoluteDate date, double[] y, boolean meanOnly)
         throws OrekitException;
 
     /** Map a spacecraft state to raw double components.
@@ -181,7 +181,7 @@ public abstract class StateMapper {
      * @param y placeholder where to put the components
      * @exception OrekitException if state is inconsistent or cannot be mapped
      */
-    public abstract void mapStateToArray(final SpacecraftState state, final double[] y)
+    public abstract void mapStateToArray(SpacecraftState state, double[] y)
         throws OrekitException;
 
 }

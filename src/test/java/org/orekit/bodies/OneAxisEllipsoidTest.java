@@ -24,14 +24,19 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.geometry.euclidean.oned.Vector1D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.twod.Vector2D;
+import org.hipparchus.random.SobolSequenceGenerator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -106,6 +111,24 @@ public class OneAxisEllipsoidTest {
         checkCartesianToEllipsoidic(6378137.0, 0,
                                     r * cL * cH, r * sL * cH, r * sH,
                                     lambda, phi, r - 6378137.0);
+    }
+
+    @Test
+    public void testNoFlatteningPolar() throws OrekitException {
+        final double r = 1000.0;
+        final double h = 100;
+        checkCartesianToEllipsoidic(r, 0,
+                                    0, 0, r + h,
+                                    0, 0.5 * FastMath.PI, h);
+        checkCartesianToEllipsoidic(r, 0,
+                                    0, 0, r - h,
+                                    0, 0.5 * FastMath.PI, -h);
+        checkCartesianToEllipsoidic(r, 0,
+                                    0, 0, -(r + h),
+                                    0, -0.5 * FastMath.PI, h);
+        checkCartesianToEllipsoidic(r, 0,
+                                    0, 0, -(r - h),
+                                    0, -0.5 * FastMath.PI, -h);
     }
 
     @Test
@@ -382,6 +405,22 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
+    public void testNumerousIteration() throws OrekitException {
+        // this test, which corresponds to an unrealistic extremely flat ellipsoid,
+        // is designed to need more than the usual 2 or 3 iterations in the iterative
+        // version of the Toshio Fukushima's algorithm. It in fact would reach
+        // convergence at iteration 17. However, despite we interrupt the loop
+        // at iteration 9, the result is nevertheless very accurate
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 999.0 / 1000.0, frame);
+        Vector3D point     = new Vector3D(100.001, 0.0, 1.0);
+        GeodeticPoint gp = model.transform(point, frame, date);
+        Vector3D rebuilt = model.transform(gp);
+        Assert.assertEquals(0.0, rebuilt.distance(point), 8.0e-12);
+    }
+
+    @Test
     public void testEquatorialInside() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -584,12 +623,13 @@ public class OneAxisEllipsoidTest {
         double lat2 =  -1.0e-5;
         double lon2 =  -3.0e-5;
         double alt2 =  -0.01;
-        final DerivativeStructure latDS = new DerivativeStructure(1, 2, lat0, lat1, lat2);
-        final DerivativeStructure lonDS = new DerivativeStructure(1, 2, lon0, lon1, lon2);
-        final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
+        final DSFactory factory = new DSFactory(1, 2);
+        final DerivativeStructure latDS = factory.build(lat0, lat1, lat2);
+        final DerivativeStructure lonDS = factory.build(lon0, lon1, lon2);
+        final DerivativeStructure altDS = factory.build(alt0, alt1, alt2);
 
         // direct computation of position, velocity and acceleration
-        PVCoordinates pv = earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS));
+        PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS)));
         FieldGeodeticPoint<DerivativeStructure> rebuilt = earth.transform(pv, earth.getBodyFrame(),null);
         Assert.assertEquals(lat0, rebuilt.getLatitude().getReal(),                1.0e-16);
         Assert.assertEquals(lat1, rebuilt.getLatitude().getPartialDerivative(1),  5.0e-19);
@@ -618,12 +658,13 @@ public class OneAxisEllipsoidTest {
         double lat2 =  -1.0e-5;
         double lon2 =  -3.0e-5;
         double alt2 =  -0.01;
-        final DerivativeStructure latDS = new DerivativeStructure(1, 2, lat0, lat1, lat2);
-        final DerivativeStructure lonDS = new DerivativeStructure(1, 2, lon0, lon1, lon2);
-        final DerivativeStructure altDS = new DerivativeStructure(1, 2, alt0, alt1, alt2);
+        final DSFactory factory = new DSFactory(1, 2);
+        final DerivativeStructure latDS = factory.build(lat0, lat1, lat2);
+        final DerivativeStructure lonDS = factory.build(lon0, lon1, lon2);
+        final DerivativeStructure altDS = factory.build(alt0, alt1, alt2);
 
         // direct computation of position, velocity and acceleration
-        PVCoordinates pv = earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS));
+        PVCoordinates pv = new PVCoordinates(earth.transform(new FieldGeodeticPoint<DerivativeStructure>(latDS, lonDS, altDS)));
 
         // finite differences computation
         FiniteDifferencesDifferentiator differentiator =
@@ -652,7 +693,7 @@ public class OneAxisEllipsoidTest {
                         return earth.transform(gp).getZ();
                     }
                 });
-        DerivativeStructure dtZero = new DerivativeStructure(1, 2, 0, 0.0);
+        DerivativeStructure dtZero = factory.variable(0, 0.0);
         DerivativeStructure xDS    = fx.value(dtZero);
         DerivativeStructure yDS    = fy.value(dtZero);
         DerivativeStructure zDS    = fz.value(dtZero);
@@ -691,6 +732,110 @@ public class OneAxisEllipsoidTest {
         Assert.assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
         Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
         Assert.assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
+    }
+
+    @Test
+    public void testTransformVsOldIterativeSobol()
+        throws OrekitException {
+
+        OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        SobolSequenceGenerator sobol = new SobolSequenceGenerator(3);
+        final double rMax = 10 * model.getEquatorialRadius();
+        Stream<Vector3D> points = Stream.generate(() -> {
+            final double[] v = sobol.nextVector();
+            return new Vector3D(rMax * (2 * v[0] - 1), rMax * (2 * v[1] - 1), rMax * (2 * v[2] - 1));
+        }).limit(1000000);
+
+        doTestTransformVsOldIterative(model, points, 2.0e-15, 1.0e-15, 8.0e-14 * rMax);
+    }
+
+    @Test
+    public void testTransformVsOldIterativePolarAxis()
+        throws OrekitException {
+        OneAxisEllipsoid model = new OneAxisEllipsoid(90, 5.0 / 9.0,
+                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        Stream<Vector3D> points = DoubleStream.iterate(0, x -> x + 1.0).limit(150).mapToObj(z -> new Vector3D(0, 0, z));
+        doTestTransformVsOldIterative(model, points, 2.0e-15, 1.0e-15, 1.0e-14 * model.getEquatorialRadius());
+    }
+
+    @Test
+    public void testTransformVsOldIterativeEquatorial()
+        throws OrekitException {
+        OneAxisEllipsoid model = new OneAxisEllipsoid(90, 5.0 / 9.0,
+                                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        Stream<Vector3D> points = DoubleStream.iterate(0, x -> x + 1.0).limit(150).mapToObj(x -> new Vector3D(x, 0, 0));
+        doTestTransformVsOldIterative(model, points, 2.0e-15, 1.0e-15, 1.0e-14 * model.getEquatorialRadius());
+    }
+
+    private void doTestTransformVsOldIterative(OneAxisEllipsoid model,
+                                               Stream<Vector3D> points,
+                                               double latitudeTolerance, double longitudeTolerance,
+                                               double altitudeTolerance)
+        throws OrekitException {
+        points.forEach(point -> {
+            try {
+                GeodeticPoint reference = transformOldIterative(model, point, model.getBodyFrame(), null);
+                GeodeticPoint result    = model.transform(point, model.getBodyFrame(), null);
+                Assert.assertEquals(reference.getLatitude(),  result.getLatitude(),  latitudeTolerance);
+                Assert.assertEquals(reference.getLongitude(), result.getLongitude(), longitudeTolerance);
+                Assert.assertEquals(reference.getAltitude(),  result.getAltitude(),  altitudeTolerance);
+            } catch (OrekitException oe) {
+                Assert.fail(oe.getLocalizedMessage());
+            }
+        });
+
+    }
+
+    /** Transform a cartesian point to a surface-relative point.
+     * <p>
+     * This method was the implementation used in the main Orekit library
+     * as of version 8.0. It has been replaced as of 9.0 with a new version
+     * using faster iterations, so it is now used only as a test reference
+     * with an implementation which is different from the one in the main library.
+     * </p>
+     * @param point Cartesian point
+     * @param frame frame in which Cartesian point is expressed
+     * @param date date of the computation (used for frames conversions)
+     * @return point at the same location but as a surface-relative point
+     * @exception OrekitException if point cannot be converted to body frame
+     */
+    private GeodeticPoint transformOldIterative(final OneAxisEllipsoid model,
+                                                final Vector3D point,
+                                                final Frame frame,
+                                                final AbsoluteDate date)
+        throws OrekitException {
+
+        // transform point to body frame
+        final Vector3D pointInBodyFrame = frame.getTransformTo(model.getBodyFrame(), date).transformPosition(point);
+        final double   r2               = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
+                                          pointInBodyFrame.getY() * pointInBodyFrame.getY();
+        final double   r                = FastMath.sqrt(r2);
+        final double   z                = pointInBodyFrame.getZ();
+
+        // set up the 2D meridian ellipse
+        final Ellipse meridian = new Ellipse(Vector3D.ZERO,
+                                             new Vector3D(pointInBodyFrame.getX() / r, pointInBodyFrame.getY() / r, 0),
+                                             Vector3D.PLUS_K,
+                                             model.getA(), model.getC(), model.getBodyFrame());
+
+        // project point on the 2D meridian ellipse
+        final Vector2D ellipsePoint = meridian.projectToEllipse(new Vector2D(r, z));
+
+        // relative position of test point with respect to its ellipse sub-point
+        final double dr  = r - ellipsePoint.getX();
+        final double dz  = z - ellipsePoint.getY();
+        final double ae2 = model.getA() * model.getA();
+        final double f   = model.getFlattening();
+        final double g   = 1.0 - f;
+        final double g2  = g * g;
+        final double insideIfNegative = g2 * (r2 - ae2) + z * z;
+
+        return new GeodeticPoint(FastMath.atan2(ellipsePoint.getY(), g2 * ellipsePoint.getX()),
+                                 FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX()),
+                                 FastMath.copySign(FastMath.hypot(dr, dz), insideIfNegative));
+
     }
 
     @Before

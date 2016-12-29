@@ -155,8 +155,10 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 // go ahead one step size
                 final SpacecraftState previous = state;
                 AbsoluteDate t = previous.getDate().shiftedBy(stepSize);
-                if ((dt == 0) || ((dt > 0) ^ (t.compareTo(target) <= 0))) {
+                if ((dt == 0) || ((dt > 0) ^ (t.compareTo(target) <= 0)) ||
+                        (FastMath.abs(target.durationFrom(t)) <= epsilon)) {
                     // current step exceeds target
+                    // or is target to within double precision
                     t = target;
                 }
                 final SpacecraftState current = updateAdditionalStates(basicPropagate(t));
@@ -308,12 +310,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         } while (!occurringEvents.isEmpty());
 
-        final double remaining = target.durationFrom(current.getDate());
-        if (interpolator.isForward()) {
-            isLastStep = remaining <  epsilon;
-        } else {
-            isLastStep = remaining > -epsilon;
-        }
+        isLastStep = target.equals(current.getDate());
 
         // handle the remaining part of the step, after all events if any
         if (getStepHandler() != null) {
@@ -329,7 +326,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @return mass mass
      * @exception OrekitException if some parameters are out of bounds
      */
-    protected abstract double getMass(final AbsoluteDate date)
+    protected abstract double getMass(AbsoluteDate date)
         throws OrekitException;
 
     /** Get PV coordinates provider.
@@ -345,7 +342,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * propagations after itself
      * @exception OrekitException if initial state cannot be reset
      */
-    protected abstract void resetIntermediateState(final SpacecraftState state, final boolean forward)
+    protected abstract void resetIntermediateState(SpacecraftState state, boolean forward)
         throws OrekitException;
 
     /** Extrapolate an orbit up to a specific target date.
@@ -353,7 +350,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
      * @return extrapolated parameters
      * @exception OrekitException if some parameters are out of bounds
      */
-    protected abstract Orbit propagateOrbit(final AbsoluteDate date)
+    protected abstract Orbit propagateOrbit(AbsoluteDate date)
         throws OrekitException;
 
     /** Propagate an orbit without any fancy features.

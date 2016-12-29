@@ -132,7 +132,7 @@ public class EllipsoidTest {
                 double cAzimuth = FastMath.cos(azimuth);
                 double sAzimuth = FastMath.sin(azimuth);
                 Vector3D tAz = new Vector3D(cAzimuth, t1, sAzimuth, t2);
-                
+
                 final Ellipse ps = ellipsoid.getPlaneSection(surfacePoint, tAz);
                 Assert.assertEquals(0.0, errorOnEllipsoid(ps, ellipsoid), 1.0e-12 * size);
                 Assert.assertEquals(0.0, errorOnPlane(ps, surfacePoint, tAz), 1.0e-10 * size);

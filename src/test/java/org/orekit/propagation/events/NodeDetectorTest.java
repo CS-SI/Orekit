@@ -109,7 +109,7 @@ public class NodeDetectorTest {
         EventDetector detector1 = new NodeDetector(orbit1, orbit1.getFrame());
         double t1 = orbit1.getKeplerianPeriod();
         Assert.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval(), t1 / 10000);
-        
+
         // nearly circular, inclined orbit
         final KeplerianOrbit orbit2 =
                 new KeplerianOrbit(a, e2, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
@@ -117,7 +117,7 @@ public class NodeDetectorTest {
         double t2 = orbit2.getKeplerianPeriod();
         Assert.assertEquals(t1, t2, t1 / 10000);
         Assert.assertEquals(t2 / 3, detector2.getMaxCheckInterval(), t2 / 10000);
-        
+
     }
 
     @Before

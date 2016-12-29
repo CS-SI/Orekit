@@ -90,26 +90,26 @@ public class CelestialBodyFactoryTest {
         // this seems to match better the content of the DE-431 ephemeris
 
         //  *******************************************************************************
-        //  Ephemeris / PORT_LOGIN Mon Oct 26 04:53:43 2015 Pasadena, USA    / Horizons    
+        //  Ephemeris / PORT_LOGIN Mon Oct 26 04:53:43 2015 Pasadena, USA    / Horizons
         //  *******************************************************************************
         //  Target body name: Jupiter Barycenter (5)          {source: DE-0431LE-0431}
         //  Center body name: Solar System Barycenter (0)     {source: DE-0431LE-0431}
         //  Center-site name: BODY CENTER
         //  *******************************************************************************
-        //  Start time      : A.D. 2000-Jan-01 00:00:00.0000 CT 
-        //  Stop  time      : A.D. 2003-Dec-31 23:59:00.0000 CT 
+        //  Start time      : A.D. 2000-Jan-01 00:00:00.0000 CT
+        //  Stop  time      : A.D. 2003-Dec-31 23:59:00.0000 CT
         //  Step-size       : 1440 minutes
         //  *******************************************************************************
         //  Center geodetic : 0.00000000,0.00000000,0.0000000 {E-lon(deg),Lat(deg),Alt(km)}
         //  Center cylindric: 0.00000000,0.00000000,0.0000000 {E-lon(deg),Dxy(km),Dz(km)}
-        //  Center radii    : (undefined)                                                  
-        //  Output units    : KM-S                                                         
+        //  Center radii    : (undefined)
+        //  Output units    : KM-S
         //  Output format   : 02
-        //  Reference frame : ICRF/J2000.0                                                 
+        //  Reference frame : ICRF/J2000.0
         //  Output type     : GEOMETRIC cartesian states
-        //  Coordinate systm: Earth Mean Equator and Equinox of Reference Epoch            
+        //  Coordinate systm: Earth Mean Equator and Equinox of Reference Epoch
         //  *******************************************************************************
-        //  JDCT 
+        //  JDCT
         //     X     Y     Z
         //     VX    VY    VZ
         //  *******************************************************************************
@@ -282,7 +282,7 @@ public class CelestialBodyFactoryTest {
                                            sun.getInertiallyOrientedFrame(),
                                            mars.getInertiallyOrientedFrame(),
                                            earth.getInertiallyOrientedFrame());
-                                           
+
         AbsoluteDate date = new AbsoluteDate(1969, 7, 23, TimeScalesFactory.getTT());
         final double refDistance = bodyDistance(sun, earthMoonBarycenter, date, frames.get(0));
         for (Frame frame : frames) {

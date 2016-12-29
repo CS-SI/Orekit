@@ -171,14 +171,14 @@ public interface Propagator extends PVCoordinatesProvider {
      * @param state new initial state to consider
      * @exception OrekitException if initial state cannot be reset
      */
-    void resetInitialState(final SpacecraftState state)
+    void resetInitialState(SpacecraftState state)
         throws OrekitException;
 
     /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
      * @param additionalStateProvider provider for additional state
      * @exception OrekitException if an additional state with the same name is already present
      */
-    void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider)
+    void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider)
         throws OrekitException;
 
     /** Get an unmodifiable list of providers for additional state.
@@ -210,7 +210,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * @param name name of the additional state
      * @return true if the additional state is managed
      */
-    boolean isAdditionalStateManaged(final String name);
+    boolean isAdditionalStateManaged(String name);
 
     /** Get all the names of all managed states.
      * @return names of all managed states
@@ -223,7 +223,7 @@ public interface Propagator extends PVCoordinatesProvider {
      * @see #getEventsDetectors()
      * @param <T> class type for the generic version
      */
-    <T extends EventDetector> void addEventDetector(final T detector);
+    <T extends EventDetector> void addEventDetector(T detector);
 
     /** Get all the events detectors that have been added.
      * @return an unmodifiable collection of the added detectors
@@ -246,7 +246,7 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Set attitude provider.
      * @param attitudeProvider attitude provider
      */
-    void setAttitudeProvider(final AttitudeProvider attitudeProvider);
+    void setAttitudeProvider(AttitudeProvider attitudeProvider);
 
     /** Get the frame in which the orbit is propagated.
      * <p>

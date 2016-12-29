@@ -18,6 +18,7 @@ package org.orekit.estimation.measurements;
 
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -40,13 +41,13 @@ public class AngularTest {
 
     @Test
     public void testStateDerivatives() throws OrekitException {
-        
+
         Context context = EstimationTestUtils.geoStationnaryContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
                         context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
                                               1.0e-6, 60.0, 0.001);
-        
+
         // create perfect azimuth-elevation measurements
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
                                                                            propagatorBuilder);
@@ -66,12 +67,12 @@ public class AngularTest {
         int AzindexV = 0;
         int ElindexP = 0;
         int ElindexV = 0;
-        
+
         for (final ObservedMeasurement<?> measurement : measurements) {
-            
+
             // parameter corresponding to station position offset
             final GroundStation stationParameter = ((Angular) measurement).getStation();
-            
+
             // We intentionally propagate to a date which is close to the
             // real spacecraft state but is *not* the accurate date, by
             // compensating only part of the downlink delay. This is done
@@ -81,7 +82,8 @@ public class AngularTest {
             // not on the current velocity.
             final AbsoluteDate datemeas  = measurement.getDate();
             SpacecraftState    state     = propagator.propagate(datemeas);
-            final double       meanDelay = stationParameter.downlinkTimeOfFlight(state, datemeas);
+            final Vector3D     stationP  = stationParameter.getOffsetFrame().getPVCoordinates(datemeas, state.getFrame()).getPosition();
+            final double       meanDelay = stationParameter.signalTimeOfFlight(state.getPVCoordinates(), stationP, datemeas);
 
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
@@ -113,18 +115,14 @@ public class AngularTest {
                     if (j < 3) {
                         if (i == 0) {
                             AzerrorsP[AzindexP++] = relativeError;
-                            //System.out.println("AZ Error dP : " + finiteDifferencesJacobian[i][j] + "   " + jacobian[i][j] + "    " + relativeError + "\n");
                         } else {
                             ElerrorsP[ElindexP++] = relativeError;
-                            //System.out.println("El Error dP : " + finiteDifferencesJacobian[i][j] + "   " + jacobian[i][j] + "    " + relativeError + "\n");
                         }
                     } else {
                         if (i == 0) {
                             AzerrorsV[AzindexV++] = relativeError;
-                            //System.out.println("AZ Error dv : " + finiteDifferencesJacobian[i][j] + "   " + jacobian[i][j] + "    " + relativeError + "\n");
                         } else {
                             ElerrorsV[ElindexV++] = relativeError;
-                            //System.out.println("El Error dv : " + finiteDifferencesJacobian[i][j] + "   " + jacobian[i][j] + "    " + relativeError + "\n");
                         }
                     }
                 }
@@ -132,18 +130,14 @@ public class AngularTest {
         }
 
         // median errors on Azimuth
-        //System.out.println("Ecart median Azimuth/dP : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(AzerrorsP) + "\n");
         Assert.assertEquals(0.0, new Median().evaluate(AzerrorsP), 5.0e-6);
-        //System.out.println("Ecart median Azimuth/dV : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(AzerrorsV) + "\n");
         Assert.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.3e-5);
 
         // median errors on Elevation
-        //System.out.println("Ecart median Elevation/dP : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(ElerrorsP) + "\n");
         Assert.assertEquals(0.0, new Median().evaluate(ElerrorsP), 5.0e-6);
-        //System.out.println("Ecart median Elevation/dV : " + new Median().withNaNStrategy(NaNStrategy.REMOVED).evaluate(ElerrorsV) + "\n");
         Assert.assertEquals(0.0, new Median().evaluate(ElerrorsV), 2.0e-5);
            }
-    
+
     @Test
     public void testParameterDerivatives() throws OrekitException {
 
@@ -181,7 +175,8 @@ public class AngularTest {
             // not on the current velocity.
             final AbsoluteDate    datemeas  = measurement.getDate();
             final SpacecraftState stateini  = propagator.propagate(datemeas);
-            final double          meanDelay = stationParameter.downlinkTimeOfFlight(stateini, datemeas);
+            final Vector3D        stationP  = stationParameter.getOffsetFrame().getPVCoordinates(datemeas, stateini.getFrame()).getPosition();
+            final double          meanDelay = stationParameter.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
             
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);

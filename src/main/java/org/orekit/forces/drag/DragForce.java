@@ -16,6 +16,11 @@
  */
 package org.orekit.forces.drag;
 
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -23,12 +28,17 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractForceModel;
+import org.orekit.forces.drag.atmosphere.Atmosphere;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
@@ -88,11 +98,34 @@ public class DragForce extends AbstractForceModel {
 
     }
 
+    @Override
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s,
+                        final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+        final FieldAbsoluteDate<T> date     = s.getDate();
+        final Frame        frame    = s.getFrame();
+        final FieldVector3D<T>     position = s.getPVCoordinates().getPosition();
+
+        final T rho    = atmosphere.getDensity(date, position, frame);
+        final FieldVector3D<T> vAtm = atmosphere.getVelocity(date, position, frame);
+        final FieldVector3D<T> relativeVelocity = s.getPVCoordinates().getVelocity().negate().add(vAtm);
+
+        // Addition of calculated acceleration to adder
+        adder.addAcceleration(spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                                          s.getMass(), rho, relativeVelocity), frame);
+    }
+
     /** There are no discrete events for this model.
      * @return an empty array
      */
-    public EventDetector[] getEventsDetectors() {
-        return new EventDetector[0];
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
     }
 
     /** {@inheritDoc} */
@@ -107,10 +140,8 @@ public class DragForce extends AbstractForceModel {
                                                                       final FieldRotation<DerivativeStructure> rotation,
                                                                       final DerivativeStructure mass)
         throws OrekitException {
-
         // retrieve derivation properties
-        final int parameters = mass.getFreeParameters();
-        final int order      = mass.getOrder();
+        final DSFactory factory = mass.getFactory();
 
         // get atmosphere properties in atmosphere own frame
         final Frame      atmFrame  = atmosphere.getFrame();
@@ -124,8 +155,8 @@ public class DragForce extends AbstractForceModel {
         // this could be improved by adding a new method
         // getDensity(AbsoluteDate, DerivativeStructure, Frame)
         // to the Atmosphere interface
-        if (order > 1) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        if (factory.getCompiler().getOrder() > 1) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, factory.getCompiler().getOrder());
         }
         final double delta  = 1.0;
         final double x      = posBody.getX();
@@ -143,7 +174,7 @@ public class DragForce extends AbstractForceModel {
         for (int i = 1; i < rhoAll.length; ++i) {
             rhoAll[i] = dRhodX * dXdQ[i] + dRhodY * dYdQ[i] + dRhodZ * dZdQ[i];
         }
-        final DerivativeStructure rho = new DerivativeStructure(parameters, order, rhoAll);
+        final DerivativeStructure rho = factory.build(rhoAll);
 
         // we consider that at first order the atmosphere velocity in atmosphere frame
         // does not depend on local position; however atmosphere velocity in inertial
@@ -151,10 +182,10 @@ public class DragForce extends AbstractForceModel {
         // on it, due to central body rotation rate and velocity composition.
         // So we use the transform to get the correct partial derivatives on vAtm
         final FieldVector3D<DerivativeStructure> vAtmBodyDS =
-                new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, vAtmBody.getX()),
-                                                       new DerivativeStructure(parameters, order, vAtmBody.getY()),
-                                                       new DerivativeStructure(parameters, order, vAtmBody.getZ()));
-        final FieldPVCoordinates<DerivativeStructure> pvAtmBody = new FieldPVCoordinates<DerivativeStructure>(posBodyDS, vAtmBodyDS);
+                new FieldVector3D<>(factory.constant(vAtmBody.getX()),
+                                    factory.constant(vAtmBody.getY()),
+                                    factory.constant(vAtmBody.getZ()));
+        final FieldPVCoordinates<DerivativeStructure> pvAtmBody = new FieldPVCoordinates<>(posBodyDS, vAtmBodyDS);
         final FieldPVCoordinates<DerivativeStructure> pvAtm     = toBody.getInverse().transformPVCoordinates(pvAtmBody);
 
         // now we can compute relative velocity, it takes into account partial derivatives with respect to position

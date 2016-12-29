@@ -111,13 +111,13 @@ public class PropagatorConversion {
 
             // Add force models to the propagator
             numProp.addForceModel(gravity);
-            
+
             // Propagator factory
             PropagatorBuilder builder = new KeplerianPropagatorBuilder(initialOrbit, PositionAngle.TRUE, dP);
 
             // Propagator converter
             PropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, 1.e-6, 5000);
-            
+
             // Resulting propagator
             KeplerianPropagator kepProp = (KeplerianPropagator)fitter.convert(numProp, 2*period, 251);
 
@@ -211,9 +211,6 @@ public class PropagatorConversion {
         public StatesHandler() {
             // prepare an empty list of SpacecraftState
             states = new ArrayList<SpacecraftState>();
-        }
-
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {

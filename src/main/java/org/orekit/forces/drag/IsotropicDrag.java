@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.drag;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -27,6 +29,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -59,6 +62,9 @@ public class IsotropicDrag implements DragSensitive {
     /** Drag coefficient. */
     private double dragCoeff;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param crossSection Surface (m²)
      * @param dragCoeff drag coefficient
@@ -84,6 +90,7 @@ public class IsotropicDrag implements DragSensitive {
         };
         this.crossSection = crossSection;
         this.dragCoeff    = dragCoeff;
+        this.factory      = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
@@ -119,11 +126,22 @@ public class IsotropicDrag implements DragSensitive {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName, DRAG_COEFFICIENT);
         }
 
-        final DerivativeStructure dragCoeffDS = new DerivativeStructure(1, 1, 0, dragCoeff);
+        final DerivativeStructure dragCoeffDS = factory.variable(0, dragCoeff);
 
-        return new FieldVector3D<DerivativeStructure>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
-                              relativeVelocity);
+        return new FieldVector3D<>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
+                                   relativeVelocity);
 
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T>
+        dragAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
+                         final FieldVector3D<T> position, final FieldRotation<T> rotation,
+                         final T mass, final T density,
+                         final FieldVector3D<T> relativeVelocity)
+            throws OrekitException {
+        return new FieldVector3D<>(relativeVelocity.getNorm().multiply(density.multiply(dragCoeff * crossSection / 2)).divide(mass),
+                                   relativeVelocity);
     }
 
 }

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.FastMath;
@@ -112,6 +113,7 @@ public class HansenTesseralLinear {
             // Prepare the database of the associated polynomials
             generatePolynomials();
         }
+
     }
 
     /**
@@ -455,6 +457,9 @@ public class HansenTesseralLinear {
         /** Polynomial representing the serie. */
         private PolynomialFunction polynomial;
 
+        /** Factory for the DerivativeStructure instances. */
+        private final DSFactory factory;
+
         /**
          * Class constructor.
          *
@@ -470,6 +475,7 @@ public class HansenTesseralLinear {
             this.j = j;
             this.maxNewcomb = maxHansen;
             this.polynomial = generatePolynomial();
+            this.factory = new DSFactory(1, 1);
         }
 
         /** Computes the value of Hansen kernel and its derivative at e².
@@ -485,14 +491,13 @@ public class HansenTesseralLinear {
         public DerivativeStructure getValue(final double e2, final double chi, final double chi2) {
 
             //Estimation of the serie expansion at e2
-            final DerivativeStructure serie = polynomial.value(
-                    new DerivativeStructure(1, 1, 0, e2));
+            final DerivativeStructure serie = polynomial.value(factory.variable(0, e2));
 
             final double value      =  FastMath.pow(chi2, -mnm1 - 1) * serie.getValue() / chi;
             final double coef       = -(mnm1 + 1.5);
             final double derivative = coef * chi2 * value +
                                       FastMath.pow(chi2, -mnm1 - 1) * serie.getPartialDerivative(1) / chi;
-            return new DerivativeStructure(1, 1, value, derivative);
+            return factory.build(value, derivative);
         }
 
         /** Generate the serie expansion in e².

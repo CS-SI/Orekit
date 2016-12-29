@@ -317,7 +317,7 @@ public class GeoMagneticFieldTest {
 
         InputStream input = getResource("WMM2015.COF");
         loader.loadData(input, "WMM2015.COF");
-        
+
         Collection<GeoMagneticField> models = loader.getModels();
         Assert.assertNotNull(models);
         Assert.assertEquals(1, models.size());

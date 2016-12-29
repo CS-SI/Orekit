@@ -180,7 +180,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
          * @return position-velocity at the specified date
          * @exception OrekitException if the date is not available to the loader
          */
-        PVCoordinates getRawPV(final AbsoluteDate date) throws OrekitException;
+        PVCoordinates getRawPV(AbsoluteDate date) throws OrekitException;
     }
 
     /** Regular expression for supported files names. */

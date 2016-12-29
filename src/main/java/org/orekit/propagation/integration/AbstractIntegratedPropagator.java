@@ -356,15 +356,15 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param frame inertial frame
      * @return new mapper
      */
-    protected abstract StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
-                                                final OrbitType orbitType, final PositionAngle positionAngleType,
-                                                final AttitudeProvider attitudeProvider, final Frame frame);
+    protected abstract StateMapper createMapper(AbsoluteDate referenceDate, double mu,
+                                                OrbitType orbitType, PositionAngle positionAngleType,
+                                                AttitudeProvider attitudeProvider, Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
      * @param integ numerical integrator to use for propagation.
      * @return differential equations for main state
      */
-    protected abstract MainStateEquations getMainStateEquations(final ODEIntegrator integ);
+    protected abstract MainStateEquations getMainStateEquations(ODEIntegrator integ);
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target) throws OrekitException {
@@ -627,7 +627,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @return derivatives of main state
          * @throws OrekitException if differentials cannot be computed
          */
-        double[] computeDerivatives(final SpacecraftState state) throws OrekitException;
+        double[] computeDerivatives(SpacecraftState state) throws OrekitException;
 
     }
 

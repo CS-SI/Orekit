@@ -135,7 +135,7 @@ public class EclipticProviderTest {
     @Test
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         TransformProvider provider = new EclipticProvider(IERSConventions.IERS_2010);
-        
+
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);

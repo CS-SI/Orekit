@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -55,19 +56,19 @@ import org.orekit.utils.TimeSpanMap;
 public class DSSTThirdBody implements DSSTForceModel {
 
     /** Max power for summation. */
-    private static final int       MAX_POWER = 22;
+    private static final int    MAX_POWER = 22;
 
     /** Truncation tolerance for big, eccentric  orbits. */
-    private static final double    BIG_TRUNCATION_TOLERANCE = 1.e-1;
+    private static final double BIG_TRUNCATION_TOLERANCE = 1.e-1;
 
     /** Truncation tolerance for small orbits. */
-    private static final double    SMALL_TRUNCATION_TOLERANCE = 1.9e-6;
+    private static final double SMALL_TRUNCATION_TOLERANCE = 1.9e-6;
 
     /** Number of points for interpolation. */
-    private static final int        INTERPOLATION_POINTS = 3;
+    private static final int    INTERPOLATION_POINTS = 3;
 
     /** Maximum power for eccentricity used in short periodic computation. */
-    private static final int        MAX_ECCPOWER_SP = 4;
+    private static final int    MAX_ECCPOWER_SP = 4;
 
     /** Retrograde factor I.
      *  <p>
@@ -82,7 +83,7 @@ public class DSSTThirdBody implements DSSTForceModel {
      *  has been kept in the formulas.
      *  </p>
      */
-    private static final int I = 1;
+    private static final int    I = 1;
 
     /** The 3rd body to consider. */
     private final CelestialBody    body;
@@ -192,6 +193,9 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** k * &Chi;³. */
     private double kXXX;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @see org.orekit.bodies.CelestialBodyFactory
@@ -218,6 +222,8 @@ public class DSSTThirdBody implements DSSTForceModel {
         for (int s = 0; s <= MAX_POWER; s++) {
             this.hansenObjects[s] = new HansenThirdBodyLinear(MAX_POWER, s);
         }
+
+        this.factory = new DSFactory(1, 1);
 
     }
 
@@ -439,17 +445,17 @@ public class DSSTThirdBody implements DSSTForceModel {
 
             initializeStep(new AuxiliaryElements(meanState.getOrbit(), I));
 
-            // Qns coefficients
-            Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
-            final GeneratingFunctionCoefficients gfCoefs =
-                            new GeneratingFunctionCoefficients(maxAR3Pow, MAX_ECCPOWER_SP, maxAR3Pow + 1);
-
             // a / R3 up to power maxAR3Pow
             final double aoR3 = a / R3;
             aoR3Pow[0] = 1.;
             for (int i = 1; i <= maxAR3Pow; i++) {
                 aoR3Pow[i] = aoR3 * aoR3Pow[i - 1];
             }
+
+            // Qns coefficients
+            Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
+            final GeneratingFunctionCoefficients gfCoefs =
+                            new GeneratingFunctionCoefficients(maxAR3Pow, MAX_ECCPOWER_SP, maxAR3Pow + 1);
 
             //Compute additional quantities
             // 2 * a / An
@@ -1144,7 +1150,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             final double coef2 = sign * btjms[absJmS];
             // P<sub>l</sub><sup>|j-s|, |j+s|</sup>(χ)
             final DerivativeStructure jac =
-                    JacobiPolynomials.getValue(l, absJmS, absJpS, new DerivativeStructure(1, 1, 0, X));
+                    JacobiPolynomials.getValue(l, absJmS, absJpS, factory.variable(0, X));
 
             // the derivative of coef1 by c
             final double dcoef1dc = -coef1 * 2. * c * (((double) n) / opc2tn[1] + ((double) l) / omc2tn[1]);

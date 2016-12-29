@@ -111,15 +111,15 @@ public class BiasTest {
             }
         }
 
-        EstimationTestUtils.checkFit(context, estimator, 2, 6,
-                                     0.0,  3.0e-7,
-                                     0.0,  7.3e-7,
-                                     0.0,  1.3e-7,
-                                     0.0,  7.9e-11);
+        EstimationTestUtils.checkFit(context, estimator, 2, 7,
+                                     0.0,  5.0e-7,
+                                     0.0,  1.2e-6,
+                                     0.0,  2.4e-7,
+                                     0.0,  9.4e-11);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
             Assert.assertEquals(realStationsBiases[i],
                                 stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),
-                                3.5e-8);
+                                3.3e-6);
         }
 
     }

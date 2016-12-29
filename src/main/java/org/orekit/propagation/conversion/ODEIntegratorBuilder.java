@@ -33,7 +33,7 @@ public interface ODEIntegratorBuilder {
      * @return a first order integrator ready to use
      * @exception OrekitException if integrator cannot been built
      */
-    AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType)
+    AbstractIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType)
         throws OrekitException;
 
 }

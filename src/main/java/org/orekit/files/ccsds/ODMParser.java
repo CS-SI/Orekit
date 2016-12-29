@@ -16,24 +16,19 @@
  */
 package org.orekit.files.ccsds;
 
-import org.hipparchus.util.FastMath;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFile;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
-
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.hipparchus.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 /**
  * Base class for all CCSDS Orbit Data Message parsers.
@@ -102,7 +97,7 @@ public abstract class ODMParser {
      * @return a new instance, with mission reference date replaced
      * @see #getMissionReferenceDate()
      */
-    public abstract ODMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate);
+    public abstract ODMParser withMissionReferenceDate(AbsoluteDate newMissionReferenceDate);
 
     /** Get initial date.
      * @return mission reference date to use while parsing
@@ -117,7 +112,7 @@ public abstract class ODMParser {
      * @return a new instance, with gravitational coefficient date replaced
      * @see #getMu()
      */
-    public abstract ODMParser withMu(final double newMu);
+    public abstract ODMParser withMu(double newMu);
 
     /** Get gravitational coefficient.
      * @return gravitational coefficient to use while parsing
@@ -132,7 +127,7 @@ public abstract class ODMParser {
      * @return a new instance, with IERS conventions replaced
      * @see #getConventions()
      */
-    public abstract ODMParser withConventions(final IERSConventions newConventions);
+    public abstract ODMParser withConventions(IERSConventions newConventions);
 
     /** Get IERS conventions.
      * @return IERS conventions to use while parsing
@@ -147,7 +142,7 @@ public abstract class ODMParser {
      * @return a new instance, with EOP interpolation method replaced
      * @see #isSimpleEOP()
      */
-    public abstract ODMParser withSimpleEOP(final boolean newSimpleEOP);
+    public abstract ODMParser withSimpleEOP(boolean newSimpleEOP);
 
     /** Get EOP interpolation method.
      * @return true if tidal effects are ignored when interpolating EOP
@@ -170,9 +165,9 @@ public abstract class ODMParser {
      * @param newLaunchPiece piece of launch (from "A" to "ZZZ")
      * @return a new instance, with TLE settings replaced
      */
-    public abstract ODMParser withInternationalDesignator(final int newLaunchYear,
-                                                          final int newLaunchNumber,
-                                                          final String newLaunchPiece);
+    public abstract ODMParser withInternationalDesignator(int newLaunchYear,
+                                                          int newLaunchNumber,
+                                                          String newLaunchPiece);
 
     /** Get the launch year.
      * @return launch year
@@ -202,24 +197,11 @@ public abstract class ODMParser {
      */
     public ODMFile parse(final String fileName)
         throws OrekitException {
-
-        InputStream stream = null;
-
-        try {
-            stream = new FileInputStream(fileName);
+        try (InputStream stream = new FileInputStream(fileName)) {
             return parse(stream, fileName);
-        } catch (FileNotFoundException e) {
+        } catch (IOException e) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException e) {
-                // ignore
-            }
         }
-
     }
 
     /** Parse a CCSDS Orbit Data Message.
@@ -238,7 +220,7 @@ public abstract class ODMParser {
      * @return parsed orbit
      * @exception OrekitException if orbit message cannot be parsed
      */
-    public abstract ODMFile parse(final InputStream stream, final String fileName)
+    public abstract ODMFile parse(InputStream stream, String fileName)
         throws OrekitException;
 
     /** Parse a comment line.
@@ -337,6 +319,7 @@ public abstract class ODMParser {
                 return true;
 
             case REF_FRAME:
+                metaData.setFrameString(keyValue.getValue());
                 metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(getConventions(), isSimpleEOP()));
                 return true;
 
@@ -345,7 +328,13 @@ public abstract class ODMParser {
                 return true;
 
             case TIME_SYSTEM:
-                final OrbitFile.TimeSystem timeSystem = OrbitFile.TimeSystem.valueOf(keyValue.getValue());
+                if (!CcsdsTimeScale.contains(keyValue.getValue())) {
+                    throw new OrekitException(
+                            OrekitMessages.CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED,
+                            keyValue.getValue());
+                }
+                final CcsdsTimeScale timeSystem =
+                        CcsdsTimeScale.valueOf(keyValue.getValue());
                 metaData.setTimeSystem(timeSystem);
                 if (metaData.getFrameEpochString() != null) {
                     metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem));
@@ -372,7 +361,7 @@ public abstract class ODMParser {
             case EPOCH:
                 general.setEpochComment(comment);
                 comment.clear();
-                general.setEpoch(parseDate(keyValue.getValue(), general.getTimeSystem()));
+                general.setEpoch(parseDate(keyValue.getValue(), general.getMetaData().getTimeSystem()));
                 return true;
 
             case SEMI_MAJOR_AXIS:
@@ -566,44 +555,9 @@ public abstract class ODMParser {
      * @return parsed date
      * @exception OrekitException if some time scale cannot be retrieved
      */
-    protected AbsoluteDate parseDate(final String date, final OrbitFile.TimeSystem timeSystem)
+    protected AbsoluteDate parseDate(final String date, final CcsdsTimeScale timeSystem)
         throws OrekitException {
-        switch (timeSystem) {
-            case GMST:
-                return new AbsoluteDate(date, TimeScalesFactory.getGMST(conventions, false));
-            case GPS:
-                return new AbsoluteDate(date, TimeScalesFactory.getGPS());
-            case TAI:
-                return new AbsoluteDate(date, TimeScalesFactory.getTAI());
-            case TCB:
-                return new AbsoluteDate(date, TimeScalesFactory.getTCB());
-            case TDB:
-                return new AbsoluteDate(date, TimeScalesFactory.getTDB());
-            case TCG:
-                return new AbsoluteDate(date, TimeScalesFactory.getTCG());
-            case TT:
-                return new AbsoluteDate(date, TimeScalesFactory.getTT());
-            case UT1:
-                return new AbsoluteDate(date, TimeScalesFactory.getUT1(conventions, false));
-            case UTC:
-                return new AbsoluteDate(date, TimeScalesFactory.getUTC());
-            case MET: {
-                final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
-                final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                        clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                        clock.getTime().getSecondsInUTCDay();
-                return missionReferenceDate.shiftedBy(offset);
-            }
-            case MRT: {
-                final DateTimeComponents clock = DateTimeComponents.parseDateTime(date);
-                final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                        clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                        clock.getTime().getSecondsInUTCDay();
-                return missionReferenceDate.shiftedBy(offset);
-            }
-            default:
-                throw new OrekitInternalError(null);
-        }
+        return timeSystem.parseDate(date, conventions, missionReferenceDate);
     }
 
 }

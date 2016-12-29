@@ -16,6 +16,11 @@
  */
 package org.orekit.forces.gravity;
 
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -25,8 +30,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.AbstractForceModel;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -54,6 +62,9 @@ public class NewtonianAttraction extends AbstractForceModel {
     /** Central attraction coefficient (m^3/s^2). */
     private double mu;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
    /** Simple constructor.
      * @param mu central attraction coefficient (m^3/s^2)
      */
@@ -76,6 +87,7 @@ public class NewtonianAttraction extends AbstractForceModel {
         };
 
         this.mu = mu;
+        this.factory = new DSFactory(1, 1);
     }
 
     /** {@inheritDoc} */
@@ -97,7 +109,7 @@ public class NewtonianAttraction extends AbstractForceModel {
 
         final Vector3D            position = s.getPVCoordinates().getPosition();
         final double              r2       = position.getNormSq();
-        final DerivativeStructure muds     = new DerivativeStructure(1, 1, 0, mu);
+        final DerivativeStructure muds     = factory.variable(0, mu);
         return new FieldVector3D<DerivativeStructure>(muds.divide(-r2 * FastMath.sqrt(r2)), position);
 
     }
@@ -116,8 +128,20 @@ public class NewtonianAttraction extends AbstractForceModel {
     }
 
     /** {@inheritDoc} */
-    public EventDetector[] getEventsDetectors() {
-        return new EventDetector[0];
+    public <T extends RealFieldElement<T>> void addContribution(final FieldSpacecraftState<T> s, final FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException {
+        adder.addKeplerContribution(mu);
+    }
+
+    /** {@inheritDoc} */
+    public Stream<EventDetector> getEventsDetectors() {
+        return Stream.empty();
+    }
+
+    @Override
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return Stream.empty();
     }
 
     /** {@inheritDoc} */

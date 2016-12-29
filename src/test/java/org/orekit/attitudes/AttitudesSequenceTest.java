@@ -118,8 +118,6 @@ public class AttitudesSequenceTest {
         attitudesSequence.registerSwitchEvents(propagator);
 
         propagator.setMasterMode(60.0, new OrekitFixedStepHandler() {
-            public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            }
             public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
                 // the Earth position in spacecraft frame should be along spacecraft Z axis
                 // during night time and away from it during day time due to roll and pitch offsets

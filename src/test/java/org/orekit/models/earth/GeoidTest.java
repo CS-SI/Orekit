@@ -207,9 +207,9 @@ public class GeoidTest {
             // verify
             String message = String.format("point: %s%n",
                     Arrays.toString(point));
-            // position accuracy on Earth's surface to 1 um.
-            assertThat(message, actualReversed, geodeticPointCloseTo(gp, 1e-6));
-            assertThat(message, actual, geodeticPointCloseTo(gp, 1e-6));
+            // position accuracy on Earth's surface to 1.3 um.
+            assertThat(message, actualReversed, geodeticPointCloseTo(gp, 1.3e-6));
+            assertThat(message, actual, geodeticPointCloseTo(gp, 1.3e-6));
         }
     }
 
@@ -374,7 +374,7 @@ public class GeoidTest {
         //verify
         assertThat(
                 geoid.transform(actual, geoid.getBodyFrame(), date).getAltitude(),
-                closeTo(0.0, 1e-9));
+                closeTo(0.0, 1.1e-9));
     }
 
 }

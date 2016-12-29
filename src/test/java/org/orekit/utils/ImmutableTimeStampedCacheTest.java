@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
 
 /**
  * Unit tests for {@link ImmutableTimeStampedCache}.
- * 
+ *
  * @author Evan Ward
  */
 public class ImmutableTimeStampedCacheTest {
@@ -115,7 +115,7 @@ public class ImmutableTimeStampedCacheTest {
     /**
      * check {@link ImmutableTimeStampedCache#getNeighbors(AbsoluteDate)} at a
      * series of different dates designed to test all logic paths.
-     * 
+     *
      * @throws TimeStampedCacheException
      */
     @Test
@@ -198,7 +198,7 @@ public class ImmutableTimeStampedCacheTest {
     /**
      * check that the cache is immutable by changing the data passed in the
      * constructor and returned from methods.
-     * 
+     *
      * @throws TimeStampedCacheException
      */
     @Test

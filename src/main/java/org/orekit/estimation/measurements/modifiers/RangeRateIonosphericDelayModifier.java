@@ -36,9 +36,10 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
 
-/** Class modifying theoretical range measurement with ionospheric delay.
- * The effect of ionospheric correction on the range is directly computed
- * through the computation of the ionospheric delay.
+/** Class modifying theoretical range-rate measurement with ionospheric delay.
+ * The effect of ionospheric correction on the range-rate is directly computed
+ * through the computation of the ionospheric delay difference with respect to
+ * time.
  *
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
@@ -56,8 +57,8 @@ public class RangeRateIonosphericDelayModifier implements EstimationModifier<Ran
 
     /** Constructor.
      *
-     * @param model  Ionospheric delay model appropriate for the current range-rate measurement method.
-     * @param twoWay     Flag indicating whether the measurement is two-way.
+     * @param model Ionospheric delay model appropriate for the current range-rate measurement method.
+     * @param twoWay Flag indicating whether the measurement is two-way.
      */
     public RangeRateIonosphericDelayModifier(final IonosphericModel model, final boolean twoWay) {
         ionoModel = model;

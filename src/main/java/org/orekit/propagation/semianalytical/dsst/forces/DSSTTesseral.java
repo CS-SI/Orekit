@@ -28,6 +28,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -235,6 +236,9 @@ public class DSSTTesseral implements DSSTForceModel {
     /** Short period terms. */
     private TesseralShortPeriodicCoefficients shortPeriodTerms;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param centralBodyFrame rotating body frame
      * @param centralBodyRotationRate central body rotation rate (rad/s)
@@ -308,6 +312,8 @@ public class DSSTTesseral implements DSSTForceModel {
         this.nonResOrders = new TreeMap<Integer, List <Integer> >();
         this.maxEccPow = 0;
         this.maxHansen = 0;
+
+        this.factory = new DSFactory(1, 1);
 
     }
 
@@ -892,7 +898,7 @@ public class DSSTTesseral implements DSSTForceModel {
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
                 final DerivativeStructure jacobi =
-                        JacobiPolynomials.getValue(l, v, w, new DerivativeStructure(1, 1, 0, gamma));
+                        JacobiPolynomials.getValue(l, v, w, factory.variable(0, gamma));
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);

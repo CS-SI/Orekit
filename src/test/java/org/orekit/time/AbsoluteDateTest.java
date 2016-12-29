@@ -69,7 +69,7 @@ public class AbsoluteDateTest {
 
     @Test
     public void testJulianEpochRate() throws OrekitException {
-        
+
         for (int i = 0; i < 10; ++i) {
             AbsoluteDate j200i = AbsoluteDate.createJulianEpoch(2000.0 + i);
             AbsoluteDate j2000 = AbsoluteDate.J2000_EPOCH;
@@ -81,7 +81,7 @@ public class AbsoluteDateTest {
 
     @Test
     public void testBesselianEpochRate() throws OrekitException {
-        
+
         for (int i = 0; i < 10; ++i) {
             AbsoluteDate b195i = AbsoluteDate.createBesselianEpoch(1950.0 + i);
             AbsoluteDate b1950 = AbsoluteDate.createBesselianEpoch(1950.0);
@@ -313,7 +313,7 @@ public class AbsoluteDateTest {
         Assert.assertEquals(0.0, AbsoluteDate.J2000_EPOCH.durationFrom(dateA), 1.0e-15);
         AbsoluteDate dateB = AbsoluteDate.createMJDDate(53774, 0.0, TimeScalesFactory.getUTC());
         AbsoluteDate dateC = new AbsoluteDate("2006-02-08T00:00:00", TimeScalesFactory.getUTC());
-        Assert.assertEquals(0.0, dateC.durationFrom(dateB), 1.0e-15);        
+        Assert.assertEquals(0.0, dateC.durationFrom(dateB), 1.0e-15);
     }
 
     @Test

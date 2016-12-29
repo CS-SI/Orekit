@@ -129,7 +129,7 @@ public class FieldOfViewTest {
                     // the offsetFromBoundary method may use the fast approximate
                     // method, so we cannot check the error accurately
                     // we know however that the fast method will underestimate the offset
-                    
+
                     Assert.assertTrue(offset > 0);
                     Assert.assertTrue(offset <= theoreticalOffset + 5e-16);
                 } else {
@@ -284,7 +284,7 @@ public class FieldOfViewTest {
         double minDist = Double.POSITIVE_INFINITY;
         double maxDist = 0;
         for (int i = 0; i < loop.size(); ++i) {
-            Assert.assertEquals(0.0, loop.get(i).getAltitude(), 8.0e-9);
+            Assert.assertEquals(0.0, loop.get(i).getAltitude(), 3.0e-7);
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "atLimb");
             final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
                                                        state.getFrame(), state.getDate());
@@ -294,7 +294,7 @@ public class FieldOfViewTest {
             minDist = FastMath.min(minDist, dist);
             maxDist = FastMath.max(maxDist, dist);
         }
-        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 1.0e-12);
+        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 2.0e-12);
         Assert.assertEquals(7.8897,    FastMath.toDegrees(maxEl), 0.001);
         Assert.assertEquals(4584829.6, minDist, 1.0);
         Assert.assertEquals(5347029.8, maxDist, 1.0);
@@ -330,7 +330,7 @@ public class FieldOfViewTest {
         double minDist = Double.POSITIVE_INFINITY;
         double maxDist = 0;
         for (int i = 0; i < loop.size(); ++i) {
-            Assert.assertEquals(0.0, loop.get(i).getAltitude(), 8.0e-9);
+            Assert.assertEquals(0.0, loop.get(i).getAltitude(), 3.0e-7);
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "atLimb");
             final double elevation = topo.getElevation(state.getPVCoordinates().getPosition(),
                                                        state.getFrame(), state.getDate());
@@ -340,8 +340,8 @@ public class FieldOfViewTest {
             minDist = FastMath.min(minDist, dist);
             maxDist = FastMath.max(maxDist, dist);
         }
-        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 1.0e-13);
-        Assert.assertEquals(0.0,       FastMath.toDegrees(maxEl), 1.0e-12);
+        Assert.assertEquals(0.0,       FastMath.toDegrees(minEl), 2.0e-12);
+        Assert.assertEquals(0.0,       FastMath.toDegrees(maxEl), 1.7e-12);
         Assert.assertEquals(5323036.6, minDist, 1.0);
         Assert.assertEquals(5347029.8, maxDist, 1.0);
     }
@@ -383,7 +383,7 @@ public class FieldOfViewTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(fov);
 
-        
+
         Assert.assertTrue(bos.size() > 400);
         Assert.assertTrue(bos.size() < 450);
 
@@ -393,7 +393,7 @@ public class FieldOfViewTest {
         Assert.assertEquals(0.5 * FastMath.PI, deserialized.getZone().getSize(),         1.0e-15);
         Assert.assertEquals(1.5 * FastMath.PI, deserialized.getZone().getBoundarySize(), 1.0e-15);
         Assert.assertEquals(0.001,  deserialized.getMargin(), 1.0e-15);
-        
+
     }
 
 }

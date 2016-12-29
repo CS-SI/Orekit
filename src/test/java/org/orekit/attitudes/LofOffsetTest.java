@@ -259,11 +259,15 @@ public class LofOffsetTest {
         Rotation offsetAtt  = law.getAttitude(orbit, date, orbit.getFrame()).getRotation();
         Rotation alignedAtt = new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, date, orbit.getFrame()).getRotation();
         Rotation offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
-        double[] angles = offsetProper.revert().getAngles(order, RotationConvention.VECTOR_OPERATOR);
-        Assert.assertEquals(alpha1, angles[0], 1.0e-11);
-        Assert.assertEquals(alpha2, angles[1], 1.0e-11);
-        Assert.assertEquals(alpha3, angles[2], 1.0e-11);
-    }
+        double[] anglesV = offsetProper.revert().getAngles(order, RotationConvention.VECTOR_OPERATOR);
+        Assert.assertEquals(alpha1, anglesV[0], 1.0e-11);
+        Assert.assertEquals(alpha2, anglesV[1], 1.0e-11);
+        Assert.assertEquals(alpha3, anglesV[2], 1.0e-11);
+        double[] anglesF = offsetProper.getAngles(order, RotationConvention.FRAME_TRANSFORM);
+        Assert.assertEquals(alpha1, anglesF[0], 1.0e-11);
+        Assert.assertEquals(alpha2, anglesF[1], 1.0e-11);
+        Assert.assertEquals(alpha3, anglesF[2], 1.0e-11);
+   }
 
     private void checkSatVector(Orbit o, Attitude a, Vector3D satVector,
                                 double expectedX, double expectedY, double expectedZ,

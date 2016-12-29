@@ -16,27 +16,29 @@
  */
 package org.orekit.files.sp3;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-import org.orekit.files.general.OrbitFile;
-import org.orekit.files.general.SatelliteInformation;
-import org.orekit.files.general.SatelliteTimeCoordinate;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.files.general.EphemerisFile;
+import org.orekit.frames.Frame;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
-/** Represents a parsed SP3 orbit file.
+/**
+ * Represents a parsed SP3 orbit file.
  * @author Thomas Neidhart
+ * @author Evan Ward
  */
-public class SP3File implements OrbitFile, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 3333652174843017654L;
+public class SP3File implements EphemerisFile {
 
     /** File type indicator. */
     public enum SP3FileType {
@@ -85,6 +87,22 @@ public class SP3File implements OrbitFile, Serializable {
 
     }
 
+    /** Time system used throughout this SP3 file. */
+    public enum TimeSystem {
+        /** Global Positioning System. */
+        GPS,
+        /** GLONASS. */
+        GLO,
+        /** GALILEO. */
+        GAL,
+        /** International Atomic Time. */
+        TAI,
+        /** Coordinated Universal Time. */
+        UTC,
+        /** Quasi-Zenith System. */
+        QZS
+    }
+
     /** File type. */
     private SP3FileType type;
 
@@ -124,20 +142,70 @@ public class SP3File implements OrbitFile, Serializable {
     /** Agency providing the file. */
     private String agency;
 
-    /** A list containing additional satellite information. */
-    private List<SatelliteInformation> satellites;
+    /** Indicates if data contains velocity or not. */
+    private CartesianDerivativesFilter filter;
 
-    /** A mapping of satellite id to its corresponding {@link SatelliteInformation} object. */
-    private Map<String, SatelliteInformation> satelliteInfo;
+    /** Time scale of dates in the ephemeris file. */
+    private TimeScale timeScale;
 
-    /** A map containing all satellite coordinates. */
-    private Map<String, List<SatelliteTimeCoordinate>> satelliteCoords;
+    /** Time scale, as specified in the file. */
+    private String timeScaleString;
 
-    /** Create a new SP3 file object. */
-    public SP3File() {
-        satellites = new ArrayList<SatelliteInformation>();
-        satelliteInfo = new HashMap<String, SatelliteInformation>();
-        satelliteCoords = new HashMap<String, List<SatelliteTimeCoordinate>>();
+    /** Standard gravitational parameter in m^3 / s^2. */
+    private final double mu;
+
+    /** Number of samples to use when interpolating. */
+    private final int interpolationSamples;
+
+    /** Maps {@link #coordinateSystem} to a {@link Frame}. */
+    private final Function<? super String, ? extends Frame> frameBuilder;
+
+    /** A map containing satellite information. */
+    private Map<String, SP3Ephemeris> satellites;
+
+    /**
+     * Create a new SP3 file object.
+     *
+     * @param mu                   is the standard gravitational parameter in m^3 / s^2.
+     * @param interpolationSamples number of samples to use in interpolation.
+     * @param frameBuilder         for constructing a reference frame from the identifier
+     *                             in the file.
+     */
+    SP3File(final double mu,
+            final int interpolationSamples,
+            final Function<? super String, ? extends Frame> frameBuilder) {
+        this.mu = mu;
+        this.interpolationSamples = interpolationSamples;
+        this.frameBuilder = frameBuilder;
+        // must be linked has map to preserve order of satellites in the file.
+        satellites = new LinkedHashMap<>();
+    }
+
+    /**
+     * Set the derivatives filter.
+     *
+     * @param filter that indicates which derivatives of position are available.
+     */
+    void setFilter(final CartesianDerivativesFilter filter) {
+        this.filter = filter;
+    }
+
+    /**
+     * Set the time scale.
+     *
+     * @param timeScale use to parse dates in this file.
+     */
+    void setTimeScale(final TimeScale timeScale) {
+        this.timeScale = timeScale;
+    }
+
+    /**
+     * Set the string used to define the time scale.
+     *
+     * @param timeScaleString the time scale identifier used in the file.
+     */
+    void setTimeScaleString(final String timeScaleString) {
+        this.timeScaleString = timeScaleString;
     }
 
     /** Returns the {@link SP3FileType} associated with this SP3 file.
@@ -150,11 +218,13 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the file type for this SP3 file.
      * @param fileType the file type to be set
      */
-    public void setType(final SP3FileType fileType) {
+    void setType(final SP3FileType fileType) {
         this.type = fileType;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the {@link TimeSystem} used to time-stamp position entries.
+     * @return the {@link TimeSystem} of the orbit file
+     */
     public TimeSystem getTimeSystem() {
         return timeSystem;
     }
@@ -162,7 +232,7 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the time system used in this SP3 file.
      * @param system the time system to be set
      */
-    public void setTimeSystem(final TimeSystem system) {
+    void setTimeSystem(final TimeSystem system) {
         this.timeSystem = system;
     }
 
@@ -176,11 +246,13 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the data used indicator for this SP3 file.
      * @param data the data used indicator to be set
      */
-    public void setDataUsed(final String data) {
+    void setDataUsed(final String data) {
         this.dataUsed = data;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the start epoch of the orbit file.
+     * @return the start epoch
+     */
     public AbsoluteDate getEpoch() {
         return epoch;
     }
@@ -188,7 +260,7 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the epoch of the SP3 file.
      * @param time the epoch to be set
      */
-    public void setEpoch(final AbsoluteDate time) {
+    void setEpoch(final AbsoluteDate time) {
         this.epoch = time;
     }
 
@@ -202,7 +274,7 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the GPS week of the SP3 file.
      * @param week the GPS week to be set
      */
-    public void setGpsWeek(final int week) {
+    void setGpsWeek(final int week) {
         this.gpsWeek = week;
     }
 
@@ -216,7 +288,7 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the seconds of the GPS week for this SP3 file.
      * @param seconds the seconds to be set
      */
-    public void setSecondsOfWeek(final double seconds) {
+    void setSecondsOfWeek(final double seconds) {
         this.secondsOfWeek = seconds;
     }
 
@@ -230,7 +302,7 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the julian day for this SP3 file.
      * @param day the julian day to be set
      */
-    public void setJulianDay(final int day) {
+    void setJulianDay(final int day) {
         this.julianDay = day;
     }
 
@@ -244,11 +316,13 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the day fraction for this SP3 file.
      * @param fraction the day fraction to be set
      */
-    public void setDayFraction(final double fraction) {
+    void setDayFraction(final double fraction) {
         this.dayFraction = fraction;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the time interval between epochs (in seconds).
+     * @return the time interval between epochs
+     */
     public double getEpochInterval() {
         return epochInterval;
     }
@@ -256,11 +330,13 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the epoch interval for this SP3 file.
      * @param interval the interval between orbit entries
      */
-    public void setEpochInterval(final double interval) {
+    void setEpochInterval(final double interval) {
         this.epochInterval = interval;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the number of epochs contained in this orbit file.
+     * @return the number of epochs
+     */
     public int getNumberOfEpochs() {
         return numberOfEpochs;
     }
@@ -268,11 +344,13 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the number of epochs as contained in the SP3 file.
      * @param epochCount the number of epochs to be set
      */
-    public void setNumberOfEpochs(final int epochCount) {
+    void setNumberOfEpochs(final int epochCount) {
         this.numberOfEpochs = epochCount;
     }
 
-    /** {@inheritDoc} */
+    /** Returns the coordinate system of the entries in this orbit file.
+     * @return the coordinate system
+     */
     public String getCoordinateSystem() {
         return coordinateSystem;
     }
@@ -280,7 +358,7 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the coordinate system used for the orbit entries.
      * @param system the coordinate system to be set
      */
-    public void setCoordinateSystem(final String system) {
+    void setCoordinateSystem(final String system) {
         this.coordinateSystem = system;
     }
 
@@ -294,7 +372,7 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the {@link SP3OrbitType} for this SP3 file.
      * @param oType the orbit type to be set
      */
-    public void setOrbitType(final SP3OrbitType oType) {
+    void setOrbitType(final SP3OrbitType oType) {
         this.orbitType = oType;
     }
 
@@ -308,7 +386,7 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the agency string for this SP3 file.
      * @param agencyStr the agency string to be set
      */
-    public void setAgency(final String agencyStr) {
+    void setAgency(final String agencyStr) {
         this.agency = agencyStr;
     }
 
@@ -318,59 +396,226 @@ public class SP3File implements OrbitFile, Serializable {
      */
     public void addSatellite(final String satId) {
         // only add satellites which have not been added before
-        if (getSatellite(satId) == null) {
-            final SatelliteInformation info = new SatelliteInformation(satId);
-            satellites.add(info);
-            satelliteInfo.put(satId, info);
-            satelliteCoords.put(satId, new LinkedList<SatelliteTimeCoordinate>());
-        }
+        satellites.putIfAbsent(satId, new SP3Ephemeris(satId));
     }
 
-    /** {@inheritDoc} */
-    public Collection<SatelliteInformation> getSatellites() {
-        return Collections.unmodifiableCollection(satellites);
+    @Override
+    public Map<String, SP3Ephemeris> getSatellites() {
+        return Collections.unmodifiableMap(satellites);
     }
 
-    /** {@inheritDoc} */
+    /** Get the number of satellites contained in this orbit file.
+     * @return the number of satellites
+     */
     public int getSatelliteCount() {
         return satellites.size();
     }
 
-    /** {@inheritDoc} */
-    public SatelliteInformation getSatellite(final String satId) {
-        if (satId == null) {
-            return null;
-        }
-
-        return satelliteInfo.get(satId);
-    }
-
-    /** Returns the nth satellite as contained in the SP3 file.
-     * @param n the index of the satellite
-     * @return a {@link SatelliteInformation} object for the nth satellite
+    /**
+     * Set the formal accuracy for a satellite.
+     *
+     * @param index    is the index of the satellite.
+     * @param accuracy of the satellite, in m.
      */
-    public SatelliteInformation getSatellite(final int n) {
-        return satellites.get(n);
+    void setAccuracy(final int index, final double accuracy) {
+        int n = index;
+        for (final SP3Ephemeris ephemeris : satellites.values()) {
+            if (n == 0) {
+                ephemeris.setAccuracy(accuracy);
+                return;
+            }
+            n--;
+        }
     }
 
-    /** {@inheritDoc} */
+    /** Tests whether a satellite with the given id is contained in this orbit
+     * file.
+     * @param satId the satellite id
+     * @return {@code true} if the satellite is contained in the file,
+     *         {@code false} otherwise
+     */
     public boolean containsSatellite(final String satId) {
-        return satelliteCoords.containsKey(satId);
+        return satellites.containsKey(satId);
     }
 
-    /** {@inheritDoc} */
-    public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
-        return satelliteCoords.get(satId);
-    }
-
-    /** Adds a new P/V coordinate for a given satellite.
+    /**
+     * Adds a new P/V coordinate for a given satellite.
+     *
      * @param satId the satellite identifier
      * @param coord the P/V coordinate of the satellite
      */
-    public void addSatelliteCoordinate(final String satId, final SatelliteTimeCoordinate coord) {
-        final List<SatelliteTimeCoordinate> coords = satelliteCoords.get(satId);
-        if (coords != null) {
-            coords.add(coord);
-        }
+    void addSatelliteCoordinate(final String satId, final SP3Coordinate coord) {
+        satellites.get(satId).coordinates.add(coord);
     }
+
+    /** An ephemeris for a single satellite in a SP3 file. */
+    public class SP3Ephemeris implements SatelliteEphemeris, EphemerisSegment {
+
+        /** Satellite ID. */
+        private final String id;
+        /** Ephemeris Data. */
+        private final List<SP3Coordinate> coordinates;
+        /** Accuracy in m. */
+        private double accuracy;
+
+        /**
+         * Create an ephemeris for a single satellite.
+         *
+         * @param id of the satellite.
+         */
+        SP3Ephemeris(final String id) {
+            this.id = id;
+            this.coordinates = new ArrayList<>();
+        }
+
+        @Override
+        public String getId() {
+            return this.id;
+        }
+
+        @Override
+        public double getMu() {
+            return mu;
+        }
+
+        @Override
+        public String getFrameString() {
+            return getCoordinateSystem();
+        }
+
+        @Override
+        public Frame getFrame() throws OrekitException {
+            return frameBuilder.apply(getFrameString());
+        }
+
+        @Override
+        public String getTimeScaleString() {
+            return timeScaleString;
+        }
+
+        @Override
+        public TimeScale getTimeScale() throws OrekitException {
+            return timeScale;
+        }
+
+        @Override
+        public int getInterpolationSamples() {
+            return interpolationSamples;
+        }
+
+        @Override
+        public CartesianDerivativesFilter getAvailableDerivatives() {
+            return filter;
+        }
+
+        @Override
+        public List<SP3Coordinate> getCoordinates() {
+            return Collections.unmodifiableList(this.coordinates);
+        }
+
+        /** Returns a list containing only {@code this}. */
+        @Override
+        public List<SP3Ephemeris> getSegments() {
+            return Collections.singletonList(this);
+        }
+
+        @Override
+        public AbsoluteDate getStart() {
+            return coordinates.get(0).getDate();
+        }
+
+        @Override
+        public AbsoluteDate getStop() {
+            return coordinates.get(coordinates.size() - 1).getDate();
+        }
+
+        @Override
+        public BoundedPropagator getPropagator() throws OrekitException {
+            return EphemerisSegment.super.getPropagator();
+        }
+
+        /**
+         * Set the accuracy for this satellite.
+         *
+         * @param accuracy in m.
+         */
+        void setAccuracy(final double accuracy) {
+            this.accuracy = accuracy;
+        }
+
+        /**
+         * Get the formal accuracy for this satellite.
+         *
+         * <p> The accuracy is limited by the SP3 standard to be a power of 2.
+         *
+         * @return magnitude of one standard deviation, in m.
+         */
+        public double getAccuracy() {
+            return accuracy;
+        }
+
+    }
+
+    /** A single record of position clock and possibly derivatives in an SP3 file. */
+    public static class SP3Coordinate extends TimeStampedPVCoordinates {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20161116L;
+        /** Clock correction in s. */
+        private final double clock;
+        /** Clock rate in s / s. */
+        private final double clockRate;
+
+        /**
+         * Create a coordinate with only position.
+         *
+         * @param date     of validity.
+         * @param position of the satellite.
+         * @param clock    correction in s.
+         */
+        SP3Coordinate(final AbsoluteDate date,
+                      final Vector3D position,
+                      final double clock) {
+            this(date, position, Vector3D.NaN, clock, 0);
+        }
+
+        /**
+         * Create a coordinate with position and velocity.
+         *
+         * @param date      of validity.
+         * @param position  of the satellite.
+         * @param velocity  of the satellite.
+         * @param clock     correction in s.
+         * @param clockRate in s / s.
+         */
+        SP3Coordinate(final AbsoluteDate date,
+                      final Vector3D position,
+                      final Vector3D velocity,
+                      final double clock,
+                      final double clockRate) {
+            super(date, position, velocity, Vector3D.NaN);
+            this.clock = clock;
+            this.clockRate = clockRate;
+        }
+
+        /**
+         * Returns the clock correction value.
+         *
+         * @return the clock correction in s.
+         */
+        public double getClockCorrection() {
+            return clock;
+        }
+
+        /**
+         * Returns the clock rate.
+         *
+         * @return the clock rate of change in s/s.
+         */
+        public double getClockRateChange() {
+            return clockRate;
+        }
+
+    }
+
 }

@@ -202,7 +202,7 @@ public class YawSteeringTest {
         SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
         SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
- 
+
         // check spin is consistent with attitude evolution
         double errorAngleMinus     = Rotation.distance(sMinus.shiftedBy(h).getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
@@ -220,7 +220,7 @@ public class YawSteeringTest {
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 4.0e-13);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 5.0e-13);
 
     }
 

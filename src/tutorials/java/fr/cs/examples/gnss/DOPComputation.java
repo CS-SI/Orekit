@@ -97,7 +97,7 @@ public class DOPComputation {
 
             // The min elevation over the zone: 10°
             final double minElevation = FastMath.toRadians(10.0);
-             
+
             // Computation period and time step: 1 day, 10'
             final AbsoluteDate tStart = new AbsoluteDate(2016, 3, 2, 20, 0, 0.,
                                                          TimeScalesFactory.getUTC());
@@ -106,7 +106,7 @@ public class DOPComputation {
 
             // Computes the DOP over the zone for the period
             new DOPComputation().run(shape, zone, 1000., minElevation, tStart, tStop, tStep);
-            
+
         } catch (OrekitException oe) {
             System.err.println(oe.getLocalizedMessage());
             System.exit(1);
@@ -131,7 +131,7 @@ public class DOPComputation {
         final SEMParser reader = new SEMParser(null);
         reader.loadData();
         final List<GPSAlmanac> almanacs = reader.getAlmanacs();
-        
+
         // Creates the GPS propagators from the almanacs
         final List<Propagator> propagators = new ArrayList<Propagator>();
         for (GPSAlmanac almanac: almanacs) {
@@ -143,7 +143,7 @@ public class DOPComputation {
                                    " is not OK (Health status = " + almanac.getHealth() + ").");
             }
         }
-        
+
         // Meshes the area of interest into a grid of geodetic points.
         final List<List<GeodeticPoint>> points = sample(shape, zone, meshSize);
 
@@ -189,7 +189,7 @@ public class DOPComputation {
 
     /**
      * Mesh an area of interest into a grid of geodetic points.
-     * 
+     *
      * @param zone the area to mesh
      * @param meshSize the size of the square meshes as a distance on the Earth surface (in meters)
      * @return a list of geodetic points sampling the zone of interest
@@ -200,7 +200,7 @@ public class DOPComputation {
                                              final double meshSize) throws OrekitException {
         // Convert the area into a SphericalPolygonsSet
         final SphericalPolygonsSet sps = computeSphericalPolygonsSet(zone);
-    
+
         // Build the tesselator
         final TileAiming aiming = new ConstantAzimuthAiming(shape, 0.);
         final EllipsoidTessellator tessellator = new EllipsoidTessellator(shape, aiming, 4);

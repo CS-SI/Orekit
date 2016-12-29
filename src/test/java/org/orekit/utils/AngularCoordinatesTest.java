@@ -204,9 +204,9 @@ public class AngularCoordinatesTest {
         }));
 
         double[] y = new double[] {
-            quadratic.getRotation().getQ0(), 
-            quadratic.getRotation().getQ1(), 
-            quadratic.getRotation().getQ2(), 
+            quadratic.getRotation().getQ0(),
+            quadratic.getRotation().getQ1(),
+            quadratic.getRotation().getQ2(),
             quadratic.getRotation().getQ3()
         };
         integrator.integrate(ode, new ODEState(0, y), dt);

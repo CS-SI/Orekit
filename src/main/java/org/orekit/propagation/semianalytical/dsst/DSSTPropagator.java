@@ -345,17 +345,17 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     }
 
-    /** Conversion from osculating to mean, orbit.
+    /** Conversion from osculating to mean orbit.
      * <p>
-     * Compute osculating state <b>in a DSST sense</b>, corresponding to the
-     * mean SpacecraftState in input, and according to the Force models taken
-     * into account.
+     * Compute mean state <b>in a DSST sense</b>, corresponding to the
+     * osculating SpacecraftState in input, and according to the Force models
+     * taken into account.
      * </p><p>
      * Since the osculating state is obtained with the computation of
      * short-periodic variation of each force model, the resulting output will
-     * depend on the force models parametrized in input.
+     * depend on the force models parameterized in input.
      * </p><p>
-     * The computing is done through a fixed-point iteration process.
+     * The computation is done through a fixed-point iteration process.
      * </p>
      * @param osculating Osculating state to convert
      * @param forceModels Forces to take into account

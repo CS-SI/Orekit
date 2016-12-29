@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.general.OrbitFile;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -230,18 +229,6 @@ public class OMMFile extends OGMFile {
      */
     void setTLERelatedParametersComment(final List<String> comment) {
         dataTleRelatedParametersComment = new ArrayList<String>(comment);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public String getCoordinateSystem() {
-        return metaData.getFrame().toString();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public OrbitFile.TimeSystem getTimeSystem() {
-        return metaData.getTimeSystem();
     }
 
     /** Generate a {@link KeplerianOrbit} based on the OMM mean keplerian elements.

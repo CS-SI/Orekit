@@ -16,6 +16,10 @@
  */
 package org.orekit.forces.gravity;
 
+import java.util.stream.Stream;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -27,8 +31,11 @@ import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsPro
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.UT1Scale;
@@ -152,10 +159,26 @@ public class SolidTides extends AbstractForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public EventDetector[] getEventsDetectors() {
+    public Stream<EventDetector> getEventsDetectors() {
         // delegate to underlying attraction model
         return attractionModel.getEventsDetectors();
     }
+
+    @Override
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(final Field<T> field) {
+        return attractionModel.getFieldEventsDetectors(field);
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s,
+                        final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+        // TODO: field implementation
+        throw new UnsupportedOperationException();
+    }
+
 
     /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {

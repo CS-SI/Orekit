@@ -16,6 +16,8 @@
  */
 package org.orekit.forces.radiation;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -27,6 +29,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 
@@ -81,6 +84,9 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
     /** Specular reflection coefficient. */
     private double tau;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param crossSection Surface (m²)
      * @param alpha absorption coefficient α between 0.0 an 1.0
@@ -108,6 +114,7 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
                     IsotropicRadiationCNES95Convention.this.tau = driver.getValue();
                 }
             });
+            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -147,11 +154,11 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
         final DerivativeStructure absorptionCoeffDS;
         final DerivativeStructure specularReflectionCoeffDS;
         if (ABSORPTION_COEFFICIENT.equals(paramName)) {
-            absorptionCoeffDS         = new DerivativeStructure(1, 1, 0, alpha);
-            specularReflectionCoeffDS = new DerivativeStructure(1, 1,    tau);
+            absorptionCoeffDS         = factory.variable(0, alpha);
+            specularReflectionCoeffDS = factory.constant(tau);
         } else if (REFLECTION_COEFFICIENT.equals(paramName)) {
-            absorptionCoeffDS         = new DerivativeStructure(1, 1,    alpha);
-            specularReflectionCoeffDS = new DerivativeStructure(1, 1, 0, tau);
+            absorptionCoeffDS         = factory.constant(alpha);
+            specularReflectionCoeffDS = factory.variable(0, tau);
         } else {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
                                       ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);
@@ -161,6 +168,17 @@ public class IsotropicRadiationCNES95Convention implements RadiationSensitive {
                 absorptionCoeffDS.subtract(1).multiply(specularReflectionCoeffDS.subtract(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
         return new FieldVector3D<DerivativeStructure>(kP.divide(mass), flux);
 
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> FieldVector3D<T>
+        radiationPressureAcceleration(final FieldAbsoluteDate<T> date, final Frame frame,
+                                      final FieldVector3D<T> position,
+                                      final FieldRotation<T> rotation, final T mass,
+                                      final FieldVector3D<T> flux)
+        throws OrekitException {
+        final double kP = crossSection * (1 + 4 * (1.0 - alpha) * (1.0 - tau) / 9.0);
+        return new FieldVector3D<T>(mass.reciprocal().multiply(kP), flux);
     }
 
 }

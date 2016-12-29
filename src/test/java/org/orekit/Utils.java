@@ -75,7 +75,7 @@ public class Utils {
         FramesFactory.setEOPContinuityThreshold(5 * Constants.JULIAN_DAY);
         TimeScalesFactory.clearUTCTAIOffsetsLoaders();
         GravityFieldFactory.clearPotentialCoefficientsReaders();
-        GravityFieldFactory.clearOceanTidesReaders();        
+        GravityFieldFactory.clearOceanTidesReaders();
         DataProvidersManager.getInstance().clearProviders();
         DataProvidersManager.getInstance().clearLoadedDataNames();
     }

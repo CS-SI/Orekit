@@ -119,12 +119,12 @@ public class EstimationTestUtils {
                 final double rotationduration = date.durationFrom(datedef);
                 final Vector3D alpharot = new Vector3D(rotationduration, rotationRate);
                 final Rotation rotation = new Rotation(Vector3D.PLUS_K, -alpharot.getZ(),
-                                                       RotationConvention.VECTOR_OPERATOR); 
+                                                       RotationConvention.VECTOR_OPERATOR);
                 return new Transform(date, rotation, rotationRate);
             }
         };
         Frame FrameTest = new Frame(FramesFactory.getEME2000(), MyEarthFrame, Myframename, true);
-        
+
         // Earth is spherical, rotating in one sidereal day
         context.earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0.0, FrameTest);
         context.sun = CelestialBodyFactory.getSun();
@@ -144,32 +144,29 @@ public class EstimationTestUtils {
 
         // semimajor axis for a geostationnary satellite
         double da = FastMath.cbrt(context.gravity.getMu() / (omega * omega));
-                                                              
+
         //context.stations = Arrays.asList(context.createStation(  0.0,  0.0, 0.0, "Lat0_Long0"),
         //                                 context.createStation( 62.29639,   -7.01250,  880.0, "Slættaratindur")
         //                );
         context.stations = Arrays.asList(context.createStation(0.0, 0.0, 0.0, "Lat0_Long0") );
-        
+
         // Station position & velocity in EME2000
         final Vector3D geovelocity = new Vector3D (0., 0., 0.);
-        
+
         // Compute the frames transformation from station frame to EME2000
         Transform topoToEME =
         context.stations.get(0).getOffsetFrame().getTransformTo(FramesFactory.getEME2000(),new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, context.utc));
 
         // Station position in EME2000 at reference date
         Vector3D stationPositionEME = topoToEME.transformPosition(Vector3D.ZERO);
-        //System.out.println("EME Station[0] position: " + stationPositionEME);
-        
+
         // Satellite position and velocity in Station Frame
         final Vector3D sat_pos = new Vector3D(0., 0., da-stationPositionEME.getNorm());
         final Vector3D acceleration = new Vector3D(-context.gravity.getMu(), sat_pos);
         final PVCoordinates pv_sat_topo = new PVCoordinates(sat_pos, geovelocity, acceleration);
-        //System.out.println("Satellite position in TopoStation[0]: " + pv_sat_topo);
 
         // satellite position in EME2000
         final PVCoordinates pv_sat_iner = topoToEME.transformPVCoordinates(pv_sat_topo);
-        //System.out.println("EME2000 Satellite position: " + pv_sat_iner);
 
         // Geo-stationary Satellite Orbit, tightly above the station (l0-L0)
         context.initialOrbit = new KeplerianOrbit(pv_sat_iner,
@@ -181,7 +178,7 @@ public class EstimationTestUtils {
         return context;
 
     }
-    
+
     public static Propagator createPropagator(final Orbit initialOrbit,
                                               final PropagatorBuilder propagatorBuilder)
         throws OrekitException {
@@ -232,15 +229,14 @@ public class EstimationTestUtils {
         Optimum optimum = estimator.getOptimum();
         Assert.assertEquals(iterations, optimum.getIterations());
         Assert.assertEquals(evaluations, optimum.getEvaluations());
-        
 
         int    k   = 0;
         double sum = 0;
         double max = 0;
         for (final Map.Entry<ObservedMeasurement<?>, EstimatedMeasurement<?>> entry :
              estimator.getLastEstimations().entrySet()) {
-            final ObservedMeasurement<?> m        = entry.getKey();
-            final EstimatedMeasurement<?>  e        = entry.getValue();
+            final ObservedMeasurement<?>  m = entry.getKey();
+            final EstimatedMeasurement<?> e = entry.getValue();
             final double[]    weight      = m.getBaseWeight();
             final double[]    sigma       = m.getTheoreticalStandardDeviation();
             final double[]    observed    = m.getObservedValue();

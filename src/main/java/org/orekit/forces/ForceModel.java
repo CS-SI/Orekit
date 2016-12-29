@@ -17,14 +17,20 @@
 package org.orekit.forces;
 
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.numerical.FieldTimeDerivativesEquations;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -87,6 +93,16 @@ public interface ForceModel {
     void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
         throws OrekitException;
 
+    /** Compute the contribution of the force model to the perturbing
+     * acceleration.
+     * @param s current state information: date, kinematics, attitude
+     * @param adder object where the contribution should be added
+     * @param <T> extends RealFieldElement
+     * @exception OrekitException if some specific error occurs
+     */
+    <T extends RealFieldElement<T>> void addContribution(FieldSpacecraftState<T> s, FieldTimeDerivativesEquations<T> adder)
+        throws OrekitException;
+
     /** Compute acceleration derivatives with respect to state parameters.
      * <p>
      * The derivatives should be computed with respect to position, velocity
@@ -124,10 +140,16 @@ public interface ForceModel {
         throws OrekitException;
 
     /** Get the discrete events related to the model.
-     * @return array of events detectors or null if the model is not
-     * related to any discrete events
+     * @return stream of events detectors
      */
-    EventDetector[] getEventsDetectors();
+    Stream<EventDetector> getEventsDetectors();
+
+    /** Get the discrete events related to the model.
+     * @param field field to which the state belongs
+     * @param <T> extends RealFieldElement<T>
+     * @return stream of events detectors
+     */
+    <T extends RealFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventsDetectors(Field<T> field);
 
     /** Get the drivers for force model parameters.
      * @return drivers for force model parameters

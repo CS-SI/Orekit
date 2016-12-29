@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.After;
@@ -629,6 +631,25 @@ public class EquinoctialParametersTest {
                     Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 4.0e-9);
                 }
             }
+
+            double[][] invJacobian = new double[6][6];
+            orbEqu.getJacobianWrtParameters(type, invJacobian);
+            MatrixUtils.createRealMatrix(jacobian).
+                            multiply(MatrixUtils.createRealMatrix(invJacobian)).
+            walkInRowOrder(new RealMatrixPreservingVisitor() {
+                public void start(int rows, int columns,
+                                  int startRow, int endRow, int startColumn, int endColumn) {
+                }
+
+                public void visit(int row, int column, double value) {
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value, 7.0e-9);
+                }
+
+                public double end() {
+                    return Double.NaN;
+                }
+            });
+
         }
 
     }

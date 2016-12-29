@@ -71,7 +71,7 @@ public class EventShifterTest {
                                                   throws OrekitException {
                 return h.resetState(detector, oldState);
             }
-            
+
         });
         EventShifter<EclipseDetector> shifter = new EventShifter<EclipseDetector>(raw, true, -15, -20).
                                                 withMaxIter(200);

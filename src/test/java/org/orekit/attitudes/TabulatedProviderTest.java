@@ -148,9 +148,6 @@ public class TabulatedProviderTest {
         final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
         referencePropagator.setMasterMode(samplingRate, new OrekitFixedStepHandler() {
 
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-
             public void handleStep(SpacecraftState currentState, boolean isLast) {
                 sample.add(currentState.getAttitude().getOrientation());
             }
@@ -170,15 +167,15 @@ public class TabulatedProviderTest {
         // (i.e. ignoring interpolation near boundaries)
         Propagator interpolatingPropagator = new KeplerianPropagator(circOrbit.shiftedBy(start.durationFrom(circOrbit.getDate())));
         interpolatingPropagator.setAttitudeProvider(provider);
- 
+
         // compute interpolation error on the internal steps .
         final double[] error = new double[1];
         interpolatingPropagator.setMasterMode(checkingRate, new OrekitFixedStepHandler() {
-            
-            public void init(SpacecraftState s0, AbsoluteDate t) {
+
+            public void init(SpacecraftState s0, AbsoluteDate t, double step) {
                 error[0] = 0.0;
             }
-            
+
             public void handleStep(SpacecraftState currentState, boolean isLast) throws OrekitException {
                 Attitude interpolated = currentState.getAttitude();
                 Attitude reference    = referenceProvider.getAttitude(currentState.getOrbit(),

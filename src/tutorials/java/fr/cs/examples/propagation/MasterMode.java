@@ -140,7 +140,7 @@ public class MasterMode {
             //private constructor
         }
 
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        public void init(final SpacecraftState s0, final AbsoluteDate t, final double step) {
             System.out.println("          date                a           e" +
                                "           i         \u03c9          \u03a9" +
                                "          \u03bd");

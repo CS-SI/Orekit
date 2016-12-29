@@ -129,7 +129,7 @@ public class Frames3 {
 
                 PrintStream out = null;
 
-                public void init(SpacecraftState s0, AbsoluteDate t)
+                public void init(SpacecraftState s0, AbsoluteDate t, double step)
                     throws OrekitException {
                     try {
                         File file = new File(System.getProperty("user.home"), "XYZ.dat");
@@ -142,7 +142,7 @@ public class Frames3 {
                                                        ioe.getLocalizedMessage());
                     }
                 }
-                
+
                 public void handleStep(SpacecraftState currentState, boolean isLast)
                     throws OrekitException {
 

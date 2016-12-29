@@ -43,11 +43,11 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.data.DirectoryCrawler;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
-import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.drag.IsotropicDrag;
+import org.orekit.forces.drag.atmosphere.Atmosphere;
+import org.orekit.forces.drag.atmosphere.HarrisPriester;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -743,7 +743,8 @@ public class DSSTPropagation {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) throws OrekitException {
+        public void init(final SpacecraftState s0, final AbsoluteDate t, final double step)
+            throws OrekitException {
             try {
                 nbColumns           = 0;
                 outputStream        = new PrintStream(outputFile, "UTF-8");

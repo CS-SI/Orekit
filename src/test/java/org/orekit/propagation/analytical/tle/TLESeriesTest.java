@@ -71,7 +71,7 @@ public class TLESeriesTest {
             Assert.assertTrue(available.contains(ref));
         }
     }
-    
+
 
     @Test
     public void testDefaultSearchAndLoad() throws IOException, OrekitException {
@@ -79,16 +79,16 @@ public class TLESeriesTest {
         Assert.assertNotNull(series);
         Set<Integer> available = series.getAvailableSatelliteNumbers();
         Assert.assertNotNull(available);
-        
+
         int expectedSatId = 27421;
         Assert.assertTrue(available.contains(expectedSatId));
-        
+
         //test what happens if already loaded...
         available = series.getAvailableSatelliteNumbers();
         Assert.assertNotNull(available);
         Assert.assertTrue(available.contains(expectedSatId));
 
-    }    
+    }
 
     @Test
     public void testSpot5Available() throws IOException, OrekitException {
@@ -206,8 +206,8 @@ public class TLESeriesTest {
 
         AbsoluteDate oneYearAfter = new AbsoluteDate(2003, 06, 02, 11, 12, 15, TimeScalesFactory.getUTC());
         Assert.assertTrue(series.getClosestTLE(oneYearAfter).getDate().equals(series.getLastDate()));
-        
-        
+
+
         series.loadTLEData(2002, 21, null);
         TLE currentTle = series.getFirst();
         Assert.assertEquals(27421, currentTle.getSatelliteNumber());

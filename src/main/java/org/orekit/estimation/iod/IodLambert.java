@@ -47,7 +47,7 @@ public class IodLambert {
         this.mu = mu;
     }
 
-    /** Estimate an keplerian orbit given two position vector and a duration.
+    /** Estimate a keplerian orbit given two position vectors and a duration.
      *
      * @param frame     frame
      * @param posigrade flag indicating the direction of motion
@@ -85,15 +85,14 @@ public class IodLambert {
         final double[] Vdep = new double[2];
 
         // call Lambert's problem solver
-        final boolean exitflag = solveLambertPb(r1 / R, r2 / R, dth,
-                                          tau / T,
-                                          nRev,
-                                          Vdep);
+        final boolean exitflag = solveLambertPb(r1 / R, r2 / R, dth, tau / T, nRev, Vdep);
 
         if (exitflag) {
             // basis vectors
-            final Vector3D Pn = P1.crossProduct(P2);    // normal to the orbital arc plane
-            final Vector3D Pt = Pn.crossProduct(P1);    // perpendicular to the radius vector, in the orbital arc plane
+            // normal to the orbital arc plane
+            final Vector3D Pn = P1.crossProduct(P2);
+            // perpendicular to the radius vector, in the orbital arc plane
+            final Vector3D Pt = Pn.crossProduct(P1);
 
             // tangential velocity norm
             double RT = Pt.getNorm();
@@ -102,8 +101,7 @@ public class IodLambert {
             }
 
             // velocity vector at P1
-            final Vector3D Vel1 = P1.scalarMultiply(V * Vdep[0] / r1)
-                            .add(Pt.scalarMultiply(V * Vdep[1] / RT));
+            final Vector3D Vel1 = P1.scalarMultiply(V * Vdep[0] / r1).add(Pt.scalarMultiply(V * Vdep[1] / RT));
 
             // compile a new middle point with position, velocity
             final PVCoordinates pv = new PVCoordinates(P1, Vel1);
@@ -116,20 +114,20 @@ public class IodLambert {
     }
 
     /** Lambert's solver.
-    * Assume mu=1.
-    *
-    * @param r1 radius 1
-    * @param r2  radius 2
-    * @param dth sweep angle
-    * @param tau time of flight
-    * @param mRev number of revs
-    * @param V1 velocity at departure in (T,N) basis
-    * @return something
-    */
+     * Assume mu=1.
+     *
+     * @param r1 radius 1
+     * @param r2  radius 2
+     * @param dth sweep angle
+     * @param tau time of flight
+     * @param mRev number of revs
+     * @param V1 velocity at departure in (T,N) basis
+     * @return something
+     */
     public boolean solveLambertPb(final double r1, final double r2, final double dth, final double tau,
                                   final int mRev, final double[] V1) {
-       // decide whether to use the left or right branch (for multi-revolution
-       // problems), and the long- or short way.
+        // decide whether to use the left or right branch (for multi-revolution
+        // problems), and the long- or short way.
         final boolean leftbranch = FastMath.signum(mRev) > 0;
         int longway = 0;
         if (tau > 0) {

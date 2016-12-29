@@ -25,7 +25,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Sampler for half track span.
@@ -54,11 +53,6 @@ class HalfTrackSampler implements OrekitFixedStepHandler {
      */
     public List<Pair<GeodeticPoint, TimeStampedPVCoordinates>> getHalfTrack() {
         return halfTrack;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** {@inheritDoc} */

@@ -16,12 +16,14 @@
  */
 package org.orekit.estimation.measurements;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation.OffsetDerivatives;
+import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -40,6 +42,9 @@ public class Angular extends AbstractMeasurement<Angular> {
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param station ground station from which measurement is performed
      * @param date date of the measurement
@@ -57,6 +62,7 @@ public class Angular extends AbstractMeasurement<Angular> {
               station.getNorthOffsetDriver(),
               station.getZenithOffsetDriver());
         this.station = station;
+        this.factory = new DSFactory(6, 1);
     }
 
     /** Get the ground station from which measurement is performed.
@@ -76,16 +82,18 @@ public class Angular extends AbstractMeasurement<Angular> {
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have offset == downlinkDelay and transitState will be
         //  the same as state)
-        final double          tauD         = station.downlinkTimeOfFlight(state, getDate());
+        final Vector3D        stationP     = station.getOffsetFrame().getPVCoordinates(getDate(), state.getFrame()).getPosition();
+        final double          tauD         = station.signalTimeOfFlight(state.getPVCoordinates(), stationP, getDate());
         final double          delta        = getDate().durationFrom(state.getDate());
         final double          dt           = delta - tauD;
         final SpacecraftState transitState = state.shiftedBy(dt);
 
         // transformation from inertial frame to station parent frame
-        final Transform iner2Body = state.getFrame().getTransformTo(station.getOffsetFrame().getParent(), getDate());
+        final Frame     bodyFrame = station.getOffsetFrame().getParentShape().getBodyFrame();
+        final Transform iner2Body = state.getFrame().getTransformTo(bodyFrame, getDate());
 
         // station topocentric frame (east-north-zenith) in station parent frame expressed as DerivativeStructures
-        final OffsetDerivatives od = station.getOffsetDerivatives(6, 3, 4, 5);
+        final OffsetDerivatives od = station.getOffsetDerivatives(factory, 3, 4, 5);
         final FieldVector3D<DerivativeStructure> east   = od.getEast();
         final FieldVector3D<DerivativeStructure> north  = od.getNorth();
         final FieldVector3D<DerivativeStructure> zenith = od.getZenith();
@@ -97,9 +105,9 @@ public class Angular extends AbstractMeasurement<Angular> {
         final Vector3D transitp = iner2Body.transformPosition(transitState.getPVCoordinates().getPosition());
 
         // satellite vector expressed in station parent frame expressed as DerivativeStructures
-        final FieldVector3D<DerivativeStructure> pP = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(6, 1, 0, transitp.getX()),
-                                                                                             new DerivativeStructure(6, 1, 1, transitp.getY()),
-                                                                                             new DerivativeStructure(6, 1, 2, transitp.getZ()));
+        final FieldVector3D<DerivativeStructure> pP = new FieldVector3D<>(factory.variable(0, transitp.getX()),
+                                                                          factory.variable(1, transitp.getY()),
+                                                                          factory.variable(2, transitp.getZ()));
         // station-satellite vector expressed in station parent frame
         final FieldVector3D<DerivativeStructure> staSat = pP.subtract(qP);
 
@@ -111,7 +119,7 @@ public class Angular extends AbstractMeasurement<Angular> {
 
         // prepare the estimation
         final EstimatedMeasurement<Angular> estimated =
-                        new EstimatedMeasurement<Angular>(this, iteration, evaluation, transitState);
+                        new EstimatedMeasurement<>(this, iteration, evaluation, transitState);
 
         // azimuth - elevation values
         estimated.setEstimatedValue(azimuth.getValue(), elevation.getValue());

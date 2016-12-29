@@ -20,7 +20,44 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="8.1" date="TBD" description="TBD">
+    <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        OneAxisEllipsoid can now transform FieldGeodeticPoint from any field
+        and not only DerivativeStructure.
+      </action>
+      <action dev="luc" type="add">
+        Completed field-based Cartesian and angular coordinates with missing
+        features that were only in the double based versions.
+      </action>
+      <action dev="luc" type="update" due-to="Maxime Journot">
+        Use DerivativeStructure to compute derivatives for Range measurements.
+      </action>
+      <action dev="luc" type="update">
+        Improved conversion speed from Cartesian coordinates to geodetic coordinates
+        by about 15%.
+      </action>
+      <action dev="evan" type="add">
+        Replace OrbitFile interface with EphemerisFile, adding support for multiple
+        ephemeris segments and the capability to create a propagator from an ephemeris.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed thread-safety issues in DTM2000 model.
+        Fixes issue #258.
+      </action>
+      <action dev="pascal" type="add">
+        Added JB2008 atmosphere model.
+      </action>
+      <action dev="pascal" type="add">
+        Added NRLMSISE-00 atmosphere model.
+      </action>
+      <action dev="luc" type="fix" due-to="Hao Peng">
+        Fixed outliers configuration parsing in orbit determination tutorial and test.
+        Fixes issue #249
+      </action>
+       <action dev="luc" type="fix" >
+        Greatly improved orbit determination speed when a lot of measurements are used
+        (several thousands).
+      </action>
       <action dev="luc" type="fix" >
         Fixed ant build script to run Junit tests.
         Fixes issue #246.

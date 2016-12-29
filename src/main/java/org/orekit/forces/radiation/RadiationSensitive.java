@@ -19,6 +19,7 @@ package org.orekit.forces.radiation;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -28,6 +29,7 @@ import org.hipparchus.ode.LocalizedODEFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** Interface for spacecraft that are sensitive to radiation pressure forces.
@@ -62,6 +64,21 @@ public interface RadiationSensitive {
      */
     Vector3D radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
                                            Rotation rotation, double mass, Vector3D flux)
+        throws OrekitException;
+
+    /** Compute the acceleration due to radiation pressure.
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in reference frame
+     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
+     * @param mass current mass
+     * @param flux radiation flux in the same inertial frame as spacecraft orbit
+     * @param <T> extends RealFieldElement
+     * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s²)
+     * @throws OrekitException if acceleration cannot be computed
+     */
+    <T extends RealFieldElement<T>> FieldVector3D<T> radiationPressureAcceleration(FieldAbsoluteDate<T> date, Frame frame, FieldVector3D<T> position,
+                                           FieldRotation<T> rotation, T mass, FieldVector3D<T> flux)
         throws OrekitException;
 
     /** Compute the acceleration due to radiation pressure, with state derivatives.

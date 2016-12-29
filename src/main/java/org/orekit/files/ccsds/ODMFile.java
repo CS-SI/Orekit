@@ -18,13 +18,10 @@
 package org.orekit.files.ccsds;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.general.OrbitFile;
-import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -35,7 +32,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public abstract class ODMFile implements OrbitFile {
+public abstract class ODMFile {
 
     /** CCSDS Format version. */
     private double formatVersion;
@@ -243,38 +240,6 @@ public abstract class ODMFile implements OrbitFile {
      */
     void setOriginator(final String originator) {
         this.originator = originator;
-    }
-
-    /**
-     * Not supported by CCSDS orbit messages.
-     * @return always throws an {@link UnsupportedOperationException}
-     * @throws UnsupportedOperationException always
-     */
-    @Override
-    public double getEpochInterval() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Not supported by CCSDS orbit messages.
-     * @return always throws an {@link UnsupportedOperationException}
-     * @throws UnsupportedOperationException always
-     */
-    @Override
-    public int getNumberOfEpochs() {
-        throw new UnsupportedOperationException();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean containsSatellite(final String satId) {
-        return getSatellite(satId) != null;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
-        return Collections.emptyList();
     }
 
 }

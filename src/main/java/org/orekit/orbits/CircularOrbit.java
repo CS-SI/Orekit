@@ -162,11 +162,11 @@ public class CircularOrbit
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public CircularOrbit(final double a, final double ex, final double ey,
-                         final double i, final double raan,
-                         final double alpha, final PositionAngle type,
-                         final TimeStampedPVCoordinates pvCoordinates, final Frame frame,
-                         final double mu)
+    private CircularOrbit(final double a, final double ex, final double ey,
+                          final double i, final double raan,
+                          final double alpha, final PositionAngle type,
+                          final TimeStampedPVCoordinates pvCoordinates, final Frame frame,
+                          final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
         if (ex * ex + ey * ey >= 1.0) {

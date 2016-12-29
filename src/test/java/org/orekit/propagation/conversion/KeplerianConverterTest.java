@@ -81,7 +81,7 @@ public class KeplerianConverterTest {
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder, threshold, 1000);
 
         fitter.convert(sample, positionOnly, freeParameters);
-        
+
         Assert.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
 
         KeplerianPropagator prop = (KeplerianPropagator)fitter.getAdaptedPropagator();

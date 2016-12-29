@@ -68,26 +68,28 @@ public class LofOffset implements AttitudeProvider {
      * <p>
      * An important thing to note is that the rotation order and angles signs used here
      * are compliant with an <em>attitude</em> definition, i.e. they correspond to
-     * a frame that rotate in a field of fixed vectors. The underlying definitions used
-     * in Hipparchus {@link org.hipparchus.geometry.euclidean.threed.Rotation#Rotation(RotationOrder,
-     * double, double, double) Rotation(RotationOrder, double, double, double)} use
-     * <em>reversed</em> definition, i.e. they correspond to a vectors field rotating
-     * with respect to a fixed frame. So to retrieve the angles provided here from the
-     * Hipparchus underlying rotation, one has to <em>revert</em> the rotation, as in
-     * the following code snippet:
+     * a frame that rotate in a field of fixed vectors. So to retrieve the angles
+     * provided here from the Hipparchus underlying rotation, one has to either use the
+     * {@link RotationConvention#VECTOR_OPERATOR} and <em>revert</em> the rotation, or
+     * to use {@link RotationConvention#FRAME_TRANSFORM} as in the following code snippet:
      * </p>
      * <pre>
      *   LofOffset law          = new LofOffset(inertial, lofType, order, alpha1, alpha2, alpha3);
      *   Rotation  offsetAtt    = law.getAttitude(orbit).getRotation();
      *   Rotation  alignedAtt   = new LofOffset(inertial, lofType).getAttitude(orbit).getRotation();
-     *   Rotation  offsetProper = offsetAtt.applyTo(alignedAtt.revert());
+     *   Rotation  offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
      *
-     *   // note the call to revert in the following statement
-     *   double[] angles = offsetProper.revert().getAngles(order);
+     *   // note the call to revert and the conventions in the following statement
+     *   double[] anglesV = offsetProper.revert().getAngles(order, RotationConvention.VECTOR_OPERATOR);
+     *   System.out.println(alpha1 + " == " + anglesV[0]);
+     *   System.out.println(alpha2 + " == " + anglesV[1]);
+     *   System.out.println(alpha3 + " == " + anglesV[2]);
      *
-     *   System.out.println(alpha1 + " == " + angles[0]);
-     *   System.out.println(alpha2 + " == " + angles[1]);
-     *   System.out.println(alpha3 + " == " + angles[2]);
+     *   // note the conventions in the following statement
+     *   double[] anglesF = offsetProper.getAngles(order, RotationConvention.FRAME_TRANSFORM);
+     *   System.out.println(alpha1 + " == " + anglesF[0]);
+     *   System.out.println(alpha2 + " == " + anglesF[1]);
+     *   System.out.println(alpha3 + " == " + anglesF[2]);
      * </pre>
      * @param inertialFrame inertial frame with respect to which orbit should be computed
      * @param type type of Local Orbital Frame

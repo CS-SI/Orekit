@@ -25,9 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
+import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.After;
@@ -471,27 +473,27 @@ public class KeplerianParametersTest {
             final KeplerianOrbit orb0 = new KeplerianOrbit(42600e3, 0.9, 0.00001, 0, 0,
                                                            FastMath.toRadians(meanAnomaly),
                                                            PositionAngle.MEAN, eme2000, date, mu);
-    
+
             // big dV along Y
             final Vector3D deltaV = new Vector3D(0.0, 110000.0, 0.0);
             final PVCoordinates pv1 = new PVCoordinates(orb0.getPVCoordinates().getPosition(),
                                                         orb0.getPVCoordinates().getVelocity().add(deltaV));
             final KeplerianOrbit orb1 = new KeplerianOrbit(pv1, eme2000, date, mu);
-    
+
             // Despite large eccentricity, the conversion of mean anomaly to hyperbolic eccentric anomaly
             // converges in less than 50 iterations (issue #114)
             final PVCoordinates pvTested    = orb1.shiftedBy(0).getPVCoordinates();
             final Vector3D      pTested     = pvTested.getPosition();
             final Vector3D      vTested     = pvTested.getVelocity();
-    
+
             final PVCoordinates pvReference = orb1.getPVCoordinates();
             final Vector3D      pReference  = pvReference.getPosition();
             final Vector3D      vReference  = pvReference.getVelocity();
-    
+
             final double threshold = 1.e-15;
             Assert.assertEquals(0, pTested.subtract(pReference).getNorm(), threshold * pReference.getNorm());
             Assert.assertEquals(0, vTested.subtract(vReference).getNorm(), threshold * vReference.getNorm());
-    
+
         }
 
     @Test
@@ -656,6 +658,25 @@ public class KeplerianParametersTest {
                     Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 2.0e-7);
                 }
             }
+
+            double[][] invJacobian = new double[6][6];
+            orbKep.getJacobianWrtParameters(type, invJacobian);
+            MatrixUtils.createRealMatrix(jacobian).
+                            multiply(MatrixUtils.createRealMatrix(invJacobian)).
+            walkInRowOrder(new RealMatrixPreservingVisitor() {
+                public void start(int rows, int columns,
+                                  int startRow, int endRow, int startColumn, int endColumn) {
+                }
+
+                public void visit(int row, int column, double value) {
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value, 5.0e-9);
+                }
+
+                public double end() {
+                    return Double.NaN;
+                }
+            });
+
         }
 
     }
@@ -766,6 +787,25 @@ public class KeplerianParametersTest {
                     Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 3.0e-8);
                 }
             }
+
+            double[][] invJacobian = new double[6][6];
+            orbKep.getJacobianWrtParameters(type, invJacobian);
+            MatrixUtils.createRealMatrix(jacobian).
+                            multiply(MatrixUtils.createRealMatrix(invJacobian)).
+            walkInRowOrder(new RealMatrixPreservingVisitor() {
+                public void start(int rows, int columns,
+                                  int startRow, int endRow, int startColumn, int endColumn) {
+                }
+
+                public void visit(int row, int column, double value) {
+                    Assert.assertEquals(row == column ? 1.0 : 0.0, value, 2.0e-8);
+                }
+
+                public double end() {
+                    return Double.NaN;
+                }
+            });
+
         }
 
     }
@@ -956,6 +996,7 @@ public class KeplerianParametersTest {
 
     @Test
     public void testKeplerianDerivatives() {
+        final DSFactory factory = new DSFactory(1, 1);
         final KeplerianOrbit o = new KeplerianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                       new Vector3D(-2079., 5291., -7842.)),
                                                     FramesFactory.getEME2000(), date, 3.9860047e14);
@@ -973,19 +1014,19 @@ public class KeplerianParametersTest {
             public double value(double dt) {
                 return o.shiftedBy(dt).getPVCoordinates().getPosition().getX();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getVelocity().getX(), vx, 3.0e-12 * v.getNorm());
         double vy = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(dt).getPVCoordinates().getPosition().getY();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getVelocity().getY(), vy, 3.0e-12 * v.getNorm());
         double vz = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(dt).getPVCoordinates().getPosition().getZ();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getVelocity().getZ(), vz, 3.0e-12 * v.getNorm());
 
         // check acceleration is the derivative of velocity
@@ -993,19 +1034,19 @@ public class KeplerianParametersTest {
             public double value(double dt) {
                 return o.shiftedBy(dt).getPVCoordinates().getVelocity().getX();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getAcceleration().getX(), ax, 3.0e-12 * a.getNorm());
         double ay = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(dt).getPVCoordinates().getVelocity().getY();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getAcceleration().getY(), ay, 3.0e-12 * a.getNorm());
         double az = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(dt).getPVCoordinates().getVelocity().getZ();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(o.getPVCoordinates().getAcceleration().getZ(), az, 3.0e-12 * a.getNorm());
 
         // check jerk is the derivative of acceleration
@@ -1016,19 +1057,19 @@ public class KeplerianParametersTest {
             public double value(double dt) {
                 return o.shiftedBy(dt).getPVCoordinates().getAcceleration().getX();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(keplerianJerk.getX(), jx, 3.0e-12 * keplerianJerk.getNorm());
         double jy = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(dt).getPVCoordinates().getAcceleration().getY();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(keplerianJerk.getY(), jy, 3.0e-12 * keplerianJerk.getNorm());
         double jz = differentiator.differentiate(new UnivariateFunction() {
             public double value(double dt) {
                 return o.shiftedBy(dt).getPVCoordinates().getAcceleration().getZ();
             }
-        }).value(new DerivativeStructure(1, 1, 0, 0.0)).getPartialDerivative(1);
+        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
         Assert.assertEquals(keplerianJerk.getZ(), jz, 3.0e-12 * keplerianJerk.getNorm());
 
     }

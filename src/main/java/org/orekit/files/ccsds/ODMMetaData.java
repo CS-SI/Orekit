@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.bodies.CelestialBody;
-import org.orekit.files.general.OrbitFile;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -36,7 +35,7 @@ public class ODMMetaData {
     private final ODMFile odmFile;
 
     /** Time System: used for metadata, orbit state and covariance data. */
-    private OrbitFile.TimeSystem timeSystem;
+    private CcsdsTimeScale timeSystem;
 
     /** Spacecraft name for which the orbit state is provided. */
     private String objectName;
@@ -67,6 +66,9 @@ public class ODMMetaData {
     /** Reference frame in which data are given: used for state vector
      * and Keplerian elements data (and for the covariance reference frame if none is given). */
     private Frame refFrame;
+
+    /** The reference frame specifier, as it appeared in the file. */
+    private String refFrameString;
 
     /** Epoch of reference frame, if not intrinsic to the definition of the
      * reference frame. */
@@ -100,7 +102,7 @@ public class ODMMetaData {
      * covariance data.
      * @return the time system
      */
-    public OrbitFile.TimeSystem getTimeSystem() {
+    public CcsdsTimeScale getTimeSystem() {
         return timeSystem;
     }
 
@@ -110,7 +112,7 @@ public class ODMMetaData {
      * covariance data.
      * @param timeSystem the time system to be set
      */
-    void setTimeSystem(final OrbitFile.TimeSystem timeSystem) {
+    void setTimeSystem(final CcsdsTimeScale timeSystem) {
         this.timeSystem = timeSystem;
     }
 
@@ -243,6 +245,25 @@ public class ODMMetaData {
      */
     void setRefFrame(final Frame refFrame) {
         this.refFrame = refFrame;
+    }
+
+    /**
+     * Get the reference frame specifier as it appeared in the file.
+     *
+     * @return the frame name as it appeared in the file.
+     * @see #getFrame()
+     */
+    public String getFrameString() {
+        return this.refFrameString;
+    }
+
+    /**
+     * Set the reference frame name.
+     *
+     * @param frame specifier as it appeared in the file.
+     */
+    void setFrameString(final String frame) {
+        this.refFrameString = frame;
     }
 
     /** Get epoch of reference frame, if not intrinsic to the definition of the

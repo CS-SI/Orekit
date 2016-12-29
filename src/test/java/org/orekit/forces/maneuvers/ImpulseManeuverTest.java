@@ -116,7 +116,7 @@ public class ImpulseManeuverTest {
         final Vector3D finalVelocity = finalState.getPVCoordinates().getVelocity();
         Assert.assertEquals(finalVxExpected, finalVelocity.getX(), maneuverTolerance);
         Assert.assertEquals(finalVyExpected, finalVelocity.getY(), maneuverTolerance);
-        Assert.assertEquals(finalVzExpected, finalVelocity.getZ(), maneuverTolerance);                                               
+        Assert.assertEquals(finalVzExpected, finalVelocity.getZ(), maneuverTolerance);
 
     }
 
