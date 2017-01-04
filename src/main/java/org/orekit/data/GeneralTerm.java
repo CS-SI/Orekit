@@ -22,7 +22,7 @@ import org.hipparchus.RealFieldElement;
  * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class GeneralTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
+class GeneralTerm extends SeriesTerm {
 
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
@@ -83,8 +83,8 @@ class GeneralTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cPa coefficient for general accumulated precession in longitude
      */
     GeneralTerm(final int cL, final int cLPrime, final int cF, final int cD, final int cOmega,
-                       final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
-                       final int cSa, final int cUr, final int cNe, final int cPa) {
+                final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
+                final int cSa, final int cUr, final int cNe, final int cPa) {
         this.cL      = cL;
         this.cLPrime = cLPrime;
         this.cF      = cF;
@@ -113,7 +113,7 @@ class GeneralTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
     }
 
     /** {@inheritDoc} */
-    protected T argument(final FieldBodiesElements<T> elements) {
+    protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
         return elements.getL().multiply(cL).
                 add(elements.getLPrime().multiply(cLPrime)).
                 add(elements.getF().multiply(cF)).

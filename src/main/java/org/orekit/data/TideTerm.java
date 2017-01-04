@@ -35,7 +35,7 @@ import org.hipparchus.RealFieldElement;
  * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class TideTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
+class TideTerm extends SeriesTerm {
 
     /** Coefficient for γ = GMST + π tide parameter. */
     private final int cGamma;
@@ -64,7 +64,7 @@ class TideTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      */
     TideTerm(final int cGamma,
-                    final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
+             final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
         this.cGamma  = cGamma;
         this.cL      = cL;
         this.cLPrime = cLPrime;
@@ -81,7 +81,7 @@ class TideTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
     }
 
     /** {@inheritDoc} */
-    protected T argument(final FieldBodiesElements<T> elements) {
+    protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
         return elements.getGamma().multiply(cGamma).
                 add(elements.getL().multiply(cL)).
                 add(elements.getLPrime().multiply(cLPrime)).

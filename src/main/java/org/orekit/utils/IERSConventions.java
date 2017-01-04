@@ -102,11 +102,11 @@ public enum IERSConventions {
         public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
 
             // value from chapter 5, page 22
-            final PolynomialNutation<DerivativeStructure> epsilonA =
-                    new PolynomialNutation<DerivativeStructure>(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                  -46.8150   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                   -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                    0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation epsilonA =
+                    new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -46.8150   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<Double>() {
 
@@ -131,12 +131,12 @@ public enum IERSConventions {
             // X = 2004.3109″t - 0.42665″t² - 0.198656″t³ + 0.0000140″t⁴
             //     + 0.00006″t² cos Ω + sin ε0 { Σ [(Ai + Ai' t) sin(ARGUMENT) + Ai'' t cos(ARGUMENT)]}
             //     + 0.00204″t² sin Ω + 0.00016″t² sin 2(F - D + Ω),
-            final PolynomialNutation<DerivativeStructure> xPolynomial =
-                    new PolynomialNutation<DerivativeStructure>(0,
-                                                                2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.198656 * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                0.0000140 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation xPolynomial =
+                    new PolynomialNutation(0,
+                                           2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.198656 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.0000140 * Constants.ARC_SECONDS_TO_RADIANS);
 
             final double fXCosOm    = 0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
             final double fXSinOm    = 0.00204 * Constants.ARC_SECONDS_TO_RADIANS;
@@ -144,35 +144,35 @@ public enum IERSConventions {
             final double sinEps0   = FastMath.sin(getMeanObliquityFunction().value(getNutationReferenceEpoch()));
 
             final double deciMilliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4;
-            final PoissonSeriesParser<DerivativeStructure> baseParser =
-                    new PoissonSeriesParser<DerivativeStructure>(12).withFirstDelaunay(1);
+            final PoissonSeriesParser baseParser =
+                    new PoissonSeriesParser(12).withFirstDelaunay(1);
 
-            final PoissonSeriesParser<DerivativeStructure> xParser =
+            final PoissonSeriesParser xParser =
                     baseParser.
                     withSinCos(0, 7, deciMilliAS, -1, deciMilliAS).
                     withSinCos(1, 8, deciMilliAS,  9, deciMilliAS);
-            final PoissonSeries<DerivativeStructure> xSum = xParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
+            final PoissonSeries xSum = xParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
 
             // Y = -0.00013″ - 22.40992″t² + 0.001836″t³ + 0.0011130″t⁴
             //     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
             //    - 0.00231″t² cos Ω − 0.00014″t² cos 2(F - D + Ω)
-            final PolynomialNutation<DerivativeStructure> yPolynomial =
-                    new PolynomialNutation<DerivativeStructure>(-0.00013  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                0.0,
-                                                                -22.40992 * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                0.001836  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                0.0011130 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation yPolynomial =
+                    new PolynomialNutation(-0.00013  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.0,
+                                           -22.40992 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.001836  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.0011130 * Constants.ARC_SECONDS_TO_RADIANS);
 
             final double fYCosOm    = -0.00231 * Constants.ARC_SECONDS_TO_RADIANS;
             final double fYCos2FDOm = -0.00014 * Constants.ARC_SECONDS_TO_RADIANS;
 
-            final PoissonSeriesParser<DerivativeStructure> yParser =
+            final PoissonSeriesParser yParser =
                     baseParser.
                     withSinCos(0, -1, deciMilliAS, 10, deciMilliAS).
                     withSinCos(1, 12, deciMilliAS, 11, deciMilliAS);
-            final PoissonSeries<DerivativeStructure> ySum = yParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
+            final PoissonSeries ySum = yParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
 
-            final PoissonSeries.CompiledSeries<DerivativeStructure> xySum =
+            final PoissonSeries.CompiledSeries xySum =
                     PoissonSeries.compile(xSum, ySum);
 
             // s = -XY/2 + 0.00385″t - 0.07259″t³ - 0.00264″ sin Ω - 0.00006″ sin 2Ω
@@ -230,21 +230,21 @@ public enum IERSConventions {
             // Expressions for the precession quantities based upon the IAU(1976) system of astronomical constants
             // http://articles.adsabs.harvard.edu/full/1977A%26A....58....1L
             // also available as equation 30 in IERS 2003 conventions
-            final PolynomialNutation<DerivativeStructure> psiA =
-                    new PolynomialNutation<DerivativeStructure>(   0.0,
-                                                                5038.7784   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                  -1.07259  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                  -0.001147 * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation<DerivativeStructure> omegaA =
-                    new PolynomialNutation<DerivativeStructure>(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
-                                                                 0.0,
-                                                                 0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation<DerivativeStructure> chiA =
-                    new PolynomialNutation<DerivativeStructure>( 0.0,
-                                                                10.5526   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation psiA =
+                    new PolynomialNutation(   0.0,
+                                           5038.7784   * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -1.07259  * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.001147 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation omegaA =
+                    new PolynomialNutation(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
+                                            0.0,
+                                            0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation chiA =
+                    new PolynomialNutation( 0.0,
+                                           10.5526   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -269,22 +269,22 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double deciMilliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4;
-            final PoissonSeriesParser<DerivativeStructure> baseParser =
-                    new PoissonSeriesParser<DerivativeStructure>(10).withFirstDelaunay(1);
+            final PoissonSeriesParser baseParser =
+                    new PoissonSeriesParser(10).withFirstDelaunay(1);
 
-            final PoissonSeriesParser<DerivativeStructure> psiParser =
+            final PoissonSeriesParser psiParser =
                     baseParser.
                     withSinCos(0, 7, deciMilliAS, -1, deciMilliAS).
                     withSinCos(1, 8, deciMilliAS, -1, deciMilliAS);
-            final PoissonSeries<DerivativeStructure> psiSeries = psiParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
+            final PoissonSeries psiSeries = psiParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
 
-            final PoissonSeriesParser<DerivativeStructure> epsilonParser =
+            final PoissonSeriesParser epsilonParser =
                     baseParser.
                     withSinCos(0, -1, deciMilliAS, 9, deciMilliAS).
                     withSinCos(1, -1, deciMilliAS, 10, deciMilliAS);
-            final PoissonSeries<DerivativeStructure> epsilonSeries = epsilonParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
+            final PoissonSeries epsilonSeries = epsilonParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
 
-            final PoissonSeries.CompiledSeries<DerivativeStructure> psiEpsilonSeries =
+            final PoissonSeries.CompiledSeries psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
 
             return new TimeFunction<double[]>() {
@@ -394,30 +394,30 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double milliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3;
-            final PoissonSeriesParser<DerivativeStructure> xyParser = new PoissonSeriesParser<DerivativeStructure>(17).
+            final PoissonSeriesParser xyParser = new PoissonSeriesParser(17).
                     withOptionalColumn(1).
                     withGamma(7).
                     withFirstDelaunay(2);
-            final PoissonSeries<DerivativeStructure> xSeries =
+            final PoissonSeries xSeries =
                     xyParser.
                     withSinCos(0, 14, milliAS, 15, milliAS).
                     parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES), TIDAL_CORRECTION_XP_YP_SERIES);
-            final PoissonSeries<DerivativeStructure> ySeries =
+            final PoissonSeries ySeries =
                     xyParser.
                     withSinCos(0, 16, milliAS, 17, milliAS).
                     parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES),
                                                          TIDAL_CORRECTION_XP_YP_SERIES);
 
             final double deciMilliS = 1.0e-4;
-            final PoissonSeriesParser<DerivativeStructure> ut1Parser = new PoissonSeriesParser<DerivativeStructure>(17).
+            final PoissonSeriesParser ut1Parser = new PoissonSeriesParser(17).
                     withOptionalColumn(1).
                     withGamma(7).
                     withFirstDelaunay(2).
                     withSinCos(0, 16, deciMilliS, 17, deciMilliS);
-            final PoissonSeries<DerivativeStructure> ut1Series =
+            final PoissonSeries ut1Series =
                     ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
 
-            final PoissonSeries.CompiledSeries<DerivativeStructure> correctionSeries =
+            final PoissonSeries.CompiledSeries correctionSeries =
                 PoissonSeries.compile(xSeries, ySeries, ut1Series);
 
             return new TimeFunction<double[]>() {
@@ -451,45 +451,45 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
-            final PoissonSeriesParser<DerivativeStructure> k20Parser =
-                    new PoissonSeriesParser<DerivativeStructure>(18).
+            final PoissonSeriesParser k20Parser =
+                    new PoissonSeriesParser(18).
                         withOptionalColumn(1).
                         withDoodson(4, 2).
                         withFirstDelaunay(10);
-            final PoissonSeriesParser<DerivativeStructure> k21Parser =
-                    new PoissonSeriesParser<DerivativeStructure>(18).
+            final PoissonSeriesParser k21Parser =
+                    new PoissonSeriesParser(18).
                         withOptionalColumn(1).
                         withDoodson(4, 3).
                         withFirstDelaunay(10);
-            final PoissonSeriesParser<DerivativeStructure> k22Parser =
-                    new PoissonSeriesParser<DerivativeStructure>(16).
+            final PoissonSeriesParser k22Parser =
+                    new PoissonSeriesParser(16).
                         withOptionalColumn(1).
                         withDoodson(4, 2).
                         withFirstDelaunay(10);
 
             final double pico = 1.0e-12;
-            final PoissonSeries<DerivativeStructure> c20Series =
+            final PoissonSeries c20Series =
                     k20Parser.
                   withSinCos(0, 18, -pico, 16, pico).
                     parse(getStream(K20_FREQUENCY_DEPENDENCE), K20_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> c21Series =
+            final PoissonSeries c21Series =
                     k21Parser.
                     withSinCos(0, 17, pico, 18, pico).
                     parse(getStream(K21_FREQUENCY_DEPENDENCE), K21_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> s21Series =
+            final PoissonSeries s21Series =
                     k21Parser.
                     withSinCos(0, 18, -pico, 17, pico).
                     parse(getStream(K21_FREQUENCY_DEPENDENCE), K21_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> c22Series =
+            final PoissonSeries c22Series =
                     k22Parser.
                     withSinCos(0, -1, pico, 16, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> s22Series =
+            final PoissonSeries s22Series =
                     k22Parser.
                     withSinCos(0, 16, -pico, -1, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
 
-            final PoissonSeries.CompiledSeries<DerivativeStructure> kSeries =
+            final PoissonSeries.CompiledSeries kSeries =
                 PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
 
             return new TimeFunction<double[]>() {
@@ -605,11 +605,11 @@ public enum IERSConventions {
         public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
 
             // epsilon 0 value from chapter 5, page 41, other terms from equation 32 page 45
-            final PolynomialNutation<DerivativeStructure> epsilonA =
-                    new PolynomialNutation<DerivativeStructure>(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                  -46.84024  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                   -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                    0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation epsilonA =
+                    new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -46.84024  * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<Double>() {
 
@@ -633,17 +633,17 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> parser =
-                    new PoissonSeriesParser<DerivativeStructure>(17).
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
                         withPolynomialPart('t', PolynomialParser.Unit.MICRO_ARC_SECONDS).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS);
 
-            final PoissonSeries<DerivativeStructure> xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
-            final PoissonSeries<DerivativeStructure> ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
-            final PoissonSeries<DerivativeStructure> sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
-            final PoissonSeries.CompiledSeries<DerivativeStructure> xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
+            final PoissonSeries xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
+            final PoissonSeries ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
+            final PoissonSeries sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
+            final PoissonSeries.CompiledSeries xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeFunction<double[]>() {
@@ -665,21 +665,21 @@ public enum IERSConventions {
 
             // set up the conventional polynomials
             // the following values are from equation 32 in IERS 2003 conventions
-            final PolynomialNutation<DerivativeStructure> psiA =
-                    new PolynomialNutation<DerivativeStructure>(    0.0,
-                                                                 5038.47875   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                   -1.07259   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                   -0.001147  * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation<DerivativeStructure> omegaA =
-                    new PolynomialNutation<DerivativeStructure>(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
-                                                                -0.02524   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                 0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation<DerivativeStructure> chiA =
-                    new PolynomialNutation<DerivativeStructure>( 0.0,
-                                                                10.5526   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation psiA =
+                    new PolynomialNutation(    0.0,
+                                            5038.47875   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -1.07259   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.001147  * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation omegaA =
+                    new PolynomialNutation(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
+                                           -0.02524   * Constants.ARC_SECONDS_TO_RADIANS,
+                                            0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation chiA =
+                    new PolynomialNutation( 0.0,
+                                           10.5526   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -704,37 +704,37 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double milliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3;
-            final PoissonSeriesParser<DerivativeStructure> luniSolarParser =
-                    new PoissonSeriesParser<DerivativeStructure>(14).withFirstDelaunay(1);
-            final PoissonSeriesParser<DerivativeStructure> luniSolarPsiParser =
+            final PoissonSeriesParser luniSolarParser =
+                    new PoissonSeriesParser(14).withFirstDelaunay(1);
+            final PoissonSeriesParser luniSolarPsiParser =
                     luniSolarParser.
                     withSinCos(0, 7, milliAS, 11, milliAS).
                     withSinCos(1, 8, milliAS, 12, milliAS);
-            final PoissonSeries<DerivativeStructure> psiLuniSolarSeries =
+            final PoissonSeries psiLuniSolarSeries =
                     luniSolarPsiParser.parse(getStream(LUNI_SOLAR_SERIES), LUNI_SOLAR_SERIES);
-            final PoissonSeriesParser<DerivativeStructure> luniSolarEpsilonParser =
+            final PoissonSeriesParser luniSolarEpsilonParser =
                     luniSolarParser.
                     withSinCos(0, 13, milliAS, 9, milliAS).
                     withSinCos(1, 14, milliAS, 10, milliAS);
-            final PoissonSeries<DerivativeStructure> epsilonLuniSolarSeries =
+            final PoissonSeries epsilonLuniSolarSeries =
                     luniSolarEpsilonParser.parse(getStream(LUNI_SOLAR_SERIES), LUNI_SOLAR_SERIES);
 
-            final PoissonSeriesParser<DerivativeStructure> planetaryParser =
-                    new PoissonSeriesParser<DerivativeStructure>(21).
+            final PoissonSeriesParser planetaryParser =
+                    new PoissonSeriesParser(21).
                         withFirstDelaunay(2).
                         withFirstPlanetary(7);
-            final PoissonSeriesParser<DerivativeStructure> planetaryPsiParser =
+            final PoissonSeriesParser planetaryPsiParser =
                     planetaryParser.withSinCos(0, 17, milliAS, 18, milliAS);
-            final PoissonSeries<DerivativeStructure> psiPlanetarySeries =
+            final PoissonSeries psiPlanetarySeries =
                     planetaryPsiParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
-            final PoissonSeriesParser<DerivativeStructure> planetaryEpsilonParser =
+            final PoissonSeriesParser planetaryEpsilonParser =
                     planetaryParser.withSinCos(0, 19, milliAS, 20, milliAS);
-            final PoissonSeries<DerivativeStructure> epsilonPlanetarySeries =
+            final PoissonSeries epsilonPlanetarySeries =
                     planetaryEpsilonParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
 
-            final PoissonSeries.CompiledSeries<DerivativeStructure> luniSolarSeries =
+            final PoissonSeries.CompiledSeries luniSolarSeries =
                     PoissonSeries.compile(psiLuniSolarSeries, epsilonLuniSolarSeries);
-            final PoissonSeries.CompiledSeries<DerivativeStructure> planetarySeries =
+            final PoissonSeries.CompiledSeries planetarySeries =
                     PoissonSeries.compile(psiPlanetarySeries, epsilonPlanetarySeries);
 
             return new TimeFunction<double[]>() {
@@ -764,13 +764,13 @@ public enum IERSConventions {
             // Polynomial part of the apparent sidereal time series
             // which is the opposite of Equation of Origins (EO)
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> parser =
-                    new PoissonSeriesParser<DerivativeStructure>(17).
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PolynomialNutation<DerivativeStructure> minusEO =
+            final PolynomialNutation minusEO =
                     parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
 
             // create a function evaluating the series
@@ -800,31 +800,31 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double milliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3;
-            final PoissonSeriesParser<DerivativeStructure> luniSolarPsiParser =
-                    new PoissonSeriesParser<DerivativeStructure>(14).
+            final PoissonSeriesParser luniSolarPsiParser =
+                    new PoissonSeriesParser(14).
                         withFirstDelaunay(1).
                         withSinCos(0, 7, milliAS, 11, milliAS).
                         withSinCos(1, 8, milliAS, 12, milliAS);
-            final PoissonSeries<DerivativeStructure> psiLuniSolarSeries =
+            final PoissonSeries psiLuniSolarSeries =
                     luniSolarPsiParser.parse(getStream(LUNI_SOLAR_SERIES), LUNI_SOLAR_SERIES);
 
-            final PoissonSeriesParser<DerivativeStructure> planetaryPsiParser =
-                    new PoissonSeriesParser<DerivativeStructure>(21).
+            final PoissonSeriesParser planetaryPsiParser =
+                    new PoissonSeriesParser(21).
                         withFirstDelaunay(2).
                         withFirstPlanetary(7).
                         withSinCos(0, 17, milliAS, 18, milliAS);
-            final PoissonSeries<DerivativeStructure> psiPlanetarySeries =
+            final PoissonSeries psiPlanetarySeries =
                     planetaryPsiParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
 
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> gstParser =
-                    new PoissonSeriesParser<DerivativeStructure>(17).
+            final PoissonSeriesParser gstParser =
+                    new PoissonSeriesParser(17).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PoissonSeries<DerivativeStructure> gstSeries = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
-            final PoissonSeries.CompiledSeries<DerivativeStructure> psiGstSeries =
+            final PoissonSeries gstSeries = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
+            final PoissonSeries.CompiledSeries psiGstSeries =
                     PoissonSeries.compile(psiLuniSolarSeries, psiPlanetarySeries, gstSeries);
 
             // ERA function
@@ -867,29 +867,29 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> xyParser = new PoissonSeriesParser<DerivativeStructure>(13).
+            final PoissonSeriesParser xyParser = new PoissonSeriesParser(13).
                     withOptionalColumn(1).
                     withGamma(2).
                     withFirstDelaunay(3);
-            final PoissonSeries<DerivativeStructure> xSeries =
+            final PoissonSeries xSeries =
                     xyParser.
                     withSinCos(0, 10, microAS, 11, microAS).
                     parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES), TIDAL_CORRECTION_XP_YP_SERIES);
-            final PoissonSeries<DerivativeStructure> ySeries =
+            final PoissonSeries ySeries =
                     xyParser.
                     withSinCos(0, 12, microAS, 13, microAS).
                     parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES), TIDAL_CORRECTION_XP_YP_SERIES);
 
             final double microS = 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> ut1Parser = new PoissonSeriesParser<DerivativeStructure>(11).
+            final PoissonSeriesParser ut1Parser = new PoissonSeriesParser(11).
                     withOptionalColumn(1).
                     withGamma(2).
                     withFirstDelaunay(3).
                     withSinCos(0, 10, microS, 11, microS);
-            final PoissonSeries<DerivativeStructure> ut1Series =
+            final PoissonSeries ut1Series =
                     ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
 
-            final PoissonSeries.CompiledSeries<DerivativeStructure> correctionSeries =
+            final PoissonSeries.CompiledSeries correctionSeries =
                 PoissonSeries.compile(xSeries, ySeries, ut1Series);
 
             return new TimeFunction<double[]>() {
@@ -923,45 +923,45 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
-            final PoissonSeriesParser<DerivativeStructure> k20Parser =
-                    new PoissonSeriesParser<DerivativeStructure>(18).
+            final PoissonSeriesParser k20Parser =
+                    new PoissonSeriesParser(18).
                         withOptionalColumn(1).
                         withDoodson(4, 2).
                         withFirstDelaunay(10);
-            final PoissonSeriesParser<DerivativeStructure> k21Parser =
-                    new PoissonSeriesParser<DerivativeStructure>(18).
+            final PoissonSeriesParser k21Parser =
+                    new PoissonSeriesParser(18).
                         withOptionalColumn(1).
                         withDoodson(4, 3).
                         withFirstDelaunay(10);
-            final PoissonSeriesParser<DerivativeStructure> k22Parser =
-                    new PoissonSeriesParser<DerivativeStructure>(16).
+            final PoissonSeriesParser k22Parser =
+                    new PoissonSeriesParser(16).
                         withOptionalColumn(1).
                         withDoodson(4, 2).
                         withFirstDelaunay(10);
 
             final double pico = 1.0e-12;
-            final PoissonSeries<DerivativeStructure> c20Series =
+            final PoissonSeries c20Series =
                     k20Parser.
                   withSinCos(0, 18, -pico, 16, pico).
                     parse(getStream(K20_FREQUENCY_DEPENDENCE), K20_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> c21Series =
+            final PoissonSeries c21Series =
                     k21Parser.
                     withSinCos(0, 17, pico, 18, pico).
                     parse(getStream(K21_FREQUENCY_DEPENDENCE), K21_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> s21Series =
+            final PoissonSeries s21Series =
                     k21Parser.
                     withSinCos(0, 18, -pico, 17, pico).
                     parse(getStream(K21_FREQUENCY_DEPENDENCE), K21_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> c22Series =
+            final PoissonSeries c22Series =
                     k22Parser.
                     withSinCos(0, -1, pico, 16, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> s22Series =
+            final PoissonSeries s22Series =
                     k22Parser.
                     withSinCos(0, 16, -pico, -1, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
 
-            final PoissonSeries.CompiledSeries<DerivativeStructure> kSeries =
+            final PoissonSeries.CompiledSeries kSeries =
                 PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
 
             return new TimeFunction<double[]>() {
@@ -1173,13 +1173,13 @@ public enum IERSConventions {
         public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
 
             // epsilon 0 value from chapter 5, page 56, other terms from equation 5.40 page 65
-            final PolynomialNutation<DerivativeStructure> epsilonA =
-                    new PolynomialNutation<DerivativeStructure>(84381.406        * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                  -46.836769     * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                   -0.0001831    * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                    0.00200340   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                   -0.000000576  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                   -0.0000000434 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation epsilonA =
+                    new PolynomialNutation(84381.406        * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -46.836769     * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.0001831    * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.00200340   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.000000576  * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.0000000434 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<Double>() {
 
@@ -1202,16 +1202,16 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> parser =
-                    new PoissonSeriesParser<DerivativeStructure>(17).
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
                         withPolynomialPart('t', PolynomialParser.Unit.MICRO_ARC_SECONDS).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS);
-            final PoissonSeries<DerivativeStructure> xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
-            final PoissonSeries<DerivativeStructure> ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
-            final PoissonSeries<DerivativeStructure> sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
-            final PoissonSeries.CompiledSeries<DerivativeStructure> xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
+            final PoissonSeries xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
+            final PoissonSeries ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
+            final PoissonSeries sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
+            final PoissonSeries.CompiledSeries xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeFunction<double[]>() {
@@ -1239,45 +1239,45 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
-            final PoissonSeriesParser<DerivativeStructure> k20Parser =
-                    new PoissonSeriesParser<DerivativeStructure>(18).
+            final PoissonSeriesParser k20Parser =
+                    new PoissonSeriesParser(18).
                         withOptionalColumn(1).
                         withDoodson(4, 2).
                         withFirstDelaunay(10);
-            final PoissonSeriesParser<DerivativeStructure> k21Parser =
-                    new PoissonSeriesParser<DerivativeStructure>(18).
+            final PoissonSeriesParser k21Parser =
+                    new PoissonSeriesParser(18).
                         withOptionalColumn(1).
                         withDoodson(4, 3).
                         withFirstDelaunay(10);
-            final PoissonSeriesParser<DerivativeStructure> k22Parser =
-                    new PoissonSeriesParser<DerivativeStructure>(16).
+            final PoissonSeriesParser k22Parser =
+                    new PoissonSeriesParser(16).
                         withOptionalColumn(1).
                         withDoodson(4, 2).
                         withFirstDelaunay(10);
 
             final double pico = 1.0e-12;
-            final PoissonSeries<DerivativeStructure> c20Series =
+            final PoissonSeries c20Series =
                     k20Parser.
                     withSinCos(0, 18, -pico, 16, pico).
                     parse(getStream(K20_FREQUENCY_DEPENDENCE), K20_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> c21Series =
+            final PoissonSeries c21Series =
                     k21Parser.
                     withSinCos(0, 17, pico, 18, pico).
                     parse(getStream(K21_FREQUENCY_DEPENDENCE), K21_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> s21Series =
+            final PoissonSeries s21Series =
                     k21Parser.
                     withSinCos(0, 18, -pico, 17, pico).
                     parse(getStream(K21_FREQUENCY_DEPENDENCE), K21_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> c22Series =
+            final PoissonSeries c22Series =
                     k22Parser.
                     withSinCos(0, -1, pico, 16, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
-            final PoissonSeries<DerivativeStructure> s22Series =
+            final PoissonSeries s22Series =
                     k22Parser.
                     withSinCos(0, 16, -pico, -1, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
 
-            final PoissonSeries.CompiledSeries<DerivativeStructure> kSeries =
+            final PoissonSeries.CompiledSeries kSeries =
                 PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
 
             return new TimeFunction<double[]>() {
@@ -1417,27 +1417,27 @@ public enum IERSConventions {
 
             // set up the conventional polynomials
             // the following values are from equation 5.40 in IERS 2010 conventions
-            final PolynomialNutation<DerivativeStructure> psiA =
-                    new PolynomialNutation<DerivativeStructure>(   0.0,
-                                                                5038.481507     * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                  -1.0790069    * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                  -0.00114045   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                   0.000132851  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                  -0.0000000951 * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation<DerivativeStructure> omegaA =
-                    new PolynomialNutation<DerivativeStructure>(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
-                                                                -0.025754     * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                 0.0512623    * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.00772503   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.000000467  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                 0.0000003337 * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation<DerivativeStructure> chiA =
-                    new PolynomialNutation<DerivativeStructure>( 0.0,
-                                                                10.556403     * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -2.3814292    * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.00121197   * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                 0.000170663  * Constants.ARC_SECONDS_TO_RADIANS,
-                                                                -0.0000000560 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation psiA =
+                    new PolynomialNutation(   0.0,
+                                           5038.481507     * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -1.0790069    * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.00114045   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              0.000132851  * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.0000000951 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation omegaA =
+                    new PolynomialNutation(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
+                                           -0.025754     * Constants.ARC_SECONDS_TO_RADIANS,
+                                            0.0512623    * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.00772503   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.000000467  * Constants.ARC_SECONDS_TO_RADIANS,
+                                            0.0000003337 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation chiA =
+                    new PolynomialNutation( 0.0,
+                                           10.556403     * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -2.3814292    * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.00121197   * Constants.ARC_SECONDS_TO_RADIANS,
+                                            0.000170663  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.0000000560 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -1462,14 +1462,14 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> parser =
-                    new PoissonSeriesParser<DerivativeStructure>(17).
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS);
-            final PoissonSeries<DerivativeStructure> psiSeries     = parser.parse(getStream(PSI_SERIES), PSI_SERIES);
-            final PoissonSeries<DerivativeStructure> epsilonSeries = parser.parse(getStream(EPSILON_SERIES), EPSILON_SERIES);
-            final PoissonSeries.CompiledSeries<DerivativeStructure> psiEpsilonSeries =
+            final PoissonSeries psiSeries     = parser.parse(getStream(PSI_SERIES), PSI_SERIES);
+            final PoissonSeries epsilonSeries = parser.parse(getStream(EPSILON_SERIES), EPSILON_SERIES);
+            final PoissonSeries.CompiledSeries psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
 
             return new TimeFunction<double[]>() {
@@ -1496,13 +1496,13 @@ public enum IERSConventions {
             // Polynomial part of the apparent sidereal time series
             // which is the opposite of Equation of Origins (EO)
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> parser =
-                    new PoissonSeriesParser<DerivativeStructure>(17).
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PolynomialNutation<DerivativeStructure> minusEO =
+            final PolynomialNutation minusEO =
                     parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
 
             // create a function evaluating the series
@@ -1532,15 +1532,15 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> baseParser =
-                    new PoissonSeriesParser<DerivativeStructure>(17).
+            final PoissonSeriesParser baseParser =
+                    new PoissonSeriesParser(17).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, microAS, 3, microAS);
-            final PoissonSeriesParser<DerivativeStructure> gstParser  = baseParser.withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PoissonSeries<DerivativeStructure> psiSeries        = baseParser.parse(getStream(PSI_SERIES), PSI_SERIES);
-            final PoissonSeries<DerivativeStructure> gstSeries        = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
-            final PoissonSeries.CompiledSeries<DerivativeStructure> psiGstSeries =
+            final PoissonSeriesParser gstParser  = baseParser.withPolynomialPart('t', Unit.ARC_SECONDS);
+            final PoissonSeries psiSeries        = baseParser.parse(getStream(PSI_SERIES), PSI_SERIES);
+            final PoissonSeries gstSeries        = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
+            final PoissonSeries.CompiledSeries psiGstSeries =
                     PoissonSeries.compile(psiSeries, gstSeries);
 
             // ERA function
@@ -1583,29 +1583,29 @@ public enum IERSConventions {
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> xyParser = new PoissonSeriesParser<DerivativeStructure>(13).
+            final PoissonSeriesParser xyParser = new PoissonSeriesParser(13).
                     withOptionalColumn(1).
                     withGamma(2).
                     withFirstDelaunay(3);
-            final PoissonSeries<DerivativeStructure> xSeries =
+            final PoissonSeries xSeries =
                     xyParser.
                     withSinCos(0, 10, microAS, 11, microAS).
                     parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES), TIDAL_CORRECTION_XP_YP_SERIES);
-            final PoissonSeries<DerivativeStructure> ySeries =
+            final PoissonSeries ySeries =
                     xyParser.
                     withSinCos(0, 12, microAS, 13, microAS).
                     parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES), TIDAL_CORRECTION_XP_YP_SERIES);
 
             final double microS = 1.0e-6;
-            final PoissonSeriesParser<DerivativeStructure> ut1Parser = new PoissonSeriesParser<DerivativeStructure>(11).
+            final PoissonSeriesParser ut1Parser = new PoissonSeriesParser(11).
                     withOptionalColumn(1).
                     withGamma(2).
                     withFirstDelaunay(3).
                     withSinCos(0, 10, microS, 11, microS);
-            final PoissonSeries<DerivativeStructure> ut1Series =
+            final PoissonSeries ut1Series =
                     ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
 
-            final PoissonSeries.CompiledSeries<DerivativeStructure> correctionSeries =
+            final PoissonSeries.CompiledSeries correctionSeries =
                     PoissonSeries.compile(xSeries, ySeries, ut1Series);
 
             return new TimeFunction<double[]>() {

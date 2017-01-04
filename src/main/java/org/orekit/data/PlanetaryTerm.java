@@ -19,10 +19,9 @@ package org.orekit.data;
 import org.hipparchus.RealFieldElement;
 
 /** Class for planetary only terms.
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class PlanetaryTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
+class PlanetaryTerm extends SeriesTerm {
 
     /** Coefficient for mean Mercury longitude. */
     private final int cMe;
@@ -63,7 +62,7 @@ class PlanetaryTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cPa coefficient for general accumulated precession in longitude
       */
     PlanetaryTerm(final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
-                         final int cSa, final int cUr, final int cNe, final int cPa) {
+                  final int cSa, final int cUr, final int cNe, final int cPa) {
         this.cMe = cMe;
         this.cVe = cVe;
         this.cE  = cE;
@@ -84,7 +83,7 @@ class PlanetaryTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
     }
 
     /** {@inheritDoc} */
-    protected T argument(final FieldBodiesElements<T> elements) {
+    protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
         return elements.getLMe().multiply(cMe).
                 add(elements.getLVe().multiply(cVe)).
                 add(elements.getLE().multiply(cE)).
