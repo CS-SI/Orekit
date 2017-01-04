@@ -25,6 +25,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -95,14 +97,6 @@ public class OrekitEphemerisFile implements EphemerisFile {
 
         /** List of segements in the file. **/
         private final List<OrekitEphemerisSegment> segments;
-
-        /**
-         * The default constructor, which should never be callable.
-         */
-        @SuppressWarnings("unused")
-        private OrekitSatelliteEphemeris() {
-            throw new IllegalArgumentException("Cannot call default constructor on this class");
-        }
 
         /**
          * Standard constructor for building the satellite Ephemeris object.
@@ -203,12 +197,12 @@ public class OrekitEphemerisFile implements EphemerisFile {
                 final int interpolationSampleSize) throws OrekitException {
             final int minimumSampleSize = 2;
             if (states == null || states.size() == 0) {
-                throw new IllegalArgumentException("States connet be null or empty");
+                throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT);
             }
 
             if (interpolationSampleSize < minimumSampleSize) {
-                throw new IllegalArgumentException(
-                        "Interpolation samples must be greater than one (linear interpolation)");
+                throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                        interpolationSampleSize);
             }
 
             final AbsoluteDate start = states.get(0).getDate();
@@ -258,13 +252,6 @@ public class OrekitEphemerisFile implements EphemerisFile {
 
         /** **/
         private final int samples;
-
-        /**
-         * Default constructor that should never be called on this object.
-         */
-        private OrekitEphemerisSegment() {
-            throw new IllegalArgumentException("Cannot invoke default constructor");
-        }
 
         /**
          * constructor for OrekitEphemerisSegment.

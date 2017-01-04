@@ -22,6 +22,8 @@ import java.util.Date;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFile;
 import org.orekit.files.general.EphemerisFile.EphemerisSegment;
 import org.orekit.files.general.EphemerisFileWriter;
@@ -104,7 +106,7 @@ public class OEMWriter implements EphemerisFileWriter {
             throws OrekitException, IOException {
 
         if (writer == null) {
-            throw new IllegalArgumentException("Writer must not be null");
+            throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "writer");
         }
 
         if (ephemerisFile == null) {
@@ -116,14 +118,12 @@ public class OEMWriter implements EphemerisFileWriter {
             if (ephemerisFile.getSatellites().containsKey(spaceObjectId)) {
                 idToProcess = spaceObjectId;
             } else {
-                throw new IllegalArgumentException(
-                        "Writer's requested object ID doesn't exist in ephemeris file: " + spaceObjectId);
+                throw new OrekitIllegalArgumentException(OrekitMessages.VALUE_NOT_FOUND, spaceObjectId, "ephemerisFile");
             }
         } else if (ephemerisFile.getSatellites().keySet().size() == 1) {
             idToProcess = ephemerisFile.getSatellites().keySet().iterator().next();
         } else {
-            throw new IllegalArgumentException(
-                    "Ephemeris file must have only one satellite or a specific space object ID as defined by the OEMWriter at construction time must exist in a multi-satellite Ephemeris file");
+            throw new OrekitIllegalArgumentException(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT);
         }
 
         final EphemerisFile.SatelliteEphemeris satEphem = ephemerisFile.getSatellites().get(idToProcess);

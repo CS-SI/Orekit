@@ -18,6 +18,8 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.OEMWriter.InterpolationMethod;
 import org.orekit.files.general.EphemerisFile;
@@ -73,7 +75,7 @@ public class OEMWriterTest {
         compareOemFiles(oemFile, generatedOemFile);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = OrekitIllegalArgumentException.class)
     public void testUnfoundSpaceId() throws OrekitException, IOException {
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
@@ -124,9 +126,9 @@ public class OEMWriterTest {
         
         try {
             writer1.write(tempOEMFilePath, ephemerisFile);
-            fail("Should have thrown IllegalArgumentException due to multiple satellites");
-        } catch (IllegalArgumentException e) {
-        
+            fail("Should have thrown OrekitIllegalArgumentException due to multiple satellites");
+        } catch (OrekitIllegalArgumentException e) {
+            
         }
         
         tempOEMFilePath = Files.createTempFile("TestOEMMultisatellite", ".oem").toString();

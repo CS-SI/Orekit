@@ -405,3 +405,12 @@ CCSDS_NO_CORRESPONDING_TIME_SCALE = the CCSDS time system {0} has no correspondi
 
 # use of time system {0} in CCSDS ODMs requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = use of time system {0} in CCSDS ODMs requires an additional ICD and is not implemented in Orekit
+
+# argument {0} cannot be null
+NULL_ARGUMENT = argument {0} cannot be null
+
+# value {0} not found in {1}
+VALUE_NOT_FOUND = value {0} not found in {1}
+
+# Ephemeris file format does not support multiple space objects
+EPHEMERIS_FILE_NO_MULTI_SUPPORT = Ephemeris file format does not support multiple space objects
