@@ -21,7 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -42,6 +41,7 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -154,7 +154,7 @@ public class SolidTidesFieldTest {
                 withSinCos(0, 18, -pico, 17, pico).
                 parse(getClass().getResourceAsStream(name), name);
         final UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
-        final TimeFunction<DerivativeStructure> gmstFunction = IERSConventions.IERS_2010.getGMSTFunction(ut1);
+        final TimeScalarFunction gmstFunction = IERSConventions.IERS_2010.getGMSTFunction(ut1);
         Method getNA = IERSConventions.class.getDeclaredMethod("getNutationArguments", TimeScale.class);
         getNA.setAccessible(true);
         final FundamentalNutationArguments arguments =
@@ -191,7 +191,7 @@ public class SolidTidesFieldTest {
                 Arrays.fill(cachedSNM[i], 0.0);
             }
             frequencyDependentPart.invoke(tf, date, cachedCNM, cachedSNM);
-            double thetaPlusPi = gmstFunction.value(date).getValue() + FastMath.PI;
+            double thetaPlusPi = gmstFunction.value(date) + FastMath.PI;
             Assert.assertEquals(470.9e-12 * FastMath.sin(thetaPlusPi) - 30.2e-12 * FastMath.cos(thetaPlusPi),
                                 cachedCNM[2][1], 2.0e-25);
             Assert.assertEquals(470.9e-12 * FastMath.cos(thetaPlusPi) + 30.2e-12 * FastMath.sin(thetaPlusPi),

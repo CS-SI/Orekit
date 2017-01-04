@@ -245,7 +245,7 @@ public class ITRFProviderTest {
                             1.0e-15);
 
         // sidereal time check
-        double era = IERSConventions.IERS_2010.getEarthOrientationAngleFunction(ut1).value(date).getValue();
+        double era = IERSConventions.IERS_2010.getEarthOrientationAngleFunction(ut1).value(date);
         Assert.assertEquals(13.318492966097 * 3600 * 1.0e6,
                             radToMicroAS(MathUtils.normalizeAngle(era, 0)),
                             0.0022);

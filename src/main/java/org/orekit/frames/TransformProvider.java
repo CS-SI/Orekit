@@ -19,8 +19,10 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Interface for Transform providers.
  * <p>The transform provider interface is mainly used to define the
@@ -36,5 +38,13 @@ public interface TransformProvider extends Serializable {
      * @exception OrekitException if transform cannot be computed at given date
      */
     Transform getTransform(AbsoluteDate date) throws OrekitException;
+
+//    /** Get the {@link FieldTransform} corresponding to specified date.
+//     * @param date current date
+//     * @param <T> type of the field elements
+//     * @return transform at specified date
+//     * @exception OrekitException if transform cannot be computed at given date
+//     */
+//    <T extends RealFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date) throws OrekitException;
 
 }

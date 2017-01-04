@@ -25,6 +25,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeFunction;
 import org.orekit.utils.IERSConventions;
 
@@ -55,7 +56,7 @@ class MODProvider implements TransformProvider {
     MODProvider(final IERSConventions conventions) throws OrekitException {
         this.conventions        = conventions;
         this.precessionFunction = conventions.getPrecessionFunction();
-        final TimeFunction<Double> epsilonAFunction = conventions.getMeanObliquityFunction();
+        final TimeScalarFunction epsilonAFunction = conventions.getMeanObliquityFunction();
         final AbsoluteDate date0 = conventions.getNutationReferenceEpoch();
         final double epsilon0 = epsilonAFunction.value(date0);
         r4 = new Rotation(Vector3D.PLUS_I, epsilon0, RotationConvention.FRAME_TRANSFORM);

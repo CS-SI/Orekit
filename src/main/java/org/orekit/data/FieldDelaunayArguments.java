@@ -19,8 +19,8 @@ package org.orekit.data;
 import java.io.Serializable;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeStamped;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.FieldTimeStamped;
 
 /** Delaunay arguments used for nutation or tides.
  * <p>This class is a simple placeholder,
@@ -30,13 +30,13 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public class FieldDelaunayArguments<T extends RealFieldElement<T>> implements TimeStamped, Serializable {
+public class FieldDelaunayArguments<T extends RealFieldElement<T>> implements FieldTimeStamped<T>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131097L;
 
     /** Date. */
-    private final AbsoluteDate date;
+    private final FieldAbsoluteDate<T> date;
 
     /** Offset in Julian centuries. */
     private final T tc;
@@ -69,7 +69,7 @@ public class FieldDelaunayArguments<T extends RealFieldElement<T>> implements Ti
      * @param d mean elongation of the Moon from the Sun
      * @param omega mean longitude of the ascending node of the Moon
      */
-    public FieldDelaunayArguments(final AbsoluteDate date, final T tc, final T gamma,
+    public FieldDelaunayArguments(final FieldAbsoluteDate<T> date, final T tc, final T gamma,
                                   final T l, final T lPrime,
                                   final T f, final T d, final T omega) {
         this.date   = date;
@@ -83,7 +83,7 @@ public class FieldDelaunayArguments<T extends RealFieldElement<T>> implements Ti
     }
 
     /** {@inheritDoc} */
-    public AbsoluteDate getDate() {
+    public FieldAbsoluteDate<T> getDate() {
         return date;
     }
 

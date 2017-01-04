@@ -19,7 +19,7 @@ package org.orekit.data;
 import java.io.Serializable;
 
 import org.hipparchus.RealFieldElement;
-import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Elements of the bodies having an effect on nutation.
  * <p>This class is a simple placeholder,
@@ -80,7 +80,7 @@ public final class FieldBodiesElements<T extends RealFieldElement<T>> extends  F
      * @param lNe mean Neptune longitude
      * @param pa general accumulated precession in longitude
      */
-    public FieldBodiesElements(final AbsoluteDate date, final T tc, final T gamma,
+    public FieldBodiesElements(final FieldAbsoluteDate<T> date, final T tc, final T gamma,
                                final T l, final T lPrime, final T f, final T d, final T omega,
                                final T lMe, final T lVe, final T lE, final T lMa, final T lJu,
                                final T lSa, final T lUr, final T lNe, final T pa) {

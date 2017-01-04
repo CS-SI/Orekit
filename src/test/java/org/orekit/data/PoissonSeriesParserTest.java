@@ -35,6 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -571,24 +572,26 @@ public class PoissonSeriesParserTest {
         UnivariateDifferentiableFunction dy = new FiniteDifferencesDifferentiator(4, 0.4).differentiate(yCoordinate);
         UnivariateDifferentiableFunction dz = new FiniteDifferencesDifferentiator(4, 0.4).differentiate(zCoordinate);
 
+        DSFactory factory = new DSFactory(1, 1);
+        FieldAbsoluteDate<DerivativeStructure> ds2000 = FieldAbsoluteDate.getJ2000Epoch(factory.getDerivativeField());
         for (double t = 0; t < Constants.JULIAN_DAY; t += 120) {
 
-            final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(t);
+            final FieldAbsoluteDate<DerivativeStructure> date = ds2000.shiftedBy(factory.variable(0, t));
 
             // direct computation of derivatives
-            FieldBodiesElements<DerivativeStructure> elements = arguments.evaluateDerivative(date);
-            Assert.assertEquals(0.0, elements.getDate().durationFrom(date), 1.0e-15);
+            FieldBodiesElements<DerivativeStructure> elements = arguments.evaluateAll(date);
+            Assert.assertEquals(0.0, elements.getDate().durationFrom(date).getValue(), 1.0e-15);
             DerivativeStructure xDirect = xSeries.value(elements);
             DerivativeStructure yDirect = ySeries.value(elements);
             DerivativeStructure zDirect = zSeries.value(elements);
 
             // finite differences computation of derivatives
             DerivativeStructure zero = new DSFactory(1, 1).variable(0, 0.0);
-            xCoordinate.setDate(date);
+            xCoordinate.setDate(date.toAbsoluteDate());
             DerivativeStructure xFinite = dx.value(zero);
-            yCoordinate.setDate(date);
+            yCoordinate.setDate(date.toAbsoluteDate());
             DerivativeStructure yFinite = dy.value(zero);
-            zCoordinate.setDate(date);
+            zCoordinate.setDate(date.toAbsoluteDate());
             DerivativeStructure zFinite = dz.value(zero);
 
             Assert.assertEquals(xFinite.getValue(),              xDirect.getValue(),              FastMath.abs(7.0e-15 * xFinite.getValue()));

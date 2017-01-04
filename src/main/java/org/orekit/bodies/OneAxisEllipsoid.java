@@ -216,23 +216,23 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
         // transform line and close to body frame
         final FieldTransform<T> frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
-        final FieldLine<T> lineInBodyFrame = frameToBodyFrame.transformLine(line);
-        final FieldVector3D<T> closeInBodyFrame = frameToBodyFrame.transformPosition(close);
-        final T closeAbscissa = lineInBodyFrame.getAbscissa(closeInBodyFrame);
+        final FieldLine<T>      lineInBodyFrame  = frameToBodyFrame.transformLine(line);
+        final FieldVector3D<T>  closeInBodyFrame = frameToBodyFrame.transformPosition(close);
+        final T                 closeAbscissa    = lineInBodyFrame.getAbscissa(closeInBodyFrame);
 
         // compute some miscellaneous variables outside of the loop
-        final FieldVector3D<T> point    = lineInBodyFrame.getOrigin();
-        final T x          = point.getX();
-        final T y          = point.getY();
-        final T z          = point.getZ();
-        final T z2         = z.multiply(z);
-        final T r2         = x.multiply(x).add(y.multiply(y));
+        final FieldVector3D<T> point = lineInBodyFrame.getOrigin();
+        final T x  = point.getX();
+        final T y  = point.getY();
+        final T z  = point.getZ();
+        final T z2 = z.multiply(z);
+        final T r2 = x.multiply(x).add(y.multiply(y));
 
         final FieldVector3D<T> direction = lineInBodyFrame.getDirection();
-        final T dx         = direction.getX();
-        final T dy         = direction.getY();
-        final T dz         = direction.getZ();
-        final T cz2        = dx.multiply(dx).add(dy.multiply(dy));
+        final T dx  = direction.getX();
+        final T dy  = direction.getY();
+        final T dz  = direction.getZ();
+        final T cz2 = dx.multiply(dx).add(dy.multiply(dy));
 
         // abscissa of the intersection as a root of a 2nd degree polynomial :
         // a k^2 - 2 b k + c = 0
@@ -249,8 +249,8 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final T k2 = c.divide(a.multiply(k1));
 
         // select the right point
-        final T k =
-                        (FastMath.abs(k1.getReal() - closeAbscissa.getReal()) < FastMath.abs(k2.getReal() - closeAbscissa.getReal())) ? k1 : k2;
+        final T k = (FastMath.abs(k1.getReal() - closeAbscissa.getReal()) < FastMath.abs(k2.getReal() - closeAbscissa.getReal())) ?
+                    k1 : k2;
         final FieldVector3D<T> intersection = lineInBodyFrame.pointAt(k);
         final T ix = intersection.getX();
         final T iy = intersection.getY();

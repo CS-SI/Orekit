@@ -24,7 +24,8 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeVectorFunction;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.utils.IERSConventions;
 
 /** Provider for True of Date (ToD) frame.
@@ -44,10 +45,10 @@ class TODProvider implements EOPBasedTransformProvider {
     private final EOPHistory eopHistory;
 
     /** Function computing the mean obliquity. */
-    private final transient TimeFunction<Double> obliquityFunction;
+    private final transient TimeScalarFunction obliquityFunction;
 
     /** Function computing the nutation angles. */
-    private final transient TimeFunction<double[]> nutationFunction;
+    private final transient TimeVectorFunction nutationFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply

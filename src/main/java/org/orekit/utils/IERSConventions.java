@@ -23,14 +23,17 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.MathArrays;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FieldBodiesElements;
+import org.orekit.data.FieldDelaunayArguments;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PoissonSeriesParser;
@@ -45,7 +48,10 @@ import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.PoleCorrection;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScale;
@@ -99,7 +105,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
+        public TimeScalarFunction getMeanObliquityFunction() throws OrekitException {
 
             // value from chapter 5, page 22
             final PolynomialNutation epsilonA =
@@ -108,11 +114,17 @@ public enum IERSConventions {
                                               -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
                                                0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
 
-            return new TimeFunction<Double>() {
+            return new TimeScalarFunction() {
 
                 /** {@inheritDoc} */
                 @Override
-                public Double value(final AbsoluteDate date) {
+                public double value(final AbsoluteDate date) {
+                    return epsilonA.value(evaluateTC(date));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return epsilonA.value(evaluateTC(date));
                 }
 
@@ -261,7 +273,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getNutationFunction()
+        public TimeVectorFunction getNutationFunction()
             throws OrekitException {
 
             // set up nutation arguments
@@ -287,7 +299,8 @@ public enum IERSConventions {
             final PoissonSeries.CompiledSeries psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
+
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
@@ -297,13 +310,26 @@ public enum IERSConventions {
                         psiEpsilon[0], psiEpsilon[1], IAU1994ResolutionC7.value(elements)
                     };
                 }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                    final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
+                    final T[] psiEpsilon = psiEpsilonSeries.value(elements);
+                    final T[] result = MathArrays.buildArray(date.getField(), 3);
+                    result[0] = psiEpsilon[0];
+                    result[1] = psiEpsilon[1];
+                    result[2] = IAU1994ResolutionC7.value(elements);
+                    return result;
+                }
+
             };
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGMSTFunction(final TimeScale ut1)
+        public TimeScalarFunction getGMSTFunction(final TimeScale ut1)
             throws OrekitException {
 
             // Radians per second of time
@@ -318,20 +344,38 @@ public enum IERSConventions {
             final double gmst2 = 0.093104;
             final double gmst3 = -6.2e-6;
 
-            return new TimeFunction<DerivativeStructure>() {
+            return new TimeScalarFunction() {
 
                 /** {@inheritDoc} */
                 @Override
-                public DerivativeStructure value(final AbsoluteDate date) {
+                public double value(final AbsoluteDate date) {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final double dtai = date.durationFrom(gmstReference);
-                    final DerivativeStructure tut1 = FACTORY_1_1.build(dtai + ut1.offsetFromTAI(date), 1.0);
-                    final DerivativeStructure tt = tut1.divide(Constants.JULIAN_CENTURY);
+                    final double tut1 = dtai + ut1.offsetFromTAI(date);
+                    final double tt   = tut1 / Constants.JULIAN_CENTURY;
 
                     // Seconds in the day, adjusted by 12 hours because the
                     // UT1 is supplied as a Julian date beginning at noon.
-                    final DerivativeStructure sd = tut1.add(Constants.JULIAN_DAY / 2).remainder(Constants.JULIAN_DAY);
+                    final double sd = FastMath.IEEEremainder(tut1 + Constants.JULIAN_DAY / 2, Constants.JULIAN_DAY);
+
+                    // compute Greenwich mean sidereal time, in radians
+                    return ((((((tt * gmst3 + gmst2) * tt) + gmst1) * tt) + gmst0) + sd) * radiansPerSecond;
+
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+
+                    // offset in Julian centuries from J2000 epoch (UT1 scale)
+                    final T dtai = date.durationFrom(gmstReference);
+                    final T tut1 = dtai.add(ut1.offsetFromTAI(date.toAbsoluteDate()));
+                    final T tt   = tut1.divide(Constants.JULIAN_CENTURY);
+
+                    // Seconds in the day, adjusted by 12 hours because the
+                    // UT1 is supplied as a Julian date beginning at noon.
+                    final T sd = tut1.add(Constants.JULIAN_DAY / 2).remainder(Constants.JULIAN_DAY);
 
                     // compute Greenwich mean sidereal time, in radians
                     return tt.multiply(gmst3).add(gmst2).multiply(tt).add(gmst1).multiply(tt).add(gmst0).add(sd).multiply(radiansPerSecond);
@@ -344,24 +388,23 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGASTFunction(final TimeScale ut1,
-                                                                 final EOPHistory eopHistory)
+        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
             throws OrekitException {
 
             // obliquity
-            final TimeFunction<Double> epsilonA = getMeanObliquityFunction();
+            final TimeScalarFunction epsilonA = getMeanObliquityFunction();
 
             // GMST function
-            final TimeFunction<DerivativeStructure> gmst = getGMSTFunction(ut1);
+            final TimeScalarFunction gmst = getGMSTFunction(ut1);
 
             // nutation function
-            final TimeFunction<double[]> nutation = getNutationFunction();
+            final TimeVectorFunction nutation = getNutationFunction();
 
-            return new TimeFunction<DerivativeStructure>() {
+            return new TimeScalarFunction() {
 
                 /** {@inheritDoc} */
                 @Override
-                public DerivativeStructure value(final AbsoluteDate date) {
+                public double value(final AbsoluteDate date) {
 
                     // compute equation of equinoxes
                     final double[] angles = nutation.value(date);
@@ -370,6 +413,23 @@ public enum IERSConventions {
                         deltaPsi += eopHistory.getEquinoxNutationCorrection(date)[0];
                     }
                     final double eqe = deltaPsi  * FastMath.cos(epsilonA.value(date)) + angles[2];
+
+                    // add mean sidereal time and equation of equinoxes
+                    return gmst.value(date) + eqe;
+
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+
+                    // compute equation of equinoxes
+                    final T[] angles = nutation.value(date);
+                    T deltaPsi = angles[0];
+                    if (eopHistory != null) {
+                        deltaPsi = deltaPsi.add(eopHistory.getEquinoxNutationCorrection(date)[0]);
+                    }
+                    final T eqe = deltaPsi.multiply(epsilonA.value(date).cos()).add(angles[2]);
 
                     // add mean sidereal time and equation of equinoxes
                     return gmst.value(date).add(eqe);
@@ -424,8 +484,10 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
+                    final FieldAbsoluteDate<DerivativeStructure> dsDate =
+                                    new FieldAbsoluteDate<>(date, FACTORY_1_1.variable(0, 0.0));
                     final FieldBodiesElements<DerivativeStructure> elements =
-                            arguments.evaluateDerivative(date);
+                            arguments.evaluateAll(dsDate);
                     final DerivativeStructure[] correction = correctionSeries.value(elements);
                     return new double[] {
                         correction[0].getValue(),
@@ -602,7 +664,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
+        public TimeScalarFunction getMeanObliquityFunction() throws OrekitException {
 
             // epsilon 0 value from chapter 5, page 41, other terms from equation 32 page 45
             final PolynomialNutation epsilonA =
@@ -611,11 +673,17 @@ public enum IERSConventions {
                                               -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
                                                0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
 
-            return new TimeFunction<Double>() {
+            return new TimeScalarFunction() {
 
                 /** {@inheritDoc} */
                 @Override
-                public Double value(final AbsoluteDate date) {
+                public double value(final AbsoluteDate date) {
+                    return epsilonA.value(evaluateTC(date));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return epsilonA.value(evaluateTC(date));
                 }
 
@@ -696,7 +764,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getNutationFunction()
+        public TimeVectorFunction getNutationFunction()
             throws OrekitException {
 
             // set up nutation arguments
@@ -737,7 +805,8 @@ public enum IERSConventions {
             final PoissonSeries.CompiledSeries planetarySeries =
                     PoissonSeries.compile(psiPlanetarySeries, epsilonPlanetarySeries);
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
+
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
@@ -749,13 +818,27 @@ public enum IERSConventions {
                         IAU1994ResolutionC7.value(elements)
                     };
                 }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                    final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
+                    final T[] luniSolar = luniSolarSeries.value(elements);
+                    final T[] planetary = planetarySeries.value(elements);
+                    final T[] result = MathArrays.buildArray(date.getField(), 3);
+                    result[0] = luniSolar[0].add(planetary[0]);
+                    result[1] = luniSolar[1].add(planetary[1]);
+                    result[2] = IAU1994ResolutionC7.value(elements);
+                    return result;
+                }
+
             };
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGMSTFunction(final TimeScale ut1)
+        public TimeScalarFunction getGMSTFunction(final TimeScale ut1)
             throws OrekitException {
 
             // Earth Rotation Angle
@@ -774,12 +857,18 @@ public enum IERSConventions {
                     parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
 
             // create a function evaluating the series
-            return new TimeFunction<DerivativeStructure>() {
+            return new TimeScalarFunction() {
 
                 /** {@inheritDoc} */
                 @Override
-                public DerivativeStructure value(final AbsoluteDate date) {
-                    return era.value(date).add(minusEO.value(dsEvaluateTC(date)));
+                public double value(final AbsoluteDate date) {
+                    return era.value(date) + minusEO.value(evaluateTC(date));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                    return era.value(date).add(minusEO.value(evaluateTC(date)));
                 }
 
             };
@@ -788,15 +877,14 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGASTFunction(final TimeScale ut1,
-                                                                 final EOPHistory eopHistory)
+        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
             throws OrekitException {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // mean obliquity function
-            final TimeFunction<Double> epsilon = getMeanObliquityFunction();
+            final TimeScalarFunction epsilon = getMeanObliquityFunction();
 
             // set up Poisson series
             final double milliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3;
@@ -828,13 +916,13 @@ public enum IERSConventions {
                     PoissonSeries.compile(psiLuniSolarSeries, psiPlanetarySeries, gstSeries);
 
             // ERA function
-            final TimeFunction<DerivativeStructure> era = getEarthOrientationAngleFunction(ut1);
+            final TimeScalarFunction era = getEarthOrientationAngleFunction(ut1);
 
-            return new TimeFunction<DerivativeStructure>() {
+            return new TimeScalarFunction() {
 
                 /** {@inheritDoc} */
                 @Override
-                public DerivativeStructure value(final AbsoluteDate date) {
+                public double value(final AbsoluteDate date) {
 
                     // evaluate equation of origins
                     final BodiesElements elements = arguments.evaluateAll(date);
@@ -845,7 +933,24 @@ public enum IERSConventions {
 
                     // subtract equation of origin from EA
                     // (hence add the series above which have the sign included)
-                    return era.value(date).add(deltaPsi * FastMath.cos(epsilonA) + angles[2]);
+                    return era.value(date) + deltaPsi * FastMath.cos(epsilonA) + angles[2];
+
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+
+                    // evaluate equation of origins
+                    final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
+                    final T[] angles = psiGstSeries.value(elements);
+                    final T ddPsi    = (eopHistory == null) ? date.getField().getZero() : eopHistory.getEquinoxNutationCorrection(date)[0];
+                    final T deltaPsi = angles[0].add(angles[1]).add(ddPsi);
+                    final T epsilonA = epsilon.value(date);
+
+                    // subtract equation of origin from EA
+                    // (hence add the series above which have the sign included)
+                    return era.value(date).add(deltaPsi.multiply(epsilonA.cos())).add(angles[2]);
 
                 }
 
@@ -896,8 +1001,10 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
+                    final FieldAbsoluteDate<DerivativeStructure> dsDate =
+                                    new FieldAbsoluteDate<>(date, FACTORY_1_1.variable(0, 0.0));
                     final FieldBodiesElements<DerivativeStructure> elements =
-                            arguments.evaluateDerivative(date);
+                            arguments.evaluateAll(dsDate);
                     final DerivativeStructure[] correction = correctionSeries.value(elements);
                     return new double[] {
                         correction[0].getValue(),
@@ -1170,7 +1277,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
+        public TimeScalarFunction getMeanObliquityFunction() throws OrekitException {
 
             // epsilon 0 value from chapter 5, page 56, other terms from equation 5.40 page 65
             final PolynomialNutation epsilonA =
@@ -1181,11 +1288,17 @@ public enum IERSConventions {
                                               -0.000000576  * Constants.ARC_SECONDS_TO_RADIANS,
                                               -0.0000000434 * Constants.ARC_SECONDS_TO_RADIANS);
 
-            return new TimeFunction<Double>() {
+            return new TimeScalarFunction() {
 
                 /** {@inheritDoc} */
                 @Override
-                public Double value(final AbsoluteDate date) {
+                public double value(final AbsoluteDate date) {
+                    return epsilonA.value(evaluateTC(date));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return epsilonA.value(evaluateTC(date));
                 }
 
@@ -1454,7 +1567,7 @@ public enum IERSConventions {
 
          /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getNutationFunction()
+        public TimeVectorFunction getNutationFunction()
             throws OrekitException {
 
             // set up nutation arguments
@@ -1472,7 +1585,8 @@ public enum IERSConventions {
             final PoissonSeries.CompiledSeries psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
+
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
@@ -1482,13 +1596,26 @@ public enum IERSConventions {
                         psiEpsilon[0], psiEpsilon[1], IAU1994ResolutionC7.value(elements)
                     };
                 }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                    final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
+                    final T[] psiEpsilon = psiEpsilonSeries.value(elements);
+                    final T[] result = MathArrays.buildArray(date.getField(), 3);
+                    result[0] = psiEpsilon[0];
+                    result[1] = psiEpsilon[1];
+                    result[2] = IAU1994ResolutionC7.value(elements);
+                    return result;
+                }
+
             };
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGMSTFunction(final TimeScale ut1) throws OrekitException {
+        public TimeScalarFunction getGMSTFunction(final TimeScale ut1) throws OrekitException {
 
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
@@ -1506,12 +1633,18 @@ public enum IERSConventions {
                     parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
 
             // create a function evaluating the series
-            return new TimeFunction<DerivativeStructure>() {
+            return new TimeScalarFunction() {
 
                 /** {@inheritDoc} */
                 @Override
-                public DerivativeStructure value(final AbsoluteDate date) {
-                    return era.value(date).add(minusEO.value(dsEvaluateTC(date)));
+                public double value(final AbsoluteDate date) {
+                    return era.value(date) + minusEO.value(evaluateTC(date));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                    return era.value(date).add(minusEO.value(evaluateTC(date)));
                 }
 
             };
@@ -1520,15 +1653,14 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGASTFunction(final TimeScale ut1,
-                                                                 final EOPHistory eopHistory)
+        public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
             throws OrekitException {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // mean obliquity function
-            final TimeFunction<Double> epsilon = getMeanObliquityFunction();
+            final TimeScalarFunction epsilon = getMeanObliquityFunction();
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
@@ -1544,13 +1676,13 @@ public enum IERSConventions {
                     PoissonSeries.compile(psiSeries, gstSeries);
 
             // ERA function
-            final TimeFunction<DerivativeStructure> era = getEarthOrientationAngleFunction(ut1);
+            final TimeScalarFunction era = getEarthOrientationAngleFunction(ut1);
 
-            return new TimeFunction<DerivativeStructure>() {
+            return new TimeScalarFunction() {
 
                 /** {@inheritDoc} */
                 @Override
-                public DerivativeStructure value(final AbsoluteDate date) {
+                public double value(final AbsoluteDate date) {
 
                     // evaluate equation of origins
                     final BodiesElements elements = arguments.evaluateAll(date);
@@ -1561,7 +1693,24 @@ public enum IERSConventions {
 
                     // subtract equation of origin from EA
                     // (hence add the series above which have the sign included)
-                    return era.value(date).add(deltaPsi * FastMath.cos(epsilonA) + angles[1]);
+                    return era.value(date) + deltaPsi * FastMath.cos(epsilonA) + angles[1];
+
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+
+                    // evaluate equation of origins
+                    final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
+                    final T[] angles = psiGstSeries.value(elements);
+                    final T ddPsi    = (eopHistory == null) ? date.getField().getZero() : eopHistory.getEquinoxNutationCorrection(date)[0];
+                    final T deltaPsi = angles[0].add(ddPsi);
+                    final T epsilonA = epsilon.value(date);
+
+                    // subtract equation of origin from EA
+                    // (hence add the series above which have the sign included)
+                    return era.value(date).add(deltaPsi.multiply(epsilonA.cos())).add(angles[1]);
 
                 }
 
@@ -1612,8 +1761,10 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
+                    final FieldAbsoluteDate<DerivativeStructure> dsDate =
+                                    new FieldAbsoluteDate<>(date, FACTORY_1_1.variable(0, 0.0));
                     final FieldBodiesElements<DerivativeStructure> elements =
-                            arguments.evaluateDerivative(date);
+                            arguments.evaluateAll(dsDate);
                     final DerivativeStructure[] correction = correctionSeries.value(elements);
                     return new double[] {
                         correction[0].getValue(),
@@ -1654,11 +1805,12 @@ public enum IERSConventions {
 
     /** Evaluate the date offset between the current date and the {@link #getNutationReferenceEpoch() reference date}.
      * @param date current date
+     * @param <T> type of the field elements
      * @return date offset in Julian centuries
-     * @since 6.1
+     * @since 9.0
      */
-    public DerivativeStructure dsEvaluateTC(final AbsoluteDate date) {
-        return FACTORY_1_1.build(evaluateTC(date), 1.0 / Constants.JULIAN_CENTURY);
+    public <T extends RealFieldElement<T>> T evaluateTC(final FieldAbsoluteDate<T> date) {
+        return date.durationFrom(getNutationReferenceEpoch()).divide(Constants.JULIAN_CENTURY);
     }
 
     /** Get the fundamental nutation arguments.
@@ -1676,7 +1828,7 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<Double> getMeanObliquityFunction() throws OrekitException;
+    public abstract TimeScalarFunction getMeanObliquityFunction() throws OrekitException;
 
     /** Get the function computing the Celestial Intermediate Pole and Celestial Intermediate Origin components.
      * <p>
@@ -1697,11 +1849,10 @@ public enum IERSConventions {
      * the first derivative.
      * </p>
      * @param ut1 UT1 time scale
-     * @return function computing the rawEarth Orientation Angle, in the non-rotating origin paradigm,
-     * the return value containing both the angle and its first time derivative
+     * @return function computing the rawEarth Orientation Angle, in the non-rotating origin paradigm
      * @since 6.1
      */
-    public TimeFunction<DerivativeStructure> getEarthOrientationAngleFunction(final TimeScale ut1) {
+    public TimeScalarFunction getEarthOrientationAngleFunction(final TimeScale ut1) {
         return new StellarAngleCapitaine(ut1);
     }
 
@@ -1732,29 +1883,26 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getNutationFunction()
+    public abstract TimeVectorFunction getNutationFunction()
         throws OrekitException;
 
     /** Get the function computing Greenwich mean sidereal time, in radians.
      * @param ut1 UT1 time scale
-     * @return function computing Greenwich mean sidereal time,
-     * the return value containing both the angle and its first time derivative
+     * @return function computing Greenwich mean sidereal time
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<DerivativeStructure> getGMSTFunction(TimeScale ut1)
+    public abstract TimeScalarFunction getGMSTFunction(TimeScale ut1)
         throws OrekitException;
 
     /** Get the function computing Greenwich apparent sidereal time, in radians.
      * @param ut1 UT1 time scale
      * @param eopHistory EOP history
-     * @return function computing Greenwich apparent sidereal time,
-     * the return value containing both the angle and its first time derivative
+     * @return function computing Greenwich apparent sidereal time
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<DerivativeStructure> getGASTFunction(TimeScale ut1,
-                                                                      EOPHistory eopHistory)
+    public abstract TimeScalarFunction getGASTFunction(TimeScale ut1, EOPHistory eopHistory)
         throws OrekitException;
 
     /** Get the function computing tidal corrections for Earth Orientation Parameters.
@@ -1854,7 +2002,7 @@ public enum IERSConventions {
 
         // get models parameters
         final TimeFunction<double[]> precessionFunction = getPrecessionFunction();
-        final TimeFunction<Double> epsilonAFunction = getMeanObliquityFunction();
+        final TimeScalarFunction epsilonAFunction = getMeanObliquityFunction();
         final AbsoluteDate date0 = getNutationReferenceEpoch();
         final double cosE0 = FastMath.cos(epsilonAFunction.value(date0));
 
@@ -2024,6 +2172,28 @@ public enum IERSConventions {
             }
         }
 
+        /** Evaluate the correction.
+         * @param arguments Delaunay for nutation
+         * @param <T> type of the field elements
+         * @return correction value (0 before 1997-02-27)
+         */
+        public static <T extends RealFieldElement<T>> T value(final FieldDelaunayArguments<T> arguments) {
+            if (arguments.getDate().toAbsoluteDate().compareTo(MODEL_START) >= 0) {
+
+                // IAU 1994 resolution C7 added two terms to the equation of equinoxes
+                // taking effect since 1997-02-27 for continuity
+
+                // Mean longitude of the ascending node of the Moon
+                final T om = arguments.getOmega();
+
+                // add the two correction terms
+                return om.sin().multiply(EQE1).add(om.add(om).sin().multiply(EQE2));
+
+            } else {
+                return arguments.getDate().getField().getZero();
+            }
+        }
+
     };
 
     /** Stellar angle model.
@@ -2041,7 +2211,7 @@ public enum IERSConventions {
      * IERS conventions 2003 and 2010.
      * </p>
      */
-    private static class StellarAngleCapitaine implements TimeFunction<DerivativeStructure> {
+    private static class StellarAngleCapitaine implements TimeScalarFunction {
 
         /** Reference date of Capitaine's Earth Rotation Angle model. */
         private static final AbsoluteDate REFERENCE_DATE = new AbsoluteDate(DateComponents.J2000_EPOCH,
@@ -2059,9 +2229,6 @@ public enum IERSConventions {
          * (radians per day, fractional part) */
         private static final double ERA_1B  = ERA_1A * 0.00273781191135448;
 
-        /** Total rate term of Capitaine's Earth Rotation Angle model. */
-        private static final double ERA_1AB = ERA_1A + ERA_1B;
-
         /** UT1 time scale. */
         private final TimeScale ut1;
 
@@ -2074,7 +2241,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public DerivativeStructure value(final AbsoluteDate date) {
+        public double value(final AbsoluteDate date) {
 
             // split the date offset as a full number of days plus a smaller part
             final int secondsInDay = 86400;
@@ -2083,7 +2250,22 @@ public enum IERSConventions {
             final double dtA = secondsInDay * days;
             final double dtB = (dt - dtA) + ut1.offsetFromTAI(date);
 
-            return FACTORY_1_1.build(ERA_0 + ERA_1A * dtB + ERA_1B * (dtA + dtB), ERA_1AB);
+            return ERA_0 + ERA_1A * dtB + ERA_1B * (dtA + dtB);
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+
+            // split the date offset as a full number of days plus a smaller part
+            final int secondsInDay = 86400;
+            final T dt  = date.durationFrom(REFERENCE_DATE);
+            final long days  = ((long) dt.getReal()) / secondsInDay;
+            final double dtA = secondsInDay * days;
+            final T dtB = dt.subtract(dtA).add(ut1.offsetFromTAI(date.toAbsoluteDate()));
+
+            return dtB.add(dtA).multiply(ERA_1B).add(dtB.multiply(ERA_1A)).add(ERA_0);
 
         }
 

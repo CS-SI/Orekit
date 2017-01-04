@@ -180,7 +180,7 @@ public class ITRFEquinoxProviderTest {
                             1.0e-15);
 
         // sidereal time check
-        double gast = IERSConventions.IERS_1996.getGASTFunction(ut1, eopHistory).value(date).getValue();
+        double gast = IERSConventions.IERS_1996.getGASTFunction(ut1, eopHistory).value(date);
         Assert.assertEquals(13.412402380740 * 3600 * 1.0e6,
                             radToMicroAS(MathUtils.normalizeAngle(gast, 0)),
                             25);

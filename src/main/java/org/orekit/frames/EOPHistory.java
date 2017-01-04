@@ -21,12 +21,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
@@ -287,6 +291,42 @@ public class EOPHistory implements Serializable {
                                             });
             }
             return interpolator.value(0);
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check above
+            throw new OrekitInternalError(tce);
+        }
+    }
+
+    /** Get the correction to the nutation parameters for equinox-based paradigm.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the correction is desired
+     * @param <T> type of the field elements
+     * @return nutation correction in longitude ΔΨ and in obliquity Δε
+     * (zero if date is outside covered range)
+     */
+    public <T extends RealFieldElement<T>> T[] getEquinoxNutationCorrection(final FieldAbsoluteDate<T> date) {
+
+        final AbsoluteDate aDate = date.toAbsoluteDate();
+
+        // check if there is data for date
+        if (!this.hasDataFor(aDate)) {
+            // no EOP data available for this date, we use a default null correction
+            return MathArrays.buildArray(date.getField(), 2);
+        }
+        //we have EOP data for date -> interpolate correction
+        try {
+            final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
+            final T[] y = MathArrays.buildArray(date.getField(), 2);
+            final T zero = date.getField().getZero();
+            final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
+                                                                                       // for example removing derivatives
+                                                                                       // if T was DerivativeStructure for example
+            for (final EOPEntry entry : getNeighbors(date.toAbsoluteDate())) {
+                y[0] = zero.add(entry.getDdPsi());
+                y[1] = zero.add(entry.getDdEps());
+                interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
+            }
+            return interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
             throw new OrekitInternalError(tce);

@@ -18,14 +18,13 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
@@ -54,7 +53,7 @@ public class GTODProvider implements EOPBasedTransformProvider {
     private final EOPHistory eopHistory;
 
     /** GAST function. */
-    private final transient TimeFunction<DerivativeStructure> gastFunction;
+    private final transient TimeScalarFunction gastFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to use
@@ -92,7 +91,7 @@ public class GTODProvider implements EOPBasedTransformProvider {
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         // compute Greenwich apparent sidereal time, in radians
-        final double gast = gastFunction.value(date).getValue();
+        final double gast = gastFunction.value(date);
 
         // compute true angular rotation of Earth, in rad/s
         final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);

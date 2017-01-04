@@ -24,7 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -51,7 +51,7 @@ public class EclipticProvider implements TransformProvider {
     private final IERSConventions conventions;
 
     /** the obliquity of the ecliptic, in radians as a function of time. */
-    private final transient TimeFunction<Double> obliquity;
+    private final transient TimeScalarFunction obliquity;
 
     /**
      * Create a transform provider from MOD to an ecliptically aligned frame.
