@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.List;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
@@ -325,8 +326,7 @@ public enum IERSConventions {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final double dtai = date.durationFrom(gmstReference);
-                    final DerivativeStructure tut1 =
-                            new DerivativeStructure(1, 1, dtai + ut1.offsetFromTAI(date), 1.0);
+                    final DerivativeStructure tut1 = FACTORY_1_1.build(dtai + ut1.offsetFromTAI(date), 1.0);
                     final DerivativeStructure tt = tut1.divide(Constants.JULIAN_CENTURY);
 
                     // Seconds in the day, adjusted by 12 hours because the
@@ -1631,6 +1631,9 @@ public enum IERSConventions {
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
 
+    /** Factory for the DerivativeStructure instances. */
+    private static final DSFactory FACTORY_1_1 = new DSFactory(1, 1);
+
     /** Get the reference epoch for fundamental nutation arguments.
      * @return reference epoch for fundamental nutation arguments
      * @since 6.1
@@ -1655,7 +1658,7 @@ public enum IERSConventions {
      * @since 6.1
      */
     public DerivativeStructure dsEvaluateTC(final AbsoluteDate date) {
-        return new DerivativeStructure(1, 1, evaluateTC(date), 1.0 / Constants.JULIAN_CENTURY);
+        return FACTORY_1_1.build(evaluateTC(date), 1.0 / Constants.JULIAN_CENTURY);
     }
 
     /** Get the fundamental nutation arguments.
@@ -2080,9 +2083,7 @@ public enum IERSConventions {
             final double dtA = secondsInDay * days;
             final double dtB = (dt - dtA) + ut1.offsetFromTAI(date);
 
-            return new DerivativeStructure(1, 1,
-                                           ERA_0 + ERA_1A * dtB + ERA_1B * (dtA + dtB),
-                                           ERA_1AB);
+            return FACTORY_1_1.build(ERA_0 + ERA_1A * dtB + ERA_1B * (dtA + dtB), ERA_1AB);
 
         }
 

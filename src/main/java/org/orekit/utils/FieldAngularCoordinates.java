@@ -16,6 +16,7 @@
  */
 package org.orekit.utils;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -106,9 +107,9 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @exception OrekitException if the vectors are inconsistent for the
      * rotation to be found (null, aligned, ...)
      */
-    public FieldAngularCoordinates (final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
-                              final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
-                              final double tolerance)
+    public FieldAngularCoordinates(final FieldPVCoordinates<T> u1, final FieldPVCoordinates<T> u2,
+                                   final FieldPVCoordinates<T> v1, final FieldPVCoordinates<T> v2,
+                                   final double tolerance)
         throws OrekitException {
 
         try {
@@ -147,6 +148,26 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
 
     }
 
+    /** Builds a FieldAngularCoordinates from a field and a regular AngularCoordinates.
+     * @param field field for the components
+     * @param ang AngularCoordinates to convert
+     */
+    public FieldAngularCoordinates(final Field<T> field, final AngularCoordinates ang) {
+        this.rotation             = new FieldRotation<>(field, ang.getRotation());
+        this.rotationRate         = new FieldVector3D<>(field, ang.getRotationRate());
+        this.rotationAcceleration = new FieldVector3D<>(field, ang.getRotationAcceleration());
+    }
+
+    /** Fixed orientation parallel with reference frame
+     * (identity rotation, zero rotation rate and acceleration).
+     * @param field field for the components
+     * @param <T> the type of the field elements
+     * @return a new fixed orientation parallel with reference frame
+     */
+    public static <T extends RealFieldElement<T>> FieldAngularCoordinates<T> getIdentity(final Field<T> field) {
+        return new FieldAngularCoordinates<>(field, AngularCoordinates.IDENTITY);
+    }
+
     /** Find a vector from two known cross products.
      * <p>
      * We want to find Ω such that: Ω ⨯ v₁ = c₁ and Ω ⨯ v₂ = c₂
@@ -160,13 +181,14 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param v2 vector forming the second known cross product
      * @param c2 know vector for cross product Ω ⨯ v₂
      * @param tolerance relative tolerance factor used to check singularities
+     * @param <T> the type of the field elements
      * @return vector Ω such that: Ω ⨯ v₁ = c₁ and Ω ⨯ v₂ = c₂
      * @exception MathIllegalArgumentException if vectors are inconsistent and
      * no solution can be found
      */
-    private FieldVector3D<T> inverseCrossProducts(final FieldVector3D<T> v1, final FieldVector3D<T> c1,
-                                                 final FieldVector3D<T> v2, final FieldVector3D<T> c2,
-                                                 final double tolerance)
+    private static <T extends RealFieldElement<T>> FieldVector3D<T> inverseCrossProducts(final FieldVector3D<T> v1, final FieldVector3D<T> c1,
+                                                                                         final FieldVector3D<T> v2, final FieldVector3D<T> c2,
+                                                                                         final double tolerance)
         throws MathIllegalArgumentException {
 
         final T v12 = v1.getNormSq();
@@ -459,6 +481,258 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
     public AngularCoordinates toAngularCoordinates() {
         return new AngularCoordinates(rotation.toRotation(), rotationRate.toVector3D(),
                                       rotationAcceleration.toVector3D());
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @return a new pv coordinates which is the image of u by the rotation
+     */
+    public FieldPVCoordinates<T> applyTo(final PVCoordinates pv) {
+
+        final FieldVector3D<T> transformedP = rotation.applyTo(pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = rotation.applyTo(pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, rotation.applyTo(pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new FieldPVCoordinates<>(transformedP, transformedV, transformedA);
+
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @return a new pv coordinates which is the image of u by the rotation
+     */
+    public TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedPVCoordinates pv) {
+
+        final FieldVector3D<T> transformedP = rotation.applyTo(pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = rotation.applyTo(pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, rotation.applyTo(pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new TimeStampedFieldPVCoordinates<>(pv.getDate(), transformedP, transformedV, transformedA);
+
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @return a new pv coordinates which is the image of u by the rotation
+     * @since 9.0
+     */
+    public FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
+
+        final FieldVector3D<T> transformedP = rotation.applyTo(pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = rotation.applyTo(pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, rotation.applyTo(pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new FieldPVCoordinates<>(transformedP, transformedV, transformedA);
+
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @return a new pv coordinates which is the image of u by the rotation
+     * @since 9.0
+     */
+    public TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
+
+        final FieldVector3D<T> transformedP = rotation.applyTo(pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = rotation.applyTo(pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, rotation.applyTo(pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new TimeStampedFieldPVCoordinates<>(pv.getDate(), transformedP, transformedV, transformedA);
+
+    }
+
+    /** Convert rotation, rate and acceleration to modified Rodrigues vector and derivatives.
+     * <p>
+     * The modified Rodrigues vector is tan(θ/4) u where θ and u are the
+     * rotation angle and axis respectively.
+     * </p>
+     * @param sign multiplicative sign for quaternion components
+     * @return modified Rodrigues vector and derivatives (vector on row 0, first derivative
+     * on row 1, second derivative on row 2)
+     * @see #createFromModifiedRodrigues(double[][])
+     * @since 9.0
+     */
+    public T[][] getModifiedRodrigues(final double sign) {
+
+        final T q0    = getRotation().getQ0().multiply(sign);
+        final T q1    = getRotation().getQ1().multiply(sign);
+        final T q2    = getRotation().getQ2().multiply(sign);
+        final T q3    = getRotation().getQ3().multiply(sign);
+        final T oX    = getRotationRate().getX();
+        final T oY    = getRotationRate().getY();
+        final T oZ    = getRotationRate().getZ();
+        final T oXDot = getRotationAcceleration().getX();
+        final T oYDot = getRotationAcceleration().getY();
+        final T oZDot = getRotationAcceleration().getZ();
+
+        // first time-derivatives of the quaternion
+        final T q0Dot = q0.linearCombination(q1.negate(), oX, q2.negate(), oY, q3.negate(), oZ).multiply(0.5);
+        final T q1Dot = q0.linearCombination( q0, oX, q3.negate(), oY,  q2, oZ).multiply(0.5);
+        final T q2Dot = q0.linearCombination( q3, oX,  q0, oY, q1.negate(), oZ).multiply(0.5);
+        final T q3Dot = q0.linearCombination(q2.negate(), oX,  q1, oY,  q0, oZ).multiply(0.5);
+
+        // second time-derivatives of the quaternion
+        final T q0DotDot = linearCombination(q1, oXDot, q2, oYDot, q3, oZDot,
+                                             q1Dot, oX, q2Dot, oY, q3Dot, oZ).
+                           multiply(-0.5);
+        final T q1DotDot = linearCombination(q0, oXDot, q2, oZDot, q3.negate(), oYDot,
+                                             q0Dot, oX, q2Dot, oZ, q3Dot.negate(), oY).
+                           multiply(0.5);
+        final T q2DotDot = linearCombination(q0, oYDot, q3, oXDot, q1.negate(), oZDot,
+                                             q0Dot, oY, q3Dot, oX, q1Dot.negate(), oZ).
+                           multiply(0.5);
+        final T q3DotDot = linearCombination(q0, oZDot, q1, oYDot, q2.negate(), oXDot,
+                                             q0Dot, oZ, q1Dot, oY, q2Dot.negate(), oX).
+                           multiply(0.5);
+
+        // the modified Rodrigues is tan(θ/4) u where θ and u are the rotation angle and axis respectively
+        // this can be rewritten using quaternion components:
+        //      r (q₁ / (1+q₀), q₂ / (1+q₀), q₃ / (1+q₀))
+        // applying the derivation chain rule to previous expression gives rDot and rDotDot
+        final T inv          = q0.add(1).reciprocal();
+        final T mTwoInvQ0Dot = inv.multiply(q0Dot).multiply(-2);
+
+        final T r1       = inv.multiply(q1);
+        final T r2       = inv.multiply(q2);
+        final T r3       = inv.multiply(q3);
+
+        final T mInvR1   = inv.multiply(r1).negate();
+        final T mInvR2   = inv.multiply(r2).negate();
+        final T mInvR3   = inv.multiply(r3).negate();
+
+        final T r1Dot    = q0.linearCombination(inv, q1Dot, mInvR1, q0Dot);
+        final T r2Dot    = q0.linearCombination(inv, q2Dot, mInvR2, q0Dot);
+        final T r3Dot    = q0.linearCombination(inv, q3Dot, mInvR3, q0Dot);
+
+        final T r1DotDot = q0.linearCombination(inv, q1DotDot, mTwoInvQ0Dot, r1Dot, mInvR1, q0DotDot);
+        final T r2DotDot = q0.linearCombination(inv, q2DotDot, mTwoInvQ0Dot, r2Dot, mInvR2, q0DotDot);
+        final T r3DotDot = q0.linearCombination(inv, q3DotDot, mTwoInvQ0Dot, r3Dot, mInvR3, q0DotDot);
+
+        final T[][] rodrigues = MathArrays.buildArray(q0.getField(), 3, 3);
+        rodrigues[0][0] = r1;
+        rodrigues[0][1] = r2;
+        rodrigues[0][2] = r3;
+        rodrigues[1][0] = r1Dot;
+        rodrigues[1][1] = r2Dot;
+        rodrigues[1][2] = r3Dot;
+        rodrigues[2][0] = r1DotDot;
+        rodrigues[2][1] = r2DotDot;
+        rodrigues[2][2] = r3DotDot;
+        return rodrigues;
+
+    }
+
+    /**
+     * Compute a linear combination.
+     * @param a1 first factor of the first term
+     * @param b1 second factor of the first term
+     * @param a2 first factor of the second term
+     * @param b2 second factor of the second term
+     * @param a3 first factor of the third term
+     * @param b3 second factor of the third term
+     * @param a4 first factor of the fourth term
+     * @param b4 second factor of the fourth term
+     * @param a5 first factor of the fifth term
+     * @param b5 second factor of the fifth term
+     * @param a6 first factor of the sixth term
+     * @param b6 second factor of the sicth term
+     * @return a<sub>1</sub>&times;b<sub>1</sub> + a<sub>2</sub>&times;b<sub>2</sub> +
+     * a<sub>3</sub>&times;b<sub>3</sub> + a<sub>4</sub>&times;b<sub>4</sub> +
+     * a<sub>5</sub>&times;b<sub>5</sub> + a<sub>6</sub>&times;b<sub>6</sub>
+     */
+    private T linearCombination(final T a1, final T b1, final T a2, final T b2, final T a3, final T b3,
+                                final T a4, final T b4, final T a5, final T b5, final T a6, final T b6) {
+
+        final T[] a = MathArrays.buildArray(a1.getField(), 6);
+        a[0] = a1;
+        a[1] = a2;
+        a[2] = a3;
+        a[3] = a4;
+        a[4] = a5;
+        a[5] = a6;
+
+        final T[] b = MathArrays.buildArray(b1.getField(), 6);
+        b[0] = b1;
+        b[1] = b2;
+        b[2] = b3;
+        b[3] = b4;
+        b[4] = b5;
+        b[5] = b6;
+
+        return a1.linearCombination(a, b);
+
+    }
+
+    /** Convert a modified Rodrigues vector and derivatives to angular coordinates.
+     * @param r modified Rodrigues vector (with first and second times derivatives)
+     * @param <T> the type of the field elements
+     * @return angular coordinates
+     * @see #getModifiedRodrigues(RealFieldElement)
+     * @since 9.0
+     */
+    public static <T extends RealFieldElement<T>>  FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r) {
+
+        // rotation
+        final T rSquared = r[0][0].multiply(r[0][0]).add(r[0][1].multiply(r[0][1])).add(r[0][2].multiply(r[0][2]));
+        final T oPQ0     = rSquared.add(1).reciprocal().multiply(2);
+        final T q0       = oPQ0.subtract(1);
+        final T q1       = oPQ0.multiply(r[0][0]);
+        final T q2       = oPQ0.multiply(r[0][1]);
+        final T q3       = oPQ0.multiply(r[0][2]);
+
+        // rotation rate
+        final T oPQ02    = oPQ0.multiply(oPQ0);
+        final T q0Dot    = oPQ02.multiply(q0.linearCombination(r[0][0], r[1][0], r[0][1], r[1][1],  r[0][2], r[1][2])).negate();
+        final T q1Dot    = oPQ0.multiply(r[1][0]).add(r[0][0].multiply(q0Dot));
+        final T q2Dot    = oPQ0.multiply(r[1][1]).add(r[0][1].multiply(q0Dot));
+        final T q3Dot    = oPQ0.multiply(r[1][2]).add(r[0][2].multiply(q0Dot));
+        final T oX       = q0.linearCombination(q1.negate(), q0Dot,  q0, q1Dot,  q3, q2Dot, q2.negate(), q3Dot).multiply(2);
+        final T oY       = q0.linearCombination(q2.negate(), q0Dot, q3.negate(), q1Dot,  q0, q2Dot,  q1, q3Dot).multiply(2);
+        final T oZ       = q0.linearCombination(q3.negate(), q0Dot,  q2, q1Dot, q1.negate(), q2Dot,  q0, q3Dot).multiply(2);
+
+        // rotation acceleration
+        final T q0DotDot = q0.subtract(1).negate().divide(oPQ0).multiply(q0Dot).multiply(q0Dot).
+                           subtract(oPQ02.multiply(q0.linearCombination(r[0][0], r[2][0], r[0][1], r[2][1], r[0][2], r[2][2]))).
+                           subtract(q1Dot.multiply(q1Dot).add(q2Dot.multiply(q2Dot)).add(q3Dot.multiply(q3Dot)));
+        final T q1DotDot = q0.linearCombination(oPQ0, r[2][0], r[1][0].add(r[1][0]), q0Dot, r[0][0], q0DotDot);
+        final T q2DotDot = q0.linearCombination(oPQ0, r[2][1], r[1][1].add(r[1][1]), q0Dot, r[0][1], q0DotDot);
+        final T q3DotDot = q0.linearCombination(oPQ0, r[2][2], r[1][2].add(r[1][2]), q0Dot, r[0][2], q0DotDot);
+        final T oXDot    = q0.linearCombination(q1.negate(), q0DotDot,  q0, q1DotDot,  q3, q2DotDot, q2.negate(), q3DotDot).multiply(2);
+        final T oYDot    = q0.linearCombination(q2.negate(), q0DotDot, q3.negate(), q1DotDot,  q0, q2DotDot,  q1, q3DotDot).multiply(2);
+        final T oZDot    = q0.linearCombination(q3.negate(), q0DotDot,  q2, q1DotDot, q1.negate(), q2DotDot,  q0, q3DotDot).multiply(2);
+
+        return new FieldAngularCoordinates<>(new FieldRotation<>(q0, q1, q2, q3, false),
+                                             new FieldVector3D<>(oX, oY, oZ),
+                                             new FieldVector3D<>(oXDot, oYDot, oZDot));
+
     }
 
 }

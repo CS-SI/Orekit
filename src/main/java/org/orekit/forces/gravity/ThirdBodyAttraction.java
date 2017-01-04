@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -67,6 +68,9 @@ public class ThirdBodyAttraction extends AbstractForceModel {
     /** Local value for body attraction coefficient. */
     private double gm;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param body the third body to consider
      * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
@@ -89,8 +93,10 @@ public class ThirdBodyAttraction extends AbstractForceModel {
             throw new OrekitInternalError(oe);
         };
 
-        this.body = body;
-        this.gm   = body.getGM();
+        this.body    = body;
+        this.gm      = body.getGM();
+        this.factory = new DSFactory(1, 1);
+
     }
 
     /** {@inheritDoc} */
@@ -148,7 +154,7 @@ public class ThirdBodyAttraction extends AbstractForceModel {
         final Vector3D satToBody     = centralToBody.subtract(s.getPVCoordinates().getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
-        final DerivativeStructure gmds = new DerivativeStructure(1, 1, 0, gm);
+        final DerivativeStructure gmds = factory.variable(0, gm);
 
         // compute relative acceleration
         return new FieldVector3D<DerivativeStructure>(gmds.divide(r2Sat * FastMath.sqrt(r2Sat)), satToBody,

@@ -18,6 +18,7 @@ package org.orekit.utils;
 
 
 import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -200,6 +201,7 @@ public class PVCoordinatesTest {
 
     @Test
     public void testNormalize() {
+        DSFactory factory = new DSFactory(1, 2);
         RandomGenerator generator = new Well19937a(0xb2011ffd25412067l);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
         for (int i = 0; i < 200; ++i) {
@@ -209,19 +211,19 @@ public class PVCoordinatesTest {
                         public double value(double t) {
                             return pv.shiftedBy(t).getPosition().normalize().getX();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             DerivativeStructure y =
                     differentiator.differentiate(new UnivariateFunction() {
                         public double value(double t) {
                             return pv.shiftedBy(t).getPosition().normalize().getY();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             DerivativeStructure z =
                     differentiator.differentiate(new UnivariateFunction() {
                         public double value(double t) {
                             return pv.shiftedBy(t).getPosition().normalize().getZ();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             PVCoordinates normalized = pv.normalize();
             Assert.assertEquals(x.getValue(),              normalized.getPosition().getX(),     1.0e-16);
             Assert.assertEquals(y.getValue(),              normalized.getPosition().getY(),     1.0e-16);
@@ -237,6 +239,7 @@ public class PVCoordinatesTest {
 
     @Test
     public void testCrossProduct() {
+        DSFactory factory = new DSFactory(1, 2);
         RandomGenerator generator = new Well19937a(0x85c592b3be733d23l);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
         for (int i = 0; i < 200; ++i) {
@@ -248,21 +251,21 @@ public class PVCoordinatesTest {
                             return Vector3D.crossProduct(pv1.shiftedBy(t).getPosition(),
                                                          pv2.shiftedBy(t).getPosition()).getX();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             DerivativeStructure y =
                     differentiator.differentiate(new UnivariateFunction() {
                         public double value(double t) {
                             return Vector3D.crossProduct(pv1.shiftedBy(t).getPosition(),
                                                          pv2.shiftedBy(t).getPosition()).getY();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             DerivativeStructure z =
                     differentiator.differentiate(new UnivariateFunction() {
                         public double value(double t) {
                             return Vector3D.crossProduct(pv1.shiftedBy(t).getPosition(),
                                                          pv2.shiftedBy(t).getPosition()).getZ();
                         }
-                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+                    }).value(factory.variable(0, 0.0));
             PVCoordinates product = PVCoordinates.crossProduct(pv1, pv2);
             Assert.assertEquals(x.getValue(),              product.getPosition().getX(),     1.0e-16);
             Assert.assertEquals(y.getValue(),              product.getPosition().getY(),     1.0e-16);

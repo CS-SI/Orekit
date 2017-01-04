@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.function.Function;
@@ -122,6 +124,13 @@ public class SP3Parser implements EphemerisFileParser {
     public SP3File parse(final InputStream stream) throws OrekitException, IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             return parse(reader, stream.toString());
+        }
+    }
+
+    @Override
+    public SP3File parse(final String fileName) throws IOException, OrekitException {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(fileName))) {
+            return parse(reader, fileName);
         }
     }
 

@@ -18,11 +18,14 @@ package org.orekit.utils;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -373,28 +376,32 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             oZDot, oYDot, oXDot, oZ, oY, oX
         });
 
+        final DSFactory factory;
         final DerivativeStructure q0DS;
         final DerivativeStructure q1DS;
         final DerivativeStructure q2DS;
         final DerivativeStructure q3DS;
         switch(order) {
             case 0 :
-                q0DS = new DerivativeStructure(1, 0, q0);
-                q1DS = new DerivativeStructure(1, 0, q1);
-                q2DS = new DerivativeStructure(1, 0, q2);
-                q3DS = new DerivativeStructure(1, 0, q3);
+                factory = new DSFactory(1, order);
+                q0DS = factory.build(q0);
+                q1DS = factory.build(q1);
+                q2DS = factory.build(q2);
+                q3DS = factory.build(q3);
                 break;
             case 1 :
-                q0DS = new DerivativeStructure(1, 1, q0, q0Dot);
-                q1DS = new DerivativeStructure(1, 1, q1, q1Dot);
-                q2DS = new DerivativeStructure(1, 1, q2, q2Dot);
-                q3DS = new DerivativeStructure(1, 1, q3, q3Dot);
+                factory = new DSFactory(1, order);
+                q0DS = factory.build(q0, q0Dot);
+                q1DS = factory.build(q1, q1Dot);
+                q2DS = factory.build(q2, q2Dot);
+                q3DS = factory.build(q3, q3Dot);
                 break;
             case 2 :
-                q0DS = new DerivativeStructure(1, 2, q0, q0Dot, q0DotDot);
-                q1DS = new DerivativeStructure(1, 2, q1, q1Dot, q1DotDot);
-                q2DS = new DerivativeStructure(1, 2, q2, q2Dot, q2DotDot);
-                q3DS = new DerivativeStructure(1, 2, q3, q3Dot, q3DotDot);
+                factory = new DSFactory(1, order);
+                q0DS = factory.build(q0, q0Dot, q0DotDot);
+                q1DS = factory.build(q1, q1Dot, q1DotDot);
+                q2DS = factory.build(q2, q2Dot, q2DotDot);
+                q3DS = factory.build(q3, q3Dot, q3DotDot);
                 break;
             default :
                 throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
@@ -598,6 +605,52 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                                                    -1, crossDotP);
 
         return new TimeStampedPVCoordinates(pv.getDate(), transformedP, transformedV, transformedA);
+
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @param <T> type of the field elements
+     * @return a new pv coordinates which is the image of u by the rotation
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> applyTo(final FieldPVCoordinates<T> pv) {
+
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = FieldRotation.applyTo(rotation, pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, FieldRotation.applyTo(rotation, pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new FieldPVCoordinates<>(transformedP, transformedV, transformedA);
+
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @param <T> type of the field elements
+     * @return a new pv coordinates which is the image of u by the rotation
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> applyTo(final TimeStampedFieldPVCoordinates<T> pv) {
+
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(rotation, pv.getPosition());
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(rotationRate, transformedP);
+        final FieldVector3D<T> transformedV = FieldRotation.applyTo(rotation, pv.getVelocity()).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(rotationRate, transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(rotationRate, crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(rotationAcceleration, transformedP);
+        final FieldVector3D<T> transformedA = new FieldVector3D<>( 1, FieldRotation.applyTo(rotation, pv.getAcceleration()),
+                                                                  -2, crossV,
+                                                                  -1, crossCrossP,
+                                                                  -1, crossDotP);
+
+        return new TimeStampedFieldPVCoordinates<>(pv.getDate(), transformedP, transformedV, transformedA);
 
     }
 

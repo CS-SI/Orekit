@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements;
 import java.util.List;
 
 import org.hipparchus.analysis.UnivariateMatrixFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableMatrixFunction;
@@ -263,11 +264,12 @@ public class GroundStationTest {
         final GroundStation station = new GroundStation(new TopocentricFrame(earth,
                                                                              new GeodeticPoint(latitude, longitude, altitude),
                                                                              "dummy"));
-        final int parameters  = 3;
+        final DSFactory factory = new DSFactory(3, 1);
         final int eastIndex   = 0;
         final int northIndex  = 1;
         final int zenithIndex = 2;
-        UnivariateDifferentiableMatrixFunction[] dF = new UnivariateDifferentiableMatrixFunction[parameters];
+        UnivariateDifferentiableMatrixFunction[] dF =
+                        new UnivariateDifferentiableMatrixFunction[factory.getCompiler().getFreeParameters()];
         for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
             final FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0);
             dF[k] = differentiator.differentiate(new UnivariateMatrixFunction() {
@@ -335,9 +337,9 @@ public class GroundStationTest {
                     station.getEastOffsetDriver().setValue(dEast);
                     station.getNorthOffsetDriver().setValue(dNorth);
                     station.getZenithOffsetDriver().setValue(dZenith);
-                    OffsetDerivatives od = station.getOffsetDerivatives(parameters, eastIndex, northIndex, zenithIndex);
+                    OffsetDerivatives od = station.getOffsetDerivatives(factory, eastIndex, northIndex, zenithIndex);
                     for (final int k : new int[] { eastIndex, northIndex, zenithIndex }) {
-                        DerivativeStructure[][] result = dF[k].value(new DerivativeStructure(1, 1, 0, 0.0));
+                        DerivativeStructure[][] result = dF[k].value(new DSFactory(1, 1).variable(0, 0.0));
                         int[] orders = new int[3];
                         orders[k] = 1;
 
@@ -424,7 +426,7 @@ public class GroundStationTest {
                                                                  new GeodeticPoint(0, 0, 0),
                                                                  "dummy"));
         try {
-            g.getOffsetDerivatives(3, 0, 1, 2);
+            g.getOffsetDerivatives(new DSFactory(3, 0), 0, 1, 2);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.BODY_SHAPE_IS_NOT_AN_ELLIPSOID, oe.getSpecifier());

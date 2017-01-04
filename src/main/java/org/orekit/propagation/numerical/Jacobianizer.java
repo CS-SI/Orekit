@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.numerical;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -54,6 +55,9 @@ public class Jacobianizer {
     /** Step used for finite difference computation with respect to spacecraft position. */
     private double hPos;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * <p>
      * The step size used for partial derivatives with respect to parameters is
@@ -69,6 +73,7 @@ public class Jacobianizer {
         this.forceModel = forceModel;
         this.mu         = mu;
         this.hPos       = hPos;
+        this.factory    = new DSFactory(1, 1);
 
     }
 
@@ -112,9 +117,6 @@ public class Jacobianizer {
                                                                       final DerivativeStructure mass)
         throws OrekitException {
 
-        final int parameters = mass.getFreeParameters();
-        final int order      = mass.getOrder();
-
         // estimate the scalar velocity step, assuming energy conservation
         // and hence differentiating equation V = sqrt(mu (2/r - 1/a))
         final Vector3D      p0    = position.toVector3D();
@@ -150,7 +152,7 @@ public class Jacobianizer {
         final double[] derVz = new Vector3D(1 / hVel, shifted.getAcceleration(), -1 / hVel, nominal.getAcceleration()).toArray();
 
         final double[] derM;
-        if (parameters < 7) {
+        if (mass.getFreeParameters() < 7) {
             derM = null;
         } else {
             // shift mass by hMass
@@ -158,7 +160,7 @@ public class Jacobianizer {
             derM = new Vector3D(1 / hMass, shifted.getAcceleration(), -1 / hMass, nominal.getAcceleration()).toArray();
 
         }
-        final double[] derivatives = new double[1 + parameters];
+        final double[] derivatives = new double[1 + mass.getFreeParameters()];
         final DerivativeStructure[] accDer = new DerivativeStructure[3];
         for (int i = 0; i < 3; ++i) {
 
@@ -179,7 +181,7 @@ public class Jacobianizer {
                 derivatives[7] = derM[i];
             }
 
-            accDer[i] = new DerivativeStructure(parameters, order, derivatives);
+            accDer[i] = mass.getFactory().build(derivatives);
 
         }
 
@@ -268,9 +270,9 @@ public class Jacobianizer {
 
         driver.setValue(paramValue);
 
-        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1, 1, nx, (sx - nx) / realhP),
-                              new DerivativeStructure(1, 1, ny, (sy - ny) / realhP),
-                              new DerivativeStructure(1, 1, nz, (sz - nz) / realhP));
+        return new FieldVector3D<>(factory.build(nx, (sx - nx) / realhP),
+                                   factory.build(ny, (sy - ny) / realhP),
+                                   factory.build(nz, (sz - nz) / realhP));
 
     }
 

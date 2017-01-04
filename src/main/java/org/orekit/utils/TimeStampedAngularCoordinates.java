@@ -348,17 +348,8 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
                                                                  Vector3D.ZERO, Vector3D.ZERO));
             } else {
                 // interpolation succeeded with the current offset
-                final DerivativeStructure zero = new DerivativeStructure(1, 2, 0, 0.0);
-                final DerivativeStructure[] p = interpolator.value(zero);
-                final AngularCoordinates ac = createFromModifiedRodrigues(new double[][] {
-                    {
-                        p[0].getValue(),              p[1].getValue(),              p[2].getValue()
-                    }, {
-                        p[0].getPartialDerivative(1), p[1].getPartialDerivative(1), p[2].getPartialDerivative(1)
-                    }, {
-                        p[0].getPartialDerivative(2), p[1].getPartialDerivative(2), p[2].getPartialDerivative(2)
-                    }
-                });
+                final double[][] p = interpolator.derivatives(0.0, 2);
+                final AngularCoordinates ac = createFromModifiedRodrigues(p);
                 return new TimeStampedAngularCoordinates(offset.getDate(),
                                                          ac.getRotation(),
                                                          ac.getRotationRate(),

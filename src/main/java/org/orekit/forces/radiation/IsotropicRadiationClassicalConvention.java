@@ -17,6 +17,7 @@
 package org.orekit.forces.radiation;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -71,6 +72,9 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
     /** Specular reflection coefficient. */
     private double cs;
 
+    /** Factory for the DerivativeStructure instances. */
+    private final DSFactory factory;
+
     /** Simple constructor.
      * @param crossSection Surface (m²)
      * @param ca absorption coefficient Ca between 0.0 an 1.0
@@ -97,6 +101,7 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
                     IsotropicRadiationClassicalConvention.this.cs = driver.getValue();
                 }
             });
+            factory = new DSFactory(1, 1);
         } catch (OrekitException oe) {
             // this should never occur as valueChanged above never throws an exception
             throw new OrekitInternalError(oe);
@@ -136,11 +141,11 @@ public class IsotropicRadiationClassicalConvention implements RadiationSensitive
         final DerivativeStructure caDS;
         final DerivativeStructure csDS;
         if (ABSORPTION_COEFFICIENT.equals(paramName)) {
-            caDS = new DerivativeStructure(1, 1, 0, ca);
-            csDS = new DerivativeStructure(1, 1,    cs);
+            caDS = factory.variable(0, ca);
+            csDS = factory.constant(cs);
         } else if (REFLECTION_COEFFICIENT.equals(paramName)) {
-            caDS = new DerivativeStructure(1, 1,    ca);
-            csDS = new DerivativeStructure(1, 1, 0, cs);
+            caDS = factory.constant(ca);
+            csDS = factory.variable(0, cs);
         } else {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
                                       ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);

@@ -18,6 +18,7 @@ package org.orekit.forces.gravity;
 
 
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.dfp.Dfp;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -140,13 +141,14 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() throws OrekitException{
-        DerivativeStructure a_0 = new DerivativeStructure(6, 4, 0, 7201009.7124401);
-        DerivativeStructure e_0 = new DerivativeStructure(6, 4, 1, 1e-3);
-        DerivativeStructure i_0 = new DerivativeStructure(6, 4, 2, 98.7 * FastMath.PI / 180);
-        DerivativeStructure R_0 = new DerivativeStructure(6, 4, 3, 15.0 * 22.5 * FastMath.PI / 180);
-        DerivativeStructure O_0 = new DerivativeStructure(6, 4, 4, 93.0 * FastMath.PI / 180);
-        DerivativeStructure n_0 = new DerivativeStructure(6, 4, 5, 0.1);
+    public void RealFieldTest() throws OrekitException {
+        DSFactory factory = new DSFactory(6, 4);
+        DerivativeStructure a_0 = factory.variable(0, 7201009.7124401);
+        DerivativeStructure e_0 = factory.variable(1, 1e-3);
+        DerivativeStructure i_0 = factory.variable(2, 98.7 * FastMath.PI / 180);
+        DerivativeStructure R_0 = factory.variable(3, 15.0 * 22.5 * FastMath.PI / 180);
+        DerivativeStructure O_0 = factory.variable(4, 93.0 * FastMath.PI / 180);
+        DerivativeStructure n_0 = factory.variable(5, 0.1);
         
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
@@ -216,7 +218,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         double R_R = R_0.getReal();
         double O_R = O_0.getReal();
         double n_R = n_0.getReal();
-        for(int ii = 0; ii < 1; ii++){
+        for (int ii = 0; ii < 1; ii++){
             double[] rand_next = URVG.nextVector();
             double a_shift = a_R + rand_next[0];
             double e_shift = e_R + rand_next[1];
@@ -292,13 +294,14 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException{
-        DerivativeStructure a_0 = new DerivativeStructure(6, 0, 0, 7201009.7124401);
-        DerivativeStructure e_0 = new DerivativeStructure(6, 0, 1, 1e-3);
-        DerivativeStructure i_0 = new DerivativeStructure(6, 0, 2, 98.7 * FastMath.PI / 180);
-        DerivativeStructure R_0 = new DerivativeStructure(6, 0, 3, 15.0 * 22.5 * FastMath.PI / 180);
-        DerivativeStructure O_0 = new DerivativeStructure(6, 0, 4, 93.0 * FastMath.PI / 180);
-        DerivativeStructure n_0 = new DerivativeStructure(6, 0, 5, 0.1);
+    public void RealFieldExpectErrorTest() throws OrekitException {
+        DSFactory factory = new DSFactory(6, 0);
+        DerivativeStructure a_0 = factory.variable(0, 7201009.7124401);
+        DerivativeStructure e_0 = factory.variable(1, 1e-3);
+        DerivativeStructure i_0 = factory.variable(2, 98.7 * FastMath.PI / 180);
+        DerivativeStructure R_0 = factory.variable(3, 15.0 * 22.5 * FastMath.PI / 180);
+        DerivativeStructure O_0 = factory.variable(4, 93.0 * FastMath.PI / 180);
+        DerivativeStructure n_0 = factory.variable(5, 0.1);
         
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();

@@ -156,7 +156,7 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
             // we use a loop here to compensate for very small date shifts error
             // that occur with long propagation time
             orbit = orbit.shiftedBy(date.durationFrom(orbit.getDate()));
-        } while(!date.equals(orbit.getDate()));
+        } while (!date.equals(orbit.getDate()));
         return orbit;
     }
 

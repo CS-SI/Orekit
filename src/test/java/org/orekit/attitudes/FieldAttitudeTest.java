@@ -159,24 +159,29 @@ public class FieldAttitudeTest {
         double maxInterpolationAngleError = 0;
         double maxShiftRateError = 0 ;
         double maxInterpolationRateError = 0;
-        for (double dt_R = 0; dt_R < 1.0; dt_R += 1.0) {
+        for (double dt_R = 0; dt_R < 240.0; dt_R += 1.0) {
             T dt = zero.add(dt_R);
-            FieldAbsoluteDate<T> t                 = initialOrbit.getDate().shiftedBy(dt);
-            FieldAttitude<T> propagated            = propagator.propagate(t).getAttitude();
-            T shiftAngleError         = FieldRotation.distance(propagated.getRotation(),
-                                                               initialAttitude.shiftedBy(dt).getRotation());
-            T interpolationAngleError = FieldRotation.distance(propagated.getRotation(),
-                                                               initialAttitude.interpolate(t, sample).getRotation());
-            T shiftRateError          = FieldVector3D.distance(propagated.getSpin(),
-                                                               initialAttitude.shiftedBy(dt).getSpin());
-            T interpolationRateError  = FieldVector3D.distance(propagated.getSpin(),
-                                                               initialAttitude.interpolate(t, sample).getSpin());
-            maxShiftAngleError             = FastMath.max(maxShiftAngleError, shiftAngleError.getReal());
-            maxInterpolationAngleError     = FastMath.max(maxInterpolationAngleError, interpolationAngleError.getReal());
-            maxShiftRateError              = FastMath.max(maxShiftRateError, shiftRateError.getReal());
-            maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
+            FieldAbsoluteDate<T> t      = initialOrbit.getDate().shiftedBy(dt);
+            FieldAttitude<T> propagated = propagator.propagate(t).getAttitude();
+            T shiftAngleError           = FieldRotation.distance(propagated.getRotation(),
+                                                                 initialAttitude.shiftedBy(dt).getRotation());
+            T interpolationAngleError   = FieldRotation.distance(propagated.getRotation(),
+                                                                 initialAttitude.interpolate(t, sample).getRotation());
+            T shiftRateError            = FieldVector3D.distance(propagated.getSpin(),
+                                                                 initialAttitude.shiftedBy(dt).getSpin());
+            T interpolationRateError    = FieldVector3D.distance(propagated.getSpin(),
+                                                                 initialAttitude.interpolate(t, sample).getSpin());
+            maxShiftAngleError          = FastMath.max(maxShiftAngleError, shiftAngleError.getReal());
+            maxInterpolationAngleError  = FastMath.max(maxInterpolationAngleError, interpolationAngleError.getReal());
+            maxShiftRateError           = FastMath.max(maxShiftRateError, shiftRateError.getReal());
+            maxInterpolationRateError   = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
             
         }
+        Assert.assertTrue(maxShiftAngleError         > 6.0e-6);
+        Assert.assertTrue(maxInterpolationAngleError < 6.0e-15);
+        Assert.assertTrue(maxShiftRateError          > 7.0e-8);
+        Assert.assertTrue(maxInterpolationRateError  < 2.0e-16);
+
         // past sample end, interpolation error should increase, but still be far better than quadratic shift
         maxShiftAngleError = 0;
         maxInterpolationAngleError = 0;
@@ -184,25 +189,25 @@ public class FieldAttitudeTest {
         maxInterpolationRateError = 0;
         for (double dt_R = 250.0; dt_R < 300.0; dt_R += 1.0) {
             T dt = zero.add(dt_R);
-            FieldAbsoluteDate<T> t                 = initialOrbit.getDate().shiftedBy(dt);
-            FieldAttitude<T> propagated            = propagator.propagate(t).getAttitude();
-            T shiftAngleError         = FieldRotation.distance(propagated.getRotation(),
-                                                         initialAttitude.shiftedBy(dt).getRotation());
-            T interpolationAngleError = FieldRotation.distance(propagated.getRotation(),
-                                                         initialAttitude.interpolate(t, sample).getRotation());
-            T shiftRateError          = FieldVector3D.distance(propagated.getSpin(),
-                                                         initialAttitude.shiftedBy(dt).getSpin());
-            T interpolationRateError  = FieldVector3D.distance(propagated.getSpin(),
-                                                               initialAttitude.interpolate(t, sample).getSpin());
-            maxShiftAngleError             = FastMath.max(maxShiftAngleError, shiftAngleError.getReal());
-            maxInterpolationAngleError     = FastMath.max(maxInterpolationAngleError, interpolationAngleError.getReal());
-            maxShiftRateError              = FastMath.max(maxShiftRateError, shiftRateError.getReal());
-            maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
+            FieldAbsoluteDate<T> t      = initialOrbit.getDate().shiftedBy(dt);
+            FieldAttitude<T> propagated = propagator.propagate(t).getAttitude();
+            T shiftAngleError           = FieldRotation.distance(propagated.getRotation(),
+                                                           initialAttitude.shiftedBy(dt).getRotation());
+            T interpolationAngleError   = FieldRotation.distance(propagated.getRotation(),
+                                                           initialAttitude.interpolate(t, sample).getRotation());
+            T shiftRateError            = FieldVector3D.distance(propagated.getSpin(),
+                                                           initialAttitude.shiftedBy(dt).getSpin());
+            T interpolationRateError    = FieldVector3D.distance(propagated.getSpin(),
+                                                                 initialAttitude.interpolate(t, sample).getSpin());
+            maxShiftAngleError          = FastMath.max(maxShiftAngleError, shiftAngleError.getReal());
+            maxInterpolationAngleError  = FastMath.max(maxInterpolationAngleError, interpolationAngleError.getReal());
+            maxShiftRateError           = FastMath.max(maxShiftRateError, shiftRateError.getReal());
+            maxInterpolationRateError   = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
         }
-        Assert.assertTrue(maxShiftAngleError         > 9.0e-6);
-        Assert.assertTrue(maxInterpolationAngleError < 6.0e-11);
-        Assert.assertTrue(maxShiftRateError          > 9.0e-8);
-        Assert.assertTrue(maxInterpolationRateError  < 4.0e-12);
+        Assert.assertTrue(maxShiftAngleError         > 1.0e-5);
+        Assert.assertTrue(maxInterpolationAngleError < 8.0e-13);
+        Assert.assertTrue(maxShiftRateError          > 1.0e-7);
+        Assert.assertTrue(maxInterpolationRateError  < 6.0e-14);
 
     }
     

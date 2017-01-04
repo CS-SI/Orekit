@@ -545,28 +545,9 @@ public class Transform
      * @return transformed position-velocity
      */
     public <T extends RealFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
-
-        // apply translation
-        final FieldVector3D<T> intermediateP = pv.getPosition().add(cartesian.getPosition());
-        final FieldVector3D<T> intermediateV = pv.getVelocity().add(cartesian.getVelocity());
-        final FieldVector3D<T> intermediateA = pv.getAcceleration().add(cartesian.getAcceleration());
-
-        // apply rotation
-        final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(), intermediateP);
-        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(angular.getRotationRate(), transformedP);
-        final FieldVector3D<T> transformedV = FieldRotation.applyTo(angular.getRotation(), intermediateV).subtract(crossP);
-        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(angular.getRotationRate(), transformedV);
-        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(angular.getRotationRate(), crossP);
-        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(angular.getRotationAcceleration(), transformedP);
-        final FieldVector3D<T> transformedA =
-                new FieldVector3D<T>( 1, FieldRotation.applyTo(angular.getRotation(), intermediateA),
-                                     -2, crossV,
-                                     -1, crossCrossP,
-                                     -1, crossDotP);
-
-        // build transformed object
-        return new FieldPVCoordinates<T>(transformedP, transformedV, transformedA);
-
+        return angular.applyTo(new FieldPVCoordinates<T>(pv.getPosition().add(cartesian.getPosition()),
+                                                         pv.getVelocity().add(cartesian.getVelocity()),
+                                                         pv.getAcceleration().add(cartesian.getAcceleration())));
     }
 
     /** Transform {@link TimeStampedFieldPVCoordinates} including kinematic effects.
@@ -583,28 +564,10 @@ public class Transform
      * @since 7.0
      */
     public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
-
-        // apply translation
-        final FieldVector3D<T> intermediateP = pv.getPosition().add(cartesian.getPosition());
-        final FieldVector3D<T> intermediateV = pv.getVelocity().add(cartesian.getVelocity());
-        final FieldVector3D<T> intermediateA = pv.getAcceleration().add(cartesian.getAcceleration());
-
-        // apply rotation
-        final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(), intermediateP);
-        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(angular.getRotationRate(), transformedP);
-        final FieldVector3D<T> transformedV = FieldRotation.applyTo(angular.getRotation(), intermediateV).subtract(crossP);
-        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(angular.getRotationRate(), transformedV);
-        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(angular.getRotationRate(), crossP);
-        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(angular.getRotationAcceleration(), transformedP);
-        final FieldVector3D<T> transformedA =
-                new FieldVector3D<T>( 1, FieldRotation.applyTo(angular.getRotation(), intermediateA),
-                                     -2, crossV,
-                                     -1, crossCrossP,
-                                     -1, crossDotP);
-
-        // build transformed object
-        return new TimeStampedFieldPVCoordinates<T>(pv.getDate(), transformedP, transformedV, transformedA);
-
+        return angular.applyTo(new TimeStampedFieldPVCoordinates<T>(pv.getDate(),
+                                                                    pv.getPosition().add(cartesian.getPosition()),
+                                                                    pv.getVelocity().add(cartesian.getVelocity()),
+                                                                    pv.getAcceleration().add(cartesian.getAcceleration())));
     }
 
     /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}

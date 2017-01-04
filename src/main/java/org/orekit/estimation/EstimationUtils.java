@@ -18,6 +18,7 @@ package org.orekit.estimation;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.UnivariateVectorFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
@@ -36,6 +37,9 @@ import org.orekit.utils.ParameterDriver;
  * @since 8.0
  */
 public class EstimationUtils {
+
+    /** Factory for the DerivativeStructure instances. */
+    private static final DSFactory FACTORY = new DSFactory(1, 1);
 
     /** Private constructor for utility class.
      */
@@ -85,7 +89,7 @@ public class EstimationUtils {
                                               parameterDriver.getName(), driver.getName());
                 }
                 try {
-                    final DerivativeStructure dsParam = new DerivativeStructure(1, 1, 0, parameterDriver.getNormalizedValue());
+                    final DerivativeStructure dsParam = FACTORY.variable(0, parameterDriver.getNormalizedValue());
                     final DerivativeStructure dsValue = differentiated.value(dsParam);
                     return dsValue.getPartialDerivative(1);
                 } catch (OrekitExceptionWrapper oew) {
@@ -126,8 +130,7 @@ public class EstimationUtils {
                         final UnivariateDifferentiableVectorFunction differentiatedJ =
                                 differentiator.differentiate(componentJ);
 
-                        final DerivativeStructure[] c =
-                                differentiatedJ.value(new DerivativeStructure(1, 1, 0, 0.0));
+                        final DerivativeStructure[] c = differentiatedJ.value(FACTORY.variable(0, 0.0));
 
                         // populate the j-th column of the Jacobian
                         for (int i = 0; i < dimension; ++i) {

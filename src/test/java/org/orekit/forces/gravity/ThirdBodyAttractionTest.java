@@ -18,6 +18,7 @@ package org.orekit.forces.gravity;
 
 
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -107,13 +108,14 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() throws OrekitException{
-        DerivativeStructure a_0 = new DerivativeStructure(6, 5, 0, 7e7);
-        DerivativeStructure e_0 = new DerivativeStructure(6, 5, 1, 0.4);
-        DerivativeStructure i_0 = new DerivativeStructure(6, 5, 2, 85 * FastMath.PI / 180);
-        DerivativeStructure R_0 = new DerivativeStructure(6, 5, 3, 0.7);
-        DerivativeStructure O_0 = new DerivativeStructure(6, 5, 4, 0.5);
-        DerivativeStructure n_0 = new DerivativeStructure(6, 5, 5, 0.1);
+    public void RealFieldTest() throws OrekitException {
+        DSFactory factory = new DSFactory(6, 5);
+        DerivativeStructure a_0 = factory.variable(0, 7e7);
+        DerivativeStructure e_0 = factory.variable(1, 0.4);
+        DerivativeStructure i_0 = factory.variable(2, 85 * FastMath.PI / 180);
+        DerivativeStructure R_0 = factory.variable(3, 0.7);
+        DerivativeStructure O_0 = factory.variable(4, 0.5);
+        DerivativeStructure n_0 = factory.variable(5, 0.1);
         
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
@@ -175,7 +177,7 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
         double R_R = R_0.getReal();
         double O_R = O_0.getReal();
         double n_R = n_0.getReal();
-        for(int ii = 0; ii < 1; ii++){
+        for (int ii = 0; ii < 1; ii++){
             double[] rand_next = URVG.nextVector();
             double a_shift = a_R + rand_next[0];
             double e_shift = e_R + rand_next[1];
@@ -252,13 +254,14 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() throws OrekitException{
-        DerivativeStructure a_0 = new DerivativeStructure(6, 0, 0, 7e7);
-        DerivativeStructure e_0 = new DerivativeStructure(6, 0, 1, 0.4);
-        DerivativeStructure i_0 = new DerivativeStructure(6, 0, 2, 85 * FastMath.PI / 180);
-        DerivativeStructure R_0 = new DerivativeStructure(6, 0, 3, 0.7);
-        DerivativeStructure O_0 = new DerivativeStructure(6, 0, 4, 0.5);
-        DerivativeStructure n_0 = new DerivativeStructure(6, 0, 5, 0.1);
+    public void RealFieldExpectErrorTest() throws OrekitException {
+        DSFactory factory = new DSFactory(6, 5);
+        DerivativeStructure a_0 = factory.variable(0, 7e7);
+        DerivativeStructure e_0 = factory.variable(1, 0.4);
+        DerivativeStructure i_0 = factory.variable(2, 85 * FastMath.PI / 180);
+        DerivativeStructure R_0 = factory.variable(3, 0.7);
+        DerivativeStructure O_0 = factory.variable(4, 0.5);
+        DerivativeStructure n_0 = factory.variable(5, 0.1);
         
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();

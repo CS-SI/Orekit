@@ -37,11 +37,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * <p> An {@link EphemerisFile} consists of one or more satellites each an ID unique
  * within the file. The ephemeris for each satellite consists of one or more segments.
  *
- * <p> Some ephermis file formats may supply additional information that is not available
+ * <p> Some ephemeris file formats may supply additional information that is not available
  * via this interface. In those cases it is recommended that the parser return a subclass
  * of this interface to provide access to the additional information.
  *
  * @author Evan Ward
+ * @see SatelliteEphemeris
+ * @see EphemerisSegment
  */
 public interface EphemerisFile {
 
@@ -61,6 +63,8 @@ public interface EphemerisFile {
      * as a maneuver.
      *
      * @author Evan Ward
+     * @see EphemerisFile
+     * @see EphemerisSegment
      */
     interface SatelliteEphemeris {
 
@@ -146,6 +150,10 @@ public interface EphemerisFile {
      *
      * <p> Segments are typically used to split an ephemeris around discontinuous events
      * such as maneuvers.
+     *
+     * @author Evan Ward
+     * @see EphemerisFile
+     * @see SatelliteEphemeris
      */
     interface EphemerisSegment {
 
@@ -224,7 +232,9 @@ public interface EphemerisFile {
          * Get the coordinates for this ephemeris segment.
          *
          * @return a list of state vectors in chronological order. The coordinates are not
-         * necessarily evenly spaced in time.
+         * necessarily evenly spaced in time. Any position, velocity, or acceleration
+         * coordinates that are not specified in the ephemeris file are NaN in the
+         * returned values.
          */
         List<? extends TimeStampedPVCoordinates> getCoordinates();
 

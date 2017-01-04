@@ -406,6 +406,9 @@ CCSDS_NO_CORRESPONDING_TIME_SCALE = <MISSING TRANSLATION>
 # use of time system {0} in CCSDS ODMs requires an additional ICD and is not implemented in Orekit
 CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 
+# Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
+NOT_ENOUGH_PROPAGATORS = <MISSING TRANSLATION>
+
 # argument {0} cannot be null
 NULL_ARGUMENT = <MISSING TRANSLATION>
 
