@@ -138,18 +138,18 @@ public class SolidTidesFieldTest {
         throws OrekitException, NoSuchFieldException, IllegalAccessException,
                NoSuchMethodException, InvocationTargetException {
         // the reference for this test is the example at the bottom of page 86, IERS conventions 2010 section 6.2.1
-        final PoissonSeriesParser<DerivativeStructure> k21Parser =
-                new PoissonSeriesParser<DerivativeStructure>(18).
+        final PoissonSeriesParser k21Parser =
+                new PoissonSeriesParser(18).
                     withOptionalColumn(1).
                     withDoodson(4, 3).
                     withFirstDelaunay(10);
         final String name = "/tides/tab6.5a-only-K1.txt";
         final double pico = 1.0e-12;
-        final PoissonSeries<DerivativeStructure> c21Series =
+        final PoissonSeries c21Series =
                 k21Parser.
                 withSinCos(0, 17, pico, 18, pico).
                 parse(getClass().getResourceAsStream(name), name);
-        final PoissonSeries<DerivativeStructure> s21Series =
+        final PoissonSeries s21Series =
                 k21Parser.
                 withSinCos(0, 18, -pico, 17, pico).
                 parse(getClass().getResourceAsStream(name), name);

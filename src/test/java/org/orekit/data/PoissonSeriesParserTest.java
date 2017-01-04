@@ -64,18 +64,18 @@ public class PoissonSeriesParserTest {
                   + "j = 0  Nb of terms = 1\n");
     }
 
-    private PoissonSeries<DerivativeStructure> buildData(String data) throws OrekitException {
-        return new PoissonSeriesParser<DerivativeStructure>(0).
+    private PoissonSeries buildData(String data) throws OrekitException {
+        return new PoissonSeriesParser(0).
                 withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                 parse(new ByteArrayInputStream(data.getBytes()),
-                                                             "<file-content>" + data + "</file-content>");
+                      "<file-content>" + data + "</file-content>");
     }
 
     @Test(expected=OrekitException.class)
     public void testNoFile() throws OrekitException {
         InputStream stream =
                 PoissonSeriesParserTest.class.getResourceAsStream("/org/orekit/resources/missing");
-        new PoissonSeriesParser<DerivativeStructure>(17).
+        new PoissonSeriesParser(17).
             withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
             withFirstDelaunay(4).
             withFirstPlanetary(9).
@@ -94,7 +94,7 @@ public class PoissonSeriesParserTest {
                     + "2 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n"
                     + "j = 3  Nb of terms = 1\n"
                     + "3 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
-            new PoissonSeriesParser<DerivativeStructure>(17).
+            new PoissonSeriesParser(17).
                 withPolynomialPart('x', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
                 withFirstPlanetary(9).
@@ -120,7 +120,7 @@ public class PoissonSeriesParserTest {
                     + "3 1.0 0.0 0 0 0 0 0 2 0 0 0 0 0 0 0 0\n"
                     + "j = 2  Nb of terms = 1\n"
                     + "4 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
-            new PoissonSeriesParser<DerivativeStructure>(17).
+            new PoissonSeriesParser(17).
                 withPolynomialPart('x', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
                 withFirstPlanetary(9).
@@ -138,7 +138,7 @@ public class PoissonSeriesParserTest {
             "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
             + "j = 0  Nb of terms = 1\n"
             + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
-        PoissonSeries<DerivativeStructure> nd = new PoissonSeriesParser<DerivativeStructure>(17).
+        PoissonSeries nd = new PoissonSeriesParser(17).
                                withPolynomialPart('x', PolynomialParser.Unit.NO_UNITS).
                                withFirstDelaunay(4).
                                withFirstPlanetary(9).
@@ -153,7 +153,7 @@ public class PoissonSeriesParserTest {
             "  0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5\n"
             + "j = 0  Nb of terms = 1\n"
             + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
-        PoissonSeries<DerivativeStructure> nd = new PoissonSeriesParser<DerivativeStructure>(17).
+        PoissonSeries nd = new PoissonSeriesParser(17).
                                withFirstPlanetary(9).
                                withSinCos(0, 2, 1.0, 3, 1.0).
                                withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
@@ -227,7 +227,7 @@ public class PoissonSeriesParserTest {
         // therefore grouped together. The Delaunay arguments for the 5 terms are:
         // Ω, 4(F-D+Ω), l-l'-2(F+D)-Ω, l-2(F+D)-Ω and 2Ω
         Assert.assertEquals(5,
-                            new PoissonSeriesParser<DerivativeStructure>(17).
+                            new PoissonSeriesParser(17).
                              withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                              withFirstDelaunay(4).
                              withFirstPlanetary(9).
@@ -296,7 +296,7 @@ public class PoissonSeriesParserTest {
             + "       \n"
             + "   9          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
         try {
-            new PoissonSeriesParser<DerivativeStructure>(17).
+            new PoissonSeriesParser(17).
                 withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
                 withFirstPlanetary(9).
@@ -356,7 +356,7 @@ public class PoissonSeriesParserTest {
             + "\n"
             + "   3       -3328.48      205833.15    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
         try {
-            new PoissonSeriesParser<DerivativeStructure>(17).
+            new PoissonSeriesParser(17).
                 withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
                 withFirstPlanetary(9).
@@ -371,8 +371,8 @@ public class PoissonSeriesParserTest {
     @Test
     public void testTrue1996Files() throws OrekitException {
         String directory = "/assets/org/orekit/IERS-conventions/";
-        PoissonSeriesParser<DerivativeStructure> parser =
-                new PoissonSeriesParser<DerivativeStructure>(10).
+        PoissonSeriesParser parser =
+                new PoissonSeriesParser(10).
                     withFirstDelaunay(1).
                     withSinCos(0, 7, 1.0, -1, 1.0).
                     withSinCos(1, 8, 1.0, -1, 1.0);
@@ -389,8 +389,8 @@ public class PoissonSeriesParserTest {
     @Test
     public void testTrue2003Files() throws OrekitException {
         String directory = "/assets/org/orekit/IERS-conventions/";
-        PoissonSeriesParser<DerivativeStructure> parser =
-                new PoissonSeriesParser<DerivativeStructure>(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
+        PoissonSeriesParser parser =
+                new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                     withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2a.txt");
@@ -406,8 +406,8 @@ public class PoissonSeriesParserTest {
     @Test
     public void testTrue2010Files() throws OrekitException {
         String directory = "/assets/org/orekit/IERS-conventions/";
-        PoissonSeriesParser<DerivativeStructure> parser =
-                new PoissonSeriesParser<DerivativeStructure>(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
+        PoissonSeriesParser parser =
+                new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                     withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
@@ -419,8 +419,8 @@ public class PoissonSeriesParserTest {
                 getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
         Assert.assertNotNull(parser.parse(zStream, "2010/tab5.2d.txt"));
 
-        PoissonSeriesParser<DerivativeStructure> correctionParser =
-                new PoissonSeriesParser<DerivativeStructure>(14).withFirstDelaunay(4).withSinCos(0, 11, 1.0, 12, 1.0);
+        PoissonSeriesParser correctionParser =
+                new PoissonSeriesParser(14).withFirstDelaunay(4).withSinCos(0, 11, 1.0, 12, 1.0);
         InputStream xCorrectionStream =
                 getClass().getResourceAsStream(directory + "2010/tab5.1a.txt");
         Assert.assertNotNull(correctionParser.parse(xCorrectionStream, "2010/tab5.1a.txt"));
@@ -469,8 +469,8 @@ public class PoissonSeriesParserTest {
 
     private void checkCorrupted(String resourceName, String lineStart) {
         try {
-            PoissonSeriesParser<DerivativeStructure> parser =
-                    new PoissonSeriesParser<DerivativeStructure>(18).
+            PoissonSeriesParser parser =
+                    new PoissonSeriesParser(18).
                     withOptionalColumn(1).
                     withDoodson(4, 3).
                     withFirstDelaunay(10).
@@ -492,7 +492,7 @@ public class PoissonSeriesParserTest {
     @Test
     public void testGammaTauForbidden() throws OrekitException {
         try {
-            new PoissonSeriesParser<DerivativeStructure>(18).withGamma(4).withDoodson(4, 3);
+            new PoissonSeriesParser(18).withGamma(4).withDoodson(4, 3);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA, oe.getSpecifier());
@@ -502,7 +502,7 @@ public class PoissonSeriesParserTest {
     @Test
     public void testTauGammaForbidden() throws OrekitException {
         try {
-            new PoissonSeriesParser<DerivativeStructure>(18).withDoodson(4, 3).withGamma(4);
+            new PoissonSeriesParser(18).withDoodson(4, 3).withGamma(4);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA, oe.getSpecifier());
@@ -512,19 +512,19 @@ public class PoissonSeriesParserTest {
     @Test
     public void testCompile() throws OrekitException, SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         String directory = "/assets/org/orekit/IERS-conventions/";
-        PoissonSeriesParser<DerivativeStructure> parser =
-                new PoissonSeriesParser<DerivativeStructure>(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
+        PoissonSeriesParser parser =
+                new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                     withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
-        PoissonSeries<DerivativeStructure> xSeries = parser.parse(xStream, "2010/tab5.2a.txt");
+        PoissonSeries xSeries = parser.parse(xStream, "2010/tab5.2a.txt");
         InputStream yStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2b.txt");
-        PoissonSeries<DerivativeStructure> ySeries = parser.parse(yStream, "2010/tab5.2b.txt");
+        PoissonSeries ySeries = parser.parse(yStream, "2010/tab5.2b.txt");
         InputStream zStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
-        PoissonSeries<DerivativeStructure> sSeries = parser.parse(zStream, "2010/tab5.2d.txt");
-        PoissonSeries.CompiledSeries<DerivativeStructure> xysSeries =
+        PoissonSeries sSeries = parser.parse(zStream, "2010/tab5.2d.txt");
+        PoissonSeries.CompiledSeries xysSeries =
                 PoissonSeries.compile(xSeries, ySeries, sSeries);
 
         Method m = IERSConventions.class.getDeclaredMethod("getNutationArguments", TimeScale.class);
@@ -551,14 +551,14 @@ public class PoissonSeriesParserTest {
 
         Utils.setDataRoot("regular-data");
         String directory = "/assets/org/orekit/IERS-conventions/";
-        PoissonSeriesParser<DerivativeStructure> parser =
-                new PoissonSeriesParser<DerivativeStructure>(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
+        PoissonSeriesParser parser =
+                new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                     withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
-        PoissonSeries<DerivativeStructure> xSeries =
+        PoissonSeries xSeries =
                         parser.parse(getClass().getResourceAsStream(directory + "2010/tab5.2a.txt"), "2010/tab5.2a.txt");
-        PoissonSeries<DerivativeStructure> ySeries =
+        PoissonSeries ySeries =
                         parser.parse(getClass().getResourceAsStream(directory + "2010/tab5.2b.txt"), "2010/tab5.2b.txt");
-        PoissonSeries<DerivativeStructure> zSeries =
+        PoissonSeries zSeries =
                         parser.parse(getClass().getResourceAsStream(directory + "2010/tab5.2d.txt"), "2010/tab5.2d.txt");
 
         TimeScale ut1 = TimeScalesFactory.getUT1(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
@@ -603,11 +603,10 @@ public class PoissonSeriesParserTest {
     }
 
     private static class Coordinate implements UnivariateFunction {
-        private final PoissonSeries<DerivativeStructure> series;
+        private final PoissonSeries series;
         private final FundamentalNutationArguments arguments;
         private AbsoluteDate date;
-        Coordinate(PoissonSeries<DerivativeStructure> series,
-                   FundamentalNutationArguments arguments) {
+        Coordinate(PoissonSeries series, FundamentalNutationArguments arguments) {
             this.series    = series;
             this.arguments = arguments;
             this.date      = AbsoluteDate.J2000_EPOCH;

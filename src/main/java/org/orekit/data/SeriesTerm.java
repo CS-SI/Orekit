@@ -24,11 +24,10 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitInternalError;
 
 /** Base class for nutation series terms.
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  * @see PoissonSeries
  */
-abstract class SeriesTerm<T extends RealFieldElement<T>> {
+abstract class SeriesTerm {
 
     /** Coefficients for the sine part. */
     private double[][] sinCoeff;
@@ -140,9 +139,10 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
 
     /** Evaluate the value of the series term.
      * @param elements bodies elements for nutation
+     * @param <T> the type of the field elements
      * @return value of the series term
      */
-    public T[] value(final FieldBodiesElements<T> elements) {
+    public <T extends RealFieldElement<T>> T[] value(final FieldBodiesElements<T> elements) {
 
         // preliminary computation
         final T tc  = elements.getTC();
@@ -168,15 +168,15 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
 
     /** Compute the argument for the current date.
      * @param elements luni-solar and planetary elements for the current date
+     * @param <T> the type of the field elements
      * @return current value of the argument
      */
-    protected abstract T argument(FieldBodiesElements<T> elements);
+    protected abstract <T extends RealFieldElement<T>> T argument(FieldBodiesElements<T> elements);
 
     /** Factory method for building the appropriate object.
      * <p>The method checks the null coefficients and build an instance
      * of an appropriate type to avoid too many unnecessary multiplications
      * by zero coefficients.</p>
-     * @param <S> the type of the field elements
      * @param cGamma coefficient for γ = GMST + π tide parameter
      * @param cL coefficient for mean anomaly of the Moon
      * @param cLPrime coefficient for mean anomaly of the Sun
@@ -194,28 +194,28 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
      * @param cPa coefficient for general accumulated precession in longitude
      * @return a nutation serie term instance well suited for the set of coefficients
      */
-    public static <S extends RealFieldElement<S>> SeriesTerm<S> buildTerm(final int cGamma,
-                                                                          final int cL, final int cLPrime, final int cF,
-                                                                          final int cD, final int cOmega,
-                                                                          final int cMe, final int cVe, final int cE,
-                                                                          final int cMa, final int cJu, final int cSa,
-                                                                          final int cUr, final int cNe, final int cPa) {
+    public static  SeriesTerm buildTerm(final int cGamma,
+                                        final int cL, final int cLPrime, final int cF,
+                                        final int cD, final int cOmega,
+                                        final int cMe, final int cVe, final int cE,
+                                        final int cMa, final int cJu, final int cSa,
+                                        final int cUr, final int cNe, final int cPa) {
         if (cGamma == 0 && cL == 0 && cLPrime == 0 && cF == 0 && cD == 0 && cOmega == 0) {
-            return new PlanetaryTerm<S>(cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+            return new PlanetaryTerm(cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
         } else if (cGamma == 0 &&
                    cMe == 0 && cVe == 0 && cE == 0 && cMa == 0 && cJu == 0 &&
                    cSa == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
-            return new LuniSolarTerm<S>(cL, cLPrime, cF, cD, cOmega);
+            return new LuniSolarTerm(cL, cLPrime, cF, cD, cOmega);
         } else if (cGamma != 0 &&
                    cMe == 0 && cVe == 0 && cE == 0 && cMa == 0 && cJu == 0 &&
                    cSa == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
-            return new TideTerm<S>(cGamma, cL, cLPrime, cF, cD, cOmega);
+            return new TideTerm(cGamma, cL, cLPrime, cF, cD, cOmega);
         } else if (cGamma == 0 && cLPrime == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
-            return new NoFarPlanetsTerm<S>(cL, cF, cD, cOmega,
-                                           cMe, cVe, cE, cMa, cJu, cSa);
+            return new NoFarPlanetsTerm(cL, cF, cD, cOmega,
+                                        cMe, cVe, cE, cMa, cJu, cSa);
         } else if (cGamma == 0) {
-            return new GeneralTerm<S>(cL, cLPrime, cF, cD, cOmega,
-                                      cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+            return new GeneralTerm(cL, cLPrime, cF, cD, cOmega,
+                                   cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
         } else {
             throw new OrekitInternalError(null);
         }

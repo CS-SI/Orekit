@@ -23,11 +23,10 @@ import org.hipparchus.RealFieldElement;
 /**
  * Polynomial nutation function.
  *
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  * @see PoissonSeries
  */
-public class PolynomialNutation<T extends RealFieldElement<T>> implements Serializable {
+public class PolynomialNutation implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131007L;
@@ -59,9 +58,10 @@ public class PolynomialNutation<T extends RealFieldElement<T>> implements Serial
 
     /** Evaluate the value of the polynomial.
      * @param tc date offset in Julian centuries
+     * @param <T> type of the filed elements
      * @return value of the polynomial
      */
-    public T value(final T tc) {
+    public <T extends RealFieldElement<T>> T value(final T tc) {
 
         T p = tc.getField().getZero();
         for (int i = coefficients.length - 1; i >= 0; --i) {

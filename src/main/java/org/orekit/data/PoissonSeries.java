@@ -16,7 +16,6 @@
  */
 package org.orekit.data;
 
-import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,19 +37,19 @@ import org.hipparchus.util.MathArrays;
  * @see SeriesTerm
  * @see PolynomialNutation
  */
-public class PoissonSeries<T extends RealFieldElement<T>> {
+public class PoissonSeries {
 
     /** Polynomial part. */
-    private final PolynomialNutation<T> polynomial;
+    private final PolynomialNutation polynomial;
 
     /** Non-polynomial series. */
-    private final Map<Long, SeriesTerm<T>> series;
+    private final Map<Long, SeriesTerm> series;
 
     /** Build a Poisson series from an IERS table file.
      * @param polynomial polynomial part (may be null)
      * @param series non-polynomial part
      */
-    public PoissonSeries(final PolynomialNutation<T> polynomial, final Map<Long, SeriesTerm<T>> series) {
+    public PoissonSeries(final PolynomialNutation polynomial, final Map<Long, SeriesTerm> series) {
         this.polynomial = polynomial;
         this.series     = series;
     }
@@ -58,7 +57,7 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
     /** Get the polynomial part of the series.
      * @return polynomial part of the series.
      */
-    public PolynomialNutation<T> getPolynomial() {
+    public PolynomialNutation getPolynomial() {
         return polynomial;
     }
 
@@ -84,7 +83,7 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
         // arithmetic properties (rounding and representable numbers)
         double npHigh = 0;
         double npLow  = 0;
-        for (final SeriesTerm<T> term : series.values()) {
+        for (final SeriesTerm term : series.values()) {
             final double v       = term.value(elements)[0];
             final double sum     = npHigh + v;
             final double sPrime  = sum - v;
@@ -102,9 +101,10 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
 
     /** Evaluate the value of the series.
      * @param elements bodies elements for nutation
+     * @param <T> type fo the field elements
      * @return value of the series
      */
-    public T value(final FieldBodiesElements<T> elements) {
+    public <T extends RealFieldElement<T>> T value(final FieldBodiesElements<T> elements) {
 
         // polynomial part
         final T tc = elements.getTC();
@@ -112,7 +112,7 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
 
         // non-polynomial part
         T sum = tc.getField().getZero();
-        for (final SeriesTerm<T> term : series.values()) {
+        for (final SeriesTerm term : series.values()) {
             sum = sum.add(term.value(elements)[0]);
         }
 
@@ -123,10 +123,9 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
 
     /** This interface represents a fast evaluator for Poisson series.
      * @see PoissonSeries#compile(PoissonSeries...)
-     * @param <S> the type of the field elements
      * @since 6.1
      */
-    public interface  CompiledSeries<S extends RealFieldElement<S>> {
+    public interface  CompiledSeries {
 
         /** Evaluate a set of Poisson series.
          * @param elements bodies elements for nutation
@@ -136,32 +135,30 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
 
         /** Evaluate a set of Poisson series.
          * @param elements bodies elements for nutation
+         * @param <S> the type of the field elements
          * @return value of the series
          */
-        S[] value(FieldBodiesElements<S> elements);
+        <S extends RealFieldElement<S>> S[] value(FieldBodiesElements<S> elements);
 
     }
 
     /** Join several nutation series, for fast simultaneous evaluation.
      * @param poissonSeries Poisson series to join
      * @return a single function that evaluates all series together
-     * @param <S> the type of the field elements
      * @since 6.1
      */
     @SafeVarargs
-    public static <S extends RealFieldElement<S>> CompiledSeries<S> compile(final PoissonSeries<S> ... poissonSeries) {
+    public static CompiledSeries compile(final PoissonSeries ... poissonSeries) {
 
         // store all polynomials
-        @SuppressWarnings("unchecked")
-        final PolynomialNutation<S>[] polynomials =
-                (PolynomialNutation<S>[]) Array.newInstance(PolynomialNutation.class, poissonSeries.length);
+        final PolynomialNutation[] polynomials = new PolynomialNutation[poissonSeries.length];
         for (int i = 0; i < polynomials.length; ++i) {
             polynomials[i] = poissonSeries[i].polynomial;
         }
 
         // gather all series terms
-        final Map<Long, SeriesTerm<S>> joinedMap = new HashMap<Long, SeriesTerm<S>>();
-        for (final PoissonSeries<S> ps : poissonSeries) {
+        final Map<Long, SeriesTerm> joinedMap = new HashMap<Long, SeriesTerm>();
+        for (final PoissonSeries ps : poissonSeries) {
             for (long key : ps.series.keySet()) {
                 if (!joinedMap.containsKey(key)) {
 
@@ -169,7 +166,7 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
                     final int[] m = NutationCodec.decode(key);
 
                     // prepare a new term, ready to handle the required dimension
-                    final SeriesTerm<S> term =
+                    final SeriesTerm term =
                             SeriesTerm.buildTerm(m[0],
                                                  m[1], m[2], m[3], m[4], m[5],
                                                  m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13], m[14]);
@@ -185,9 +182,9 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
         // join series by sharing terms, in order to speed up evaluation
         // which is dominated by the computation of sine/cosine in each term
         for (int i = 0; i < poissonSeries.length; ++i) {
-            for (final Map.Entry<Long, SeriesTerm<S>> entry : poissonSeries[i].series.entrySet()) {
-                final SeriesTerm<S> singleTerm = entry.getValue();
-                final SeriesTerm<S> joinedTerm = joinedMap.get(entry.getKey());
+            for (final Map.Entry<Long, SeriesTerm> entry : poissonSeries[i].series.entrySet()) {
+                final SeriesTerm singleTerm = entry.getValue();
+                final SeriesTerm joinedTerm = joinedMap.get(entry.getKey());
                 for (int degree = 0; degree <= singleTerm.getDegree(0); ++degree) {
                     joinedTerm.add(i, degree,
                                    singleTerm.getSinCoeff(0, degree),
@@ -197,11 +194,9 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
         }
 
         // use a single array for faster access
-        @SuppressWarnings("unchecked")
-        final SeriesTerm<S>[] joinedTerms =
-                joinedMap.values().toArray((SeriesTerm<S>[]) Array.newInstance(SeriesTerm.class, joinedMap.size()));
+        final SeriesTerm[] joinedTerms = joinedMap.values().toArray(new SeriesTerm[joinedMap.size()]);
 
-        return new CompiledSeries<S>() {
+        return new CompiledSeries() {
 
             /** {@inheritDoc} */
             @Override
@@ -213,7 +208,7 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
                 // arithmetic properties (rounding and representable numbers)
                 final double[] npHigh = new double[polynomials.length];
                 final double[] npLow  = new double[polynomials.length];
-                for (final SeriesTerm<S> term : joinedTerms) {
+                for (final SeriesTerm term : joinedTerms) {
                     final double[] termValue = term.value(elements);
                     for (int i = 0; i < termValue.length; ++i) {
                         final double v       = termValue[i];
@@ -237,11 +232,11 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
 
             /** {@inheritDoc} */
             @Override
-            public S[] value(final FieldBodiesElements<S> elements) {
+            public <S extends RealFieldElement<S>> S[] value(final FieldBodiesElements<S> elements) {
 
                // non-polynomial part
                 final S[] v = MathArrays.buildArray(elements.getTC().getField(), polynomials.length);
-                for (final SeriesTerm<S> term : joinedTerms) {
+                for (final SeriesTerm term : joinedTerms) {
                     final S[] termValue = term.value(elements);
                     for (int i = 0; i < termValue.length; ++i) {
                         v[i] = v[i].add(termValue[i]);

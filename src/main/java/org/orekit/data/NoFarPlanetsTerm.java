@@ -22,7 +22,7 @@ import org.hipparchus.RealFieldElement;
  * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class NoFarPlanetsTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
+class NoFarPlanetsTerm extends SeriesTerm {
 
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
@@ -67,8 +67,8 @@ class NoFarPlanetsTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
      * @param cSa coefficient for mean Saturn longitude
      */
     NoFarPlanetsTerm(final int cL, final int cF, final int cD, final int cOmega,
-                            final int cMe, final int cVe, final int cE, final int cMa,
-                            final int cJu, final int cSa) {
+                     final int cMe, final int cVe, final int cE, final int cMa,
+                     final int cJu, final int cSa) {
         this.cL     = cL;
         this.cF     = cF;
         this.cD     = cD;
@@ -91,7 +91,7 @@ class NoFarPlanetsTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
     }
 
     /** {@inheritDoc} */
-    protected T argument(final FieldBodiesElements<T> elements) {
+    protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
         return elements.getL().multiply(cL).
                 add(elements.getF().multiply(cF)).
                 add(elements.getD().multiply(cD)).

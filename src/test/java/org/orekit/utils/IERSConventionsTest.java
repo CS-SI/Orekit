@@ -846,7 +846,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
 
         final AbsoluteDate t0 = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, 52654),
-                                           TimeScalesFactory.getUTC());
+                                                 TimeScalesFactory.getUTC());
 
         for (double[] row : new double[][] {
             {     0.0, -0.29840026968370659,  0.00045312852893139, -0.12196223480123573,  0.21922730818562719 },
