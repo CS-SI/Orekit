@@ -350,7 +350,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
         this.field = elapsedDuration.getField();
         final double dT = since.durationFrom(AbsoluteDate.J2000_EPOCH);
         final T deltaT = elapsedDuration.add(dT);
-        final FieldAbsoluteDate<T> j2000 =  getJ2000Epoch(elapsedDuration.getField()).shiftedBy(deltaT.getReal());
+        final FieldAbsoluteDate<T> j2000 =  getJ2000Epoch(elapsedDuration.getField()).shiftedBy(deltaT);
         offset = j2000.offset;
         epoch = j2000.epoch;
     }
@@ -638,9 +638,10 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     public static <T extends RealFieldElement<T>> FieldAbsoluteDate<T> createMJDDate(final int mjd, final T secondsInDay,
                                                                                      final TimeScale timeScale) {
-        return new FieldAbsoluteDate<T>(secondsInDay.getField(), new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
-                                        new TimeComponents(secondsInDay.getReal()),
-                                        timeScale);
+        return new FieldAbsoluteDate<T>(secondsInDay.getField(),
+                                        new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                        TimeComponents.H00,
+                                        timeScale).shiftedBy(secondsInDay);
     }
 
     /** Build an instance corresponding to a GPS date.
