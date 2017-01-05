@@ -199,6 +199,11 @@ public class OEMFile extends ODMFile implements EphemerisFile {
         }
 
         @Override
+        public String getFrameCenterString() {
+            return this.getMetaData().getCenterName();
+        }
+
+        @Override
         public String getFrameString() {
             return this.getMetaData().getFrameString();
         }
