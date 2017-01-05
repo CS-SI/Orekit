@@ -60,7 +60,6 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeComponents;
-import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
@@ -141,7 +140,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getXYSpXY2Function()
+        public TimeVectorFunction getXYSpXY2Function()
             throws OrekitException {
 
             // set up nutation arguments
@@ -203,7 +202,7 @@ public enum IERSConventions {
             final double fST2SinOm    =  0.00074 * Constants.ARC_SECONDS_TO_RADIANS;
             final double fST2Sin2FDOm =  0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
 
                 /** {@inheritDoc} */
                 @Override
@@ -233,6 +232,44 @@ public enum IERSConventions {
                     return new double[] {
                         x, y, sPxy2
                     };
+
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+
+                    final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
+                    final T[] xy             = xySum.value(elements);
+
+                    final T omega     = elements.getOmega();
+                    final T f         = elements.getF();
+                    final T d         = elements.getD();
+                    final T t         = elements.getTC();
+                    final T t2        = t.multiply(t);
+
+                    final T cosOmega  = omega.cos();
+                    final T sinOmega  = omega.sin();
+                    final T sin2Omega = omega.multiply(2).sin();
+                    final T fMDPO2 = f.subtract(d).add(omega).multiply(2);
+                    final T cos2FDOm  = fMDPO2.cos();
+                    final T sin2FDOm  = fMDPO2.sin();
+
+                    final T x = xPolynomial.value(t).
+                                add(xy[0].multiply(sinEps0)).
+                                add(t2.multiply(cosOmega.multiply(fXCosOm).add(sinOmega.multiply(fXSinOm)).add(cos2FDOm.multiply(fXSin2FDOm))));
+                    final T y = yPolynomial.value(t).
+                                add(xy[1]).
+                                add(t2.multiply(cosOmega.multiply(fYCosOm).add(cos2FDOm.multiply(fYCos2FDOm))));
+                    final T sPxy2 = sinOmega.multiply(fSSinOm).
+                                    add(sin2Omega.multiply(fSSin2Om)).
+                                    add(t.multiply(fST3).add(sinOmega.multiply(fST2SinOm)).add(sin2FDOm.multiply(fST2Sin2FDOm)).multiply(t).add(fST).multiply(t));
+
+                    final T[] a = MathArrays.buildArray(date.getField(), 3);
+                    a[0] = x;
+                    a[1] = y;
+                    a[2] = sPxy2;
+                    return a;
 
                 }
 
@@ -687,7 +724,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getXYSpXY2Function()
+        public TimeVectorFunction getXYSpXY2Function()
             throws OrekitException {
 
             // set up nutation arguments
@@ -708,11 +745,17 @@ public enum IERSConventions {
             final PoissonSeries.CompiledSeries xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
 
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
+                    return xys.value(arguments.evaluateAll(date));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     return xys.value(arguments.evaluateAll(date));
                 }
 
@@ -1366,7 +1409,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getXYSpXY2Function() throws OrekitException {
+        public TimeVectorFunction getXYSpXY2Function() throws OrekitException {
 
             // set up nutation arguments
             final FundamentalNutationArguments arguments = getNutationArguments(null);
@@ -1385,11 +1428,17 @@ public enum IERSConventions {
             final PoissonSeries.CompiledSeries xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
 
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
+                    return xys.value(arguments.evaluateAll(date));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
                     return xys.value(arguments.evaluateAll(date));
                 }
 
@@ -1963,7 +2012,7 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getXYSpXY2Function()
+    public abstract TimeVectorFunction getXYSpXY2Function()
         throws OrekitException;
 
     /** Get the function computing the raw Earth Orientation Angle.

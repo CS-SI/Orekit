@@ -24,7 +24,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeVectorFunction;
 
 /** Celestial Intermediate Reference Frame 2000.
  * <p>This provider includes precession effects according to either the IAU 2006 precession
@@ -43,7 +43,7 @@ class CIRFProvider implements EOPBasedTransformProvider {
     private static final long serialVersionUID = 20130806L;
 
     /** Function computing CIP/CIO components. */
-    private final transient TimeFunction<double[]> xysPxy2Function;
+    private final transient TimeVectorFunction xysPxy2Function;
 
     /** EOP history. */
     private final EOPHistory eopHistory;
