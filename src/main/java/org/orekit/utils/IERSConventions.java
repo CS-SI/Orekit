@@ -21,11 +21,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
+import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -46,6 +52,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.EOPHistory;
+import org.orekit.frames.FieldPoleCorrection;
 import org.orekit.frames.PoleCorrection;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeVectorFunction;
@@ -442,7 +449,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getEOPTidalCorrection()
+        public TimeVectorFunction getEOPTidalCorrection()
             throws OrekitException {
 
             // set up nutation arguments
@@ -477,26 +484,7 @@ public enum IERSConventions {
             final PoissonSeries ut1Series =
                     ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
 
-            final PoissonSeries.CompiledSeries correctionSeries =
-                PoissonSeries.compile(xSeries, ySeries, ut1Series);
-
-            return new TimeFunction<double[]>() {
-                /** {@inheritDoc} */
-                @Override
-                public double[] value(final AbsoluteDate date) {
-                    final FieldAbsoluteDate<DerivativeStructure> dsDate =
-                                    new FieldAbsoluteDate<>(date, FACTORY_1_1.variable(0, 0.0));
-                    final FieldBodiesElements<DerivativeStructure> elements =
-                            arguments.evaluateAll(dsDate);
-                    final DerivativeStructure[] correction = correctionSeries.value(elements);
-                    return new double[] {
-                        correction[0].getValue(),
-                        correction[1].getValue(),
-                        correction[2].getValue(),
-                        -correction[2].getPartialDerivative(1) * Constants.JULIAN_DAY
-                    };
-                }
-            };
+            return new EOPTidalCorrection(arguments, xSeries, ySeries, ut1Series);
 
         }
 
@@ -506,7 +494,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public TimeFunction<double[]> getTideFrequencyDependenceFunction(final TimeScale ut1)
+        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1)
             throws OrekitException {
 
             // set up nutation arguments
@@ -551,16 +539,10 @@ public enum IERSConventions {
                     withSinCos(0, 16, -pico, -1, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
 
-            final PoissonSeries.CompiledSeries kSeries =
-                PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
-
-            return new TimeFunction<double[]>() {
-                /** {@inheritDoc} */
-                @Override
-                public double[] value(final AbsoluteDate date) {
-                    return kSeries.value(arguments.evaluateAll(date));
-                }
-            };
+            return new TideFrequencyDependenceFunction(arguments,
+                                                       c20Series,
+                                                       c21Series, s21Series,
+                                                       c22Series, s22Series);
 
         }
 
@@ -572,13 +554,14 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getSolidPoleTide(final EOPHistory eopHistory) {
+        public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory) {
 
             // constants from IERS 1996 page 47
             final double globalFactor = -1.348e-9 / Constants.ARC_SECONDS_TO_RADIANS;
             final double coupling     =  0.00112;
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
+
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
@@ -588,15 +571,27 @@ public enum IERSConventions {
                         globalFactor * (coupling * pole.getXp() - pole.getYp()),
                     };
                 }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                    final FieldPoleCorrection<T> pole = eopHistory.getPoleCorrection(date);
+                    final T[] a = MathArrays.buildArray(date.getField(), 2);
+                    a[0] = pole.getXp().add(pole.getYp().multiply(coupling)).multiply(globalFactor);
+                    a[1] = pole.getXp().multiply(coupling).subtract(pole.getYp()).multiply(globalFactor);
+                    return a;
+                }
+
             };
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getOceanPoleTide(final EOPHistory eopHistory)
+        public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory)
             throws OrekitException {
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
+
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
@@ -605,6 +600,14 @@ public enum IERSConventions {
                         0.0, 0.0
                     };
                 }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                    // there are no model for ocean pole tide prior to conventions 2010
+                    return MathArrays.buildArray(date.getField(), 2);
+                }
+
             };
         }
 
@@ -960,7 +963,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getEOPTidalCorrection()
+        public TimeVectorFunction getEOPTidalCorrection()
             throws OrekitException {
 
             // set up nutation arguments
@@ -994,26 +997,7 @@ public enum IERSConventions {
             final PoissonSeries ut1Series =
                     ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
 
-            final PoissonSeries.CompiledSeries correctionSeries =
-                PoissonSeries.compile(xSeries, ySeries, ut1Series);
-
-            return new TimeFunction<double[]>() {
-                /** {@inheritDoc} */
-                @Override
-                public double[] value(final AbsoluteDate date) {
-                    final FieldAbsoluteDate<DerivativeStructure> dsDate =
-                                    new FieldAbsoluteDate<>(date, FACTORY_1_1.variable(0, 0.0));
-                    final FieldBodiesElements<DerivativeStructure> elements =
-                            arguments.evaluateAll(dsDate);
-                    final DerivativeStructure[] correction = correctionSeries.value(elements);
-                    return new double[] {
-                        correction[0].getValue(),
-                        correction[1].getValue(),
-                        correction[2].getValue(),
-                        -correction[2].getPartialDerivative(1) * Constants.JULIAN_DAY
-                    };
-                }
-            };
+            return new EOPTidalCorrection(arguments, xSeries, ySeries, ut1Series);
 
         }
 
@@ -1023,7 +1007,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public TimeFunction<double[]> getTideFrequencyDependenceFunction(final TimeScale ut1)
+        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1)
             throws OrekitException {
 
             // set up nutation arguments
@@ -1068,16 +1052,10 @@ public enum IERSConventions {
                     withSinCos(0, 16, -pico, -1, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
 
-            final PoissonSeries.CompiledSeries kSeries =
-                PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
-
-            return new TimeFunction<double[]>() {
-                /** {@inheritDoc} */
-                @Override
-                public double[] value(final AbsoluteDate date) {
-                    return kSeries.value(arguments.evaluateAll(date));
-                }
-            };
+            return new TideFrequencyDependenceFunction(arguments,
+                                                       c20Series,
+                                                       c21Series, s21Series,
+                                                       c22Series, s22Series);
 
         }
 
@@ -1089,7 +1067,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getSolidPoleTide(final EOPHistory eopHistory)
+        public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory)
             throws OrekitException {
 
             // annual pole from ftp://tai.bipm.org/iers/conv2003/chapter7/annual.pole
@@ -1122,7 +1100,8 @@ public enum IERSConventions {
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
             final double ratio        =  0.00115;
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
+
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
@@ -1203,16 +1182,105 @@ public enum IERSConventions {
                     };
 
                 }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+
+                    final AbsoluteDate aDate = date.toAbsoluteDate();
+
+                    // we can't compute anything before the range covered by the annual pole file
+                    if (aDate.compareTo(firstAnnualPoleDate) <= 0) {
+                        return MathArrays.buildArray(date.getField(), 2);
+                    }
+
+                    // evaluate mean pole
+                    T meanPoleX = date.getField().getZero();
+                    T meanPoleY = date.getField().getZero();
+                    if (aDate.compareTo(lastAnnualPoleDate) <= 0) {
+                        // we are within the range covered by the annual pole file,
+                        // we interpolate within it
+                        try {
+                            final List<MeanPole> neighbors = annualCache.getNeighbors(aDate);
+                            final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
+                            final T[] y = MathArrays.buildArray(date.getField(), 2);
+                            final T zero = date.getField().getZero();
+                            final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
+                                                                                                       // for example removing derivatives
+                                                                                                       // if T was DerivativeStructure
+                            for (final MeanPole neighbor : neighbors) {
+                                y[0] = zero.add(neighbor.getX());
+                                y[1] = zero.add(neighbor.getY());
+                                interpolator.addSamplePoint(central.durationFrom(neighbor.getDate()).negate(), y);
+                            }
+                            final T[] interpolated = interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)
+                            meanPoleX = interpolated[0];
+                            meanPoleY = interpolated[1];
+                        } catch (TimeStampedCacheException tsce) {
+                            // this should never happen
+                            throw new OrekitInternalError(tsce);
+                        }
+                    } else {
+
+                        // we are after the range covered by the annual pole file,
+                        // we use the polynomial extension
+                        final T t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+                        meanPoleX = t.multiply(xp0Dot).add(xp0);
+                        meanPoleY = t.multiply(yp0Dot).add(yp0);
+
+                    }
+
+                    // evaluate wobble variables
+                    final FieldPoleCorrection<T> correction = eopHistory.getPoleCorrection(date);
+                    final T m1 = correction.getXp().subtract(meanPoleX);
+                    final T m2 = meanPoleY.subtract(correction.getYp());
+
+                    final T[] a = MathArrays.buildArray(date.getField(), 2);
+
+                    // the following correspond to the equations published in IERS 2003 conventions,
+                    // section 6.2 page 65. In the publication, the equations read:
+                    // ∆C₂₁ = −1.333 × 10⁻⁹ (m₁ − 0.0115m₂)
+                    // ∆S₂₁ = −1.333 × 10⁻⁹ (m₂ + 0.0115m₁)
+                    // However, it seems there are sign errors in these equations, which have
+                    // been fixed in IERS 2010 conventions, section 6.4 page 94. In these newer
+                    // publication, the equations read:
+                    // ∆C₂₁ = −1.333 × 10⁻⁹ (m₁ + 0.0115m₂)
+                    // ∆S₂₁ = −1.333 × 10⁻⁹ (m₂ − 0.0115m₁)
+                    // the newer equations seem more consistent with the premises as the
+                    // deformation due to the centrifugal potential has the form:
+                    // −Ω²r²/2 sin 2θ Re [k₂(m₁ − im₂) exp(iλ)] where k₂ is the complex
+                    // number 0.3077 + 0.0036i, so the real part in the previous equation is:
+                    // A[Re(k₂) m₁ + Im(k₂) m₂)] cos λ + A[Re(k₂) m₂ - Im(k₂) m₁] sin λ
+                    // identifying this with ∆C₂₁ cos λ + ∆S₂₁ sin λ we get:
+                    // ∆C₂₁ = A Re(k₂) [m₁ + Im(k₂)/Re(k₂) m₂)]
+                    // ∆S₂₁ = A Re(k₂) [m₂ - Im(k₂)/Re(k₂) m₁)]
+                    // and Im(k₂)/Re(k₂) is very close to +0.00115
+                    // As the equation as written in the IERS 2003 conventions are used in
+                    // legacy systems, we have reproduced this alleged error here (and fixed it in
+                    // the IERS 2010 conventions below) for validation purposes. We don't recommend
+                    // using the IERS 2003 conventions for solid pole tide computation other than
+                    // for validation or reproducibility of legacy applications behavior.
+                    // As solid pole tide is small and as the sign change is on the smallest coefficient,
+                    // the effect is quite small. A test case on a propagated orbit showed a position change
+                    // slightly below 0.4m after a 30 days propagation on a Low Earth Orbit
+                    a[0] = m1.add(m2.multiply(-ratio)).multiply(globalFactor);
+                    a[1] = m2.add(m1.multiply( ratio)).multiply(globalFactor);
+
+                    return a;
+
+                }
+
             };
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getOceanPoleTide(final EOPHistory eopHistory)
+        public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory)
             throws OrekitException {
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
+
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
@@ -1221,6 +1289,14 @@ public enum IERSConventions {
                         0.0, 0.0
                     };
                 }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                    // there are no model for ocean pole tide prior to conventions 2010
+                    return MathArrays.buildArray(date.getField(), 2);
+                }
+
             };
         }
 
@@ -1345,7 +1421,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public TimeFunction<double[]> getTideFrequencyDependenceFunction(final TimeScale ut1)
+        public TimeVectorFunction getTideFrequencyDependenceFunction(final TimeScale ut1)
             throws OrekitException {
 
             // set up nutation arguments
@@ -1390,16 +1466,10 @@ public enum IERSConventions {
                     withSinCos(0, 16, -pico, -1, pico).
                     parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
 
-            final PoissonSeries.CompiledSeries kSeries =
-                PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
-
-            return new TimeFunction<double[]>() {
-                /** {@inheritDoc} */
-                @Override
-                public double[] value(final AbsoluteDate date) {
-                    return kSeries.value(arguments.evaluateAll(date));
-                }
-            };
+            return new TideFrequencyDependenceFunction(arguments,
+                                                       c20Series,
+                                                       c21Series, s21Series,
+                                                       c22Series, s22Series);
 
         }
 
@@ -1462,16 +1532,70 @@ public enum IERSConventions {
 
         }
 
+        /** Compute pole wobble variables m₁ and m₂.
+         * @param date current date
+         * @param <T> type of the field elements
+         * @param eopHistory EOP history
+         * @return array containing m₁ and m₂
+         */
+        private <T extends RealFieldElement<T>> T[] computePoleWobble(final FieldAbsoluteDate<T> date, final EOPHistory eopHistory) {
+
+            // polynomial model from IERS 2010, table 7.7
+            final double f0 = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
+            final double f1 = f0 / Constants.JULIAN_YEAR;
+            final double f2 = f1 / Constants.JULIAN_YEAR;
+            final double f3 = f2 / Constants.JULIAN_YEAR;
+            final AbsoluteDate changeDate = new AbsoluteDate(2010, 1, 1, TimeScalesFactory.getTT());
+
+            // evaluate mean pole
+            final double[] xPolynomial;
+            final double[] yPolynomial;
+            if (date.toAbsoluteDate().compareTo(changeDate) <= 0) {
+                xPolynomial = new double[] {
+                    55.974 * f0, 1.8243 * f1, 0.18413 * f2, 0.007024 * f3
+                };
+                yPolynomial = new double[] {
+                    346.346 * f0, 1.7896 * f1, -0.10729 * f2, -0.000908 * f3
+                };
+            } else {
+                xPolynomial = new double[] {
+                    23.513 * f0, 7.6141 * f1
+                };
+                yPolynomial = new double[] {
+                    358.891 * f0,  -0.6287 * f1
+                };
+            }
+            T meanPoleX = date.getField().getZero();
+            T meanPoleY = date.getField().getZero();
+            final T t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+            for (int i = xPolynomial.length - 1; i >= 0; --i) {
+                meanPoleX = meanPoleX.multiply(t).add(xPolynomial[i]);
+            }
+            for (int i = yPolynomial.length - 1; i >= 0; --i) {
+                meanPoleY = meanPoleY.multiply(t).add(yPolynomial[i]);
+            }
+
+            // evaluate wobble variables
+            final FieldPoleCorrection<T> correction = eopHistory.getPoleCorrection(date);
+            final T[] m = MathArrays.buildArray(date.getField(), 2);
+            m[0] = correction.getXp().subtract(meanPoleX);
+            m[1] = meanPoleY.subtract(correction.getYp());
+
+            return m;
+
+        }
+
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getSolidPoleTide(final EOPHistory eopHistory)
+        public TimeVectorFunction getSolidPoleTide(final EOPHistory eopHistory)
             throws OrekitException {
 
             // constants from IERS 2010, section 6.4
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
             final double ratio        =  0.00115;
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
+
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
@@ -1493,16 +1617,42 @@ public enum IERSConventions {
                     };
 
                 }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+
+                    // evaluate wobble variables
+                    final T[] wobbleM = computePoleWobble(date, eopHistory);
+
+                    final T[] a = MathArrays.buildArray(date.getField(), 2);
+
+                    // the following correspond to the equations published in IERS 2010 conventions,
+                    // section 6.4 page 94. The equations read:
+                    // ∆C₂₁ = −1.333 × 10⁻⁹ (m₁ + 0.0115m₂)
+                    // ∆S₂₁ = −1.333 × 10⁻⁹ (m₂ − 0.0115m₁)
+                    // These equations seem to fix what was probably a sign error in IERS 2003
+                    // conventions section 6.2 page 65. In this older publication, the equations read:
+                    // ∆C₂₁ = −1.333 × 10⁻⁹ (m₁ − 0.0115m₂)
+                    // ∆S₂₁ = −1.333 × 10⁻⁹ (m₂ + 0.0115m₁)
+                    a[0] = wobbleM[0].add(wobbleM[1].multiply( ratio)).multiply(globalFactor);
+                    a[1] = wobbleM[1].add(wobbleM[0].multiply(-ratio)).multiply(globalFactor);
+
+                    return a;
+
+                }
+
             };
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getOceanPoleTide(final EOPHistory eopHistory)
+        public TimeVectorFunction getOceanPoleTide(final EOPHistory eopHistory)
             throws OrekitException {
 
-            return new TimeFunction<double[]>() {
+            return new TimeVectorFunction() {
+
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
@@ -1520,6 +1670,27 @@ public enum IERSConventions {
                     };
 
                 }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+
+                    final T[] v = MathArrays.buildArray(date.getField(), 2);
+
+                    // evaluate wobble variables
+                    final T[] wobbleM = computePoleWobble(date, eopHistory);
+
+                    // the following correspond to the equations published in IERS 2010 conventions,
+                    // section 6.4 page 94 equation 6.24:
+                    // ∆C₂₁ = −2.1778 × 10⁻¹⁰ (m₁ − 0.01724m₂)
+                    // ∆S₂₁ = −1.7232 × 10⁻¹⁰ (m₂ − 0.03365m₁)
+                    v[0] = wobbleM[0].subtract(wobbleM[1].multiply(0.01724)).multiply(-2.1778e-10 / Constants.ARC_SECONDS_TO_RADIANS);
+                    v[1] = wobbleM[1].subtract(wobbleM[0].multiply(0.03365)).multiply(-1.7232e-10 / Constants.ARC_SECONDS_TO_RADIANS);
+
+                    return v;
+
+                }
+
             };
 
         }
@@ -1720,7 +1891,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getEOPTidalCorrection()
+        public TimeVectorFunction getEOPTidalCorrection()
             throws OrekitException {
 
             // set up nutation arguments
@@ -1754,26 +1925,7 @@ public enum IERSConventions {
             final PoissonSeries ut1Series =
                     ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
 
-            final PoissonSeries.CompiledSeries correctionSeries =
-                    PoissonSeries.compile(xSeries, ySeries, ut1Series);
-
-            return new TimeFunction<double[]>() {
-                /** {@inheritDoc} */
-                @Override
-                public double[] value(final AbsoluteDate date) {
-                    final FieldAbsoluteDate<DerivativeStructure> dsDate =
-                                    new FieldAbsoluteDate<>(date, FACTORY_1_1.variable(0, 0.0));
-                    final FieldBodiesElements<DerivativeStructure> elements =
-                            arguments.evaluateAll(dsDate);
-                    final DerivativeStructure[] correction = correctionSeries.value(elements);
-                    return new double[] {
-                        correction[0].getValue(),
-                        correction[1].getValue(),
-                        correction[2].getValue(),
-                        -correction[2].getPartialDerivative(1) * Constants.JULIAN_DAY
-                    };
-                }
-            };
+            return new EOPTidalCorrection(arguments, xSeries, ySeries, ut1Series);
 
         }
 
@@ -1911,7 +2063,7 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getEOPTidalCorrection()
+    public abstract TimeVectorFunction getEOPTidalCorrection()
         throws OrekitException;
 
     /** Get the Love numbers.
@@ -1928,7 +2080,7 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getTideFrequencyDependenceFunction(TimeScale ut1)
+    public abstract TimeVectorFunction getTideFrequencyDependenceFunction(TimeScale ut1)
         throws OrekitException;
 
     /** Get the permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used.
@@ -1943,7 +2095,7 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getSolidPoleTide(EOPHistory eopHistory)
+    public abstract TimeVectorFunction getSolidPoleTide(EOPHistory eopHistory)
         throws OrekitException;
 
     /** Get the function computing ocean pole tide (ΔC₂₁, ΔS₂₁).
@@ -1952,7 +2104,7 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getOceanPoleTide(EOPHistory eopHistory)
+    public abstract TimeVectorFunction getOceanPoleTide(EOPHistory eopHistory)
         throws OrekitException;
 
     /** Interface for functions converting nutation corrections between
@@ -2318,4 +2470,118 @@ public enum IERSConventions {
         }
 
     }
+
+    /** Local class for tides frequency function. */
+    private static class TideFrequencyDependenceFunction implements TimeVectorFunction {
+
+        /** Nutation arguments. */
+        private final FundamentalNutationArguments arguments;
+
+        /** Correction series. */
+        private final PoissonSeries.CompiledSeries kSeries;
+
+        /** Simple constructor.
+         * @param arguments nutation arguments
+         * @param c20Series correction series for the C20 term
+         * @param c21Series correction series for the C21 term
+         * @param s21Series correction series for the S21 term
+         * @param c22Series correction series for the C22 term
+         * @param s22Series correction series for the S22 term
+         */
+        TideFrequencyDependenceFunction(final FundamentalNutationArguments arguments,
+                                        final PoissonSeries c20Series,
+                                        final PoissonSeries c21Series,
+                                        final PoissonSeries s21Series,
+                                        final PoissonSeries c22Series,
+                                        final PoissonSeries s22Series) {
+            this.arguments = arguments;
+            this.kSeries   = PoissonSeries.compile(c20Series, c21Series, s21Series, c22Series, s22Series);
+        }
+
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] value(final AbsoluteDate date) {
+            return kSeries.value(arguments.evaluateAll(date));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+            return kSeries.value(arguments.evaluateAll(date));
+        }
+
+    }
+
+    /** Local class for EOP tidal corrections. */
+    private static class EOPTidalCorrection implements TimeVectorFunction {
+
+        /** Map for already created factories. */
+        private final Map<Field<?>, FDSFactory<?>> factories = new HashMap<>();
+
+        /** Nutation arguments. */
+        private final FundamentalNutationArguments arguments;
+
+        /** Correction series. */
+        private final PoissonSeries.CompiledSeries correctionSeries;
+
+        /** Simple constructor.
+         * @param arguments nutation arguments
+         * @param xSeries correction series for the x coordinate
+         * @param ySeries correction series for the y coordinate
+         * @param ut1Series correction series for the UT1
+         */
+        EOPTidalCorrection(final FundamentalNutationArguments arguments,
+                           final PoissonSeries xSeries,
+                           final PoissonSeries ySeries,
+                           final PoissonSeries ut1Series) {
+            this.arguments        = arguments;
+            this.correctionSeries = PoissonSeries.compile(xSeries, ySeries, ut1Series);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] value(final AbsoluteDate date) {
+            final FieldAbsoluteDate<DerivativeStructure> dsDate =
+                            new FieldAbsoluteDate<>(date, FACTORY_1_1.variable(0, 0.0));
+            final FieldBodiesElements<DerivativeStructure> elements =
+                    arguments.evaluateAll(dsDate);
+            final DerivativeStructure[] correction = correctionSeries.value(elements);
+            return new double[] {
+                correction[0].getValue(),
+                correction[1].getValue(),
+                correction[2].getValue(),
+                -correction[2].getPartialDerivative(1) * Constants.JULIAN_DAY
+            };
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+
+            final Field<T> field = date.getField();
+
+            @SuppressWarnings("unchecked")
+            FDSFactory<T> factory = (FDSFactory<T>) factories.get(field);
+            if (factory == null) {
+                factory = new FDSFactory<>(field, 1, 1);
+                factories.put(field, factory);
+            }
+
+            final FieldAbsoluteDate<FieldDerivativeStructure<T>> dsDate =
+                            new FieldAbsoluteDate<>(date.toAbsoluteDate(),
+                                                    factory.variable(0, field.getZero()));
+            final FieldBodiesElements<FieldDerivativeStructure<T>> elements =
+                    arguments.evaluateAll(dsDate);
+            final FieldDerivativeStructure<T>[] correction = correctionSeries.value(elements);
+            final T[] a = MathArrays.buildArray(field, 4);
+            a[0] = correction[0].getValue();
+            a[1] = correction[1].getValue();
+            a[2] = correction[2].getValue();
+            a[3] = correction[2].getPartialDerivative(1).multiply(-Constants.JULIAN_DAY);
+            return a;
+        }
+
+    }
+
 }

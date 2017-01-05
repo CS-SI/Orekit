@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
@@ -33,6 +34,7 @@ import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PoissonSeriesParser;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -41,10 +43,11 @@ import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
-import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -159,25 +162,29 @@ public class SolidTidesFieldTest {
         getNA.setAccessible(true);
         final FundamentalNutationArguments arguments =
                 (FundamentalNutationArguments) getNA.invoke(IERSConventions.IERS_2010, ut1);
-        TimeFunction<double[]> deltaCSFunction = new TimeFunction<double[]>() {
+        TimeVectorFunction deltaCSFunction = new TimeVectorFunction() {
             public double[] value(final AbsoluteDate date) {
                 final BodiesElements elements = arguments.evaluateAll(date);
                 return new double[] {
                     0.0, c21Series.value(elements), s21Series.value(elements), 0.0, 0.0
                 };
             }
+            public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+                // never called in this test
+                throw new OrekitInternalError(null);
+            }
         };
 
         SolidTidesField tf = new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
-                                       deltaCSFunction,
-                                       IERSConventions.IERS_2010.getPermanentTide(),
-                                       IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEOPHistory()),
-                                       FramesFactory.getITRF(IERSConventions.IERS_2010, false),
-                                       Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
-                                       Constants.EIGEN5C_EARTH_MU,
-                                       TideSystem.ZERO_TIDE,
-                                       CelestialBodyFactory.getSun(),
-                                       CelestialBodyFactory.getMoon());
+                                                 deltaCSFunction,
+                                                 IERSConventions.IERS_2010.getPermanentTide(),
+                                                 IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEOPHistory()),
+                                                 FramesFactory.getITRF(IERSConventions.IERS_2010, false),
+                                                 Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                                 Constants.EIGEN5C_EARTH_MU,
+                                                 TideSystem.ZERO_TIDE,
+                                                 CelestialBodyFactory.getSun(),
+                                                 CelestialBodyFactory.getMoon());
         Method frequencyDependentPart = SolidTidesField.class.getDeclaredMethod("frequencyDependentPart", AbsoluteDate.class, double[][].class, double[][].class);
         frequencyDependentPart.setAccessible(true);
         double[][] cachedCNM = new double[5][5];

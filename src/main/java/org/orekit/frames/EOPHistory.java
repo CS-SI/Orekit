@@ -31,8 +31,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeStamped;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.Constants;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.IERSConventions;
@@ -66,7 +66,7 @@ public class EOPHistory implements Serializable {
     private final IERSConventions conventions;
 
     /** Correction to apply to EOP (may be null). */
-    private final transient TimeFunction<double[]> tidalCorrection;
+    private final transient TimeVectorFunction tidalCorrection;
 
     /** Simple constructor.
      * @param conventions IERS conventions to which EOP refers
@@ -89,7 +89,7 @@ public class EOPHistory implements Serializable {
      */
     private EOPHistory(final IERSConventions conventions,
                          final Collection<EOPEntry> data,
-                         final TimeFunction<double[]> tidalCorrection)
+                         final TimeVectorFunction tidalCorrection)
         throws OrekitException {
         this.conventions      = conventions;
         this.tidalCorrection  = tidalCorrection;
@@ -269,6 +269,54 @@ public class EOPHistory implements Serializable {
         }
     }
 
+    /** Get the pole IERS Reference Pole correction.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the correction is desired
+     * @param <T> type of the field elements
+     * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
+     * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
+     */
+    public <T extends RealFieldElement<T>> FieldPoleCorrection<T> getPoleCorrection(final FieldAbsoluteDate<T> date) {
+
+        final AbsoluteDate aDate = date.toAbsoluteDate();
+
+        // check if there is data for date
+        if (!this.hasDataFor(aDate)) {
+            // no EOP data available for this date, we use a default null correction
+            if (tidalCorrection == null) {
+                return new FieldPoleCorrection<>(date.getField().getZero(), date.getField().getZero());
+            } else {
+                final T[] correction = tidalCorrection.value(date);
+                return new FieldPoleCorrection<>(correction[0], correction[1]);
+            }
+        }
+        //we have EOP data for date -> interpolate correction
+        try {
+            final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
+            final T[] y = MathArrays.buildArray(date.getField(), 2);
+            final T zero = date.getField().getZero();
+            final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
+                                                                                       // for example removing derivatives
+                                                                                       // if T was DerivativeStructure
+            for (final EOPEntry entry : getNeighbors(aDate)) {
+                y[0] = zero.add(entry.getX());
+                y[1] = zero.add(entry.getY());
+                interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
+            }
+            final T[] interpolated = interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)
+
+            if (tidalCorrection != null) {
+                final T[] correction = tidalCorrection.value(date);
+                interpolated[0] = interpolated[0].add(correction[0]);
+                interpolated[1] = interpolated[1].add(correction[1]);
+            }
+            return new FieldPoleCorrection<>(interpolated[0], interpolated[1]);
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check above
+            throw new OrekitInternalError(tce);
+        }
+    }
+
     /** Get the correction to the nutation parameters for equinox-based paradigm.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
@@ -320,8 +368,8 @@ public class EOPHistory implements Serializable {
             final T zero = date.getField().getZero();
             final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
                                                                                        // for example removing derivatives
-                                                                                       // if T was DerivativeStructure for example
-            for (final EOPEntry entry : getNeighbors(date.toAbsoluteDate())) {
+                                                                                       // if T was DerivativeStructure
+            for (final EOPEntry entry : getNeighbors(aDate)) {
                 y[0] = zero.add(entry.getDdPsi());
                 y[1] = zero.add(entry.getDdEps());
                 interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
@@ -485,10 +533,10 @@ public class EOPHistory implements Serializable {
 
     /** Local generator for thread-safe cache. */
     private static class CachedCorrection
-        implements TimeFunction<double[]>, TimeStampedGenerator<TidalCorrectionEntry> {
+        implements TimeVectorFunction, TimeStampedGenerator<TidalCorrectionEntry> {
 
         /** Correction to apply to EOP (may be null). */
-        private final TimeFunction<double[]> tidalCorrection;
+        private final TimeVectorFunction tidalCorrection;
 
         /** Step between generated entries. */
         private final double step;
@@ -499,7 +547,7 @@ public class EOPHistory implements Serializable {
         /** Simple constructor.
          * @param tidalCorrection function computing the tidal correction
          */
-        CachedCorrection(final TimeFunction<double[]> tidalCorrection) {
+        CachedCorrection(final TimeVectorFunction tidalCorrection) {
             this.step            = 60 * 60;
             this.tidalCorrection = tidalCorrection;
             this.cache           =
@@ -523,6 +571,34 @@ public class EOPHistory implements Serializable {
 
                 // interpolate to specified date
                 return interpolator.value(0.0);
+            } catch (TimeStampedCacheException tsce) {
+                // this should never happen
+                throw new OrekitInternalError(tsce);
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+            try {
+
+                final AbsoluteDate aDate = date.toAbsoluteDate();
+
+                final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
+                final T[] y = MathArrays.buildArray(date.getField(), 2);
+                final T zero = date.getField().getZero();
+                final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
+                                                                                           // for example removing derivatives
+                                                                                           // if T was DerivativeStructure
+                for (final TidalCorrectionEntry entry : cache.getNeighbors(aDate)) {
+                    y[0] = zero.add(entry.correction[0]);
+                    y[1] = zero.add(entry.correction[1]);
+                    interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
+                }
+
+                // interpolate to specified date
+                return interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)
+
             } catch (TimeStampedCacheException tsce) {
                 // this should never happen
                 throw new OrekitInternalError(tsce);
