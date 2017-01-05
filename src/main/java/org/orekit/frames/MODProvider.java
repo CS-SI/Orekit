@@ -26,7 +26,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeVectorFunction;
 import org.orekit.utils.IERSConventions;
 
 /** Mean Equator, Mean Equinox Frame.
@@ -44,7 +44,7 @@ class MODProvider implements TransformProvider {
     private final IERSConventions conventions;
 
     /** Function computing the precession angles. */
-    private final transient TimeFunction<double[]> precessionFunction;
+    private final transient TimeVectorFunction precessionFunction;
 
     /** Constant rotation between ecliptic and equator poles at J2000.0. */
     private final Rotation r4;

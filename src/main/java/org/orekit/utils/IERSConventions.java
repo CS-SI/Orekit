@@ -242,7 +242,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getPrecessionFunction() throws OrekitException {
+        public TimeVectorFunction getPrecessionFunction() throws OrekitException {
 
             // set up the conventional polynomials
             // the following values are from Lieske et al. paper:
@@ -265,16 +265,7 @@ public enum IERSConventions {
                                            -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
                                            -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
 
-            return new TimeFunction<double[]>() {
-                /** {@inheritDoc} */
-                @Override
-                public double[] value(final AbsoluteDate date) {
-                    final double tc = evaluateTC(date);
-                    return new double[] {
-                        psiA.value(tc), omegaA.value(tc), chiA.value(tc)
-                    };
-                }
-            };
+            return new PrecessionFunction(psiA, omegaA, chiA);
 
         }
 
@@ -732,7 +723,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getPrecessionFunction() throws OrekitException {
+        public TimeVectorFunction getPrecessionFunction() throws OrekitException {
 
             // set up the conventional polynomials
             // the following values are from equation 32 in IERS 2003 conventions
@@ -752,16 +743,7 @@ public enum IERSConventions {
                                            -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
                                            -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
 
-            return new TimeFunction<double[]>() {
-                /** {@inheritDoc} */
-                @Override
-                public double[] value(final AbsoluteDate date) {
-                    final double tc = evaluateTC(date);
-                    return new double[] {
-                        psiA.value(tc), omegaA.value(tc), chiA.value(tc)
-                    };
-                }
-            };
+            return new PrecessionFunction(psiA, omegaA, chiA);
 
         }
 
@@ -1697,7 +1679,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getPrecessionFunction() throws OrekitException {
+        public TimeVectorFunction getPrecessionFunction() throws OrekitException {
 
             // set up the conventional polynomials
             // the following values are from equation 5.40 in IERS 2010 conventions
@@ -1723,16 +1705,7 @@ public enum IERSConventions {
                                             0.000170663  * Constants.ARC_SECONDS_TO_RADIANS,
                                            -0.0000000560 * Constants.ARC_SECONDS_TO_RADIANS);
 
-            return new TimeFunction<double[]>() {
-                /** {@inheritDoc} */
-                @Override
-                public double[] value(final AbsoluteDate date) {
-                    final double tc = evaluateTC(date);
-                    return new double[] {
-                        psiA.value(tc), omegaA.value(tc), chiA.value(tc)
-                    };
-                }
-            };
+            return new PrecessionFunction(psiA, omegaA, chiA);
 
         }
 
@@ -2022,7 +1995,7 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getPrecessionFunction() throws OrekitException;
+    public abstract TimeVectorFunction getPrecessionFunction() throws OrekitException;
 
     /** Get the function computing the nutation angles.
      * <p>
@@ -2153,7 +2126,7 @@ public enum IERSConventions {
         throws OrekitException {
 
         // get models parameters
-        final TimeFunction<double[]> precessionFunction = getPrecessionFunction();
+        final TimeVectorFunction precessionFunction = getPrecessionFunction();
         final TimeScalarFunction epsilonAFunction = getMeanObliquityFunction();
         final AbsoluteDate date0 = getNutationReferenceEpoch();
         final double cosE0 = FastMath.cos(epsilonAFunction.value(date0));
@@ -2467,6 +2440,54 @@ public enum IERSConventions {
          */
         public double getY() {
             return y;
+        }
+
+    }
+
+    /** Local class for precession function. */
+    private class PrecessionFunction implements TimeVectorFunction {
+
+        /** Polynomial nutation for psiA. */
+        private final PolynomialNutation psiA;
+
+        /** Polynomial nutation for omegaA. */
+        private final PolynomialNutation omegaA;
+
+        /** Polynomial nutation for chiA. */
+        private final PolynomialNutation chiA;
+
+        /** Simple constructor.
+         * @param psiA polynomial nutation for psiA
+         * @param omegaA polynomial nutation for omegaA
+         * @param chiA polynomial nutation for chiA
+         */
+        PrecessionFunction(final PolynomialNutation psiA,
+                           final PolynomialNutation omegaA,
+                           final PolynomialNutation chiA) {
+            this.psiA   = psiA;
+            this.omegaA = omegaA;
+            this.chiA   = chiA;
+        }
+
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] value(final AbsoluteDate date) {
+            final double tc = evaluateTC(date);
+            return new double[] {
+                psiA.value(tc), omegaA.value(tc), chiA.value(tc)
+            };
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
+            final T[] a = MathArrays.buildArray(date.getField(), 3);
+            final T tc = evaluateTC(date);
+            a[0] = psiA.value(tc);
+            a[1] = omegaA.value(tc);
+            a[2] = chiA.value(tc);
+            return a;
         }
 
     }
