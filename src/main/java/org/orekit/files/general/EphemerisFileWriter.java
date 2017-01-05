@@ -18,6 +18,7 @@ package org.orekit.files.general;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -77,7 +78,8 @@ public interface EphemerisFileWriter {
      */
     default void write(final String outputFilePath, EphemerisFile ephemerisFile)
             throws OrekitException, IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(Paths.get(outputFilePath))) {
+        try (BufferedWriter writer =
+                        Files.newBufferedWriter(Paths.get(outputFilePath), StandardCharsets.UTF_8)) {
             write(writer, ephemerisFile);
         }
     }

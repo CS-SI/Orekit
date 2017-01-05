@@ -197,7 +197,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
                 final int interpolationSampleSize) throws OrekitException {
             final int minimumSampleSize = 2;
             if (states == null || states.size() == 0) {
-                throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT);
+                throw new OrekitIllegalArgumentException(OrekitMessages.NULL_ARGUMENT, "states");
             }
 
             if (interpolationSampleSize < minimumSampleSize) {

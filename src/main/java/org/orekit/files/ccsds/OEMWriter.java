@@ -19,6 +19,7 @@ package org.orekit.files.ccsds;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Locale;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -47,6 +48,9 @@ public class OEMWriter implements EphemerisFileWriter {
 
     /** Default originator field value if user specifies none. **/
     public static final String DEFAULT_ORIGINATOR = "OREKIT";
+
+    /** Standardized locale to use, to ensure files can be exchanged without internationalization issues. */
+    private static final Locale STANDARDIZED_LOCALE = Locale.US;
 
     /** String format used for all key/value pair lines. **/
     private static final String KV_FORMAT = "%s = %s";
@@ -171,7 +175,8 @@ public class OEMWriter implements EphemerisFileWriter {
             final double vx = velocity.getX() * meterToKm;
             final double vy = velocity.getY() * meterToKm;
             final double vz = velocity.getZ() * meterToKm;
-            final String outputString = String.format(ephemerisLineFormat, timeString, x, y, z, vx, vy, vz);
+            final String outputString = String.format(STANDARDIZED_LOCALE, ephemerisLineFormat,
+                                                      timeString, x, y, z, vx, vy, vz);
             writer.write(outputString);
             writer.newLine();
         }
@@ -188,12 +193,12 @@ public class OEMWriter implements EphemerisFileWriter {
      *             if the stream cannot write to stream
      */
     private void writeHeader(final BufferedWriter writer) throws IOException, OrekitException {
-        writer.write(String.format(KV_FORMAT, "CCSDS_OEM_VERS", CCSDS_OEM_VERS));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "CCSDS_OEM_VERS", CCSDS_OEM_VERS));
         writer.newLine();
         writer.write(
-                String.format(KV_FORMAT, "CREATION_DATE", new AbsoluteDate(new Date(), TimeScalesFactory.getUTC())));
+                String.format(STANDARDIZED_LOCALE, KV_FORMAT, "CREATION_DATE", new AbsoluteDate(new Date(), TimeScalesFactory.getUTC())));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "ORIGINATOR", originator));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "ORIGINATOR", originator));
         writer.newLine();
     }
 
@@ -215,28 +220,28 @@ public class OEMWriter implements EphemerisFileWriter {
             final String objectId) throws IOException, OrekitException {
         writer.write("META_START");
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "OBJECT_NAME", objectName));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "OBJECT_NAME", objectName));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "OBJECT_ID", objectId));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "OBJECT_ID", objectId));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "CENTER_NAME", segment.getFrameCenterString()));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "CENTER_NAME", segment.getFrameCenterString()));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "REF_FRAME", segment.getFrameString()));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "REF_FRAME", segment.getFrameString()));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "TIME_SYSTEM", segment.getTimeScaleString()));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "TIME_SYSTEM", segment.getTimeScaleString()));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "START_TIME", segment.getStart().toString(segment.getTimeScale())));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "START_TIME", segment.getStart().toString(segment.getTimeScale())));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "USEABLE_START_TIME", segment.getStart().toString(segment.getTimeScale())));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "USEABLE_START_TIME", segment.getStart().toString(segment.getTimeScale())));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "USEABLE_STOP_TIME", segment.getStop().toString(segment.getTimeScale())));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "USEABLE_STOP_TIME", segment.getStop().toString(segment.getTimeScale())));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "STOP_TIME", segment.getStop().toString(segment.getTimeScale())));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "STOP_TIME", segment.getStop().toString(segment.getTimeScale())));
         writer.newLine();
-        writer.write(String.format(KV_FORMAT, "INTERPOLATION", this.interpolationMethod));
+        writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "INTERPOLATION", this.interpolationMethod));
         writer.newLine();
         if (this.interpolationMethod != InterpolationMethod.LINEAR) {
-            writer.write(String.format(KV_FORMAT, "INTERPOLATION_DEGREE", segment.getInterpolationSamples() - 1));
+            writer.write(String.format(STANDARDIZED_LOCALE, KV_FORMAT, "INTERPOLATION_DEGREE", segment.getInterpolationSamples() - 1));
             writer.newLine();
         }
         writer.write("META_STOP");

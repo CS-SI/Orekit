@@ -2,11 +2,17 @@ package org.orekit.files.ccsds;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +20,9 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -30,6 +38,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class OEMWriterTest {
     private static final double POSITION_PRECISION = 1e-9;
     private static final double VELOCITY_PRECISION = 1e-9;
+
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     @Before
     public void setUp() throws Exception {
@@ -67,7 +78,7 @@ public class OEMWriterTest {
         String objectID = oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectID();
         String interpolationMethodString = oemFile.getEphemeridesBlocks().get(0).getInterpolationMethod();
         InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
-        String tempOEMFilePath = Files.createTempFile("TestWriteOEM1", ".oem").toString();
+        String tempOEMFilePath = tempFolder.newFile("TestWriteOEM1.oem").toString();
         OEMWriter writer = new OEMWriter(interpolationMethod, originator, objectID, objectName);
         writer.write(tempOEMFilePath, ephemerisFile);
 
@@ -75,7 +86,7 @@ public class OEMWriterTest {
         compareOemFiles(oemFile, generatedOemFile);
     }
 
-    @Test(expected = OrekitIllegalArgumentException.class)
+    @Test
     public void testUnfoundSpaceId() throws OrekitException, IOException {
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
@@ -87,10 +98,57 @@ public class OEMWriterTest {
         String badObjectId = "12345";
         String interpolationMethodString = oemFile.getEphemeridesBlocks().get(0).getInterpolationMethod();
         InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
-        String tempOEMFilePath = Files.createTempFile("TestOEMUnfoundSpaceId", ".oem").toString();
+        String tempOEMFilePath = tempFolder.newFile("TestOEMUnfoundSpaceId.oem").toString();
         OEMWriter writer = new OEMWriter(interpolationMethod, null, badObjectId, null);
-        writer.write(tempOEMFilePath, ephemerisFile);
+        try {
+            writer.write(tempOEMFilePath, ephemerisFile);
+            fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oiae) {
+            assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
+            assertEquals(badObjectId, oiae.getParts()[0]);
+        }
 
+    }
+
+    @Test
+    public void testNullFile() throws OrekitException, IOException {
+        final String ex = "/ccsds/OEMExample.txt";
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM())
+                .withConventions(IERSConventions.IERS_2010);
+        final OEMFile oemFile = parser.parse(inEntry, "OEMExample.txt");
+        final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
+        String originator = oemFile.getOriginator();
+        String objectName = oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectName();
+        String objectID = oemFile.getEphemeridesBlocks().get(0).getMetaData().getObjectID();
+        String interpolationMethodString = oemFile.getEphemeridesBlocks().get(0).getInterpolationMethod();
+        InterpolationMethod interpolationMethod = Enum.valueOf(InterpolationMethod.class, interpolationMethodString);
+        OEMWriter writer = new OEMWriter(interpolationMethod, originator, objectID, objectName);
+        try {
+            writer.write((BufferedWriter) null, ephemerisFile);
+            fail("an exception should have been thrown");
+        } catch (OrekitIllegalArgumentException oiae) {
+            assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
+            assertEquals("writer", oiae.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testNullEphemeris() throws OrekitException, IOException {
+        File tempOEMFile = tempFolder.newFile("TestNullEphemeris.oem");
+        OEMWriter writer = new OEMWriter(InterpolationMethod.HERMITE,
+                                         "NASA/JPL", "1996-062A", "MARS GLOBAL SURVEYOR");
+        writer.write(tempOEMFile.toString(), null);
+        assertTrue(tempOEMFile.exists());
+        try (FileInputStream   fis = new FileInputStream(tempOEMFile);
+             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+             BufferedReader    br  = new BufferedReader(isr)) {
+            int count = 0;
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                ++count;
+            }
+            assertEquals(0, count);
+        }
     }
 
     @Test
@@ -102,7 +160,7 @@ public class OEMWriterTest {
         final OEMFile oemFile = parser.parse(inEntry, "OEMExample.txt");
         final EphemerisFile ephemerisFile = (EphemerisFile) oemFile;
 
-        String tempOEMFilePath = Files.createTempFile("TestOEMUnisatelliteWithDefault", ".oem").toString();
+        String tempOEMFilePath = tempFolder.newFile("TestOEMUnisatelliteWithDefault.oem").toString();
         OEMWriter writer = new OEMWriter();
         writer.write(tempOEMFilePath, ephemerisFile);
 
@@ -120,7 +178,7 @@ public class OEMWriterTest {
         file.getSatellites().put(id2, new StandInSatelliteEphemeris(id2));
         
         EphemerisFile ephemerisFile = (EphemerisFile) file;
-        String tempOEMFilePath = Files.createTempFile("TestOEMMultisatellite", ".oem").toString();
+        String tempOEMFilePath = tempFolder.newFile("TestOEMMultisatellite-1.oem").toString();
         
         OEMWriter writer1 = new OEMWriter();
         
@@ -128,10 +186,10 @@ public class OEMWriterTest {
             writer1.write(tempOEMFilePath, ephemerisFile);
             fail("Should have thrown OrekitIllegalArgumentException due to multiple satellites");
         } catch (OrekitIllegalArgumentException e) {
-            
+            assertEquals(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT, e.getSpecifier());
         }
         
-        tempOEMFilePath = Files.createTempFile("TestOEMMultisatellite", ".oem").toString();
+        tempOEMFilePath = tempFolder.newFile("TestOEMMultisatellite-2.oem").toString();
         OEMWriter writer2 = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD, null, id1, null);
         writer2.write(tempOEMFilePath, ephemerisFile);
     }
