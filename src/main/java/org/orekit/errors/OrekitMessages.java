@@ -183,7 +183,11 @@ public enum OrekitMessages implements Localizable {
     NO_YUMA_ALMANAC_AVAILABLE("no Yuma almanac file found"),
     NOT_A_SUPPORTED_YUMA_ALMANAC_FILE("file {0} is not a supported Yuma almanac file"),
     NOT_ENOUGH_GNSS_FOR_DOP("only {0} GNSS orbits are provided while {1} are needed to compute the DOP"),
-    NOT_ENOUGH_PROPAGATORS("Creating an aggregate propagator requires at least one constituent propagator, but none were provided.");
+    NOT_ENOUGH_PROPAGATORS("Creating an aggregate propagator requires at least one constituent propagator, but none were provided."),
+    NULL_ARGUMENT("argument {0} cannot be null"),
+    VALUE_NOT_FOUND("value {0} not found in {1}"),
+    EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects");
+
 
     // CHECKSTYLE: resume JavadocVariable check
 

@@ -166,6 +166,15 @@ public interface EphemerisFile {
         double getMu();
 
         /**
+         * Get the name of the center of the coordinate system the ephemeris is provided
+         * in.  This may be a natural origin, such as the center of the Earth, another
+         * satellite, etc.
+         *
+         * @return the name of the frame center
+         */
+        String getFrameCenterString();
+
+        /**
          * Get the defining frame for this ephemeris segment.
          *
          * @return the frame identifier, as specified in the ephemeris file, or {@code

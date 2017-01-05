@@ -401,10 +401,19 @@ NOT_A_SUPPORTED_YUMA_ALMANAC_FILE = le fichier {0} n''est pas un fichier d''alma
 NOT_ENOUGH_GNSS_FOR_DOP = seulement {0} orbite(s) GNSS fournie(s) alors qu''il en faut {1} pour calculer la DOP
 
 # the CCSDS time system {0} has no corresponding Orekit TimeScale.
-CCSDS_NO_CORRESPONDING_TIME_SCALE = <MISSING TRANSLATION>
+CCSDS_NO_CORRESPONDING_TIME_SCALE = le système temporel {0} du CCSDS n''a pas d''équivalent dans les échelles de temps Orekit
 
 # use of time system {0} in CCSDS ODMs requires an additional ICD and is not implemented in Orekit
-CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
+CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = l''utilisation du système temporel {0} nécessite un ICD additionel et n''est pas disponible dans Orekit
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
-NOT_ENOUGH_PROPAGATORS = <MISSING TRANSLATION>
+NOT_ENOUGH_PROPAGATORS = la création d''un propagateur combiné nécessite au moins un propagateur, mais aucun n''a été fourni
+
+# argument {0} cannot be null
+NULL_ARGUMENT = l''argument {0} ne devrait pas être nul
+
+# value {0} not found in {1}
+VALUE_NOT_FOUND = la valeur {0} n''a pas été trouvée dans {1}
+
+# Ephemeris file format does not support multiple space objects
+EPHEMERIS_FILE_NO_MULTI_SUPPORT = le format de fichier des éphémérides n''autorise pas les objets spatiaux multiples
