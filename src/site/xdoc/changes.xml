@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added getGMSTRateFunction to IEEEConventions to compute accurately Earth rotation rate.
+      </action>
       <action dev="luc" type="update">
         OneAxisEllipsoid can now transform FieldGeodeticPoint from any field
         and not only DerivativeStructure.

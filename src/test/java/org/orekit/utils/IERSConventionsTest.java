@@ -1088,21 +1088,21 @@ public class IERSConventionsTest {
     public void testEOPTidalCorrection1996FieldConsistency() throws OrekitException {
         checkVectorFunctionConsistency(IERSConventions.IERS_1996.getEOPTidalCorrection(), 4,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-17, 4.0e-121);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-17, 6.0e-20);
     }
 
     @Test
     public void testEOPTidalCorrection2003FieldConsistency() throws OrekitException {
         checkVectorFunctionConsistency(IERSConventions.IERS_2003.getEOPTidalCorrection(), 4,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-17, 6.0e-121);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-17, 2.0e-19);
     }
 
     @Test
     public void testEOPTidalCorrection2010FieldConsistency() throws OrekitException {
         checkVectorFunctionConsistency(IERSConventions.IERS_2010.getEOPTidalCorrection(), 4,
                                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-17, 6.0e-121);
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-17, 2.0e-19);
     }
 
     @Test

@@ -133,12 +133,25 @@ public class PoissonSeries {
          */
         double[] value(BodiesElements elements);
 
+        /** Evaluate time derivative of a set of Poisson series.
+         * @param elements bodies elements for nutation
+         * @return time derivative of the series
+         */
+        double[] derivative(BodiesElements elements);
+
         /** Evaluate a set of Poisson series.
          * @param elements bodies elements for nutation
          * @param <S> the type of the field elements
          * @return value of the series
          */
         <S extends RealFieldElement<S>> S[] value(FieldBodiesElements<S> elements);
+
+        /** Evaluate time derivative of a set of Poisson series.
+         * @param elements bodies elements for nutation
+         * @param <S> the type of the field elements
+         * @return time derivative of the series
+         */
+        <S extends RealFieldElement<S>> S[] derivative(FieldBodiesElements<S> elements);
 
     }
 
@@ -232,6 +245,27 @@ public class PoissonSeries {
 
             /** {@inheritDoc} */
             @Override
+            public double[] derivative(final BodiesElements elements) {
+
+                // non-polynomial part
+                final double[] v = new double[polynomials.length];
+                for (final SeriesTerm term : joinedTerms) {
+                    final double[] termDerivative = term.derivative(elements);
+                    for (int i = 0; i < termDerivative.length; ++i) {
+                        v[i] += termDerivative[i];
+                    }
+                }
+
+                // add polynomial part
+                for (int i = 0; i < v.length; ++i) {
+                    v[i] += polynomials[i].derivative(elements.getTC());
+                }
+                return v;
+
+            }
+
+            /** {@inheritDoc} */
+            @Override
             public <S extends RealFieldElement<S>> S[] value(final FieldBodiesElements<S> elements) {
 
                // non-polynomial part
@@ -243,10 +277,32 @@ public class PoissonSeries {
                     }
                 }
 
-                // add residual and polynomial part
+                // add polynomial part
                 final S tc = elements.getTC();
                 for (int i = 0; i < v.length; ++i) {
                     v[i] = v[i].add(polynomials[i].value(tc));
+                }
+                return v;
+
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public <S extends RealFieldElement<S>> S[] derivative(final FieldBodiesElements<S> elements) {
+
+               // non-polynomial part
+                final S[] v = MathArrays.buildArray(elements.getTC().getField(), polynomials.length);
+                for (final SeriesTerm term : joinedTerms) {
+                    final S[] termDerivative = term.derivative(elements);
+                    for (int i = 0; i < termDerivative.length; ++i) {
+                        v[i] = v[i].add(termDerivative[i]);
+                    }
+                }
+
+                // add polynomial part
+                final S tc = elements.getTC();
+                for (int i = 0; i < v.length; ++i) {
+                    v[i] = v[i].add(polynomials[i].derivative(tc));
                 }
                 return v;
 

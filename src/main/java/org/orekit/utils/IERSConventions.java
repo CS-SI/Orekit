@@ -28,14 +28,12 @@ import java.util.Map;
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FieldBodiesElements;
@@ -55,14 +53,14 @@ import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FieldPoleCorrection;
 import org.orekit.frames.PoleCorrection;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
+import org.orekit.time.TimeVectorFunction;
 
 
 /** Supported IERS conventions.
@@ -2755,16 +2753,14 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public double[] value(final AbsoluteDate date) {
-            final FieldAbsoluteDate<DerivativeStructure> dsDate =
-                            new FieldAbsoluteDate<>(date, FACTORY_1_1.variable(0, 0.0));
-            final FieldBodiesElements<DerivativeStructure> elements =
-                    arguments.evaluateAll(dsDate);
-            final DerivativeStructure[] correction = correctionSeries.value(elements);
+            final BodiesElements elements = arguments.evaluateAll(date);
+            final double[] correction    = correctionSeries.value(elements);
+            final double[] correctionDot = correctionSeries.derivative(elements);
             return new double[] {
-                correction[0].getValue(),
-                correction[1].getValue(),
-                correction[2].getValue(),
-                -correction[2].getPartialDerivative(1) * Constants.JULIAN_DAY
+                correction[0],
+                correction[1],
+                correction[2],
+                correctionDot[2] * (-Constants.JULIAN_DAY)
             };
         }
 
@@ -2772,26 +2768,14 @@ public enum IERSConventions {
         @Override
         public <T extends RealFieldElement<T>> T[] value(final FieldAbsoluteDate<T> date) {
 
-            final Field<T> field = date.getField();
-
-            @SuppressWarnings("unchecked")
-            FDSFactory<T> factory = (FDSFactory<T>) factories.get(field);
-            if (factory == null) {
-                factory = new FDSFactory<>(field, 1, 1);
-                factories.put(field, factory);
-            }
-
-            final FieldAbsoluteDate<FieldDerivativeStructure<T>> dsDate =
-                            new FieldAbsoluteDate<>(date.toAbsoluteDate(),
-                                                    factory.variable(0, field.getZero()));
-            final FieldBodiesElements<FieldDerivativeStructure<T>> elements =
-                    arguments.evaluateAll(dsDate);
-            final FieldDerivativeStructure<T>[] correction = correctionSeries.value(elements);
-            final T[] a = MathArrays.buildArray(field, 4);
-            a[0] = correction[0].getValue();
-            a[1] = correction[1].getValue();
-            a[2] = correction[2].getValue();
-            a[3] = correction[2].getPartialDerivative(1).multiply(-Constants.JULIAN_DAY);
+            final FieldBodiesElements<T> elements = arguments.evaluateAll(date);
+            final T[] correction    = correctionSeries.value(elements);
+            final T[] correctionDot = correctionSeries.derivative(elements);
+            final T[] a = MathArrays.buildArray(date.getField(), 4);
+            a[0] = correction[0];
+            a[1] = correction[1];
+            a[2] = correction[2];
+            a[3] = correctionDot[2].multiply(-Constants.JULIAN_DAY);
             return a;
         }
 

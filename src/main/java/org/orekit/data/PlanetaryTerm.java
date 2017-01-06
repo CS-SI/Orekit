@@ -83,17 +83,37 @@ class PlanetaryTerm extends SeriesTerm {
     }
 
     /** {@inheritDoc} */
+    protected double argumentDerivative(final BodiesElements elements) {
+        return cMe * elements.getLMeDot() + cVe * elements.getLVeDot() + cE  * elements.getLEDot() +
+               cMa * elements.getLMaDot() + cJu * elements.getLJuDot() +
+               cSa * elements.getLSaDot() + cUr * elements.getLUrDot() +
+               cNe * elements.getLNeDot() + cPa * elements.getPaDot();
+    }
+
+    /** {@inheritDoc} */
     protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
         return elements.getLMe().multiply(cMe).
-                add(elements.getLVe().multiply(cVe)).
-                add(elements.getLE().multiply(cE)).
-                add(elements.getLMa().multiply(cMa)).
-                add(elements.getLJu().multiply(cJu)).
-                add(elements.getLSa().multiply(cSa)).
-                add(elements.getLUr().multiply(cUr)).
-                add(elements.getLNe().multiply(cNe)).
-                add(elements.getPa().multiply(cPa));
+               add(elements.getLVe().multiply(cVe)).
+               add(elements.getLE().multiply(cE)).
+               add(elements.getLMa().multiply(cMa)).
+               add(elements.getLJu().multiply(cJu)).
+               add(elements.getLSa().multiply(cSa)).
+               add(elements.getLUr().multiply(cUr)).
+               add(elements.getLNe().multiply(cNe)).
+               add(elements.getPa().multiply(cPa));
+    }
 
+    /** {@inheritDoc} */
+    protected <T extends RealFieldElement<T>> T argumentDerivative(final FieldBodiesElements<T> elements) {
+        return elements.getLMeDot().multiply(cMe).
+               add(elements.getLVeDot().multiply(cVe)).
+               add(elements.getLEDot().multiply(cE)).
+               add(elements.getLMaDot().multiply(cMa)).
+               add(elements.getLJuDot().multiply(cJu)).
+               add(elements.getLSaDot().multiply(cSa)).
+               add(elements.getLUrDot().multiply(cUr)).
+               add(elements.getLNeDot().multiply(cNe)).
+               add(elements.getPaDot().multiply(cPa));
     }
 
 }

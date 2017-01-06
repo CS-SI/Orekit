@@ -22,6 +22,7 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.utils.Constants;
 
 /** Base class for nutation series terms.
  * @author Luc Maisonobe
@@ -131,11 +132,54 @@ abstract class SeriesTerm {
 
     }
 
+    /** Evaluate the time derivative of the series term.
+     * @param elements bodies elements for nutation
+     * @return time derivative of the series term
+     */
+    public double[] derivative(final BodiesElements elements) {
+
+        // preliminary computation
+        final double tc   = elements.getTC();
+        final double a    = argument(elements);
+        final double aDot = argumentDerivative(elements);
+        final double sin  = FastMath.sin(a);
+        final double cos  = FastMath.cos(a);
+
+        // compute each function
+        final double[] derivatives = new double[sinCoeff.length];
+        for (int i = 0; i < derivatives.length; ++i) {
+            double s    = 0;
+            double c    = 0;
+            double sDot = 0;
+            double cDot = 0;
+            for (int j = sinCoeff[i].length - 1; j > 0; --j) {
+                s    = s    * tc +     sinCoeff[i][j];
+                c    = c    * tc +     cosCoeff[i][j];
+                sDot = sDot * tc + j * sinCoeff[i][j];
+                cDot = cDot * tc + j * cosCoeff[i][j];
+            }
+            s     = s * tc + sinCoeff[i][0];
+            c     = c * tc + cosCoeff[i][0];
+            sDot /= Constants.JULIAN_CENTURY;
+            cDot /= Constants.JULIAN_CENTURY;
+            derivatives[i] = (sDot - c * aDot) * sin + (cDot + s * aDot) * cos;
+        }
+
+        return derivatives;
+
+    }
+
     /** Compute the argument for the current date.
      * @param elements luni-solar and planetary elements for the current date
      * @return current value of the argument
      */
     protected abstract double argument(BodiesElements elements);
+
+    /** Compute the time derivative of the argument for the current date.
+     * @param elements luni-solar and planetary elements for the current date
+     * @return current time derivative of the argument
+     */
+    protected abstract double argumentDerivative(BodiesElements elements);
 
     /** Evaluate the value of the series term.
      * @param elements bodies elements for nutation
@@ -166,12 +210,58 @@ abstract class SeriesTerm {
 
     }
 
+    /** Evaluate the time derivative of the series term.
+     * @param elements bodies elements for nutation
+     * @param <T> the type of the field elements
+     * @return time derivative of the series term
+     */
+    public <T extends RealFieldElement<T>> T[] derivative(final FieldBodiesElements<T> elements) {
+
+        // preliminary computation
+        final T tc   = elements.getTC();
+        final T a    = argument(elements);
+        final T aDot = argumentDerivative(elements);
+        final T sin  = a.sin();
+        final T cos  = a.cos();
+
+        // compute each function
+        final T[] derivatives = MathArrays.buildArray(tc.getField(), sinCoeff.length);
+        for (int i = 0; i < derivatives.length; ++i) {
+            T s    = tc.getField().getZero();
+            T c    = tc.getField().getZero();
+            T sDot = tc.getField().getZero();
+            T cDot = tc.getField().getZero();
+            for (int j = sinCoeff[i].length - 1; j > 0; --j) {
+                s    = s.multiply(tc).add(sinCoeff[i][j]);
+                c    = c.multiply(tc).add(cosCoeff[i][j]);
+                sDot = sDot.multiply(tc).add(j * sinCoeff[i][j]);
+                cDot = cDot.multiply(tc).add(j * cosCoeff[i][j]);
+            }
+            s    = s.multiply(tc).add(sinCoeff[i][0]);
+            c    = c.multiply(tc).add(cosCoeff[i][0]);
+            sDot = sDot.divide(Constants.JULIAN_CENTURY);
+            cDot = cDot.divide(Constants.JULIAN_CENTURY);
+            derivatives[i] = sDot.subtract(c.multiply(aDot)).multiply(sin).
+                             add(cDot.add(s.multiply(aDot)).multiply(cos));
+        }
+
+        return derivatives;
+
+    }
+
     /** Compute the argument for the current date.
      * @param elements luni-solar and planetary elements for the current date
      * @param <T> the type of the field elements
      * @return current value of the argument
      */
     protected abstract <T extends RealFieldElement<T>> T argument(FieldBodiesElements<T> elements);
+
+    /** Compute the time derivative of the argument for the current date.
+     * @param elements luni-solar and planetary elements for the current date
+     * @param <T> the type of the field elements
+     * @return current time derivative of the argument
+     */
+    protected abstract <T extends RealFieldElement<T>> T argumentDerivative(FieldBodiesElements<T> elements);
 
     /** Factory method for building the appropriate object.
      * <p>The method checks the null coefficients and build an instance
