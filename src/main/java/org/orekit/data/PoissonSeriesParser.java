@@ -540,7 +540,7 @@ public class PoissonSeriesParser {
             // prepare the container for the parsed data
             PolynomialNutation polynomial;
             if (polynomialParser == null) {
-                // we don't expect any polynomial, we directly the the zero polynomial
+                // we don't expect any polynomial, we directly set the zero polynomial
                 polynomial = new PolynomialNutation(new double[0]);
             } else {
                 // the dedicated parser will fill in the polynomial later
