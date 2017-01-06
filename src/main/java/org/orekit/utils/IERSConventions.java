@@ -423,6 +423,56 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
+        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1)
+            throws OrekitException {
+
+            // Radians per second of time
+            final double radiansPerSecond = MathUtils.TWO_PI / Constants.JULIAN_DAY;
+
+            // constants from IERS 1996 page 21
+            // the underlying model is IAU 1982 GMST-UT1
+            final AbsoluteDate gmstReference =
+                new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
+            final double gmst1 = 8640184.812866;
+            final double gmst2 = 0.093104;
+            final double gmst3 = -6.2e-6;
+
+            return new TimeScalarFunction() {
+
+                /** {@inheritDoc} */
+                @Override
+                public double value(final AbsoluteDate date) {
+
+                    // offset in Julian centuries from J2000 epoch (UT1 scale)
+                    final double dtai = date.durationFrom(gmstReference);
+                    final double tut1 = dtai + ut1.offsetFromTAI(date);
+                    final double tt   = tut1 / Constants.JULIAN_CENTURY;
+
+                    // compute Greenwich mean sidereal time rate, in radians per second
+                    return ((((tt * 3 * gmst3 + 2 * gmst2) * tt) + gmst1) / Constants.JULIAN_CENTURY + 1) * radiansPerSecond;
+
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+
+                    // offset in Julian centuries from J2000 epoch (UT1 scale)
+                    final T dtai = date.durationFrom(gmstReference);
+                    final T tut1 = dtai.add(ut1.offsetFromTAI(date.toAbsoluteDate()));
+                    final T tt   = tut1.divide(Constants.JULIAN_CENTURY);
+
+                    // compute Greenwich mean sidereal time, in radians
+                    return tt.multiply(3 * gmst3).add(2 * gmst2).multiply(tt).add(gmst1).divide(Constants.JULIAN_CENTURY).add(1).multiply(radiansPerSecond);
+
+                }
+
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
             throws OrekitException {
 
@@ -897,6 +947,45 @@ public enum IERSConventions {
                 @Override
                 public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
                     return era.value(date).add(minusEO.value(evaluateTC(date)));
+                }
+
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1)
+            throws OrekitException {
+
+            // Earth Rotation Angle
+            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
+
+            // Polynomial part of the apparent sidereal time series
+            // which is the opposite of Equation of Origins (EO)
+            final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
+                        withFirstDelaunay(4).
+                        withFirstPlanetary(9).
+                        withSinCos(0, 2, microAS, 3, microAS).
+                        withPolynomialPart('t', Unit.ARC_SECONDS);
+            final PolynomialNutation minusEO =
+                    parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
+
+            // create a function evaluating the series
+            return new TimeScalarFunction() {
+
+                /** {@inheritDoc} */
+                @Override
+                public double value(final AbsoluteDate date) {
+                    return era.getRate() + minusEO.derivative(evaluateTC(date));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                    return minusEO.derivative(evaluateTC(date)).add(era.getRate());
                 }
 
             };
@@ -1846,6 +1935,44 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
+        public TimeScalarFunction getGMSTRateFunction(final TimeScale ut1) throws OrekitException {
+
+            // Earth Rotation Angle
+            final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
+
+            // Polynomial part of the apparent sidereal time series
+            // which is the opposite of Equation of Origins (EO)
+            final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
+                        withFirstDelaunay(4).
+                        withFirstPlanetary(9).
+                        withSinCos(0, 2, microAS, 3, microAS).
+                        withPolynomialPart('t', Unit.ARC_SECONDS);
+            final PolynomialNutation minusEO =
+                    parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
+
+            // create a function evaluating the series
+            return new TimeScalarFunction() {
+
+                /** {@inheritDoc} */
+                @Override
+                public double value(final AbsoluteDate date) {
+                    return era.getRate() + minusEO.derivative(evaluateTC(date));
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public <T extends RealFieldElement<T>> T value(final FieldAbsoluteDate<T> date) {
+                    return minusEO.derivative(evaluateTC(date)).add(era.getRate());
+                }
+
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public TimeScalarFunction getGASTFunction(final TimeScale ut1, final EOPHistory eopHistory)
             throws OrekitException {
 
@@ -2067,6 +2194,15 @@ public enum IERSConventions {
      * @since 6.1
      */
     public abstract TimeScalarFunction getGMSTFunction(TimeScale ut1)
+        throws OrekitException;
+
+    /** Get the function computing Greenwich mean sidereal time rate, in radians per second.
+     * @param ut1 UT1 time scale
+     * @return function computing Greenwich mean sidereal time rate
+     * @exception OrekitException if table cannot be loaded
+     * @since 9.0
+     */
+    public abstract TimeScalarFunction getGMSTRateFunction(TimeScale ut1)
         throws OrekitException;
 
     /** Get the function computing Greenwich apparent sidereal time, in radians.
@@ -2411,6 +2547,13 @@ public enum IERSConventions {
          */
         StellarAngleCapitaine(final TimeScale ut1) {
             this.ut1 = ut1;
+        }
+
+        /** Get the rotation rate.
+         * @return rotation rate
+         */
+        public double getRate() {
+            return ERA_1A + ERA_1B;
         }
 
         /** {@inheritDoc} */
