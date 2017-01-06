@@ -18,10 +18,13 @@ package org.orekit.utils;
 
 
 import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.UnivariateVectorFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -112,11 +115,11 @@ public class IERSConventionsTest {
     }
 
     @Test
-    public void testGMST82Derivative() throws OrekitException {
+    public void testGMST82FieldConsistency() throws OrekitException {
         final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_1996, true);
-        checkDerivative(IERSConventions.IERS_1996.getGMSTFunction(ut1),
-                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.0e-12);
+        checkScalarFunctionConsistency(IERSConventions.IERS_1996.getGMSTFunction(ut1),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 9.0e-16, 8.0e-13);
     }
 
     @Test
@@ -159,11 +162,11 @@ public class IERSConventionsTest {
     }
 
     @Test
-    public void testGMST00Derivative() throws OrekitException {
+    public void testGMST00FieldConsistency() throws OrekitException {
         final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2003, true);
-        checkDerivative(IERSConventions.IERS_2003.getGMSTFunction(ut1),
-                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.0e-12);
+        checkScalarFunctionConsistency(IERSConventions.IERS_2003.getGMSTFunction(ut1),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-15, 8.0e-13);
     }
 
     @Test
@@ -212,11 +215,11 @@ public class IERSConventionsTest {
     }
 
     @Test
-    public void testGMST06Derivative() throws OrekitException {
+    public void testGMST06FieldConsistency() throws OrekitException {
         final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-        checkDerivative(IERSConventions.IERS_2010.getGMSTFunction(ut1),
-                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.0e-12);
+        checkScalarFunctionConsistency(IERSConventions.IERS_2010.getGMSTFunction(ut1),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-15, 8.0e-13);
     }
 
     @Test
@@ -265,11 +268,27 @@ public class IERSConventionsTest {
     }
 
     @Test
-    public void testERADerivative() throws OrekitException {
+    public void testERA1996FieldConsistency() throws OrekitException {
+        final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_1996, true);
+        checkScalarFunctionConsistency(IERSConventions.IERS_1996.getEarthOrientationAngleFunction(ut1),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-15, 8.0e-13);
+    }
+
+    @Test
+    public void testERA2003FieldConsistency() throws OrekitException {
+        final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2003, true);
+        checkScalarFunctionConsistency(IERSConventions.IERS_2003.getEarthOrientationAngleFunction(ut1),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-15, 8.0e-13);
+    }
+
+    @Test
+    public void testERA2010FieldConsistency() throws OrekitException {
         final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-        checkDerivative(IERSConventions.IERS_2010.getGMSTFunction(ut1),
-                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 1.0e-12);
+        checkScalarFunctionConsistency(IERSConventions.IERS_2010.getEarthOrientationAngleFunction(ut1),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-15, 8.0e-13);
     }
 
     @Test
@@ -314,12 +333,19 @@ public class IERSConventionsTest {
     }
 
     @Test
-    public void testGST94Derivative() throws OrekitException {
+    public void testGST94FieldConsistency() throws OrekitException {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true);
-        checkDerivative(IERSConventions.IERS_1996.getGASTFunction(TimeScalesFactory.getUT1(eopHistory),
-                                                                  eopHistory),
-                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-12);
+        checkScalarFunctionConsistency(IERSConventions.IERS_1996.getGASTFunction(TimeScalesFactory.getUT1(eopHistory),
+                                                                                 eopHistory),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 9.0e-16, 8.0e-13);
+    }
+
+    @Test
+    public void testGST94FieldConsistencyNoEOP() throws OrekitException {
+        checkScalarFunctionConsistency(IERSConventions.IERS_1996.getGASTFunction(TimeScalesFactory.getUT1(null), null),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 9.0e-16, 2.0e-16);
     }
 
     @Test
@@ -436,11 +462,18 @@ public class IERSConventionsTest {
     }
 
     @Test
-    public void testGST00ADerivative() throws OrekitException {
+    public void testGST00AFieldConsistency() throws OrekitException {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2003, true);
-        checkDerivative(IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory),
-                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 1.0e-11);
+        checkScalarFunctionConsistency(IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-15, 8.0e-13);
+    }
+
+    @Test
+    public void testGST00AFieldConsistencyNoEOP() throws OrekitException {
+        checkScalarFunctionConsistency(IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(null), null),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-15, 2.0e-16);
     }
 
     @Test
@@ -510,11 +543,18 @@ public class IERSConventionsTest {
     }
 
     @Test
-    public void testGST06Derivative() throws OrekitException {
+    public void testGST06FieldConsistency() throws OrekitException {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
-        checkDerivative(IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory),
-                        AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 1.0e-11);
+        checkScalarFunctionConsistency(IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-15, 8.0e-13);
+    }
+
+    @Test
+    public void testGST06FieldConsistencyNoEOP() throws OrekitException {
+        checkScalarFunctionConsistency(IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(null), null),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-15, 2.0e-16);
     }
 
     @Test
@@ -871,9 +911,165 @@ public class IERSConventionsTest {
 
     }
 
-    private void checkDerivative(final TimeScalarFunction function,
-                                 final AbsoluteDate date, final double span, final double sampleStep,
-                                 final double h, final double tolerance) {
+    @Test
+    public void testPrecessionFunction1996FieldConsistency() throws OrekitException {
+        checkVectorFunctionConsistency(IERSConventions.IERS_1996.getPrecessionFunction(), 3,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-22, 3.0e-19);
+    }
+
+    @Test
+    public void testPrecessionFunction2003FieldConsistency() throws OrekitException {
+        checkVectorFunctionConsistency(IERSConventions.IERS_2003.getPrecessionFunction(), 3,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 6.0e-17, 6.0e-18);
+    }
+
+    @Test
+    public void testPrecessionFunction2010FieldConsistency() throws OrekitException {
+        checkVectorFunctionConsistency(IERSConventions.IERS_2010.getPrecessionFunction(), 3,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 6.0e-17, 6.0e-18);
+    }
+
+    @Test
+    public void testNutationFunction1996FieldConsistency() throws OrekitException {
+        checkVectorFunctionConsistency(IERSConventions.IERS_1996.getNutationFunction(), 3,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-19, 4.0e-21);
+    }
+
+    @Test
+    public void testNutationFunction2003FieldConsistency() throws OrekitException {
+        checkVectorFunctionConsistency(IERSConventions.IERS_2003.getNutationFunction(), 3,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 3.0e-19, 6.0e-21);
+    }
+
+    @Test
+    public void testNutationFunction2010FieldConsistency() throws OrekitException {
+        checkVectorFunctionConsistency(IERSConventions.IERS_2010.getNutationFunction(), 3,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 5.0e-19, 6.0e-21);
+    }
+
+    @Test
+    public void testXYSpXY2Function1996FieldConsistency() throws OrekitException {
+        checkVectorFunctionConsistency(IERSConventions.IERS_1996.getXYSpXY2Function(), 3,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 6.0e-20, 2.0e-21);
+    }
+
+    @Test
+    public void testXYSpXY2Function2003FieldConsistency() throws OrekitException {
+        checkVectorFunctionConsistency(IERSConventions.IERS_2003.getXYSpXY2Function(), 3,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-19, 3.0e-21);
+    }
+
+    @Test
+    public void testXYSpXY2Function2010FieldConsistency() throws OrekitException {
+        checkVectorFunctionConsistency(IERSConventions.IERS_2010.getXYSpXY2Function(), 3,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-19, 3.0e-21);
+    }
+
+    @Test
+    public void testMeanObliquityFunction1996FieldConsistency() throws OrekitException {
+        checkScalarFunctionConsistency(IERSConventions.IERS_1996.getMeanObliquityFunction(),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 6.0e-17, 6.0e-18);
+    }
+
+    @Test
+    public void testMeanObliquityFunction2003FieldConsistency() throws OrekitException {
+        checkScalarFunctionConsistency(IERSConventions.IERS_2003.getMeanObliquityFunction(),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 6.0e-17, 6.0e-18);
+    }
+
+    @Test
+    public void testMeanObliquityFunction2010FieldConsistency() throws OrekitException {
+        checkScalarFunctionConsistency(IERSConventions.IERS_2010.getMeanObliquityFunction(),
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 6.0e-17, 6.0e-18);
+    }
+
+    @Test
+    public void testTideFrequencyDependenceFunction1996FieldConsistency() throws OrekitException {
+        final UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_1996, true);
+        checkVectorFunctionConsistency(IERSConventions.IERS_1996.getTideFrequencyDependenceFunction(ut1), 5,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 4.0e-24, 4.0e-22);
+    }
+
+    @Test
+    public void testTideFrequencyDependenceFunction2003FieldConsistency() throws OrekitException {
+        final UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2003, true);
+        checkVectorFunctionConsistency(IERSConventions.IERS_2003.getTideFrequencyDependenceFunction(ut1), 5,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 4.0e-24, 4.0e-22);
+    }
+
+    @Test
+    public void testTideFrequencyDependenceFunction2010FieldConsistency() throws OrekitException {
+        final UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        checkVectorFunctionConsistency(IERSConventions.IERS_2010.getTideFrequencyDependenceFunction(ut1), 5,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 4.0e-24, 4.0e-22);
+    }
+
+    @Test
+    public void testSolidPoleTide1996FieldConsistency() throws OrekitException {
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996, false);
+        checkVectorFunctionConsistency(IERSConventions.IERS_1996.getSolidPoleTide(eopHistory), 2,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 3.0e-25, 4.0e-26);
+    }
+
+    @Test
+    public void testSolidPoleTide2003FieldConsistency() throws OrekitException {
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2003, false);
+        checkVectorFunctionConsistency(IERSConventions.IERS_2003.getSolidPoleTide(eopHistory), 2,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-25, 3.0e-26);
+    }
+
+    @Test
+    public void testSolidPoleTide2010FieldConsistency() throws OrekitException {
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        checkVectorFunctionConsistency(IERSConventions.IERS_2010.getSolidPoleTide(eopHistory), 2,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-25, 2.0e-26);
+    }
+
+    @Test
+    public void testOceanPoleTide1996FieldConsistency() throws OrekitException {
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996, false);
+        checkVectorFunctionConsistency(IERSConventions.IERS_1996.getOceanPoleTide(eopHistory), 2,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, Double.MIN_VALUE, Double.MIN_VALUE);
+    }
+
+    @Test
+    public void testOceanPoleTide2003FieldConsistency() throws OrekitException {
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2003, false);
+        checkVectorFunctionConsistency(IERSConventions.IERS_2003.getOceanPoleTide(eopHistory), 2,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, Double.MIN_VALUE, Double.MIN_VALUE);
+    }
+
+    @Test
+    public void testOceanPoleTide2010FieldConsistency() throws OrekitException {
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
+        checkVectorFunctionConsistency(IERSConventions.IERS_2010.getOceanPoleTide(eopHistory), 2,
+                                       AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
+                                       0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 2.0e-26, 2.0e-27);
+    }
+
+    private void checkScalarFunctionConsistency(final TimeScalarFunction function,
+                                                final AbsoluteDate date, final double span, final double sampleStep,
+                                                final double h, final double valueTolerance, final double derivativeTolerance) {
 
         UnivariateDifferentiableFunction differentiated =
                 new FiniteDifferencesDifferentiator(4, h).differentiate(new UnivariateFunction() {
@@ -885,12 +1081,53 @@ public class IERSConventionsTest {
 
         DSFactory factory = new DSFactory(1, 1);
         FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(date, factory.constant(0.0));
+        double maxValueError = 0;
+        double maxDerivativeError = 0;
         for (double dt = 0; dt < span; dt += sampleStep) {
             DerivativeStructure dsdt = factory.variable(0, dt);
             DerivativeStructure yRef = differentiated.value(dsdt);
             DerivativeStructure y    = function.value(dsDate.shiftedBy(dsdt));
-            Assert.assertEquals(yRef.getPartialDerivative(1), y.getPartialDerivative(1), tolerance);
+            maxValueError      = FastMath.max(maxValueError,
+                                              FastMath.abs(yRef.getValue() - y.getValue()));
+            maxDerivativeError = FastMath.max(maxDerivativeError,
+                                              FastMath.abs(yRef.getPartialDerivative(1) - y.getPartialDerivative(1)));
         }
+        Assert.assertEquals(0, maxValueError,      valueTolerance);
+        Assert.assertEquals(0, maxDerivativeError, derivativeTolerance);
+
+    }
+
+    private void checkVectorFunctionConsistency(final TimeVectorFunction function, final int dimension,
+                                                final AbsoluteDate date, final double span, final double sampleStep,
+                                                final double h, final double valueTolerance, final double derivativeTolerance) {
+
+        UnivariateDifferentiableVectorFunction differentiated =
+                new FiniteDifferencesDifferentiator(4, h).differentiate(new UnivariateVectorFunction() {
+                    @Override
+                    public double[] value(final double dt) {
+                        return function.value(date.shiftedBy(dt));
+                    }
+                });
+
+        DSFactory factory = new DSFactory(1, 1);
+        FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(date, factory.constant(0.0));
+        double maxValueError = 0;
+        double maxDerivativeError = 0;
+        for (double dt = 0; dt < span; dt += sampleStep) {
+            DerivativeStructure dsdt = factory.variable(0, dt);
+            DerivativeStructure[] yRef = differentiated.value(dsdt);
+            DerivativeStructure[] y    = function.value(dsDate.shiftedBy(dsdt));
+            Assert.assertEquals(dimension, yRef.length);
+            Assert.assertEquals(dimension, y.length);
+            for (int i = 0; i < dimension; ++i) {
+                maxValueError      = FastMath.max(maxValueError,
+                                                  FastMath.abs(yRef[i].getValue() - y[i].getValue()));
+                maxDerivativeError = FastMath.max(maxDerivativeError,
+                                                  FastMath.abs(yRef[i].getPartialDerivative(1) - y[i].getPartialDerivative(1)));
+            }
+        }
+        Assert.assertEquals(0, maxValueError,      valueTolerance);
+        Assert.assertEquals(0, maxDerivativeError, derivativeTolerance);
 
     }
 
