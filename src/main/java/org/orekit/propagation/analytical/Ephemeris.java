@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
@@ -129,7 +130,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     @Override
     /** {@inheritDoc} */
     public SpacecraftState basicPropagate(final AbsoluteDate date) throws OrekitException {
-        final List<SpacecraftState> neighbors = cache.getNeighbors(date);
+        final List<SpacecraftState> neighbors = cache.getNeighbors(date).collect(Collectors.toList());
         final SpacecraftState interpolatedState = neighbors.get(0).interpolate(date, neighbors);
 
         final AttitudeProvider attitudeProvider = this.getAttitudeProvider();

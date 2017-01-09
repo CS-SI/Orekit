@@ -17,6 +17,7 @@
 package org.orekit.files.general;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -106,7 +107,7 @@ class EphemerisSegmentPropagator extends AbstractAnalyticalPropagator
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date,
                                                      final Frame frame) throws OrekitException {
-        final List<TimeStampedPVCoordinates> neighbors = this.cache.getNeighbors(date);
+        final Stream<TimeStampedPVCoordinates> neighbors = this.cache.getNeighbors(date);
         final TimeStampedPVCoordinates point =
                 TimeStampedPVCoordinates.interpolate(date, ephemeris.getAvailableDerivatives(), neighbors);
         return ephemerisFrame.getTransformTo(frame, date).transformPVCoordinates(point);

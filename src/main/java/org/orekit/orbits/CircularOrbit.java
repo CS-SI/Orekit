@@ -17,7 +17,8 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -546,41 +547,42 @@ public class CircularOrbit
      * in a thread-safe way.
      * </p>
      */
-    public CircularOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
+    public CircularOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
 
         // set up an interpolator
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
-        // add sample points
-        AbsoluteDate previousDate = null;
-        double previousRAAN   = Double.NaN;
-        double previousAlphaM = Double.NaN;
-        for (final Orbit orbit : sample) {
-            final CircularOrbit circ = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
-            final double continuousRAAN;
-            final double continuousAlphaM;
-            if (previousDate == null) {
-                continuousRAAN   = circ.getRightAscensionOfAscendingNode();
-                continuousAlphaM = circ.getAlphaM();
-            } else {
-                final double dt       = circ.getDate().durationFrom(previousDate);
-                final double keplerAM = previousAlphaM + circ.getKeplerianMeanMotion() * dt;
-                continuousRAAN   = MathUtils.normalizeAngle(circ.getRightAscensionOfAscendingNode(), previousRAAN);
-                continuousAlphaM = MathUtils.normalizeAngle(circ.getAlphaM(), keplerAM);
+        sample.forEach(new Consumer<Orbit>() {
+            private AbsoluteDate previousDate = null;
+            private double previousRAAN   = Double.NaN;
+            private double previousAlphaM = Double.NaN;
+            public void accept(final Orbit orbit) {
+                final CircularOrbit circ = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
+                final double continuousRAAN;
+                final double continuousAlphaM;
+                if (previousDate == null) {
+                    continuousRAAN   = circ.getRightAscensionOfAscendingNode();
+                    continuousAlphaM = circ.getAlphaM();
+                } else {
+                    final double dt       = circ.getDate().durationFrom(previousDate);
+                    final double keplerAM = previousAlphaM + circ.getKeplerianMeanMotion() * dt;
+                    continuousRAAN   = MathUtils.normalizeAngle(circ.getRightAscensionOfAscendingNode(), previousRAAN);
+                    continuousAlphaM = MathUtils.normalizeAngle(circ.getAlphaM(), keplerAM);
+                }
+                previousDate   = circ.getDate();
+                previousRAAN   = continuousRAAN;
+                previousAlphaM = continuousAlphaM;
+                interpolator.addSamplePoint(circ.getDate().durationFrom(date),
+                                            new double[] {
+                                                circ.getA(),
+                                                circ.getCircularEx(),
+                                                circ.getCircularEy(),
+                                                circ.getI(),
+                                                continuousRAAN,
+                                                continuousAlphaM
+                                            });
             }
-            previousDate   = circ.getDate();
-            previousRAAN   = continuousRAAN;
-            previousAlphaM = continuousAlphaM;
-            interpolator.addSamplePoint(circ.getDate().durationFrom(date),
-                                        new double[] {
-                                            circ.getA(),
-                                            circ.getCircularEx(),
-                                            circ.getCircularEy(),
-                                            circ.getI(),
-                                            continuousRAAN,
-                                            continuousAlphaM
-                                        });
-        }
+        });
 
         // interpolate
         final double[] interpolated = interpolator.value(0);

@@ -90,7 +90,7 @@ public class ShiftingTransformProvider implements TransformProvider {
                                      final int maxSlots, final double maxSpan, final double newSlotInterval) {
         this.interpolatingProvider = interpolatingProvider;
         this.cache = new GenericTimeStampedCache<Transform>(2, maxSlots, maxSpan, newSlotInterval,
-                                                            new Generator(), Transform.class);
+                                                            new Generator());
     }
 
     /** Get the underlying provider for raw (non-interpolated) transforms.
@@ -119,14 +119,10 @@ public class ShiftingTransformProvider implements TransformProvider {
         try {
 
             // retrieve a sample from the thread-safe cache
-            final List<Transform> sample = cache.getNeighbors(date);
-            final double dt0 = date.durationFrom(sample.get(0).getDate());
-            final double dt1 = date.durationFrom(sample.get(1).getDate());
-            if (FastMath.abs(dt0) < FastMath.abs(dt1)) {
-                return sample.get(0).shiftedBy(dt0);
-            } else {
-                return sample.get(1).shiftedBy(dt1);
-            }
+            final Transform closest = cache.getNeighbors(date).reduce((t0, t1) ->
+                FastMath.abs(date.durationFrom(t0.getDate())) < FastMath.abs(date.durationFrom(t1.getDate())) ? t0 : t1
+            ).get();
+            return closest.shiftedBy(date.durationFrom(closest.getDate()));
 
         } catch (OrekitExceptionWrapper oew) {
             // something went wrong while generating the sample,

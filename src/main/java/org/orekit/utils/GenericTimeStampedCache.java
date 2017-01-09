@@ -16,15 +16,14 @@
  */
 package org.orekit.utils;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
@@ -61,9 +60,6 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
     /** Quantum gap above which a new slot is created instead of extending an existing one. */
     private final long newSlotQuantumGap;
 
-    /** Class of the cached entries. */
-    private final Class<T> entriesClass;
-
     /** Generator to use for yet non-cached data. */
     private final TimeStampedGenerator<T> generator;
 
@@ -94,11 +90,9 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * @param newSlotInterval time interval above which a new slot is created
      * instead of extending an existing one
      * @param generator generator to use for yet non-existent data
-     * @param entriesClass class of the cached entries
      */
     public GenericTimeStampedCache(final int neighborsSize, final int maxSlots, final double maxSpan,
-                                   final double newSlotInterval, final TimeStampedGenerator<T> generator,
-                                   final Class<T> entriesClass) {
+                                   final double newSlotInterval, final TimeStampedGenerator<T> generator) {
 
         // safety check
         if (maxSlots < 1) {
@@ -113,7 +107,6 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         this.maxSlots          = maxSlots;
         this.maxSpan           = maxSpan;
         this.newSlotQuantumGap = FastMath.round(newSlotInterval / QUANTUM_STEP);
-        this.entriesClass      = entriesClass;
         this.generator         = generator;
         this.neighborsSize     = neighborsSize;
         this.slots             = new ArrayList<Slot>(maxSlots);
@@ -293,13 +286,13 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * @see #getEarliest()
      * @see #getLatest()
      */
-    public List<T> getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
+    public Stream<T> getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
 
         lock.readLock().lock();
         try {
             getNeighborsCalls.incrementAndGet();
             final long dateQuantum = quantum(central);
-            return Arrays.asList(selectSlot(central, dateQuantum).getNeighbors(central, dateQuantum));
+            return selectSlot(central, dateQuantum).getNeighbors(central, dateQuantum);
         } finally {
             lock.readLock().unlock();
         }
@@ -567,7 +560,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
          * @see #getBefore(AbsoluteDate)
          * @see #getAfter(AbsoluteDate)
          */
-        public T[] getNeighbors(final AbsoluteDate central, final long dateQuantum)
+        public Stream<T> getNeighbors(final AbsoluteDate central, final long dateQuantum)
             throws TimeStampedCacheException {
 
             int index         = entryIndex(central, dateQuantum);
@@ -635,8 +628,6 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
             }
 
-            @SuppressWarnings("unchecked")
-            final T[] array = (T[]) Array.newInstance(entriesClass, neighborsSize);
             if (firstNeighbor + neighborsSize > cache.size()) {
                 // we end up with a non-balanced neighborhood,
                 // adjust the start point to fit within the cache
@@ -645,11 +636,12 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             if (firstNeighbor < 0) {
                 firstNeighbor = 0;
             }
+            final Stream.Builder<T> builder = Stream.builder();
             for (int i = 0; i < neighborsSize; ++i) {
-                array[i] = cache.get(firstNeighbor + i).getData();
+                builder.add(cache.get(firstNeighbor + i).getData());
             }
 
-            return array;
+            return builder.build();
 
         }
 

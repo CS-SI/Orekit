@@ -252,8 +252,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         ephemerides = new GenericTimeStampedCache<PosVelChebyshev>(2, OrekitConfiguration.getCacheSlotsNumber(),
-                Double.POSITIVE_INFINITY, FIFTY_DAYS,
-                new EphemerisParser(), PosVelChebyshev.class);
+                                                                   Double.POSITIVE_INFINITY, FIFTY_DAYS,
+                                                                   new EphemerisParser());
         maxChunksDuration = Double.NaN;
         chunksDuration    = Double.NaN;
 
@@ -1014,7 +1014,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             // get raw PV from Chebyshev polynomials
             PosVelChebyshev chebyshev;
             try {
-                chebyshev = ephemerides.getNeighbors(date).get(0);
+                chebyshev = ephemerides.getNeighbors(date).findFirst().get();
             } catch (TimeStampedCacheException tce) {
                 // we cannot bracket the date, check if the last available chunk covers the specified date
                 chebyshev = ephemerides.getLatest();

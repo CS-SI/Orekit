@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.orekit.errors.OrekitException;
@@ -75,8 +76,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         this.size         = (k * (k + 1)) / 2;
 
         cache = new GenericTimeStampedCache<TimeStampedSphericalHarmonics>(nbPoints, maxSlots, maxSpan,
-                                                                           newSlotInterval, new Generator(step),
-                                                                           TimeStampedSphericalHarmonics.class);
+                                                                           newSlotInterval, new Generator(step));
     }
 
     /** {@inheritDoc} */
@@ -276,15 +276,13 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
          * @return a new time-stamped spherical harmonics, interpolated at specified date
          */
         public static TimeStampedSphericalHarmonics interpolate(final AbsoluteDate date,
-                                                                final Collection<TimeStampedSphericalHarmonics> sample) {
+                                                                final Stream<TimeStampedSphericalHarmonics> sample) {
 
             // set up an interpolator taking derivatives into account
             final HermiteInterpolator interpolator = new HermiteInterpolator();
 
             // add sample points
-            for (final TimeStampedSphericalHarmonics tssh : sample) {
-                interpolator.addSamplePoint(tssh.date.durationFrom(date), tssh.cnmsnm);
-            }
+            sample.forEach(tssh -> interpolator.addSamplePoint(tssh.date.durationFrom(date), tssh.cnmsnm));
 
             // build a new interpolated instance
             return new TimeStampedSphericalHarmonics(date, interpolator.value(0.0));

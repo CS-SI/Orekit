@@ -17,7 +17,8 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -644,46 +645,47 @@ public class KeplerianOrbit extends Orbit {
      * in a thread-safe way.
      * </p>
      */
-    public KeplerianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
+    public KeplerianOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
 
         // set up an interpolator
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
-        // add sample points
-        AbsoluteDate previousDate = null;
-        double previousPA   = Double.NaN;
-        double previousRAAN = Double.NaN;
-        double previousM    = Double.NaN;
-        for (final Orbit orbit : sample) {
-            final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
-            final double continuousPA;
-            final double continuousRAAN;
-            final double continuousM;
-            if (previousDate == null) {
-                continuousPA   = kep.getPerigeeArgument();
-                continuousRAAN = kep.getRightAscensionOfAscendingNode();
-                continuousM    = kep.getMeanAnomaly();
-            } else {
-                final double dt      = kep.getDate().durationFrom(previousDate);
-                final double keplerM = previousM + kep.getKeplerianMeanMotion() * dt;
-                continuousPA   = MathUtils.normalizeAngle(kep.getPerigeeArgument(), previousPA);
-                continuousRAAN = MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
-                continuousM    = MathUtils.normalizeAngle(kep.getMeanAnomaly(), keplerM);
+        sample.forEach(new Consumer<Orbit>() {
+            private AbsoluteDate previousDate = null;
+            private double previousPA   = Double.NaN;
+            private double previousRAAN = Double.NaN;
+            private double previousM    = Double.NaN;
+            public void accept(final Orbit orbit) {
+                final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+                final double continuousPA;
+                final double continuousRAAN;
+                final double continuousM;
+                if (previousDate == null) {
+                    continuousPA   = kep.getPerigeeArgument();
+                    continuousRAAN = kep.getRightAscensionOfAscendingNode();
+                    continuousM    = kep.getMeanAnomaly();
+                } else {
+                    final double dt      = kep.getDate().durationFrom(previousDate);
+                    final double keplerM = previousM + kep.getKeplerianMeanMotion() * dt;
+                    continuousPA   = MathUtils.normalizeAngle(kep.getPerigeeArgument(), previousPA);
+                    continuousRAAN = MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
+                    continuousM    = MathUtils.normalizeAngle(kep.getMeanAnomaly(), keplerM);
+                }
+                previousDate = kep.getDate();
+                previousPA   = continuousPA;
+                previousRAAN = continuousRAAN;
+                previousM    = continuousM;
+                interpolator.addSamplePoint(kep.getDate().durationFrom(date),
+                                            new double[] {
+                                                kep.getA(),
+                                                kep.getE(),
+                                                kep.getI(),
+                                                continuousPA,
+                                                continuousRAAN,
+                                                continuousM
+                                            });
             }
-            previousDate = kep.getDate();
-            previousPA   = continuousPA;
-            previousRAAN = continuousRAAN;
-            previousM    = continuousM;
-            interpolator.addSamplePoint(kep.getDate().durationFrom(date),
-                                        new double[] {
-                                            kep.getA(),
-                                            kep.getE(),
-                                            kep.getI(),
-                                            continuousPA,
-                                            continuousRAAN,
-                                            continuousM
-                                        });
-        }
+        });
 
         // interpolate
         final double[] interpolated = interpolator.value(0);

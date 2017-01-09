@@ -1232,14 +1232,12 @@ public enum IERSConventions {
                         // we are within the range covered by the annual pole file,
                         // we interpolate within it
                         try {
-                            final List<MeanPole> neighbors = annualCache.getNeighbors(date);
                             final HermiteInterpolator interpolator = new HermiteInterpolator();
-                            for (final MeanPole neighbor : neighbors) {
+                            annualCache.getNeighbors(date).forEach(neighbor ->
                                 interpolator.addSamplePoint(neighbor.getDate().durationFrom(date),
                                                             new double[] {
                                                                 neighbor.getX(), neighbor.getY()
-                                                            });
-                            }
+                                                            }));
                             final double[] interpolated = interpolator.value(0);
                             meanPoleX = interpolated[0];
                             meanPoleY = interpolated[1];
@@ -1313,18 +1311,17 @@ public enum IERSConventions {
                         // we are within the range covered by the annual pole file,
                         // we interpolate within it
                         try {
-                            final List<MeanPole> neighbors = annualCache.getNeighbors(aDate);
                             final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
                             final T[] y = MathArrays.buildArray(date.getField(), 2);
                             final T zero = date.getField().getZero();
                             final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
                                                                                                        // for example removing derivatives
                                                                                                        // if T was DerivativeStructure
-                            for (final MeanPole neighbor : neighbors) {
+                            annualCache.getNeighbors(aDate).forEach(neighbor -> {
                                 y[0] = zero.add(neighbor.getX());
                                 y[1] = zero.add(neighbor.getY());
                                 interpolator.addSamplePoint(central.durationFrom(neighbor.getDate()).negate(), y);
-                            }
+                            });
                             final T[] interpolated = interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)
                             meanPoleX = interpolated[0];
                             meanPoleY = interpolated[1];

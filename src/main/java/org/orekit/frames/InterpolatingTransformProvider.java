@@ -20,6 +20,7 @@ package org.orekit.frames;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
@@ -95,7 +96,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
         this.latest      = latest;
         this.step        = step;
         this.cache       = new GenericTimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
-                                                                  new Generator(), Transform.class);
+                                                                  new Generator());
     }
 
     /** Get the underlying provider for raw (non-interpolated) transforms.
@@ -124,7 +125,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
         try {
 
             // retrieve a sample from the thread-safe cache
-            final List<Transform> sample = cache.getNeighbors(date);
+            final List<Transform> sample = cache.getNeighbors(date).collect(Collectors.toList());
 
             // interpolate to specified date
             return Transform.interpolate(date, cFilter, aFilter, sample);
