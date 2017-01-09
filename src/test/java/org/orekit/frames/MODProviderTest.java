@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -34,6 +35,7 @@ import org.orekit.data.PolynomialNutation;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -73,6 +75,11 @@ public class MODProviderTest {
                                                                  RotationConvention.VECTOR_OPERATOR),
                                                       RotationConvention.VECTOR_OPERATOR));
             }
+
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                throw new UnsupportedOperationException("never called in this test");
+            }
+
         };
 
         MODProvider modProvider = new MODProvider(IERSConventions.IERS_1996);
@@ -125,6 +132,11 @@ public class MODProviderTest {
                                                                  RotationConvention.VECTOR_OPERATOR),
                                                       RotationConvention.VECTOR_OPERATOR));
             }
+
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                throw new UnsupportedOperationException("never called in this test");
+            }
+
         };
 
         MODProvider modProvider = new MODProvider(IERSConventions.IERS_2003);

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -40,6 +41,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -139,6 +141,9 @@ public class FramesFactoryTest {
                                      new PVCoordinates(new Vector3D(sin, Vector3D.PLUS_I),
                                                        Vector3D.ZERO));
             }
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                throw new UnsupportedOperationException("never called in this test");
+            }
         };
         Frame parent = FramesFactory.getGCRF();
         Frame frame  = new Frame(parent,
@@ -178,6 +183,9 @@ public class FramesFactoryTest {
                 return new Transform(date,
                                      new PVCoordinates(new Vector3D(sin, Vector3D.PLUS_I),
                                                        Vector3D.ZERO));
+            }
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                throw new UnsupportedOperationException("never called in this test");
             }
         };
         Frame parent = FramesFactory.getGCRF();

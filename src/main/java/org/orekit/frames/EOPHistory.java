@@ -251,7 +251,7 @@ public class EOPHistory implements Serializable {
      */
     public double getLOD(final AbsoluteDate date) {
 
-        //check if there is data for date
+        // check if there is data for date
         if (!this.hasDataFor(date)) {
             // no EOP data available for this date, we use a default null correction
             return (tidalCorrection == null) ? 0.0 : tidalCorrection.value(date)[3];
@@ -266,6 +266,33 @@ public class EOPHistory implements Serializable {
 
     }
 
+    /** Get the LoD (Length of Day) value.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the value is desired
+     * @param <T> type of the filed elements
+     * @return LoD in seconds (0 if date is outside covered range)
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> T getLOD(final FieldAbsoluteDate<T> date) {
+
+        final AbsoluteDate aDate = date.toAbsoluteDate();
+
+        // check if there is data for date
+        if (!this.hasDataFor(aDate)) {
+            // no EOP data available for this date, we use a default null correction
+            return (tidalCorrection == null) ? date.getField().getZero() : tidalCorrection.value(date)[3];
+        }
+
+        // we have EOP data for date -> interpolate correction
+        T interpolated = interpolate(date, aDate, entry -> entry.getLOD());
+        if (tidalCorrection != null) {
+            interpolated = interpolated.add(tidalCorrection.value(date)[3]);
+        }
+
+        return interpolated;
+
+    }
+
     /** Get the pole IERS Reference Pole correction.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
@@ -273,6 +300,7 @@ public class EOPHistory implements Serializable {
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
     public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
+
         // check if there is data for date
         if (!this.hasDataFor(date)) {
             // no EOP data available for this date, we use a default null correction
@@ -316,31 +344,16 @@ public class EOPHistory implements Serializable {
                 return new FieldPoleCorrection<>(correction[0], correction[1]);
             }
         }
-        //we have EOP data for date -> interpolate correction
-        try {
-            final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
-            final T[] y = MathArrays.buildArray(date.getField(), 2);
-            final T zero = date.getField().getZero();
-            final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
-                                                                                       // for example removing derivatives
-                                                                                       // if T was DerivativeStructure
-            getNeighbors(aDate).forEach(entry -> {
-                y[0] = zero.add(entry.getX());
-                y[1] = zero.add(entry.getY());
-                interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
-            });
-            final T[] interpolated = interpolator.value(date.durationFrom(central)); // here, we introduce derivatives again (in DerivativeStructure case)
 
-            if (tidalCorrection != null) {
-                final T[] correction = tidalCorrection.value(date);
-                interpolated[0] = interpolated[0].add(correction[0]);
-                interpolated[1] = interpolated[1].add(correction[1]);
-            }
-            return new FieldPoleCorrection<>(interpolated[0], interpolated[1]);
-        } catch (TimeStampedCacheException tce) {
-            // this should not happen because of date check above
-            throw new OrekitInternalError(tce);
+        // we have EOP data for date -> interpolate correction
+        final T[] interpolated = interpolate(date, aDate, entry -> entry.getX(), entry -> entry.getY());
+        if (tidalCorrection != null) {
+            final T[] correction = tidalCorrection.value(date);
+            interpolated[0] = interpolated[0].add(correction[0]);
+            interpolated[1] = interpolated[1].add(correction[1]);
         }
+        return new FieldPoleCorrection<>(interpolated[0], interpolated[1]);
+
     }
 
     /** Get the correction to the nutation parameters for equinox-based paradigm.
@@ -350,6 +363,7 @@ public class EOPHistory implements Serializable {
      * (zero if date is outside covered range)
      */
     public double[] getEquinoxNutationCorrection(final AbsoluteDate date) {
+
         // check if there is data for date
         if (!this.hasDataFor(date)) {
             // no EOP data available for this date, we use a default null correction
@@ -399,6 +413,28 @@ public class EOPHistory implements Serializable {
 
         // we have EOP data for date -> interpolate correction
         return interpolate(date, entry -> entry.getDx(), entry -> entry.getDy());
+
+    }
+
+    /** Get the correction to the nutation parameters for Non-Rotating Origin paradigm.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the correction is desired
+     * @param <T> type of the filed elements
+     * @return nutation correction in Celestial Intermediat Pole coordinates
+     * δX and δY (zero if date is outside covered range)
+     */
+    public <T extends RealFieldElement<T>> T[] getNonRotatinOriginNutationCorrection(final FieldAbsoluteDate<T> date) {
+
+        final AbsoluteDate aDate = date.toAbsoluteDate();
+
+        // check if there is data for date
+        if (!this.hasDataFor(aDate)) {
+            // no EOP data available for this date, we use a default null correction
+            return MathArrays.buildArray(date.getField(), 2);
+        }
+
+        // we have EOP data for date -> interpolate correction
+        return interpolate(date, aDate, entry -> entry.getDx(), entry -> entry.getDy());
 
     }
 
@@ -463,6 +499,37 @@ public class EOPHistory implements Serializable {
                                                                        selector.apply(entry)
                                                                    }));
             return interpolator.value(0)[0];
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check performed by caller
+            throw new OrekitInternalError(tce);
+        }
+    }
+
+    /** Interpolate a single EOP component.
+     * <p>
+     * This method should be called <em>only</em> when {@link #hasDataFor(AbsoluteDate)} returns true.
+     * </p>
+     * @param date interpolation date
+     * @param aDate interpolation date, as an {@link AbsoluteDate}
+     * @param selector selector for EOP entry component
+     * @param <T> type of the field elements
+     * @return interpolated value
+     */
+    private <T extends RealFieldElement<T>> T interpolate(final FieldAbsoluteDate<T> date,
+                                                          final AbsoluteDate aDate,
+                                                          final Function<EOPEntry, Double> selector) {
+        try {
+            final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
+            final T[] y = MathArrays.buildArray(date.getField(), 1);
+            final T zero = date.getField().getZero();
+            final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
+                                                                                       // for example removing derivatives
+                                                                                       // if T was DerivativeStructure
+            getNeighbors(aDate).forEach(entry -> {
+                y[0] = zero.add(selector.apply(entry));
+                interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
+            });
+            return interpolator.value(date.durationFrom(central))[0]; // here, we introduce derivatives again (in DerivativeStructure case)
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check performed by caller
             throw new OrekitInternalError(tce);

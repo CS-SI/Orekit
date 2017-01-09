@@ -43,7 +43,7 @@ public class IAUPoleFactoryTest {
 
     @Test
     public void testGCRFAligned() throws OrekitException, UnsupportedEncodingException, IOException {
-        IAUPole iauPole = IAUPoleFactory.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER);
+        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
         Assert.assertEquals(0,   Vector3D.distance(pole, Vector3D.PLUS_K), 1.0e-15);
@@ -52,7 +52,7 @@ public class IAUPoleFactoryTest {
 
     @Test
     public void testSun() throws OrekitException, UnsupportedEncodingException, IOException {
-        IAUPole iauPole = IAUPoleFactory.getIAUPole(EphemerisType.SUN);
+        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         final double alphaRef    = FastMath.toRadians(286.13);
         final double deltaRef    = FastMath.toRadians(63.87);
@@ -96,7 +96,7 @@ public class IAUPoleFactoryTest {
                 Rotation rRef = new Rotation(m, 1.0e-10);
 
                 // check pole
-                IAUPole iauPole = IAUPoleFactory.getIAUPole(type);
+                IAUPole iauPole = PredefinedIAUPoles.getIAUPole(type);
                 Vector3D pole = iauPole.getPole(date2);
                 double w = iauPole.getPrimeMeridianAngle(date2);
                 Assert.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);

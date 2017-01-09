@@ -18,15 +18,19 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeVectorFunction;
 
-/** Celestial Intermediate Reference Frame 2000.
+/** Celestial Intermediate Reference Frame.
  * <p>This provider includes precession effects according to either the IAU 2006 precession
  * (also known as Nicole Capitaines's P03 precession theory) and IAU 2000A_R06 nutation
  * for IERS 2010 conventions or the IAU 2000A precession-nutation model for IERS 2003
@@ -78,13 +82,8 @@ class CIRFProvider implements EOPBasedTransformProvider {
         return new CIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
-    /** Get the transform from GCRF to CIRF2000 at the specified date.
-     * <p>The transform considers the nutation and precession effects from IERS data.</p>
-     * @param date new value of the date
-     * @return transform at the specified date
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read
-     */
+    /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         final double[] xys  = xysPxy2Function.value(date);
@@ -114,6 +113,43 @@ class CIRFProvider implements EOPBasedTransformProvider {
                                            true);
 
         return new Transform(date, bpn, Vector3D.ZERO);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        final T[] xys  = xysPxy2Function.value(date);
+        final T[] dxdy = eopHistory.getNonRotatinOriginNutationCorrection(date);
+
+        // position of the Celestial Intermediate Pole (CIP)
+        final T xCurrent = xys[0].add(dxdy[0]);
+        final T yCurrent = xys[1].add(dxdy[1]);
+
+        // position of the Celestial Intermediate Origin (CIO)
+        final T sCurrent = xys[2].subtract(xCurrent.multiply(yCurrent).multiply(0.5));
+
+        // set up the bias, precession and nutation rotation
+        final T x2Py2  = xCurrent.multiply(xCurrent).add(yCurrent.multiply(yCurrent));
+        final T zP1    = x2Py2.subtract(1).negate().sqrt().add(1);
+        final T r      = x2Py2.sqrt();
+        final T sPe2   = sCurrent.add(yCurrent.atan2(xCurrent)).multiply(0.5);
+        final T cos    = sPe2.cos();
+        final T sin    = sPe2.sin();
+        final T xPr    = xCurrent.add(r);
+        final T xPrCos = xPr.multiply(cos);
+        final T xPrSin = xPr.multiply(sin);
+        final T yCos   = yCurrent.multiply(cos);
+        final T ySin   = yCurrent.multiply(sin);
+        final FieldRotation<T> bpn  = new FieldRotation<>(zP1.multiply(xPrCos.add(ySin)),
+                                                          r.multiply(yCos.add(xPrSin)).negate(),
+                                                          r.multiply(xPrCos.subtract(ySin)),
+                                                          zP1.multiply(yCos.subtract(xPrSin)),
+                                                          true);
+
+        return new FieldTransform<>(date, bpn, FieldVector3D.getZero(date.getField()));
 
     }
 

@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -43,6 +46,7 @@ import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.OceanLoadDeformationCoefficients;
 import org.orekit.forces.radiation.IsotropicRadiationClassicalConvention;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -53,6 +57,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -121,6 +126,14 @@ public class EstimationTestUtils {
                 final Rotation rotation = new Rotation(Vector3D.PLUS_K, -alpharot.getZ(),
                                                        RotationConvention.VECTOR_OPERATOR);
                 return new Transform(date, rotation, rotationRate);
+            }
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                final T rotationduration = date.durationFrom(datedef);
+                final FieldVector3D<T> alpharot = new FieldVector3D<>(rotationduration, rotationRate);
+                final FieldRotation<T> rotation = new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
+                                                                      alpharot.getZ().negate(),
+                                                                      RotationConvention.VECTOR_OPERATOR);
+                return new FieldTransform<>(date, rotation, new FieldVector3D<>(date.getField(), rotationRate));
             }
         };
         Frame FrameTest = new Frame(FramesFactory.getEME2000(), MyEarthFrame, Myframename, true);

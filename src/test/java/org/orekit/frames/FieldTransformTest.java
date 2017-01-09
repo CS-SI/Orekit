@@ -282,10 +282,10 @@ public class FieldTransformTest {
         RandomGenerator random = new Well19937a(0xb8ee9da1b05198c9l);
         for (int i = 0; i < 20; ++i) {
             FieldTransform<T> combined = randomTransform(field, random);
-            FieldTransform<T> rebuilt  = new FieldTransform<>(combined.getDate(),
-                                                              new FieldTransform<>(combined.getDate(), combined.getTranslation(),
+            FieldTransform<T> rebuilt  = new FieldTransform<>(combined.getFieldDate(),
+                                                              new FieldTransform<>(combined.getFieldDate(), combined.getTranslation(),
                                                                                    combined.getVelocity(), combined.getAcceleration()),
-                                                              new FieldTransform<>(combined.getDate(), combined.getRotation(),
+                                                              new FieldTransform<>(combined.getFieldDate(), combined.getRotation(),
                                                                                    combined.getRotationRate(), combined.getRotationAcceleration()));
 
             checkNoTransform(new FieldTransform<>(FieldAbsoluteDate.getJ2000Epoch(field), combined, rebuilt.getInverse()), random);
@@ -1083,8 +1083,8 @@ public class FieldTransformTest {
 
         for (double dt = 0.1; dt <= 3.1; dt += 0.01) {
             FieldTransform<T> reference = evolvingTransform(t0, dt);
-            FieldTransform<T> interpolated = sample.get(0).interpolate(reference.getDate(), sample);
-            FieldTransform<T> error = new FieldTransform<>(reference.getDate(), reference, interpolated.getInverse());
+            FieldTransform<T> interpolated = sample.get(0).interpolate(reference.getFieldDate(), sample);
+            FieldTransform<T> error = new FieldTransform<>(reference.getFieldDate(), reference, interpolated.getInverse());
             Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm().getReal(),           2.0e-15);
             Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm().getReal(),           6.0e-15);
             Assert.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm().getReal(),       4.0e-14);
@@ -1162,15 +1162,15 @@ public class FieldTransformTest {
     private <T extends RealFieldElement<T>> void checkNoTransform(FieldTransform<T> transform,
                                                                   RandomGenerator random) {
         for (int i = 0; i < 100; ++i) {
-            FieldVector3D<T> a = randomVector(transform.getDate().getField(), 1.0e3, random);
+            FieldVector3D<T> a = randomVector(transform.getFieldDate().getField(), 1.0e3, random);
             FieldVector3D<T> tA = transform.transformVector(a);
             Assert.assertEquals(0, a.subtract(tA).getNorm().getReal(), 1.0e-10 * a.getNorm().getReal());
-            FieldVector3D<T> b = randomVector(transform.getDate().getField(), 1.0e3, random);
+            FieldVector3D<T> b = randomVector(transform.getFieldDate().getField(), 1.0e3, random);
             FieldVector3D<T> tB = transform.transformPosition(b);
             Assert.assertEquals(0, b.subtract(tB).getNorm().getReal(), 1.0e-10 * b.getNorm().getReal());
-            FieldPVCoordinates<T> pv  = new FieldPVCoordinates<>(randomVector(transform.getDate().getField(), 1.0e3, random),
-                                                                 randomVector(transform.getDate().getField(), 1.0, random),
-                                                                 randomVector(transform.getDate().getField(), 1.0e-3, random));
+            FieldPVCoordinates<T> pv  = new FieldPVCoordinates<>(randomVector(transform.getFieldDate().getField(), 1.0e3, random),
+                                                                 randomVector(transform.getFieldDate().getField(), 1.0, random),
+                                                                 randomVector(transform.getFieldDate().getField(), 1.0e-3, random));
             FieldPVCoordinates<T> tPv = transform.transformPVCoordinates(pv);
             checkVector(pv.getPosition(),     tPv.getPosition(), 1.0e-10);
             checkVector(pv.getVelocity(),     tPv.getVelocity(), 3.0e-9);

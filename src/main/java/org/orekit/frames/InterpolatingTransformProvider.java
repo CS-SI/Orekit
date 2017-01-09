@@ -19,12 +19,19 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.Map;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.GenericTimeStampedCache;
@@ -68,6 +75,9 @@ public class InterpolatingTransformProvider implements TransformProvider {
     /** Cache for sample points. */
     private final transient GenericTimeStampedCache<Transform> cache;
 
+    /** Field caches for sample points. */
+    private final transient Map<Field<? extends RealFieldElement<?>>, GenericTimeStampedCache<FieldTransform<? extends RealFieldElement<?>>>> fieldCaches;
+
     /** Simple constructor.
      * @param rawProvider provider for raw (non-interpolated) transforms
      * @param cFilter filter for derivatives from the sample to use in interpolation
@@ -97,6 +107,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
         this.step        = step;
         this.cache       = new GenericTimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
                                                                   new Generator());
+        this.fieldCaches = new HashMap<>();
     }
 
     /** Get the underlying provider for raw (non-interpolated) transforms.
@@ -121,6 +132,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
         try {
 
@@ -129,6 +141,35 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
             // interpolate to specified date
             return Transform.interpolate(date, cFilter, aFilter, sample);
+
+        } catch (OrekitExceptionWrapper oew) {
+            // something went wrong while generating the sample,
+            // we just forward the exception up
+            throw oew.getException();
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+        try {
+
+            GenericTimeStampedCache<FieldTransform<T>> fieldCache = fieldCaches.get(date.getField());
+            if (fieldCache == null) {
+                fieldCache = new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                                cache.getMaxSlots(),
+                                cache.getMaxSpan(),
+                                cache.getNewSlotQuantumGap(),
+                                new FieldGenerator<T>(date.getField()));
+//                fieldCaches.put(date.getField(), fieldCache);
+            }
+
+            // retrieve a sample from the thread-safe cache
+            final Stream<FieldTransform<T>> sample = fieldCache.getNeighbors(date.toAbsoluteDate());
+
+            // interpolate to specified date
+            return FieldTransform.interpolate(date, cFilter, aFilter, sample);
 
         } catch (OrekitExceptionWrapper oew) {
             // something went wrong while generating the sample,
@@ -266,6 +307,71 @@ public class InterpolatingTransformProvider implements TransformProvider {
                             t = t.shiftedBy(-step);
                             generated.add(0, rawProvider.getTransform(t));
                         } while (t.compareTo(date) >= 0);
+                    }
+                }
+
+                // return the generated transforms
+                return generated;
+            } catch (OrekitException oe) {
+                throw new OrekitExceptionWrapper(oe);
+            }
+
+        }
+
+    }
+
+    /** Local generator for thread-safe cache.
+     * @param <T> type of the field elements
+     */
+    private class FieldGenerator<T extends RealFieldElement<T>> implements TimeStampedGenerator<FieldTransform<T>> {
+
+        /** Field to which the elements belong. */
+        private final Field<T> field;
+
+        /** Simple constructor.
+         * @param field field to which the elements belong
+         */
+        FieldGenerator(final Field<T> field) {
+            this.field = field;
+        }
+
+        /** {@inheritDoc} */
+        public List<FieldTransform<T>> generate(final FieldTransform<T> existing, final AbsoluteDate date) {
+
+            try {
+                final List<FieldTransform<T>> generated = new ArrayList<FieldTransform<T>>();
+                final FieldAbsoluteDate<T> fDate = new FieldAbsoluteDate<>(field, date);
+
+                if (existing == null) {
+
+                    // no prior existing transforms, just generate a first set
+                    for (int i = 0; i < cache.getNeighborsSize(); ++i) {
+                        generated.add(rawProvider.getTransform(fDate.shiftedBy(i * step)));
+                    }
+
+                } else {
+
+                    // some transforms have already been generated
+                    // add the missing ones up to specified date
+
+                    AbsoluteDate at = existing.getDate();
+                    FieldAbsoluteDate<T> ft = existing.getFieldDate();
+                    if (date.compareTo(at) > 0) {
+                        // forward generation
+                        do {
+                            ft = ft.shiftedBy(step);
+                            final FieldTransform<T> ftr = rawProvider.getTransform(ft);
+                            generated.add(generated.size(), ftr);
+                            at = ftr.getDate();
+                        } while (at.compareTo(date) <= 0);
+                    } else {
+                        // backward generation
+                        do {
+                            ft = ft.shiftedBy(-step);
+                            final FieldTransform<T> ftr = rawProvider.getTransform(ft);
+                            generated.add(0, ftr);
+                            at = ftr.getDate();
+                        } while (at.compareTo(date) >= 0);
                     }
                 }
 

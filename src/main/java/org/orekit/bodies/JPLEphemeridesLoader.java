@@ -29,6 +29,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
@@ -40,10 +41,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.GenericTimeStampedCache;
@@ -175,12 +178,22 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     /** Interface for raw position-velocity retrieval. */
     public interface RawPVProvider {
+
         /** Get the position-velocity at date.
          * @param date date at which the position-velocity is desired
          * @return position-velocity at the specified date
          * @exception OrekitException if the date is not available to the loader
          */
         PVCoordinates getRawPV(AbsoluteDate date) throws OrekitException;
+
+        /** Get the position-velocity at date.
+         * @param date date at which the position-velocity is desired
+         * @param <T> type of the field elements
+         * @return position-velocity at the specified date
+         * @exception OrekitException if the date is not available to the loader
+         */
+        <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(FieldAbsoluteDate<T> date) throws OrekitException;
+
     }
 
     /** Regular expression for supported files names. */
@@ -267,7 +280,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     public CelestialBody loadCelestialBody(final String name) throws OrekitException {
 
         final double gm       = getLoadedGravitationalCoefficient(generateType);
-        final IAUPole iauPole = IAUPoleFactory.getIAUPole(generateType);
+        final IAUPole iauPole = PredefinedIAUPoles.getIAUPole(generateType);
         final double scale;
         final Frame definingFrameAlignedWithICRF;
         final RawPVProvider rawPVProvider;
@@ -1029,6 +1042,28 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         }
 
+        /** {@inheritDoc} */
+        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date)
+            throws TimeStampedCacheException {
+
+            // get raw PV from Chebyshev polynomials
+            PosVelChebyshev chebyshev;
+            try {
+                chebyshev = ephemerides.getNeighbors(date.toAbsoluteDate()).findFirst().get();
+            } catch (TimeStampedCacheException tce) {
+                // we cannot bracket the date, check if the last available chunk covers the specified date
+                chebyshev = ephemerides.getLatest();
+                if (!chebyshev.inRange(date.toAbsoluteDate())) {
+                    // we were not able to recover from the error, the date is too far
+                    throw tce;
+                }
+            }
+
+            // evaluate the Chebyshev polynomials
+            return chebyshev.getPositionVelocityAcceleration(date);
+
+        }
+
     }
 
     /** Raw position-velocity provider providing always zero. */
@@ -1037,6 +1072,11 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         /** {@inheritDoc} */
         public PVCoordinates getRawPV(final AbsoluteDate date) {
             return PVCoordinates.ZERO;
+        }
+
+        /** {@inheritDoc} */
+        public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getRawPV(final FieldAbsoluteDate<T> date) {
+            return FieldPVCoordinates.getZero(date.getField());
         }
 
     }

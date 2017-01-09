@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
@@ -30,8 +31,10 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeShiftable;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldAngularCoordinates;
@@ -100,10 +103,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 9.0
  */
 public class FieldTransform<T extends RealFieldElement<T>>
-    implements TimeShiftable<FieldTransform<T>> {
+    implements TimeStamped, TimeShiftable<FieldTransform<T>> {
 
     /** Date of the transform. */
     private final FieldAbsoluteDate<T> date;
+
+    /** Date of the transform. */
+    private final AbsoluteDate aDate;
 
     /** Cartesian coordinates of the target frame with respect to the original frame. */
     private final FieldPVCoordinates<T> cartesian;
@@ -113,15 +119,27 @@ public class FieldTransform<T extends RealFieldElement<T>>
 
     /** Build a transform from its primitive operations.
      * @param date date of the transform
+     * @param aDate date of the transform
      * @param cartesian Cartesian coordinates of the target frame with respect to the original frame
      * @param angular angular coordinates of the target frame with respect to the original frame
      */
-    private FieldTransform(final FieldAbsoluteDate<T> date,
+    private FieldTransform(final FieldAbsoluteDate<T> date, final AbsoluteDate aDate,
                            final FieldPVCoordinates<T> cartesian,
                            final FieldAngularCoordinates<T> angular) {
         this.date      = date;
+        this.aDate     = aDate;
         this.cartesian = cartesian;
         this.angular   = angular;
+    }
+
+    /** Build a transform from a regular transform.
+     * @param field field of the elements
+     * @param transform regular transform to convert
+     */
+    public FieldTransform(final Field<T> field, final Transform transform) {
+        this(new FieldAbsoluteDate<>(field, transform.getDate()), transform.getDate(),
+             new FieldPVCoordinates<>(field, transform.getCartesian()),
+             new FieldAngularCoordinates<>(field, transform.getAngular()));
     }
 
     /** Build a translation transform.
@@ -131,7 +149,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * old frame in the new frame)
      */
     public FieldTransform(final FieldAbsoluteDate<T> date, final FieldVector3D<T> translation) {
-        this(date,
+        this(date, date.toAbsoluteDate(),
              new FieldPVCoordinates<>(translation,
                                       FieldVector3D.getZero(date.getField()),
                                       FieldVector3D.getZero(date.getField())),
@@ -145,7 +163,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * same vector expressed in the new frame )
      */
     public FieldTransform(final FieldAbsoluteDate<T> date, final FieldRotation<T> rotation) {
-        this(date,
+        this(date, date.toAbsoluteDate(),
              FieldPVCoordinates.getZero(date.getField()),
              new FieldAngularCoordinates<>(rotation,
                                            FieldVector3D.getZero(date.getField()),
@@ -192,7 +210,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * old frame in the new frame, with their derivatives)
      */
     public FieldTransform(final FieldAbsoluteDate<T> date, final FieldPVCoordinates<T> cartesian) {
-        this(date,
+        this(date, date.toAbsoluteDate(),
              cartesian,
              FieldAngularCoordinates.getIdentity(date.getField()));
     }
@@ -237,7 +255,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * same vector expressed in the new frame, with its rotation rate)
      */
     public FieldTransform(final FieldAbsoluteDate<T> date, final FieldAngularCoordinates<T> angular) {
-        this(date,
+        this(date, date.toAbsoluteDate(),
              FieldPVCoordinates.getZero(date.getField()),
              angular);
     }
@@ -256,7 +274,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
     public FieldTransform(final FieldAbsoluteDate<T> date,
                           final FieldTransform<T> first,
                           final FieldTransform<T> second) {
-        this(date,
+        this(date, date.toAbsoluteDate(),
              new FieldPVCoordinates<>(compositeTranslation(first, second),
                                       compositeVelocity(first, second),
                                       compositeAcceleration(first, second)),
@@ -386,13 +404,21 @@ public class FieldTransform<T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    public FieldAbsoluteDate<T> getDate() {
+    public AbsoluteDate getDate() {
+        return aDate;
+    }
+
+    /** Get the date.
+     * @return date attached to the object
+     */
+    public FieldAbsoluteDate<T> getFieldDate() {
         return date;
     }
 
     /** {@inheritDoc} */
     public FieldTransform<T> shiftedBy(final double dt) {
-        return new FieldTransform<>(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
+        return new FieldTransform<>(date.shiftedBy(dt), aDate.shiftedBy(dt),
+                                    cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     }
 
     /** Get a time-shifted instance.
@@ -400,10 +426,11 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @return a new instance, shifted with respect to instance (which is not changed)
      */
     FieldTransform<T> shiftedBy(final T dt) {
-        return new FieldTransform<>(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
+        return new FieldTransform<>(date.shiftedBy(dt), aDate.shiftedBy(dt.getReal()),
+                                    cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     }
 
-    /** {@inheritDoc}
+    /** Interpolate a transform from a sample set of existing transforms.
      * <p>
      * Calling this method is equivalent to call {@link #interpolate(FieldAbsoluteDate,
      * CartesianDerivativesFilter, AngularDerivativesFilter, Collection)} with {@code cFilter}
@@ -411,10 +438,14 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * {@link AngularDerivativesFilter#USE_RRA}
      * set to true.
      * </p>
+     * @param interpolationDate interpolation date
+     * @param sample sample points on which interpolation should be done
+     * @param <T> the type of the field elements
+     * @return a new instance, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
      */
-    public FieldTransform<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
-                                         final Collection<FieldTransform<T>> sample)
+    public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> interpolationDate,
+                                                                                final Collection<FieldTransform<T>> sample)
         throws OrekitException {
         return interpolate(interpolationDate,
                            CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
@@ -451,15 +482,48 @@ public class FieldTransform<T extends RealFieldElement<T>>
                                                                                 final AngularDerivativesFilter aFilter,
                                                                                 final Collection<FieldTransform<T>> sample)
         throws OrekitException {
-        final List<TimeStampedFieldPVCoordinates<T>>      datedPV = new ArrayList<TimeStampedFieldPVCoordinates<T>>(sample.size());
-        final List<TimeStampedFieldAngularCoordinates<T>> datedAC = new ArrayList<TimeStampedFieldAngularCoordinates<T>>(sample.size());
-        for (final FieldTransform<T> t : sample) {
+        return interpolate(date, cFilter, aFilter, sample.stream());
+    }
+
+    /** Interpolate a transform from a sample set of existing transforms.
+     * <p>
+     * Note that even if first time derivatives (velocities and rotation rates)
+     * from sample can be ignored, the interpolated instance always includes
+     * interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the positions
+     * and rotations.
+     * </p>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
+     * @param date interpolation date
+     * @param cFilter filter for derivatives from the sample to use in interpolation
+     * @param aFilter filter for derivatives from the sample to use in interpolation
+     * @param sample sample points on which interpolation should be done
+     * @return a new instance, interpolated at specified date
+     * @exception OrekitException if the number of point is too small for interpolating
+     * @param <T> the type of the field elements
+     */
+    public static <T extends RealFieldElement<T>> FieldTransform<T> interpolate(final FieldAbsoluteDate<T> date,
+                                                                                final CartesianDerivativesFilter cFilter,
+                                                                                final AngularDerivativesFilter aFilter,
+                                                                                final Stream<FieldTransform<T>> sample)
+        throws OrekitException {
+        final List<TimeStampedFieldPVCoordinates<T>>      datedPV = new ArrayList<>();
+        final List<TimeStampedFieldAngularCoordinates<T>> datedAC = new ArrayList<>();
+        sample.forEach(t -> {
             datedPV.add(new TimeStampedFieldPVCoordinates<>(t.getDate(), t.getTranslation(), t.getVelocity(), t.getAcceleration()));
             datedAC.add(new TimeStampedFieldAngularCoordinates<>(t.getDate(), t.getRotation(), t.getRotationRate(), t.getRotationAcceleration()));
-        }
+        });
         final TimeStampedFieldPVCoordinates<T>      interpolatedPV = TimeStampedFieldPVCoordinates.interpolate(date, cFilter, datedPV);
         final TimeStampedFieldAngularCoordinates<T> interpolatedAC = TimeStampedFieldAngularCoordinates.interpolate(date, aFilter, datedAC);
-        return new FieldTransform<>(date, interpolatedPV, interpolatedAC);
+        return new FieldTransform<>(date, date.toAbsoluteDate(), interpolatedPV, interpolatedAC);
     }
 
     /** Get the inverse transform of the instance.
@@ -485,7 +549,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
                                                                   1, crossDotP,
                                                                  -1, crossCrossP);
 
-        return new FieldTransform<>(date, new FieldPVCoordinates<>(pInv, vInv, aInv), angular.revert());
+        return new FieldTransform<>(date, aDate, new FieldPVCoordinates<>(pInv, vInv, aInv), angular.revert());
 
     }
 
@@ -497,7 +561,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
      * @return a new transform, without any time-dependent parts
      */
     public FieldTransform<T> freeze() {
-        return new FieldTransform<>(date,
+        return new FieldTransform<>(date, aDate,
                                     new FieldPVCoordinates<>(cartesian.getPosition(),
                                                              FieldVector3D.getZero(date.getField()),
                                                              FieldVector3D.getZero(date.getField())),
@@ -861,7 +925,7 @@ public class FieldTransform<T extends RealFieldElement<T>>
          * @param field field for the components
          */
         FieldIdentityTransform(final Field<T> field) {
-            super(FieldAbsoluteDate.getJ2000Epoch(field),
+            super(FieldAbsoluteDate.getJ2000Epoch(field), AbsoluteDate.J2000_EPOCH,
                   FieldPVCoordinates.getZero(field),
                   FieldAngularCoordinates.getIdentity(field));
         }
@@ -907,8 +971,8 @@ public class FieldTransform<T extends RealFieldElement<T>>
         public void getJacobian(final CartesianDerivativesFilter selector, final T[][] jacobian) {
             final int n = 3 * (selector.getMaxOrder() + 1);
             for (int i = 0; i < n; ++i) {
-                Arrays.fill(jacobian[i], 0, n, getDate().getField().getZero());
-                jacobian[i][i] = getDate().getField().getOne();
+                Arrays.fill(jacobian[i], 0, n, getFieldDate().getField().getZero());
+                jacobian[i][i] = getFieldDate().getField().getOne();
             }
         }
 

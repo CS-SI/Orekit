@@ -271,42 +271,42 @@ public class Frame implements Serializable {
 
     }
 
-//    /** Get the transform from the instance to another frame.
-//     * @param destination destination frame to which we want to transform vectors
-//     * @param date the date (can be null if it is sure than no date dependent frame is used)
-//     * @param <T> the type of the field elements
-//     * @return transform from the instance to the destination frame
-//     * @exception OrekitException if some frame specific error occurs
-//     */
-//    public <T extends RealFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date)
-//        throws OrekitException {
-//
-//        if (this == destination) {
-//            // shortcut for special case that may be frequent
-//            return FieldTransform.getIdentity(date.getField());
-//        }
-//
-//        // common ancestor to both frames in the frames tree
-//        final Frame common = findCommon(this, destination);
-//
-//        // transform from common to instance
-//        FieldTransform<T> commonToInstance = FieldTransform.getIdentity(date.getField());
-//        for (Frame frame = this; frame != common; frame = frame.parent) {
-//            commonToInstance =
-//                new FieldTransform<>(date, frame.transformProvider.getTransform(date), commonToInstance);
-//        }
-//
-//        // transform from destination up to common
-//        FieldTransform<T> commonToDestination = FieldTransform.getIdentity(date.getField());
-//        for (Frame frame = destination; frame != common; frame = frame.parent) {
-//            commonToDestination =
-//                new FieldTransform<>(date, frame.transformProvider.getTransform(date), commonToDestination);
-//        }
-//
-//        // transform from instance to destination via common
-//        return new FieldTransform<>(date, commonToInstance.getInverse(), commonToDestination);
-//
-//    }
+    /** Get the transform from the instance to another frame.
+     * @param destination destination frame to which we want to transform vectors
+     * @param date the date (can be null if it is sure than no date dependent frame is used)
+     * @param <T> the type of the field elements
+     * @return transform from the instance to the destination frame
+     * @exception OrekitException if some frame specific error occurs
+     */
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransformTo(final Frame destination, final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        if (this == destination) {
+            // shortcut for special case that may be frequent
+            return FieldTransform.getIdentity(date.getField());
+        }
+
+        // common ancestor to both frames in the frames tree
+        final Frame common = findCommon(this, destination);
+
+        // transform from common to instance
+        FieldTransform<T> commonToInstance = FieldTransform.getIdentity(date.getField());
+        for (Frame frame = this; frame != common; frame = frame.parent) {
+            commonToInstance =
+                new FieldTransform<>(date, frame.transformProvider.getTransform(date), commonToInstance);
+        }
+
+        // transform from destination up to common
+        FieldTransform<T> commonToDestination = FieldTransform.getIdentity(date.getField());
+        for (Frame frame = destination; frame != common; frame = frame.parent) {
+            commonToDestination =
+                new FieldTransform<>(date, frame.transformProvider.getTransform(date), commonToDestination);
+        }
+
+        // transform from instance to destination via common
+        return new FieldTransform<>(date, commonToInstance.getInverse(), commonToDestination);
+
+    }
 
     /** Get the provider for transform from parent frame to instance.
      * @return provider for transform from parent frame to instance

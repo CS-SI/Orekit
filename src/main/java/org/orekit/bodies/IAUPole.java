@@ -18,8 +18,11 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Interface for IAU pole and prime meridian orientations.
  * <p>
@@ -47,6 +50,14 @@ public interface IAUPole extends Serializable {
      */
     Vector3D getPole(AbsoluteDate date);
 
+    /** Get the body North pole direction in ICRF frame.
+     * @param date current date
+     * @param <T> type of the field elements
+     * @return body North pole direction in ICRF frame
+     * @since 9.0
+     */
+    <T extends RealFieldElement<T>> FieldVector3D<T> getPole(FieldAbsoluteDate<T> date);
+
     /** Get the prime meridian angle.
      * <p>
      * The prime meridian angle is the angle between the Q node and the
@@ -56,5 +67,17 @@ public interface IAUPole extends Serializable {
      * @return prime meridian vector
      */
     double getPrimeMeridianAngle(AbsoluteDate date);
+
+    /** Get the prime meridian angle.
+     * <p>
+     * The prime meridian angle is the angle between the Q node and the
+     * prime meridian. represents the body rotation.
+     * </p>
+     * @param date current date
+     * @param <T> type of the field elements
+     * @return prime meridian vector
+     * @since 9.0
+     */
+    <T extends RealFieldElement<T>> T getPrimeMeridianAngle(FieldAbsoluteDate<T> date);
 
 }
