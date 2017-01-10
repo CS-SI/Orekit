@@ -18,12 +18,15 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeVectorFunction;
 import org.orekit.time.TimeScalarFunction;
 import org.orekit.utils.IERSConventions;
@@ -76,13 +79,8 @@ class TODProvider implements EOPBasedTransformProvider {
         return new TODProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
-    /** Get the transform from Mean Of Date at specified date.
-     * <p>The update considers the nutation effects from IERS data.</p>
-     * @param date new value of the date
-     * @return transform at the specified date
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read
-     */
+    /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         // compute nutation angles
@@ -109,6 +107,39 @@ class TODProvider implements EOPBasedTransformProvider {
 
         // set up the transform from parent MOD
         return new Transform(date, nutation);
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // compute nutation angles
+        final T[] angles = nutationFunction.value(date);
+
+        // compute the mean obliquity of the ecliptic
+        final T moe = obliquityFunction.value(date);
+
+        T dpsi = angles[0];
+        T deps = angles[1];
+        if (eopHistory != null) {
+            // apply the corrections for the nutation parameters
+            final T[] correction = eopHistory.getEquinoxNutationCorrection(date);
+            dpsi = dpsi.add(correction[0]);
+            deps = deps.add(correction[1]);
+        }
+
+        // compute the true obliquity of the ecliptic
+        final T toe = moe.add(deps);
+
+        // complete nutation
+        final FieldRotation<T> nutation = new FieldRotation<>(RotationOrder.XZX, RotationConvention.FRAME_TRANSFORM,
+                                                              moe, dpsi.negate(), toe.negate());
+
+        // set up the transform from parent MOD
+        return new FieldTransform<>(date, nutation);
 
     }
 

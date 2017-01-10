@@ -196,6 +196,10 @@ public class InterpolatingTransformProviderTest {
                                                new Vector3D(omega, Vector3D.PLUS_K)));
         }
 
+        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+            throw new UnsupportedOperationException("never called in this test");
+        }
+
         public int getCount() {
             return count;
         }

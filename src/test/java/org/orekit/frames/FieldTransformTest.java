@@ -112,9 +112,9 @@ public class FieldTransformTest {
                                                                                         CartesianDerivativesFilter.USE_PV,
                                                                                         sample);
 
-            checkVector(rebuiltPV.getPosition(),     transformedPV.getPosition(),     4.0e-16);
-            checkVector(rebuiltPV.getVelocity(),     transformedPV.getVelocity(),     2.0e-16);
-            checkVector(rebuiltPV.getAcceleration(), transformedPV.getAcceleration(), 9.0e-11);
+            checkVector(rebuiltPV.getPosition(),     transformedPV.getPosition(),     3.0e-15);
+            checkVector(rebuiltPV.getVelocity(),     transformedPV.getVelocity(),     2.0e-15);
+            checkVector(rebuiltPV.getAcceleration(), transformedPV.getAcceleration(), 5.0e-10);
 
         }
 
@@ -1083,14 +1083,14 @@ public class FieldTransformTest {
 
         for (double dt = 0.1; dt <= 3.1; dt += 0.01) {
             FieldTransform<T> reference = evolvingTransform(t0, dt);
-            FieldTransform<T> interpolated = sample.get(0).interpolate(reference.getFieldDate(), sample);
+            FieldTransform<T> interpolated = FieldTransform.interpolate(reference.getFieldDate(), sample);
             FieldTransform<T> error = new FieldTransform<>(reference.getFieldDate(), reference, interpolated.getInverse());
-            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm().getReal(),           2.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm().getReal(),           6.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm().getReal(),       4.0e-14);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle().getReal(),            2.0e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm().getReal(),         6.0e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm().getReal(), 4.0e-14);
+            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm().getReal(),           4.0e-12);
+            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm().getReal(),           3.0e-11);
+            Assert.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm().getReal(),       3.0e-10);
+            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle().getReal(),            2.0e-10);
+            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm().getReal(),         2.0e-09);
+            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm().getReal(), 8.0e-09);
 
         }
 

@@ -21,14 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.FDSFactory;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.util.FastMath;
@@ -2078,9 +2073,6 @@ public enum IERSConventions {
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
 
-    /** Factory for the DerivativeStructure instances. */
-    private static final DSFactory FACTORY_1_1 = new DSFactory(1, 1);
-
     /** Get the reference epoch for fundamental nutation arguments.
      * @return reference epoch for fundamental nutation arguments
      * @since 6.1
@@ -2723,9 +2715,6 @@ public enum IERSConventions {
 
     /** Local class for EOP tidal corrections. */
     private static class EOPTidalCorrection implements TimeVectorFunction {
-
-        /** Map for already created factories. */
-        private final Map<Field<?>, FDSFactory<?>> factories = new HashMap<>();
 
         /** Nutation arguments. */
         private final FundamentalNutationArguments arguments;

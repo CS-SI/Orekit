@@ -29,6 +29,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
+@Deprecated
 public class LocalOrbitalFrameTest {
 
     @Test

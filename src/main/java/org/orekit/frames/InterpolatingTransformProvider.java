@@ -31,7 +31,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.GenericTimeStampedCache;
@@ -76,7 +75,10 @@ public class InterpolatingTransformProvider implements TransformProvider {
     private final transient GenericTimeStampedCache<Transform> cache;
 
     /** Field caches for sample points. */
-    private final transient Map<Field<? extends RealFieldElement<?>>, GenericTimeStampedCache<FieldTransform<? extends RealFieldElement<?>>>> fieldCaches;
+    // we use Object as the value of fieldCaches because despite numerous attempts,
+    // we could not find a way to use GenericTimeStampedCache<FieldTransform<? extends RealFieldElement<?>>
+    // without the compiler complaining
+    private final transient Map<Field<? extends RealFieldElement<?>>, Object> fieldCaches;
 
     /** Simple constructor.
      * @param rawProvider provider for raw (non-interpolated) transforms
@@ -155,14 +157,17 @@ public class InterpolatingTransformProvider implements TransformProvider {
         throws OrekitException {
         try {
 
-            GenericTimeStampedCache<FieldTransform<T>> fieldCache = fieldCaches.get(date.getField());
+            @SuppressWarnings("unchecked")
+            GenericTimeStampedCache<FieldTransform<T>> fieldCache =
+                (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
             if (fieldCache == null) {
-                fieldCache = new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
-                                cache.getMaxSlots(),
-                                cache.getMaxSpan(),
-                                cache.getNewSlotQuantumGap(),
-                                new FieldGenerator<T>(date.getField()));
-//                fieldCaches.put(date.getField(), fieldCache);
+                fieldCache =
+                    new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                                                                   cache.getMaxSlots(),
+                                                                   cache.getMaxSpan(),
+                                                                   cache.getNewSlotQuantumGap(),
+                                                                   new FieldGenerator<>(date));
+                fieldCaches.put(date.getField(), fieldCache);
             }
 
             // retrieve a sample from the thread-safe cache
@@ -325,14 +330,18 @@ public class InterpolatingTransformProvider implements TransformProvider {
      */
     private class FieldGenerator<T extends RealFieldElement<T>> implements TimeStampedGenerator<FieldTransform<T>> {
 
-        /** Field to which the elements belong. */
-        private final Field<T> field;
+        /** Reference date. */
+        private final FieldAbsoluteDate<T> refDate;
+
+        /** Reference date as an absolute date. */
+        private final AbsoluteDate aRefDate;
 
         /** Simple constructor.
-         * @param field field to which the elements belong
+         * @param refDate reference date
          */
-        FieldGenerator(final Field<T> field) {
-            this.field = field;
+        FieldGenerator(final FieldAbsoluteDate<T> refDate) {
+            this.refDate  = refDate;
+            this.aRefDate = refDate.toAbsoluteDate();
         }
 
         /** {@inheritDoc} */
@@ -340,7 +349,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
             try {
                 final List<FieldTransform<T>> generated = new ArrayList<FieldTransform<T>>();
-                final FieldAbsoluteDate<T> fDate = new FieldAbsoluteDate<>(field, date);
+                final FieldAbsoluteDate<T> fDate = refDate.shiftedBy(date.durationFrom(aRefDate));
 
                 if (existing == null) {
 

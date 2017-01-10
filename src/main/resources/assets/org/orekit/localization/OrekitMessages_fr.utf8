@@ -417,3 +417,6 @@ VALUE_NOT_FOUND = la valeur {0} n''a pas été trouvée dans {1}
 
 # Ephemeris file format does not support multiple space objects
 EPHEMERIS_FILE_NO_MULTI_SUPPORT = le format de fichier des éphémérides n''autorise pas les objets spatiaux multiples
+
+# no FieldPVCoordinatesProvider for field {0} in LOF frame {1}
+ LOF_FRAME_NO_PROVIDER_FOR_FIELD = pas de FieldPVCoordinatesProvider pour le corps {0} dans le repère orbital local {1}

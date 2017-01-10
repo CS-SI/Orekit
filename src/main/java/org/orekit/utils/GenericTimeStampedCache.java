@@ -100,7 +100,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         }
         if (neighborsSize < 2) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
-                                                      neighborsSize, 2);
+                                                     neighborsSize, 2);
         }
 
         this.reference         = new AtomicReference<AbsoluteDate>();

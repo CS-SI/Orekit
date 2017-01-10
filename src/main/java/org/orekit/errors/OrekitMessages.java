@@ -186,7 +186,8 @@ public enum OrekitMessages implements Localizable {
     NOT_ENOUGH_PROPAGATORS("Creating an aggregate propagator requires at least one constituent propagator, but none were provided."),
     NULL_ARGUMENT("argument {0} cannot be null"),
     VALUE_NOT_FOUND("value {0} not found in {1}"),
-    EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects");
+    EPHEMERIS_FILE_NO_MULTI_SUPPORT("Ephemeris file format does not support multiple space objects"),
+    LOF_FRAME_NO_PROVIDER_FOR_FIELD("no FieldPVCoordinatesProvider for field {0} in LOF frame {1}");
 
 
     // CHECKSTYLE: resume JavadocVariable check
