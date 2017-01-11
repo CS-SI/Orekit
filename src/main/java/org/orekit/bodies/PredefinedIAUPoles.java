@@ -46,10 +46,10 @@ enum PredefinedIAUPoles implements IAUPole {
                                                    FastMath.toRadians(63.87));
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(84.176);
+        private final double w0 = 84.176;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(14.1844000);
+        private final double wDot = 14.1844000;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -63,12 +63,12 @@ enum PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            return d(date) * wDot + w0;
+            return FastMath.toRadians(d(date) * wDot + w0);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return d(date).multiply(wDot).add(w0);
+            return toRadians(d(date).multiply(wDot).add(w0));
         }
 
     },
@@ -77,100 +77,102 @@ enum PredefinedIAUPoles implements IAUPole {
     MERCURY {
 
         /** Constant term of the right ascension of the pole. */
-        private final double alpha0 = FastMath.toRadians(281.0097);
+        private final double alpha0 = 281.0097;
 
         /** Rate term of the right ascension of the pole. */
-        private final double alphaDot = FastMath.toRadians(-0.0328);
+        private final double alphaDot = -0.0328;
 
         /** Constant term of the declination of the pole. */
-        private final double delta0 = FastMath.toRadians(281.0097);
+        private final double delta0 = 61.4143;
 
         /** Rate term of the declination of the pole. */
-        private final double deltaDot = FastMath.toRadians(-0.0328);
+        private final double deltaDot = -0.0049;
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(329.5469);
+        private final double w0 = 329.5469;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(6.1385025);
+        private final double wDot = 6.1385025;
 
         /** M1 coefficient of the prime meridian. */
-        private final double m1Coeff = FastMath.toRadians(0.00993822);
+        private final double m1Coeff = 0.00993822;
 
         /** M2 coefficient of the prime meridian. */
-        private final double m2Coeff = FastMath.toRadians(0.00104581);
+        private final double m2Coeff = -0.00104581;
 
         /** M3 coefficient of the prime meridian. */
-        private final double m3Coeff = FastMath.toRadians(0.00010280);
+        private final double m3Coeff = -0.00010280;
 
         /** M4 coefficient of the prime meridian. */
-        private final double m4Coeff = FastMath.toRadians(0.00002364);
+        private final double m4Coeff = -0.00002364;
 
         /** M5 coefficient of the prime meridian. */
-        private final double m5Coeff = FastMath.toRadians(0.00000532);
+        private final double m5Coeff = -0.00000532;
 
         /** Constant term of the M1 angle. */
-        private double M10   = FastMath.toRadians(174.791086);
+        private double M10   = 174.791086;
 
         /** Rate term of the M1 angle. */
-        private double M1Dot = FastMath.toRadians(4.092335);
+        private double M1Dot = 4.092335;
 
         /** Constant term of the M2 angle. */
-        private double M20   = FastMath.toRadians(349.582171);
+        private double M20   = 349.582171;
 
         /** Rate term of the M1 angle. */
-        private double M2Dot = FastMath.toRadians(8.184670);
+        private double M2Dot = 8.184670;
 
         /** Constant term of the M3 angle. */
-        private double M30   = FastMath.toRadians(164.373257);
+        private double M30   = 164.373257;
 
         /** Rate term of the M1 angle. */
-        private double M3Dot = FastMath.toRadians(12.277005);
+        private double M3Dot = 12.277005;
 
         /** Constant term of the M4 angle. */
-        private double M40   = FastMath.toRadians(339.164343);
+        private double M40   = 339.164343;
 
         /** Rate term of the M1 angle. */
-        private double M4Dot = FastMath.toRadians(16.369340);
+        private double M4Dot = 16.369340;
 
         /** Constant term of the M5 angle. */
-        private double M50   = FastMath.toRadians(153.955429);
+        private double M50   = 153.955429;
 
         /** Rate term of the M1 angle. */
-        private double M5Dot = FastMath.toRadians(20.461675);
+        private double M5Dot = 20.461675;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             final double t = t(date);
-            return new Vector3D(t * alphaDot + alpha0, t * deltaDot + delta0);
+            return new Vector3D(FastMath.toRadians(t * alphaDot + alpha0),
+                                FastMath.toRadians(t * deltaDot + delta0));
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(t.multiply(alphaDot).add(alpha0), t.multiply(deltaDot).add(delta0));
+            return new FieldVector3D<>(toRadians(t.multiply(alphaDot).add(alpha0)),
+                                       toRadians(t.multiply(deltaDot).add(delta0)));
         }
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
             final double d = d(date);
-            return d(date) * wDot + w0 +
-                   FastMath.sin(d * M10 + M1Dot) * m1Coeff +
-                   FastMath.sin(d * M20 + M2Dot) * m2Coeff +
-                   FastMath.sin(d * M30 + M3Dot) * m3Coeff +
-                   FastMath.sin(d * M40 + M4Dot) * m4Coeff +
-                   FastMath.sin(d * M50 + M5Dot) * m5Coeff;
+            return FastMath.toRadians(d(date) * wDot + w0 +
+                                      FastMath.sin(FastMath.toRadians(d * M1Dot + M10)) * m1Coeff +
+                                      FastMath.sin(FastMath.toRadians(d * M2Dot + M20)) * m2Coeff +
+                                      FastMath.sin(FastMath.toRadians(d * M3Dot + M30)) * m3Coeff +
+                                      FastMath.sin(FastMath.toRadians(d * M4Dot + M40)) * m4Coeff +
+                                      FastMath.sin(FastMath.toRadians(d * M5Dot + M50)) * m5Coeff);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
-            return d(date).multiply(wDot).add(w0).
-                   add(d.multiply(M10).add(M1Dot).sin().multiply(m1Coeff)).
-                   add(d.multiply(M20).add(M2Dot).sin().multiply(m2Coeff)).
-                   add(d.multiply(M30).add(M3Dot).sin().multiply(m3Coeff)).
-                   add(d.multiply(M40).add(M4Dot).sin().multiply(m4Coeff)).
-                   add(d.multiply(M50).add(M5Dot).sin().multiply(m5Coeff));
+            return toRadians(d(date).multiply(wDot).add(w0).
+                             add(toRadians(d.multiply(M1Dot).add(M10)).sin().multiply(m1Coeff)).
+                             add(toRadians(d.multiply(M2Dot).add(M20)).sin().multiply(m2Coeff)).
+                             add(toRadians(d.multiply(M3Dot).add(M30)).sin().multiply(m3Coeff)).
+                             add(toRadians(d.multiply(M4Dot).add(M40)).sin().multiply(m4Coeff)).
+                             add(toRadians(d.multiply(M5Dot).add(M50)).sin().multiply(m5Coeff)));
         }
 
     },
@@ -183,10 +185,10 @@ enum PredefinedIAUPoles implements IAUPole {
                                                    FastMath.toRadians(67.16));
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(160.20);
+        private final double w0 = 160.20;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(-1.4813688);
+        private final double wDot = -1.4813688;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -200,12 +202,12 @@ enum PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            return d(date) * wDot + w0;
+            return FastMath.toRadians(d(date) * wDot + w0);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return d(date).multiply(wDot).add(w0);
+            return toRadians(d(date).multiply(wDot).add(w0));
         }
 
     },
@@ -214,43 +216,45 @@ enum PredefinedIAUPoles implements IAUPole {
     EARTH {
 
         /** Constant term of the right ascension of the pole. */
-        private final double alpha0 = FastMath.toRadians( 0.00);
+        private final double alpha0 =  0.00;
 
         /** Rate term of the right ascension of the pole. */
-        private final double alphaDot = FastMath.toRadians(-0.641);
+        private final double alphaDot = -0.641;
 
         /** Constant term of the declination of the pole. */
-        private final double delta0 = FastMath.toRadians(90.00);
+        private final double delta0 = 90.00;
 
         /** Rate term of the declination of the pole. */
-        private final double deltaDot = FastMath.toRadians(-0.557);
+        private final double deltaDot = -0.557;
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(190.147);
+        private final double w0 = 190.147;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(360.9856235);
+        private final double wDot = 360.9856235;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             final double t = t(date);
-            return new Vector3D(t * alphaDot + alpha0, t * deltaDot + delta0);
+            return new Vector3D(FastMath.toRadians(t * alphaDot + alpha0),
+                                FastMath.toRadians(t * deltaDot + delta0));
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(t.multiply(alphaDot).add(alpha0), t.multiply(deltaDot).add(delta0));
+            return new FieldVector3D<>(toRadians(t.multiply(alphaDot).add(alpha0)),
+                                       toRadians(t.multiply(deltaDot).add(delta0)));
         }
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            return d(date) * wDot + w0;
+            return FastMath.toRadians(d(date) * wDot + w0);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return d(date).multiply(wDot).add(w0);
+            return toRadians(d(date).multiply(wDot).add(w0));
         }
 
     },
@@ -259,270 +263,270 @@ enum PredefinedIAUPoles implements IAUPole {
     MOON {
 
         /** Constant term of the right ascension of the pole. */
-        private final double alpha0 = FastMath.toRadians(269.9949);
+        private final double alpha0 = 269.9949;
 
         /** Rate term of the right ascension of the pole. */
-        private final double alphaDot = FastMath.toRadians(0.0031);
+        private final double alphaDot = 0.0031;
 
         /** Constant term of the declination of the pole. */
-        private final double delta0 = FastMath.toRadians(66.5392);
+        private final double delta0 = 66.5392;
 
         /** Rate term of the declination of the pole. */
-        private final double deltaDot = FastMath.toRadians( 0.0130);
+        private final double deltaDot =  0.0130;
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(38.3213);
+        private final double w0 = 38.3213;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(13.17635815);
+        private final double wDot = 13.17635815;
 
         /** Rate term of the prime meridian. */
-        private final double wDotDot = FastMath.toRadians(-1.4e-12);
+        private final double wDotDot = -1.4e-12;
 
         /** Constant term of the E1 angle. */
-        private final double e010    = FastMath.toRadians(125.045);
+        private final double e010    = 125.045;
 
         /** Rate term of the E1 angle. */
-        private final double e01Dot  = FastMath.toRadians( -0.0529921);
+        private final double e01Dot  =  -0.0529921;
 
         /** Sine coefficient of the E1 angle. */
-        private final double e01Sin  = FastMath.toRadians(-3.8787);
+        private final double e01Sin  = -3.8787;
 
         /** Cosine coefficient of the E1 angle. */
-        private final double e01Cos  = FastMath.toRadians( 1.5419);
+        private final double e01Cos  =  1.5419;
 
         /** Sine coefficient of the E1 angle, for the prime meridian. */
-        private final double e01WSin = FastMath.toRadians( 3.5610);
+        private final double e01WSin =  3.5610;
 
         /** Constant term of the E2 angle. */
-        private final double e020    = FastMath.toRadians(250.089);
+        private final double e020    = 250.089;
 
         /** Rate term of the E2 angle. */
-        private final double e02Dot  = FastMath.toRadians( -0.1059842);
+        private final double e02Dot  =  -0.1059842;
 
         /** Sine coefficient of the E2 angle. */
-        private final double e02Sin  = FastMath.toRadians(-0.1204);
+        private final double e02Sin  = -0.1204;
 
         /** Cosine coefficient of the E2 angle. */
-        private final double e02Cos  = FastMath.toRadians( 0.0239);
+        private final double e02Cos  =  0.0239;
 
         /** Sine coefficient of the E2 angle, for the prime meridian. */
-        private final double e02WSin = FastMath.toRadians( 0.1208);
+        private final double e02WSin =  0.1208;
 
         /** Constant term of the E3 angle. */
-        private final double e030    = FastMath.toRadians(260.008);
+        private final double e030    = 260.008;
 
         /** Rate term of the E3 angle. */
-        private final double e03Dot  = FastMath.toRadians( 13.0120009);
+        private final double e03Dot  =  13.0120009;
 
         /** Sine coefficient of the E3 angle. */
-        private final double e03Sin  = FastMath.toRadians( 0.0700);
+        private final double e03Sin  =  0.0700;
 
         /** Cosine coefficient of the E3 angle. */
-        private final double e03Cos  = FastMath.toRadians(-0.0278);
+        private final double e03Cos  = -0.0278;
 
         /** Sine coefficient of the E3 angle, for the prime meridian. */
-        private final double e03WSin = FastMath.toRadians(-0.0642);
+        private final double e03WSin = -0.0642;
 
         /** Constant term of the E4 angle. */
-        private final double e040    = FastMath.toRadians(176.625);
+        private final double e040    = 176.625;
 
         /** Rate term of the E4 angle. */
-        private final double e04Dot  = FastMath.toRadians( 13.3407154);
+        private final double e04Dot  =  13.3407154;
 
         /** Sine coefficient of the E4 angle. */
-        private final double e04Sin  = FastMath.toRadians(-0.0172);
+        private final double e04Sin  = -0.0172;
 
         /** Cosine coefficient of the E4 angle. */
-        private final double e04Cos  = FastMath.toRadians( 0.0068);
+        private final double e04Cos  =  0.0068;
 
         /** Sine coefficient of the E4 angle, for the prime meridian. */
-        private final double e04WSin = FastMath.toRadians( 0.0158);
+        private final double e04WSin =  0.0158;
 
         /** Constant term of the E5 angle. */
-        private final double e050    = FastMath.toRadians(357.529);
+        private final double e050    = 357.529;
 
         /** Rate term of the E5 angle. */
-        private final double e05Dot  = FastMath.toRadians(  0.9856003);
+        private final double e05Dot  =   0.9856003;
 
         /** Sine coefficient of the E5 angle, for the prime meridian. */
-        private final double e05WSin = FastMath.toRadians( 0.0252);
+        private final double e05WSin =  0.0252;
 
         /** Constant term of the E6 angle. */
-        private final double e060    = FastMath.toRadians(311.589);
+        private final double e060    = 311.589;
 
         /** Rate term of the E6 angle. */
-        private final double e06Dot  = FastMath.toRadians( 26.4057084);
+        private final double e06Dot  =  26.4057084;
 
         /** Sine coefficient of the E6 angle. */
-        private final double e06Sin  = FastMath.toRadians(0.0072);
+        private final double e06Sin  = 0.0072;
 
         /** Cosine coefficient of the E6 angle. */
-        private final double e06Cos  = FastMath.toRadians(-0.0029);
+        private final double e06Cos  = -0.0029;
 
         /** Sine coefficient of the E6 angle, for the prime meridian. */
-        private final double e06WSin = FastMath.toRadians(-0.0066);
+        private final double e06WSin = -0.0066;
 
         /** Constant term of the E7 angle. */
-        private final double e070    = FastMath.toRadians(134.963);
+        private final double e070    = 134.963;
 
         /** Rate term of the E7 angle. */
-        private final double e07Dot  = FastMath.toRadians( 13.0649930);
+        private final double e07Dot  =  13.0649930;
 
         /** Cosine coefficient of the E7 angle. */
-        private final double e07Cos  = FastMath.toRadians( 0.0009);
+        private final double e07Cos  =  0.0009;
 
         /** Sine coefficient of the E7 angle, for the prime meridian. */
-        private final double e07WSin = FastMath.toRadians(-0.0047);
+        private final double e07WSin = -0.0047;
 
         /** Constant term of the E8 angle. */
-        private final double e080    = FastMath.toRadians(276.617);
+        private final double e080    = 276.617;
 
         /** Rate term of the E8 angle. */
-        private final double e08Dot  = FastMath.toRadians(  0.3287146);
+        private final double e08Dot  =   0.3287146;
 
         /** Sine coefficient of the E8 angle, for the prime meridian. */
-        private final double e08WSin = FastMath.toRadians(-0.0046);
+        private final double e08WSin = -0.0046;
 
         /** Constant term of the E9 angle. */
-        private final double e090    = FastMath.toRadians( 34.226);
+        private final double e090    =  34.226;
 
         /** Rate term of the E9 angle. */
-        private final double e09Dot  = FastMath.toRadians(  1.7484877);
+        private final double e09Dot  =   1.7484877;
 
         /** Sine coefficient of the E9 angle, for the prime meridian. */
-        private final double e09WSin = FastMath.toRadians( 0.0028);
+        private final double e09WSin =  0.0028;
 
         /** Constant term of the E10 angle. */
-        private final double e100    = FastMath.toRadians( 15.134);
+        private final double e100    =  15.134;
 
         /** Rate term of the E10 angle. */
-        private final double e10Dot  = FastMath.toRadians( -0.1589763);
+        private final double e10Dot  =  -0.1589763;
 
         /** Sine coefficient of the E10 angle. */
-        private final double e10Sin  = FastMath.toRadians(-0.0052);
+        private final double e10Sin  = -0.0052;
 
         /** Cosine coefficient of the E10 angle. */
-        private final double e10Cos  = FastMath.toRadians(0.0008);
+        private final double e10Cos  = 0.0008;
 
         /** Sine coefficient of the E10 angle, for the prime meridian. */
-        private final double e10WSin = FastMath.toRadians( 0.0052);
+        private final double e10WSin =  0.0052;
 
         /** Constant term of the E11 angle. */
-        private final double e110    = FastMath.toRadians(119.743);
+        private final double e110    = 119.743;
 
         /** Rate term of the E11 angle. */
-        private final double e11Dot  = FastMath.toRadians(  0.0036096);
+        private final double e11Dot  =   0.0036096;
 
         /** Sine coefficient of the E11 angle, for the prime meridian. */
-        private final double e11WSin = FastMath.toRadians( 0.0040);
+        private final double e11WSin =  0.0040;
 
         /** Constant term of the E12 angle. */
-        private final double e120    = FastMath.toRadians(239.961);
+        private final double e120    = 239.961;
 
         /** Rate term of the E12 angle. */
-        private final double e12Dot  = FastMath.toRadians(  0.1643573);
+        private final double e12Dot  =   0.1643573;
 
         /** Sine coefficient of the E12 angle, for the prime meridian. */
-        private final double e12WSin = FastMath.toRadians( 0.0019);
+        private final double e12WSin =  0.0019;
 
         /** Constant term of the E13 angle. */
-        private final double e130    = FastMath.toRadians( 25.053);
+        private final double e130    =  25.053;
 
         /** Rate term of the E13 angle. */
-        private final double e13Dot  = FastMath.toRadians( 12.9590088);
+        private final double e13Dot  =  12.9590088;
 
         /** Sine coefficient of the E13 angle. */
-        private final double e13Sin  = FastMath.toRadians(0.0043);
+        private final double e13Sin  = 0.0043;
 
         /** Cosine coefficient of the E13 angle. */
-        private final double e13Cos  = FastMath.toRadians(-0.0009);
+        private final double e13Cos  = -0.0009;
 
         /** Sine coefficient of the E13 angle, for the prime meridian. */
-        private final double e13WSin = FastMath.toRadians(-0.0044);
+        private final double e13WSin = -0.0044;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             final double d = d(date);
             final double t = t(date);
-            return new Vector3D(t * alphaDot + alpha0 +
-                                FastMath.sin(d * e01Dot + e010) * e01Sin +
-                                FastMath.sin(d * e02Dot + e020) * e02Sin +
-                                FastMath.sin(d * e03Dot + e030) * e03Sin +
-                                FastMath.sin(d * e04Dot + e040) * e04Sin +
-                                FastMath.sin(d * e06Dot + e060) * e06Sin +
-                                FastMath.sin(d * e10Dot + e100) * e10Sin +
-                                FastMath.sin(d * e13Dot + e130) * e13Sin,
-                                t * deltaDot + delta0 +
-                                FastMath.cos(d * e01Dot + e010) * e01Cos +
-                                FastMath.cos(d * e02Dot + e020) * e02Cos +
-                                FastMath.cos(d * e03Dot + e030) * e03Cos +
-                                FastMath.cos(d * e04Dot + e040) * e04Cos +
-                                FastMath.cos(d * e06Dot + e060) * e06Cos +
-                                FastMath.cos(d * e07Dot + e070) * e07Cos +
-                                FastMath.cos(d * e10Dot + e100) * e10Cos +
-                                FastMath.cos(d * e13Dot + e130) * e13Cos);
+            return new Vector3D(FastMath.toRadians(t * alphaDot + alpha0 +
+                                                   FastMath.sin(FastMath.toRadians(d * e01Dot + e010)) * e01Sin +
+                                                   FastMath.sin(FastMath.toRadians(d * e02Dot + e020)) * e02Sin +
+                                                   FastMath.sin(FastMath.toRadians(d * e03Dot + e030)) * e03Sin +
+                                                   FastMath.sin(FastMath.toRadians(d * e04Dot + e040)) * e04Sin +
+                                                   FastMath.sin(FastMath.toRadians(d * e06Dot + e060)) * e06Sin +
+                                                   FastMath.sin(FastMath.toRadians(d * e10Dot + e100)) * e10Sin +
+                                                   FastMath.sin(FastMath.toRadians(d * e13Dot + e130)) * e13Sin),
+                                FastMath.toRadians(t * deltaDot + delta0 +
+                                                   FastMath.cos(FastMath.toRadians(d * e01Dot + e010)) * e01Cos +
+                                                   FastMath.cos(FastMath.toRadians(d * e02Dot + e020)) * e02Cos +
+                                                   FastMath.cos(FastMath.toRadians(d * e03Dot + e030)) * e03Cos +
+                                                   FastMath.cos(FastMath.toRadians(d * e04Dot + e040)) * e04Cos +
+                                                   FastMath.cos(FastMath.toRadians(d * e06Dot + e060)) * e06Cos +
+                                                   FastMath.cos(FastMath.toRadians(d * e07Dot + e070)) * e07Cos +
+                                                   FastMath.cos(FastMath.toRadians(d * e10Dot + e100)) * e10Cos +
+                                                   FastMath.cos(FastMath.toRadians(d * e13Dot + e130)) * e13Cos));
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
             final T t = t(date);
-            return new FieldVector3D<>(t.multiply(alphaDot).add(alpha0).
-                                       add(d.multiply(e01Dot).add(e010).sin().multiply(e01Sin)).
-                                       add(d.multiply(e02Dot).add(e020).sin().multiply(e02Sin)).
-                                       add(d.multiply(e03Dot).add(e030).sin().multiply(e03Sin)).
-                                       add(d.multiply(e04Dot).add(e040).sin().multiply(e04Sin)).
-                                       add(d.multiply(e06Dot).add(e060).sin().multiply(e06Sin)).
-                                       add(d.multiply(e10Dot).add(e100).sin().multiply(e10Sin)).
-                                       add(d.multiply(e13Dot).add(e130).sin().multiply(e13Sin)),
-                                       t.multiply(deltaDot).add(delta0).
-                                       add(d.multiply(e01Dot).add(e010).cos().multiply(e01Cos)).
-                                       add(d.multiply(e02Dot).add(e020).cos().multiply(e02Cos)).
-                                       add(d.multiply(e03Dot).add(e030).cos().multiply(e03Cos)).
-                                       add(d.multiply(e04Dot).add(e040).cos().multiply(e04Cos)).
-                                       add(d.multiply(e06Dot).add(e060).cos().multiply(e06Cos)).
-                                       add(d.multiply(e07Dot).add(e070).cos().multiply(e07Cos)).
-                                       add(d.multiply(e10Dot).add(e100).cos().multiply(e10Cos)).
-                                       add(d.multiply(e13Dot).add(e130).cos().multiply(e13Cos)));
+            return new FieldVector3D<>(toRadians(t.multiply(alphaDot).add(alpha0).
+                                                 add(toRadians(d.multiply(e01Dot).add(e010)).sin().multiply(e01Sin)).
+                                                 add(toRadians(d.multiply(e02Dot).add(e020)).sin().multiply(e02Sin)).
+                                                 add(toRadians(d.multiply(e03Dot).add(e030)).sin().multiply(e03Sin)).
+                                                 add(toRadians(d.multiply(e04Dot).add(e040)).sin().multiply(e04Sin)).
+                                                 add(toRadians(d.multiply(e06Dot).add(e060)).sin().multiply(e06Sin)).
+                                                 add(toRadians(d.multiply(e10Dot).add(e100)).sin().multiply(e10Sin)).
+                                                 add(toRadians(d.multiply(e13Dot).add(e130)).sin().multiply(e13Sin))),
+                                       toRadians(t.multiply(deltaDot).add(delta0).
+                                                 add(toRadians(d.multiply(e01Dot).add(e010)).cos().multiply(e01Cos)).
+                                                 add(toRadians(d.multiply(e02Dot).add(e020)).cos().multiply(e02Cos)).
+                                                 add(toRadians(d.multiply(e03Dot).add(e030)).cos().multiply(e03Cos)).
+                                                 add(toRadians(d.multiply(e04Dot).add(e040)).cos().multiply(e04Cos)).
+                                                 add(toRadians(d.multiply(e06Dot).add(e060)).cos().multiply(e06Cos)).
+                                                 add(toRadians(d.multiply(e07Dot).add(e070)).cos().multiply(e07Cos)).
+                                                 add(toRadians(d.multiply(e10Dot).add(e100)).cos().multiply(e10Cos)).
+                                                 add(toRadians(d.multiply(e13Dot).add(e130)).cos().multiply(e13Cos))));
         }
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
             final double d = d(date);
-            return d * (d * wDotDot + wDot) + w0 +
-                   FastMath.sin(d * e01Dot + e010) * e01WSin +
-                   FastMath.sin(d * e02Dot + e020) * e02WSin +
-                   FastMath.sin(d * e03Dot + e030) * e03WSin +
-                   FastMath.sin(d * e04Dot + e040) * e04WSin +
-                   FastMath.sin(d * e05Dot + e050) * e05WSin +
-                   FastMath.sin(d * e06Dot + e060) * e06WSin +
-                   FastMath.sin(d * e07Dot + e070) * e07WSin +
-                   FastMath.sin(d * e08Dot + e080) * e08WSin +
-                   FastMath.sin(d * e09Dot + e090) * e09WSin +
-                   FastMath.sin(d * e10Dot + e100) * e10WSin +
-                   FastMath.sin(d * e11Dot + e110) * e11WSin +
-                   FastMath.sin(d * e12Dot + e120) * e12WSin +
-                   FastMath.sin(d * e13Dot + e130) * e13WSin;
+            return FastMath.toRadians(d * (d * wDotDot + wDot) + w0 +
+                                      FastMath.sin(FastMath.toRadians(d * e01Dot + e010)) * e01WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e02Dot + e020)) * e02WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e03Dot + e030)) * e03WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e04Dot + e040)) * e04WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e05Dot + e050)) * e05WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e06Dot + e060)) * e06WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e07Dot + e070)) * e07WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e08Dot + e080)) * e08WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e09Dot + e090)) * e09WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e10Dot + e100)) * e10WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e11Dot + e110)) * e11WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e12Dot + e120)) * e12WSin +
+                                      FastMath.sin(FastMath.toRadians(d * e13Dot + e130)) * e13WSin);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
             final T d = d(date);
-            return d.multiply(d.multiply(wDotDot).add(wDot)).add(w0).
-                   add(d.multiply(e01Dot).add(e010).sin().multiply(e01WSin)).
-                   add(d.multiply(e02Dot).add(e020).sin().multiply(e02WSin)).
-                   add(d.multiply(e03Dot).add(e030).sin().multiply(e03WSin)).
-                   add(d.multiply(e04Dot).add(e040).sin().multiply(e04WSin)).
-                   add(d.multiply(e05Dot).add(e050).sin().multiply(e05WSin)).
-                   add(d.multiply(e06Dot).add(e060).sin().multiply(e06WSin)).
-                   add(d.multiply(e07Dot).add(e070).sin().multiply(e07WSin)).
-                   add(d.multiply(e08Dot).add(e080).sin().multiply(e08WSin)).
-                   add(d.multiply(e09Dot).add(e090).sin().multiply(e09WSin)).
-                   add(d.multiply(e10Dot).add(e100).sin().multiply(e10WSin)).
-                   add(d.multiply(e11Dot).add(e110).sin().multiply(e11WSin)).
-                   add(d.multiply(e12Dot).add(e120).sin().multiply(e12WSin)).
-                   add(d.multiply(e13Dot).add(e130).sin().multiply(e13WSin));
+            return toRadians(d.multiply(d.multiply(wDotDot).add(wDot)).add(w0).
+                             add(toRadians(d.multiply(e01Dot).add(e010)).sin().multiply(e01WSin)).
+                             add(toRadians(d.multiply(e02Dot).add(e020)).sin().multiply(e02WSin)).
+                             add(toRadians(d.multiply(e03Dot).add(e030)).sin().multiply(e03WSin)).
+                             add(toRadians(d.multiply(e04Dot).add(e040)).sin().multiply(e04WSin)).
+                             add(toRadians(d.multiply(e05Dot).add(e050)).sin().multiply(e05WSin)).
+                             add(toRadians(d.multiply(e06Dot).add(e060)).sin().multiply(e06WSin)).
+                             add(toRadians(d.multiply(e07Dot).add(e070)).sin().multiply(e07WSin)).
+                             add(toRadians(d.multiply(e08Dot).add(e080)).sin().multiply(e08WSin)).
+                             add(toRadians(d.multiply(e09Dot).add(e090)).sin().multiply(e09WSin)).
+                             add(toRadians(d.multiply(e10Dot).add(e100)).sin().multiply(e10WSin)).
+                             add(toRadians(d.multiply(e11Dot).add(e110)).sin().multiply(e11WSin)).
+                             add(toRadians(d.multiply(e12Dot).add(e120)).sin().multiply(e12WSin)).
+                             add(toRadians(d.multiply(e13Dot).add(e130)).sin().multiply(e13WSin)));
         }
 
     },
@@ -531,43 +535,45 @@ enum PredefinedIAUPoles implements IAUPole {
     MARS {
 
         /** Constant term of the right ascension of the pole. */
-        private final double alpha0 = FastMath.toRadians(317.68143);
+        private final double alpha0 = 317.68143;
 
         /** Rate term of the right ascension of the pole. */
-        private final double alphaDot = FastMath.toRadians(-0.1061);
+        private final double alphaDot = -0.1061;
 
         /** Constant term of the declination of the pole. */
-        private final double delta0 = FastMath.toRadians( 52.88650);
+        private final double delta0 =  52.88650;
 
         /** Rate term of the declination of the pole. */
-        private final double deltaDot = FastMath.toRadians(-0.0609);
+        private final double deltaDot = -0.0609;
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(176.630);
+        private final double w0 = 176.630;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(350.89198226);
+        private final double wDot = 350.89198226;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             final double t = t(date);
-            return new Vector3D(t * alphaDot + alpha0, t * deltaDot + delta0);
+            return new Vector3D(FastMath.toRadians(t * alphaDot + alpha0),
+                                FastMath.toRadians(t * deltaDot + delta0));
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(t.multiply(alphaDot).add(alpha0), t.multiply(deltaDot).add(delta0));
+            return new FieldVector3D<>(toRadians(t.multiply(alphaDot).add(alpha0)),
+                                       toRadians(t.multiply(deltaDot).add(delta0)));
         }
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            return d(date) * wDot + w0;
+            return FastMath.toRadians(d(date) * wDot + w0);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return d(date).multiply(wDot).add(w0);
+            return toRadians(d(date).multiply(wDot).add(w0));
         }
 
     },
@@ -576,140 +582,140 @@ enum PredefinedIAUPoles implements IAUPole {
     JUPITER {
 
         /** Constant term of the right ascension of the pole. */
-        private final double alpha0 = FastMath.toRadians(268.056595);
+        private final double alpha0 = 268.056595;
 
         /** Rate term of the right ascension of the pole. */
-        private final double alphaDot = FastMath.toRadians(-0.006499);
+        private final double alphaDot = -0.006499;
 
         /** Constant term of the declination of the pole. */
-        private final double delta0 = FastMath.toRadians(64.495303);
+        private final double delta0 = 64.495303;
 
         /** Rate term of the declination of the pole. */
-        private final double deltaDot = FastMath.toRadians(0.002413);
+        private final double deltaDot = 0.002413;
 
         /** Constant term of the ja angle. */
-        private final double ja0 = FastMath.toRadians( 99.360714);
+        private final double ja0 =  99.360714;
 
         /** Rate term of the ja angle. */
-        private final double jaDot = FastMath.toRadians(4850.4046);
+        private final double jaDot = 4850.4046;
 
         /** Sine coefficient of the ja angle. */
-        private final double jaSin = FastMath.toRadians(0.000117);
+        private final double jaSin = 0.000117;
 
         /** Cosine coefficient of the ja angle. */
-        private final double jaCos = FastMath.toRadians(0.000050);
+        private final double jaCos = 0.000050;
 
         /** Constant term of the jb angle. */
-        private final double jb0 = FastMath.toRadians(175.895369);
+        private final double jb0 = 175.895369;
 
         /** Rate term of the jb angle. */
-        private final double jbDot = FastMath.toRadians(1191.9605);
+        private final double jbDot = 1191.9605;
 
         /** Sine coefficient of the jb angle. */
-        private final double jbSin = FastMath.toRadians(0.000938);
+        private final double jbSin = 0.000938;
 
         /** Cosine coefficient of the jb angle. */
-        private final double jbCos = FastMath.toRadians(0.000404);
+        private final double jbCos = 0.000404;
 
         /** Constant term of the jc angle. */
-        private final double jc0 = FastMath.toRadians(300.323162);
+        private final double jc0 = 300.323162;
 
         /** Rate term of the jc angle. */
-        private final double jcDot = FastMath.toRadians(262.5475);
+        private final double jcDot = 262.5475;
 
         /** Sine coefficient of the jc angle. */
-        private final double jcSin = FastMath.toRadians(0.001432);
+        private final double jcSin = 0.001432;
 
         /** Cosine coefficient of the jc angle. */
-        private final double jcCos = FastMath.toRadians(0.000617);
+        private final double jcCos = 0.000617;
 
         /** Constant term of the jd angle. */
-        private final double jd0 = FastMath.toRadians(114.012305);
+        private final double jd0 = 114.012305;
 
         /** Rate term of the jd angle. */
-        private final double jdDot = FastMath.toRadians(6070.2476);
+        private final double jdDot = 6070.2476;
 
         /** Sine coefficient of the jd angle. */
-        private final double jdSin = FastMath.toRadians(0.000030);
+        private final double jdSin = 0.000030;
 
         /** Cosine coefficient of the jd angle. */
-        private final double jdCos = FastMath.toRadians(-0.000013);
+        private final double jdCos = -0.000013;
 
         /** Constant term of the je angle. */
-        private final double je0 = FastMath.toRadians(49.511251);
+        private final double je0 = 49.511251;
 
         /** Rate term of the je angle. */
-        private final double jeDot = FastMath.toRadians(64.3000);
+        private final double jeDot = 64.3000;
 
         /** Sine coefficient of the je angle. */
-        private final double jeSin = FastMath.toRadians(0.002150);
+        private final double jeSin = 0.002150;
 
         /** Cosine coefficient of the je angle. */
-        private final double jeCos = FastMath.toRadians(0.000926);
+        private final double jeCos = 0.000926;
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(284.95);
+        private final double w0 = 284.95;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(870.5360000);
+        private final double wDot = 870.5360000;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
 
             final double t = t(date);
-            final double ja = t * jaDot + ja0;
-            final double jb = t * jbDot + jb0;
-            final double jc = t * jcDot + jc0;
-            final double jd = t * jdDot + jd0;
-            final double je = t * jeDot + je0;
+            final double ja = FastMath.toRadians(t * jaDot + ja0);
+            final double jb = FastMath.toRadians(t * jbDot + jb0);
+            final double jc = FastMath.toRadians(t * jcDot + jc0);
+            final double jd = FastMath.toRadians(t * jdDot + jd0);
+            final double je = FastMath.toRadians(t * jeDot + je0);
 
-            return new Vector3D(t * alphaDot + alpha0 +
-                                FastMath.sin(ja) * jaSin +
-                                FastMath.sin(jb) * jbSin +
-                                FastMath.sin(jc) * jcSin +
-                                FastMath.sin(jd) * jdSin +
-                                FastMath.sin(je) * jeSin,
-                                t * deltaDot + delta0 +
-                                FastMath.cos(ja) * jaCos +
-                                FastMath.cos(jb) * jbCos +
-                                FastMath.cos(jc) * jcCos +
-                                FastMath.cos(jd) * jdCos +
-                                FastMath.cos(je) * jeCos);
+            return new Vector3D(FastMath.toRadians(t * alphaDot + alpha0 +
+                                                   FastMath.sin(ja) * jaSin +
+                                                   FastMath.sin(jb) * jbSin +
+                                                   FastMath.sin(jc) * jcSin +
+                                                   FastMath.sin(jd) * jdSin +
+                                                   FastMath.sin(je) * jeSin),
+                                FastMath.toRadians(t * deltaDot + delta0 +
+                                                   FastMath.cos(ja) * jaCos +
+                                                   FastMath.cos(jb) * jbCos +
+                                                   FastMath.cos(jc) * jcCos +
+                                                   FastMath.cos(jd) * jdCos +
+                                                   FastMath.cos(je) * jeCos));
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
 
             final T t = t(date);
-            final T ja = t.multiply(jaDot).add(ja0);
-            final T jb = t.multiply(jbDot).add(jb0);
-            final T jc = t.multiply(jcDot).add(jc0);
-            final T jd = t.multiply(jdDot).add(jd0);
-            final T je = t.multiply(jeDot).add(je0);
+            final T ja = toRadians(t.multiply(jaDot).add(ja0));
+            final T jb = toRadians(t.multiply(jbDot).add(jb0));
+            final T jc = toRadians(t.multiply(jcDot).add(jc0));
+            final T jd = toRadians(t.multiply(jdDot).add(jd0));
+            final T je = toRadians(t.multiply(jeDot).add(je0));
 
-            return new FieldVector3D<>(t.multiply(alphaDot).add(alpha0).
-                                       add(ja.sin().multiply(jaSin)).
-                                       add(jb.sin().multiply(jbSin)).
-                                       add(jc.sin().multiply(jcSin)).
-                                       add(jd.sin().multiply(jdSin)).
-                                       add(je.sin().multiply(jeSin)),
-                                       t.multiply(deltaDot).add(delta0).
-                                       add(ja.cos().multiply(jaCos)).
-                                       add(jb.cos().multiply(jbCos)).
-                                       add(jc.cos().multiply(jcCos)).
-                                       add(jd.cos().multiply(jdCos)).
-                                       add(je.cos().multiply(jeCos)));
+            return new FieldVector3D<>(toRadians(t.multiply(alphaDot).add(alpha0).
+                                                 add(ja.sin().multiply(jaSin)).
+                                                 add(jb.sin().multiply(jbSin)).
+                                                 add(jc.sin().multiply(jcSin)).
+                                                 add(jd.sin().multiply(jdSin)).
+                                                 add(je.sin().multiply(jeSin))),
+                                       toRadians(t.multiply(deltaDot).add(delta0).
+                                                 add(ja.cos().multiply(jaCos)).
+                                                 add(jb.cos().multiply(jbCos)).
+                                                 add(jc.cos().multiply(jcCos)).
+                                                 add(jd.cos().multiply(jdCos)).
+                                                 add(je.cos().multiply(jeCos))));
 
         }
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            return d(date) * wDot + w0;
+            return FastMath.toRadians(d(date) * wDot + w0);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return d(date).multiply(wDot).add(w0);
+            return toRadians(d(date).multiply(wDot).add(w0));
         }
 
     },
@@ -718,43 +724,45 @@ enum PredefinedIAUPoles implements IAUPole {
     SATURN {
 
         /** Constant term of the right ascension of the pole. */
-        private final double alpha0 = FastMath.toRadians(40.589);
+        private final double alpha0 = 40.589;
 
         /** Rate term of the right ascension of the pole. */
-        private final double alphaDot = FastMath.toRadians(-0.036);
+        private final double alphaDot = -0.036;
 
         /** Constant term of the declination of the pole. */
-        private final double delta0 = FastMath.toRadians(83.537);
+        private final double delta0 = 83.537;
 
         /** Rate term of the declination of the pole. */
-        private final double deltaDot = FastMath.toRadians(-0.004);
+        private final double deltaDot = -0.004;
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(38.90);
+        private final double w0 = 38.90;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(810.7939024);
+        private final double wDot = 810.7939024;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
             final double t = t(date);
-            return new Vector3D(t * alphaDot + alpha0, t * deltaDot + delta0);
+            return new Vector3D(FastMath.toRadians(t * alphaDot + alpha0),
+                                FastMath.toRadians(t * deltaDot + delta0));
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
             final T t = t(date);
-            return new FieldVector3D<>(t.multiply(alphaDot).add(alpha0), t.multiply(deltaDot).add(delta0));
+            return new FieldVector3D<>(toRadians(t.multiply(alphaDot).add(alpha0)),
+                                       toRadians(t.multiply(deltaDot).add(delta0)));
         }
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            return d(date) * wDot + w0;
+            return FastMath.toRadians(d(date) * wDot + w0);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return d(date).multiply(wDot).add(w0);
+            return toRadians(d(date).multiply(wDot).add(w0));
         }
 
     },
@@ -767,10 +775,10 @@ enum PredefinedIAUPoles implements IAUPole {
                                                    FastMath.toRadians(-15.175));
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(203.81);
+        private final double w0 = 203.81;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(-501.1600928);
+        private final double wDot = -501.1600928;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -784,12 +792,12 @@ enum PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            return d(date) * wDot + w0;
+            return FastMath.toRadians(d(date) * wDot + w0);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return d(date).multiply(wDot).add(w0);
+            return toRadians(d(date).multiply(wDot).add(w0));
         }
 
     },
@@ -798,54 +806,56 @@ enum PredefinedIAUPoles implements IAUPole {
     NEPTUNE {
 
         /** Constant term of the right ascension of the pole. */
-        private final double alpha0 = FastMath.toRadians(299.36);
+        private final double alpha0 = 299.36;
 
         /** Sine term of the right ascension of the pole. */
-        private final double alphaSin = FastMath.toRadians(0.70);
+        private final double alphaSin = 0.70;
 
         /** Constant term of the declination of the pole. */
-        private final double delta0 = FastMath.toRadians(43.46);
+        private final double delta0 = 43.46;
 
         /** Cosine term of the declination of the pole. */
-        private final double deltaCos = FastMath.toRadians(-0.51);
+        private final double deltaCos = -0.51;
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(253.18);
+        private final double w0 = 253.18;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(536.3128492);
+        private final double wDot = 536.3128492;
 
         /** Sine term of the prime meridian. */
-        private final double wSin = FastMath.toRadians(-0.48);
+        private final double wSin = -0.48;
 
         /** Constant term of the N angle. */
-        private double N0   = FastMath.toRadians(357.85);
+        private double N0   = 357.85;
 
         /** Rate term of the M1 angle. */
-        private double NDot = FastMath.toRadians(52.316);
+        private double NDot = 52.316;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
-            final double n = t(date) * NDot + N0;
-            return new Vector3D(FastMath.sin(n) * alphaSin + alpha0, FastMath.cos(n) * deltaCos + delta0);
+            final double n = FastMath.toRadians(t(date) * NDot + N0);
+            return new Vector3D(FastMath.toRadians(FastMath.sin(n) * alphaSin + alpha0),
+                                FastMath.toRadians(FastMath.cos(n) * deltaCos + delta0));
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> FieldVector3D<T> getPole(final FieldAbsoluteDate<T> date) {
-            final T n = t(date).multiply(NDot).add(N0);
-            return new FieldVector3D<>(n.sin().multiply(alphaSin).add(alpha0), n.cos().multiply(deltaCos).add(delta0));
+            final T n = toRadians(t(date).multiply(NDot).add(N0));
+            return new FieldVector3D<>(toRadians(n.sin().multiply(alphaSin).add(alpha0)),
+                                       toRadians(n.cos().multiply(deltaCos).add(delta0)));
         }
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            final double n = t(date) * NDot + N0;
-            return d(date) * wDot + FastMath.sin(n) * wSin + w0;
+            final double n = FastMath.toRadians(t(date) * NDot + N0);
+            return FastMath.toRadians(d(date) * wDot + FastMath.sin(n) * wSin + w0);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            final T n = t(date).multiply(NDot).add(N0);
-            return d(date).multiply(wDot).add(n.sin().multiply(wSin)).add(w0);
+            final T n = toRadians(t(date).multiply(NDot).add(N0));
+            return toRadians(d(date).multiply(wDot).add(n.sin().multiply(wSin)).add(w0));
         }
 
     },
@@ -858,10 +868,10 @@ enum PredefinedIAUPoles implements IAUPole {
                                                    FastMath.toRadians(-6.163));
 
         /** Constant term of the prime meridian. */
-        private final double w0 = FastMath.toRadians(302.695);
+        private final double w0 = 302.695;
 
         /** Rate term of the prime meridian. */
-        private final double wDot = FastMath.toRadians(56.3625225);
+        private final double wDot = 56.3625225;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {
@@ -875,12 +885,12 @@ enum PredefinedIAUPoles implements IAUPole {
 
         /** {@inheritDoc} */
         public double getPrimeMeridianAngle(final AbsoluteDate date) {
-            return d(date) * wDot + w0;
+            return FastMath.toRadians(d(date) * wDot + w0);
         }
 
         /** {@inheritDoc} */
         public <T extends RealFieldElement<T>> T getPrimeMeridianAngle(final FieldAbsoluteDate<T> date) {
-            return d(date).multiply(wDot).add(w0);
+            return toRadians(d(date).multiply(wDot).add(w0));
         }
 
     },
@@ -982,6 +992,15 @@ enum PredefinedIAUPoles implements IAUPole {
      */
     private static <T extends RealFieldElement<T>> T d(final FieldAbsoluteDate<T> date) {
         return date.offsetFrom(FieldAbsoluteDate.getJ2000Epoch(date.getField()), TimeScalesFactory.getTDB()).divide(Constants.JULIAN_DAY);
+    }
+
+    /** Convert an angle to radians.
+     * @param angleInDegrees angle in degrees
+     * @param <T> type of the filed elements
+     * @return angle in radians
+     */
+    private static <T extends RealFieldElement<T>> T toRadians(final T angleInDegrees) {
+        return angleInDegrees.multiply(FastMath.PI / 180);
     }
 
 
