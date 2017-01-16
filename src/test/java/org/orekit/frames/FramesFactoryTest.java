@@ -27,8 +27,17 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.UnivariateVectorFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,6 +45,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitIllegalStateException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -44,12 +54,13 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
+import org.orekit.utils.PVCoordinates;
 
 public class FramesFactoryTest {
 
@@ -473,6 +484,161 @@ public class FramesFactoryTest {
         Assert.assertEquals(dx, nro[0], 1.0e-20);
         Assert.assertEquals(dy, nro[1], 1.0e-20);
 
+    }
+
+    @Test
+    public void testFieldConsistency() throws OrekitException {
+        for (final Predefined predefined : Predefined.values()) {
+            final Frame frame = FramesFactory.getFrame(predefined);
+            final Frame parent = frame.getParent();
+            if (parent != null) {
+                double maxPositionError             = 0;
+                double maxVelocityError             = 0;
+                double maxAccelerationError         = 0;
+                double maxRotationError             = 0;
+                double maxRotationRateError         = 0;
+                double maxRotationAccelerationError = 0;
+                for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60.0) {
+                    final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+                    final Transform transformDouble = parent.getTransformTo(frame, date);
+                    final FieldTransform<Decimal64> transformD64 =
+                                    parent.getTransformTo(frame, new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date));
+                    maxPositionError             = FastMath.max(maxPositionError,
+                                                                Vector3D.distance(transformDouble.getTranslation(),
+                                                                                  transformD64.getTranslation().toVector3D()));
+                    maxVelocityError             = FastMath.max(maxVelocityError,
+                                                                Vector3D.distance(transformDouble.getVelocity(),
+                                                                                  transformD64.getVelocity().toVector3D()));
+                    maxAccelerationError         = FastMath.max(maxAccelerationError,
+                                                                Vector3D.distance(transformDouble.getAcceleration(),
+                                                                                  transformD64.getAcceleration().toVector3D()));
+                    maxRotationError             = FastMath.max(maxRotationError,
+                                                               Rotation.distance(transformDouble.getRotation(),
+                                                                                 transformD64.getRotation().toRotation()));
+                    maxRotationRateError         = FastMath.max(maxRotationRateError,
+                                                                Vector3D.distance(transformDouble.getRotationRate(),
+                                                                                  transformD64.getRotationRate().toVector3D()));
+                    maxRotationAccelerationError = FastMath.max(maxRotationAccelerationError,
+                                                               Vector3D.distance(transformDouble.getRotationAcceleration(),
+                                                                                 transformD64.getRotationAcceleration().toVector3D()));
+                }
+                Assert.assertEquals(0, maxPositionError,             1.0e-100);
+                Assert.assertEquals(0, maxVelocityError,             1.0e-100);
+                Assert.assertEquals(0, maxAccelerationError,         1.0e-100);
+                Assert.assertEquals(0, maxRotationError,             2.0e-14);
+                Assert.assertEquals(0, maxRotationRateError,         2.0e-18);
+                Assert.assertEquals(0, maxRotationAccelerationError, 8.0e-22);
+            }
+        }
+    }
+
+    @Test
+    public void testDerivativesWithInterpolation() throws OrekitException {
+        doTestDerivatives(Constants.JULIAN_DAY, 60.0, false,
+                          8.0e-5, 2.0e-5, 3.0e-8, 4.0e-11, 7.0e-13, 2.0e-14);
+    }
+
+    @Test
+    public void testDerivativesWithoutInterpolation() throws OrekitException {
+        // when we forbid interpolation, the test is really slow (almost two hours
+        // runtime on a very old machine for one day time span and one minute rate),
+        // we drastically reduce sampling to circumvent this drawback
+        doTestDerivatives(Constants.JULIAN_DAY / 4, 3600, true,
+                          8.0e-5, 2.0e-5, 3.0e-8, 4.0e-11, 7.0e-13, 2.0e-14);
+    }
+
+    private void doTestDerivatives(double duration, double step, boolean forbidInterpolation,
+                                   double cartesianTolerance, double cartesianDotTolerance, double cartesianDotDotTolerance,
+                                   double rodriguesTolerance, double rodriguesDotTolerance, double rodriguesDotDotTolerance)
+        throws OrekitException {
+
+        final DSFactory factory = new DSFactory(1, 2);
+        final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
+        final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 60.0);
+
+        for (final Predefined predefined : Predefined.values()) {
+            final Frame frame = FramesFactory.getFrame(predefined);
+            final Frame parent = frame.getParent();
+            if (parent != null) {
+
+                UnivariateDifferentiableVectorFunction dCartesian = differentiator.differentiate(new UnivariateVectorFunction() {
+                    @Override
+                    public double[] value(double t) {
+                        try {
+                            return forbidInterpolation ?
+                                   FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getTranslation().toArray() :
+                                   parent.getTransformTo(frame, ref.shiftedBy(t)).getTranslation().toArray();
+                        } catch (OrekitException oe) {
+                            throw new OrekitExceptionWrapper(oe);
+                        }
+                    }
+                });
+
+                UnivariateDifferentiableVectorFunction dOrientation = differentiator.differentiate(new UnivariateVectorFunction() {
+                    double sign = +1.0;
+                    Rotation previous = Rotation.IDENTITY;
+                    @Override
+                    public double[] value(double t) {
+                        try {
+                            AngularCoordinates ac = forbidInterpolation ?
+                                                    FramesFactory.getNonInterpolatingTransform(parent, frame, ref.shiftedBy(t)).getAngular() :
+                                                    parent.getTransformTo(frame, ref.shiftedBy(t)).getAngular();
+                            final double dot = MathArrays.linearCombination(ac.getRotation().getQ0(), previous.getQ0(),
+                                                                            ac.getRotation().getQ1(), previous.getQ1(),
+                                                                            ac.getRotation().getQ2(), previous.getQ2(),
+                                                                            ac.getRotation().getQ3(), previous.getQ3());
+                            sign = FastMath.copySign(1.0, dot * sign);
+                            previous = ac.getRotation();
+                            return ac.getModifiedRodrigues(sign)[0];
+                        } catch (OrekitException oe) {
+                            throw new OrekitExceptionWrapper(oe);
+                        }
+                    }
+                });
+
+                double maxCartesianError       = 0;
+                double maxCartesianDotError    = 0;
+                double maxCartesianDotDotError = 0;
+                double maxRodriguesError       = 0;
+                double maxRodriguesDotError    = 0;
+                double maxRodriguesDotDotError = 0;
+                for (double dt = 0; dt < duration; dt += step) {
+
+                    final DerivativeStructure dtDS = factory.variable(0, dt);
+                    final FieldTransform<DerivativeStructure> tDS = forbidInterpolation ?
+                                                                    FramesFactory.getNonInterpolatingTransform(parent, frame, refDS.shiftedBy(dtDS)) :
+                                                                    parent.getTransformTo(frame, refDS.shiftedBy(dtDS));
+
+                    final DerivativeStructure[] refCart   = dCartesian.value(dtDS);
+                    final DerivativeStructure[] fieldCart = tDS.getTranslation().toArray();
+                    for (int i = 0; i < 3; ++i) {
+                        maxCartesianError       = FastMath.max(maxCartesianError,       FastMath.abs(refCart[i].getValue()              - fieldCart[i].getValue()));
+                        maxCartesianDotError    = FastMath.max(maxCartesianDotError,    FastMath.abs(refCart[i].getPartialDerivative(1) - fieldCart[i].getPartialDerivative(1)));
+                        maxCartesianDotDotError = FastMath.max(maxCartesianDotDotError, FastMath.abs(refCart[i].getPartialDerivative(2) - fieldCart[i].getPartialDerivative(2)));
+                    }
+
+                    final DerivativeStructure[] refOr   = dOrientation.value(dtDS);
+                    DerivativeStructure[] fieldOr = tDS.getAngular().getModifiedRodrigues(1.0)[0];
+                    final double dot = refOr[0].linearCombination(refOr, fieldOr).getReal();
+                    if (dot < 0 || Double.isNaN(dot)) {
+                        fieldOr = tDS.getAngular().getModifiedRodrigues(-1.0)[0];
+                    }
+                    for (int i = 0; i < 3; ++i) {
+                        maxRodriguesError       = FastMath.max(maxRodriguesError,       FastMath.abs(refOr[i].getValue()              - fieldOr[i].getValue()));
+                        maxRodriguesDotError    = FastMath.max(maxRodriguesDotError,    FastMath.abs(refOr[i].getPartialDerivative(1) - fieldOr[i].getPartialDerivative(1)));
+                        maxRodriguesDotDotError = FastMath.max(maxRodriguesDotDotError, FastMath.abs(refOr[i].getPartialDerivative(2) - fieldOr[i].getPartialDerivative(2)));
+                    }
+
+                }
+                Assert.assertEquals(frame.getName(), 0, maxCartesianError,              cartesianTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxCartesianDotError,           cartesianDotTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxCartesianDotDotError,        cartesianDotDotTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxRodriguesError,             rodriguesTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxRodriguesDotError,          rodriguesDotTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxRodriguesDotDotError,       rodriguesDotDotTolerance);
+            }
+        }
     }
 
     @Before
