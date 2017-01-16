@@ -23,11 +23,13 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -1246,6 +1248,60 @@ public class FramesFactory {
 
         // transform from origin to destination via common
         return new Transform(date, commonToOrigin.getInverse(), commonToDestination);
+
+    }
+
+    /** Get the transform between two frames, suppressing all interpolation.
+     * <p>
+     * This method is similar to {@link Frame#getTransformTo(Frame, AbsoluteDate)}
+     * except it removes the performance enhancing interpolation features that are
+     * added by the {@link FramesFactory factory} to some frames, in order to focus
+     * on accuracy. The interpolation features are intended to save processing time
+     * by avoiding doing some lengthy computation like nutation evaluation at each
+     * time step and caching some results. This method can be used to avoid this,
+     * when very high accuracy is desired, or for testing purposes. It should be
+     * used with care, as doing the full computation is <em>really</em> costly for
+     * some frames.
+     * </p>
+     * @param from frame from which transformation starts
+     * @param to frame to which transformation ends
+     * @param date date of the transform
+     * @param <T> type of the field elements
+     * @return transform between the two frames, avoiding interpolation
+     * @throws OrekitException if transform cannot be computed at this date
+     * @since 9.0
+     */
+    public static <T extends RealFieldElement<T>> FieldTransform<T> getNonInterpolatingTransform(final Frame from, final Frame to,
+                                                                                                 final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // common ancestor to both frames in the frames tree
+        Frame currentF = from.getDepth() > to.getDepth() ? from.getAncestor(from.getDepth() - to.getDepth()) : from;
+        Frame currentT = from.getDepth() > to.getDepth() ? to : to.getAncestor(to.getDepth() - from.getDepth());
+        while (currentF != currentT) {
+            currentF = currentF.getParent();
+            currentT = currentT.getParent();
+        }
+        final Frame common = currentF;
+
+        // transform from common to origin
+        FieldTransform<T> commonToOrigin = FieldTransform.getIdentity(date.getField());
+        for (Frame frame = from; frame != common; frame = frame.getParent()) {
+            commonToOrigin = new FieldTransform<>(date,
+                                                   peel(frame.getTransformProvider()).getTransform(date),
+                                                   commonToOrigin);
+        }
+
+        // transform from destination up to common
+        FieldTransform<T> commonToDestination = FieldTransform.getIdentity(date.getField());
+        for (Frame frame = to; frame != common; frame = frame.getParent()) {
+            commonToDestination = new FieldTransform<>(date,
+                                                       peel(frame.getTransformProvider()).getTransform(date),
+                                                       commonToDestination);
+        }
+
+        // transform from origin to destination via common
+        return new FieldTransform<>(date, commonToOrigin.getInverse(), commonToDestination);
 
     }
 
