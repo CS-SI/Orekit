@@ -726,14 +726,15 @@ public class EOPHistory implements Serializable {
                 final AbsoluteDate aDate = date.toAbsoluteDate();
 
                 final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<>();
-                final T[] y = MathArrays.buildArray(date.getField(), 2);
+                final T[] y = MathArrays.buildArray(date.getField(), 4);
                 final T zero = date.getField().getZero();
                 final FieldAbsoluteDate<T> central = new FieldAbsoluteDate<>(aDate, zero); // here, we attempt to get a constant date,
                                                                                            // for example removing derivatives
                                                                                            // if T was DerivativeStructure
                 cache.getNeighbors(aDate).forEach(entry -> {
-                    y[0] = zero.add(entry.correction[0]);
-                    y[1] = zero.add(entry.correction[1]);
+                    for (int i = 0; i < y.length; ++i) {
+                        y[i] = zero.add(entry.correction[i]);
+                    }
                     interpolator.addSamplePoint(central.durationFrom(entry.getDate()).negate(), y);
                 });
 
