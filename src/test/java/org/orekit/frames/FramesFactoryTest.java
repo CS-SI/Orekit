@@ -533,27 +533,44 @@ public class FramesFactoryTest {
     }
 
     @Test
-    public void testDerivativesWithInterpolation() throws OrekitException {
-        doTestDerivatives(Constants.JULIAN_DAY, 60.0, false,
+    public void testDerivatives2000WithInterpolation() throws OrekitException {
+        doTestDerivatives(AbsoluteDate.J2000_EPOCH, Constants.JULIAN_DAY, 60.0, false,
                           8.0e-5, 2.0e-5, 3.0e-8, 4.0e-11, 7.0e-13, 2.0e-14);
     }
 
     @Test
-    public void testDerivativesWithoutInterpolation() throws OrekitException {
+    public void testDerivatives2000WithoutInterpolation() throws OrekitException {
         // when we forbid interpolation, the test is really slow (almost two hours
         // runtime on a very old machine for one day time span and one minute rate),
         // we drastically reduce sampling to circumvent this drawback
-        doTestDerivatives(Constants.JULIAN_DAY / 4, 3600, true,
+        doTestDerivatives(AbsoluteDate.J2000_EPOCH, Constants.JULIAN_DAY / 4, 3600, true,
                           8.0e-5, 2.0e-5, 3.0e-8, 4.0e-11, 7.0e-13, 2.0e-14);
     }
 
-    private void doTestDerivatives(double duration, double step, boolean forbidInterpolation,
+    @Test
+    public void testDerivatives2003WithInterpolation() throws OrekitException {
+        doTestDerivatives(AbsoluteDate.J2000_EPOCH.shiftedBy(3 * Constants.JULIAN_YEAR),
+                          Constants.JULIAN_DAY, 60.0, false,
+                          8.0e-5, 2.0e-5, 4.0e-8, 8.0e-12, 3.0e-13, 4.0e-15);
+    }
+
+    @Test
+    public void testDerivatives2003WithoutInterpolation() throws OrekitException {
+        // when we forbid interpolation, the test is really slow (almost two hours
+        // runtime on a very old machine for one day time span and one minute rate),
+        // we drastically reduce sampling to circumvent this drawback
+        doTestDerivatives(AbsoluteDate.J2000_EPOCH.shiftedBy(3 * Constants.JULIAN_YEAR),
+                          Constants.JULIAN_DAY / 4, 3600, true,
+                          8.0e-5, 2.0e-5, 4.0e-8, 8.0e-12, 3.0e-13, 4.0e-15);
+    }
+
+    private void doTestDerivatives(AbsoluteDate ref,
+                                   double duration, double step, boolean forbidInterpolation,
                                    double cartesianTolerance, double cartesianDotTolerance, double cartesianDotDotTolerance,
                                    double rodriguesTolerance, double rodriguesDotTolerance, double rodriguesDotDotTolerance)
         throws OrekitException {
 
         final DSFactory factory = new DSFactory(1, 2);
-        final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
         final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 60.0);
 

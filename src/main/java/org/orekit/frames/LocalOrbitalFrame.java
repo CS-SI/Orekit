@@ -140,7 +140,7 @@ public class LocalOrbitalFrame extends Frame {
             final FieldPVCoordinatesProvider<T> fp = (FieldPVCoordinatesProvider<T>) fieldProviders.get(date.getField());
             if (fp == null) {
                 throw new OrekitException(OrekitMessages.LOF_FRAME_NO_PROVIDER_FOR_FIELD,
-                                          date.getField().getClass(), name);
+                                          date.getField().getClass().toString(), name);
             }
 
             return type.transformFromInertial(date, fp.getPVCoordinates(date, reference));
