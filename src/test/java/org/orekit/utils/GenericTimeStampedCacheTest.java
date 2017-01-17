@@ -242,7 +242,7 @@ public class GenericTimeStampedCacheTest {
     public void testNoGeneratedData() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
-            public List<AbsoluteDate> generate(AbsoluteDate existing,
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate,
                                                AbsoluteDate date) {
                 return new ArrayList<AbsoluteDate>();
             }
@@ -255,7 +255,7 @@ public class GenericTimeStampedCacheTest {
     public void testNoDataBefore() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
-            public List<AbsoluteDate> generate(AbsoluteDate existing,
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate,
                                                AbsoluteDate date) {
                 return Arrays.asList(AbsoluteDate.J2000_EPOCH);
             }
@@ -268,7 +268,7 @@ public class GenericTimeStampedCacheTest {
     public void testNoDataAfter() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
-            public List<AbsoluteDate> generate(AbsoluteDate existing,
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate,
                                                AbsoluteDate date) {
                 return Arrays.asList(AbsoluteDate.J2000_EPOCH);
             }
@@ -282,7 +282,7 @@ public class GenericTimeStampedCacheTest {
         TimeStampedGenerator<AbsoluteDate> reversedGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
             /** {@inheritDoc} */
-            public List<AbsoluteDate> generate(AbsoluteDate existing, AbsoluteDate date) {
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate, AbsoluteDate date) {
                 List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
                 list.add(date);
                 list.add(date.shiftedBy(-10.0));
@@ -304,19 +304,19 @@ public class GenericTimeStampedCacheTest {
                 new TimeStampedGenerator<AbsoluteDate>() {
 
             /** {@inheritDoc} */
-            public List<AbsoluteDate> generate(AbsoluteDate existing, AbsoluteDate date) {
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate, AbsoluteDate date) {
                 List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
-                if (existing == null) {
+                if (existingDate == null) {
                     list.add(date);
                 } else {
-                    if (date.compareTo(existing) > 0) {
-                        AbsoluteDate t = existing.shiftedBy(-10 * step);
+                    if (date.compareTo(existingDate) > 0) {
+                        AbsoluteDate t = existingDate.shiftedBy(-10 * step);
                         do {
                             t = t.shiftedBy(step);
                             list.add(list.size(), t);
                         } while (t.compareTo(date) <= 0);
                     } else {
-                        AbsoluteDate t = existing.shiftedBy(10 * step);
+                        AbsoluteDate t = existingDate.shiftedBy(10 * step);
                         do {
                             t = t.shiftedBy(-step);
                             list.add(0, t);
@@ -482,12 +482,12 @@ public class GenericTimeStampedCacheTest {
             return step;
         }
 
-        public List<AbsoluteDate> generate(AbsoluteDate existing, AbsoluteDate date) {
+        public List<AbsoluteDate> generate(AbsoluteDate existingDate, AbsoluteDate date) {
             List<AbsoluteDate> dates = new ArrayList<AbsoluteDate>();
-            if (existing == null) {
+            if (existingDate == null) {
                 dates.add(date);
-            } else if (date.compareTo(existing) >= 0) {
-                AbsoluteDate previous = existing;
+            } else if (date.compareTo(existingDate) >= 0) {
+                AbsoluteDate previous = existingDate;
                 while (date.compareTo(previous) > 0) {
                     previous = previous.shiftedBy(step);
                     if (previous.compareTo(earliest) >= 0 && previous.compareTo(latest) <= 0) {
@@ -495,7 +495,7 @@ public class GenericTimeStampedCacheTest {
                     }
                 }
             } else {
-                AbsoluteDate previous = existing;
+                AbsoluteDate previous = existingDate;
                 while (date.compareTo(previous) < 0) {
                     previous = previous.shiftedBy(-step);
                     if (previous.compareTo(earliest) >= 0 && previous.compareTo(latest) <= 0) {

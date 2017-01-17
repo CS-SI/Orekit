@@ -749,11 +749,11 @@ public class EOPHistory implements Serializable {
 
         /** {@inheritDoc} */
         @Override
-        public List<TidalCorrectionEntry> generate(final TidalCorrectionEntry existing, final AbsoluteDate date) {
+        public List<TidalCorrectionEntry> generate(final AbsoluteDate existingDate, final AbsoluteDate date) {
 
             final List<TidalCorrectionEntry> generated = new ArrayList<TidalCorrectionEntry>();
 
-            if (existing == null) {
+            if (existingDate == null) {
 
                 // no prior existing entries, just generate a first set
                 for (int i = -cache.getNeighborsSize() / 2; generated.size() < cache.getNeighborsSize(); ++i) {
@@ -766,7 +766,7 @@ public class EOPHistory implements Serializable {
                 // some entries have already been generated
                 // add the missing ones up to specified date
 
-                AbsoluteDate t = existing.getDate();
+                AbsoluteDate t = existingDate;
                 if (date.compareTo(t) > 0) {
                     // forward generation
                     do {

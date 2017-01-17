@@ -631,9 +631,9 @@ public class FramesFactoryTest {
                     }
 
                 }
-                Assert.assertEquals(frame.getName(), 0, maxCartesianError,              cartesianTolerance);
-                Assert.assertEquals(frame.getName(), 0, maxCartesianDotError,           cartesianDotTolerance);
-                Assert.assertEquals(frame.getName(), 0, maxCartesianDotDotError,        cartesianDotDotTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxCartesianError,             cartesianTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxCartesianDotError,          cartesianDotTolerance);
+                Assert.assertEquals(frame.getName(), 0, maxCartesianDotDotError,       cartesianDotDotTolerance);
                 Assert.assertEquals(frame.getName(), 0, maxRodriguesError,             rodriguesTolerance);
                 Assert.assertEquals(frame.getName(), 0, maxRodriguesDotError,          rodriguesDotTolerance);
                 Assert.assertEquals(frame.getName(), 0, maxRodriguesDotDotError,       rodriguesDotDotTolerance);

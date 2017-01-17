@@ -850,24 +850,24 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         }
 
         /** {@inheritDoc} */
-        public List<PosVelChebyshev> generate(final PosVelChebyshev existing, final AbsoluteDate date)
+        public List<PosVelChebyshev> generate(final AbsoluteDate existingDate, final AbsoluteDate date)
             throws TimeStampedCacheException {
             try {
 
                 // prepare reading
                 entries.clear();
-                if (existing == null) {
+                if (existingDate == null) {
                     // we want ephemeris data for the first time, set up an arbitrary first range
                     start = date.shiftedBy(-FIFTY_DAYS);
                     end   = date.shiftedBy(+FIFTY_DAYS);
-                } else if (existing.getDate().compareTo(date) <= 0) {
+                } else if (existingDate.compareTo(date) <= 0) {
                     // we want to extend an existing range towards future dates
-                    start = existing.getDate();
+                    start = existingDate;
                     end   = date;
                 } else {
                     // we want to extend an existing range towards past dates
                     start = date;
-                    end   = existing.getDate();
+                    end   = existingDate;
                 }
 
                 // get new entries in the specified data range

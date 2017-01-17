@@ -143,7 +143,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
 
         /** {@inheritDoc} */
         @Override
-        public List<TimeStampedSphericalHarmonics> generate(final TimeStampedSphericalHarmonics existing,
+        public List<TimeStampedSphericalHarmonics> generate(final AbsoluteDate existingDate,
                                                             final AbsoluteDate date)
             throws TimeStampedCacheException {
             try {
@@ -152,7 +152,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
                         new ArrayList<TimeStampedSphericalHarmonics>();
                 final double[] cnmsnm = new double[2 * size];
 
-                if (existing == null) {
+                if (existingDate == null) {
 
                     // no prior existing transforms, just generate a first set
                     for (int i = 0; i < cache.getNeighborsSize(); ++i) {
@@ -166,7 +166,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
                     // some coefficients have already been generated
                     // add the missing ones up to specified date
 
-                    AbsoluteDate t = existing.getDate();
+                    AbsoluteDate t = existingDate;
                     if (date.compareTo(t) > 0) {
                         // forward generation
                         do {
