@@ -638,7 +638,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             }
             final Stream.Builder<T> builder = Stream.builder();
             for (int i = 0; i < neighborsSize; ++i) {
-                builder.add(cache.get(firstNeighbor + i).getData());
+                builder.accept(cache.get(firstNeighbor + i).getData());
             }
 
             return builder.build();
