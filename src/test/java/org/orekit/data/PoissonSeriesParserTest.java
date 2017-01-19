@@ -27,6 +27,9 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
@@ -548,7 +551,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testDerivatives() throws OrekitException {
+    public void testDerivativesAsField() throws OrekitException {
 
         Utils.setDataRoot("regular-data");
         String directory = "/assets/org/orekit/IERS-conventions/";
@@ -586,7 +589,7 @@ public class PoissonSeriesParserTest {
             DerivativeStructure zDirect = zSeries.value(elements);
 
             // finite differences computation of derivatives
-            DerivativeStructure zero = new DSFactory(1, 1).variable(0, 0.0);
+            DerivativeStructure zero = factory.variable(0, 0.0);
             xCoordinate.setDate(date.toAbsoluteDate());
             DerivativeStructure xFinite = dx.value(zero);
             yCoordinate.setDate(date.toAbsoluteDate());
@@ -600,6 +603,94 @@ public class PoissonSeriesParserTest {
             Assert.assertEquals(yFinite.getPartialDerivative(1), yDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * yFinite.getPartialDerivative(1)));
             Assert.assertEquals(zFinite.getValue(),              zDirect.getValue(),              FastMath.abs(7.0e-15 * zFinite.getValue()));
             Assert.assertEquals(zFinite.getPartialDerivative(1), zDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * zFinite.getPartialDerivative(1)));
+
+        }
+
+    }
+
+    @Test
+    public void testDerivativesFromDoubleAPI() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        String directory = "/assets/org/orekit/IERS-conventions/";
+        PoissonSeriesParser parser =
+                new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
+                    withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
+        InputStream xStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
+        PoissonSeries xSeries = parser.parse(xStream, "2010/tab5.2a.txt");
+        InputStream yStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2b.txt");
+        PoissonSeries ySeries = parser.parse(yStream, "2010/tab5.2b.txt");
+        InputStream zStream =
+                getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
+        PoissonSeries zSeries = parser.parse(zStream, "2010/tab5.2d.txt");
+
+        final PoissonSeries.CompiledSeries compiled =
+                        PoissonSeries.compile(xSeries, ySeries, zSeries);
+
+        TimeScale ut1 = TimeScalesFactory.getUT1(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+        final FundamentalNutationArguments arguments = IERSConventions.IERS_2010.getNutationArguments(ut1);
+
+        UnivariateDifferentiableVectorFunction finite = new FiniteDifferencesDifferentiator(4, 0.4).differentiate((double t) ->
+            compiled.value(arguments.evaluateAll(AbsoluteDate.J2000_EPOCH.shiftedBy(t))));
+
+        DSFactory factory = new DSFactory(1, 1);
+        for (double t = 0; t < Constants.JULIAN_DAY; t += 120) {
+
+            // computation of derivatives from API
+            double[] dAPI = compiled.derivative(arguments.evaluateAll(AbsoluteDate.J2000_EPOCH.shiftedBy(t)));
+
+            // finite differences computation of derivatives
+            DerivativeStructure[] d = finite.value(factory.variable(0, t));
+
+            Assert.assertEquals(d.length, dAPI.length);
+            for (int i = 0; i < d.length; ++i) {
+                Assert.assertEquals(d[i].getPartialDerivative(1), dAPI[i], FastMath.abs(2.0e-7 * d[i].getPartialDerivative(1)));
+            }
+
+        }
+
+    }
+
+    @Test
+    public void testDerivativesFromFieldAPI() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        String directory = "/assets/org/orekit/IERS-conventions/";
+        PoissonSeriesParser parser =
+                new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
+                    withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
+        InputStream xStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
+        PoissonSeries xSeries = parser.parse(xStream, "2010/tab5.2a.txt");
+        InputStream yStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2b.txt");
+        PoissonSeries ySeries = parser.parse(yStream, "2010/tab5.2b.txt");
+        InputStream zStream =
+                getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
+        PoissonSeries zSeries = parser.parse(zStream, "2010/tab5.2d.txt");
+
+        final PoissonSeries.CompiledSeries compiled =
+                        PoissonSeries.compile(xSeries, ySeries, zSeries);
+
+        TimeScale ut1 = TimeScalesFactory.getUT1(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+        final FundamentalNutationArguments arguments = IERSConventions.IERS_2010.getNutationArguments(ut1);
+
+        UnivariateDifferentiableVectorFunction finite = new FiniteDifferencesDifferentiator(4, 0.4).differentiate((double t) ->
+            compiled.value(arguments.evaluateAll(AbsoluteDate.J2000_EPOCH.shiftedBy(t))));
+
+        DSFactory factory = new DSFactory(1, 1);
+        for (double t = 0; t < Constants.JULIAN_DAY; t += 120) {
+
+            // computation of derivatives from API
+            Decimal64[] dAPI = compiled.derivative(arguments.evaluateAll(FieldAbsoluteDate.getJ2000Epoch(Decimal64Field.getInstance()).shiftedBy(t)));
+
+            // finite differences computation of derivatives
+            DerivativeStructure[] d = finite.value(factory.variable(0, t));
+
+            Assert.assertEquals(d.length, dAPI.length);
+            for (int i = 0; i < d.length; ++i) {
+                Assert.assertEquals(d[i].getPartialDerivative(1), dAPI[i].getReal(), FastMath.abs(2.0e-7 * d[i].getPartialDerivative(1)));
+            }
 
         }
 
