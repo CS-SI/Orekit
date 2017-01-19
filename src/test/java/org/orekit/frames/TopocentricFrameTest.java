@@ -86,7 +86,7 @@ public class TopocentricFrameTest {
 
         // Check that frame directions are aligned
         final double xDiff = Vector3D.dotProduct(topoFrame.getEast(), Vector3D.PLUS_J);
-        final double yDiff = Vector3D.dotProduct(topoFrame.getNorth(), Vector3D.PLUS_I.negate());
+        final double yDiff = Vector3D.dotProduct(topoFrame.getSouth(), Vector3D.PLUS_I);
         final double zDiff = Vector3D.dotProduct(topoFrame.getZenith(), Vector3D.PLUS_K);
         Assert.assertEquals(1., xDiff, Utils.epsilonTest);
         Assert.assertEquals(1., yDiff, Utils.epsilonTest);
@@ -161,6 +161,10 @@ public class TopocentricFrameTest {
         Assert.assertEquals(1., xDiff, Utils.epsilonTest);
         Assert.assertEquals(1., yDiff, Utils.epsilonTest);
         Assert.assertEquals(-1., zDiff, Utils.epsilonTest);
+
+        Assert.assertEquals(1, Vector3D.dotProduct(topoFrame1.getNadir(), topoFrame2.getZenith()), Utils.epsilonTest);
+        Assert.assertEquals(1, Vector3D.dotProduct(topoFrame1.getZenith(), topoFrame2.getNadir()), Utils.epsilonTest);
+
     }
 
     @Test

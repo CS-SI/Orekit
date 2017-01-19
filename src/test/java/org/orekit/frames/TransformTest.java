@@ -58,6 +58,16 @@ public class TransformTest {
     }
 
     @Test
+    public void testIdentityLine() {
+        RandomGenerator random = new Well19937a(0x98603025df70db7cl);
+        Vector3D p1 = randomVector(100.0, random);
+        Vector3D p2 = randomVector(100.0, random);
+        Line line = new Line(p1, p2, 1.0e-6);
+        Line transformed = Transform.IDENTITY.transformLine(line);
+        Assert.assertSame(line, transformed);
+    }
+
+    @Test
     public void testSimpleComposition() {
         Transform transform =
             new Transform(AbsoluteDate.J2000_EPOCH,
@@ -141,6 +151,11 @@ public class TransformTest {
         Assert.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertTrue(t12.getAngular().getRotationAcceleration().getNorm() > 0.01);
+
+        Assert.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
 
     }
 
