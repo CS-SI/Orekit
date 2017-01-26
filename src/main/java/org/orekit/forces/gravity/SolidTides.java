@@ -175,8 +175,8 @@ public class SolidTides extends AbstractForceModel {
         addContribution(final FieldSpacecraftState<T> s,
                         final FieldTimeDerivativesEquations<T> adder)
             throws OrekitException {
-        // TODO: field implementation
-        throw new UnsupportedOperationException();
+        // delegate to underlying attraction model
+        attractionModel.addContribution(s, adder);
     }
 
 

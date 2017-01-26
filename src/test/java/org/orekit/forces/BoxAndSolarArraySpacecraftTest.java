@@ -17,8 +17,17 @@
 package org.orekit.forces;
 
 
+import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,6 +36,8 @@ import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
@@ -37,8 +48,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class BoxAndSolarArraySpacecraftTest {
 
@@ -245,6 +258,235 @@ public class BoxAndSolarArraySpacecraftTest {
 
         }
 
+    }
+
+    @Test
+    public void testWrongParameterDrag() throws OrekitException {
+        SpacecraftState state = propagator.getInitialState();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        try {
+            s.dragAcceleration(state.getDate(), state.getFrame(),
+                               state.getPVCoordinates().getPosition(),
+                               state.getAttitude().getRotation(),
+                               state.getMass(), 1.0e-6, Vector3D.PLUS_I,
+                               "wrong");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                oe.getSpecifier());
+            Assert.assertEquals("wrong", (String) oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testWrongParameterRadiation() throws OrekitException {
+        SpacecraftState state = propagator.getInitialState();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        try {
+            s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
+                                            state.getPVCoordinates().getPosition(),
+                                            state.getAttitude().getRotation(),
+                                            state.getMass(), Vector3D.PLUS_I,
+                                            "wrong");
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                oe.getSpecifier());
+            Assert.assertEquals("wrong", (String) oe.getParts()[0]);
+        }
+    }
+
+    @Test
+    public void testNullIllumination() throws OrekitException {
+        SpacecraftState state = propagator.getInitialState();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        FieldVector3D<DerivativeStructure> a =
+                        s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
+                                            state.getPVCoordinates().getPosition(),
+                                            state.getAttitude().getRotation(),
+                                            state.getMass(), new Vector3D(Precision.SAFE_MIN / 2,
+                                                                          Vector3D.PLUS_I),
+                                            RadiationSensitive.ABSORPTION_COEFFICIENT);
+        Assert.assertEquals(0.0, a.getNorm().getReal(), Double.MIN_VALUE);
+    }
+
+    @Test
+    public void testBackwardIllumination() throws OrekitException {
+        SpacecraftState state = propagator.getInitialState();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
+                                 state.getPVCoordinates().getPosition(),
+                                 state.getAttitude().getRotation());
+        FieldVector3D<DerivativeStructure> aPlus =
+                        s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
+                                            state.getPVCoordinates().getPosition(),
+                                            state.getAttitude().getRotation(),
+                                            state.getMass(), n,
+                                            RadiationSensitive.ABSORPTION_COEFFICIENT);
+        FieldVector3D<DerivativeStructure> aMinus =
+                        s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
+                                            state.getPVCoordinates().getPosition(),
+                                            state.getAttitude().getRotation(),
+                                            state.getMass(), n.negate(),
+                                            RadiationSensitive.ABSORPTION_COEFFICIENT);
+        Assert.assertEquals(0.0, aPlus.add(aMinus).getNorm().getReal(), Double.MIN_VALUE);
+    }
+
+    @Test
+    public void testNormalOptimalRotationDouble() throws OrekitException {
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        for (double dt = 0; dt < 4000; dt += 60) {
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
+            Vector3D normal = s.getNormal(state.getDate(), state.getFrame(),
+                                            state.getPVCoordinates().getPosition(),
+                                            state.getAttitude().getRotation());
+            Assert.assertEquals(0, Vector3D.dotProduct(normal, Vector3D.PLUS_J), 1.0e-16);
+        }
+    }
+
+    @Test
+    public void testNormalOptimalRotationField() throws OrekitException {
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        Field<Decimal64> field = Decimal64Field.getInstance();
+        for (double dt = 0; dt < 4000; dt += 60) {
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
+            FieldVector3D<Decimal64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
+                                                          state.getFrame(),
+                                                          new FieldVector3D<>(field, state.getPVCoordinates().getPosition()),
+                                                          new FieldRotation<>(field, state.getAttitude().getRotation()));
+            Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
+        }
+    }
+
+    @Test
+    public void testNormalOptimalRotationDS() throws OrekitException {
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        DSFactory factory = new DSFactory(1, 2);
+        for (double dt = 0; dt < 4000; dt += 60) {
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
+            FieldVector3D<DerivativeStructure> normal = s.getNormal(state.getDate(),
+                                                                    state.getFrame(),
+                                                                    new FieldVector3D<>(factory.getDerivativeField(), state.getPVCoordinates().getPosition()),
+                                                                    new FieldRotation<>(factory.getDerivativeField(), state.getAttitude().getRotation()));
+            Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
+        }
+    }
+
+    @Test
+    public void testNormalFixedRateDouble() throws OrekitException {
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J,
+                                           initialDate, Vector3D.PLUS_K, 1.0e-3,
+                                           0.0, 1.0, 0.0);
+        for (double dt = 0; dt < 4000; dt += 60) {
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
+            Vector3D normal = s.getNormal(state.getDate(), state.getFrame(),
+                                            state.getPVCoordinates().getPosition(),
+                                            state.getAttitude().getRotation());
+            Assert.assertEquals(0, Vector3D.dotProduct(normal, Vector3D.PLUS_J), 1.0e-16);
+        }
+    }
+
+    @Test
+    public void testNormalFixedRateField() throws OrekitException {
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J,
+                                           initialDate, Vector3D.PLUS_K, 1.0e-3,
+                                           0.0, 1.0, 0.0);
+        Field<Decimal64> field = Decimal64Field.getInstance();
+        for (double dt = 0; dt < 4000; dt += 60) {
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
+            FieldVector3D<Decimal64> normal = s.getNormal(new FieldAbsoluteDate<>(field, state.getDate()),
+                                                          state.getFrame(),
+                                                          new FieldVector3D<>(field, state.getPVCoordinates().getPosition()),
+                                                          new FieldRotation<>(field, state.getAttitude().getRotation()));
+            Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
+        }
+    }
+
+    @Test
+    public void testNormalFixedRateDS() throws OrekitException {
+        AbsoluteDate initialDate = propagator.getInitialState().getDate();
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0, sun, 20.0, Vector3D.PLUS_J,
+                                           initialDate, Vector3D.PLUS_K, 1.0e-3,
+                                           0.0, 1.0, 0.0);
+        DSFactory factory = new DSFactory(1, 2);
+        for (double dt = 0; dt < 4000; dt += 60) {
+            AbsoluteDate date = initialDate.shiftedBy(dt);
+            SpacecraftState state = propagator.propagate(date);
+            FieldVector3D<DerivativeStructure> normal = s.getNormal(state.getDate(),
+                                                                    state.getFrame(),
+                                                                    new FieldVector3D<>(factory.getDerivativeField(), state.getPVCoordinates().getPosition()),
+                                                                    new FieldRotation<>(factory.getDerivativeField(), state.getAttitude().getRotation()));
+            Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
+        }
+    }
+
+    @Test
+    public void testNormalSunAlignedDouble() throws OrekitException {
+        BoxAndSolarArraySpacecraft s =
+            new BoxAndSolarArraySpacecraft(0, 0, 0,
+                                           (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),
+                                           20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        Vector3D normal = s.getNormal(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
+                                      Vector3D.ZERO, Rotation.IDENTITY);
+        Assert.assertEquals(0, Vector3D.dotProduct(normal, Vector3D.PLUS_J), 1.0e-16);
+    }
+
+    @Test
+    public void testNormalSunAlignedField() throws OrekitException {
+        BoxAndSolarArraySpacecraft s =
+                        new BoxAndSolarArraySpacecraft(0, 0, 0,
+                                                       (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),
+                                                       20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        Field<Decimal64> field = Decimal64Field.getInstance();
+        FieldVector3D<Decimal64> normal = s.getNormal(FieldAbsoluteDate.getJ2000Epoch(field),
+                                                      FramesFactory.getEME2000(),
+                                                      FieldVector3D.getZero(field),
+                                                      FieldRotation.getIdentity(field));
+        Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
+    }
+
+    @Test
+    public void testNormalSunAlignedDS() throws OrekitException {
+        BoxAndSolarArraySpacecraft s =
+                        new BoxAndSolarArraySpacecraft(0, 0, 0,
+                                                       (date, frame) -> new TimeStampedPVCoordinates(date, new Vector3D(0, 1e6, 0), Vector3D.ZERO),
+                                                       20.0, Vector3D.PLUS_J, 0.0, 1.0, 0.0);
+        DSFactory factory = new DSFactory(1, 2);
+        FieldVector3D<DerivativeStructure> normal = s.getNormal(AbsoluteDate.J2000_EPOCH,
+                                                                FramesFactory.getEME2000(),
+                                                                FieldVector3D.getZero(factory.getDerivativeField()),
+                                                                FieldRotation.getIdentity(factory.getDerivativeField()));
+        Assert.assertEquals(0, FieldVector3D.dotProduct(normal, Vector3D.PLUS_J).getReal(), 1.0e-16);
     }
 
     @Before
