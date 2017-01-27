@@ -847,7 +847,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         // cos (phi) = -dot / (psr * area)
         // n         = facet / area
         // s         = -fluxSat / psr
-        final T cN = dot.multiply(-2 * area).multiply(dot.multiply(specularReflectionCoeff).divide(psr.subtract(diffuseReflectionCoeff / 3)));
+        final T cN = dot.multiply(-2 * area).multiply(dot.multiply(specularReflectionCoeff).divide(psr).subtract(diffuseReflectionCoeff / 3));
         final T cS = dot.multiply(area * (specularReflectionCoeff - 1)).divide(psr);
         return new FieldVector3D<>(cN, normal, cS, fluxSat);
 

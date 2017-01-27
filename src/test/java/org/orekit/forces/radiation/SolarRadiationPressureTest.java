@@ -469,7 +469,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
         
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> J2000 = FieldAbsoluteDate.getJ2000Epoch(field);
         
         Frame EME = FramesFactory.getEME2000();
         
@@ -482,8 +482,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+
+        final OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -493,10 +494,12 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
-                
+
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
         NP.setInitialState(iSR);
         
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
@@ -512,15 +515,16 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
         
-        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(10000.);
+        FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(3000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assert.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        Assert.assertEquals(0,
+                            Vector3D.distance(finPVC_DS.toPVCoordinates().getPosition(),
+                                              finPVC_R.getPosition()),
+                            4.0e-9);
         
         long number = 23091991;
         RandomGenerator RG = new Well19937a(number);
@@ -553,7 +557,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             SpacecraftState shift_iSR = new SpacecraftState(shiftedOrb);
             
             NumericalPropagator shift_NP = new NumericalPropagator(RIntegrator);
-            
+            shift_NP.setOrbitType(type);
             shift_NP.setInitialState(shift_iSR);
             
             shift_NP.addForceModel(forceModel);
@@ -575,9 +579,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             double x = finPVC_shift.getPosition().getX();
             double y = finPVC_shift.getPosition().getY();
             double z = finPVC_shift.getPosition().getZ();
-            Assert.assertEquals(x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 1e-8);
-            Assert.assertEquals(y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 1e-8);
-            Assert.assertEquals(z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 1e-8);
+            Assert.assertEquals(x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 2e-9);
+            Assert.assertEquals(y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 5e-9);
+            Assert.assertEquals(z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 6e-10);
             
             //velocity check
             
@@ -588,9 +592,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             double vx = finPVC_shift.getVelocity().getX();
             double vy = finPVC_shift.getVelocity().getY();
             double vz = finPVC_shift.getVelocity().getZ();
-            Assert.assertEquals(vx_DS, vx, FastMath.abs(vx) * 1e-9);
-            Assert.assertEquals(vy_DS, vy, FastMath.abs(vy) * 1e-9);
-            Assert.assertEquals(vz_DS, vz, FastMath.abs(vz) * 1e-9);
+            Assert.assertEquals(vx_DS, vx, FastMath.abs(vx) * 4e-11);
+            Assert.assertEquals(vy_DS, vy, FastMath.abs(vy) * 2e-10);
+            Assert.assertEquals(vz_DS, vz, FastMath.abs(vz) * 4e-11);
             //acceleration check
             
             FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
@@ -600,9 +604,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 1e-8);
-            Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 1e-8);
-            Assert.assertEquals(az_DS, az, FastMath.abs(az) * 1e-8);
+            Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 6e-10);
+            Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 2e-9);
+            Assert.assertEquals(az_DS, az, FastMath.abs(az) * 3e-9);
         }
     }
 
@@ -636,8 +640,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+
+        final OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -647,7 +652,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
                 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
@@ -694,7 +700,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         Field<DerivativeStructure> field = a_0.getField();
         DerivativeStructure zero = field.getZero();
         
-        FieldAbsoluteDate<DerivativeStructure> J2000 = new FieldAbsoluteDate<DerivativeStructure>(field);
+        FieldAbsoluteDate<DerivativeStructure> J2000 = FieldAbsoluteDate.getJ2000Epoch(field);
         
         Frame EME = FramesFactory.getEME2000();
         
@@ -707,8 +713,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), OrbitType.KEPLERIAN);
+
+        final OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -718,10 +725,12 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
                 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
         NP.setInitialState(iSR);
         
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
@@ -731,14 +740,15 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         SolarRadiationPressure forceModel =
-            new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
-                                       new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
-                                                                      Vector3D.PLUS_J,
-                                                                      initialState.getDate().toAbsoluteDate(), Vector3D.PLUS_K, 1.0e-6,
-                                                                      1.2, 0.7, 0.2));
+                        new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
+                                                   new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
+                                                                                  Vector3D.PLUS_J,
+                                                                                  initialState.getDate().toAbsoluteDate(), Vector3D.PLUS_K, 1.0e-6,
+                                                                                  1.2, 0.7, 0.2));
         
         FNP.addForceModel(forceModel);
         NP.addForceModel(forceModel);
+        NP.setEphemerisMode();
         
         FieldAbsoluteDate<DerivativeStructure> target = J2000.shiftedBy(3000.);
         FieldSpacecraftState<DerivativeStructure> finalState_DS = FNP.propagate(target);
@@ -749,7 +759,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         Assert.assertEquals(0,
                             Vector3D.distance(finPVC_DS.toPVCoordinates().getPosition(),
                                               finPVC_R.getPosition()),
-                            0.05);
+                            1.0e-8);
         
         long number = 23091991;
         RandomGenerator RG = new Well19937a(number);
@@ -804,12 +814,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             double x = finPVC_shift.getPosition().getX();
             double y = finPVC_shift.getPosition().getY();
             double z = finPVC_shift.getPosition().getZ();
-            Assert.assertEquals("" + ((x_DS-x)/(x - pos_DS.getX().getReal())),
-                                x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 3e-8);
-            Assert.assertEquals("" + ((y_DS-y)/(y - pos_DS.getY().getReal())),
-                                y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 6e-7);
-            Assert.assertEquals("" + ((z_DS-z)/(z - pos_DS.getZ().getReal())),
-                                z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 7e-8);
+            Assert.assertEquals(x_DS, x, FastMath.abs(x - pos_DS.getX().getReal()) * 2e-9);
+            Assert.assertEquals(y_DS, y, FastMath.abs(y - pos_DS.getY().getReal()) * 5e-9);
+            Assert.assertEquals(z_DS, z, FastMath.abs(z - pos_DS.getZ().getReal()) * 6e-10);
             
             //velocity check
             
@@ -820,9 +827,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             double vx = finPVC_shift.getVelocity().getX();
             double vy = finPVC_shift.getVelocity().getY();
             double vz = finPVC_shift.getVelocity().getZ();
-            Assert.assertEquals("" + ((vx_DS-vx)/vx), vx_DS, vx, FastMath.abs(vx) * 2e-9);
-            Assert.assertEquals("" + ((vy_DS-vy)/vy), vy_DS, vy, FastMath.abs(vy) * 2e-8);
-            Assert.assertEquals("" + ((vz_DS-vz)/vz), vz_DS, vz, FastMath.abs(vz) * 2e-8);
+            Assert.assertEquals(vx_DS, vx, FastMath.abs(vx) * 4e-11);
+            Assert.assertEquals(vy_DS, vy, FastMath.abs(vy) * 2e-10);
+            Assert.assertEquals(vz_DS, vz, FastMath.abs(vz) * 4e-11);
             //acceleration check
             
             FieldVector3D<DerivativeStructure> acc_DS = finPVC_DS.getAcceleration();
@@ -832,9 +839,9 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
             double ax = finPVC_shift.getAcceleration().getX();
             double ay = finPVC_shift.getAcceleration().getY();
             double az = finPVC_shift.getAcceleration().getZ();
-            Assert.assertEquals("" + ((ax_DS-ax)/ax), ax_DS, ax, FastMath.abs(ax) * 3e-9);
-            Assert.assertEquals("" + ((ay_DS-ay)/ay), ay_DS, ay, FastMath.abs(ay) * 3e-10);
-            Assert.assertEquals("" + ((az_DS-az)/az), az_DS, az, FastMath.abs(az) * 3e-9);
+            Assert.assertEquals(ax_DS, ax, FastMath.abs(ax) * 6e-10);
+            Assert.assertEquals(ay_DS, ay, FastMath.abs(ay) * 2e-9);
+            Assert.assertEquals(az_DS, az, FastMath.abs(az) * 3e-10);
         }
     }
 
