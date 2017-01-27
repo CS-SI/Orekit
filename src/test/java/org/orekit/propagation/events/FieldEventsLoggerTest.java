@@ -34,6 +34,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -99,7 +100,8 @@ public class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
@@ -143,7 +145,8 @@ public class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
@@ -178,7 +181,8 @@ public class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
@@ -221,7 +225,8 @@ public class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
@@ -276,7 +281,8 @@ public class FieldEventsLoggerTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<T>(field, 0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(field.getZero().add(60));
-        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);

@@ -154,7 +154,8 @@ public class FieldPropagation {
                                                               GravityFieldFactory.getNormalizedProvider(18, 18));
 
         //setting an hipparchus field integrator
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, KO.toOrbit(), OrbitType.CARTESIAN);
+        OrbitType type = OrbitType.CARTESIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, KO.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<DerivativeStructure>(field, 0.001, 200, tolerance[0], tolerance[1]);
 
@@ -164,6 +165,7 @@ public class FieldPropagation {
         //and the holmes featherstone force models
         FieldNumericalPropagator<DerivativeStructure> numProp = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
 
+        numProp.setOrbitType(type);
         numProp.setInitialState(SS_0);
         numProp.addForceModel(fModel_Sun);
         numProp.addForceModel(fModel_Moon);

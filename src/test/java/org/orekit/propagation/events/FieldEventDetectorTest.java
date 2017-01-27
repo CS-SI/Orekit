@@ -34,6 +34,7 @@ import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -142,6 +143,7 @@ public class FieldEventDetectorTest {
         final T step = zero.add(60.0);
         final int    n    = 100;
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<T>(field, step));
+        propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.resetInitialState(new FieldSpacecraftState<>(orbit));
         GCallsCounter<T> counter = new GCallsCounter<>(zero.add(100000.0), zero.add(1.0e-6), 20,
                                                        new FieldStopOnEvent<GCallsCounter<T>, T>());
