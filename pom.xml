@@ -251,55 +251,55 @@
 
   <dependencies>
     <dependency>
-        <groupId>org.hipparchus</groupId>
-        <artifactId>hipparchus-core</artifactId>
-        <version>${orekit.hipparchus.version}</version>
-        <type>jar</type>
-        <optional>false</optional>
+      <groupId>org.hipparchus</groupId>
+      <artifactId>hipparchus-core</artifactId>
+      <version>${orekit.hipparchus.version}</version>
+      <type>jar</type>
+      <optional>false</optional>
     </dependency>
     <dependency>
-        <groupId>org.hipparchus</groupId>
-        <artifactId>hipparchus-geometry</artifactId>
-        <version>${orekit.hipparchus.version}</version>
-        <type>jar</type>
-        <optional>false</optional>
+      <groupId>org.hipparchus</groupId>
+      <artifactId>hipparchus-geometry</artifactId>
+      <version>${orekit.hipparchus.version}</version>
+      <type>jar</type>
+      <optional>false</optional>
     </dependency>
     <dependency>
-        <groupId>org.hipparchus</groupId>
-        <artifactId>hipparchus-ode</artifactId>
-        <version>${orekit.hipparchus.version}</version>
-        <type>jar</type>
-        <optional>false</optional>
+      <groupId>org.hipparchus</groupId>
+      <artifactId>hipparchus-ode</artifactId>
+      <version>${orekit.hipparchus.version}</version>
+      <type>jar</type>
+      <optional>false</optional>
     </dependency>
     <dependency>
-        <groupId>org.hipparchus</groupId>
-        <artifactId>hipparchus-fitting</artifactId>
-        <version>${orekit.hipparchus.version}</version>
-        <type>jar</type>
-        <optional>false</optional>
+      <groupId>org.hipparchus</groupId>
+      <artifactId>hipparchus-fitting</artifactId>
+      <version>${orekit.hipparchus.version}</version>
+      <type>jar</type>
+      <optional>false</optional>
     </dependency>
     <dependency>
-        <groupId>org.hipparchus</groupId>
-        <artifactId>hipparchus-optim</artifactId>
-        <version>${orekit.hipparchus.version}</version>
-        <type>jar</type>
-        <optional>false</optional>
+      <groupId>org.hipparchus</groupId>
+      <artifactId>hipparchus-optim</artifactId>
+      <version>${orekit.hipparchus.version}</version>
+      <type>jar</type>
+      <optional>false</optional>
     </dependency>
     <dependency>
-        <groupId>org.hipparchus</groupId>
-        <artifactId>hipparchus-stat</artifactId>
-        <version>${orekit.hipparchus.version}</version>
-        <type>jar</type>
-        <optional>false</optional>
+      <groupId>org.hipparchus</groupId>
+      <artifactId>hipparchus-stat</artifactId>
+      <version>${orekit.hipparchus.version}</version>
+      <type>jar</type>
+      <optional>false</optional>
     </dependency>
-  	<dependency>
-  		<groupId>junit</groupId>
-  		<artifactId>junit</artifactId>
-  		<version>${orekit.junit.version}</version>
-  		<type>jar</type>
-  		<scope>test</scope>
-  		<optional>false</optional>
-  	</dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${orekit.junit.version}</version>
+      <type>jar</type>
+      <scope>test</scope>
+      <optional>false</optional>
+    </dependency>
   </dependencies>
 
   <build>
