@@ -107,7 +107,8 @@
  * org.orekit.propagation.events.EventSlopeFilter EventSlopeFilter} and {@link
  * org.orekit.propagation.events.EventEnablingPredicateFilter EventEnablingPredicateFilter} to trigger
  * only specific types of events, without losing computation time by locating events user is not
- * interested in.
+ * interested in. Also the {@link org.orekit.propagation.events.BooleanDetector} allows
+ * the user to combine other event detectors using Boolean logic.
  * </p>
  *
  * <p>

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="evan" type="add">
+        Added simple Boolean logic with EventDetectors.
+      </action>
       <action dev="luc" type="add">
         Added getGMSTRateFunction to IEEEConventions to compute accurately Earth rotation rate.
       </action>
