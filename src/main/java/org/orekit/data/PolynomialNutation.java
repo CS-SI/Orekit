@@ -38,7 +38,7 @@ public class PolynomialNutation implements Serializable {
     /** Build a polynomial from its coefficients.
      * @param coefficients polynomial coefficients in increasing degree
      */
-    public PolynomialNutation(final double ... coefficients) {
+    public PolynomialNutation(final double... coefficients) {
         this.coefficients = coefficients.clone();
     }
 

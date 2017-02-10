@@ -227,7 +227,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      * @see #getAdditionalStates()
      */
     @SafeVarargs
-    public final FieldSpacecraftState<T> addAdditionalState(final String name, final T ... value) {
+    public final FieldSpacecraftState<T> addAdditionalState(final String name, final T... value) {
         final Map<String, T[]> newMap = new HashMap<String, T[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());

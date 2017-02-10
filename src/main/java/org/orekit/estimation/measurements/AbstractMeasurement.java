@@ -66,7 +66,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double observed,
                                   final double sigma, final double baseWeight,
-                                  final ParameterDriver ... supportedParameters) {
+                                  final ParameterDriver... supportedParameters) {
 
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
         for (final ParameterDriver parameterDriver : supportedParameters) {
@@ -101,7 +101,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>>
      */
     protected AbstractMeasurement(final AbsoluteDate date, final double[] observed,
                                   final double[] sigma, final double[] baseWeight,
-                                  final ParameterDriver ... supportedParameters) {
+                                  final ParameterDriver... supportedParameters) {
         this.supportedParameters = new ArrayList<ParameterDriver>(supportedParameters.length);
         for (final ParameterDriver parameterDriver : supportedParameters) {
             this.supportedParameters.add(parameterDriver);

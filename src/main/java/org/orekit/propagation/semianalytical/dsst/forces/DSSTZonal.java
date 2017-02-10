@@ -616,7 +616,7 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void updateShortPeriodTerms(final SpacecraftState ... meanStates)
+    public void updateShortPeriodTerms(final SpacecraftState... meanStates)
         throws OrekitException {
 
         final Slot slot = zonalSPCoefs.createSlot(meanStates);
@@ -1018,7 +1018,7 @@ public class DSSTZonal implements DSSTForceModel {
          * @param meanStates mean states defining the slot
          * @return slot valid at the specified date
          */
-        public Slot createSlot(final SpacecraftState ... meanStates) {
+        public Slot createSlot(final SpacecraftState... meanStates) {
             final Slot         slot  = new Slot(maxFrequencyShortPeriodics, interpolationPoints);
             final AbsoluteDate first = meanStates[0].getDate();
             final AbsoluteDate last  = meanStates[meanStates.length - 1].getDate();
@@ -1111,7 +1111,7 @@ public class DSSTZonal implements DSSTForceModel {
          * @param indices list of coefficient indices
          */
         private void storeIfSelected(final Map<String, double[]> map, final Set<String> selected,
-                                     final double[] value, final String id, final int ... indices) {
+                                     final double[] value, final String id, final int... indices) {
             final StringBuilder keyBuilder = new StringBuilder(getCoefficientsKeyPrefix());
             keyBuilder.append(id);
             for (int index : indices) {

@@ -232,7 +232,7 @@ public class SpacecraftState
      * @see #getAdditionalState(String)
      * @see #getAdditionalStates()
      */
-    public SpacecraftState addAdditionalState(final String name, final double ... value) {
+    public SpacecraftState addAdditionalState(final String name, final double... value) {
         final Map<String, double[]> newMap = new HashMap<String, double[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());

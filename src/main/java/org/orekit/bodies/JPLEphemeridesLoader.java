@@ -424,7 +424,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * @return value of the constant of NaN if the constant is not defined
      * @exception OrekitException if constants cannot be loaded
      */
-    public double getLoadedConstant(final String ... names) throws OrekitException {
+    public double getLoadedConstant(final String... names) throws OrekitException {
 
         // lazy loading of constants
         Map<String, Double> map = constants.get();

@@ -109,7 +109,7 @@ public interface DSSTForceModel {
      * @param meanStates mean states information: date, kinematics, attitude
      * @throws OrekitException if some specific error occurs
      */
-    void updateShortPeriodTerms(SpacecraftState ... meanStates)
+    void updateShortPeriodTerms(SpacecraftState... meanStates)
         throws OrekitException;
 
 }

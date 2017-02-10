@@ -84,7 +84,7 @@ public class PartialDerivativesTest {
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance,
-                                             OrbitType ... orbitTypes)
+                                             OrbitType... orbitTypes)
         throws OrekitException {
 
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -550,7 +550,7 @@ public class PartialDerivativesTest {
 
     private NumericalPropagator setUpPropagator(Orbit orbit, double dP,
                                                 OrbitType orbitType, PositionAngle angleType,
-                                                ForceModel ... models)
+                                                ForceModel... models)
         throws OrekitException {
 
         final double minStep = 0.001;

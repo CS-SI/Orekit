@@ -66,7 +66,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @param dates list of event dates
      * @see #addEventDate(AbsoluteDate)
      */
-    public DateDetector(final double maxCheck, final double threshold, final TimeStamped ... dates) {
+    public DateDetector(final double maxCheck, final double threshold, final TimeStamped... dates) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<DateDetector>(), dates);
     }
 
@@ -96,7 +96,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      */
     private DateDetector(final double maxCheck, final double threshold,
                          final int maxIter, final EventHandler<? super DateDetector> handler,
-                         final TimeStamped ... dates) {
+                         final TimeStamped... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;

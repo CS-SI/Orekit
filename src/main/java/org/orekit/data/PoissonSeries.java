@@ -161,7 +161,7 @@ public class PoissonSeries {
      * @since 6.1
      */
     @SafeVarargs
-    public static CompiledSeries compile(final PoissonSeries ... poissonSeries) {
+    public static CompiledSeries compile(final PoissonSeries... poissonSeries) {
 
         // store all polynomials
         final PolynomialNutation[] polynomials = new PolynomialNutation[poissonSeries.length];

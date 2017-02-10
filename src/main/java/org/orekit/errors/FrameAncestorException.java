@@ -33,7 +33,7 @@ public class FrameAncestorException extends OrekitException {
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public FrameAncestorException(final Localizable specifier, final Object ... parts) {
+    public FrameAncestorException(final Localizable specifier, final Object... parts) {
         super(specifier, parts);
     }
 

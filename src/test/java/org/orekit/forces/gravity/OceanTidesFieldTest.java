@@ -81,7 +81,7 @@ public class OceanTidesFieldTest {
         }
     }
 
-    private List<OceanTidesWave> getWaves(int degree, int order, int ... doodson)
+    private List<OceanTidesWave> getWaves(int degree, int order, int... doodson)
         throws OrekitException {
 
         // load a complete model

@@ -56,7 +56,7 @@ public interface PropagatorConverter {
     Propagator convert(Propagator source,
                        double timeSpan,
                        int nbPoints,
-                       String ... freeParameters) throws OrekitException;
+                       String... freeParameters) throws OrekitException;
 
     /** Find the propagator that minimize the mean square error for a sample of {@link SpacecraftState states}.
      * @param states spacecraft states sample to fit
@@ -78,6 +78,6 @@ public interface PropagatorConverter {
      */
     Propagator convert(List<SpacecraftState> states,
                        boolean positionOnly,
-                       String ... freeParameters) throws OrekitException;
+                       String... freeParameters) throws OrekitException;
 
 }

@@ -65,7 +65,7 @@ public class KeplerianConverterTest {
                             final double threshold,
                             final boolean positionOnly,
                             final double expectedRMS,
-                            final String ... freeParameters)
+                            final String... freeParameters)
         throws OrekitException {
 
         Propagator p = new KeplerianPropagator(orbit);
