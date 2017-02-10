@@ -108,7 +108,7 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
     SolidTidesField(final LoveNumbers love, final TimeVectorFunction deltaCSFunction,
                            final double deltaC20PermanentTide, final TimeVectorFunction poleTideFunction,
                            final Frame centralBodyFrame, final double ae, final double mu,
-                           final TideSystem centralTideSystem, final CelestialBody ... bodies) {
+                           final TideSystem centralTideSystem, final CelestialBody... bodies) {
 
         // store mode parameters
         this.centralBodyFrame  = centralBodyFrame;

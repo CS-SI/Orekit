@@ -36,7 +36,7 @@ public class PropagationException extends OrekitException {
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public PropagationException(final Localizable specifier, final Object ... parts) {
+    public PropagationException(final Localizable specifier, final Object... parts) {
         super(specifier, parts);
     }
 
@@ -47,7 +47,7 @@ public class PropagationException extends OrekitException {
      * @param parts parts to insert in the format (no translation)
      */
     public PropagationException(final Throwable cause, final Localizable specifier,
-                                final Object ... parts) {
+                                final Object... parts) {
         super(cause, specifier, parts);
     }
 

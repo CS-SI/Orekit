@@ -117,7 +117,7 @@ public class JacobianPropagatorConverterTest {
                           NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
-    private void doTestDerivatives(double tolP, double tolV, String ... names) throws OrekitException  {
+    private void doTestDerivatives(double tolP, double tolV, String... names) throws OrekitException  {
 
         // we use a fixed step integrator on purpose
         // as the test is based on external differentiation using finite differences,

@@ -143,7 +143,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     public Propagator convert(final Propagator source,
                               final double timeSpan,
                               final int nbPoints,
-                              final String ... freeParameters)
+                              final String... freeParameters)
         throws OrekitException, IllegalArgumentException {
         setFreeParameters(Arrays.asList(freeParameters));
         final List<SpacecraftState> states = createSample(source, timeSpan, nbPoints);
@@ -176,7 +176,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      */
     public Propagator convert(final List<SpacecraftState> states,
                               final boolean positionOnly,
-                              final String ... freeParameters)
+                              final String... freeParameters)
         throws OrekitException, IllegalArgumentException {
         setFreeParameters(Arrays.asList(freeParameters));
         return adapt(states, positionOnly);

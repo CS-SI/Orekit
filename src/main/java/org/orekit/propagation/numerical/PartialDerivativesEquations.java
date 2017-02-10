@@ -237,7 +237,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * parameters selection is performed at force model level
      */
     @Deprecated
-    public void selectParameters(final String ... parameters) {
+    public void selectParameters(final String... parameters) {
         selectParameters(Arrays.asList(parameters));
     }
 

@@ -115,7 +115,7 @@ class NutationCodec {
      * @param multipliers multipliers to encode
      * @return a key merging all multipliers as one long integer
      */
-    public static long encode(final int ... multipliers) {
+    public static long encode(final int... multipliers) {
         final NutationCodec encoder = new NutationCodec(0x0l);
         for (final int multiplier : multipliers) {
             encoder.addMultiplier(multiplier);

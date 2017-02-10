@@ -184,7 +184,7 @@ public class SolidTidesTest {
 
     }
 
-    private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel ... forceModels)
+    private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel... forceModels)
         throws OrekitException {
         double[][] tolerances = NumericalPropagator.tolerances(10, orbit, OrbitType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1.0e-3, 300, tolerances[0], tolerances[1]);
