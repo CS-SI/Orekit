@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Updated dependency to Hipparchus 1.1, released on 2017, March 16th.
+        Fixes issue #329.
+      </action>
       <action dev="evan" type="add">
         Added simple Boolean logic with EventDetectors.
       </action>
