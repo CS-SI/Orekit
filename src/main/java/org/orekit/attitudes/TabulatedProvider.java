@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -70,7 +71,7 @@ public class TabulatedProvider implements AttitudeProvider {
         throws OrekitException {
 
         // get attitudes sample on which interpolation will be performed
-        final List<TimeStampedAngularCoordinates> sample = table.getNeighbors(date);
+        final List<TimeStampedAngularCoordinates> sample = table.getNeighbors(date).collect(Collectors.toList());
 
         // interpolate
         final TimeStampedAngularCoordinates interpolated =

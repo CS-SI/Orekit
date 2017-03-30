@@ -32,6 +32,7 @@ import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
@@ -49,17 +50,8 @@ public class FieldIntegratedEphemerisTest {
     }
 
     public <T extends RealFieldElement<T>> void testNormalKeplerIntegration(Field<T> field) throws OrekitException {
-        T zero = field.getZero();
-        FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
-
-        FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
-        FieldOrbit<T> initialOrbit =
-            new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
-                                 FramesFactory.getEME2000(), initDate, mu);
-        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<T>(field, 0.001, 500, absTolerance, relTolerance);
-        integrator.setInitialStepSize(zero.add(100));
-        FieldNumericalPropagator<T> numericalPropagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldOrbit<T> initialOrbit = createOrbit(field);
+        FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
         // Keplerian propagator definition
         FieldKeplerianPropagator<T> keplerEx = new FieldKeplerianPropagator<T>(initialOrbit);
 
@@ -99,55 +91,27 @@ public class FieldIntegratedEphemerisTest {
         Assert.assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 10e-2);
 
     }
-//
-//    public <T extends RealFieldElement<T>>  void testPartialDerivativesIssue16(Field<T> field) throws OrekitException {
-//
-//        final String eqName = "derivatives";
-//        numericalPropagator.setEphemerisMode();
-//        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
-//        final PartialDerivativesEquations derivatives =
-//            new PartialDerivativesEquations(eqName, numericalPropagator);
-//        final FieldSpacecraftState<T> initialState =
-//                derivatives.setInitialJacobians(new FieldSpacecraftState<T>(initialOrbit), 6, 0);
-//        final FieldJacobiansMapper<T> mapper = derivatives.getMapper();
-//        numericalPropagator.setInitialState(initialState);
-//        numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
-//        FieldBoundedPropagator<T> ephemeris = numericalPropagator.getGeneratedEphemeris();
-//        ephemeris.setMasterMode(new OrekitStepHandler() {
-//
-//            private final Array2DRowFieldMatrix<T> dYdY0 = new Array2DRowFieldMatrix<T>(6, 6);
-//
-//            public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-//                throws OrekitException {
-//                FieldSpacecraftState<T> state = interpolator.getCurrentState();
-//                Assert.assertEquals(mapper.getAdditionalStateDimension(),
-//                                    state.getAdditionalState(eqName).length);
-//                mapper.getStateJacobian(state, dYdY0.getDataRef());
-//                mapper.getParametersJacobian(state, null); // no parameters, this is a no-op and should work
-//                FieldMatrix<T> deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
-//                Assert.assertTrue(deltaId.getNorm() >  100);
-//                Assert.assertTrue(deltaId.getNorm() < 3100);
-//            }
-//
-//        });
-//
-//        ephemeris.propagate(initialOrbit.getDate().shiftedBy(1800.0));
-//
-//    }
-//
-//    public <T extends RealFieldElement<T>>  void testGetFrame(Field<T> field) throws OrekitException {
-//        // setup
-//        FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
-//        numericalPropagator.setEphemerisMode();
-//        numericalPropagator.setInitialState(new FieldSpacecraftState<T>(initialOrbit));
-//        numericalPropagator.propagate(finalDate);
-//        Assert.assertTrue(numericalPropagator.getCalls() < 3200);
-//        FieldBoundedPropagator<T> ephemeris = numericalPropagator.getGeneratedEphemeris();
-//
-//        //action
-//        Assert.assertNotNull(ephemeris.getFrame());
-//        Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
-//    }
+
+    @Test
+    public void testGetFrame() throws OrekitException {
+        doTestGetFrame(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>>  void doTestGetFrame(Field<T> field) throws OrekitException {
+        FieldOrbit<T> initialOrbit = createOrbit(field);
+        FieldNumericalPropagator<T> numericalPropagator = createPropagator(field);
+        // setup
+        FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
+        numericalPropagator.setEphemerisMode();
+        numericalPropagator.setInitialState(new FieldSpacecraftState<T>(initialOrbit));
+        numericalPropagator.propagate(finalDate);
+        Assert.assertTrue(numericalPropagator.getCalls() < 3200);
+        FieldBoundedPropagator<T> ephemeris = numericalPropagator.getGeneratedEphemeris();
+
+        //action
+        Assert.assertNotNull(ephemeris.getFrame());
+        Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
+    }
 
     @Before
     public void setUp() {
@@ -155,12 +119,32 @@ public class FieldIntegratedEphemerisTest {
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
     }
-    double[] absTolerance= {
-                            0.0001, 1.0e-11, 1.0e-11, 1.0e-8, 1.0e-8, 1.0e-8, 0.001
-                        };
-    double[] relTolerance = {
-        1.0e-8, 1.0e-8, 1.0e-8, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-7
-    };
-    private double mu;
 
+    private <T extends RealFieldElement<T>> FieldNumericalPropagator<T> createPropagator(Field<T> field) {
+        double[] absTolerance= {
+            0.0001, 1.0e-11, 1.0e-11, 1.0e-8, 1.0e-8, 1.0e-8, 0.001
+        };
+        double[] relTolerance = {
+            1.0e-8, 1.0e-8, 1.0e-8, 1.0e-9, 1.0e-9, 1.0e-9, 1.0e-7
+        };
+        OrbitType type = OrbitType.EQUINOCTIAL;
+        AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<T>(field, 0.001, 500, absTolerance, relTolerance);
+        integrator.setInitialStepSize(field.getZero().add(100));
+        FieldNumericalPropagator<T> numericalPropagator = new FieldNumericalPropagator<>(field, integrator);
+        numericalPropagator.setOrbitType(type);
+        return numericalPropagator;
+    }
+
+    private <T extends RealFieldElement<T>> FieldOrbit<T> createOrbit(Field<T> field) {
+        T zero = field.getZero();
+        FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+
+        double mu = 3.9860047e14;
+        FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
+        return new FieldEquinoctialOrbit<T>(new FieldPVCoordinates<T>(position, velocity),
+                                 FramesFactory.getEME2000(), initDate, mu);
+    }
+
+    double mu;
 }

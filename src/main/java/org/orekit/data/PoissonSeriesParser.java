@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
@@ -206,14 +205,13 @@ import org.orekit.errors.OrekitMessages;
  * is not expected to be encountered in practice. The real files use either several columns
  * <em>or</em> several sections, but not both at the same time.
  * </p>
- * @param <T> the type of the field elements
  *
  * @author Luc Maisonobe
  * @see SeriesTerm
  * @see PolynomialNutation
  * @since 6.1
  */
-public class PoissonSeriesParser<T extends RealFieldElement<T>> {
+public class PoissonSeriesParser {
 
     /** Default pattern for fields with unknown type (non-space characters). */
     private static final String  UNKNOWN_TYPE_PATTERN = "\\S+";
@@ -330,10 +328,10 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param unit default unit for polynomial, if not explicit within the file
      * @return a new parser, with polynomial parser updated
      */
-    public PoissonSeriesParser<T> withPolynomialPart(final char freeVariable, final PolynomialParser.Unit unit) {
-        return new PoissonSeriesParser<T>(new PolynomialParser(freeVariable, unit), fieldsPatterns, optional,
-                                          gamma, firstDoodson, doodson, firstDelaunay,
-                                          firstPlanetary, sinCosColumns, sinCosFactors);
+    public PoissonSeriesParser withPolynomialPart(final char freeVariable, final PolynomialParser.Unit unit) {
+        return new PoissonSeriesParser(new PolynomialParser(freeVariable, unit), fieldsPatterns, optional,
+                                       gamma, firstDoodson, doodson, firstDelaunay,
+                                       firstPlanetary, sinCosColumns, sinCosFactors);
     }
 
     /** Set up optional column.
@@ -348,16 +346,16 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param column column of the GMST tide multiplier (counting from 1)
      * @return a new parser, with updated columns settings
      */
-    public PoissonSeriesParser<T> withOptionalColumn(final int column) {
+    public PoissonSeriesParser withOptionalColumn(final int column) {
 
         // update the fields pattern to expect 1 optional field at the right index
         final String[] newFieldsPatterns = fieldsPatterns.clone();
         setPatterns(newFieldsPatterns, optional, 1, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, column,   1, OPTIONAL_FIELD_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, column,
-                                          gamma, firstDoodson, doodson, firstDelaunay,
-                                          firstPlanetary, sinCosColumns, sinCosFactors);
+        return new PoissonSeriesParser(polynomialParser, newFieldsPatterns, column,
+                                       gamma, firstDoodson, doodson, firstDelaunay,
+                                       firstPlanetary, sinCosColumns, sinCosFactors);
 
     }
 
@@ -368,7 +366,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * to {@link #withDoodson(int, int)}
      * @see #withDoodson(int, int)
      */
-    public PoissonSeriesParser<T> withGamma(final int column) throws OrekitException {
+    public PoissonSeriesParser withGamma(final int column) throws OrekitException {
 
         // check we don't try to have both τ and γ configured at the same time
         if (firstDoodson > 0 && column > 0) {
@@ -380,9 +378,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, gamma,  1, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, column, 1, INTEGER_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
-                                          column, firstDoodson, doodson, firstDelaunay,
-                                          firstPlanetary, sinCosColumns, sinCosFactors);
+        return new PoissonSeriesParser(polynomialParser, newFieldsPatterns, optional,
+                                       column, firstDoodson, doodson, firstDelaunay,
+                                       firstPlanetary, sinCosColumns, sinCosFactors);
 
     }
 
@@ -396,7 +394,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @see #withGamma(int)
      * @see #withFirstDelaunay(int)
      */
-    public PoissonSeriesParser<T> withDoodson(final int firstMultiplierColumn, final int numberColumn)
+    public PoissonSeriesParser withDoodson(final int firstMultiplierColumn, final int numberColumn)
         throws OrekitException {
 
         // check we don't try to have both τ and γ configured at the same time
@@ -414,9 +412,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, doodson,      1, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, numberColumn, 1, DOODSON_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
-                                          gamma, firstMultiplierColumn, numberColumn, firstDelaunay,
-                                          firstPlanetary, sinCosColumns, sinCosFactors);
+        return new PoissonSeriesParser(polynomialParser, newFieldsPatterns, optional,
+                                       gamma, firstMultiplierColumn, numberColumn, firstDelaunay,
+                                       firstPlanetary, sinCosColumns, sinCosFactors);
 
     }
 
@@ -424,16 +422,16 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param firstColumn column of the first Delaunay multiplier (counting from 1)
      * @return a new parser, with updated columns settings
      */
-    public PoissonSeriesParser<T> withFirstDelaunay(final int firstColumn) {
+    public PoissonSeriesParser withFirstDelaunay(final int firstColumn) {
 
         // update the fields pattern to expect 5 integers at the right indices
         final String[] newFieldsPatterns = fieldsPatterns.clone();
         setPatterns(newFieldsPatterns, firstDelaunay, 5, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, firstColumn,   5, INTEGER_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
-                                          gamma, firstDoodson, doodson, firstColumn,
-                                          firstPlanetary, sinCosColumns, sinCosFactors);
+        return new PoissonSeriesParser(polynomialParser, newFieldsPatterns, optional,
+                                       gamma, firstDoodson, doodson, firstColumn,
+                                       firstPlanetary, sinCosColumns, sinCosFactors);
 
     }
 
@@ -441,16 +439,16 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param firstColumn column of the first planetary multiplier (counting from 1)
      * @return a new parser, with updated columns settings
      */
-    public PoissonSeriesParser<T> withFirstPlanetary(final int firstColumn) {
+    public PoissonSeriesParser withFirstPlanetary(final int firstColumn) {
 
         // update the fields pattern to expect 9 integers at the right indices
         final String[] newFieldsPatterns = fieldsPatterns.clone();
         setPatterns(newFieldsPatterns, firstPlanetary, 9, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, firstColumn,    9, INTEGER_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
-                                          gamma, firstDoodson, doodson, firstDelaunay,
-                                          firstColumn, sinCosColumns, sinCosFactors);
+        return new PoissonSeriesParser(polynomialParser, newFieldsPatterns, optional,
+                                       gamma, firstDoodson, doodson, firstDelaunay,
+                                       firstColumn, sinCosColumns, sinCosFactors);
 
     }
 
@@ -464,9 +462,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param cosFactor multiplicative factor for the cosine coefficient
      * @return a new parser, with updated columns settings
      */
-    public PoissonSeriesParser<T> withSinCos(final int degree,
-                                             final int sinColumn, final double sinFactor,
-                                             final int cosColumn, final double cosFactor) {
+    public PoissonSeriesParser withSinCos(final int degree,
+                                          final int sinColumn, final double sinFactor,
+                                          final int cosColumn, final double cosFactor) {
 
         // update the sin/cos columns array
         final int      maxDegree        = FastMath.max(degree, sinCosColumns.length / 2 - 1);
@@ -493,9 +491,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         }
         setPatterns(newFieldsPatterns, cosColumn, 1, REAL_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
-                                          gamma, firstDoodson, doodson, firstDelaunay,
-                                          firstPlanetary, newSinCosColumns, newSinCosFactors);
+        return new PoissonSeriesParser(polynomialParser, newFieldsPatterns, optional,
+                                       gamma, firstDoodson, doodson, firstDelaunay,
+                                       firstPlanetary, newSinCosColumns, newSinCosFactors);
 
     }
 
@@ -505,7 +503,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @return parsed Poisson series
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public PoissonSeries<T> parse(final InputStream stream, final String name) throws OrekitException {
+    public PoissonSeries parse(final InputStream stream, final String name) throws OrekitException {
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
@@ -540,15 +538,15 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
             int degree        =  0;
 
             // prepare the container for the parsed data
-            PolynomialNutation<T> polynomial;
+            PolynomialNutation polynomial;
             if (polynomialParser == null) {
-                // we don't expect any polynomial, we directly the the zero polynomial
-                polynomial = new PolynomialNutation<T>(new double[0]);
+                // we don't expect any polynomial, we directly set the zero polynomial
+                polynomial = new PolynomialNutation(new double[0]);
             } else {
                 // the dedicated parser will fill in the polynomial later
                 polynomial = null;
             }
-            final Map<Long, SeriesTerm<T>> series = new HashMap<Long, SeriesTerm<T>>();
+            final Map<Long, SeriesTerm> series = new HashMap<Long, SeriesTerm>();
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
@@ -622,7 +620,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                                                           cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
 
                     // retrieved the term, or build it if it's the first time it is encountered in the file
-                    final SeriesTerm<T> term;
+                    final SeriesTerm term;
                     if (series.containsKey(key)) {
                         // the term was already known, from another degree
                         term = series.get(key);
@@ -686,7 +684,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                         // look for the polynomial part
                         final double[] coefficients = polynomialParser.parse(line);
                         if (coefficients != null) {
-                            polynomial = new PolynomialNutation<T>(coefficients);
+                            polynomial = new PolynomialNutation(coefficients);
                         }
                     }
 
@@ -704,7 +702,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
             }
 
             // build the series
-            return new PoissonSeries<T>(polynomial, series);
+            return new PoissonSeries(polynomial, series);
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

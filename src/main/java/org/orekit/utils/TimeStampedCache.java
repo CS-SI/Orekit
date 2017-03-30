@@ -16,7 +16,7 @@
  */
 package org.orekit.utils;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
@@ -53,7 +53,7 @@ public interface TimeStampedCache<T extends TimeStamped> {
      * @throws TimeStampedCacheException if {@code central} is outside the range
      *         of data this cache is capable of providing.
      */
-    List<T> getNeighbors(AbsoluteDate central)
+    Stream<T> getNeighbors(AbsoluteDate central)
         throws TimeStampedCacheException;
 
     /**

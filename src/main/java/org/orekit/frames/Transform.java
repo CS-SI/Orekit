@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -383,11 +385,11 @@ public class Transform
      * </p>
      * @exception OrekitException if the number of point is too small for interpolating
      */
-    public Transform interpolate(final AbsoluteDate interpolationDate, final Collection<Transform> sample)
+    public Transform interpolate(final AbsoluteDate interpolationDate, final Stream<Transform> sample)
         throws OrekitException {
         return interpolate(interpolationDate,
                            CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
-                           sample);
+                           sample.collect(Collectors.toList()));
     }
 
     /** Interpolate a transform from a sample set of existing transforms.

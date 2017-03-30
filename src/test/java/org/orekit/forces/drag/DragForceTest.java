@@ -294,11 +294,13 @@ public class DragForceTest extends AbstractForceModelTest {
                         new ClassicalRungeKuttaFieldIntegrator<DerivativeStructure>(field, zero.add(6));
         ClassicalRungeKuttaIntegrator RIntegrator =
                         new ClassicalRungeKuttaIntegrator(6);
-                
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        OrbitType type = OrbitType.EQUINOCTIAL;
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
         NP.setInitialState(iSR);
         
         final DragForce forceModel =
@@ -438,8 +440,8 @@ public class DragForceTest extends AbstractForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+        OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -449,10 +451,12 @@ public class DragForceTest extends AbstractForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
                 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
         NP.setInitialState(iSR);
         
         final DragForce forceModel =

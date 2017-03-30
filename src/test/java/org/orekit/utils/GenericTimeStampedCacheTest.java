@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
@@ -57,7 +58,7 @@ public class GenericTimeStampedCacheTest {
                 new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    new Generator(AbsoluteDate.PAST_INFINITY,
                                                                  AbsoluteDate.J2000_EPOCH,
-                                                                 10.0), AbsoluteDate.class);
+                                                                 10.0));
         List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
         list.add(AbsoluteDate.GALILEO_EPOCH);
         list.add(AbsoluteDate.MODIFIED_JULIAN_EPOCH);
@@ -79,8 +80,7 @@ public class GenericTimeStampedCacheTest {
         GenericTimeStampedCache<AbsoluteDate> cache =
                 new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    new Generator(AbsoluteDate.MODIFIED_JULIAN_EPOCH,
-                                                                 AbsoluteDate.FUTURE_INFINITY, 10.0),
-                                                   AbsoluteDate.class);
+                                                                 AbsoluteDate.FUTURE_INFINITY, 10.0));
         List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
         list.add(AbsoluteDate.J2000_EPOCH);
         list.add(AbsoluteDate.GALILEO_EPOCH);
@@ -102,7 +102,7 @@ public class GenericTimeStampedCacheTest {
                 new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    new Generator(AbsoluteDate.PAST_INFINITY,
                                                                  AbsoluteDate.FUTURE_INFINITY,
-                                                                 10.0), AbsoluteDate.class);
+                                                                 10.0));
         List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
         list.add(AbsoluteDate.J2000_EPOCH.shiftedBy(+4.6e12));
         list.add(AbsoluteDate.J2000_EPOCH.shiftedBy(-4.6e12));
@@ -242,39 +242,39 @@ public class GenericTimeStampedCacheTest {
     public void testNoGeneratedData() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
-            public List<AbsoluteDate> generate(AbsoluteDate existing,
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate,
                                                AbsoluteDate date) {
                 return new ArrayList<AbsoluteDate>();
             }
         };
         new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
-                                           nullGenerator, AbsoluteDate.class).getNeighbors(AbsoluteDate.J2000_EPOCH);
+                                           nullGenerator).getNeighbors(AbsoluteDate.J2000_EPOCH);
     }
 
     @Test(expected=TimeStampedCacheException.class)
     public void testNoDataBefore() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
-            public List<AbsoluteDate> generate(AbsoluteDate existing,
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate,
                                                AbsoluteDate date) {
                 return Arrays.asList(AbsoluteDate.J2000_EPOCH);
             }
         };
         new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
-                                           nullGenerator, AbsoluteDate.class).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(-10));
+                                           nullGenerator).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(-10));
     }
 
     @Test(expected=TimeStampedCacheException.class)
     public void testNoDataAfter() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
-            public List<AbsoluteDate> generate(AbsoluteDate existing,
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate,
                                                AbsoluteDate date) {
                 return Arrays.asList(AbsoluteDate.J2000_EPOCH);
             }
         };
         new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
-                                           nullGenerator, AbsoluteDate.class).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(+10));
+                                           nullGenerator).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(+10));
     }
 
     @Test(expected=TimeStampedCacheException.class)
@@ -282,7 +282,7 @@ public class GenericTimeStampedCacheTest {
         TimeStampedGenerator<AbsoluteDate> reversedGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
             /** {@inheritDoc} */
-            public List<AbsoluteDate> generate(AbsoluteDate existing, AbsoluteDate date) {
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate, AbsoluteDate date) {
                 List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
                 list.add(date);
                 list.add(date.shiftedBy(-10.0));
@@ -291,7 +291,7 @@ public class GenericTimeStampedCacheTest {
         };
 
         new GenericTimeStampedCache<AbsoluteDate>(3, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
-                                           reversedGenerator, AbsoluteDate.class).getNeighbors(AbsoluteDate.J2000_EPOCH);
+                                           reversedGenerator).getNeighbors(AbsoluteDate.J2000_EPOCH);
 
     }
 
@@ -304,19 +304,19 @@ public class GenericTimeStampedCacheTest {
                 new TimeStampedGenerator<AbsoluteDate>() {
 
             /** {@inheritDoc} */
-            public List<AbsoluteDate> generate(AbsoluteDate existing, AbsoluteDate date) {
+            public List<AbsoluteDate> generate(AbsoluteDate existingDate, AbsoluteDate date) {
                 List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
-                if (existing == null) {
+                if (existingDate == null) {
                     list.add(date);
                 } else {
-                    if (date.compareTo(existing) > 0) {
-                        AbsoluteDate t = existing.shiftedBy(-10 * step);
+                    if (date.compareTo(existingDate) > 0) {
+                        AbsoluteDate t = existingDate.shiftedBy(-10 * step);
                         do {
                             t = t.shiftedBy(step);
                             list.add(list.size(), t);
                         } while (t.compareTo(date) <= 0);
                     } else {
-                        AbsoluteDate t = existing.shiftedBy(10 * step);
+                        AbsoluteDate t = existingDate.shiftedBy(10 * step);
                         do {
                             t = t.shiftedBy(-step);
                             list.add(0, t);
@@ -330,23 +330,23 @@ public class GenericTimeStampedCacheTest {
 
         final GenericTimeStampedCache<AbsoluteDate> cache =
                 new GenericTimeStampedCache<AbsoluteDate>(5, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
-                                                   duplicatingGenerator, AbsoluteDate.class);
+                                                   duplicatingGenerator);
 
         final AbsoluteDate start = AbsoluteDate.GALILEO_EPOCH;
-        final AbsoluteDate[] firstSet = cache.getNeighbors(start).toArray(new AbsoluteDate[0]);
-        Assert.assertEquals(5, firstSet.length);
+        final List<AbsoluteDate> firstSet = cache.getNeighbors(start).collect(Collectors.toList());
+        Assert.assertEquals(5, firstSet.size());
         Assert.assertEquals(4, cache.getGenerateCalls());
         Assert.assertEquals(8, cache.getEntries());
-        for (int i = 1; i < firstSet.length; ++i) {
-            Assert.assertEquals(step, firstSet[i].durationFrom(firstSet[i - 1]), 1.0e-10);
+        for (int i = 1; i < firstSet.size(); ++i) {
+            Assert.assertEquals(step, firstSet.get(i).durationFrom(firstSet.get(i - 1)), 1.0e-10);
         }
 
-        final AbsoluteDate[] secondSet = cache.getNeighbors(cache.getLatest().shiftedBy(10 * step)).toArray(new AbsoluteDate[0]);
-        Assert.assertEquals(5, secondSet.length);
+        final List<AbsoluteDate> secondSet = cache.getNeighbors(cache.getLatest().shiftedBy(10 * step)).collect(Collectors.toList());
+        Assert.assertEquals(5, secondSet.size());
         Assert.assertEquals(7, cache.getGenerateCalls());
         Assert.assertEquals(20, cache.getEntries());
-        for (int i = 1; i < secondSet.length; ++i) {
-            Assert.assertEquals(step, firstSet[i].durationFrom(firstSet[i - 1]), 1.0e-10);
+        for (int i = 1; i < secondSet.size(); ++i) {
+            Assert.assertEquals(step, firstSet.get(i).durationFrom(firstSet.get(i - 1)), 1.0e-10);
         }
 
     }
@@ -380,7 +380,7 @@ public class GenericTimeStampedCacheTest {
                               AbsoluteDate.J2000_EPOCH.shiftedBy(+Constants.JULIAN_CENTURY),
                               step);
         return new GenericTimeStampedCache<AbsoluteDate>(neighborsSize, maxSlots, Constants.JULIAN_YEAR,
-                                                  Constants.JULIAN_DAY, generator, AbsoluteDate.class);
+                                                  Constants.JULIAN_DAY, generator);
     }
 
     private int checkDatesSingleThread(final List<AbsoluteDate> centralDates,
@@ -391,7 +391,7 @@ public class GenericTimeStampedCacheTest {
         final double step = ((Generator) cache.getGenerator()).getStep();
 
         for (final AbsoluteDate central : centralDates) {
-            final List<AbsoluteDate> neighbors = cache.getNeighbors(central);
+            final List<AbsoluteDate> neighbors = cache.getNeighbors(central).collect(Collectors.toList());
             Assert.assertEquals(n, neighbors.size());
             for (final AbsoluteDate date : neighbors) {
                 Assert.assertTrue(date.durationFrom(central) >= -(n + 1) * step);
@@ -418,7 +418,7 @@ public class GenericTimeStampedCacheTest {
             executorService.execute(new Runnable() {
                 public void run() {
                     try {
-                        final List<AbsoluteDate> neighbors = cache.getNeighbors(central);
+                        final List<AbsoluteDate> neighbors = cache.getNeighbors(central).collect(Collectors.toList());
                         Assert.assertEquals(n, neighbors.size());
                         for (final AbsoluteDate date : neighbors) {
                             if (date.durationFrom(central) < -(n + 1) * step ||
@@ -482,12 +482,12 @@ public class GenericTimeStampedCacheTest {
             return step;
         }
 
-        public List<AbsoluteDate> generate(AbsoluteDate existing, AbsoluteDate date) {
+        public List<AbsoluteDate> generate(AbsoluteDate existingDate, AbsoluteDate date) {
             List<AbsoluteDate> dates = new ArrayList<AbsoluteDate>();
-            if (existing == null) {
+            if (existingDate == null) {
                 dates.add(date);
-            } else if (date.compareTo(existing) >= 0) {
-                AbsoluteDate previous = existing;
+            } else if (date.compareTo(existingDate) >= 0) {
+                AbsoluteDate previous = existingDate;
                 while (date.compareTo(previous) > 0) {
                     previous = previous.shiftedBy(step);
                     if (previous.compareTo(earliest) >= 0 && previous.compareTo(latest) <= 0) {
@@ -495,7 +495,7 @@ public class GenericTimeStampedCacheTest {
                     }
                 }
             } else {
-                AbsoluteDate previous = existing;
+                AbsoluteDate previous = existingDate;
                 while (date.compareTo(previous) < 0) {
                     previous = previous.shiftedBy(-step);
                     if (previous.compareTo(earliest) >= 0 && previous.compareTo(latest) <= 0) {

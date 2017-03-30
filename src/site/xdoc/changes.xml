@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="evan" type="add">
+        Added simple Boolean logic with EventDetectors.
+      </action>
+      <action dev="luc" type="add">
+        Added getGMSTRateFunction to IEEEConventions to compute accurately Earth rotation rate.
+      </action>
       <action dev="luc" type="update">
         OneAxisEllipsoid can now transform FieldGeodeticPoint from any field
         and not only DerivativeStructure.
@@ -39,6 +45,14 @@
       <action dev="evan" type="add">
         Replace OrbitFile interface with EphemerisFile, adding support for multiple
         ephemeris segments and the capability to create a propagator from an ephemeris.
+      </action>
+      <action dev="hank" type="add">
+        Added EphemerisFileWriter interface for serializing EphemerisFiles to external
+        file formats, and implemented the OEMWriter for CCSDS OEM file export support.
+      </action>
+      <action dev="hank" type="add">
+        Added OrekitEphemerisFile object for encapsulating propagator outputs into an 
+        EphemerisFile which can then be exported with EphemerisFileWriter classes.
       </action>
       <action dev="luc" type="fix">
         Fixed thread-safety issues in DTM2000 model.

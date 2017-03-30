@@ -19,15 +19,15 @@ package org.orekit.data;
 import java.io.Serializable;
 
 import org.hipparchus.RealFieldElement;
+import org.orekit.utils.Constants;
 
 /**
  * Polynomial nutation function.
  *
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  * @see PoissonSeries
  */
-public class PolynomialNutation<T extends RealFieldElement<T>> implements Serializable {
+public class PolynomialNutation implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131007L;
@@ -38,7 +38,7 @@ public class PolynomialNutation<T extends RealFieldElement<T>> implements Serial
     /** Build a polynomial from its coefficients.
      * @param coefficients polynomial coefficients in increasing degree
      */
-    public PolynomialNutation(final double ... coefficients) {
+    public PolynomialNutation(final double... coefficients) {
         this.coefficients = coefficients.clone();
     }
 
@@ -57,11 +57,27 @@ public class PolynomialNutation<T extends RealFieldElement<T>> implements Serial
 
     }
 
+    /** Evaluate the time derivative of the polynomial.
+     * @param tc date offset in Julian centuries
+     * @return time derivative of the polynomial
+     */
+    public double derivative(final double tc) {
+
+        double p = 0;
+        for (int i = coefficients.length - 1; i > 0; --i) {
+            p = p * tc + i * coefficients[i];
+        }
+
+        return p / Constants.JULIAN_CENTURY;
+
+    }
+
     /** Evaluate the value of the polynomial.
      * @param tc date offset in Julian centuries
+     * @param <T> type of the filed elements
      * @return value of the polynomial
      */
-    public T value(final T tc) {
+    public <T extends RealFieldElement<T>> T value(final T tc) {
 
         T p = tc.getField().getZero();
         for (int i = coefficients.length - 1; i >= 0; --i) {
@@ -69,6 +85,22 @@ public class PolynomialNutation<T extends RealFieldElement<T>> implements Serial
         }
 
         return p;
+
+    }
+
+    /** Evaluate the time derivative of the polynomial.
+     * @param tc date offset in Julian centuries
+     * @param <T> type of the filed elements
+     * @return time derivative of the polynomial
+     */
+    public <T extends RealFieldElement<T>> T derivative(final T tc) {
+
+        T p = tc.getField().getZero();
+        for (int i = coefficients.length - 1; i > 0; --i) {
+            p = p.multiply(tc).add( i * coefficients[i]);
+        }
+
+        return p.divide(Constants.JULIAN_CENTURY);
 
     }
 

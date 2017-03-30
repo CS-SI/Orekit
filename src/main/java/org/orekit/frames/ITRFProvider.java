@@ -16,12 +16,16 @@
  */
 package org.orekit.frames;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
 
@@ -63,16 +67,11 @@ class ITRFProvider implements EOPBasedTransformProvider {
         return new ITRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
-    /** Get the transform from TIRF 2000 at specified date.
-     * <p>The update considers the pole motion from IERS data.</p>
-     * @param date new value of the date
-     * @return transform at the specified date
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read
-     */
+    /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        // offset from J2000 epoch in julian centuries
+        // offset from J2000 epoch in Julian centuries
         final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
         final double ttc =  tts / Constants.JULIAN_CENTURY;
 
@@ -88,6 +87,32 @@ class ITRFProvider implements EOPBasedTransformProvider {
 
         // set up the transform from parent TIRF
         return new Transform(date, combined, Vector3D.ZERO);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // offset from J2000 epoch in Julian centuries
+        final T tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        final T ttc =  tts.divide(Constants.JULIAN_CENTURY);
+
+        // pole correction parameters
+        final FieldPoleCorrection<T> eop = eopHistory.getPoleCorrection(date);
+
+        // pole motion in terrestrial frame
+        final FieldRotation<T> wRot = new FieldRotation<>(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM,
+                                                          eop.getYp(),
+                                                          eop.getXp(),
+                                                          ttc.multiply(-S_PRIME_RATE));
+
+        // combined effects
+        final FieldRotation<T> combined = wRot.revert();
+
+        // set up the transform from parent TIRF
+        return new FieldTransform<>(date, combined, FieldVector3D.getZero(date.getField()));
 
     }
 

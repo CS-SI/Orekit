@@ -408,3 +408,16 @@ CCSDS_TIME_SYSTEM_NOT_IMPLEMENTED = <MISSING TRANSLATION>
 
 # Creating an aggregate propagator requires at least one constituent propagator, but none were provided.
 NOT_ENOUGH_PROPAGATORS = <MISSING TRANSLATION>
+
+# argument {0} cannot be null
+NULL_ARGUMENT = <MISSING TRANSLATION>
+
+# value {0} not found in {1}
+VALUE_NOT_FOUND = <MISSING TRANSLATION>
+
+# Ephemeris file format does not support multiple space objects
+EPHEMERIS_FILE_NO_MULTI_SUPPORT = <MISSING TRANSLATION>
+
+# no FieldPVCoordinatesProvider for field {0} in LOF frame {1}
+ LOF_FRAME_NO_PROVIDER_FOR_FIELD = <MISSING TRANSLATION>
+

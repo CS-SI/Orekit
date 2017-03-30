@@ -167,7 +167,6 @@ public class ConstantThrustManeuverTest {
 
     }
 
-    
     /**Testing if the propagation between the FieldPropagation and the propagation
      * is equivalent.
      * Also testing if propagating X+dX with the propagation is equivalent to 
@@ -199,8 +198,9 @@ public class ConstantThrustManeuverTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+
+        final OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -210,10 +210,12 @@ public class ConstantThrustManeuverTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
                 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
         NP.setInitialState(iSR);
         
         final ConstantThrustManeuver forceModel =  new ConstantThrustManeuver(J2000.toAbsoluteDate().shiftedBy(100), 100.0, 400.0, 300.0, Vector3D.PLUS_K);
@@ -345,8 +347,9 @@ public class ConstantThrustManeuverTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+
+        final OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -356,7 +359,8 @@ public class ConstantThrustManeuverTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
                 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);

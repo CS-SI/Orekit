@@ -155,7 +155,7 @@ public class GroundStation {
             // lazy evaluation of offset frame, in body frame
             final BodyShape bodyShape    = baseFrame.getParentShape();
             final Frame     bodyFrame    = bodyShape.getBodyFrame();
-            final Transform baseToBody   = baseFrame.getTransformTo(bodyFrame, null);
+            final Transform baseToBody   = baseFrame.getTransformTo(bodyFrame, (AbsoluteDate) null);
             final double    x            = eastOffsetDriver.getValue();
             final double    y            = northOffsetDriver.getValue();
             final double    z            = zenithOffsetDriver.getValue();
@@ -268,7 +268,7 @@ public class GroundStation {
         final TopocentricFrame frame = getOffsetFrame();
 
         // offset frame origin
-        final Transform offsetToBody = frame.getTransformTo(baseFrame.getParent(), null);
+        final Transform offsetToBody = frame.getTransformTo(baseFrame.getParent(), (AbsoluteDate) null);
         final Vector3D  offsetOrigin = offsetToBody.transformPosition(Vector3D.ZERO);
         final FieldVector3D<DerivativeStructure> zeroEast =
                         new FieldVector3D<DerivativeStructure>(factory.variable(eastOffsetIndex,   0.0),

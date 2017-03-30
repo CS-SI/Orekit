@@ -18,10 +18,14 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -160,6 +164,84 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         return new PVCoordinates(new Vector3D(xP, yP, zP),
                                  new Vector3D(xV * vScale, yV * vScale, zV * vScale),
                                  new Vector3D(xA * aScale, yA * aScale, zA * aScale));
+
+    }
+
+    /** Get the position-velocity-acceleration at a specified date.
+     * @param date date at which position-velocity-acceleration is requested
+     * @param <T> type fo the field elements
+     * @return position-velocity-acceleration at specified date
+     */
+    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> getPositionVelocityAcceleration(final FieldAbsoluteDate<T> date) {
+
+        final T zero = date.getField().getZero();
+        final T one  = date.getField().getOne();
+
+        // normalize date
+        final T t = date.offsetFrom(new FieldAbsoluteDate<>(date.getField(), start), timeScale).multiply(2).subtract(duration).divide(duration);
+        final T twoT = t.add(t);
+
+        // initialize Chebyshev polynomials recursion
+        T pKm1 = one;
+        T pK   = t;
+        T xP   = zero.add(xCoeffs[0]);
+        T yP   = zero.add(yCoeffs[0]);
+        T zP   = zero.add(zCoeffs[0]);
+
+        // initialize Chebyshev polynomials derivatives recursion
+        T qKm1 = zero;
+        T qK   = one;
+        T xV   = zero;
+        T yV   = zero;
+        T zV   = zero;
+
+        // initialize Chebyshev polynomials second derivatives recursion
+        T rKm1 = zero;
+        T rK   = zero;
+        T xA   = zero;
+        T yA   = zero;
+        T zA   = zero;
+
+        // combine polynomials by applying coefficients
+        for (int k = 1; k < xCoeffs.length; ++k) {
+
+            // consider last computed polynomials on position
+            xP = xP.add(pK.multiply(xCoeffs[k]));
+            yP = yP.add(pK.multiply(yCoeffs[k]));
+            zP = zP.add(pK.multiply(zCoeffs[k]));
+
+            // consider last computed polynomials on velocity
+            xV = xV.add(qK.multiply(xCoeffs[k]));
+            yV = yV.add(qK.multiply(yCoeffs[k]));
+            zV = zV.add(qK.multiply(zCoeffs[k]));
+
+            // consider last computed polynomials on acceleration
+            xA = xA.add(rK.multiply(xCoeffs[k]));
+            yA = yA.add(rK.multiply(yCoeffs[k]));
+            zA = zA.add(rK.multiply(zCoeffs[k]));
+
+            // compute next Chebyshev polynomial value
+            final T pKm2 = pKm1;
+            pKm1 = pK;
+            pK   = twoT.multiply(pKm1).subtract(pKm2);
+
+            // compute next Chebyshev polynomial derivative
+            final T qKm2 = qKm1;
+            qKm1 = qK;
+            qK   = twoT.multiply(qKm1).add(pKm1.multiply(2)).subtract(qKm2);
+
+            // compute next Chebyshev polynomial second derivative
+            final T rKm2 = rKm1;
+            rKm1 = rK;
+            rK   = twoT.multiply(rKm1).add(qKm1.multiply(4)).subtract(rKm2);
+
+        }
+
+        final double vScale = 2 / duration;
+        final double aScale = vScale * vScale;
+        return new FieldPVCoordinates<>(new FieldVector3D<>(xP, yP, zP),
+                                        new FieldVector3D<>(xV.multiply(vScale), yV.multiply(vScale), zV.multiply(vScale)),
+                                        new FieldVector3D<>(xA.multiply(aScale), yA.multiply(aScale), zA.multiply(aScale)));
 
     }
 

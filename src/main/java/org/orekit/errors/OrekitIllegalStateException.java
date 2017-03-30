@@ -39,7 +39,7 @@ public class OrekitIllegalStateException extends IllegalStateException implement
      * @param specifier format specifier (to be translated)
      * @param parts parts to insert in the format (no translation)
      */
-    public OrekitIllegalStateException(final Localizable specifier, final Object ... parts) {
+    public OrekitIllegalStateException(final Localizable specifier, final Object... parts) {
         this.specifier = specifier;
         this.parts     = (parts == null) ? new Object[0] : parts.clone();
     }

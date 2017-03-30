@@ -29,7 +29,6 @@ import java.text.ParseException;
 import java.util.Locale;
 
 import org.hipparchus.analysis.UnivariateFunction;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.solvers.BaseUnivariateSolver;
 import org.hipparchus.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.hipparchus.analysis.solvers.UnivariateSolverUtils;
@@ -58,7 +57,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -75,7 +74,7 @@ import fr.cs.examples.KeyValueFileParser;
 public class Phasing {
 
     /** GMST function. */
-    private final TimeFunction<DerivativeStructure> gmst;
+    private final TimeScalarFunction gmst;
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
@@ -571,7 +570,7 @@ public class Phasing {
         // compute angle between Sun and spacecraft in the equatorial plane
         final Vector3D position = orbit.getPVCoordinates().getPosition();
         final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInUTCDay();
-        final double theta      = gmst.value(orbit.getDate()).getValue();
+        final double theta      = gmst.value(orbit.getDate());
         final double sunAlpha   = theta + FastMath.PI * (1 - time / (Constants.JULIAN_DAY * 0.5));
         final double dAlpha     = MathUtils.normalizeAngle(position.getAlpha() - sunAlpha, 0);
 

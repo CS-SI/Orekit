@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -35,6 +35,7 @@ import org.orekit.data.PolynomialNutation;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -49,18 +50,18 @@ public class MODProviderTest {
 
         TransformProvider eulerBasedProvider = new TransformProvider() {
             private static final long serialVersionUID = 1L;
-            private final PolynomialNutation<DerivativeStructure> zetaA =
-                    new PolynomialNutation<DerivativeStructure>(0.0,
+            private final PolynomialNutation zetaA =
+                    new PolynomialNutation(0.0,
                             2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
                             0.30188   * Constants.ARC_SECONDS_TO_RADIANS,
                             0.017998  * Constants.ARC_SECONDS_TO_RADIANS);
-            private final PolynomialNutation<DerivativeStructure> thetaA =
-                    new PolynomialNutation<DerivativeStructure>(0.0,
+            private final PolynomialNutation thetaA =
+                    new PolynomialNutation(0.0,
                             2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
                             -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
                             -0.041833 * Constants.ARC_SECONDS_TO_RADIANS);
-            private final PolynomialNutation<DerivativeStructure> zA =
-                    new PolynomialNutation<DerivativeStructure>(0.0,
+            private final PolynomialNutation zA =
+                    new PolynomialNutation(0.0,
                             2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
                             1.09468   * Constants.ARC_SECONDS_TO_RADIANS,
                             0.018203  * Constants.ARC_SECONDS_TO_RADIANS);
@@ -74,6 +75,11 @@ public class MODProviderTest {
                                                                  RotationConvention.VECTOR_OPERATOR),
                                                       RotationConvention.VECTOR_OPERATOR));
             }
+
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                throw new UnsupportedOperationException("never called in this test");
+            }
+
         };
 
         MODProvider modProvider = new MODProvider(IERSConventions.IERS_1996);
@@ -95,22 +101,22 @@ public class MODProviderTest {
         // is from equation 33 in IERS conventions 2003
         TransformProvider eulerBasedProvider = new TransformProvider() {
             private static final long serialVersionUID = 1L;
-            private final PolynomialNutation<DerivativeStructure> zetaA =
-                    new PolynomialNutation<DerivativeStructure>(   2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
+            private final PolynomialNutation zetaA =
+                    new PolynomialNutation(   2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
                                            2306.0809506 * Constants.ARC_SECONDS_TO_RADIANS,
                                               0.3019015 * Constants.ARC_SECONDS_TO_RADIANS,
                                               0.0179663 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0000327 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0000002 * Constants.ARC_SECONDS_TO_RADIANS);
-            private final PolynomialNutation<DerivativeStructure> thetaA =
-                    new PolynomialNutation<DerivativeStructure>(0.0,
+            private final PolynomialNutation thetaA =
+                    new PolynomialNutation(0.0,
                                            2004.1917476 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.4269353 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0418251 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0000601 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0000001 * Constants.ARC_SECONDS_TO_RADIANS);
-            private final PolynomialNutation<DerivativeStructure> zA =
-                    new PolynomialNutation<DerivativeStructure>(  -2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
+            private final PolynomialNutation zA =
+                    new PolynomialNutation(  -2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
                                            2306.0803226 * Constants.ARC_SECONDS_TO_RADIANS,
                                               1.0947790 * Constants.ARC_SECONDS_TO_RADIANS,
                                               0.0182273 * Constants.ARC_SECONDS_TO_RADIANS,
@@ -126,6 +132,11 @@ public class MODProviderTest {
                                                                  RotationConvention.VECTOR_OPERATOR),
                                                       RotationConvention.VECTOR_OPERATOR));
             }
+
+            public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                throw new UnsupportedOperationException("never called in this test");
+            }
+
         };
 
         MODProvider modProvider = new MODProvider(IERSConventions.IERS_2003);

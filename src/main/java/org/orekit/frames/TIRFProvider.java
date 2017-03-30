@@ -18,7 +18,9 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -26,7 +28,8 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
@@ -46,8 +49,11 @@ class TIRFProvider implements EOPBasedTransformProvider {
     /** EOP history. */
     private final EOPHistory eopHistory;
 
+    /** UT1 time scale. */
+    private final transient UT1Scale ut1;
+
     /** ERA function. */
-    private final transient TimeFunction<DerivativeStructure> era;
+    private final transient TimeScalarFunction era;
 
     /** Simple constructor.
      * @param eopHistory EOP history
@@ -56,9 +62,9 @@ class TIRFProvider implements EOPBasedTransformProvider {
     protected TIRFProvider(final EOPHistory eopHistory)
         throws OrekitException {
 
-        final UT1Scale ut1   = TimeScalesFactory.getUT1(eopHistory);
-        this.eopHistory      = eopHistory;
-        this.era             = eopHistory.getConventions().getEarthOrientationAngleFunction(ut1);
+        this.ut1        = TimeScalesFactory.getUT1(eopHistory);
+        this.eopHistory = eopHistory;
+        this.era        = eopHistory.getConventions().getEarthOrientationAngleFunction(ut1);
 
     }
 
@@ -75,26 +81,42 @@ class TIRFProvider implements EOPBasedTransformProvider {
         return new TIRFProvider(eopHistory.getNonInterpolatingEOPHistory());
     }
 
-    /** Get the transform from CIRF 2000 at specified date.
-     * <p>The update considers the earth rotation from IERS data.</p>
-     * @param date new value of the date
-     * @return transform at the specified date
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read
-     */
+    /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         // compute proper rotation
-        final double correctedERA = era.value(date).getValue();
+        final double correctedERA = era.value(date);
 
         // compute true angular rotation of Earth, in rad/s
         final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
         final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
         final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 
-        // set up the transform from parent CIRF2000
+        // set up the transform from parent CIRF
         final Rotation rotation     = new Rotation(Vector3D.PLUS_K, correctedERA, RotationConvention.FRAME_TRANSFORM);
         return new Transform(date, rotation, rotationRate);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // compute proper rotation
+        final T correctedERA = era.value(date);
+
+        // compute true angular rotation of Earth, in rad/s
+        final T lod = (eopHistory == null) ? date.getField().getZero() : eopHistory.getLOD(date);
+        final T omp = lod.divide(Constants.JULIAN_DAY).subtract(1).multiply(-AVE);
+        final FieldVector3D<T> rotationRate = new FieldVector3D<>(omp, Vector3D.PLUS_K);
+
+        // set up the transform from parent CIRF
+        final FieldRotation<T> rotation = new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
+                                                              correctedERA,
+                                                              RotationConvention.FRAME_TRANSFORM);
+        return new FieldTransform<>(date, rotation, rotationRate);
 
     }
 
@@ -104,7 +126,7 @@ class TIRFProvider implements EOPBasedTransformProvider {
      * @exception OrekitException if nutation model cannot be computed
      */
     public double getEarthRotationAngle(final AbsoluteDate date) throws OrekitException {
-        return MathUtils.normalizeAngle(era.value(date).getValue(), 0);
+        return MathUtils.normalizeAngle(era.value(date), 0);
     }
 
     /** Replace the instance with a data transfer object for serialization.

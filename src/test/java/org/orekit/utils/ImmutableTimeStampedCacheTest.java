@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -225,12 +226,7 @@ public class ImmutableTimeStampedCacheTest {
         Assert.assertArrayEquals(cache.getAll().toArray(), expecteds.toArray());
 
         // check getNeighbors
-        actuals = cache.getNeighbors(date);
-        try {
-            actuals.set(0, different);
-        } catch (UnsupportedOperationException e) {
-            // exception ok
-        }
+        actuals = cache.getNeighbors(date).collect(Collectors.toList());
         Assert.assertArrayEquals(cache.getAll().toArray(), expecteds.toArray());
     }
 

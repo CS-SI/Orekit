@@ -190,7 +190,8 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<T>(field,0.001, 1000, absTolerance, relTolerance);
         integrator.setInitialStepSize(zero.add(60));
-        FieldNumericalPropagator<T> FPropagator = new FieldNumericalPropagator<T>(field, integrator);
+        FieldNumericalPropagator<T> FPropagator = new FieldNumericalPropagator<>(field, integrator);
+        FPropagator.setOrbitType(OrbitType.EQUINOCTIAL);
         
         FPropagator.addForceModel(new CunninghamAttractionModel(itrf2008,
                                                                GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu,
@@ -333,8 +334,8 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+        OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -344,10 +345,12 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
                 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
         NP.setInitialState(iSR);
         
         final CunninghamAttractionModel forceModel = new CunninghamAttractionModel(itrf2008,
@@ -489,8 +492,8 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+        OrbitType type = OrbitType.KEPLERIAN;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -500,10 +503,12 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
                 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
         NP.setInitialState(iSR);
         
         final CunninghamAttractionModel forceModel = new CunninghamAttractionModel(itrf2008,
@@ -766,6 +771,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                 new DormandPrince853Integrator(0.001, 1000, absTolerance, relTolerance);
             integrator.setInitialStepSize(60);
             propagator = new NumericalPropagator(integrator);
+            propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
         }

@@ -169,6 +169,7 @@
     * loading of SP3-a and SP3-c orbit files
     * loading of CCSDS Orbit Data Messages (both OPM, OEM, and OMM types are supported)
     * loading of SEM and YUMA files for GPS constellation
+    * exporting of ephemeris in CCSDS OEM file format
 
   * Earth models
   

@@ -29,15 +29,17 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -67,7 +69,10 @@ public class FundamentalNutationArguments implements Serializable {
     private final TimeScale timeScale;
 
     /** Function computing Greenwich Mean Sidereal Time. */
-    private final transient TimeFunction<DerivativeStructure> gmstFunction;
+    private final transient TimeScalarFunction gmstFunction;
+
+    /** Function computing Greenwich Mean Sidereal Time rate. */
+    private final transient TimeScalarFunction gmstRateFunction;
 
     // luni-solar Delaunay arguments
 
@@ -145,6 +150,7 @@ public class FundamentalNutationArguments implements Serializable {
         this.conventions        = conventions;
         this.timeScale          = timeScale;
         this.gmstFunction       = (timeScale == null) ? null : conventions.getGMSTFunction(timeScale);
+        this.gmstRateFunction   = (timeScale == null) ? null : conventions.getGMSTRateFunction(timeScale);
         this.lCoefficients      = coefficients.get( 0);
         this.lPrimeCoefficients = coefficients.get( 1);
         this.fCoefficients      = coefficients.get( 2);
@@ -258,73 +264,133 @@ public class FundamentalNutationArguments implements Serializable {
         return value;
     }
 
+    /** Evaluate a polynomial time derivative.
+     * @param tc offset in Julian centuries
+     * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
+     * @return time derivative of the polynomial
+     */
+    private double derivative(final double tc, final double[] coefficients) {
+        double derivative = 0;
+        for (int i = coefficients.length - 1; i > 0; --i) {
+            derivative = i * coefficients[i] + tc * derivative;
+        }
+        return derivative / Constants.JULIAN_CENTURY;
+    }
+
+    /** Evaluate a polynomial.
+     * @param tc offset in Julian centuries
+     * @param <T> type of the field elements
+     * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
+     * @return value of the polynomial
+     */
+    private <T extends RealFieldElement<T>> T value(final T tc, final double[] coefficients) {
+        T value = tc.getField().getZero();
+        for (int i = coefficients.length - 1; i >= 0; --i) {
+            value = tc.multiply(value).add(coefficients[i]);
+        }
+        return value;
+    }
+
+    /** Evaluate a polynomial time derivative.
+     * @param tc offset in Julian centuries
+     * @param <T> type of the field elements
+     * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
+     * @return time derivative of the polynomial
+     */
+    private <T extends RealFieldElement<T>> T derivative(final T tc, final double[] coefficients) {
+        T derivative = tc.getField().getZero();
+        for (int i = coefficients.length - 1; i > 0; --i) {
+            derivative = tc.multiply(derivative).add(i * coefficients[i]);
+        }
+        return derivative.divide(Constants.JULIAN_CENTURY);
+    }
+
     /** Evaluate all fundamental arguments for the current date (Delaunay plus planetary).
      * @param date current date
      * @return all fundamental arguments for the current date (Delaunay plus planetary)
      */
     public BodiesElements evaluateAll(final AbsoluteDate date) {
 
-        final double tc = conventions.evaluateTC(date);
-        final double gamma = gmstFunction == null ?
-                             Double.NaN : gmstFunction.value(date).getValue() + FastMath.PI;
+        final double tc       = conventions.evaluateTC(date);
+        final double gamma    = gmstFunction == null ?
+                                Double.NaN : gmstFunction.value(date) + FastMath.PI;
+        final double gammaDot = gmstRateFunction == null ?
+                                Double.NaN : gmstRateFunction.value(date);
 
-        return new BodiesElements(date, tc, gamma,
-                                  value(tc, lCoefficients),      // mean anomaly of the Moon
-                                  value(tc, lPrimeCoefficients), // mean anomaly of the Sun
-                                  value(tc, fCoefficients),      // L - Ω where L is the mean longitude of the Moon
-                                  value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
-                                  value(tc, omegaCoefficients),  // mean longitude of the ascending node of the Moon
-                                  value(tc, lMeCoefficients),    // mean Mercury longitude
-                                  value(tc, lVeCoefficients),    // mean Venus longitude
-                                  value(tc, lECoefficients),     // mean Earth longitude
-                                  value(tc, lMaCoefficients),    // mean Mars longitude
-                                  value(tc, lJCoefficients),     // mean Jupiter longitude
-                                  value(tc, lSaCoefficients),    // mean Saturn longitude
-                                  value(tc, lUCoefficients),     // mean Uranus longitude
-                                  value(tc, lNeCoefficients),    // mean Neptune longitude
-                                  value(tc, paCoefficients));    // general accumulated precession in longitude
+        return new BodiesElements(date, tc, gamma, gammaDot,
+                                  value(tc, lCoefficients),           // mean anomaly of the Moon
+                                  derivative(tc, lCoefficients),      // mean anomaly of the Moon time derivative
+                                  value(tc, lPrimeCoefficients),      // mean anomaly of the Sun
+                                  derivative(tc, lPrimeCoefficients), // mean anomaly of the Sun time derivative
+                                  value(tc, fCoefficients),           // L - Ω where L is the mean longitude of the Moon
+                                  derivative(tc, fCoefficients),      // L - Ω where L is the mean longitude of the Moon time derivative
+                                  value(tc, dCoefficients),           // mean elongation of the Moon from the Sun
+                                  derivative(tc, dCoefficients),      // mean elongation of the Moon from the Sun time derivative
+                                  value(tc, omegaCoefficients),       // mean longitude of the ascending node of the Moon
+                                  derivative(tc, omegaCoefficients),  // mean longitude of the ascending node of the Moon time derivative
+                                  value(tc, lMeCoefficients),         // mean Mercury longitude
+                                  derivative(tc, lMeCoefficients),    // mean Mercury longitude time derivative
+                                  value(tc, lVeCoefficients),         // mean Venus longitude
+                                  derivative(tc, lVeCoefficients),    // mean Venus longitude time derivative
+                                  value(tc, lECoefficients),          // mean Earth longitude
+                                  derivative(tc, lECoefficients),     // mean Earth longitude time derivative
+                                  value(tc, lMaCoefficients),         // mean Mars longitude
+                                  derivative(tc, lMaCoefficients),    // mean Mars longitude time derivative
+                                  value(tc, lJCoefficients),          // mean Jupiter longitude
+                                  derivative(tc, lJCoefficients),     // mean Jupiter longitude time derivative
+                                  value(tc, lSaCoefficients),         // mean Saturn longitude
+                                  derivative(tc, lSaCoefficients),    // mean Saturn longitude time derivative
+                                  value(tc, lUCoefficients),          // mean Uranus longitude
+                                  derivative(tc, lUCoefficients),     // mean Uranus longitude time derivative
+                                  value(tc, lNeCoefficients),         // mean Neptune longitude
+                                  derivative(tc, lNeCoefficients),    // mean Neptune longitude time derivative
+                                  value(tc, paCoefficients),          // general accumulated precession in longitude
+                                  derivative(tc, paCoefficients));    // general accumulated precession in longitude time derivative
 
     }
 
-    /** Evaluate a polynomial.
-     * @param tc offset in Julian centuries
-     * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
-     * @return value of the polynomial
-     */
-    private DerivativeStructure value(final DerivativeStructure tc, final double[] coefficients) {
-        DerivativeStructure value = tc.getField().getZero();
-        for (int i = coefficients.length - 1; i >= 0; --i) {
-            value = value.multiply(tc).add(coefficients[i]);
-        }
-        return value;
-    }
-
-    /** Evaluate all fundamental arguments for the current date (Delaunay plus planetary),
-     * including the first time derivative.
+    /** Evaluate all fundamental arguments for the current date (Delaunay plus planetary).
      * @param date current date
-     * @return all fundamental arguments for the current date (Delaunay plus planetary),
-     * including the first time derivative
+     * @param <T> type of the field elements
+     * @return all fundamental arguments for the current date (Delaunay plus planetary)
      */
-    public FieldBodiesElements<DerivativeStructure> evaluateDerivative(final AbsoluteDate date) {
+    public <T extends RealFieldElement<T>> FieldBodiesElements<T> evaluateAll(final FieldAbsoluteDate<T> date) {
 
-        final DerivativeStructure tc = conventions.dsEvaluateTC(date);
+        final T tc       = conventions.evaluateTC(date);
+        final T gamma    = gmstFunction == null ?
+                           tc.getField().getZero().add(Double.NaN) : gmstFunction.value(date).add(FastMath.PI);
+        final T gammaDot = gmstRateFunction == null ?
+                           tc.getField().getZero().add(Double.NaN) : gmstRateFunction.value(date);
 
-        return new FieldBodiesElements<DerivativeStructure>(date, tc,
-                                                            gmstFunction.value(date).add(FastMath.PI),
-                                                            value(tc, lCoefficients),      // mean anomaly of the Moon
-                                                            value(tc, lPrimeCoefficients), // mean anomaly of the Sun
-                                                            value(tc, fCoefficients),      // L - Ω where L is the mean longitude of the Moon
-                                                            value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
-                                                            value(tc, omegaCoefficients),  // mean longitude of the ascending node of the Moon
-                                                            value(tc, lMeCoefficients),    // mean Mercury longitude
-                                                            value(tc, lVeCoefficients),    // mean Venus longitude
-                                                            value(tc, lECoefficients),     // mean Earth longitude
-                                                            value(tc, lMaCoefficients),    // mean Mars longitude
-                                                            value(tc, lJCoefficients),     // mean Jupiter longitude
-                                                            value(tc, lSaCoefficients),    // mean Saturn longitude
-                                                            value(tc, lUCoefficients),     // mean Uranus longitude
-                                                            value(tc, lNeCoefficients),    // mean Neptune longitude
-                                                            value(tc, paCoefficients));    // general accumulated precession in longitude
+        return new FieldBodiesElements<>(date, tc, gamma, gammaDot,
+                                         value(tc, lCoefficients),           // mean anomaly of the Moon
+                                         derivative(tc, lCoefficients),      // mean anomaly of the Moon time derivative
+                                         value(tc, lPrimeCoefficients),      // mean anomaly of the Sun
+                                         derivative(tc, lPrimeCoefficients), // mean anomaly of the Sun time derivative
+                                         value(tc, fCoefficients),           // L - Ω where L is the mean longitude of the Moon
+                                         derivative(tc, fCoefficients),      // L - Ω where L is the mean longitude of the Moon time derivative
+                                         value(tc, dCoefficients),           // mean elongation of the Moon from the Sun
+                                         derivative(tc, dCoefficients),      // mean elongation of the Moon from the Sun time derivative
+                                         value(tc, omegaCoefficients),       // mean longitude of the ascending node of the Moon
+                                         derivative(tc, omegaCoefficients),  // mean longitude of the ascending node of the Moon time derivative
+                                         value(tc, lMeCoefficients),         // mean Mercury longitude
+                                         derivative(tc, lMeCoefficients),    // mean Mercury longitude time derivative
+                                         value(tc, lVeCoefficients),         // mean Venus longitude
+                                         derivative(tc, lVeCoefficients),    // mean Venus longitude time derivative
+                                         value(tc, lECoefficients),          // mean Earth longitude
+                                         derivative(tc, lECoefficients),     // mean Earth longitude time derivative
+                                         value(tc, lMaCoefficients),         // mean Mars longitude
+                                         derivative(tc, lMaCoefficients),    // mean Mars longitude time derivative
+                                         value(tc, lJCoefficients),          // mean Jupiter longitude
+                                         derivative(tc, lJCoefficients),     // mean Jupiter longitude time derivative
+                                         value(tc, lSaCoefficients),         // mean Saturn longitude
+                                         derivative(tc, lSaCoefficients),    // mean Saturn longitude time derivative
+                                         value(tc, lUCoefficients),          // mean Uranus longitude
+                                         derivative(tc, lUCoefficients),     // mean Uranus longitude time derivative
+                                         value(tc, lNeCoefficients),         // mean Neptune longitude
+                                         derivative(tc, lNeCoefficients),    // mean Neptune longitude time derivative
+                                         value(tc, paCoefficients),          // general accumulated precession in longitude
+                                         derivative(tc, paCoefficients));    // general accumulated precession in longitude time derivative
 
     }
 

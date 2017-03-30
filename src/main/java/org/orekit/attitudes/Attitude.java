@@ -17,9 +17,9 @@
 package org.orekit.attitudes;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -211,13 +211,10 @@ public class Attitude
      * </p>
      * @exception OrekitException if the number of point is too small for interpolating
      */
-    public Attitude interpolate(final AbsoluteDate interpolationDate, final Collection<Attitude> sample)
+    public Attitude interpolate(final AbsoluteDate interpolationDate, final Stream<Attitude> sample)
         throws OrekitException {
         final List<TimeStampedAngularCoordinates> datedPV =
-                new ArrayList<TimeStampedAngularCoordinates>(sample.size());
-        for (final Attitude attitude : sample) {
-            datedPV.add(attitude.orientation);
-        }
+             sample.map(attitude -> attitude.orientation).collect(Collectors.toList());
         final TimeStampedAngularCoordinates interpolated =
                 TimeStampedAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RR, datedPV);
         return new Attitude(referenceFrame, interpolated);

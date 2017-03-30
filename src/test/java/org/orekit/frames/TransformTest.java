@@ -58,6 +58,16 @@ public class TransformTest {
     }
 
     @Test
+    public void testIdentityLine() {
+        RandomGenerator random = new Well19937a(0x98603025df70db7cl);
+        Vector3D p1 = randomVector(100.0, random);
+        Vector3D p2 = randomVector(100.0, random);
+        Line line = new Line(p1, p2, 1.0e-6);
+        Line transformed = Transform.IDENTITY.transformLine(line);
+        Assert.assertSame(line, transformed);
+    }
+
+    @Test
     public void testSimpleComposition() {
         Transform transform =
             new Transform(AbsoluteDate.J2000_EPOCH,
@@ -141,6 +151,11 @@ public class TransformTest {
         Assert.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertTrue(t12.getAngular().getRotationAcceleration().getNorm() > 0.01);
+
+        Assert.assertEquals(0.0, t12.freeze().getCartesian().getVelocity().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getCartesian().getAcceleration().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationRate().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t12.freeze().getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
 
     }
 
@@ -288,7 +303,7 @@ public class TransformTest {
 
         // rotation transform test
         PVCoordinates pointP3 = new PVCoordinates(Vector3D.PLUS_J, new Vector3D(-2, 1, 0), new Vector3D(-4, -3, -1));
-        Rotation R = new Rotation(Vector3D.PLUS_K, FastMath.PI/2, RotationConvention.VECTOR_OPERATOR);
+        Rotation R = new Rotation(Vector3D.PLUS_K, FastMath.PI / 2, RotationConvention.VECTOR_OPERATOR);
         Transform R1toR3 = new Transform(AbsoluteDate.J2000_EPOCH, R, new Vector3D(0, 0, -2), new Vector3D(1, 0, 0));
         PVCoordinates result2 = R1toR3.transformPVCoordinates(pointP1);
         checkVector(pointP3.getPosition(),     result2.getPosition(),     1.0e-15);
@@ -367,7 +382,7 @@ public class TransformTest {
 
             Rotation instantRot    = randomRotation(rnd);
             Vector3D normAxis = instantRot.getAxis(RotationConvention.VECTOR_OPERATOR);
-            double w  = FastMath.abs(instantRot.getAngle())/Constants.JULIAN_DAY;
+            double w  = FastMath.abs(instantRot.getAngle()) / Constants.JULIAN_DAY;
 
             // random rotation
             Rotation rot    = randomRotation(rnd);
@@ -1041,7 +1056,7 @@ public class TransformTest {
             Assert.assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
             Vector3D b = randomVector(1.0e3, random);
             Vector3D tB = transform.transformPosition(b);
-            Assert.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * a.getNorm());
+            Assert.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * b.getNorm());
             PVCoordinates pv  = new PVCoordinates(randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random));
             PVCoordinates tPv = transform.transformPVCoordinates(pv);
             checkVector(pv.getPosition(),     tPv.getPosition(), 1.0e-10);

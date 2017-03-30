@@ -18,11 +18,11 @@ package org.orekit.propagation;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -32,8 +32,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -231,7 +232,7 @@ public class SpacecraftState
      * @see #getAdditionalState(String)
      * @see #getAdditionalStates()
      */
-    public SpacecraftState addAdditionalState(final String name, final double ... value) {
+    public SpacecraftState addAdditionalState(final String name, final double... value) {
         final Map<String, double[]> newMap = new HashMap<String, double[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
@@ -310,12 +311,12 @@ public class SpacecraftState
      * </p>
      */
     public SpacecraftState interpolate(final AbsoluteDate date,
-                                       final Collection<SpacecraftState> sample)
-        throws OrekitException {
+                                       final Stream<SpacecraftState> sample)
+            throws OrekitException {
 
         // prepare interpolators
-        final List<Orbit> orbits = new ArrayList<Orbit>(sample.size());
-        final List<Attitude> attitudes = new ArrayList<Attitude>(sample.size());
+        final List<Orbit> orbits = new ArrayList<>();
+        final List<Attitude> attitudes = new ArrayList<>();
         final HermiteInterpolator massInterpolator = new HermiteInterpolator();
         final Map<String, HermiteInterpolator> additionalInterpolators =
                 new HashMap<String, HermiteInterpolator>(additional.size());
@@ -324,17 +325,25 @@ public class SpacecraftState
         }
 
         // extract sample data
-        for (final SpacecraftState state : sample) {
-            final double deltaT = state.getDate().durationFrom(date);
-            orbits.add(state.getOrbit());
-            attitudes.add(state.getAttitude());
-            massInterpolator.addSamplePoint(deltaT,
-                                            new double[] {
-                                                state.getMass()
-                                            });
-            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
-                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
-            }
+        try {
+            sample.forEach(state -> {
+                try {
+                    final double deltaT = state.getDate().durationFrom(date);
+                    orbits.add(state.getOrbit());
+                    attitudes.add(state.getAttitude());
+                    massInterpolator.addSamplePoint(deltaT,
+                                                    new double[] {
+                                                         state.getMass()
+                                                    });
+                    for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
+                        entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
+                    }
+                } catch (OrekitException oe) {
+                    throw new OrekitExceptionWrapper(oe);
+                }
+            });
+        } catch (OrekitExceptionWrapper oew) {
+            throw oew.getException();
         }
 
         // perform interpolations

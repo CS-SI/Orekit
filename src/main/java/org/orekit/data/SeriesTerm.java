@@ -22,13 +22,13 @@ import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.utils.Constants;
 
 /** Base class for nutation series terms.
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  * @see PoissonSeries
  */
-abstract class SeriesTerm<T extends RealFieldElement<T>> {
+abstract class SeriesTerm {
 
     /** Coefficients for the sine part. */
     private double[][] sinCoeff;
@@ -132,17 +132,63 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
 
     }
 
+    /** Evaluate the time derivative of the series term.
+     * @param elements bodies elements for nutation
+     * @return time derivative of the series term
+     */
+    public double[] derivative(final BodiesElements elements) {
+
+        // preliminary computation
+        final double tc   = elements.getTC();
+        final double a    = argument(elements);
+        final double aDot = argumentDerivative(elements);
+        final double sin  = FastMath.sin(a);
+        final double cos  = FastMath.cos(a);
+
+        // compute each function
+        final double[] derivatives = new double[sinCoeff.length];
+        for (int i = 0; i < derivatives.length; ++i) {
+            double s    = 0;
+            double c    = 0;
+            double sDot = 0;
+            double cDot = 0;
+            if (sinCoeff[i].length > 0) {
+                for (int j = sinCoeff[i].length - 1; j > 0; --j) {
+                    s    = s    * tc +     sinCoeff[i][j];
+                    c    = c    * tc +     cosCoeff[i][j];
+                    sDot = sDot * tc + j * sinCoeff[i][j];
+                    cDot = cDot * tc + j * cosCoeff[i][j];
+                }
+                s     = s * tc + sinCoeff[i][0];
+                c     = c * tc + cosCoeff[i][0];
+                sDot /= Constants.JULIAN_CENTURY;
+                cDot /= Constants.JULIAN_CENTURY;
+            }
+            derivatives[i] = (sDot - c * aDot) * sin + (cDot + s * aDot) * cos;
+        }
+
+        return derivatives;
+
+    }
+
     /** Compute the argument for the current date.
      * @param elements luni-solar and planetary elements for the current date
      * @return current value of the argument
      */
     protected abstract double argument(BodiesElements elements);
 
+    /** Compute the time derivative of the argument for the current date.
+     * @param elements luni-solar and planetary elements for the current date
+     * @return current time derivative of the argument
+     */
+    protected abstract double argumentDerivative(BodiesElements elements);
+
     /** Evaluate the value of the series term.
      * @param elements bodies elements for nutation
+     * @param <T> the type of the field elements
      * @return value of the series term
      */
-    public T[] value(final FieldBodiesElements<T> elements) {
+    public <T extends RealFieldElement<T>> T[] value(final FieldBodiesElements<T> elements) {
 
         // preliminary computation
         final T tc  = elements.getTC();
@@ -166,17 +212,65 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
 
     }
 
+    /** Evaluate the time derivative of the series term.
+     * @param elements bodies elements for nutation
+     * @param <T> the type of the field elements
+     * @return time derivative of the series term
+     */
+    public <T extends RealFieldElement<T>> T[] derivative(final FieldBodiesElements<T> elements) {
+
+        // preliminary computation
+        final T tc   = elements.getTC();
+        final T a    = argument(elements);
+        final T aDot = argumentDerivative(elements);
+        final T sin  = a.sin();
+        final T cos  = a.cos();
+
+        // compute each function
+        final T[] derivatives = MathArrays.buildArray(tc.getField(), sinCoeff.length);
+        for (int i = 0; i < derivatives.length; ++i) {
+            T s    = tc.getField().getZero();
+            T c    = tc.getField().getZero();
+            T sDot = tc.getField().getZero();
+            T cDot = tc.getField().getZero();
+            if (sinCoeff[i].length > 0) {
+                for (int j = sinCoeff[i].length - 1; j > 0; --j) {
+                    s    = s.multiply(tc).add(sinCoeff[i][j]);
+                    c    = c.multiply(tc).add(cosCoeff[i][j]);
+                    sDot = sDot.multiply(tc).add(j * sinCoeff[i][j]);
+                    cDot = cDot.multiply(tc).add(j * cosCoeff[i][j]);
+                }
+                s    = s.multiply(tc).add(sinCoeff[i][0]);
+                c    = c.multiply(tc).add(cosCoeff[i][0]);
+                sDot = sDot.divide(Constants.JULIAN_CENTURY);
+                cDot = cDot.divide(Constants.JULIAN_CENTURY);
+            }
+            derivatives[i] = sDot.subtract(c.multiply(aDot)).multiply(sin).
+                             add(cDot.add(s.multiply(aDot)).multiply(cos));
+        }
+
+        return derivatives;
+
+    }
+
     /** Compute the argument for the current date.
      * @param elements luni-solar and planetary elements for the current date
+     * @param <T> the type of the field elements
      * @return current value of the argument
      */
-    protected abstract T argument(FieldBodiesElements<T> elements);
+    protected abstract <T extends RealFieldElement<T>> T argument(FieldBodiesElements<T> elements);
+
+    /** Compute the time derivative of the argument for the current date.
+     * @param elements luni-solar and planetary elements for the current date
+     * @param <T> the type of the field elements
+     * @return current time derivative of the argument
+     */
+    protected abstract <T extends RealFieldElement<T>> T argumentDerivative(FieldBodiesElements<T> elements);
 
     /** Factory method for building the appropriate object.
      * <p>The method checks the null coefficients and build an instance
      * of an appropriate type to avoid too many unnecessary multiplications
      * by zero coefficients.</p>
-     * @param <S> the type of the field elements
      * @param cGamma coefficient for γ = GMST + π tide parameter
      * @param cL coefficient for mean anomaly of the Moon
      * @param cLPrime coefficient for mean anomaly of the Sun
@@ -194,35 +288,35 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
      * @param cPa coefficient for general accumulated precession in longitude
      * @return a nutation serie term instance well suited for the set of coefficients
      */
-    public static <S extends RealFieldElement<S>> SeriesTerm<S> buildTerm(final int cGamma,
-                                                                          final int cL, final int cLPrime, final int cF,
-                                                                          final int cD, final int cOmega,
-                                                                          final int cMe, final int cVe, final int cE,
-                                                                          final int cMa, final int cJu, final int cSa,
-                                                                          final int cUr, final int cNe, final int cPa) {
+    public static  SeriesTerm buildTerm(final int cGamma,
+                                        final int cL, final int cLPrime, final int cF,
+                                        final int cD, final int cOmega,
+                                        final int cMe, final int cVe, final int cE,
+                                        final int cMa, final int cJu, final int cSa,
+                                        final int cUr, final int cNe, final int cPa) {
         if (cGamma == 0 && cL == 0 && cLPrime == 0 && cF == 0 && cD == 0 && cOmega == 0) {
-            return new PlanetaryTerm<S>(cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+            return new PlanetaryTerm(cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
         } else if (cGamma == 0 &&
                    cMe == 0 && cVe == 0 && cE == 0 && cMa == 0 && cJu == 0 &&
                    cSa == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
-            return new LuniSolarTerm<S>(cL, cLPrime, cF, cD, cOmega);
+            return new LuniSolarTerm(cL, cLPrime, cF, cD, cOmega);
         } else if (cGamma != 0 &&
                    cMe == 0 && cVe == 0 && cE == 0 && cMa == 0 && cJu == 0 &&
                    cSa == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
-            return new TideTerm<S>(cGamma, cL, cLPrime, cF, cD, cOmega);
+            return new TideTerm(cGamma, cL, cLPrime, cF, cD, cOmega);
         } else if (cGamma == 0 && cLPrime == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
-            return new NoFarPlanetsTerm<S>(cL, cF, cD, cOmega,
-                                           cMe, cVe, cE, cMa, cJu, cSa);
+            return new NoFarPlanetsTerm(cL, cF, cD, cOmega,
+                                        cMe, cVe, cE, cMa, cJu, cSa);
         } else if (cGamma == 0) {
-            return new GeneralTerm<S>(cL, cLPrime, cF, cD, cOmega,
-                                      cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+            return new GeneralTerm(cL, cLPrime, cF, cD, cOmega,
+                                   cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
         } else {
             throw new OrekitInternalError(null);
         }
 
     }
 
-    /** Extend an array to old at least index and degree.
+    /** Extend an array to hold at least index and degree.
      * @param index index of the function
      * @param degree degree of the coefficients
      * @param array to extend
@@ -249,7 +343,7 @@ abstract class SeriesTerm<T extends RealFieldElement<T>> {
 
     }
 
-    /** Extend an array to old at least index and degree.
+    /** Extend an array to hold at least degree.
      * @param degree degree of the coefficients
      * @param array to extend
      * @return extended array

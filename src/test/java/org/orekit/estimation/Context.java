@@ -56,7 +56,7 @@ public class Context {
     public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
                                                     final boolean perfectStart,
                                                     final double minStep, final double maxStep, final double dP,
-                                                    final Force ... forces)
+                                                    final Force... forces)
         throws OrekitException {
 
         final Orbit startOrbit;

@@ -23,9 +23,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
+import org.hipparchus.analysis.UnivariateFunction;
+import org.hipparchus.analysis.UnivariateVectorFunction;
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFunction;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -33,17 +42,20 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.IAUPoleFactory.OldIAUPole;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
-public class IAUPoleFactoryTest {
+public class PredefinedIAUPolesTest {
 
     @Test
     public void testGCRFAligned() throws OrekitException, UnsupportedEncodingException, IOException {
-        IAUPole iauPole = IAUPoleFactory.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER);
+        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
         Assert.assertEquals(0,   Vector3D.distance(pole, Vector3D.PLUS_K), 1.0e-15);
@@ -52,7 +64,7 @@ public class IAUPoleFactoryTest {
 
     @Test
     public void testSun() throws OrekitException, UnsupportedEncodingException, IOException {
-        IAUPole iauPole = IAUPoleFactory.getIAUPole(EphemerisType.SUN);
+        IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         final double alphaRef    = FastMath.toRadians(286.13);
         final double deltaRef    = FastMath.toRadians(63.87);
@@ -96,7 +108,7 @@ public class IAUPoleFactoryTest {
                 Rotation rRef = new Rotation(m, 1.0e-10);
 
                 // check pole
-                IAUPole iauPole = IAUPoleFactory.getIAUPole(type);
+                IAUPole iauPole = PredefinedIAUPoles.getIAUPole(type);
                 Vector3D pole = iauPole.getPole(date2);
                 double w = iauPole.getPrimeMeridianAngle(date2);
                 Assert.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
@@ -115,6 +127,75 @@ public class IAUPoleFactoryTest {
 
             }
         }
+    }
+
+    @Test
+    public void testVersus80Implementation() {
+        for (EphemerisType body : EphemerisType.values()) {
+            IAUPole    newPole = PredefinedIAUPoles.getIAUPole(body);
+            OldIAUPole oldPole = IAUPoleFactory.getIAUPole(body);
+            for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
+                final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+                Assert.assertEquals(0, Vector3D.angle(newPole.getPole(date), oldPole.getPole(date)), 1.0e-20);
+                Assert.assertEquals(oldPole.getPrimeMeridianAngle(date), newPole.getPrimeMeridianAngle(date), 5.0e-13);
+            }
+        }
+
+    }
+
+    @Test
+    public void testFieldConsistency() {
+        for (IAUPole iaupole : PredefinedIAUPoles.values()) {
+            for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
+                final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+                final FieldAbsoluteDate<Decimal64> date64 = new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date);
+                Assert.assertEquals(0, Vector3D.angle(iaupole.getPole(date), iaupole.getPole(date64).toVector3D()), 2.0e-15);
+                Assert.assertEquals(iaupole.getPrimeMeridianAngle(date), iaupole.getPrimeMeridianAngle(date64).getReal(), 1.0e-12);
+            }
+        }
+
+    }
+
+    @Test
+    public void testDerivatives() {
+        final DSFactory factory = new DSFactory(1, 1);
+        final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
+        final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 60.0);
+        for (final IAUPole iaupole : PredefinedIAUPoles.values()) {
+
+            UnivariateDifferentiableVectorFunction dPole = differentiator.differentiate(new UnivariateVectorFunction() {
+                @Override
+                public double[] value(double t) {
+                    return iaupole.getPole(ref.shiftedBy(t)).toArray();
+                }
+            });
+            UnivariateDifferentiableFunction dMeridian = differentiator.differentiate(new UnivariateFunction() {
+                @Override
+                public double value(double t) {
+                    return iaupole.getPrimeMeridianAngle(ref.shiftedBy(t));
+                }
+            });
+
+            for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
+
+                final DerivativeStructure dtDS = factory.variable(0, dt);
+
+                final DerivativeStructure[] refPole = dPole.value(dtDS);
+                final DerivativeStructure[] fieldPole = iaupole.getPole(refDS.shiftedBy(dtDS)).toArray();
+                for (int i = 0; i < 3; ++i) {
+                    Assert.assertEquals(refPole[i].getValue(),              fieldPole[i].getValue(),              2.0e-15);
+                    Assert.assertEquals(refPole[i].getPartialDerivative(1), fieldPole[i].getPartialDerivative(1), 4.0e-17);
+                }
+
+                final DerivativeStructure refMeridian = dMeridian.value(dtDS);
+                final DerivativeStructure fieldMeridian = iaupole.getPrimeMeridianAngle(refDS.shiftedBy(dtDS));
+                Assert.assertEquals(refMeridian.getValue(),              fieldMeridian.getValue(),              4.0e-12);
+                Assert.assertEquals(refMeridian.getPartialDerivative(1), fieldMeridian.getPartialDerivative(1), 9.0e-14);
+
+            }
+        }
+
     }
 
     @Before

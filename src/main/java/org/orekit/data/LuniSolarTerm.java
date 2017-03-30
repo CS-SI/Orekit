@@ -19,10 +19,9 @@ package org.orekit.data;
 import org.hipparchus.RealFieldElement;
 
 /** Class for luni-solar only terms.
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class LuniSolarTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
+class LuniSolarTerm extends SeriesTerm {
 
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
@@ -61,13 +60,27 @@ class LuniSolarTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
     }
 
     /** {@inheritDoc} */
-    protected T argument(final FieldBodiesElements<T> elements) {
-        return elements.getL().multiply(cL).
-                add(elements.getLPrime().multiply(cLPrime)).
-                add(elements.getF().multiply(cF)).
-                add(elements.getD().multiply(cD)).
-                add(elements.getOmega().multiply(cOmega));
+    protected double argumentDerivative(final BodiesElements elements) {
+        return cL * elements.getLDot() + cLPrime * elements.getLPrimeDot() + cF * elements.getFDot() +
+               cD * elements.getDDot() + cOmega * elements.getOmegaDot();
+    }
 
+    /** {@inheritDoc} */
+    protected <T extends RealFieldElement<T>> T argument(final FieldBodiesElements<T> elements) {
+        return elements.getL().multiply(cL).
+               add(elements.getLPrime().multiply(cLPrime)).
+               add(elements.getF().multiply(cF)).
+               add(elements.getD().multiply(cD)).
+               add(elements.getOmega().multiply(cOmega));
+    }
+
+    /** {@inheritDoc} */
+    protected <T extends RealFieldElement<T>> T argumentDerivative(final FieldBodiesElements<T> elements) {
+        return elements.getLDot().multiply(cL).
+               add(elements.getLPrimeDot().multiply(cLPrime)).
+               add(elements.getFDot().multiply(cF)).
+               add(elements.getDDot().multiply(cD)).
+               add(elements.getOmegaDot().multiply(cOmega));
     }
 
 }

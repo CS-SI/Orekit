@@ -18,13 +18,17 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -51,7 +55,7 @@ public class EclipticProvider implements TransformProvider {
     private final IERSConventions conventions;
 
     /** the obliquity of the ecliptic, in radians as a function of time. */
-    private final transient TimeFunction<Double> obliquity;
+    private final transient TimeScalarFunction obliquity;
 
     /**
      * Create a transform provider from MOD to an ecliptically aligned frame.
@@ -69,6 +73,16 @@ public class EclipticProvider implements TransformProvider {
         //mean obliquity of date
         final double epsA = obliquity.value(date);
         return new Transform(date, new Rotation(Vector3D.MINUS_I, epsA, RotationConvention.VECTOR_OPERATOR));
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+        //mean obliquity of date
+        final T epsA = obliquity.value(date);
+        return new FieldTransform<>(date, new FieldRotation<>(FieldVector3D.getMinusI(date.getField()),
+                                                              epsA,
+                                                              RotationConvention.VECTOR_OPERATOR));
     }
 
     /** Replace the instance with a data transfer object for serialization.

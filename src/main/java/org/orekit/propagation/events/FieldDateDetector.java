@@ -65,7 +65,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
      * @see #addEventDate(FieldAbsoluteDate)
      */
     @SafeVarargs
-    public FieldDateDetector(final T maxCheck, final T threshold, final FieldTimeStamped<T> ... dates) {
+    public FieldDateDetector(final T maxCheck, final T threshold, final FieldTimeStamped<T>... dates) {
         this(maxCheck, threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<FieldDateDetector<T>, T>(), dates);
     }
 
@@ -95,7 +95,7 @@ public class FieldDateDetector<T extends RealFieldElement<T>> extends FieldAbstr
     @SafeVarargs
     private FieldDateDetector(final T maxCheck, final T threshold,
                               final int maxIter, final FieldEventHandler<? super FieldDateDetector<T>, T> handler,
-                              final FieldTimeStamped<T> ... dates) {
+                              final FieldTimeStamped<T>... dates) {
         super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;

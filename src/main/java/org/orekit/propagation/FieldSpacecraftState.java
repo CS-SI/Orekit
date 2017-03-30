@@ -35,6 +35,7 @@ import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.FieldLofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.FieldOrbit;
@@ -226,7 +227,7 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
      * @see #getAdditionalStates()
      */
     @SafeVarargs
-    public final FieldSpacecraftState<T> addAdditionalState(final String name, final T ... value) {
+    public final FieldSpacecraftState<T> addAdditionalState(final String name, final T... value) {
         final Map<String, T[]> newMap = new HashMap<String, T[]>(additional.size() + 1);
         newMap.putAll(additional);
         newMap.put(name, value.clone());
@@ -453,18 +454,17 @@ public class FieldSpacecraftState <T extends RealFieldElement<T>> {
         return Collections.unmodifiableMap(additional);
     }
 
-//  TODO: field implementation
-//    /** Compute the transform from orbite/attitude reference frame to spacecraft frame.
-//     * <p>The spacecraft frame origin is at the point defined by the orbit,
-//     * and its orientation is defined by the attitude.</p>
-//     * @return transform from specified frame to current spacecraft frame
-//     */
-////    public Transform toTransform() {
-//        final FieldAbsoluteDate<T> date = orbit.getDate();
-//        return new Transform(date.toAbsoluteDate(),
-//        TODO                     new Transform(date.toAbsoluteDate(), orbit.getFieldPVCoordinates().negate()),
-//                             new Transform(date.toAbsoluteDate(), attitude.getOrientation()));
-//    }
+    /** Compute the transform from orbite/attitude reference frame to spacecraft frame.
+     * <p>The spacecraft frame origin is at the point defined by the orbit,
+     * and its orientation is defined by the attitude.</p>
+     * @return transform from specified frame to current spacecraft frame
+     */
+    public FieldTransform<T> toTransform() {
+        final FieldAbsoluteDate<T> date = orbit.getDate();
+        return new FieldTransform<>(date,
+                                    new FieldTransform<>(date, orbit.getPVCoordinates().negate()),
+                                    new FieldTransform<>(date, attitude.getOrientation()));
+    }
 
     /** Get the central attraction coefficient.
      * @return mu central attraction coefficient (m^3/s^2)

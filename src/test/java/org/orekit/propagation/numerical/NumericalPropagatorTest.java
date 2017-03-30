@@ -76,7 +76,6 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
@@ -267,10 +266,11 @@ public class NumericalPropagatorTest {
         KeplerianOrbit orbit = new KeplerianOrbit(
                 600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
                 PositionAngle.TRUE, eci, initialDate, mu);
-        double[][] tol = NumericalPropagator
-                .tolerances(1, orbit, OrbitType.CARTESIAN);
-        Propagator prop = new NumericalPropagator(
+        OrbitType type = OrbitType.CARTESIAN;
+        double[][] tol = NumericalPropagator.tolerances(1e-3, orbit, type);
+        NumericalPropagator prop = new NumericalPropagator(
                 new DormandPrince853Integrator(0.1, 500, tol[0], tol[1]));
+        prop.setOrbitType(type);
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
@@ -306,10 +306,11 @@ public class NumericalPropagatorTest {
         KeplerianOrbit orbit = new KeplerianOrbit(
                 600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
                 PositionAngle.TRUE, eci, initialDate, mu);
-        double[][] tol = NumericalPropagator
-                .tolerances(1, orbit, OrbitType.CARTESIAN);
-        Propagator prop = new NumericalPropagator(
+        OrbitType type = OrbitType.CARTESIAN;
+        double[][] tol = NumericalPropagator.tolerances(1e-3, orbit, type);
+        NumericalPropagator prop = new NumericalPropagator(
                 new DormandPrince853Integrator(0.1, 500, tol[0], tol[1]));
+        prop.setOrbitType(type);
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
 
         //action
@@ -429,11 +430,13 @@ public class NumericalPropagatorTest {
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit, OrbitType.EQUINOCTIAL);
+        OrbitType type = OrbitType.EQUINOCTIAL;
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit, type);
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new NumericalPropagator(integrator);
+        propagator.setOrbitType(type);
         propagator.setInitialState(initialState);
 
         ForceModel gravityField =

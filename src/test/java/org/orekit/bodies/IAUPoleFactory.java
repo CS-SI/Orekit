@@ -16,13 +16,15 @@
  */
 package org.orekit.bodies;
 
+import java.io.Serializable;
+
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-/** Factory class for IAU poles.
+/** Old Factory class for IAU poles, replaced as of Orekit 9.0 by a new implementation.
  * <p>The pole models provided here come from the <a
  * href="http://astropedia.astrogeology.usgs.gov/alfresco/d/d/workspace/SpacesStore/28fd9e81-1964-44d6-a58b-fbbf61e64e15/WGCCRE2009reprint.pdf">
  * 2009 report</a> and the <a href="http://astropedia.astrogeology.usgs.gov/alfresco/d/d/workspace/SpacesStore/04d348b0-eb2b-46a2-abe9-6effacb37763/WGCCRE-Erratum-2011reprint.pdf">
@@ -34,6 +36,26 @@ import org.orekit.utils.Constants;
  * @since 5.1
  */
 class IAUPoleFactory {
+
+    interface OldIAUPole extends Serializable {
+
+        /** Get the body North pole direction in ICRF frame.
+         * @param date current date
+         * @return body North pole direction in ICRF frame
+         */
+        Vector3D getPole(AbsoluteDate date);
+
+        /** Get the prime meridian angle.
+         * <p>
+         * The prime meridian angle is the angle between the Q node and the
+         * prime meridian. represents the body rotation.
+         * </p>
+         * @param date current date
+         * @return prime meridian vector
+         */
+        double getPrimeMeridianAngle(AbsoluteDate date);
+
+    }
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -48,10 +70,10 @@ class IAUPoleFactory {
      * @return IAU pole for the body, or dummy GCRF aligned pole
      * for barycenters
      */
-    public static IAUPole getIAUPole(final JPLEphemeridesLoader.EphemerisType body) {
+    public static OldIAUPole getIAUPole(final JPLEphemeridesLoader.EphemerisType body) {
         switch (body) {
             case SUN:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 5715331729495237139L;
@@ -69,7 +91,7 @@ class IAUPoleFactory {
 
                 };
             case MERCURY:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = -5769710119654037007L;
@@ -108,7 +130,7 @@ class IAUPoleFactory {
                     }
                 };
             case VENUS:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 7030506277976648896L;
@@ -126,7 +148,7 @@ class IAUPoleFactory {
 
                 };
             case EARTH:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 6912325697192667056L;
@@ -145,7 +167,7 @@ class IAUPoleFactory {
 
                 };
             case MOON:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
 
                     /** Serializable UID. */
@@ -204,7 +226,7 @@ class IAUPoleFactory {
 
                 };
             case MARS:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 1471983418540015411L;
@@ -223,7 +245,7 @@ class IAUPoleFactory {
 
                 };
             case JUPITER:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 6959753758673537524L;
@@ -259,7 +281,7 @@ class IAUPoleFactory {
 
                 };
             case SATURN:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = -1082211873912149774L;
@@ -278,7 +300,7 @@ class IAUPoleFactory {
 
                 };
             case URANUS:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 362792230470085154L;
@@ -296,7 +318,7 @@ class IAUPoleFactory {
 
                 };
             case NEPTUNE:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = 560614555734665287L;
@@ -316,7 +338,7 @@ class IAUPoleFactory {
 
                 };
             case PLUTO:
-                return new IAUPole() {
+                return new OldIAUPole() {
 
                     /** Serializable UID. */
                     private static final long serialVersionUID = -1277113129327018062L;
@@ -361,7 +383,7 @@ class IAUPoleFactory {
      * to define the ICRF.
      * </p>
      */
-    private static class GCRFAligned implements IAUPole {
+    private static class GCRFAligned implements OldIAUPole {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20130327L;

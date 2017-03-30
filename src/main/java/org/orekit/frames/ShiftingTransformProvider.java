@@ -18,17 +18,19 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.GenericTimeStampedCache;
-import org.orekit.utils.TimeStampedGenerator;
 
 /** Transform provider using thread-safe shifts on transforms sample.
  * <p>
@@ -49,6 +51,12 @@ public class ShiftingTransformProvider implements TransformProvider {
 
     /** Cache for sample points. */
     private final transient GenericTimeStampedCache<Transform> cache;
+
+    /** Field caches for sample points. */
+    // we use Object as the value of fieldCaches because despite numerous attempts,
+    // we could not find a way to use GenericTimeStampedCache<FieldTransform<? extends RealFieldElement<?>>
+    // without the compiler complaining
+    private final transient Map<Field<? extends RealFieldElement<?>>, Object> fieldCaches;
 
     /** Simple constructor.
      * @param rawProvider provider for raw (non-interpolated) transforms
@@ -90,7 +98,10 @@ public class ShiftingTransformProvider implements TransformProvider {
                                      final int maxSlots, final double maxSpan, final double newSlotInterval) {
         this.interpolatingProvider = interpolatingProvider;
         this.cache = new GenericTimeStampedCache<Transform>(2, maxSlots, maxSpan, newSlotInterval,
-                                                            new Generator(), Transform.class);
+                                                            new TransformGenerator(2,
+                                                                                   interpolatingProvider,
+                                                                                   interpolatingProvider.getStep()));
+        this.fieldCaches = new HashMap<>();
     }
 
     /** Get the underlying provider for raw (non-interpolated) transforms.
@@ -119,14 +130,44 @@ public class ShiftingTransformProvider implements TransformProvider {
         try {
 
             // retrieve a sample from the thread-safe cache
-            final List<Transform> sample = cache.getNeighbors(date);
-            final double dt0 = date.durationFrom(sample.get(0).getDate());
-            final double dt1 = date.durationFrom(sample.get(1).getDate());
-            if (FastMath.abs(dt0) < FastMath.abs(dt1)) {
-                return sample.get(0).shiftedBy(dt0);
-            } else {
-                return sample.get(1).shiftedBy(dt1);
+            final Transform closest = cache.getNeighbors(date).reduce((t0, t1) ->
+                FastMath.abs(date.durationFrom(t0.getDate())) < FastMath.abs(date.durationFrom(t1.getDate())) ? t0 : t1
+            ).get();
+            return closest.shiftedBy(date.durationFrom(closest.getDate()));
+
+        } catch (OrekitExceptionWrapper oew) {
+            // something went wrong while generating the sample,
+            // we just forward the exception up
+            throw oew.getException();
+        }
+    }
+
+    /** {@inheritDoc} */
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+        try {
+
+            @SuppressWarnings("unchecked")
+            GenericTimeStampedCache<FieldTransform<T>> fieldCache =
+                (GenericTimeStampedCache<FieldTransform<T>>) fieldCaches.get(date.getField());
+            if (fieldCache == null) {
+                fieldCache =
+                    new GenericTimeStampedCache<FieldTransform<T>>(cache.getNeighborsSize(),
+                                                                   cache.getMaxSlots(),
+                                                                   cache.getMaxSpan(),
+                                                                   cache.getNewSlotQuantumGap(),
+                                                                   new FieldTransformGenerator<>(date.getField(),
+                                                                                                 cache,
+                                                                                                 interpolatingProvider.getStep()));
+                fieldCaches.put(date.getField(), fieldCache);
             }
+
+            // retrieve a sample from the thread-safe cache
+            final FieldTransform<T> closest = fieldCache.getNeighbors(date.toAbsoluteDate()).reduce((t0, t1) ->
+                date.durationFrom(t0.getDate()).abs().getReal() < date.durationFrom(t1.getDate()).abs().getReal() ?
+                t0 : t1
+            ).get();
+            return closest.shiftedBy(date.durationFrom(closest.getDate()));
 
         } catch (OrekitExceptionWrapper oew) {
             // something went wrong while generating the sample,
@@ -190,53 +231,6 @@ public class ShiftingTransformProvider implements TransformProvider {
             // build a new provider, with an empty cache
             return new ShiftingTransformProvider(interpolatingProvider,
                                                  maxSlots, maxSpan, newSlotInterval);
-        }
-
-    }
-
-    /** Local generator for thread-safe cache. */
-    private class Generator implements TimeStampedGenerator<Transform> {
-
-        /** {@inheritDoc} */
-        public List<Transform> generate(final Transform existing, final AbsoluteDate date) {
-
-            try {
-                final List<Transform> generated = new ArrayList<Transform>();
-
-                if (existing == null) {
-
-                    // no prior existing transforms, just generate a first set
-                    for (int i = 0; i < cache.getNeighborsSize(); ++i) {
-                        generated.add(interpolatingProvider.getTransform(date.shiftedBy(i * interpolatingProvider.getStep())));
-                    }
-
-                } else {
-
-                    // some transforms have already been generated
-                    // add the missing ones up to specified date
-
-                    AbsoluteDate t = existing.getDate();
-                    if (date.compareTo(t) > 0) {
-                        // forward generation
-                        do {
-                            t = t.shiftedBy(interpolatingProvider.getStep());
-                            generated.add(generated.size(), interpolatingProvider.getTransform(t));
-                        } while (t.compareTo(date) <= 0);
-                    } else {
-                        // backward generation
-                        do {
-                            t = t.shiftedBy(-interpolatingProvider.getStep());
-                            generated.add(0, interpolatingProvider.getTransform(t));
-                        } while (t.compareTo(date) >= 0);
-                    }
-                }
-
-                // return the generated transforms
-                return generated;
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
-
         }
 
     }

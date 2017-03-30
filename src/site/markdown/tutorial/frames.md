@@ -48,14 +48,10 @@ of the library architecture documentation.
     Orbit initialOrbit =
         new CartesianOrbit(pvCoordinates, inertialFrame, initialDate, mu);
 
-As a propagator, we consider a simple `KeplerianPropagator`.
+As a propagator, we consider a simple `KeplerianPropagator` that will propagate orbit in the inertial
+frame in which the initial orbit was defined (here EME2000).
 
     Propagator kepler = new KeplerianPropagator(initialOrbit);
-
-So, the LOF is all defined, assuming its type to be QSW.
-
-    LocalOrbitalFrame lof =
-        new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "QSW");
 
 On the other hand, let's define the ground station by its coordinates as a `GeodeticPoint` 
 in its own `TopocentricFrame` related to a `BodyShape` in some terrestrial frame.
@@ -81,16 +77,17 @@ Finally, we can get the Doppler measurement in a simple propagation loop
  
     AbsoluteDate extrapDate = initialDate;
     while (extrapDate.compareTo(finalDate) <= 0)  {
-    
-        // We can simply get the position and velocity of station in LOF frame at any time
-        PVCoordinates pv = staF.getTransformTo(lof, extrapDate).transformPVCoordinates(PVCoordinates.ZERO);
-    
+
+        // We can simply get the position and velocity of spacecraft in station frame at any time
+        PVCoordinates pvInert   = kepler.propagate(extrapDate).getPVCoordinates();
+        PVCoordinates pvStation = inertialFrame.getTransformTo(staF, extrapDate).transformPVCoordinates(pvInert);
+
         // And then calculate the doppler signal
-        double doppler = Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) / pv.getPosition().getNorm();
+        double doppler = Vector3D.dotProduct(pvStation.getPosition(), pvStation.getVelocity()) / pvStation.getPosition().getNorm();
     
         System.out.format(Locale.US, "%s   %9.3f%n", extrapDate, doppler);
     
-        extrapDate = new AbsoluteDate(extrapDate, 600, utc);
+        extrapDate = extrapDate.shiftedBy(600);
     
     }
 

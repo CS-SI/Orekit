@@ -30,7 +30,7 @@ import org.orekit.time.TimeStamped;
 public class DelaunayArguments implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130729L;
+    private static final long serialVersionUID = 20170106L;
 
     /** Date. */
     private final AbsoluteDate date;
@@ -41,42 +41,73 @@ public class DelaunayArguments implements TimeStamped, Serializable {
     /** Tide parameter γ = GMST + π. */
     private final double gamma;
 
+    /** Tide parameter γ = GMST + π time derivative. */
+    private final double gammaDot;
+
     /** Mean anomaly of the Moon. */
     private final double l;
+
+    /** Mean anomaly of the Moon time derivative. */
+    private final double lDot;
 
     /** Mean anomaly of the Sun. */
     private final double lPrime;
 
+    /** Mean anomaly of the Sun time derivative. */
+    private final double lPrimeDot;
+
     /** L - Ω where L is the mean longitude of the Moon. */
     private final double f;
+
+    /** L - Ω where L is the mean longitude of the Moon time derivative. */
+    private final double fDot;
 
     /** Mean elongation of the Moon from the Sun. */
     private final double d;
 
+    /** Mean elongation of the Moon from the Sun time derivative. */
+    private final double dDot;
+
     /** Mean longitude of the ascending node of the Moon. */
     private final double omega;
+
+    /** Mean longitude of the ascending node of the Moon time derivative. */
+    private final double omegaDot;
 
     /** Simple constructor.
      * @param date current date
      * @param tc offset in Julian centuries
      * @param gamma tide parameter γ = GMST + π
+     * @param gammaDot tide parameter γ = GMST + π time derivative
      * @param l mean anomaly of the Moon
+     * @param lDot mean anomaly of the Moon time derivative
      * @param lPrime mean anomaly of the Sun
+     * @param lPrimeDot mean anomaly of the Sun time derivative
      * @param f L - Ω where L is the mean longitude of the Moon
+     * @param fDot L - Ω where L is the mean longitude of the Moon time derivative
      * @param d mean elongation of the Moon from the Sun
+     * @param dDot mean elongation of the Moon from the Sun time derivative
      * @param omega mean longitude of the ascending node of the Moon
+     * @param omegaDot mean longitude of the ascending node of the Moon time derivative
      */
-    public DelaunayArguments(final AbsoluteDate date, final double tc, final double gamma,
-                             final double l, final double lPrime,
-                             final double f, final double d, final double omega) {
-        this.date   = date;
-        this.tc     = tc;
-        this.gamma  = gamma;
-        this.l      = l;
-        this.lPrime = lPrime;
-        this.f      = f;
-        this.d      = d;
-        this.omega  = omega;
+    public DelaunayArguments(final AbsoluteDate date, final double tc, final double gamma, final double gammaDot,
+                             final double l, final double lDot, final double lPrime, final double lPrimeDot,
+                             final double f, final double fDot, final double d, final double dDot,
+                             final double omega, final double omegaDot) {
+        this.date      = date;
+        this.tc        = tc;
+        this.gamma     = gamma;
+        this.gammaDot  = gammaDot;
+        this.l         = l;
+        this.lDot      = lDot;
+        this.lPrime    = lPrime;
+        this.lPrimeDot = lPrimeDot;
+        this.f         = f;
+        this.fDot      = fDot;
+        this.d         = d;
+        this.dDot      = dDot;
+        this.omega     = omega;
+        this.omegaDot  = omegaDot;
     }
 
     /** {@inheritDoc} */
@@ -98,11 +129,25 @@ public class DelaunayArguments implements TimeStamped, Serializable {
         return gamma;
     }
 
+    /** Get the tide parameter γ = GMST + π time derivative.
+     * @return tide parameter γ = GMST + π time derivative
+     */
+    public double getGammaDot() {
+        return gammaDot;
+    }
+
     /** Get the mean anomaly of the Moon.
      * @return mean anomaly of the Moon
      */
     public double getL() {
         return l;
+    }
+
+    /** Get the mean anomaly of the Moon time derivative.
+     * @return mean anomaly of the Moon time derivative
+     */
+    public double getLDot() {
+        return lDot;
     }
 
     /** Get the mean anomaly of the Sun.
@@ -112,11 +157,25 @@ public class DelaunayArguments implements TimeStamped, Serializable {
         return lPrime;
     }
 
+    /** Get the mean anomaly of the Sun time derivative.
+     * @return mean anomaly of the Sun time derivative.
+     */
+    public double getLPrimeDot() {
+        return lPrimeDot;
+    }
+
     /** Get L - Ω where L is the mean longitude of the Moon.
      * @return L - Ω
      */
     public double getF() {
         return f;
+    }
+
+    /** Get L - Ω where L is the mean longitude of the Moon time derivative.
+     * @return L - Ω time derivative
+     */
+    public double getFDot() {
+        return fDot;
     }
 
     /** Get the mean elongation of the Moon from the Sun.
@@ -126,11 +185,25 @@ public class DelaunayArguments implements TimeStamped, Serializable {
         return d;
     }
 
+    /** Get the mean elongation of the Moon from the Sun time derivative.
+     * @return mean elongation of the Moon from the Sun time derivative.
+     */
+    public double getDDot() {
+        return dDot;
+    }
+
     /** Get the mean longitude of the ascending node of the Moon.
      * @return mean longitude of the ascending node of the Moon.
      */
     public double getOmega() {
         return omega;
+    }
+
+    /** Get the mean longitude of the ascending node of the Moon time derivative.
+     * @return mean longitude of the ascending node of the Moon time derivative.
+     */
+    public double getOmegaDot() {
+        return omegaDot;
     }
 
 }

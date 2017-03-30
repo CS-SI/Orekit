@@ -458,7 +458,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
                                                       1, FieldVector3D.crossProduct(a1, p2)));
     }
 
-    /** Convert to a constant position-velocity without derivatives.
+    /** Convert to a constant position-velocity.
      * @return a constant position-velocity
      */
     public PVCoordinates toPVCoordinates() {

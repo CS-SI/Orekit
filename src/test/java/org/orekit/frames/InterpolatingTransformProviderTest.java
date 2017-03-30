@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -32,6 +33,7 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 
@@ -102,6 +104,9 @@ public class InterpolatingTransformProviderTest {
                     private static final long serialVersionUID = -3126512810306982868L;
                     public Transform getTransform(AbsoluteDate date) throws OrekitException {
                         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
+                    }
+                    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+                        throw new UnsupportedOperationException("never called in this test");
                     }
                 },
                 CartesianDerivativesFilter.USE_PVA,
@@ -189,6 +194,10 @@ public class InterpolatingTransformProviderTest {
                                                             FastMath.PI - omega * dt,
                                                             RotationConvention.VECTOR_OPERATOR),
                                                new Vector3D(omega, Vector3D.PLUS_K)));
+        }
+
+        public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+            throw new UnsupportedOperationException("never called in this test");
         }
 
         public int getCount() {

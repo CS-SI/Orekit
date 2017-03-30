@@ -16,16 +16,24 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.RealFieldElement;
+
 /** This interface represents a scalar function of time.
- * @param <T> Type of the return value.
  * @author Luc Maisonobe
  */
-public interface TimeFunction<T> {
+public interface TimeScalarFunction {
 
     /** Compute a function of time.
      * @param date date
      * @return value of the function
      */
-    T value(AbsoluteDate date);
+    double value(AbsoluteDate date);
+
+    /** Compute a function of time.
+     * @param date date
+     * @param <T> type of the filed elements
+     * @return value of the function
+     */
+    <T extends RealFieldElement<T>> T value(FieldAbsoluteDate<T> date);
 
 }

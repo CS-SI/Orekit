@@ -16,13 +16,18 @@
  */
 package org.orekit.frames;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -235,10 +240,8 @@ public class HelmertTransformation implements TransformProvider {
         return epoch;
     }
 
-    /** Compute the transform at some date.
-     * @param date date at which the transform is desired
-     * @return computed transform at specified date
-     */
+    /** {@inheritDoc} */
+    @Override
     public Transform getTransform(final AbsoluteDate date) {
 
         // compute parameters evolution since reference epoch
@@ -259,6 +262,34 @@ public class HelmertTransformation implements TransformProvider {
 
         // combine both parts
         return new Transform(date, translationTransform, rotationTransform);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+
+        // compute parameters evolution since reference epoch
+        final T dt = date.durationFrom(epoch);
+        final FieldVector3D<T> dR = new FieldVector3D<>(date.getField().getOne(), rotationVector,
+                                                        dt, rotationRate);
+
+        // build translation part
+        final FieldTransform<T> translationTransform =
+                        new FieldTransform<>(date,
+                                             new FieldPVCoordinates<>(date.getField(), cartesian).shiftedBy(dt));
+
+        // build rotation part
+        final T angle = dR.getNorm();
+        final FieldTransform<T> rotationTransform =
+                new FieldTransform<>(date,
+                                    (angle.getReal() < Precision.SAFE_MIN) ?
+                                     FieldRotation.getIdentity(date.getField()) :
+                                    new FieldRotation<>(dR, angle, RotationConvention.VECTOR_OPERATOR),
+                                    new FieldVector3D<>(date.getField(), rotationRate));
+
+        // combine both parts
+        return new FieldTransform<>(date, translationTransform, rotationTransform);
 
     }
 

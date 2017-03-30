@@ -166,8 +166,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+        OrbitType type = OrbitType.EQUINOCTIAL;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -177,10 +177,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
                 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
         NP.setInitialState(iSR);
         
         double[][] c = new double[3][1];
@@ -237,6 +239,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
             SpacecraftState shift_iSR = new SpacecraftState(shiftedOrb);
             
             NumericalPropagator shift_NP = new NumericalPropagator(RIntegrator);
+            shift_NP.setOrbitType(type);
             
             shift_NP.setInitialState(shift_iSR);
             
@@ -318,8 +321,8 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         FieldSpacecraftState<DerivativeStructure> initialState = new FieldSpacecraftState<DerivativeStructure>(FKO); 
         
         SpacecraftState iSR = initialState.toSpacecraftState();
-        
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), OrbitType.KEPLERIAN);
+        OrbitType type = OrbitType.EQUINOCTIAL;
+        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
         
         
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -329,10 +332,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                         new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         RIntegrator.setInitialStepSize(60);
                 
-        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<DerivativeStructure>(field, integrator);
+        FieldNumericalPropagator<DerivativeStructure> FNP = new FieldNumericalPropagator<>(field, integrator);
+        FNP.setOrbitType(type);
         FNP.setInitialState(initialState);
                 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
+        NP.setOrbitType(type);
         NP.setInitialState(iSR);
         
         double[][] c = new double[3][1];

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
@@ -108,7 +109,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
     }
 
     /** {@inheritDoc} */
-    public List<T> getNeighbors(final AbsoluteDate central)
+    public Stream<T> getNeighbors(final AbsoluteDate central)
         throws TimeStampedCacheException {
 
         // find central index
@@ -130,7 +131,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         start = end - this.neighborsSize;
 
         // return list without copying
-        return Collections.unmodifiableList(this.data.subList(start, end));
+        return this.data.subList(start, end).stream();
     }
 
     /**
@@ -191,10 +192,9 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
         /** {@inheritDoc} */
         @Override
-        public List<T> getNeighbors(final AbsoluteDate central)
+        public Stream<T> getNeighbors(final AbsoluteDate central)
             throws TimeStampedCacheException {
-            throw new TimeStampedCacheException(
-                                                OrekitMessages.NO_CACHED_ENTRIES);
+            throw new TimeStampedCacheException(OrekitMessages.NO_CACHED_ENTRIES);
         };
 
         /** {@inheritDoc} */

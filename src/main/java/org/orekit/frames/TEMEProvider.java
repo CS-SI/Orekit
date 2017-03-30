@@ -18,6 +18,9 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -25,7 +28,9 @@ import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeFunction;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeVectorFunction;
+import org.orekit.time.TimeScalarFunction;
 import org.orekit.utils.IERSConventions;
 
 /** True Equator Mean Equinox Frame.
@@ -48,10 +53,10 @@ class TEMEProvider implements EOPBasedTransformProvider {
     private final EOPHistory eopHistory;
 
     /** Function computing the mean obliquity. */
-    private final transient TimeFunction<Double> obliquityFunction;
+    private final transient TimeScalarFunction obliquityFunction;
 
     /** Function computing the nutation angles. */
-    private final transient TimeFunction<double[]> nutationFunction;
+    private final transient TimeVectorFunction nutationFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -80,15 +85,21 @@ class TEMEProvider implements EOPBasedTransformProvider {
         return new TEMEProvider(conventions, eopHistory.getNonInterpolatingEOPHistory());
     }
 
-    /** Get the transform from True Of Date date.
-     * @param date new value of the date
-     * @return transform at the specified date
-     * @exception OrekitException if the nutation model data embedded in the
-     * library cannot be read
-     */
-    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    /** {@inheritDoc} */
+    @Override
+    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
         final double eqe = getEquationOfEquinoxes(date);
         return new Transform(date, new Rotation(Vector3D.PLUS_K, eqe, RotationConvention.FRAME_TRANSFORM));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+        final T eqe = getEquationOfEquinoxes(date);
+        return new FieldTransform<>(date, new FieldRotation<>(FieldVector3D.getPlusK(date.getField()),
+                                                              eqe,
+                                                              RotationConvention.FRAME_TRANSFORM));
     }
 
     /** Get the Equation of the Equinoxes at the current date.
@@ -119,6 +130,38 @@ class TEMEProvider implements EOPBasedTransformProvider {
 
         // apply correction if needed
         return eqe + angles[2];
+
+    }
+
+    /** Get the Equation of the Equinoxes at the current date.
+     * @param  date the date
+     * @param <T> type of the field elements
+     * @return equation of the equinoxes
+     * @exception OrekitException if nutation model cannot be computed
+     */
+    private <T extends RealFieldElement<T>> T getEquationOfEquinoxes(final FieldAbsoluteDate<T> date)
+        throws OrekitException {
+
+        // compute nutation angles
+        final T[] angles = nutationFunction.value(date);
+
+        // nutation in longitude
+        T dPsi = angles[0];
+
+        if (eopHistory != null) {
+            // apply the corrections for the nutation parameters
+            final T[] correction = eopHistory.getEquinoxNutationCorrection(date);
+            dPsi = dPsi.add(correction[0]);
+        }
+
+        // mean obliquity of ecliptic
+        final T moe = obliquityFunction.value(date);
+
+        // original definition of equation of equinoxes
+        final T eqe = dPsi.multiply(moe.cos());
+
+        // apply correction if needed
+        return eqe.add(angles[2]);
 
     }
 

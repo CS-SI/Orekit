@@ -18,6 +18,9 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -25,11 +28,15 @@ import org.hipparchus.util.Precision;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Implementation of the {@link CelestialBody} interface using JPL or INPOP ephemerides.
@@ -104,6 +111,29 @@ class JPLCelestialBody implements CelestialBody {
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
         final Transform transform = getInertiallyOrientedFrame().getParent().getTransformTo(frame, date);
+
+        // convert to requested frame
+        return transform.transformPVCoordinates(scaledPV);
+
+    }
+
+    /** Get the {@link FieldPVCoordinates} of the body in the selected frame.
+     * @param date current date
+     * @param frame the frame where to define the position
+     * @param <T> type fo the field elements
+     * @return time-stamped position/velocity of the body (m and m/s)
+     * @exception OrekitException if position cannot be computed in given frame
+     */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
+                                                                                             final Frame frame)
+        throws OrekitException {
+
+        // apply the scale factor to raw position-velocity
+        final FieldPVCoordinates<T> rawPV    = rawPVProvider.getRawPV(date);
+        final TimeStampedFieldPVCoordinates<T> scaledPV = new TimeStampedFieldPVCoordinates<>(date, scale, rawPV);
+
+        // the raw PV are relative to the parent of the body centered inertially oriented frame
+        final FieldTransform<T> transform = getInertiallyOrientedFrame().getParent().getTransformTo(frame, date);
 
         // convert to requested frame
         return transform.transformPVCoordinates(scaledPV);
@@ -188,6 +218,40 @@ class JPLCelestialBody implements CelestialBody {
 
                 }
 
+                /** {@inheritDoc} */
+                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+                    throws OrekitException {
+
+                    // compute translation from parent frame to self
+                    final FieldPVCoordinates<T> pv = getPVCoordinates(date, definingFrame);
+                    final FieldTransform<T> translation = new FieldTransform<>(date, pv.negate());
+
+                    // compute rotation from ICRF frame to self,
+                    // as per the "Report of the IAU/IAG Working Group on Cartographic
+                    // Coordinates and Rotational Elements of the Planets and Satellites"
+                    // These definitions are common for all recent versions of this report
+                    // published every three years, the precise values of pole direction
+                    // and W angle coefficients may vary from publication year as models are
+                    // adjusted. These coefficients are not in this class, they are in the
+                    // specialized classes that do implement the getPole and getPrimeMeridianAngle
+                    // methods
+                    final FieldVector3D<T> pole  = iauPole.getPole(date);
+                    FieldVector3D<T> qNode = FieldVector3D.crossProduct(Vector3D.PLUS_K, pole);
+                    if (qNode.getNormSq().getReal() < Precision.SAFE_MIN) {
+                        qNode = FieldVector3D.getPlusI(date.getField());
+                    }
+                    final FieldTransform<T> rotation =
+                            new FieldTransform<>(date,
+                                                 new FieldRotation<>(pole,
+                                                                     qNode,
+                                                                     FieldVector3D.getPlusK(date.getField()),
+                                                                     FieldVector3D.getPlusI(date.getField())));
+
+                    // update transform from parent to self
+                    return new FieldTransform<>(date, translation, rotation);
+
+                }
+
             }, name + INERTIAL_FRAME_SUFFIX, true);
         }
 
@@ -208,7 +272,7 @@ class JPLCelestialBody implements CelestialBody {
     private class BodyOriented extends Frame {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -2286454820784307274L;
+        private static final long serialVersionUID = 20170109L;
 
         /** Suffix for body frame name. */
         private static final String BODY_FRAME_SUFFIX = "/rotating";
@@ -219,7 +283,7 @@ class JPLCelestialBody implements CelestialBody {
             super(inertialFrame, new TransformProvider() {
 
                 /** Serializable UID. */
-                private static final long serialVersionUID = 5973062576520917181L;
+                private static final long serialVersionUID = 20170109L;
 
                 /** {@inheritDoc} */
                 public Transform getTransform(final AbsoluteDate date) throws OrekitException {
@@ -229,6 +293,18 @@ class JPLCelestialBody implements CelestialBody {
                     return new Transform(date,
                                          new Rotation(Vector3D.PLUS_K, w0, RotationConvention.FRAME_TRANSFORM),
                                          new Vector3D((w1 - w0) / dt, Vector3D.PLUS_K));
+                }
+
+                /** {@inheritDoc} */
+                public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date)
+                    throws OrekitException {
+                    final double dt = 10.0;
+                    final T w0 = iauPole.getPrimeMeridianAngle(date);
+                    final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
+                    return new FieldTransform<>(date,
+                                                new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
+                                                                    RotationConvention.FRAME_TRANSFORM),
+                                                new FieldVector3D<>(w1.subtract(w0).divide(dt), Vector3D.PLUS_K));
                 }
 
             }, name + BODY_FRAME_SUFFIX, false);

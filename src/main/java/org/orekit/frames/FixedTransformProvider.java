@@ -17,7 +17,14 @@
 
 package org.orekit.frames;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.hipparchus.Field;
+import org.hipparchus.RealFieldElement;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /**
 ** Transform provider using fixed transform.
@@ -26,21 +33,75 @@ import org.orekit.time.AbsoluteDate;
 public class FixedTransformProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7143912747227560905L;
+    private static final long serialVersionUID = 20170106L;
 
     /** Fixed transform. */
     private final Transform transform;
+
+    /** Cached field-based transforms. */
+    private final transient Map<Field<? extends RealFieldElement<?>>, FieldTransform<? extends RealFieldElement<?>>> cached;
 
     /** Simple constructor.
      * @param transform fixed transform
      */
     public FixedTransformProvider(final Transform transform) {
         this.transform = transform;
+        this.cached    = new HashMap<>();
     }
 
     /** {@inheritDoc} */
     public Transform getTransform(final AbsoluteDate date) {
         return transform;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
+
+        @SuppressWarnings("unchecked")
+        FieldTransform<T> ft = (FieldTransform<T>) cached.get(date.getField());
+        if (ft == null) {
+            ft = new FieldTransform<>(date.getField(), transform);
+            cached.put(date.getField(), ft);
+        }
+
+        return ft;
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes nothing.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(transform);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20170106L;
+
+        /** Fixed transform. */
+        private final Transform transform;
+
+        /** Simple constructor.
+         * @param transform fixed transform
+         */
+        private DataTransferObject(final Transform transform) {
+            this.transform = transform;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link FixedTransformProvider}.
+         * @return replacement {@link FixedTransformProvider}
+         */
+        private Object readResolve() {
+            return new FixedTransformProvider(transform);
+        }
+
     }
 
 }

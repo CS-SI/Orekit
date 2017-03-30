@@ -81,7 +81,7 @@ public class GroundStationTest {
         final Vector3D deltaTopo = new Vector3D(2 * random.nextDouble() - 1,
                                                 2 * random.nextDouble() - 1,
                                                 2 * random.nextDouble() - 1);
-        final Transform topoToParent = base.getTransformTo(parent.getBodyFrame(), null);
+        final Transform topoToParent = base.getTransformTo(parent.getBodyFrame(), (AbsoluteDate) null);
         final Vector3D deltaParent   = topoToParent.transformVector(deltaTopo);
         final String movedSuffix     = "-moved";
         final GroundStation moved = new GroundStation(new TopocentricFrame(parent,

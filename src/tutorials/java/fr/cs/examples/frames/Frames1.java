@@ -27,8 +27,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.LOFType;
-import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -68,9 +66,6 @@ public class Frames1 {
             // Propagator : consider a simple keplerian motion
             Propagator kepler = new KeplerianPropagator(initialOrbit);
 
-            // The local orbital frame (LOF) is related to the orbit propagated by the kepler propagator.
-            LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "QSW");
-
             // Earth and frame
             Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
             BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -93,15 +88,16 @@ public class Frames1 {
             AbsoluteDate extrapDate = initialDate;
             while (extrapDate.compareTo(finalDate) <= 0)  {
 
-                // We can simply get the position and velocity of station in LOF frame at any time
-                PVCoordinates pv = staF.getTransformTo(lof, extrapDate).transformPVCoordinates(PVCoordinates.ZERO);
+                // We can simply get the position and velocity of spacecraft in station frame at any time
+                PVCoordinates pvInert   = kepler.propagate(extrapDate).getPVCoordinates();
+                PVCoordinates pvStation = inertialFrame.getTransformTo(staF, extrapDate).transformPVCoordinates(pvInert);
 
                 // And then calculate the doppler signal
-                double doppler = Vector3D.dotProduct(pv.getPosition(), pv.getVelocity()) / pv.getPosition().getNorm();
+                double doppler = Vector3D.dotProduct(pvStation.getPosition(), pvStation.getVelocity()) / pvStation.getPosition().getNorm();
 
                 System.out.format(Locale.US, "%s   %9.3f%n", extrapDate, doppler);
 
-                extrapDate = new AbsoluteDate(extrapDate, 600, utc);
+                extrapDate = extrapDate.shiftedBy(600);
 
             }
 

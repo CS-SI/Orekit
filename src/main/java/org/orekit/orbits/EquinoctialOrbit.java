@@ -17,7 +17,8 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -429,36 +430,37 @@ public class EquinoctialOrbit extends Orbit {
      * in a thread-safe way.
      * </p>
      */
-    public EquinoctialOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
+    public EquinoctialOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
 
         // set up an interpolator
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
-        // add sample points
-        AbsoluteDate previousDate = null;
-        double previousLm = Double.NaN;
-        for (final Orbit orbit : sample) {
-            final EquinoctialOrbit equi = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
-            final double continuousLm;
-            if (previousDate == null) {
-                continuousLm = equi.getLM();
-            } else {
-                final double dt       = equi.getDate().durationFrom(previousDate);
-                final double keplerLm = previousLm + equi.getKeplerianMeanMotion() * dt;
-                continuousLm = MathUtils.normalizeAngle(equi.getLM(), keplerLm);
+        sample.forEach(new Consumer<Orbit>() {
+            private AbsoluteDate previousDate = null;
+            private double previousLm = Double.NaN;
+            public void accept(final Orbit orbit) {
+                final EquinoctialOrbit equi = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+                final double continuousLm;
+                if (previousDate == null) {
+                    continuousLm = equi.getLM();
+                } else {
+                    final double dt       = equi.getDate().durationFrom(previousDate);
+                    final double keplerLm = previousLm + equi.getKeplerianMeanMotion() * dt;
+                    continuousLm = MathUtils.normalizeAngle(equi.getLM(), keplerLm);
+                }
+                previousDate = equi.getDate();
+                previousLm   = continuousLm;
+                interpolator.addSamplePoint(equi.getDate().durationFrom(date),
+                                            new double[] {
+                                                equi.getA(),
+                                                equi.getEquinoctialEx(),
+                                                equi.getEquinoctialEy(),
+                                                equi.getHx(),
+                                                equi.getHy(),
+                                                continuousLm
+                                            });
             }
-            previousDate = equi.getDate();
-            previousLm   = continuousLm;
-            interpolator.addSamplePoint(equi.getDate().durationFrom(date),
-                                        new double[] {
-                                            equi.getA(),
-                                            equi.getEquinoctialEx(),
-                                            equi.getEquinoctialEy(),
-                                            equi.getHx(),
-                                            equi.getHy(),
-                                            continuousLm
-                                        });
-        }
+        });
 
         // interpolate
         final double[] interpolated = interpolator.value(0);

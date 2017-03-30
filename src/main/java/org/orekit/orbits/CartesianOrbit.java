@@ -17,9 +17,7 @@
 package org.orekit.orbits;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
@@ -249,16 +247,10 @@ public class CartesianOrbit extends Orbit {
      * in a thread-safe way.
      * </p>
      */
-    public CartesianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
-        final List<TimeStampedPVCoordinates> datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
-        for (final Orbit o : sample) {
-            datedPV.add(new TimeStampedPVCoordinates(o.getDate(),
-                                                     o.getPVCoordinates().getPosition(),
-                                                     o.getPVCoordinates().getVelocity(),
-                                                     o.getPVCoordinates().getAcceleration()));
-        }
+    public CartesianOrbit interpolate(final AbsoluteDate date, final Stream<Orbit> sample) {
         final TimeStampedPVCoordinates interpolated =
-                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA, datedPV);
+                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PVA,
+                                                     sample.map(orbit -> orbit.getPVCoordinates()));
         return new CartesianOrbit(interpolated, getFrame(), date, getMu());
     }
 
