@@ -84,7 +84,7 @@ public class OrekitEphemerisFileTest {
 
         String tempOemFile = Files.createTempFile("OrekitEphemerisFileTest", ".oem").toString();
         new OEMWriter().write(tempOemFile, ephemerisFile);
-        
+
         EphemerisFile ephemerisFromFile = new OEMParser().parse(tempOemFile);
         EphemerisSegment segment = ephemerisFromFile.getSatellites().get(satId).getSegments().get(0);
         assertEquals(states.get(0).getDate(), segment.getStart());
@@ -100,7 +100,7 @@ public class OrekitEphemerisFileTest {
             assertEquals(0.0, Vector3D.distance(expected.getPosition(), actual.getPosition()), positionTolerance);
             assertEquals(0.0, Vector3D.distance(expected.getVelocity(), actual.getVelocity()), velocityTolerance);
         }
-       
+
     }
 
 }

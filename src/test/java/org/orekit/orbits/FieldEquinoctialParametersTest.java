@@ -120,7 +120,7 @@ public class FieldEquinoctialParametersTest {
     public void doInterpolationTest() throws OrekitException{
         testInterpolation(Decimal64Field.getInstance());
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public <T extends RealFieldElement<T>> void testErr1(){
         testHyperbolic(Decimal64Field.getInstance());

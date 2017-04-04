@@ -664,7 +664,7 @@ public class FieldNumericalPropagatorTest {
             }
         });
         propagator.propagate(initDate.shiftedBy(-3600));
-            
+
     }
 
     @Test

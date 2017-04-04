@@ -360,9 +360,9 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void propagatedKeplerian() throws OrekitException {
-        
+
         doPropagatedKeplerian(Decimal64Field.getInstance());
-        
+
     }
 
     private <T extends RealFieldElement<T>> void doPropagatedKeplerian(Field<T> field) throws OrekitException {
@@ -765,7 +765,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     @Test
     public void date() throws OrekitException {
         doDate(Decimal64Field.getInstance());
-        
+
     }
 
     private <T extends RealFieldElement<T>> void doDate(Field<T> field) throws OrekitException {
@@ -785,10 +785,10 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void fixedStep() throws OrekitException {
-        
+
         doFixedStep(Decimal64Field.getInstance());
-        
-        
+
+
     }
 
     private <T extends RealFieldElement<T>> void doFixedStep(Field<T> field) throws OrekitException {
@@ -816,9 +816,9 @@ public class FieldEcksteinHechlerPropagatorTest {
 
     @Test
     public void setting() throws OrekitException {
-        
+
         doSetting(Decimal64Field.getInstance());
-        
+
     }
 
     private <T extends RealFieldElement<T>> void doSetting(Field<T> field) throws OrekitException {
@@ -837,7 +837,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         Assert.assertEquals(0.09, detector.getMinElevation(), 1.0e-12);
         Assert.assertTrue(topo == detector.getTopocentricFrame());
         propagator.addEventDetector(detector);
-        
+
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         final double elevation = topo.getElevation(propagated.getPVCoordinates().getPosition().toVector3D(),

@@ -114,7 +114,7 @@ public class LocalOrbitalFrameTest {
 
     @Test
     public void testTNW64() throws OrekitException {
-        
+
         FieldAbsoluteDate<Decimal64> date = fieldInitialOrbit.getDate();
         FieldPVCoordinates<Decimal64> pv = fieldProvider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.TNW, date,

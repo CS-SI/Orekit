@@ -73,66 +73,66 @@ public class FieldKeplerianPropagatorTest {
     public void doSameDateCartesianTest() throws OrekitException, ClassNotFoundException, IOException{
         sameDateCartesian(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doSameDateKeplerianTest() throws OrekitException, ClassNotFoundException, IOException{
         sameDateKeplerian(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doPropagatedCartesianTest() throws OrekitException, ClassNotFoundException, IOException{
         propagatedCartesian(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doPropagatedKeplerianTest() throws OrekitException, ClassNotFoundException, IOException{
         propagatedKeplerian(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doAscendingNodeTest() throws OrekitException, ClassNotFoundException, IOException{
         ascendingNode(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doStopAtTargetDateTest() throws OrekitException, ClassNotFoundException, IOException{
         stopAtTargetDate(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doFixedStepTest() throws OrekitException, ClassNotFoundException, IOException{
         fixedStep(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doVariableStepTest() throws OrekitException, ClassNotFoundException, IOException{
         variableStep(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doEphemerisTest() throws OrekitException, ClassNotFoundException, IOException{
         ephemeris(Decimal64Field.getInstance());}
-    
+
 
     @Test
     public void doIssue14Test() throws OrekitException, ClassNotFoundException, IOException{
         testIssue14(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doIssue107Test() throws OrekitException, ClassNotFoundException, IOException{
         testIssue107(Decimal64Field.getInstance());
     }
-    
+
 
     @Test
     public void doMuTest() throws OrekitException, ClassNotFoundException, IOException{

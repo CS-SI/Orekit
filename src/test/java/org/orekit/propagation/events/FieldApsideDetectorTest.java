@@ -42,12 +42,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
 public class FieldApsideDetectorTest {
-    
+
     @Test
     public void testSimple() throws OrekitException{
         doTestSimple(Decimal64Field.getInstance());
     }
-    
+
     private <T extends RealFieldElement<T>> void doTestSimple(Field<T> field) throws OrekitException {
         final T zero = field.getZero();
 
@@ -76,7 +76,7 @@ public class FieldApsideDetectorTest {
         Assert.assertEquals(600.0, detector.getMaxCheckInterval().getReal(), 1.0e-15);
         Assert.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
         Assert.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
-        
+
         FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
         propagator.addEventDetector(logger.monitorDetector(detector));
 

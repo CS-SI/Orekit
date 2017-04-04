@@ -111,37 +111,37 @@ public class FieldCircularParametersTest {
     }
 
     @Test
-    public void doJacoabianReferenceTest() throws OrekitException { 
+    public void doJacoabianReferenceTest() throws OrekitException {
           testJacobianReference(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doNumericalIssue25Test() throws OrekitException { 
+    public void doNumericalIssue25Test() throws OrekitException {
           testNumericalIssue25(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doPerfectlyEquatorialTest() throws OrekitException { 
+    public void doPerfectlyEquatorialTest() throws OrekitException {
           testPerfectlyEquatorial(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doPositionVelocityNormsCircTest() throws OrekitException { 
+    public void doPositionVelocityNormsCircTest() throws OrekitException {
           testPositionVelocityNormsCirc(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doPositionVelocityTest() throws OrekitException { 
+    public void doPositionVelocityTest() throws OrekitException {
           testPositionVelocityNormsEll(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doSymmetryCirTest() throws OrekitException { 
+    public void doSymmetryCirTest() throws OrekitException {
           testSymmetryCir(Decimal64Field.getInstance());
     }
 
     @Test
-    public void doSymmetryEllTest() throws OrekitException { 
+    public void doSymmetryEllTest() throws OrekitException {
           testSymmetryEll(Decimal64Field.getInstance());
     }
 

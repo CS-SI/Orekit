@@ -177,7 +177,7 @@ public class AngularTest {
             final SpacecraftState stateini  = propagator.propagate(datemeas);
             final Vector3D        stationP  = stationParameter.getOffsetFrame().getPVCoordinates(datemeas, stateini.getFrame()).getPosition();
             final double          meanDelay = stationParameter.signalTimeOfFlight(stateini.getPVCoordinates(), stationP, datemeas);
-            
+
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
             final ParameterDriver[] drivers = new ParameterDriver[] {

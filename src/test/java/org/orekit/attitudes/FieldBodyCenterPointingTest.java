@@ -218,13 +218,13 @@ public class FieldBodyCenterPointingTest {
         final double c40_D= 1.62e-6;
         final double c50_D= 2.3e-7;
         final double c60_D= -5.5e-7;
-        
+
         T  c20  = zero.add( c20_D );
         T  c30  = zero.add( c30_D );
         T  c40  = zero.add( c40_D );
         T  c50  = zero.add( c50_D );
         T  c60  = zero.add( c60_D );
-        
+
         final FieldAbsoluteDate<T> date = FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(584.);
         final FieldVector3D<T> position = new FieldVector3D<T>(zero.add(3220103.), zero.add(69623.), zero.add(6449822.));
         final FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(6414.7), zero.add(-2006.), zero.add(-3180.));
