@@ -200,7 +200,11 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
         String[] strings = getStringArray(key);
         double[] array = new double[strings.length];
         for (int i = 0; i < array.length; ++i) {
-            array[i] = Double.parseDouble(strings[i]);
+            if (!strings[i].isEmpty())
+                array[i] = Double.parseDouble(strings[i]);
+            else {
+                array[i] = 0.;
+            }
         }
         return array;
     }
