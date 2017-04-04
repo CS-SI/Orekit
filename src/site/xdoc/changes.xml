@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add" due-to="Maxime Journot">
+        Added turn-around (four-way range) measurements to orbit determination.
+      </action>
       <action dev="luc" type="update">
         Updated dependency to Hipparchus 1.1, released on 2017, March 16th.
         Fixes issue #329.
