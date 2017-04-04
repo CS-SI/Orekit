@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Maxime Journot">
+        Fixed a factor two error in tropospheric and ionospheric modifiers.
+      </action>
       <action dev="luc" type="add" due-to="Maxime Journot">
         Added turn-around (four-way range) measurements to orbit determination.
       </action>

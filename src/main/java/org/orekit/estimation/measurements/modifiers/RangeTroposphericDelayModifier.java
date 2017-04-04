@@ -43,6 +43,7 @@ import org.orekit.utils.ParameterDriver;
  * In general, for GNSS, VLBI, ... there is hardly any frequency dependence in the delay.
  * For SLR techniques however, the frequency dependence is sensitive.
  *
+ * @author Maxime Journot
  * @author Joris Olympio
  * @since 8.0
  */
@@ -94,8 +95,7 @@ public class RangeTroposphericDelayModifier implements EstimationModifier<Range>
             // delay in meters
             final double delay = tropoModel.pathDelay(elevation, height);
 
-            // Multiply by two because it is a two-way measurment.
-            return 2 * delay;
+            return delay;
         }
 
         return 0;

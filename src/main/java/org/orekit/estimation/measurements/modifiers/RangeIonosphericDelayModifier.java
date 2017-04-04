@@ -43,6 +43,7 @@ import org.orekit.utils.ParameterDriver;
  * The ionospheric delay depends on the frequency of the signal (GNSS, VLBI, ...).
  * For optical measurements (e.g. SLR), the ray is not affected by ionosphere charged particles.
  *
+ * @author Maxime Journot
  * @author Joris Olympio
  * @since 8.0
  */
@@ -88,9 +89,7 @@ public class RangeIonosphericDelayModifier implements EstimationModifier<Range> 
             final double delay = ionoModel.pathDelay(state.getDate(),
                                                      station.getBaseFrame().getPoint(),
                                                      elevation, azimuth);
-
-            // Multiply by two because it is a two-way measurment.
-            return 2 * delay;
+            return delay;
         }
 
         return 0;
