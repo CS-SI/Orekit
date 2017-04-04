@@ -92,9 +92,10 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
         //  we will have offset == downlinkDelay and compensatedState will be
         //  the same as state)
         final Vector3D        stationP         = station.getOffsetFrame().getPVCoordinates(getDate(), state.getFrame()).getPosition();
-        final double          downlinkDelay    = station.signalTimeOfFlight(state.getPVCoordinates(), stationP, getDate());
-        final double          offset           = getDate().durationFrom(state.getDate());
-        final SpacecraftState compensatedState = state.shiftedBy(offset - downlinkDelay);
+        final double          tauD             = station.signalTimeOfFlight(state.getPVCoordinates(), stationP, getDate());
+        final double          delta            = getDate().durationFrom(state.getDate());
+        final double          dt               = delta - tauD;
+        final SpacecraftState compensatedState = state.shiftedBy(dt);
 
         final TimeStampedPVCoordinates stationAtArrival = station.getOffsetFrame().getPVCoordinates(getDate(),
                                                                                                     state.getFrame());
@@ -102,14 +103,14 @@ public class RangeRate extends AbstractMeasurement<RangeRate> {
                         oneWayTheoreticalEvaluation(iteration, evaluation, stationAtArrival, compensatedState);
         if (twoway) {
             // one-way (uplink) light time correction
-            final AbsoluteDate approxUplinkDate = getDate().shiftedBy(-2 * downlinkDelay);
+            final AbsoluteDate approxUplinkDate = getDate().shiftedBy(-2 * tauD);
             final TimeStampedPVCoordinates stationUplink =
                             station.getOffsetFrame().getPVCoordinates(approxUplinkDate, state.getFrame());
 
-            final double uplinkDelay = station.signalTimeOfFlight(stationUplink,
-                                                                  compensatedState.getPVCoordinates().getPosition(),
-                                                                  compensatedState.getDate());
-            final AbsoluteDate date = compensatedState.getDate().shiftedBy(uplinkDelay);
+            final double tauU = station.signalTimeOfFlight(stationUplink,
+                                                           compensatedState.getPVCoordinates().getPosition(),
+                                                           compensatedState.getDate());
+            final AbsoluteDate date = compensatedState.getDate().shiftedBy(tauU);
             final TimeStampedPVCoordinates  stationAtEmission = station.getOffsetFrame().getPVCoordinates(date, state.getFrame());
             final EstimatedMeasurement<RangeRate> evalOneWay2 =
                             oneWayTheoreticalEvaluation(iteration, evaluation, stationAtEmission, compensatedState);

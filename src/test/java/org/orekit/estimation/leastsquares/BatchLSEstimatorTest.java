@@ -150,10 +150,10 @@ public class BatchLSEstimatorTest {
         Assert.assertEquals("a", aDriver.getName());
         aDriver.setValue(aDriver.getValue() + 1.2);
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
-                                     0.0, 3.1e-7,
-                                     0.0, 6.4e-7,
-                                     0.0, 1.3e-7,
-                                     0.0, 5.2e-11);
+                                     0.0, 9.5e-7,
+                                     0.0, 2.8e-6,
+                                     0.0, 3.5e-7,
+                                     0.0, 2.2e-10);
 
     }
 

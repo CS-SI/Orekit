@@ -17,6 +17,7 @@
 package org.orekit.estimation;
 
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
@@ -52,6 +53,10 @@ public class Context {
     public UT1Scale                             ut1;
     public Orbit                                initialOrbit;
     public List<GroundStation>                  stations;
+    // Stations for turn-around range
+    // Map entry = master station
+    // Map value = slave station associated
+    public Map<GroundStation,GroundStation>     TARstations;
 
     public NumericalPropagatorBuilder createBuilder(final OrbitType orbitType, final PositionAngle positionAngle,
                                                     final boolean perfectStart,
