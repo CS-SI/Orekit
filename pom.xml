@@ -20,21 +20,22 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.findbugs-maven-plugin.version>3.0.3</orekit.findbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.7.7.201606060606</orekit.jacoco-maven-plugin.version>
+    <orekit.findbugs-maven-plugin.version>3.0.4</orekit.findbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.7.9</orekit.jacoco-maven-plugin.version>
     <orekit.maven-assembly-plugin.version>3.0.0</orekit.maven-assembly-plugin.version>
-    <orekit.maven-bundle-plugin.version>3.2.0</orekit.maven-bundle-plugin.version>
+    <orekit.maven-bundle-plugin.version>3.3.0</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.12.1</orekit.maven-changes-plugin.version>
     <orekit.maven-checkstyle-plugin.version>2.17</orekit.maven-checkstyle-plugin.version>
-    <orekit.checkstyle.version>7.3</orekit.checkstyle.version>
+    <orekit.checkstyle.version>7.6</orekit.checkstyle.version>
     <orekit.maven-clean-plugin.version>3.0.0</orekit.maven-clean-plugin.version>
-    <orekit.maven-compiler-plugin.version>3.6.0</orekit.maven-compiler-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.6.1</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>2.10.4</orekit.maven-javadoc-plugin.version>
     <orekit.maven-jar-plugin.version>3.0.2</orekit.maven-jar-plugin.version>
     <orekit.maven-jxr-plugin.version>2.5</orekit.maven-jxr-plugin.version>
-    <orekit.plantuml-maven-plugin.version>7954</orekit.plantuml-maven-plugin.version>
+    <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
+    <orekit.plantuml.version>2017.10</orekit.plantuml.version>
     <orekit.maven-project-info-reports-plugin.version>2.9</orekit.maven-project-info-reports-plugin.version>
-    <orekit.maven-resources-plugin.version>3.0.1</orekit.maven-resources-plugin.version>
+    <orekit.maven-resources-plugin.version>3.0.2</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.6</orekit.maven-site-plugin.version>
     <orekit.maven-source-plugin.version>3.0.1</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>2.19.1</orekit.maven-surefire-plugin.version>
@@ -489,10 +490,10 @@
         <version>${orekit.plantuml-maven-plugin.version}</version>
         <configuration>
           <sourceFiles>
-            <directory>${basedir}</directory>
+            <directory>${basedir}/src/design</directory>
             <includes>
               <include>
-                src/design/**/*.puml
+                *.puml
               </include>
             </includes>
           </sourceFiles>
@@ -500,6 +501,13 @@
             ${project.build.directory}/site/images/design
           </outputDirectory>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>net.sourceforge.plantuml</groupId>
+            <artifactId>plantuml</artifactId>
+            <version>${orekit.plantuml.version}</version>
+          </dependency>
+        </dependencies>
         <executions>
           <execution>
             <phase>pre-site</phase>
