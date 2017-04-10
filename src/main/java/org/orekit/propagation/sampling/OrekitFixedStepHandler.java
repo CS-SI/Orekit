@@ -72,7 +72,7 @@ public interface OrekitFixedStepHandler {
     default void init(SpacecraftState s0, AbsoluteDate t, double step)
         throws OrekitException {
         // as of 9.0, the default implementation calls the DEPRECATED version
-        // without a step size, which does nothing by default byt may have
+        // without a step size, which does nothing by default but may have
         // been overridden by users
         // When the deprecated version is removed, the default implementation
         // will do nothing
