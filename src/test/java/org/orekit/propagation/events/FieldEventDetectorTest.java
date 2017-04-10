@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import java.lang.reflect.Array;
+
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -224,7 +226,10 @@ public class FieldEventDetectorTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> initialDate   = new FieldAbsoluteDate<>(field, 2011, 5, 11, utc);
         FieldAbsoluteDate<T> startDate     = new FieldAbsoluteDate<>(field, 2032, 10, 17, utc);
-        FieldAbsoluteDate<T> interruptDate = new FieldAbsoluteDate<>(field, 2032, 10, 18, utc);
+        @SuppressWarnings("unchecked")
+        FieldAbsoluteDate<T>[] interruptDates =
+                        ( FieldAbsoluteDate<T>[]) Array.newInstance(FieldAbsoluteDate.class, 1);
+        interruptDates[0] = new FieldAbsoluteDate<>(field, 2032, 10, 18, utc);
         FieldAbsoluteDate<T> targetDate    = new FieldAbsoluteDate<>(field, 2211, 5, 11, utc);
         FieldKeplerianPropagator<T> k1 =
                 new FieldKeplerianPropagator<>(new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(new FieldVector3D<>(zero.add(4008462.4706055815),
@@ -245,9 +250,9 @@ public class FieldEventDetectorTest {
         k2.addEventDetector(new FieldCloseApproachDetector<>(zero.add(2015.243454166727), zero.add(0.0001), 100,
                                                              new FieldContinueOnEvent<FieldCloseApproachDetector<T>, T>(),
                                                              k1));
-        k2.addEventDetector(new FieldDateDetector<>(zero.add(Constants.JULIAN_DAY), zero.add(1.0e-6), interruptDate));
+        k2.addEventDetector(new FieldDateDetector<>(zero.add(Constants.JULIAN_DAY), zero.add(1.0e-6), interruptDates));
         FieldSpacecraftState<T> s = k2.propagate(startDate, targetDate);
-        Assert.assertEquals(0.0, interruptDate.durationFrom(s.getDate()).getReal(), 1.1e-6);
+        Assert.assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
     }
 
     private static class FieldCloseApproachDetector<T extends RealFieldElement<T>> extends FieldAbstractDetector<FieldCloseApproachDetector<T>, T> {
