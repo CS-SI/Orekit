@@ -84,7 +84,6 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                 final TopocentricFrame slaveTopo     = slaveStation.getBaseFrame();
 
                 // Create a TAR measurement only if elevation for both stations is higher than elevationMin°
-                double elevationMin = 30.0;
                 if ((masterTopo.getElevation(position, inertial, date) > FastMath.toRadians(30.0))&&
                                 (slaveTopo.getElevation(position, inertial, date) > FastMath.toRadians(30.0))) {
 
