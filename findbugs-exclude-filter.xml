@@ -43,6 +43,11 @@
       <Class name="~.*\.GeographicZoneDetector$" />
       <Class name="~.*\.SaastamoinenModel$" />
       <Class name="~.*\.EventEnablingPredicateFilter$" />
+      <Class name="~.*\.FixedTransformProvider$" />
+      <Class name="~.*\.InterpolatingTransformProvider$" />
+      <Class name="~.*\.ShiftingTransformProvider$" />
+      <Class name="~.*\.MODProvider$" />
+      <Class name="~.*\.TIRFProvider$" />
     </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>

@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.function.DoubleBinaryOperator;
 
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -68,7 +67,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     private final List<EventDetector> detectors;
 
     /** The composition function. Should be associative for predictable behavior. */
-    private final DoubleBinaryOperator operator;
+    private final Operator operator;
 
     /**
      * Private constructor with all the parameters.
@@ -82,7 +81,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @param newHandler   event handler.
      */
     private BooleanDetector(final List<EventDetector> detectors,
-                            final DoubleBinaryOperator operator,
+                            final Operator operator,
                             final double newMaxCheck,
                             final double newThreshold,
                             final int newMaxIter,
@@ -138,7 +137,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
             final Collection<? extends EventDetector> detectors) {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
-                FastMath::min,
+                Operator.AND,
                 detectors.stream().map(EventDetector::getMaxCheckInterval).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
@@ -191,7 +190,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
             final Collection<? extends EventDetector> detectors) {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
-                FastMath::max,
+                Operator.OR,
                 detectors.stream().map(EventDetector::getMaxCheckInterval).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
@@ -229,7 +228,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
                 ret = detector.g(s);
                 first = false;
             } else {
-                ret = this.operator.applyAsDouble(ret, detector.g(s));
+                ret = operator.combine(ret, detector.g(s));
             }
         }
         // return the result of applying the operator to all operands
@@ -252,5 +251,39 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
             detector.init(s0, t);
         }
     }
+
+    /** Local, serializable class for operator. */
+    private enum Operator {
+
+        /** And operator. */
+        AND() {
+
+            @Override
+            /** {@inheritDoc} */
+            public double combine(final double g1, final double g2) {
+                return FastMath.min(g1, g2);
+            }
+
+        },
+
+        /** Or operator. */
+        OR() {
+
+            @Override
+            /** {@inheritDoc} */
+            public double combine(final double g1, final double g2) {
+                return FastMath.max(g1, g2);
+            }
+
+        };
+
+        /** Combine two g functions evaluations.
+         * @param g1 first evaluation
+         * @param g2 second evaluation
+         * @return combined evaluation
+         */
+        public abstract double combine(double g1, double g2);
+
+    };
 
 }

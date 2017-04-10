@@ -1,6 +1,6 @@
 package fr.cs.examples.propagation;
 
-import java.io.FileWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Locale;
@@ -65,11 +65,11 @@ public class FieldPropagation {
 
         Autoconfiguration.configureOrekit();
 
-        //setting some filewriter and printwriter to have the output
-        String workingDir = System.getProperty("user.dir");
-        System.out.println("Output file is in : " + workingDir + "/error.txt");
-        FileWriter  FW = new FileWriter(workingDir + "/error.txt", false);
-        PrintWriter PW = new PrintWriter(FW);
+        //setting some the file
+        File workingDir = new File(System.getProperty("user.dir"));
+        File errorFile = new File(workingDir, "error.txt");
+        System.out.println("Output file is in : " + errorFile.getAbsolutePath());
+        PrintWriter PW = new PrintWriter(errorFile, "UTF-8");
 
         PW.printf("time \t\tCrossTrackErr \tLongTrackErr  \tRadialErr \tTotalErr%n");
 
@@ -249,11 +249,11 @@ public class FieldPropagation {
 
             //printing all the standard deviations on the file error.txt
             Locale.setDefault(new Locale("en", "US"));
-            PW.printf("%f \t", currentState.getDate().durationFrom(data_0).getReal()/3600);
-            PW.printf("%f \t", stat_CT.getStandardDeviation());
-            PW.printf("%f \t", stat_LT.getStandardDeviation());
-            PW.printf("%f \t", stat_R.getStandardDeviation());
-            PW.printf("%f \n", stat_dist.getStandardDeviation());
+            PW.printf("%f\t", currentState.getDate().durationFrom(data_0).getReal()/3600);
+            PW.printf("%f\t", stat_CT.getStandardDeviation());
+            PW.printf("%f\t", stat_LT.getStandardDeviation());
+            PW.printf("%f\t", stat_R.getStandardDeviation());
+            PW.printf("%f%n", stat_dist.getStandardDeviation());
 
         }
 
