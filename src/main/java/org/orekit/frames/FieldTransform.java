@@ -51,7 +51,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * It is used both to define the relationship between each frame and its
  * parent frame and to gather all individual transforms into one
  * operation when converting between frames far away from each other.</p>
- * <p> The convention used in OREKIT is vectorial transformation. It means
+ * <p>The convention used in OREKIT is vectorial transformation. It means
  * that a transformation is defined as a transform to apply to the
  * coordinates of a vector expressed in the old frame to obtain the
  * same vector expressed in the new frame.
@@ -62,7 +62,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *
  * <h2> Example of translation from R<sub>A</sub> to R<sub>B</sub> </h2>
  *
- * <p> We want to transform the {@link FieldPVCoordinates<T>} PV<sub>A</sub> to
+ * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with :
  * <p> PV<sub>A</sub> = ({1, 0, 0}, {2, 0, 0}, {3, 0, 0}); <br>
  *     PV<sub>B</sub> = ({0, 0, 0}, {0, 0, 0}, {0, 0, 0});
@@ -80,7 +80,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </code></pre>
  *
  * <h2> Example of rotation from R<sub>A</sub> to R<sub>B</sub> </h2>
- * <p> We want to transform the {@link FieldPVCoordinates<T>} PV<sub>A</sub> to
+ * <p> We want to transform the {@link FieldPVCoordinates} PV<sub>A</sub> to
  * PV<sub>B</sub> with
  *
  * <p> PV<sub>A</sub> = ({1, 0, 0}, { 1, 0, 0}); <br>
@@ -726,12 +726,12 @@ public class FieldTransform<T extends RealFieldElement<T>>
                                                                    pv.getAcceleration().add(cartesian.getAcceleration())));
     }
 
-    /** Compute the Jacobian of the {@link #transformPVCoordinates<T>(FieldPVCoordinates<T>)}
+    /** Compute the Jacobian of the {@link #transformPVCoordinates(FieldPVCoordinates)}
      * method of the transform.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of Cartesian coordinate i
-     * of the transformed {@link FieldPVCoordinates<T>} with respect to Cartesian coordinate j
-     * of the input {@link FieldPVCoordinates<T>} in method {@link #transformPVCoordinates<T>(FieldPVCoordinates<T>)}.
+     * of the transformed {@link FieldPVCoordinates} with respect to Cartesian coordinate j
+     * of the input {@link FieldPVCoordinates} in method {@link #transformPVCoordinates(FieldPVCoordinates)}.
      * </p>
      * <p>
      * This definition implies that if we define position-velocity coordinates

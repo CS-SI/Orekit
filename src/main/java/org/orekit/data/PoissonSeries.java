@@ -31,7 +31,6 @@ import org.hipparchus.util.MathArrays;
  * <em>arguments</em>. The polynomial arguments are combinations of luni-solar or
  * planetary {@link BodiesElements elements}.
  * </p>
- * @param <T> the type of the field elements
  * @author Luc Maisonobe
  * @see PoissonSeriesParser
  * @see SeriesTerm

@@ -76,7 +76,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
 
     /**
      * Inner class of {@link OrekitEphemerisFile} that defines the
-     * {@link SatelliteEphemeris} corresponding object for this ephemeris type.
+     * {@link OrekitSatelliteEphemeris} corresponding object for this ephemeris type.
      *
      */
     public class OrekitSatelliteEphemeris implements SatelliteEphemeris {

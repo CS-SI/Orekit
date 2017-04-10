@@ -577,7 +577,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param sign multiplicative sign for quaternion components
      * @return modified Rodrigues vector and derivatives (vector on row 0, first derivative
      * on row 1, second derivative on row 2)
-     * @see #createFromModifiedRodrigues(double[][])
+     * @see #createFromModifiedRodrigues(RealFieldElement[][])
      * @since 9.0
      */
     public T[][] getModifiedRodrigues(final double sign) {
@@ -695,7 +695,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>> {
      * @param r modified Rodrigues vector (with first and second times derivatives)
      * @param <T> the type of the field elements
      * @return angular coordinates
-     * @see #getModifiedRodrigues(RealFieldElement)
+     * @see #getModifiedRodrigues(double)
      * @since 9.0
      */
     public static <T extends RealFieldElement<T>>  FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r) {
