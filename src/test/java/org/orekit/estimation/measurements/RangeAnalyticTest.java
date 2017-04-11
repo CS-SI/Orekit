@@ -31,7 +31,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.EstimationUtils;
-import org.orekit.estimation.ParameterFunction;
 import org.orekit.estimation.StateFunction;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.models.earth.SaastamoinenModel;
@@ -46,7 +45,7 @@ import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
-public class RangeTest {
+public class RangeAnalyticTest {
 
     
     /**
@@ -58,15 +57,15 @@ public class RangeTest {
     public void testValues() throws OrekitException {
         boolean printResults = false;
         if (printResults) {
-            System.out.println("\nTest Range Values\n");
+            System.out.println("\nTest Range Analytical Values\n");
         }
         // Run test
         this.genericTestValues(printResults);
     }
     
     /**
-     * Test the values of the state derivatives using a numerical 
-     * finite differences calculation as a reference
+     * Test the values of the analytic state derivatives computation 
+     * using Range function as a comparison
      * @throws OrekitException
      */
     @Test
@@ -74,16 +73,35 @@ public class RangeTest {
     
         boolean printResults = false;
         if (printResults) {
-            System.out.println("\nTest Range State Derivatives - Finite Differences Comparison\n");
+            System.out.println("\nTest Range Analytical State Derivatives - Derivative Structure Comparison\n");
         }
         // Run test
         boolean isModifier = false;
-        this.genericTestStateDerivatives(isModifier, printResults);
+        boolean isFiniteDifferences = false;
+        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
     }
     
     /**
-     * Test the values of the state derivatives with modifier using a numerical 
-     * finite differences calculation as a reference
+     * Test the values of the analytic state derivatives computation 
+     * using a numerical finite differences calculation as a reference
+     * @throws OrekitException
+     */
+    @Test
+    public void testStateDerivativesFiniteDifferences() throws OrekitException {
+    
+        boolean printResults = false;
+        if (printResults) {
+            System.out.println("\nTest Range Analytical State Derivatives - Finite Differences Comparison\n");
+        }
+        // Run test
+        boolean isModifier = false;
+        boolean isFiniteDifferences = true;
+        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+    }
+
+    /**
+     * Test the values of the analytic state derivatives with modifier computation 
+     * using Range function as a comparison
      * @throws OrekitException
      */
     @Test
@@ -91,51 +109,102 @@ public class RangeTest {
     
         boolean printResults = false;
         if (printResults) {
-            System.out.println("\nTest Range State Derivatives with Modifier - Finite Differences Comparison\n");
+            System.out.println("\nTest Range Analytical State Derivatives With Modifier - Derivative Structure Comparison\n");
         }
         // Run test
         boolean isModifier = true;
-        this.genericTestStateDerivatives(isModifier, printResults);
+        boolean isFiniteDifferences = false;
+        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
     }
- 
+    
     /**
-     * Test the values of the parameters' derivatives using a numerical 
-     * finite differences calculation as a reference
+     * Test the values of the analytic state derivatives with modifier computation 
+     * using a numerical finite differences calculation as a reference
+     * @throws OrekitException
+     */
+    @Test
+    public void testStateDerivativesWithModifierFiniteDifferences() throws OrekitException {
+    
+        boolean printResults = false;
+        if (printResults) {
+            System.out.println("\nTest Range Analytical State Derivatives With Modifier - Finite Differences Comparison\n");
+        }
+        // Run test
+        boolean isModifier = false;
+        boolean isFiniteDifferences = true;
+        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+    }
+
+    /**
+     * Test the values of the analytic parameter derivatives computation 
+     * using Range function as a comparison
      * @throws OrekitException
      */
     @Test
     public void testParameterDerivatives() throws OrekitException {
-
-        // Print the results ?
+    
         boolean printResults = false;
-        
         if (printResults) {
-            System.out.println("\nTest Range Parameter Derivatives - Finite Differences Comparison\n");
+            System.out.println("\nTest Range Analytical Parameter Derivatives - Derivative Structure Comparison\n");
         }
         // Run test
         boolean isModifier = false;
-        this.genericTestParameterDerivatives(isModifier, printResults);
-        
+        boolean isFiniteDifferences = false;
+        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
     }
     
     /**
-     * Test the values of the parameters' derivatives with modifier, using a numerical 
-     * finite differences calculation as a reference
+     * Test the values of the analytic parameter derivatives computation 
+     * using a numerical finite differences calculation as a reference
+     * @throws OrekitException
+     */
+    @Test
+    public void testParameterDerivativesFiniteDifferences() throws OrekitException {
+    
+        boolean printResults = false;
+        if (printResults) {
+            System.out.println("\nTest Range Analytical Parameter Derivatives - Finite Differences Comparison\n");
+        }
+        // Run test
+        boolean isModifier = false;
+        boolean isFiniteDifferences = true;
+        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+    }
+
+    /**
+     * Test the values of the analytic parameter derivatives with modifier computation 
+     * using Range function as a comparison
      * @throws OrekitException
      */
     @Test
     public void testParameterDerivativesWithModifier() throws OrekitException {
-
-        // Print the results ?
+    
         boolean printResults = false;
-        
         if (printResults) {
-            System.out.println("\nTest Range Parameter Derivatives with Modifier - Finite Differences Comparison\n");
+            System.out.println("\nTest Range Analytical Parameter Derivatives With Modifier - Derivative Structure Comparison\n");
         }
         // Run test
         boolean isModifier = true;
-        this.genericTestParameterDerivatives(isModifier, printResults);
-        
+        boolean isFiniteDifferences = false;
+        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+    }
+    
+    /**
+     * Test the values of the analytic parameter derivatives with modifier computation 
+     * using a numerical finite differences calculation as a reference
+     * @throws OrekitException
+     */
+    @Test
+    public void testParameterDerivativesWithModifierFiniteDifferences() throws OrekitException {
+    
+        boolean printResults = false;
+        if (printResults) {
+            System.out.println("\nTest Range Analytical Parameter Derivatives With Modifier - Finite Differences Comparison\n");
+        }
+        // Run test
+        boolean isModifier = false;
+        boolean isFiniteDifferences = true;
+        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
     }
     
     /**
@@ -174,7 +243,7 @@ public class RangeTest {
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {                    
+                   ) {                   
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
                     // compensating only part of the downlink delay. This is done
@@ -186,9 +255,10 @@ public class RangeTest {
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
                  
-                    // Values of the Range & errors
+                    // Values of the RangeAnalytic & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final double RangeEstimated = measurement.estimate(0, 0, state).getEstimatedValue()[0];                    
+                    final double RangeEstimated = new RangeAnalytic((Range) measurement).
+                                    theoreticalEvaluationAnalytic(0, 0, state).getEstimatedValue()[0];                    
                     final double absoluteError = RangeEstimated-RangeObserved;
                     absoluteErrors.add(absoluteError);
                     relativeErrors.add(FastMath.abs(absoluteError)/FastMath.abs(RangeObserved));
@@ -247,22 +317,21 @@ public class RangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
         
-        Assert.assertEquals(0.0, absErrorsMedian, 1e-8);
-        Assert.assertEquals(0.0, absErrorsMin, 2e-7);
-        Assert.assertEquals(0.0, absErrorsMax, 2e-7);
-        Assert.assertEquals(0.0, relErrorsMedian, 1e-14);
-        Assert.assertEquals(0.0, relErrorsMax, 2e-14);
-
-
+        Assert.assertEquals(0.0, absErrorsMedian, 7.0e-09);
+        Assert.assertEquals(0.0, absErrorsMin, 1.6e-07);
+        Assert.assertEquals(0.0, absErrorsMax, 1.7e-07);
+        Assert.assertEquals(0.0, relErrorsMedian, 4.4e-15);
+        Assert.assertEquals(0.0, relErrorsMax, 1.7e-14);
     }
    
     /**
      * Generic test function for derivatives with respect to state
      * @param isModifier Use of atmospheric modifiers
+     * @param isFiniteDifferences Finite differences reference calculation if true, Range class otherwise
      * @param printResults Print the results ?
      * @throws OrekitException 
      */
-    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults) 
+    void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults) 
                     throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
@@ -311,18 +380,35 @@ public class RangeTest {
                     final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
-                    final double[][]      jacobian  = measurement.estimate(0, 0, state).getStateDerivatives();
+                    
+                    final EstimatedMeasurement<Range> range = new RangeAnalytic((Range)measurement).theoreticalEvaluationAnalytic(0, 0, state);
+                    if (isModifier) {
+                        modifier.modify(range);
+                    }
+                    final double[][] jacobian  = range.getStateDerivatives(); 
 
                     // Jacobian reference value
                     final double[][] jacobianRef;
 
-                    // Compute a reference value using finite differences
-                    jacobianRef = EstimationUtils.differentiate(new StateFunction() {
-                        public double[] value(final SpacecraftState state) throws OrekitException {
-                            return measurement.estimate(0, 0, state).getEstimatedValue();
-                        }
-                    }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
-                    
+                    if (isFiniteDifferences) {
+                        // Compute a reference value using finite differences
+                        jacobianRef = EstimationUtils.differentiate(new StateFunction() {
+                            public double[] value(final SpacecraftState state) throws OrekitException {
+                                return measurement.estimate(0, 0, state).getEstimatedValue();
+                            }
+                        }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
+                    } else {
+                        // Compute a reference value using Range class function
+                        jacobianRef = ((Range) measurement).theoreticalEvaluation(0, 0, state).getStateDerivatives();
+                    }
+
+//                    //Test: Test point by point with the debugger
+//                    if (!isFiniteDifferences && !isModifier) {
+//                        final EstimatedMeasurement<Range> test = 
+//                                        new RangeAnalytic((Range)measurement).theoreticalEvaluationValidation(0, 0, state);
+//                    }
+//                    //Test
+
                     Assert.assertEquals(jacobianRef.length, jacobian.length);
                     Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
@@ -400,15 +486,34 @@ public class RangeTest {
         
         // Assert the results / max values depend on the test
         double refErrorsPMedian, refErrorsPMean, refErrorsPMax;
-        double refErrorsVMedian, refErrorsVMean, refErrorsVMax;
+        double refErrorsVMedian, refErrorsVMean, refErrorsVMax;       
         
-        // Finite differences reference values
-        refErrorsPMedian = 1.2e-09;
-        refErrorsPMean   = 8.1e-09;
-        refErrorsPMax    = 3.6e-07;
-        refErrorsVMedian = 3.1e-04;
-        refErrorsVMean   = 1.7e-03;
-        refErrorsVMax    = 8.1e-02;
+        // Reference comparison with Range class
+        if (!isFiniteDifferences) {
+            
+            if (!isModifier) {
+                refErrorsPMedian = 4.7e-11;
+                refErrorsPMean   = 4.7e-11;
+                refErrorsPMax    = 5.1e-11;
+            } else {
+                refErrorsPMedian = 4.1e-07;
+                refErrorsPMean   = 1.8e-06;
+                refErrorsPMax    = 6.3e-05;
+            }
+            refErrorsVMedian = 4.7e-11;
+            refErrorsVMean   = 4.7e-11;
+            refErrorsVMax    = 5.1e-11;
+        }
+        // Reference comparison with finite differences
+        else {
+            refErrorsPMedian = 1.2e-09;
+            refErrorsPMean   = 8.0e-09;
+            refErrorsPMax    = 3.1e-07;
+
+            refErrorsVMedian = 3.1e-04;
+            refErrorsVMean   = 1.7e-03;
+            refErrorsVMax    = 8.1e-02;
+        } 
 
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
         Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
@@ -421,10 +526,11 @@ public class RangeTest {
     /**
      * Generic test function for derivatives with respect to parameters (station's position in station's topocentric frame)
      * @param isModifier Use of atmospheric modifiers
+     * @param isFiniteDifferences Finite differences reference calculation if true, Range class otherwise
      * @param printResults Print the results ?
      * @throws OrekitException 
      */
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults) 
+    void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults) 
                     throws OrekitException {
     
         Context context = EstimationTestUtils.eccentricContext();
@@ -496,16 +602,16 @@ public class RangeTest {
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
                         
-                        // Compute a reference value using finite differences
-                        final ParameterFunction dMkdP =
-                                        EstimationUtils.differentiate(new ParameterFunction() {
-                                            /** {@inheritDoc} */
-                                            @Override
-                                            public double value(final ParameterDriver parameterDriver) throws OrekitException {
-                                                return measurement.estimate(0, 0, state).getEstimatedValue()[0];
-                                            }
-                                        }, drivers[i], 3, 20.0);
-                        final double ref = dMkdP.value(drivers[i]);
+                        double ref;
+                        // Compute a reference value using analytical formulas
+                        //debug
+                        RangeAnalytic x = new RangeAnalytic((Range)measurement);
+                        //debug
+                        final EstimatedMeasurement<Range> rangeAnalytic = new RangeAnalytic((Range)measurement).theoreticalEvaluationAnalytic(0, 0, state);
+                        if (isModifier) {
+                            modifier.modify(rangeAnalytic);
+                        }
+                        ref = rangeAnalytic.getParameterDerivatives(drivers[i])[0];
 
                         if (printResults) {
                             System.out.format(Locale.US,"%10.3e  %10.3e  ",gradient[0]-ref,FastMath.abs((gradient[0]-ref)/ref));
@@ -560,11 +666,10 @@ public class RangeTest {
         
         // Assert the results / max values depend on the test
         double refErrorsMedian, refErrorsMean, refErrorsMax;
-
-        // Numeric references
-        refErrorsMedian = 8.7e-11;
-        refErrorsMean   = 3.4e-10;
-        refErrorsMax    = 1.3e-08; 
+        // Analytic references
+        refErrorsMedian = 1.55e-06;
+        refErrorsMean   = 3.64e-06;
+        refErrorsMax    = 6.1e-05;
 
         Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
         Assert.assertEquals(0.0, relErrorsMean, refErrorsMean);

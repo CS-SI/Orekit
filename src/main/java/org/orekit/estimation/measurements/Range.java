@@ -25,11 +25,8 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Class modeling a range measurement from a ground station.
  * <p>
@@ -80,6 +77,13 @@ public class Range extends AbstractMeasurement<Range> {
      */
     public GroundStation getStation() {
         return station;
+    }
+
+    /** Get the DSFactory of this class.
+     * @return DSFactory of this class
+     */
+    protected DSFactory getDSFactory() {
+        return factory;
     }
 
     /** {@inheritDoc} */
@@ -199,166 +203,6 @@ public class Range extends AbstractMeasurement<Range> {
         if (station.getZenithOffsetDriver().isSelected()) {
             estimated.setParameterDerivatives(station.getZenithOffsetDriver(),
                                               range.getPartialDerivative(0, 0, 0, 0, 0, 0, 0, 0, 1)); // dROndQTz
-        }
-
-        return estimated;
-
-    }
-
-
-    /**
-     * Analytical version of the theoretical evaluation function
-     * The derivative structures are not used, an analytical computation is used instead.
-     * @param iteration current LS estimator iteration
-     * @param evaluation current LS estimator evaluation
-     * @param state spacecraft state. At measurement date on first iteration then close to emission date on further iterations
-     * @return theoretical value
-     * @throws OrekitException if value cannot be computed
-     */
-    protected EstimatedMeasurement<Range> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
-                                                                        final SpacecraftState state)
-        throws OrekitException {
-
-        // Station position at signal arrival
-        final AbsoluteDate downlinkDate = getDate();
-        final Transform topoToInertDownlink =
-                        station.getOffsetFrame().getTransformTo(state.getFrame(), downlinkDate);
-        final PVCoordinates stationDownlink = topoToInertDownlink.
-                        transformPVCoordinates(PVCoordinates.ZERO);
-
-        // Take propagation time into account
-        // (if state has already been set up to pre-compensate propagation delay,
-        //  we will have offset == downlinkDelay and transitState will be
-        //  the same as state)
-        // Downlink time of flight
-        final double          tauD         = station.signalTimeOfFlight(state.getPVCoordinates(),
-                                                                        stationDownlink.getPosition(),
-                                                                        downlinkDate);
-        final double          delta        = downlinkDate.durationFrom(state.getDate());
-        final double          dt           = delta - tauD;
-
-        // Transit state position
-        final SpacecraftState transitState = state.shiftedBy(dt);
-        final AbsoluteDate    transitDate  = transitState.getDate();
-        final Vector3D        transitP     = transitState.getPVCoordinates().getPosition();
-
-        // Station position at transit state date
-        final Transform topoToInertAtTransitDate =
-                      station.getOffsetFrame().getTransformTo(state.getFrame(), transitDate);
-        final TimeStampedPVCoordinates stationAtTransitDate = topoToInertAtTransitDate.
-                      transformPVCoordinates(new TimeStampedPVCoordinates(transitDate, PVCoordinates.ZERO));
-
-        // Uplink time of flight
-        final double          tauU             = station.signalTimeOfFlight(stationAtTransitDate,
-                                                                            transitP,
-                                                                            transitDate);
-        final double          tau              = tauD + tauU;
-
-        // Real date and position of station at signal departure
-        final AbsoluteDate             uplinkDate    = downlinkDate.shiftedBy(-tau);
-        final TimeStampedPVCoordinates stationUplink = topoToInertDownlink.shiftedBy(-tau).
-                        transformPVCoordinates(new TimeStampedPVCoordinates(uplinkDate, PVCoordinates.ZERO));
-
-        // Prepare the evaluation
-        final EstimatedMeasurement<Range> estimated =
-                        new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
-
-        // Set range value
-        final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
-        estimated.setEstimatedValue(tau * cOver2);
-
-        // Partial derivatives with respect to state
-        // The formulas below take into account the fact the measurement is at fixed reception date.
-        // When spacecraft position is changed, the downlink delay is changed, and in order
-        // to still have the measurement arrive at exactly the same date on ground, we must
-        // take the spacecraft-station relative velocity into account.
-        final Vector3D v         = state.getPVCoordinates().getVelocity();
-        final Vector3D qv        = stationDownlink.getVelocity();
-        final Vector3D downInert = stationDownlink.getPosition().subtract(transitP);
-        final double   dDown     = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tauD -
-                        Vector3D.dotProduct(downInert, v);
-        final Vector3D upInert   = transitP.subtract(stationUplink.getPosition());
-
-        //test
-        //     final double   dUp       = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tauU -
-        //                     Vector3D.dotProduct(upInert, qv);
-        //test
-        final double   dUp       = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tauU -
-                        Vector3D.dotProduct(upInert, stationUplink.getVelocity());
-
-
-        // derivatives of the downlink time of flight
-        final double dTauDdPx   = -downInert.getX() / dDown;
-        final double dTauDdPy   = -downInert.getY() / dDown;
-        final double dTauDdPz   = -downInert.getZ() / dDown;
-
-
-        // Derivatives of the uplink time of flight
-        final Vector3D qvMv = qv.subtract(v);
-        final double dTauUdPx = upInert.dotProduct(new Vector3D(1.0, Vector3D.PLUS_I, dTauDdPx, qvMv)) / dUp;
-        final double dTauUdPy = upInert.dotProduct(new Vector3D(1.0, Vector3D.PLUS_J, dTauDdPy, qvMv)) / dUp;
-        final double dTauUdPz = upInert.dotProduct(new Vector3D(1.0, Vector3D.PLUS_K, dTauDdPz, qvMv)) / dUp;
-
-
-        // derivatives of the range measurement
-        final double dRdPx = (dTauDdPx + dTauUdPx) * cOver2;
-        final double dRdPy = (dTauDdPy + dTauUdPy) * cOver2;
-        final double dRdPz = (dTauDdPz + dTauUdPz) * cOver2;
-        estimated.setStateDerivatives(new double[] {
-            dRdPx,      dRdPy,      dRdPz,
-            dRdPx * dt, dRdPy * dt, dRdPz * dt
-        });
-
-        if (station.getEastOffsetDriver().isSelected()  ||
-                        station.getNorthOffsetDriver().isSelected() ||
-                        station.getZenithOffsetDriver().isSelected()) {
-
-            // Downlink tme of flight derivatives / station position in topocentric frame
-            final AngularCoordinates ac = topoToInertDownlink.getAngular().revert();
-            //final Rotation rotTopoToInert = ac.getRotation();
-            final Vector3D omega        = ac.getRotationRate();
-
-            // Inertial frame
-            final double dTauDdQIx = downInert.getX() / dDown;
-            final double dTauDdQIy = downInert.getY() / dDown;
-            final double dTauDdQIz = downInert.getZ() / dDown;
-
-            // Uplink tme of flight derivatives / station position in topocentric frame
-            // Inertial frame
-            final double dTauUdQIx = 1 / dUp * upInert
-                            .dotProduct(Vector3D.MINUS_I
-                                        .add((qv.subtract(v)).scalarMultiply(dTauDdQIx))
-                                        .subtract(Vector3D.PLUS_I.crossProduct(omega).scalarMultiply(tau)));
-            final double dTauUdQIy = 1 / dUp * upInert
-                            .dotProduct(Vector3D.MINUS_J
-                                        .add((qv.subtract(v)).scalarMultiply(dTauDdQIy))
-                                        .subtract(Vector3D.PLUS_J.crossProduct(omega).scalarMultiply(tau)));
-            final double dTauUdQIz = 1 / dUp * upInert
-                            .dotProduct(Vector3D.MINUS_K
-                                        .add((qv.subtract(v)).scalarMultiply(dTauDdQIz))
-                                        .subtract(Vector3D.PLUS_K.crossProduct(omega).scalarMultiply(tau)));
-
-
-            // Range partial derivatives
-            // with respect to station position in inertial frame
-            final Vector3D dRdQI = new Vector3D((dTauDdQIx + dTauUdQIx) * cOver2,
-                                                (dTauDdQIy + dTauUdQIy) * cOver2,
-                                                (dTauDdQIz + dTauUdQIz) * cOver2);
-
-            // convert to topocentric frame, as the station position
-            // offset parameter is expressed in this frame
-            final Vector3D dRdQT = ac.getRotation().applyTo(dRdQI);
-
-            if (station.getEastOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(station.getEastOffsetDriver(), dRdQT.getX());
-            }
-            if (station.getNorthOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(station.getNorthOffsetDriver(), dRdQT.getY());
-            }
-            if (station.getZenithOffsetDriver().isSelected()) {
-                estimated.setParameterDerivatives(station.getZenithOffsetDriver(), dRdQT.getZ());
-            }
-
         }
 
         return estimated;
