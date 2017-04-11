@@ -106,23 +106,12 @@ in an integrated development environment with these libraries.
 
 ## Training sessions organization
 
-The training sessions can be organized both at your premises anywhere in the world or at CS
-premises in Toulouse (France). All sessions are limited to 8 students. Prices for the training
-sessions at CS premises are shown in the following table:
-
-|                                    session                                                      | industry, commercial companies | academics, research laboratories |  students  |
-|-------------------------------------------------------------------------------------------------|--------------------------------|----------------------------------|------------|
-|  Object oriented technology for numerical computing (session 1)                                 |      600 €                     |      300 €                       | 150 €      |
-|  Object oriented concepts and the Java language (session 2)                                     |     2400 €                     |     1200 €                       | 600 €      |
-|  Developing numerical applications in the Java language using Hipparchus and Orekit (session 3) |     1800 €                     |      900 €                       | 450 €      |
-prices for training sessions at CS premises
-
-The prices above include training fees, a USB stick containing lecture material and exercises,
-and lunches. They include neither travel nor hotel fees.
-
-For information about scheduled sessions or if you want to set up a session at your premises,
-please use the general orekit email address: [orekit@c-s.fr](mailto:orekit@c-s.fr) or ask
-CS space flight dynamics department at the following address:
+The training sessions can be organized both at your premises anywhere in the
+world or at CS premises in Toulouse (France). All sessions are limited to
+8 students. For information about scheduled sessions or if you want to set up
+a session at your premises, please use the general orekit email address:
+[orekit@c-s.fr](mailto:orekit@c-s.fr) or ask CS space flight dynamics
+department at the following address:
 
     CS Systèmes d'Information
     BU E-space & Geoinformation
