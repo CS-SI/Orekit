@@ -117,8 +117,9 @@ public class KeplerianPropagator extends AbstractAnalyticalPropagator implements
         // ensure the orbit use the specified mu
         final OrbitType type = initialOrbit.getType();
         final double[] stateVector = new double[6];
-        type.mapOrbitToArray(initialOrbit, PositionAngle.TRUE, stateVector);
-        final Orbit orbit = type.mapArrayToOrbit(stateVector, PositionAngle.TRUE,
+        final double[] stateVectorDot = new double[6];
+        type.mapOrbitToArray(initialOrbit, PositionAngle.TRUE, stateVector, stateVectorDot);
+        final Orbit orbit = type.mapArrayToOrbit(stateVector, stateVectorDot, PositionAngle.TRUE,
                                                  initialOrbit.getDate(), mu, initialOrbit.getFrame());
 
         resetInitialState(new SpacecraftState(orbit,

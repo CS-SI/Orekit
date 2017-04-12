@@ -170,8 +170,8 @@ public class FieldIntegratedEphemeris <T extends RealFieldElement<T>>
         try {
             final FieldODEStateAndDerivative<T> os = getInterpolatedState(date);
             FieldSpacecraftState<T> state = mapper.mapArrayToState(mapper.mapDoubleToDate(os.getTime(), date),
-                                                           os.getPrimaryState(),
-                                                           meanFieldOrbit);
+                                                                   os.getPrimaryState(), os.getPrimaryDerivative(),
+                                                                   meanFieldOrbit);
             for (Map.Entry<String, T[]> initial : unmanaged.entrySet()) {
                 state = state.addAdditionalState(initial.getKey(), initial.getValue());
             }

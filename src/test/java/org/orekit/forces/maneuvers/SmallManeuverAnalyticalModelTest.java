@@ -247,7 +247,7 @@ public class SmallManeuverAnalyticalModelTest {
                     // compute reference orbit gradient by finite differences
                     double c = 1.0 / (840 * h);
                     for (int j = 0; j < models.length; ++j) {
-                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngle, array[j]);
+                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngle, array[j], null);
                     }
                     double[] orbitGradient = new double[6];
                     for (int k = 0; k < orbitGradient.length; ++k) {

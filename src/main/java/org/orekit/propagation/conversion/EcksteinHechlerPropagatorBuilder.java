@@ -153,8 +153,9 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                     final PositionAngle positionAngle)
         throws OrekitException {
         final double[] parameters = new double[6];
-        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters);
-        return templateOrbit.getType().mapArrayToOrbit(parameters, positionAngle,
+        final double[] parametersDot = new double[6];
+        templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters, parametersDot);
+        return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngle,
                                                        templateOrbit.getDate(),
                                                        provider.getMu(),
                                                        templateOrbit.getFrame());

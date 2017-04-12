@@ -209,7 +209,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
         for (int i = 0; i < unNormalized.length; ++i) {
             unNormalized[i] = orbitalDrivers.getDrivers().get(i).getValue();
         }
-        return getOrbitType().mapArrayToOrbit(unNormalized, positionAngle, initialOrbitDate, mu, frame);
+        return getOrbitType().mapArrayToOrbit(unNormalized, null, positionAngle, initialOrbitDate, mu, frame);
     }
 
     /** Set the selected parameters.

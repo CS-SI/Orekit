@@ -228,13 +228,14 @@ public class SmallManeuverAnalyticalModel
 
         // convert current orbital state to Keplerian or equinoctial elements
         final double[] parameters = new double[6];
-        type.mapOrbitToArray(type.convertType(orbit1), PositionAngle.MEAN, parameters);
+        final double[] parametersDot = new double[6];
+        type.mapOrbitToArray(type.convertType(orbit1), PositionAngle.MEAN, parameters, parametersDot);
         for (int i = 0; i < delta.length; ++i) {
             parameters[i] += delta[i];
         }
 
         // build updated orbit as Keplerian or equinoctial elements
-        final Orbit o = type.mapArrayToOrbit(parameters, PositionAngle.MEAN,
+        final Orbit o = type.mapArrayToOrbit(parameters, parametersDot, PositionAngle.MEAN,
                                              orbit1.getDate(), orbit1.getMu(),
                                              orbit1.getFrame());
 

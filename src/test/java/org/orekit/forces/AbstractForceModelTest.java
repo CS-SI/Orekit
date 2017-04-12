@@ -176,15 +176,16 @@ public abstract class AbstractForceModelTest {
         OrbitType orbitType = propagator.getOrbitType();
         PositionAngle angleType = propagator.getPositionAngleType();
         double[] a = new double[6];
-        orbitType.mapOrbitToArray(state0.getOrbit(), angleType, a);
+        double[] aDot = new double[6];
+        orbitType.mapOrbitToArray(state0.getOrbit(), angleType, a, aDot);
         a[index] += h;
-        SpacecraftState shiftedState = new SpacecraftState(orbitType.mapArrayToOrbit(a, angleType, state0.getDate(),
+        SpacecraftState shiftedState = new SpacecraftState(orbitType.mapArrayToOrbit(a, aDot, angleType, state0.getDate(),
                                                                                      state0.getMu(), state0.getFrame()),
                                                            state0.getAttitude(),
                                                            state0.getMass());
         propagator.setInitialState(shiftedState);
         SpacecraftState integratedState = propagator.propagate(targetDate);
-        orbitType.mapOrbitToArray(integratedState.getOrbit(), angleType, a);
+        orbitType.mapOrbitToArray(integratedState.getOrbit(), angleType, a, null);
         return a;
     }
 

@@ -47,7 +47,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                    final double[] stateVector) {
+                                    final double[] stateVector, final double[] ststateVectorDot) {
 
             final PVCoordinates pv = orbit.getPVCoordinates();
             final Vector3D      p  = pv.getPosition();
@@ -64,7 +64,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public Orbit mapArrayToOrbit(final double[] stateVector, final PositionAngle type,
+        public Orbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
                                      final AbsoluteDate date, final double mu, final Frame frame) {
 
             final Vector3D p     = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
@@ -85,7 +85,8 @@ public enum OrbitType {
         @Override
         public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
                                                                     final PositionAngle type,
-                                                                    final T[] stateVector) {
+                                                                    final T[] stateVector,
+                                                                    final T[] stateVectorDot) {
 
             final TimeStampedFieldPVCoordinates<T> pv = orbit.getPVCoordinates();
             final FieldVector3D<T>      p  = pv.getPosition();
@@ -102,7 +103,9 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector, final PositionAngle type,
+        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector,
+                                                                             final T[] stateVectorDot,
+                                                                             final PositionAngle type,
                                                                              final FieldAbsoluteDate<T> date,
                                                                              final double mu, final Frame frame) {
             final T zero = stateVector[0].getField().getZero();
@@ -120,7 +123,7 @@ public enum OrbitType {
             throws OrekitException {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
-            mapOrbitToArray(orbit, type, array);
+            mapOrbitToArray(orbit, type, array, null);
             final double[] scale = scale(dP, orbit);
             drivers.add(new ParameterDriver(POS_X, array[0], scale[0], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
             drivers.add(new ParameterDriver(POS_Y, array[1], scale[1], Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
@@ -145,7 +148,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                    final double[] stateVector) {
+                                    final double[] stateVector, final double[] ststateVectorDot) {
 
             final CircularOrbit circularOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
 
@@ -160,7 +163,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public Orbit mapArrayToOrbit(final double[] stateVector, final PositionAngle type,
+        public Orbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
                                      final AbsoluteDate date, final double mu, final Frame frame) {
             return new CircularOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
                                      stateVector[4], stateVector[5], type,
@@ -177,7 +180,8 @@ public enum OrbitType {
         @Override
         public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
                                                                     final PositionAngle type,
-                                                                    final T[] stateVector) {
+                                                                    final T[] stateVector,
+                                                                    final T[] stateVectorDot) {
 
             final FieldCircularOrbit<T> circularOrbit = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(orbit);
 
@@ -192,7 +196,8 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector, final PositionAngle type,
+        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector,
+                                                                             final T[] stateVectorDot, final PositionAngle type,
                                                                              final FieldAbsoluteDate<T> date,
                                                                              final double mu, final Frame frame) {
             return new FieldCircularOrbit<T>(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
@@ -206,7 +211,7 @@ public enum OrbitType {
             throws OrekitException {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
-            mapOrbitToArray(orbit, type, array);
+            mapOrbitToArray(orbit, type, array, null);
             final double[] scale = scale(dP, orbit);
             final String name = type == PositionAngle.MEAN ?
                                     MEAN_LAT_ARG :
@@ -234,7 +239,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                    final double[] stateVector) {
+                                    final double[] stateVector, final double[] ststateVectorDot) {
 
             final EquinoctialOrbit equinoctialOrbit =
                 (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
@@ -250,7 +255,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public Orbit mapArrayToOrbit(final double[] stateVector, final PositionAngle type,
+        public Orbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
                                      final AbsoluteDate date, final double mu, final Frame frame) {
             return new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
                                         stateVector[4], stateVector[5], type,
@@ -267,7 +272,8 @@ public enum OrbitType {
         @Override
         public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
                                                                     final PositionAngle type,
-                                                                    final T[] stateVector) {
+                                                                    final T[] stateVector,
+                                                                    final T[] stateVectorDot) {
 
             final FieldEquinoctialOrbit<T> equinoctialOrbit =
                 (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(orbit);
@@ -283,7 +289,9 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector, final PositionAngle type,
+        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector,
+                                                                             final T[] stateVectorDot,
+                                                                             final PositionAngle type,
                                                                              final FieldAbsoluteDate<T> date,
                                                                              final double mu, final Frame frame) {
             return new FieldEquinoctialOrbit<T>(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
@@ -297,7 +305,7 @@ public enum OrbitType {
             throws OrekitException {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
-            mapOrbitToArray(orbit, type, array);
+            mapOrbitToArray(orbit, type, array, null);
             final double[] scale = scale(dP, orbit);
             final String name = type == PositionAngle.MEAN ?
                                     MEAN_LON_ARG :
@@ -326,7 +334,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                    final double[] stateVector) {
+                                    final double[] stateVector, final double[] ststateVectorDot) {
 
             final KeplerianOrbit keplerianOrbit =
                 (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
@@ -342,7 +350,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public Orbit mapArrayToOrbit(final double[] stateVector, final PositionAngle type,
+        public Orbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
                                      final AbsoluteDate date, final double mu, final Frame frame) {
             return new KeplerianOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
                                       stateVector[4], stateVector[5], type,
@@ -359,7 +367,8 @@ public enum OrbitType {
         @Override
         public <T extends RealFieldElement<T>> void mapOrbitToArray(final FieldOrbit<T> orbit,
                                                                     final PositionAngle type,
-                                                                    final T[] stateVector) {
+                                                                    final T[] stateVector,
+                                                                    final T[] stateVectorDot) {
             final FieldKeplerianOrbit<T> keplerianOrbit =
                             (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
 
@@ -373,7 +382,9 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector, final PositionAngle type,
+        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector,
+                                                                             final T[] stateVectorDot,
+                                                                             final PositionAngle type,
                                                                              final FieldAbsoluteDate<T> date,
                                                                              final double mu, final Frame frame) {
             return new FieldKeplerianOrbit<T>(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
@@ -387,7 +398,7 @@ public enum OrbitType {
             throws OrekitException {
             final ParameterDriversList drivers = new ParameterDriversList();
             final double[] array = new double[6];
-            mapOrbitToArray(orbit, type, array);
+            mapOrbitToArray(orbit, type, array, null);
             final double[] scale = scale(dP, orbit);
             final String name = type == PositionAngle.MEAN ?
                                     MEAN_ANOM :
@@ -496,8 +507,10 @@ public enum OrbitType {
      * @param type type of the angle
      * @param stateVector flat array into which the state vector should be mapped
      * (it can have more than 6 elements, extra elements are untouched)
+     * @param stateVectorDot flat array into which the state vector derivative should be mapped
+     * (it can be null if derivatives are not desired, and it can have more than 6 elements, extra elements are untouched)
      */
-    public abstract void mapOrbitToArray(Orbit orbit, PositionAngle type, double[] stateVector);
+    public abstract void mapOrbitToArray(Orbit orbit, PositionAngle type, double[] stateVector, double[] stateVectorDot);
 
      /** Convert state array to orbital parameters.
      * <p>
@@ -508,13 +521,16 @@ public enum OrbitType {
      * </p>
      * @param array state as a flat array
      * (it can have more than 6 elements, extra elements are ignored)
+     * @param arrayDot state derivative as a flat array
+     * (it can be null, in which case Keplerian motion is assumed,
+     * and it can have more than 6 elements, extra elements are ignored)
      * @param type type of the angle
      * @param date integration date
      * @param mu central attraction coefficient used for propagation (m³/s²)
      * @param frame frame in which integration is performed
      * @return orbit corresponding to the flat array as a space dynamics object
      */
-    public abstract Orbit mapArrayToOrbit(double[] array, PositionAngle type,
+    public abstract Orbit mapArrayToOrbit(double[] array, double arrayDot[], PositionAngle type,
                                           AbsoluteDate date, double mu, Frame frame);
 
     /** Convert an orbit to the instance type.
@@ -540,8 +556,11 @@ public enum OrbitType {
      * @param type type of the angle
      * @param stateVector flat array into which the state vector should be mapped
      * (it can have more than 6 elements, extra elements are untouched)
+     * @param stateVectorDot flat array into which the state vector derivative should be mapped
+     * (it can be null if derivatives are not desired, and it can have more than 6 elements, extra elements are untouched)
      */
-    public abstract <T extends RealFieldElement<T>>void mapOrbitToArray(FieldOrbit<T> orbit, PositionAngle type, T[] stateVector);
+    public abstract <T extends RealFieldElement<T>>void mapOrbitToArray(FieldOrbit<T> orbit, PositionAngle type,
+                                                                        T[] stateVector, T[] stateVectorDot);
 
 
     /** Convert state array to orbital parameters.
@@ -554,13 +573,17 @@ public enum OrbitType {
      * @param <T> RealFieldElement used
      * @param array state as a flat array
      * (it can have more than 6 elements, extra elements are ignored)
+     * @param arrayDot state derivative as a flat array
+     * (it can be null, in which case Keplerian motion is assumed,
      * @param type type of the angle
      * @param date integration date
      * @param mu central attraction coefficient used for propagation (m³/s²)
      * @param frame frame in which integration is performed
      * @return orbit corresponding to the flat array as a space dynamics object
      */
-    public abstract <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(T[] array, PositionAngle type,
+    public abstract <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(T[] array,
+                                                                                  T[] arrayDot,
+                                                                                  PositionAngle type,
                                                                                   FieldAbsoluteDate<T> date,
                                                                                   double mu, Frame frame);
 

@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hipparchus.ode.ODEIntegrator;
+import org.hipparchus.ode.ODEStateAndDerivative;
 import org.hipparchus.ode.sampling.ODEStateInterpolator;
 import org.hipparchus.ode.sampling.ODEStepHandler;
 import org.hipparchus.util.FastMath;
@@ -556,7 +557,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         throws OrekitException {
 
         final double[] mean = new double[6];
-        OrbitType.EQUINOCTIAL.mapOrbitToArray(meanState.getOrbit(), PositionAngle.MEAN, mean);
+        final double[] meanDot = new double[6];
+        OrbitType.EQUINOCTIAL.mapOrbitToArray(meanState.getOrbit(), PositionAngle.MEAN, mean, meanDot);
         final double[] y = mean.clone();
         for (final ShortPeriodTerms spt : shortPeriodTerms) {
             final double[] shortPeriodic = spt.value(meanState.getOrbit());
@@ -564,7 +566,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 y[i] += shortPeriodic[i];
             }
         }
-        return (EquinoctialOrbit) OrbitType.EQUINOCTIAL.mapArrayToOrbit(y,
+        return (EquinoctialOrbit) OrbitType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot,
                                                                         PositionAngle.MEAN, meanState.getDate(),
                                                                         meanState.getMu(), meanState.getFrame());
     }
@@ -647,7 +649,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
+        public SpacecraftState mapArrayToState(final AbsoluteDate date,
+                                               final double[] y, final double[] yDot,
+                                               final boolean meanOnly)
             throws OrekitException {
 
             // add short periodic variations to mean elements to get osculating elements
@@ -658,7 +662,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             if (meanOnly) {
                 coefficients = null;
             } else {
-                final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, PositionAngle.MEAN, date, getMu(), getFrame());
+                final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
                 coefficients = selectedCoefficients == null ? null : new HashMap<String, double[]>();
                 for (final ShortPeriodTerms spt : shortPeriodTerms) {
                     final double[] shortPeriodic = spt.value(meanOrbit);
@@ -676,7 +680,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
-            final Orbit orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, PositionAngle.MEAN, date, getMu(), getFrame());
+            final Orbit orbit       = OrbitType.EQUINOCTIAL.mapArrayToOrbit(elements, yDot, PositionAngle.MEAN, date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
             if (coefficients == null) {
@@ -689,10 +693,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         @Override
-        public void mapStateToArray(final SpacecraftState state, final double[] y)
+        public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot)
             throws OrekitException {
 
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, y);
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, y, yDot);
             y[6] = state.getMass();
 
         }
@@ -949,8 +953,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
                     // Build the mean state interpolated at grid point
                     final double time = interpolationPoints[i];
+                    final ODEStateAndDerivative sd = interpolator.getInterpolatedState(time);
                     meanStates[i] = mapper.mapArrayToState(time,
-                                                           interpolator.getInterpolatedState(time).getPrimaryState(),
+                                                           sd.getPrimaryState(),
+                                                           sd.getPrimaryDerivative(),
                                                            true);
 
                 }

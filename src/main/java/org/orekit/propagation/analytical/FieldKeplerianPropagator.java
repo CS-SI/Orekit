@@ -113,9 +113,10 @@ public class FieldKeplerianPropagator<T extends RealFieldElement<T>> extends Fie
             // ensure the orbit use the specified mu
             final OrbitType type = initialFieldOrbit.getType();
             final T[] stateVector = MathArrays.buildArray(initialFieldOrbit.getA().getField(), 6);
-            type.mapOrbitToArray(initialFieldOrbit, PositionAngle.TRUE, stateVector);
-            final FieldOrbit<T> orbit = type.mapArrayToOrbit(stateVector, PositionAngle.TRUE,
-                                                     initialFieldOrbit.getDate(), mu, initialFieldOrbit.getFrame());
+            final T[] stateVectorDot = MathArrays.buildArray(initialFieldOrbit.getA().getField(), 6);
+            type.mapOrbitToArray(initialFieldOrbit, PositionAngle.TRUE, stateVector, stateVectorDot);
+            final FieldOrbit<T> orbit = type.mapArrayToOrbit(stateVector, stateVectorDot, PositionAngle.TRUE,
+                                                             initialFieldOrbit.getDate(), mu, initialFieldOrbit.getFrame());
 
             resetInitialState(new FieldSpacecraftState<T>(orbit,
                                                    super.getAttitudeProvider().getAttitude(orbit,

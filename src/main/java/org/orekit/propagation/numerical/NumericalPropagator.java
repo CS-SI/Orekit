@@ -403,7 +403,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final boolean meanOnly)
+        public SpacecraftState mapArrayToState(final AbsoluteDate date, final double[] y, final double[] yDot,
+                                               final boolean meanOnly)
             throws OrekitException {
             // the parameter meanOnly is ignored for the Numerical Propagator
 
@@ -412,7 +413,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 throw new OrekitException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
-            final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, getPositionAngleType(), date, getMu(), getFrame());
+            final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, yDot, getPositionAngleType(), date, getMu(), getFrame());
             final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
             return new SpacecraftState(orbit, attitude, mass);
@@ -420,8 +421,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public void mapStateToArray(final SpacecraftState state, final double[] y) {
-            getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y);
+        public void mapStateToArray(final SpacecraftState state, final double[] y, final double[] yDot) {
+            getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y, yDot);
             y[6] = state.getMass();
         }
 
