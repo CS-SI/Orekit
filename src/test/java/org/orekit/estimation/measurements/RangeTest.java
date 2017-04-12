@@ -48,7 +48,7 @@ import org.orekit.utils.ParameterDriver;
 
 public class RangeTest {
 
-    
+
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
@@ -63,15 +63,15 @@ public class RangeTest {
         // Run test
         this.genericTestValues(printResults);
     }
-    
+
     /**
-     * Test the values of the state derivatives using a numerical 
+     * Test the values of the state derivatives using a numerical
      * finite differences calculation as a reference
      * @throws OrekitException
      */
     @Test
     public void testStateDerivatives() throws OrekitException {
-    
+
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range State Derivatives - Finite Differences Comparison\n");
@@ -80,15 +80,15 @@ public class RangeTest {
         boolean isModifier = false;
         this.genericTestStateDerivatives(isModifier, printResults);
     }
-    
+
     /**
-     * Test the values of the state derivatives with modifier using a numerical 
+     * Test the values of the state derivatives with modifier using a numerical
      * finite differences calculation as a reference
      * @throws OrekitException
      */
     @Test
     public void testStateDerivativesWithModifier() throws OrekitException {
-    
+
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range State Derivatives with Modifier - Finite Differences Comparison\n");
@@ -97,9 +97,9 @@ public class RangeTest {
         boolean isModifier = true;
         this.genericTestStateDerivatives(isModifier, printResults);
     }
- 
+
     /**
-     * Test the values of the parameters' derivatives using a numerical 
+     * Test the values of the parameters' derivatives using a numerical
      * finite differences calculation as a reference
      * @throws OrekitException
      */
@@ -108,18 +108,18 @@ public class RangeTest {
 
         // Print the results ?
         boolean printResults = false;
-        
+
         if (printResults) {
             System.out.println("\nTest Range Parameter Derivatives - Finite Differences Comparison\n");
         }
         // Run test
         boolean isModifier = false;
         this.genericTestParameterDerivatives(isModifier, printResults);
-        
+
     }
-    
+
     /**
-     * Test the values of the parameters' derivatives with modifier, using a numerical 
+     * Test the values of the parameters' derivatives with modifier, using a numerical
      * finite differences calculation as a reference
      * @throws OrekitException
      */
@@ -128,22 +128,22 @@ public class RangeTest {
 
         // Print the results ?
         boolean printResults = false;
-        
+
         if (printResults) {
             System.out.println("\nTest Range Parameter Derivatives with Modifier - Finite Differences Comparison\n");
         }
         // Run test
         boolean isModifier = true;
         this.genericTestParameterDerivatives(isModifier, printResults);
-        
+
     }
-    
+
     /**
      * Generic test function for values of the range
      * @param printResults Print the results ?
-     * @throws OrekitException 
+     * @throws OrekitException
      */
-    void genericTestValues(final boolean printResults) 
+    void genericTestValues(final boolean printResults)
                     throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
@@ -159,13 +159,13 @@ public class RangeTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        
+
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
         final List<Double> absoluteErrors = new ArrayList<Double>();
         final List<Double> relativeErrors = new ArrayList<Double>();
-        
-        // Set master mode 
+
+        // Set master mode
         // Use a lambda function to implement "handleStep" function
         propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
 
@@ -174,7 +174,7 @@ public class RangeTest {
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
-                   ) {                    
+                   ) {
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
                     // compensating only part of the downlink delay. This is done
@@ -185,14 +185,14 @@ public class RangeTest {
                     final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
                     final AbsoluteDate    date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                     final SpacecraftState state     = interpolator.getInterpolatedState(date);
-                 
+
                     // Values of the Range & errors
                     final double RangeObserved  = measurement.getObservedValue()[0];
-                    final double RangeEstimated = measurement.estimate(0, 0, state).getEstimatedValue()[0];                    
+                    final double RangeEstimated = measurement.estimate(0, 0, state).getEstimatedValue()[0];
                     final double absoluteError = RangeEstimated-RangeObserved;
                     absoluteErrors.add(absoluteError);
                     relativeErrors.add(FastMath.abs(absoluteError)/FastMath.abs(RangeObserved));
-                    
+
                     // Print results on console ?
                     if (printResults) {
                         final AbsoluteDate measurementDate = measurement.getDate();
@@ -205,10 +205,10 @@ public class RangeTest {
                                          FastMath.abs((RangeEstimated-RangeObserved)/RangeObserved));
                     }
 
-                } // End if measurement date between previous and current interpolator step                    
+                } // End if measurement date between previous and current interpolator step
             } // End for loop on the measurements
         }); // End lambda function handlestep
-        
+
         // Print results on console ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  %19s  %19s  %13s  %13s%n",
@@ -216,27 +216,27 @@ public class RangeTest {
                               "Range observed [m]","Range estimated [m]",
                               "ΔRange [m]","rel ΔRange");
         }
-        
+
         // Rewind the propagator to initial date
         propagator.propagate(context.initialOrbit.getDate());
-        
+
         // Sort measurements chronologically
         measurements.sort(new ChronologicalComparator());
-        
+
         // Propagate to final measurement's date
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
-        
+
         // Convert lists to double array
         final double[] absErrors = absoluteErrors.stream().mapToDouble(Double::doubleValue).toArray();
         final double[] relErrors = relativeErrors.stream().mapToDouble(Double::doubleValue).toArray();
-        
+
         // Statistics' assertion
         final double absErrorsMedian = new Median().evaluate(absErrors);
         final double absErrorsMin    = new Min().evaluate(absErrors);
         final double absErrorsMax    = new Max().evaluate(absErrors);
         final double relErrorsMedian = new Median().evaluate(relErrors);
         final double relErrorsMax    = new Max().evaluate(relErrors);
-        
+
         // Print the results on console ? Final results
         if (printResults) {
             System.out.println();
@@ -246,7 +246,7 @@ public class RangeTest {
             System.out.println("Relative errors median: " +  relErrorsMedian);
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
-        
+
         Assert.assertEquals(0.0, absErrorsMedian, 1e-8);
         Assert.assertEquals(0.0, absErrorsMin, 2e-7);
         Assert.assertEquals(0.0, absErrorsMax, 2e-7);
@@ -255,14 +255,14 @@ public class RangeTest {
 
 
     }
-   
+
     /**
      * Generic test function for derivatives with respect to state
      * @param isModifier Use of atmospheric modifiers
      * @param printResults Print the results ?
-     * @throws OrekitException 
+     * @throws OrekitException
      */
-    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults) 
+    void genericTestStateDerivatives(final boolean isModifier, final boolean printResults)
                     throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
@@ -278,13 +278,13 @@ public class RangeTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        
+
         // Lists for results' storage - Used only for derivatives with respect to state
         // "final" value to be seen by "handleStep" function of the propagator
         final List<Double> errorsP = new ArrayList<Double>();
         final List<Double> errorsV = new ArrayList<Double>();
-        
-        // Set master mode 
+
+        // Set master mode
         // Use a lambda function to implement "handleStep" function
         propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
 
@@ -300,7 +300,7 @@ public class RangeTest {
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
                     }
-                    
+
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
                     // compensating only part of the downlink delay. This is done
@@ -322,7 +322,7 @@ public class RangeTest {
                             return measurement.estimate(0, 0, state).getEstimatedValue();
                         }
                     }, measurement.getDimension(), OrbitType.CARTESIAN, PositionAngle.TRUE, 1.0, 3).value(state);
-                    
+
                     Assert.assertEquals(jacobianRef.length, jacobian.length);
                     Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
@@ -352,10 +352,10 @@ public class RangeTest {
                                         dJacobianRelative[0][0],dJacobianRelative[0][1],dJacobianRelative[0][2],
                                         dJacobianRelative[0][3],dJacobianRelative[0][4],dJacobianRelative[0][5]);
                     }
-                } // End if measurement date between previous and current interpolator step                    
+                } // End if measurement date between previous and current interpolator step
             } // End for loop on the measurements
         });
-        
+
         // Print results on console ?
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
@@ -368,27 +368,27 @@ public class RangeTest {
                             "rel ΔdPx","rel ΔdPy","rel ΔdPz",
                             "rel ΔdVx","rel ΔdVy","rel ΔdVz");
         }
-        
+
         // Rewind the propagator to initial date
         propagator.propagate(context.initialOrbit.getDate());
-        
+
         // Sort measurements chronologically
         measurements.sort(new ChronologicalComparator());
-        
+
         // Propagate to final measurement's date
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
-        
+
         // Convert lists to double[] and evaluate some statistics
         final double relErrorsP[] = errorsP.stream().mapToDouble(Double::doubleValue).toArray();
         final double relErrorsV[] = errorsV.stream().mapToDouble(Double::doubleValue).toArray();
-        
+
         final double errorsPMedian = new Median().evaluate(relErrorsP);
         final double errorsPMean   = new Mean().evaluate(relErrorsP);
         final double errorsPMax    = new Max().evaluate(relErrorsP);
         final double errorsVMedian = new Median().evaluate(relErrorsV);
         final double errorsVMean   = new Mean().evaluate(relErrorsV);
         final double errorsVMax    = new Max().evaluate(relErrorsV);
-        
+
         // Print the results on console ?
         if (printResults) {
             System.out.println();
@@ -397,11 +397,11 @@ public class RangeTest {
             System.out.format(Locale.US,"Relative errors dR/dV -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               errorsVMedian, errorsVMean, errorsVMax);
         }
-        
+
         // Assert the results / max values depend on the test
         double refErrorsPMedian, refErrorsPMean, refErrorsPMax;
         double refErrorsVMedian, refErrorsVMean, refErrorsVMax;
-        
+
         // Finite differences reference values
         refErrorsPMedian = 1.2e-09;
         refErrorsPMean   = 8.1e-09;
@@ -417,16 +417,16 @@ public class RangeTest {
         Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
         Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
-    
+
     /**
      * Generic test function for derivatives with respect to parameters (station's position in station's topocentric frame)
      * @param isModifier Use of atmospheric modifiers
      * @param printResults Print the results ?
-     * @throws OrekitException 
+     * @throws OrekitException
      */
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults) 
+    void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults)
                     throws OrekitException {
-    
+
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -445,30 +445,30 @@ public class RangeTest {
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new RangeMeasurementCreator(context),
                                                                1.0, 3.0, 300.0);
-        
+
         // List to store the results
         final List<Double> relErrorList = new ArrayList<Double>();
-        
-        // Set master mode 
+
+        // Set master mode
         // Use a lambda function to implement "handleStep" function
         propagator.setMasterMode((OrekitStepInterpolator interpolator, boolean isLast) -> {
-            
+
             for (final ObservedMeasurement<?> measurement : measurements) {
 
                 //  Play test if the measurement date is between interpolator previous and current date
                 if ((measurement.getDate().durationFrom(interpolator.getPreviousState().getDate()) > 0.) &&
                     (measurement.getDate().durationFrom(interpolator.getCurrentState().getDate())  <=  0.)
                    ) {
-                    
+
                     // Add modifiers if test implies it
                     final RangeTroposphericDelayModifier modifier = new RangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
                     if (isModifier) {
                         ((Range) measurement).addModifier(modifier);
                     }
-                    
+
                     // Parameter corresponding to station position offset
                     final GroundStation stationParameter = ((Range) measurement).getStation();
-                    
+
                     // We intentionally propagate to a date which is close to the
                     // real spacecraft state but is *not* the accurate date, by
                     // compensating only part of the downlink delay. This is done
@@ -490,12 +490,12 @@ public class RangeTest {
                         System.out.format(Locale.US, "%-15s  %-23s  %-23s  ",
                                           stationName, measurement.getDate(), date);
                     }
-                    
+
                     for (int i = 0; i < 3; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i]);
                         Assert.assertEquals(1, measurement.getDimension());
                         Assert.assertEquals(1, gradient.length);
-                        
+
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
                                         EstimationUtils.differentiate(new ParameterFunction() {
@@ -510,7 +510,7 @@ public class RangeTest {
                         if (printResults) {
                             System.out.format(Locale.US,"%10.3e  %10.3e  ",gradient[0]-ref,FastMath.abs((gradient[0]-ref)/ref));
                         }
-                        
+
                         final double relError = FastMath.abs((ref-gradient[0])/ref);
                         relErrorList.add(relError);
 //                        Assert.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
@@ -519,16 +519,16 @@ public class RangeTest {
                         System.out.format(Locale.US,"%n");
                     }
 
-                } // End if measurement date between previous and current interpolator step                    
+                } // End if measurement date between previous and current interpolator step
             } // End for loop on the measurements
         });
-        
+
         // Rewind the propagator to initial date
         propagator.propagate(context.initialOrbit.getDate());
-        
+
         // Sort measurements chronologically
         measurements.sort(new ChronologicalComparator());
-        
+
         // Print results ? Header
         if (printResults) {
             System.out.format(Locale.US, "%-15s  %-23s  %-23s  " +
@@ -539,13 +539,13 @@ public class RangeTest {
                             "ΔdQy","rel ΔdQy",
                             "ΔdQz","rel ΔdQz");
          }
-        
+
         // Propagate to final measurement's date
         propagator.propagate(measurements.get(measurements.size()-1).getDate());
-        
+
         // Convert error list to double[]
         final double relErrors[] = relErrorList.stream().mapToDouble(Double::doubleValue).toArray();
-        
+
         // Compute statistics
         final double relErrorsMedian = new Median().evaluate(relErrors);
         final double relErrorsMean   = new Mean().evaluate(relErrors);
@@ -557,14 +557,14 @@ public class RangeTest {
             System.out.format(Locale.US,"Relative errors dR/dQ -> Median: %6.3e / Mean: %6.3e / Max: %6.3e%n",
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
-        
+
         // Assert the results / max values depend on the test
         double refErrorsMedian, refErrorsMean, refErrorsMax;
 
         // Numeric references
         refErrorsMedian = 8.7e-11;
         refErrorsMean   = 3.4e-10;
-        refErrorsMax    = 1.3e-08; 
+        refErrorsMax    = 1.3e-08;
 
         Assert.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
         Assert.assertEquals(0.0, relErrorsMean, refErrorsMean);

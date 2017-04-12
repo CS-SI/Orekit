@@ -31,7 +31,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  *    instead of using auto-differentiation and derivative structures
  *    It is the implementation used in Orekit 8.0
  *  - A function evaluating the difference between analytical calculation
- *    and numerical calculation was added for validation  
+ *    and numerical calculation was added for validation
  * </p>
  * @author Thierry Ceolin
  * @author Luc Maisonobe
@@ -54,7 +54,7 @@ public class RangeAnalytic extends Range {
         throws OrekitException {
         super(station, date, range, sigma, baseWeight);
     }
-    
+
     /** Constructor from parent Range class
      * @param Range parent class
      */
@@ -62,9 +62,9 @@ public class RangeAnalytic extends Range {
         throws OrekitException {
         super(range.getStation(), range.getDate(), range.getObservedValue()[0],
               range.getTheoreticalStandardDeviation()[0],
-              range.getBaseWeight()[0]);  
+              range.getBaseWeight()[0]);
     }
-    
+
     /**
      * Analytical version of the theoreticalEvaluation function in Range class
      * The derivative structures are not used, an analytical computation is used instead.
@@ -78,10 +78,10 @@ public class RangeAnalytic extends Range {
     protected EstimatedMeasurement<Range> theoreticalEvaluationAnalytic(final int iteration, final int evaluation,
                                                                         final SpacecraftState state)
                                                                                         throws OrekitException {
-        
+
         // Station attribute from parent Range class
         final GroundStation groundStation = this.getStation();
-        
+
         // Station position at signal arrival
         final AbsoluteDate downlinkDate = getDate();
         final Transform topoToInertDownlink =
@@ -192,9 +192,9 @@ public class RangeAnalytic extends Range {
             // Inertial frame
             final double dTauDdQIx = downInert.getX()/dDown;
             final double dTauDdQIy = downInert.getY()/dDown;
-            final double dTauDdQIz = downInert.getZ()/dDown;           
+            final double dTauDdQIz = downInert.getZ()/dDown;
 
-            // Uplink tme of flight derivatives / station position in topocentric frame            
+            // Uplink tme of flight derivatives / station position in topocentric frame
             // Inertial frame
             final double dTauUdQIx = 1/dUp*upInert
                             .dotProduct(Vector3D.MINUS_I
@@ -207,7 +207,7 @@ public class RangeAnalytic extends Range {
             final double dTauUdQIz = 1/dUp*upInert
                             .dotProduct(Vector3D.MINUS_K
                                         .add((qv.subtract(v)).scalarMultiply(dTauDdQIz))
-                                        .subtract(Vector3D.PLUS_K.crossProduct(omega).scalarMultiply(tau)));         
+                                        .subtract(Vector3D.PLUS_K.crossProduct(omega).scalarMultiply(tau)));
 
 
             // Range partial derivatives
@@ -235,8 +235,8 @@ public class RangeAnalytic extends Range {
         return estimated;
 
     }
- 
- 
+
+
     /**
      * Added for validation
      * Compares directly numeric and analytic computations
@@ -253,7 +253,7 @@ public class RangeAnalytic extends Range {
         // Station & DSFactory attributes from parent Range class
         final GroundStation groundStation = this.getStation();
         final DSFactory     dsFactory     = this.getDSFactory();
-        
+
         // Range derivatives are computed with respect to spacecraft state in inertial frame
         // and station position in station's offset frame
         // -------
@@ -278,7 +278,7 @@ public class RangeAnalytic extends Range {
                         new FieldVector3D<DerivativeStructure>(dsFactory.variable(3, stateV.getX()),
                                                                dsFactory.variable(4, stateV.getY()),
                                                                dsFactory.variable(5, stateV.getZ()));
-        
+
         // Acceleration of the spacecraft
         // The components of the acceleration are not derivative parameters
         final Vector3D stateA = state.getPVCoordinates().getAcceleration();
@@ -298,13 +298,13 @@ public class RangeAnalytic extends Range {
         // Station position in inertial frame at end of the downlink leg
         final AbsoluteDate downlinkDate = getDate();
         final Transform bodyToInertDownlink = bodyframe.getTransformTo(state.getFrame(), downlinkDate);
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink = 
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
                         bodyToInertDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(
                                         downlinkDate,
                                         od.getOrigin(),
                                         od.getZero(),
                                         od.getZero()));
-        
+
         // Compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,
         //  we will have offset == downlinkDelay and transitState will be
@@ -315,14 +315,14 @@ public class RangeAnalytic extends Range {
 
         // Transit state
         final double                delta        = downlinkDate.durationFrom(state.getDate());
-        final DerivativeStructure   tauDMDelta   = tauD.negate().add(delta); 
+        final DerivativeStructure   tauDMDelta   = tauD.negate().add(delta);
         final SpacecraftState       transitState = state.shiftedBy(tauDMDelta.getValue());
 
         // Transit state position (re)computed with derivative structures
         final FieldVector3D<DerivativeStructure> transitStatePosition = pvaDS.shiftedBy(tauDMDelta).getPosition();
-                                                                                                 
+
         // Station at transit state date (derivatives of tauD taken into account)
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationAtTransitDate = 
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationAtTransitDate =
                         stationDownlink.shiftedBy(tauD.negate());
         // Uplink delay
         final DerivativeStructure tauU = groundStation.signalTimeOfFlight(stationAtTransitDate,
@@ -372,7 +372,7 @@ public class RangeAnalytic extends Range {
         // ----------------------------------
 
         // Time difference between t (date of the measurement) and t' (date tagged in spacecraft state)
-        
+
         // Station position at signal arrival
         final Transform topoToInertDownlink =
                         groundStation.getOffsetFrame().getTransformTo(state.getFrame(), downlinkDate);
@@ -395,7 +395,7 @@ public class RangeAnalytic extends Range {
 //                        station.getOffsetFrame().getTransformTo(state.getFrame(), uplinkDate);
 //        TimeStampedPVCoordinates QUplink = topoToInertUplink.
 //                        transformPVCoordinates(new TimeStampedPVCoordinates(uplinkDate,PVCoordinates.ZERO));
-        
+
         // Station position at transit state date
         final Transform topoToInertAtTransitDate =
                       groundStation.getOffsetFrame().getTransformTo(state.getFrame(), transitT);
@@ -413,12 +413,12 @@ public class RangeAnalytic extends Range {
 
         TimeStampedPVCoordinates QUplink = topoToInertDownlink.shiftedBy(-t).
                         transformPVCoordinates(new TimeStampedPVCoordinates(uplinkDate,PVCoordinates.ZERO));
-        
+
 
         // Range value
         double r = t * cOver2;
         double dR = r-range.getValue();
-        
+
 
 
         // td derivatives / state
@@ -461,15 +461,16 @@ public class RangeAnalytic extends Range {
         // tu derivatives / state
         // -----------------------
 
-        // Speed of the station at tmeas-t
-        // Note: Which one to use in the calculation of dUp ???
-        final Vector3D Qt2_V    = QUplink.getVelocity();
+
 
         final Vector3D Qt2_Ptr  = Ptr.subtract(QUplink.getPosition());
         final double   dUp      = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tu -
                         Vector3D.dotProduct(Qt2_Ptr, Qt_V);
-        
+
         //test
+//        // Speed of the station at tmeas-t
+//        // Note: Which one to use in the calculation of dUp ???
+//        final Vector3D Qt2_V    = QUplink.getVelocity();
 //        final double   dUp      = Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT * tu -
 //                        Vector3D.dotProduct(Qt2_Ptr, Qt2_V);
         //test
@@ -579,7 +580,7 @@ public class RangeAnalytic extends Range {
         final double dtudQIz = 1/dUp*Qt2_Ptr
                         .dotProduct(Vector3D.MINUS_K
                                     .add((Qt_V.subtract(vel)).scalarMultiply(dtddQIz))
-                                    .subtract(Vector3D.PLUS_K.crossProduct(omega).scalarMultiply(t)));         
+                                    .subtract(Vector3D.PLUS_K.crossProduct(omega).scalarMultiply(t)));
 
 //        // test
 //        final double dtudQIx = 1/dUp*Qt2_Ptr
@@ -594,7 +595,7 @@ public class RangeAnalytic extends Range {
 ////                        .dotProduct(Vector3D.MINUS_K);
 ////                                    .dotProduct((Qt_V.subtract(vel)).scalarMultiply(dtddQIz));
 //                                    .dotProduct(Vector3D.MINUS_K.crossProduct(omega).scalarMultiply(t));
-//        
+//
 //        double dtu_dQxDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 1,0,0);
 //        double dtu_dQyDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 0,1,0);
 //        double dtu_dQzDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 0,0,1);
@@ -604,11 +605,11 @@ public class RangeAnalytic extends Range {
 //        double dtudQIyDS = dtudQIDS.getY();
 //        double dtudQIxzS = dtudQIDS.getZ();
 //        // test
-        
+
         // Topocentric frame
         final Vector3D dtudQI = new Vector3D(dtudQIx, dtudQIy, dtudQIz);
         final Vector3D dtudQ = rotTopoToInert.applyTo(dtudQI);
-        
+
 
         // With DS
         double dtudQxDS = tauU.getPartialDerivative(0,0,0, 0,0,0, 1,0,0);
@@ -636,8 +637,51 @@ public class RangeAnalytic extends Range {
         // Diff
         final double d_dRdQx = dRdQxDS-dRdQx;
         final double d_dRdQy = dRdQyDS-dRdQy;
-        final double d_dRdQz = dRdQzDS-dRdQz;         
+        final double d_dRdQz = dRdQzDS-dRdQz;
 
+
+        // Print results to avoid warning
+        final boolean printResults = false;
+
+        if (printResults) {
+            System.out.println("dR = " + dR);
+
+            System.out.println("d_dtddPx = " + d_dtddPx);
+            System.out.println("d_dtddPy = " + d_dtddPy);
+            System.out.println("d_dtddPz = " + d_dtddPz);
+            System.out.println("d_dtddVx = " + d_dtddVx);
+            System.out.println("d_dtddVy = " + d_dtddVy);
+            System.out.println("d_dtddVz = " + d_dtddVz);
+
+            System.out.println("d_dtudPx = " + d_dtudPx);
+            System.out.println("d_dtudPy = " + d_dtudPy);
+            System.out.println("d_dtudPz = " + d_dtudPz);
+            System.out.println("d_dtudVx = " + d_dtudVx);
+            System.out.println("d_dtudVy = " + d_dtudVy);
+            System.out.println("d_dtudVz = " + d_dtudVz);
+
+            System.out.println("d_dRdPx = " + d_dRdPx);
+            System.out.println("d_dRdPy = " + d_dRdPy);
+            System.out.println("d_dRdPz = " + d_dRdPz);
+            System.out.println("d_dRdVx = " + d_dRdVx);
+            System.out.println("d_dRdVy = " + d_dRdVy);
+            System.out.println("d_dRdVz = " + d_dRdVz);
+
+            System.out.println("d_dtddQx = " + d_dtddQx);
+            System.out.println("d_dtddQy = " + d_dtddQy);
+            System.out.println("d_dtddQz = " + d_dtddQz);
+
+            System.out.println("d_dtudQx = " + d_dtudQx);
+            System.out.println("d_dtudQy = " + d_dtudQy);
+            System.out.println("d_dtudQz = " + d_dtudQz);
+
+            System.out.println("d_dRdQx = " + d_dRdQx);
+            System.out.println("d_dRdQy = " + d_dRdQy);
+            System.out.println("d_dRdQz = " + d_dRdQz);
+
+        }
+
+        // Dummy return
         return estimated;
 
     }

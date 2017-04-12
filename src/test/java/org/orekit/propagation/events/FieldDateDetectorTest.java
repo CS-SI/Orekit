@@ -92,7 +92,7 @@ public class FieldDateDetectorTest {
         propagator.setInitialState(initialState);
 
         FieldDateDetector<T>  dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(2.0*dt));
-    	Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
+        Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
         propagator.addEventDetector(dateDetector);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
@@ -120,19 +120,19 @@ public class FieldDateDetectorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-    	FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold));
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold));
         Assert.assertNull(dateDetector.getDate());
-    	FieldEventDetector<T> nodeDetector = new FieldNodeDetector<T>(iniOrbit, iniOrbit.getFrame()).
-    	        withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
-    	            public Action eventOccurred(FieldSpacecraftState<T> s, FieldNodeDetector<T> nd, boolean increasing)
-    	                throws OrekitException {
-    	                if (increasing) {
-    	                    nodeDate = s.getDate().toAbsoluteDate();
-    	                    dateDetector.addEventDate(s.getDate().shiftedBy(dt));
-    	                }
-    	                return Action.CONTINUE;
-    	            }
-    	        });
+        FieldEventDetector<T> nodeDetector = new FieldNodeDetector<T>(iniOrbit, iniOrbit.getFrame()).
+                withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldNodeDetector<T> nd, boolean increasing)
+                        throws OrekitException {
+                        if (increasing) {
+                            nodeDate = s.getDate().toAbsoluteDate();
+                            dateDetector.addEventDate(s.getDate().shiftedBy(dt));
+                        }
+                        return Action.CONTINUE;
+                    }
+                });
 
         propagator.addEventDetector(nodeDetector);
         propagator.addEventDetector(dateDetector);

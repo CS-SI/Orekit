@@ -47,7 +47,7 @@ import org.orekit.utils.ParameterDriver;
 
 public class TurnAroundRangeAnalyticTest {
 
-    
+
     /**
      * Test the values of the TAR (Turn-Around Range) comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
@@ -64,13 +64,13 @@ public class TurnAroundRangeAnalyticTest {
     }
 
     /**
-     * Test the values of the analytic state derivatives computation 
+     * Test the values of the analytic state derivatives computation
      * using TurnAroundRange function as a comparison
      * @throws OrekitException
      */
     @Test
     public void testStateDerivatives() throws OrekitException {
-    
+
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest TAR Analytical State Derivatives - Derivative Structure comparison\n");
@@ -80,15 +80,15 @@ public class TurnAroundRangeAnalyticTest {
         boolean isFiniteDifferences  = false;
         this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
     }
-    
+
     /**
-     * Test the values of the analytic state derivatives  
+     * Test the values of the analytic state derivatives
      * using a numerical finite differences calculation as a reference
      * @throws OrekitException
      */
     @Test
     public void testStateDerivativesFiniteDifferences() throws OrekitException {
-    
+
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest TAR Analytical State Derivatives - Finite Differences comparison\n");
@@ -98,15 +98,15 @@ public class TurnAroundRangeAnalyticTest {
         boolean isFiniteDifferences  = true;
         this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
     }
-    
+
     /**
-     * Test the values of the state derivatives with modifier 
+     * Test the values of the state derivatives with modifier
      * using TurnAroundRange function as a comparison
      * @throws OrekitException
      */
     @Test
     public void testStateDerivativesWithModifier() throws OrekitException {
-    
+
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest TAR Analytical State Derivatives with Modifier - Derivative Structure comparison\n");
@@ -116,7 +116,7 @@ public class TurnAroundRangeAnalyticTest {
         boolean isFiniteDifferences  = false;
         this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
     }
-    
+
     /**
      * Test the values of the state derivatives with modifier
      * using a numerical finite differences calculation as a reference
@@ -124,7 +124,7 @@ public class TurnAroundRangeAnalyticTest {
      */
     @Test
     public void testStateDerivativesWithModifierFiniteDifferences() throws OrekitException {
-    
+
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest TAR Analytical State Derivatives with Modifier - Finite Differences comparison\n");
@@ -134,9 +134,9 @@ public class TurnAroundRangeAnalyticTest {
         boolean isFiniteDifferences  = true;
         this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
     }
-    
+
     /**
-     * Test the values of the analytic parameters derivatives computation 
+     * Test the values of the analytic parameters derivatives computation
      * using TurnAroundRange function as a comparison
      * @throws OrekitException
      */
@@ -145,7 +145,7 @@ public class TurnAroundRangeAnalyticTest {
 
         // Print the results ?
         boolean printResults = false;
-        
+
         if (printResults) {
             System.out.println("\nTest TAR Analytical Parameter Derivatives - Derivative Structure comparison\n");
         }
@@ -153,11 +153,11 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = false;
         this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
-        
+
     }
-    
+
     /**
-     * Test the values of the analytic parameters derivatives 
+     * Test the values of the analytic parameters derivatives
      * using a numerical finite differences calculation as a reference
      * @throws OrekitException
      */
@@ -166,7 +166,7 @@ public class TurnAroundRangeAnalyticTest {
 
         // Print the results ?
         boolean printResults = false;
-        
+
         if (printResults) {
             System.out.println("\nTest TAR Analytical Parameter Derivatives - Finite Differences comparison\n");
         }
@@ -174,11 +174,11 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = false;
         boolean isFiniteDifferences  = true;
         this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
-        
+
     }
-    
+
     /**
-     * Test the values of the analytic parameters derivatives with modifiers computation 
+     * Test the values of the analytic parameters derivatives with modifiers computation
      * using TurnAroundRange function as a comparison
      * @throws OrekitException
      */
@@ -187,7 +187,7 @@ public class TurnAroundRangeAnalyticTest {
 
         // Print the results ?
         boolean printResults = false;
-        
+
         if (printResults) {
             System.out.println("\nTest TAR Analytical Parameter Derivatives with Modifier - Derivative Structure comparison\n");
         }
@@ -195,11 +195,11 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = false;
         this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
-        
+
     }
-    
+
     /**
-     * Test the values of the analytic parameters derivatives with modifiers computation 
+     * Test the values of the analytic parameters derivatives with modifiers computation
      * using a numerical finite differences calculation as a reference
      * @throws OrekitException
      */
@@ -208,7 +208,7 @@ public class TurnAroundRangeAnalyticTest {
 
         // Print the results ?
         boolean printResults = false;
-        
+
         if (printResults) {
             System.out.println("\nTest TAR Analytical Parameter Derivatives with Modifier - Finite Differences comparison\n");
         }
@@ -216,15 +216,15 @@ public class TurnAroundRangeAnalyticTest {
         boolean isModifier = true;
         boolean isFiniteDifferences  = true;
         this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
-        
+
     }
-    
+
     /**
      * Generic test function for values of the TAR
      * @param printResults Print the results ?
-     * @throws OrekitException 
+     * @throws OrekitException
      */
-    void genericTestValues(final boolean printResults) 
+    void genericTestValues(final boolean printResults)
                     throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
@@ -246,7 +246,7 @@ public class TurnAroundRangeAnalyticTest {
         double[] absoluteErrors = new double[measurements.size()];
         double[] relativeErrors = new double[measurements.size()];
         int index = 0;
-        
+
         // Print the results ? Header
         if (printResults) {
            System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17s  %17s  %13s %13s%n",
@@ -255,27 +255,27 @@ public class TurnAroundRangeAnalyticTest {
                               "TAR observed [m]","TAR estimated [m]",
                               "|ΔTAR| [m]","rel |ΔTAR|");
         }
-        
+
         // Loop on the measurements
         for (final ObservedMeasurement<?> measurement : measurements) {
-            
+
             final double          meanDelay = measurement.getObservedValue()[0] / Constants.SPEED_OF_LIGHT;
             final AbsoluteDate    date      = measurement.getDate().shiftedBy(meanDelay);
             final SpacecraftState state     = propagator.propagate(date);
-           
+
             // Values of the TAR & errors
             final double TARobserved  = measurement.getObservedValue()[0];
             final double TARestimated = new TurnAroundRangeAnalytic((TurnAroundRange) measurement).
                                                                     theoreticalEvaluationAnalytic(0, 0, state).getEstimatedValue()[0];
-            
+
             absoluteErrors[index] = TARestimated-TARobserved;
             relativeErrors[index] = FastMath.abs(absoluteErrors[index])/FastMath.abs(TARobserved);
             index++;
-            
+
             // Print results ? Values
             if (printResults) {
                 final AbsoluteDate measurementDate = measurement.getDate();
-                
+
                 String masterStationName = ((TurnAroundRange) measurement).getMasterStation().getBaseFrame().getName();
                 String slaveStationName = ((TurnAroundRange) measurement).getSlaveStation().getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  %17.6f  %17.6f  %13.6e %13.6e%n",
@@ -286,14 +286,14 @@ public class TurnAroundRangeAnalyticTest {
             }
 
         }
-        
+
         // Compute some statistics
         final double absErrorsMedian = new Median().evaluate(absoluteErrors);
-        final double absErrorsMin    = new Min().evaluate(absoluteErrors); 
+        final double absErrorsMin    = new Min().evaluate(absoluteErrors);
         final double absErrorsMax    = new Max().evaluate(absoluteErrors);
-        final double relErrorsMedian = new Median().evaluate(relativeErrors); 
+        final double relErrorsMedian = new Median().evaluate(relativeErrors);
         final double relErrorsMax    = new Max().evaluate(relativeErrors);
-        
+
         // Print the results on console ? Final results
         if (printResults) {
             System.out.println();
@@ -303,7 +303,7 @@ public class TurnAroundRangeAnalyticTest {
             System.out.println("Relative errors median: " +  relErrorsMedian);
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
-        
+
         // Assert statistical errors
         Assert.assertEquals(0.0, absErrorsMedian, 2.8e-09);
         Assert.assertEquals(0.0, absErrorsMin, 8.8e-08);
@@ -311,15 +311,15 @@ public class TurnAroundRangeAnalyticTest {
         Assert.assertEquals(0.0, relErrorsMedian, 1.7e-15);
         Assert.assertEquals(0.0, relErrorsMax , 5.8e-15);
     }
-   
+
     /**
      * Generic test function for derivatives with respect to state
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, TurnAroundRange class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException 
+     * @throws OrekitException
      */
-    void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults) 
+    void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
                     throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
@@ -361,7 +361,7 @@ public class TurnAroundRangeAnalyticTest {
         for (final ObservedMeasurement<?> measurement : measurements) {
 
             // Add modifiers if test implies it
-            final TurnAroundRangeTroposphericDelayModifier modifier = 
+            final TurnAroundRangeTroposphericDelayModifier modifier =
                             new TurnAroundRangeTroposphericDelayModifier(SaastamoinenModel.getStandardModel());
             if (isModifier) {
                 ((TurnAroundRange) measurement).addModifier(modifier);
@@ -381,7 +381,7 @@ public class TurnAroundRangeAnalyticTest {
             if (isModifier) {
                 modifier.modify(TAR);
             }
-            final double[][] jacobian  = TAR.getStateDerivatives(); 
+            final double[][] jacobian  = TAR.getStateDerivatives();
 
             // Jacobian reference value
             final double[][] jacobianRef;
@@ -400,13 +400,13 @@ public class TurnAroundRangeAnalyticTest {
 
 //            //Test: Test point by point with the debugger
 //            if (!isFiniteDifferences && !isModifier) {
-//                final EstimatedMeasurement<TurnAroundRange> test = 
+//                final EstimatedMeasurement<TurnAroundRange> test =
 //                                new TurnAroundRangeAnalytic((TurnAroundRange)measurement).theoreticalEvaluationValidation(0, 0, state);
 //            }
 //            //Test
 
             Assert.assertEquals(jacobianRef.length, jacobian.length);
-            Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);          
+            Assert.assertEquals(jacobianRef[0].length, jacobian[0].length);
 
             double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
             double [][] dJacobianRelative = new double[jacobian.length][jacobian[0].length];
@@ -423,7 +423,7 @@ public class TurnAroundRangeAnalyticTest {
                 }
             }
             // Print results on the console ? Print the Jacobian
-            if (printResults) { 
+            if (printResults) {
                 String masterStationName = ((TurnAroundRange) measurement).getMasterStation().getBaseFrame().getName();
                 String slaveStationName  = ((TurnAroundRange) measurement).getSlaveStation().getBaseFrame().getName();
                 System.out.format(Locale.US, "%-15s  %-15s  %-23s  %-23s  " +
@@ -460,23 +460,23 @@ public class TurnAroundRangeAnalyticTest {
         // Assert the results / max values depend on the test
         double refErrorsPMedian, refErrorsPMean, refErrorsPMax;
         double refErrorsVMedian, refErrorsVMean, refErrorsVMax;
-        
+
         // Reference comparison with TurnAroundRange class
         if (!isFiniteDifferences) {
-            
+
             // Without modifier
             if (!isModifier) {
                 refErrorsPMedian = 1.1e-06;
                 refErrorsPMean   = 1.1e-06;
                 refErrorsPMax    = 2.2e-06;
-            } 
+            }
             // With modifier
             else {
                 refErrorsPMedian = 1.1e-06;
                 refErrorsPMean   = 1.7e-06;
                 refErrorsPMax    = 2.0e-05;
             }
-            
+
             refErrorsVMedian = 1.1e-06;
             refErrorsVMean   = 1.1e-06;
             refErrorsVMax    = 2.3e-06;
@@ -499,7 +499,7 @@ public class TurnAroundRangeAnalyticTest {
             refErrorsVMedian = 1.5e-04;
             refErrorsVMean   = 4.1e-04;
             refErrorsVMax    = 5.3e-03;
-        } 
+        }
 
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
         Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
@@ -508,18 +508,18 @@ public class TurnAroundRangeAnalyticTest {
         Assert.assertEquals(0.0, errorsVMean, refErrorsVMean);
         Assert.assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
-        
+
 
     /**
      * Generic test function for derivatives with respect to parameters (station's position in station's topocentric frame)
      * @param isModifier Use of atmospheric modifiers
      * @param isFiniteDifferences Finite differences reference calculation if true, TurnAroundRange class otherwise
      * @param printResults Print the results ?
-     * @throws OrekitException 
+     * @throws OrekitException
      */
-    void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults) 
+    void genericTestParameterDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
                     throws OrekitException {
-        
+
         Context context = EstimationTestUtils.eccentricContext();
 
         final NumericalPropagatorBuilder propagatorBuilder =
@@ -561,7 +561,7 @@ public class TurnAroundRangeAnalyticTest {
                             "ΔdQSy","rel ΔdQSy",
                             "ΔdQSz","rel ΔdQSz");
          }
-        
+
         // List to store the results for master and slave station
         final List<Double> relErrorQMList = new ArrayList<Double>();
         final List<Double> relErrorQSList = new ArrayList<Double>();
@@ -609,14 +609,14 @@ public class TurnAroundRangeAnalyticTest {
             // Loop on the parameters
             for (int i = 0; i < 6; ++i) {
                 // Analytical computation of the parameters derivatives
-                final EstimatedMeasurement<TurnAroundRange> TAR = 
+                final EstimatedMeasurement<TurnAroundRange> TAR =
                                 new TurnAroundRangeAnalytic((TurnAroundRange) measurement).theoreticalEvaluationAnalytic(0, 0, state);
                 // Optional modifier addition
                 if (isModifier) {
                   modifier.modify(TAR);
                 }
                 final double[] gradient  = TAR.getParameterDerivatives(drivers[i]);
-                
+
                 Assert.assertEquals(1, measurement.getDimension());
                 Assert.assertEquals(1, gradient.length);
 
@@ -637,7 +637,7 @@ public class TurnAroundRangeAnalyticTest {
                     // Compute a reference value using TurnAroundRange function
                     ref = measurement.estimate(0, 0, state).getParameterDerivatives(drivers[i])[0];
                 }
-                
+
                 // Deltas
                 double dGradient         = gradient[0] - ref;
                 double dGradientRelative = FastMath.abs(dGradient/ref);
@@ -650,7 +650,7 @@ public class TurnAroundRangeAnalyticTest {
                 // Add relative error to the list
                 if (i<3) { relErrorQMList.add(dGradientRelative);}
                 else     { relErrorQSList.add(dGradientRelative);}
-                
+
             } // End for loop on the parameters
             if (printResults) {
                 System.out.format(Locale.US,"%n");
@@ -665,11 +665,11 @@ public class TurnAroundRangeAnalyticTest {
         final double relErrorsQMMedian = new Median().evaluate(relErrorQM);
         final double relErrorsQMMean   = new Mean().evaluate(relErrorQM);
         final double relErrorsQMMax    = new Max().evaluate(relErrorQM);
-        
+
         final double relErrorsQSMedian = new Median().evaluate(relErrorQS);
         final double relErrorsQSMean   = new Mean().evaluate(relErrorQS);
         final double relErrorsQSMax    = new Max().evaluate(relErrorQS);
-        
+
 
         // Print the results on console ?
         if (printResults) {
@@ -683,14 +683,14 @@ public class TurnAroundRangeAnalyticTest {
         // Assert the results / max values depend on the test
         double refErrorQMMedian, refErrorQMMean, refErrorQMMax;
         double refErrorQSMedian, refErrorQSMean, refErrorQSMax;
-        
+
         // Master station reference comparison for both methods
         refErrorQMMedian = 2.8e-06;
         refErrorQMMean   = 5.9e-06;
         refErrorQMMax    = 1.3e-04;
-        
+
         // Slave station reference comparison with TurnAroundRange class
-        if (!isFiniteDifferences) {           
+        if (!isFiniteDifferences) {
             refErrorQSMedian = 3.1e-06;
             refErrorQSMean   = 5.3e-06;
             refErrorQSMax    = 3.5e-05;
@@ -700,7 +700,7 @@ public class TurnAroundRangeAnalyticTest {
             refErrorQSMedian = 2.9e-06;
             refErrorQSMean   = 4.9e-06;
             refErrorQSMax    = 3.6e-05;
-        } 
+        }
 
         // Check values
         Assert.assertEquals(0.0, relErrorsQMMedian, refErrorQMMedian);
