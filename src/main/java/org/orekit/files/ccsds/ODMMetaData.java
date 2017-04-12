@@ -21,17 +21,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.hipparchus.RealFieldElement;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
-import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 
 /** This class gathers the meta-data present in the Orbital Data Message (ODM).
  * @author sports
@@ -255,8 +250,9 @@ public class ODMMetaData {
         }
         // Just return frame if we don't need to shift the center based on CENTER_NAME
         // MCI and ICRF are the only non-earth centered frames specified in Annex A.
-        final boolean isMci = "MCI".equals(this.getFrameString());
-        final boolean isIcrf = "ICRF".equals(this.getFrameString());
+        final String frameString = this.getFrameString();
+        final boolean isMci = "MCI".equals(frameString);
+        final boolean isIcrf = "ICRF".equals(frameString);
         final boolean isSolarSystemBarycenter =
                 CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(body.getName());
         if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(body.getName())) ||
@@ -265,25 +261,7 @@ public class ODMMetaData {
             return frame;
         }
         // else, translate frame to specified center.
-        return new Frame(
-                frame,
-                new TransformProvider() {
-                    @Override
-                    public Transform getTransform(final AbsoluteDate date)
-                            throws OrekitException {
-                        return new Transform(date, body.getPVCoordinates(date, frame));
-                    }
-
-                    @Override
-                    public <T extends RealFieldElement<T>> FieldTransform<T> getTransform(
-                            final FieldAbsoluteDate<T> date) throws OrekitException {
-                        return new FieldTransform<>(
-                                date,
-                                body.getPVCoordinates(date, frame));
-                    }
-                },
-                body.getName() + "/" + frame.getName(),
-                frame.isPseudoInertial());
+        return new CcsdsModifiedFrame(frame, frameString, body, this.getCenterName());
     }
 
     /**
