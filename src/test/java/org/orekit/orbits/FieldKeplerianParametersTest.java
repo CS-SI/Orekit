@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -57,92 +57,92 @@ public class FieldKeplerianParametersTest {
      // Body mu
     public double mu;
 
-    @Test 
+    @Test
     public void doKepToKepTest() throws OrekitException {
           testKeplerianToKeplerian(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doKepToCartTest() throws OrekitException {
           testKeplerianToCartesian(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doKepToEquinTest() throws OrekitException {
           testKeplerianToEquinoctial(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doAnomalyTest() throws OrekitException {
           testAnomaly(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doPositionVelocityNormsTest() throws OrekitException {
         testPositionVelocityNorms(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doGeometryTest() throws OrekitException {
         testGeometry(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doSymmetryTest() throws OrekitException {
         testSymmetry(Decimal64Field.getInstance());
     }
-    
+
     @Test (expected=IllegalArgumentException.class)
     public void doNonInertialFrameTest() throws OrekitException {
         testNonInertialFrame(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doPeriodTest() throws OrekitException {
         testPeriod(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doHyperbolaTest() throws OrekitException {
         testHyperbola(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doVeryLargeEccentricityTest() throws OrekitException {
         testVeryLargeEccentricity(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doKeplerEquationTest() throws OrekitException {
         testKeplerEquation(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doNumericalIssueTest() throws OrekitException {
         testNumericalIssue25(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doJacobianReferenceEllipseTest() throws OrekitException {
         testJacobianReferenceEllipse(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doJacobianFinitedDiffTest() throws OrekitException {
         testJacobianFinitedifferencesEllipse(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doJacobianReferenceHyperbolaTest() throws OrekitException {
         testJacobianReferenceHyperbola(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doJacobianFinitDiffHyperbolaTest() throws OrekitException {
         testJacobianFinitedifferencesHyperbola(Decimal64Field.getInstance());
     }
-    
-    @Test 
+
+    @Test
     public void doTest() throws OrekitException {
         testKeplerianDerivatives(Decimal64Field.getInstance());
     }
@@ -151,7 +151,7 @@ public class FieldKeplerianParametersTest {
     public void doOutOfRangeVTest() throws OrekitException {
         testOutOfRangeV(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void doInterpolationTest() throws OrekitException {
         testInterpolation(Decimal64Field.getInstance());
@@ -160,7 +160,7 @@ public class FieldKeplerianParametersTest {
     public void doPerfectlyEquatorialConversionTest() throws OrekitException {
         testPerfectlyEquatorialConversion(Decimal64Field.getInstance());
     }
-    
+
     public <T extends RealFieldElement<T>> void testKeplerianToKeplerian(final Field<T> field) {
 
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);

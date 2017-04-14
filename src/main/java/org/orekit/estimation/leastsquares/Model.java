@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -288,11 +288,15 @@ class Model implements MultivariateJacobianFunction {
     void fetchEvaluatedMeasurement(final int index, final EstimatedMeasurement<?> evaluation)
         throws OrekitException {
 
+        // State and observed measurement
+        final SpacecraftState        evaluationState     = evaluation.getState();
+        final ObservedMeasurement<?> observedMeasurement = evaluation.getObservedMeasurement();
+
         // compute weighted residuals
-        evaluations.put(evaluation.getObservedMeasurement(), evaluation);
+        evaluations.put(observedMeasurement, evaluation);
         final double[] evaluated = evaluation.getEstimatedValue();
-        final double[] observed  = evaluation.getObservedMeasurement().getObservedValue();
-        final double[] sigma     = evaluation.getObservedMeasurement().getTheoreticalStandardDeviation();
+        final double[] observed  = observedMeasurement.getObservedValue();
+        final double[] sigma     = observedMeasurement.getTheoreticalStandardDeviation();
         final double[] weight    = evaluation.getCurrentWeight();
         for (int i = 0; i < evaluated.length; ++i) {
             value.setEntry(index + i, weight[i] * (evaluated[i] - observed[i]) / sigma[i]);
@@ -300,7 +304,7 @@ class Model implements MultivariateJacobianFunction {
 
         // partial derivatives of the current Cartesian coordinates with respect to current orbital state
         final double[][] aCY = new double[6][6];
-        final Orbit currentOrbit = evaluation.getState().getOrbit();
+        final Orbit currentOrbit = evaluationState.getOrbit();
         currentOrbit.getJacobianWrtParameters(propagatorBuilder.getPositionAngle(), aCY);
         final RealMatrix dCdY = new Array2DRowRealMatrix(aCY, false);
 
@@ -310,7 +314,7 @@ class Model implements MultivariateJacobianFunction {
 
         // Jacobian of the measurement with respect to initial orbital state
         final double[][] aYY0 = new double[6][6];
-        mapper.getStateJacobian(evaluation.getState(), aYY0);
+        mapper.getStateJacobian(evaluationState, aYY0);
         final RealMatrix dYdY0 = new Array2DRowRealMatrix(aYY0, false);
         final RealMatrix dMdY0 = dMdY.multiply(dYdY0);
         for (int i = 0; i < dMdY0.getRowDimension(); ++i) {
@@ -327,7 +331,7 @@ class Model implements MultivariateJacobianFunction {
         if (estimatedPropagatorParameters.getNbParams() > 0) {
             // Jacobian of the measurement with respect to propagator parameters
             final double[][] aYPp  = new double[6][estimatedPropagatorParameters.getNbParams()];
-            mapper.getParametersJacobian(evaluation.getState(), aYPp);
+            mapper.getParametersJacobian(evaluationState, aYPp);
             final RealMatrix dYdPp = new Array2DRowRealMatrix(aYPp, false);
             final RealMatrix dMdPp = dMdY.multiply(dYdPp);
             for (int i = 0; i < dMdPp.getRowDimension(); ++i) {
@@ -341,8 +345,7 @@ class Model implements MultivariateJacobianFunction {
         }
 
         // Jacobian of the measurement with respect to measurements parameters
-        final ObservedMeasurement<?> measurement = evaluation.getObservedMeasurement();
-        for (final ParameterDriver driver : measurement.getParametersDrivers()) {
+        for (final ParameterDriver driver : observedMeasurement.getParametersDrivers()) {
             if (driver.isSelected()) {
                 final double[] aMPm = evaluation.getParameterDerivatives(driver);
                 for (int i = 0; i < aMPm.length; ++i) {

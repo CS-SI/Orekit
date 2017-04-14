@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -186,8 +186,8 @@ public class FieldAngularCoordinatesTest {
             Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()).getReal(), 2.0e-17);
         }
     }
-    
-    @Test 
+
+    @Test
     public void testResultAngularCoordinates() throws OrekitException{
         Field<Decimal64> field = Decimal64Field.getInstance();
         Decimal64 zero = field.getZero();
@@ -200,10 +200,10 @@ public class FieldAngularCoordinatesTest {
         FieldVector3D<Decimal64> acc_B = new FieldVector3D<Decimal64>(zero.add( -1.395403347295246E-10  ),
                                                       zero.add( -2.7451871050415643E-12 ),
                                                       zero.add( -2.781723303703499E-10  ) );
-       
+
         FieldPVCoordinates<Decimal64> B = new FieldPVCoordinates<Decimal64>(pos_B, vel_B, acc_B);
-       
-       
+
+
         FieldVector3D<Decimal64> pos_A = new FieldVector3D<Decimal64> (zero.add(-0.44665912825286425    ),
                                                        zero.add(-0.00965737694923173    ),
                                                        zero.add(-0.894652087807798      ));
@@ -215,22 +215,22 @@ public class FieldAngularCoordinatesTest {
                                                       zero.add( 9.520371766790574E-7    ) );
 
         FieldPVCoordinates<Decimal64> A = new FieldPVCoordinates<Decimal64>(pos_A, vel_A, acc_A);
-       
+
         FieldPVCoordinates<Decimal64> PLUS_K = new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getOne()),
                                                                  new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getZero()),
                                                                  new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getZero()));
-       
+
         FieldPVCoordinates<Decimal64> PLUS_J = new FieldPVCoordinates<Decimal64>(new FieldVector3D<Decimal64>(field.getZero(), field.getOne(), field.getZero()),
                                                                  new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getZero()),
                                                                  new FieldVector3D<Decimal64>(field.getZero(), field.getZero(), field.getZero()));
-       
-       
+
+
         FieldAngularCoordinates<Decimal64> fac = new FieldAngularCoordinates<Decimal64>(A, B, PLUS_K, PLUS_J, 1.0e-6);
-       
+
         AngularCoordinates ac = new AngularCoordinates(A.toPVCoordinates(), B.toPVCoordinates(), PLUS_K.toPVCoordinates(), PLUS_J.toPVCoordinates(), 1.0e-6);
 
         Assert.assertTrue( fac.getRotationRate().toVector3D().equals(ac.getRotationRate()));
-        
+
     }
 
     @Test

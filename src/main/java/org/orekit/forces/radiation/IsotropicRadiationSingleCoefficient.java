@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -66,18 +66,29 @@ public class IsotropicRadiationSingleCoefficient implements RadiationSensitive {
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
 
-    /** Simple constructor.
+    /** Constructor with reflection coefficient min/max set to ±∞.
      * @param crossSection Surface (m²)
      * @param cr reflection coefficient
      */
     public IsotropicRadiationSingleCoefficient(final double crossSection, final double cr) {
+        this(crossSection, cr, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+    }
+
+    /** Constructor with reflection coefficient min/max set by user.
+    * @param crossSection Surface (m²)
+    * @param cr reflection coefficient
+    * @param crMin Minimum value of reflection coefficient
+    * @param crMax Maximum value of reflection coefficient
+    */
+    public IsotropicRadiationSingleCoefficient(final double crossSection, final double cr,
+                                               final double crMin, final double crMax) {
         this.radiationParametersDrivers = new ParameterDriver[1];
         try {
             // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
             // the single coefficient may be arbitrary, and even negative
             radiationParametersDrivers[0] = new ParameterDriver(RadiationSensitive.REFLECTION_COEFFICIENT,
                                                                 cr, SCALE,
-                                                                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                                crMin, crMax);
             radiationParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

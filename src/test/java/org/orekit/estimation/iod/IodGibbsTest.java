@@ -65,7 +65,7 @@ public class IodGibbsTest {
                                                 measurements.get(2).getObservedValue()[2]);
         final PV pv3 = new PV(measurements.get(2).getDate(), position3, Vector3D.ZERO, 0., 0., 1.);
 
-        // instantiate the IOD method		
+        // instantiate the IOD method
         final IodGibbs gibbs = new IodGibbs(mu);
         final KeplerianOrbit orbit = gibbs.estimate(frame, pv1, pv2, pv3);
 
@@ -118,7 +118,7 @@ public class IodGibbsTest {
         final double mu = context.initialOrbit.getMu();
 
         //Initialisation
-        final IodGibbs gibbs = new IodGibbs(mu);	
+        final IodGibbs gibbs = new IodGibbs(mu);
 
         // Observations vector (EME2000)
         final Vector3D posR1 = new Vector3D(3419855.64, 6019826.02, 2784600.22);

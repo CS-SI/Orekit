@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -115,7 +115,7 @@ public class FieldEventsLoggerTest {
                 withMaxIter(200);
         Assert.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assert.assertEquals(200, monitored.getMaxIterationCount());
-        
+
         propagator.addEventDetector(monitored);
         propagator.addEventDetector(penumbraDetector);
         count = 0;
@@ -125,7 +125,7 @@ public class FieldEventsLoggerTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestLogPenumbra(final Field<T> field) throws OrekitException {
-        
+
 
         T zero = field.getZero();
 
@@ -189,12 +189,12 @@ public class FieldEventsLoggerTest {
         FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
 
 
-        
-        
-        
-        
-        
-        
+
+
+
+
+
+
         FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -205,7 +205,7 @@ public class FieldEventsLoggerTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestImmutableList(final Field<T> field) throws OrekitException {
-        
+
 
         T zero = field.getZero();
 
@@ -231,7 +231,7 @@ public class FieldEventsLoggerTest {
         count = 0;
         FieldEventDetector<T> umbraDetector = buildDetector(field, true);
         FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
-        
+
         FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -259,9 +259,9 @@ public class FieldEventsLoggerTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestClearLog(final Field<T> field) throws OrekitException {
-        
-        
-        
+
+
+
 
         T zero = field.getZero();
 
@@ -289,7 +289,7 @@ public class FieldEventsLoggerTest {
         FieldEventDetector<T> penumbraDetector = buildDetector(field, false);
 
 
-        
+
         FieldEventsLogger<T> logger = new FieldEventsLogger<T>();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
@@ -306,7 +306,7 @@ public class FieldEventsLoggerTest {
 
     private <T extends RealFieldElement<T>> void checkCounts(FieldEventsLogger<T> logger,
                              int expectedUmbraIncreasingCount, int expectedUmbraDecreasingCount,
-                             int expectedPenumbraIncreasingCount, int expectedPenumbraDecreasingCount, 
+                             int expectedPenumbraIncreasingCount, int expectedPenumbraDecreasingCount,
                              FieldEventDetector<T> umbraDetector, FieldEventDetector<T> penumbraDetector) {
         int umbraIncreasingCount = 0;
         int umbraDecreasingCount = 0;

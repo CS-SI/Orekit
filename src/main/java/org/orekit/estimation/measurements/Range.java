@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,6 +41,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * </p>
  * @author Thierry Ceolin
  * @author Luc Maisonobe
+ * @author Maxime Journot
  * @since 8.0
  */
 public class Range extends AbstractMeasurement<Range> {
@@ -78,9 +79,17 @@ public class Range extends AbstractMeasurement<Range> {
         return station;
     }
 
+    /** Get the DSFactory of this class.
+     * @return DSFactory of this class
+     */
+    protected DSFactory getDSFactory() {
+        return factory;
+    }
+
     /** {@inheritDoc} */
     @Override
-    protected EstimatedMeasurement<Range> theoreticalEvaluation(final int iteration, final int evaluation,
+    protected EstimatedMeasurement<Range> theoreticalEvaluation(final int iteration,
+                                                                final int evaluation,
                                                                 final SpacecraftState state)
         throws OrekitException {
 
@@ -129,7 +138,12 @@ public class Range extends AbstractMeasurement<Range> {
         // Station position in inertial frame at end of the downlink leg
         final AbsoluteDate downlinkDate = getDate();
         final Transform bodyToInertDownlink = bodyframe.getTransformTo(state.getFrame(), downlinkDate);
-        final FieldVector3D<DerivativeStructure> stationDownlink = bodyToInertDownlink.transformPosition(od.getOrigin());
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationDownlink =
+                        bodyToInertDownlink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(
+                                        downlinkDate,
+                                        od.getOrigin(),
+                                        od.getZero(),
+                                        od.getZero()));
 
         // Compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,
@@ -137,39 +151,33 @@ public class Range extends AbstractMeasurement<Range> {
         //  the same as state)
 
         // Downlink delay
-        final DerivativeStructure tauD = station.signalTimeOfFlight(pvaDS, stationDownlink, downlinkDate);
+        final DerivativeStructure tauD = station.signalTimeOfFlight(pvaDS, stationDownlink.getPosition(), downlinkDate);
 
         // Transit state
         final double                delta        = downlinkDate.durationFrom(state.getDate());
         final DerivativeStructure   tauDMDelta   = tauD.negate().add(delta);
         final SpacecraftState       transitState = state.shiftedBy(tauDMDelta.getValue());
 
+
         // Transit state position (re)computed with derivative structures
         final FieldVector3D<DerivativeStructure> transitStatePosition = pvaDS.shiftedBy(tauDMDelta).getPosition();
 
-        // Station at start of the uplink leg
-        final double cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
-        final AbsoluteDate uplinkDate = downlinkDate.shiftedBy(-getObservedValue()[0] / cOver2);
-        final Transform bodyToInertUplink =
-                        bodyframe.getTransformTo(state.getFrame(), uplinkDate);
-        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationUplink =
-                        bodyToInertUplink.transformPVCoordinates(new TimeStampedFieldPVCoordinates<>(uplinkDate,
-                                                                                                     od.getOrigin(),
-                                                                                                     od.getZero(),
-                                                                                                     od.getZero()));
+        // Station at transit state date (derivatives of tauD taken into account)
+        final TimeStampedFieldPVCoordinates<DerivativeStructure> stationAtTransitDate =
+                        stationDownlink.shiftedBy(tauD.negate());
 
         // Uplink delay
-        final DerivativeStructure tauU = station.signalTimeOfFlight(stationUplink,
+        final DerivativeStructure tauU = station.signalTimeOfFlight(stationAtTransitDate,
                                                                     transitStatePosition,
                                                                     transitState.getDate());
-
         // Prepare the evaluation
         final EstimatedMeasurement<Range> estimated =
                         new EstimatedMeasurement<Range>(this, iteration, evaluation, transitState);
 
         // Range value
-        final DerivativeStructure tau = tauD.add(tauU);
-        final DerivativeStructure range = tau.multiply(cOver2);
+        final double              cOver2 = 0.5 * Constants.SPEED_OF_LIGHT;
+        final DerivativeStructure tau    = tauD.add(tauU);
+        final DerivativeStructure range  = tau.multiply(cOver2);
         estimated.setEstimatedValue(range.getValue());
 
         // Range partial derivatives with respect to state

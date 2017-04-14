@@ -56,7 +56,7 @@ public class EphemerisSegmentPropagatorTest {
             public double getMu() {
                 return Constants.EGM96_EARTH_MU;
             }
-            
+
             @Override
             public String getFrameCenterString() {
                 return null;

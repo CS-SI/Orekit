@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@ import org.orekit.utils.IERSConventions;
  * <p>EOP 08 C04 files contain {@link EOPEntry
  * Earth Orientation Parameters} consistent with ITRF2008 for one year periods.</p>
  * <p>The EOP 08 C04 files are recognized thanks to their base names, which
- * must match one of the the patterns <code>eopc04_08_IAU2000.##</code> or
+ * must match one of the patterns <code>eopc04_08_IAU2000.##</code> or
  * <code>eopc04_08.##</code> (or the same ending with <code>.gz</code> for
  * gzip-compressed files) where # stands for a digit character.</p>
  * <p>Between 2002 and 2007, another series of Earth Orientation Parameters was

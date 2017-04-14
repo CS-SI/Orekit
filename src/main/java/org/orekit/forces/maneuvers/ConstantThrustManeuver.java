@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -61,10 +61,10 @@ import org.orekit.utils.ParameterObserver;
 public class ConstantThrustManeuver extends AbstractForceModel {
 
     /** Parameter name for thrust. */
-    private static final String THRUST = "thrust";
+    public static final String THRUST = "thrust";
 
     /** Parameter name for flow rate. */
-    private static final String FLOW_RATE = "flow rate";
+    public static final String FLOW_RATE = "flow rate";
 
     /** Thrust scaling factor.
      * <p>
@@ -143,7 +143,7 @@ public class ConstantThrustManeuver extends AbstractForceModel {
                 }
             });
             parametersDrivers[1] = new ParameterDriver(FLOW_RATE, flowRate, FLOW_RATE_SCALE,
-                                                       0.0, Double.POSITIVE_INFINITY);
+                                                       Double.NEGATIVE_INFINITY, 0.0 );
             parametersDrivers[1].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override
@@ -206,6 +206,26 @@ public class ConstantThrustManeuver extends AbstractForceModel {
 
             // compute flow rate
             adder.addMassDerivative(flowRate);
+
+        }
+
+    }
+
+    @Override
+    public <T extends RealFieldElement<T>> void
+        addContribution(final FieldSpacecraftState<T> s,
+                        final FieldTimeDerivativesEquations<T> adder)
+            throws OrekitException {
+        final T zero = s.getA().getField().getZero();
+        if (firing) {
+
+            // compute thrust acceleration in inertial frame
+            adder.addAcceleration(new FieldVector3D<T>(s.getMass().reciprocal().multiply(thrust),
+                                               s.getAttitude().getRotation().applyInverseTo(direction)),
+                                  s.getFrame());
+
+            // compute flow rate
+            adder.addMassDerivative(zero.add(flowRate));
 
         }
 
@@ -278,26 +298,6 @@ public class ConstantThrustManeuver extends AbstractForceModel {
     /** {@inheritDoc} */
     public ParameterDriver[] getParametersDrivers() {
         return parametersDrivers.clone();
-    }
-
-    @Override
-    public <T extends RealFieldElement<T>> void
-        addContribution(final FieldSpacecraftState<T> s,
-                        final FieldTimeDerivativesEquations<T> adder)
-            throws OrekitException {
-        final T zero = s.getA().getField().getZero();
-        if (firing) {
-
-            // compute thrust acceleration in inertial frame
-            adder.addAcceleration(new FieldVector3D<T>(s.getMass().reciprocal().multiply(thrust),
-                                               s.getAttitude().getRotation().applyInverseTo(direction)),
-                                  s.getFrame());
-
-            // compute flow rate
-            adder.addMassDerivative(zero.add(flowRate));
-
-        }
-
     }
 
     @Override

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -69,7 +69,7 @@ public class FieldDateDetectorTest {
     public void testGenericHandler() throws OrekitException{
         doTestGenericHandler(Decimal64Field.getInstance());
     }
-    
+
     private <T extends RealFieldElement<T>> void doTestSimpleTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
@@ -90,16 +90,16 @@ public class FieldDateDetectorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-        
+
         FieldDateDetector<T>  dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(2.0*dt));
-    	Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
+        Assert.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
         propagator.addEventDetector(dateDetector);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
         Assert.assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
     }
 
-    
+
     private <T extends RealFieldElement<T>> void doTestEmbeddedTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
@@ -120,19 +120,19 @@ public class FieldDateDetectorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-    	FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold));
+        FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold));
         Assert.assertNull(dateDetector.getDate());
-    	FieldEventDetector<T> nodeDetector = new FieldNodeDetector<T>(iniOrbit, iniOrbit.getFrame()).
-    	        withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
-    	            public Action eventOccurred(FieldSpacecraftState<T> s, FieldNodeDetector<T> nd, boolean increasing)
-    	                throws OrekitException {
-    	                if (increasing) {
-    	                    nodeDate = s.getDate().toAbsoluteDate();
-    	                    dateDetector.addEventDate(s.getDate().shiftedBy(dt));
-    	                }
-    	                return Action.CONTINUE;
-    	            }
-    	        });
+        FieldEventDetector<T> nodeDetector = new FieldNodeDetector<T>(iniOrbit, iniOrbit.getFrame()).
+                withHandler(new FieldContinueOnEvent<FieldNodeDetector<T>, T>() {
+                    public Action eventOccurred(FieldSpacecraftState<T> s, FieldNodeDetector<T> nd, boolean increasing)
+                        throws OrekitException {
+                        if (increasing) {
+                            nodeDate = s.getDate().toAbsoluteDate();
+                            dateDetector.addEventDate(s.getDate().shiftedBy(dt));
+                        }
+                        return Action.CONTINUE;
+                    }
+                });
 
         propagator.addEventDetector(nodeDetector);
         propagator.addEventDetector(dateDetector);
@@ -141,7 +141,7 @@ public class FieldDateDetectorTest {
         Assert.assertEquals(dt, finalState.getDate().durationFrom(nodeDate).getReal(), threshold);
     }
 
-    
+
     private <T extends RealFieldElement<T>> void doTestAutoEmbeddedTimer(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
@@ -162,7 +162,7 @@ public class FieldDateDetectorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-        
+
         FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(-dt)).
                 withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd,  boolean increasing)
@@ -199,7 +199,7 @@ public class FieldDateDetectorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-        
+
         FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(dt)).
                 withHandler(new FieldContinueOnEvent<FieldDateDetector<T>, T >() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldDateDetector<T>  dd, boolean increasing)
@@ -220,7 +220,7 @@ public class FieldDateDetectorTest {
      *
      * @throws OrekitException on error.
      */
-    
+
     private <T extends RealFieldElement<T>> void doTestGenericHandler(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668),zero.add( 3492467.560),zero.add( -25767.25680));
@@ -241,7 +241,7 @@ public class FieldDateDetectorTest {
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<T>(field, integrator);
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState);
-        
+
         //setup
         final FieldDateDetector<T> dateDetector = new FieldDateDetector<T> (zero.add(maxCheck), zero.add(threshold), iniDate.shiftedBy(dt));
         // generic event handler that works with all detectors.
@@ -263,10 +263,10 @@ public class FieldDateDetectorTest {
         };
 
         //action
-        final FieldDateDetector<T> dateDetector2; 
-        
+        final FieldDateDetector<T> dateDetector2;
+
         dateDetector2 = dateDetector.withHandler(handler);
-        
+
         propagator.addEventDetector(dateDetector2);
         FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100 * dt));
 

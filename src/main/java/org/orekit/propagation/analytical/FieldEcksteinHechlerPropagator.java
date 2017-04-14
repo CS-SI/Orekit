@@ -1,4 +1,4 @@
-/* Copyright 20 fiel02-2016 CS SystèmesIn>fo5rmation.00
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.

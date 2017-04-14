@@ -76,10 +76,10 @@ public class OrekitEphemerisFile implements EphemerisFile {
 
     /**
      * Inner class of {@link OrekitEphemerisFile} that defines the
-     * {@link SatelliteEphemeris} corresponding object for this ephemeris type.
+     * {@link OrekitSatelliteEphemeris} corresponding object for this ephemeris type.
      *
      */
-    public class OrekitSatelliteEphemeris implements SatelliteEphemeris {
+    public static class OrekitSatelliteEphemeris implements SatelliteEphemeris {
         /**
          * Defines the default interpolation sample size if it is not specified
          * on a segment.
@@ -231,7 +231,7 @@ public class OrekitEphemerisFile implements EphemerisFile {
         }
     }
 
-    public class OrekitEphemerisSegment implements EphemerisSegment {
+    public static class OrekitEphemerisSegment implements EphemerisSegment {
         /** **/
         private final List<TimeStampedPVCoordinates> coordinates;
 

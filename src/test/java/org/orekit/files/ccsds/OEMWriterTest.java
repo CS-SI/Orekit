@@ -176,19 +176,19 @@ public class OEMWriterTest {
         StandInEphemerisFile file = new StandInEphemerisFile();
         file.getSatellites().put(id1, new StandInSatelliteEphemeris(id1));
         file.getSatellites().put(id2, new StandInSatelliteEphemeris(id2));
-        
+
         EphemerisFile ephemerisFile = (EphemerisFile) file;
         String tempOEMFilePath = tempFolder.newFile("TestOEMMultisatellite-1.oem").toString();
-        
+
         OEMWriter writer1 = new OEMWriter();
-        
+
         try {
             writer1.write(tempOEMFilePath, ephemerisFile);
             fail("Should have thrown OrekitIllegalArgumentException due to multiple satellites");
         } catch (OrekitIllegalArgumentException e) {
             assertEquals(OrekitMessages.EPHEMERIS_FILE_NO_MULTI_SUPPORT, e.getSpecifier());
         }
-        
+
         tempOEMFilePath = tempFolder.newFile("TestOEMMultisatellite-2.oem").toString();
         OEMWriter writer2 = new OEMWriter(OEMWriter.DEFAULT_INTERPOLATION_METHOD, null, id1, null);
         writer2.write(tempOEMFilePath, ephemerisFile);

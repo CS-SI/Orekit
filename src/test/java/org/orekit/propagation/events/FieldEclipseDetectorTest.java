@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,11 +82,11 @@ public class FieldEclipseDetectorTest {
     public void testWithMethods() throws OrekitException{
         doTestWithMethods(Decimal64Field.getInstance());
     }
-    
+
     @Test
     public void testInsideOcculting() throws OrekitException{
         doTestInsideOcculting(Decimal64Field.getInstance());
-    }    
+    }
     @Test
     public void testInsideOcculted() throws OrekitException{
         doTestInsideOcculted(Decimal64Field.getInstance());
@@ -95,9 +95,9 @@ public class FieldEclipseDetectorTest {
     public void testTooSmallMaxIterationCount() throws OrekitException{
         testTooSmallMaxIterationCount(Decimal64Field.getInstance());
     }
- 
-    
-    
+
+
+
     private <T extends RealFieldElement<T>> void doTestEclipse(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));
@@ -160,7 +160,7 @@ public class FieldEclipseDetectorTest {
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate).getReal(), 2.0e-6);
     }
-   
+
     private <T extends RealFieldElement<T>> void doTestWithMethods(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         final FieldVector3D<T> position  = new FieldVector3D<T>(zero.add(-6142438.668), zero.add(3492467.560), zero.add(-25767.25680));

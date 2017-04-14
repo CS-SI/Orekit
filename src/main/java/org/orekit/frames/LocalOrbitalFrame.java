@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -40,7 +40,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  * @deprecated as of 9.0, this class is considered ill-designed. Instead of using this
  * class and its {@link #getTransformTo(Frame, AbsoluteDate) getTransformTo} method,
- * which will cause an orbit propagation to be pefformed under the hood, a better
+ * which will cause an orbit propagation to be performed under the hood, a better
  * alternative is to use {@link org.orekit.propagation.SpacecraftState#toTransform()}
  * from within the orbit propagator, at each time step.
  */
@@ -94,7 +94,7 @@ public class LocalOrbitalFrame extends Frame {
         private final PVCoordinatesProvider provider;
 
         /** Cached field-based transforms. */
-        private final transient Map<Field<? extends RealFieldElement<?>>, FieldPVCoordinatesProvider<? extends RealFieldElement<?>>> fieldProviders;
+        private transient Map<Field<? extends RealFieldElement<?>>, FieldPVCoordinatesProvider<? extends RealFieldElement<?>>> fieldProviders;
 
         /** Reference frame. */
         private final Frame reference;
@@ -145,6 +145,18 @@ public class LocalOrbitalFrame extends Frame {
 
             return type.transformFromInertial(date, fp.getPVCoordinates(date, reference));
 
+        }
+
+        /** Ensure fieldProviders is properly set.
+         * @return fixed instance
+         */
+        private Object readResolve() {
+            // this is really an ugly hack, intended only to prevent findbugs complaining
+            // anyway, the class is deprecated and already ill-designed
+            if (fieldProviders == null) {
+                fieldProviders = new HashMap<>();
+            }
+            return this;
         }
 
     }

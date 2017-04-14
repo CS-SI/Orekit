@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -65,18 +65,29 @@ public class IsotropicDrag implements DragSensitive {
     /** Factory for the DerivativeStructure instances. */
     private final DSFactory factory;
 
-    /** Simple constructor.
+    /** Constructor with drag coefficient min/max set to ±∞.
      * @param crossSection Surface (m²)
      * @param dragCoeff drag coefficient
      */
     public IsotropicDrag(final double crossSection, final double dragCoeff) {
+        this(crossSection, dragCoeff, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+    }
+
+    /** Constructor with drag coefficient min/max set by user.
+     * @param crossSection Surface (m²)
+     * @param dragCoeff drag coefficient
+     * @param dragCoeffMin Minimum value of drag coefficient
+     * @param dragCoeffMax Maximum value of drag coefficient
+     */
+    public IsotropicDrag(final double crossSection, final double dragCoeff,
+                         final double dragCoeffMin, final double dragCoeffMax) {
         this.dragParametersDrivers     = new ParameterDriver[1];
         try {
             // in some corner cases (unknown spacecraft, fuel leaks, active piloting ...)
             // the single coefficient may be arbitrary, and even negative
             dragParametersDrivers[0] = new ParameterDriver(DragSensitive.DRAG_COEFFICIENT,
                                                            dragCoeff, SCALE,
-                                                           Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                                                           dragCoeffMin, dragCoeffMax);
             dragParametersDrivers[0].addObserver(new ParameterObserver() {
                 /** {@inheritDoc} */
                 @Override

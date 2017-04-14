@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,6 +34,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.modifiers.AngularIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
+import org.orekit.estimation.measurements.modifiers.TurnAroundRangeIonosphericDelayModifier;
 import org.orekit.models.earth.KlobucharIonoModel;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -107,6 +108,70 @@ public class IonoModifierTest {
             Assert.assertTrue(found);
             //
             EstimatedMeasurement<Range> eval = range.estimate(0, 0,  refstate);
+            final double w = evalNoMod.getCurrentWeight()[0];
+            Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
+            eval.setCurrentWeight(new double[] { w + 2 });
+            Assert.assertEquals(w + 2, eval.getCurrentWeight()[0], 1.0e-10);
+
+            try {
+                eval.getParameterDerivatives(new ParameterDriver("extra", 0, 1, -1, +1));
+                Assert.fail("an exception should have been thrown");
+            } catch (OrekitIllegalArgumentException oiae) {
+                Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oiae.getSpecifier());
+            }
+
+            final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
+            // TODO: check threshold
+            Assert.assertEquals(0.0, diffMeters, 30.0);
+
+        }
+    }
+
+    @Test
+    public void testTurnAroundRangeIonoModifier() throws OrekitException {
+
+        Context context = EstimationTestUtils.eccentricContext();
+
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                                              1.0e-6, 60.0, 0.001);
+
+        // create perfect turn-around range measurements
+        for (final GroundStation station : context.stations) {
+            station.getEastOffsetDriver().setSelected(true);
+            station.getNorthOffsetDriver().setSelected(true);
+            station.getZenithOffsetDriver().setSelected(true);
+        }
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new TurnAroundRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.setSlaveMode();
+
+
+        final TurnAroundRangeIonosphericDelayModifier modifier = new TurnAroundRangeIonosphericDelayModifier(model);
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+            final AbsoluteDate date = measurement.getDate();
+
+            final SpacecraftState refstate = propagator.propagate(date);
+
+            TurnAroundRange turnAroundRange = (TurnAroundRange) measurement;
+            EstimatedMeasurement<TurnAroundRange> evalNoMod = turnAroundRange.estimate(12, 17, refstate);
+            Assert.assertEquals(12, evalNoMod.getIteration());
+            Assert.assertEquals(17, evalNoMod.getCount());
+
+            // Add modifier
+            turnAroundRange.addModifier(modifier);
+            boolean found = false;
+            for (final EstimationModifier<TurnAroundRange> existing : turnAroundRange.getModifiers()) {
+                found = found || existing == modifier;
+            }
+            Assert.assertTrue(found);
+            //
+            EstimatedMeasurement<TurnAroundRange> eval = turnAroundRange.estimate(0, 0,  refstate);
             final double w = evalNoMod.getCurrentWeight()[0];
             Assert.assertEquals(w, eval.getCurrentWeight()[0], 1.0e-10);
             eval.setCurrentWeight(new double[] { w + 2 });

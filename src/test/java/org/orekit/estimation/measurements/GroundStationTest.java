@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -117,9 +117,9 @@ public class GroundStationTest {
         EstimationTestUtils.checkFit(context, estimator, 2, 3,
                                      0.0, 7.6e-7,
                                      0.0, 1.9e-6,
-                                     0.0, 4.6e-7,
-                                     0.0, 1.9e-10);
-        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   3.1e-7);
+                                     0.0, 9.0e-7,
+                                     0.0, 4.0e-10);
+        Assert.assertEquals(deltaTopo.getX(), moved.getEastOffsetDriver().getValue(),   4.0e-7);
         Assert.assertEquals(deltaTopo.getY(), moved.getNorthOffsetDriver().getValue(),  6.2e-7);
         Assert.assertEquals(deltaTopo.getZ(), moved.getZenithOffsetDriver().getValue(), 2.6e-7);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -67,7 +67,7 @@ public class FieldAttitudeTest {
         Assert.assertEquals(rate.getReal(), attitude.getSpin().getNorm().getReal(), 1.0e-10);
         double dt_R = 10.0;
         T dt = zero.add(dt_R);
-        
+
         T alpha = rate.multiply(dt);
         FieldAttitude<T> shifted = attitude.shiftedBy(dt);
         Assert.assertEquals(rate.getReal(), shifted.getSpin().getNorm().getReal(), 1.0e-10);
@@ -119,11 +119,11 @@ public class FieldAttitudeTest {
         Assert.assertEquals(0.0, reversed.add(attitude.getSpin()).getNorm().getReal(), 1.0e-10);
 
     }
-    
+
     public <T extends RealFieldElement<T>> void doTestInterpolation(final Field<T> field) throws OrekitException {
-        
+
         T zero = field.getZero();
-        
+
         Utils.setDataRoot("regular-data");
         final double ehMu = 3.9860047e14;
         final double ae   = 6.378137e6;
@@ -175,7 +175,7 @@ public class FieldAttitudeTest {
             maxInterpolationAngleError  = FastMath.max(maxInterpolationAngleError, interpolationAngleError.getReal());
             maxShiftRateError           = FastMath.max(maxShiftRateError, shiftRateError.getReal());
             maxInterpolationRateError   = FastMath.max(maxInterpolationRateError, interpolationRateError.getReal());
-            
+
         }
         Assert.assertTrue(maxShiftAngleError         > 6.0e-6);
         Assert.assertTrue(maxInterpolationAngleError < 6.0e-15);
@@ -210,6 +210,6 @@ public class FieldAttitudeTest {
         Assert.assertTrue(maxInterpolationRateError  < 6.0e-14);
 
     }
-    
+
 }
 

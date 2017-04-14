@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -140,6 +140,7 @@ public class ElevationDetectorTest {
         public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
         }
 
+        @Deprecated
         @Override
         public void init(SpacecraftState initialState, AbsoluteDate target) {
         }

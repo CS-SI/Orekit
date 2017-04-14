@@ -1,4 +1,4 @@
-/* Copyright 2002-2016 CS Systèmes d'Information
+/* Copyright 2002-2017 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -205,9 +205,9 @@ public class TimeStampedAngularCoordinatesTest {
     @Test
     public void testNoCommute() {
         TimeStampedAngularCoordinates ac1 =
-	    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.48,  0.64, 0.36, 0.48, false), Vector3D.ZERO, Vector3D.ZERO);
+        new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.48,  0.64, 0.36, 0.48, false), Vector3D.ZERO, Vector3D.ZERO);
         TimeStampedAngularCoordinates ac2 =
-	    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.36, -0.48, 0.48, 0.64, false), Vector3D.ZERO, Vector3D.ZERO);
+        new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, new Rotation(0.36, -0.48, 0.48, 0.64, false), Vector3D.ZERO, Vector3D.ZERO);
 
         TimeStampedAngularCoordinates add12 = ac1.addOffset(ac2);
         TimeStampedAngularCoordinates add21 = ac2.addOffset(ac1);
