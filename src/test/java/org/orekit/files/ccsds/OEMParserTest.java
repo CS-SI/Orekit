@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.junit.Assert;
@@ -29,13 +30,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
 import org.orekit.files.ccsds.OEMFile.OemSatelliteEphemeris;
+import org.orekit.frames.FactoryManagedFrame;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -175,40 +180,30 @@ public class OEMParserTest {
         Assert.assertEquals(satellite.getMu(), file.getMuUsed(), 0);
         final EphemeridesBlock actualBlock = satellite.getSegments().get(0);
         Assert.assertEquals(actualBlock.getMu(), file.getMuUsed(), 0);
-        Assert.assertEquals(actualBlock.getFrame(), FramesFactory.getEME2000());
         Assert.assertEquals(actualBlock.getFrameString(), "EME2000");
+        Assert.assertEquals(actualBlock.getFrameCenterString(), "MARS BARYCENTER");
+        Assert.assertEquals(actualBlock.getMetaData().getHasCreatableBody(), false);
+        // Frame not creatable since it's center can't be created.
+        try {
+            actualBlock.getFrame();
+            Assert.fail("Expected Exception");
+        } catch (OrekitException e){
+            Assert.assertEquals(e.getSpecifier(),
+                    OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
+        }
         Assert.assertEquals(actualBlock.getTimeScaleString(), "UTC");
         Assert.assertEquals(actualBlock.getTimeScale(), TimeScalesFactory.getUTC());
         Assert.assertEquals(actualBlock.getInterpolationSamples(), 3);
         Assert.assertEquals(actualBlock.getAvailableDerivatives(),
                 CartesianDerivativesFilter.USE_PV);
-        final BoundedPropagator propagator = satellite.getPropagator();
-        Assert.assertEquals(propagator.getMinDate(), satellite.getStart());
-        Assert.assertEquals(propagator.getMinDate(), satellite.getSegments().get(0).getStart());
-        Assert.assertEquals(propagator.getMinDate(), satellite.getSegments().get(0).getUseableStartTime());
-        Assert.assertEquals(propagator.getMaxDate(), satellite.getStop());
-        Assert.assertEquals(propagator.getMaxDate(), satellite.getSegments().get(2).getStop());
-        Assert.assertEquals(propagator.getMaxDate(), satellite.getSegments().get(2).getUseableStopTime());
-
-        final List<TimeStampedPVCoordinates> dataLines = new ArrayList<>();
-        for (EphemeridesBlock block : file.getEphemeridesBlocks()) {
-            for (TimeStampedPVCoordinates dataLine : block.getEphemeridesDataLines()) {
-                if (dataLine.getDate().compareTo(satellite.getStart()) >= 0) {
-                    dataLines.add(dataLine);
-                }
-            }
+        // propagator can't be created since frame can't be created
+        try {
+            satellite.getPropagator();
+            Assert.fail("Expected Exception");
+        } catch (OrekitException e){
+            Assert.assertEquals(e.getSpecifier(),
+                    OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY);
         }
-
-        final int ulps = 12;
-        for (TimeStampedPVCoordinates coord : dataLines) {
-            Assert.assertThat(
-                    propagator.getPVCoordinates(coord.getDate(), FramesFactory.getEME2000()),
-                    OrekitMatchers.pvCloseTo(coord, ulps));
-            Assert.assertThat(
-                    propagator.propagate(coord.getDate()).getPVCoordinates(),
-                    OrekitMatchers.pvCloseTo(coord, ulps));
-        }
-
     }
 
     @Test
@@ -230,27 +225,42 @@ public class OEMParserTest {
         Assert.assertEquals(1, file.getSatellites().size());
         Assert.assertEquals("1996-062A", file.getSatellites().values().iterator().next().getId());
         Assert.assertEquals(
-                new AbsoluteDate("1996-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
+                new AbsoluteDate("2002-12-18T12:00:00.331", TimeScalesFactory.getUTC()),
                 file.getEphemeridesBlocks().get(0).getStartTime());
 
-        final OemSatelliteEphemeris satellite = file.getSatellites().get("1996-062A");
+        OemSatelliteEphemeris satellite = file.getSatellites().get("1996-062A");
         Assert.assertEquals(satellite.getId(), "1996-062A");
         Assert.assertEquals(satellite.getMu(), file.getMuUsed(), 0);
-        final EphemeridesBlock actualBlock = satellite.getSegments().get(0);
+        EphemeridesBlock actualBlock = satellite.getSegments().get(0);
         Assert.assertEquals(actualBlock.getMu(), file.getMuUsed(), 0);
-        Assert.assertEquals(actualBlock.getFrame(), FramesFactory.getEME2000());
+        FactoryManagedFrame eme2000 = FramesFactory.getEME2000();
+        Frame actualFrame = actualBlock.getFrame();
+        AbsoluteDate actualStart = satellite.getStart();
+        Transform actualTransform = eme2000.getTransformTo(actualFrame, actualStart);
+        CelestialBody mars = CelestialBodyFactory.getMars();
+        TimeStampedPVCoordinates marsPV = mars.getPVCoordinates(actualStart, eme2000);
+        Assert.assertEquals(actualTransform.getTranslation(), marsPV.getPosition());
+        Assert.assertEquals(actualTransform.getVelocity(), marsPV.getVelocity());
+        Assert.assertEquals(actualTransform.getAcceleration(), marsPV.getAcceleration());
+        Assert.assertEquals(
+                Rotation.distance(actualTransform.getRotation(), Rotation.IDENTITY),
+                0.0, 0.0);
+        Assert.assertEquals(actualTransform.getRotationRate(), Vector3D.ZERO);
+        Assert.assertEquals(actualTransform.getRotationAcceleration(), Vector3D.ZERO);
+        Assert.assertEquals(actualFrame.getName(), "Mars/EME2000");
         Assert.assertEquals(actualBlock.getFrameString(), "EME2000");
         Assert.assertEquals(actualBlock.getTimeScaleString(), "UTC");
         Assert.assertEquals(actualBlock.getTimeScale(), TimeScalesFactory.getUTC());
         Assert.assertEquals(actualBlock.getAvailableDerivatives(),
                 CartesianDerivativesFilter.USE_PV);
-        Assert.assertEquals(satellite.getSegments().get(0).getStartTime(), satellite.getStart());
-        Assert.assertEquals(satellite.getSegments().get(0).getStopTime(), satellite.getStop());
+        Assert.assertEquals(satellite.getSegments().get(0).getStartTime(), actualStart);
+        Assert.assertEquals(satellite.getSegments().get(2).getStopTime(), satellite.getStop());
+
         final BoundedPropagator propagator = satellite.getPropagator();
         Assert.assertEquals(propagator.getMinDate(), satellite.getStart());
         Assert.assertEquals(propagator.getMinDate(), satellite.getSegments().get(0).getStart());
         Assert.assertEquals(propagator.getMaxDate(), satellite.getStop());
-        Assert.assertEquals(propagator.getMaxDate(), satellite.getSegments().get(0).getStop());
+        Assert.assertEquals(propagator.getMaxDate(), satellite.getSegments().get(2).getStop());
 
         final List<TimeStampedPVCoordinates> dataLines = new ArrayList<>();
         for (EphemeridesBlock block : file.getEphemeridesBlocks()) {
@@ -264,7 +274,7 @@ public class OEMParserTest {
         final int ulps = 12;
         for (TimeStampedPVCoordinates coord : dataLines) {
             Assert.assertThat(
-                    propagator.getPVCoordinates(coord.getDate(), FramesFactory.getEME2000()),
+                    propagator.getPVCoordinates(coord.getDate(), actualFrame),
                     OrekitMatchers.pvCloseTo(coord, ulps));
             Assert.assertThat(
                     propagator.propagate(coord.getDate()).getPVCoordinates(),
