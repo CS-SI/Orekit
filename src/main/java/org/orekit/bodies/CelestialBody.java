@@ -21,7 +21,6 @@ import java.io.Serializable;
 import org.hipparchus.RealFieldElement;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -61,14 +60,14 @@ public interface CelestialBody extends Serializable, PVCoordinatesProvider {
     double getGM();
 
     /**
-     * Get the {@link FieldPVCoordinates} of the body in the selected frame.
+     * Get the {@link TimeStampedFieldPVCoordinates} of the body in the selected frame.
      *
      * @param date  current date
      * @param frame the frame where to define the position
      * @param <T>   type fo the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
      * @throws OrekitException if position cannot be computed in given frame
-     * @see #getPVCoordinates(AbsoluteDate, Frame)
+     * @see #getPVCoordinates(org.orekit.time.AbsoluteDate, Frame)
      */
     <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(
             FieldAbsoluteDate<T> date,
