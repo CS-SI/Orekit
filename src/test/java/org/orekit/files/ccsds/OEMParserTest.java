@@ -98,7 +98,7 @@ public class OEMParserTest {
         Assert.assertArrayEquals(orbit.getPVCoordinates().getPosition().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getPosition().toArray(),1e-10);
         Assert.assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getVelocity().toArray(),1e-10);
         Assert.assertArrayEquals((new Vector3D(1, 1, 1)).toArray(), file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(0).getAcceleration().toArray(), 1e-10);
-        Assert.assertEquals(Vector3D.NaN, file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(1).getAcceleration());
+        Assert.assertEquals(Vector3D.ZERO, file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(1).getAcceleration());
         final Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         final double[] column1 = {
             3.331349476038534e-04, 4.618927349220216e-04,
