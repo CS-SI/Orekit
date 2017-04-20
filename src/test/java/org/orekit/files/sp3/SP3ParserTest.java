@@ -68,7 +68,7 @@ public class SP3ParserTest {
 
         // P 1 16258.524750 -3529.015750 -20611.427050 -62.540600
         checkPVEntry(new PVCoordinates(new Vector3D(16258524.75, -3529015.75, -20611427.049),
-                                       Vector3D.NaN),
+                                       Vector3D.ZERO),
                      coord);
         Assert.assertEquals("NGS", file.getAgency());
         Assert.assertEquals("ITR92", file.getCoordinateSystem());
@@ -140,7 +140,7 @@ public class SP3ParserTest {
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
         checkPVEntry(new PVCoordinates(new Vector3D(-11044805.8, -10475672.35, 21929418.2),
-                                       Vector3D.NaN),
+                                       Vector3D.ZERO),
                      coord);
     }
 
@@ -206,7 +206,7 @@ public class SP3ParserTest {
         Assert.assertEquals(expectedVel.getY(), actualVel.getY(), eps);
         Assert.assertEquals(expectedVel.getZ(), actualVel.getZ(), eps);
 
-        Assert.assertEquals(Vector3D.NaN, actual.getAcceleration());
+        Assert.assertEquals(Vector3D.ZERO, actual.getAcceleration());
     }
 
     @Before
