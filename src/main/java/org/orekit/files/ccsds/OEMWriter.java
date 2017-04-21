@@ -38,7 +38,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Hank Grabowski
  * @author Evan Ward
  * @since 9.0
- * @see <a href="https://public.ccsds.org/Pubs/502x0b2c1.pdf">CCSDS 502.0-B-2</a>
+ * @see <a href="https://public.ccsds.org/Pubs/502x0b2c1.pdf">CCSDS 502.0-B-2 Orbit Data
+ *      Messages</a>
+ * @see <a href="https://public.ccsds.org/Pubs/500x0g3.pdf">CCSDS 500.0-G-3 Navigation
+ *      Data Definitions and Conventions</a>
+ * @see StreamingOemWriter
  */
 public class OEMWriter implements EphemerisFileWriter {
 

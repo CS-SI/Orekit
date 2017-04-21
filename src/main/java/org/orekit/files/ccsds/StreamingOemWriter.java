@@ -178,6 +178,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * Keyword#CENTER_NAME}, {@link Keyword#REF_FRAME}, and {@link Keyword#TIME_SYSTEM} to
  * avoid any bugs associated with incorrect guesses.
  *
+ * <p> Standardized values for {@link Keyword#TIME_SYSTEM} are GMST, GPS, ME, MRT, SCLK,
+ * TAI, TCB, TDB, TCG, TT, UT1, and UTC. Standardized values for {@link Keyword#REF_FRAME}
+ * are EME2000, GCRF, GRC, ICRF, ITRF2000, ITRF-93, ITRF-97, MCI, TDR, TEME, and TOD.
+ * Additionally ITRF followed by a four digit year may be used.
+ *
  * <h3> Examples </h3>
  *
  * <p> This class can be used as a step handler for a {@link Propagator}, or on its own.
@@ -221,7 +226,11 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * }</pre>
  *
  * @author Evan Ward
- * @see <a href="https://public.ccsds.org/Pubs/502x0b2c1.pdf">CCSDS 502.0-B-2</a>
+ * @see <a href="https://public.ccsds.org/Pubs/502x0b2c1.pdf">CCSDS 502.0-B-2 Orbit Data
+ *      Messages</a>
+ * @see <a href="https://public.ccsds.org/Pubs/500x0g3.pdf">CCSDS 500.0-G-3 Navigation
+ *      Data Definitions and Conventions</a>
+ * @see OEMWriter
  */
 public class StreamingOemWriter {
 
