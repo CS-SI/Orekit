@@ -485,7 +485,7 @@ public class TurnAroundRangeAnalyticTest {
         else {
             // Without modifier
             if (!isModifier) {
-                refErrorsPMedian = 1.1e-09;
+                refErrorsPMedian = 1.2e-09;
                 refErrorsPMean   = 2.6e-09;
                 refErrorsPMax    = 9.0e-08;
             }

@@ -141,7 +141,10 @@
   </Match>
   <Match>
     <Class name="org.orekit.orbits.KeplerianOrbit"/>
-    <Method name ="eMeSinE" params="double" returns="double" />
+    <Or>
+      <Method name ="eMeSinE" params="double,double" returns="double" />
+      <Method name ="eMeSinE" params="org.hipparchus.analysis.differentiation.DerivativeStructure,org.hipparchus.analysis.differentiation.DerivativeStructure" returns="org.hipparchus.analysis.differentiation.DerivativeStructure" />
+    </Or>
     <Bug pattern="FE_FLOATING_POINT_EQUALITY" />
   </Match>
 

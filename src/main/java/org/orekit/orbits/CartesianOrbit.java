@@ -19,8 +19,11 @@ package org.orekit.orbits;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import org.hipparchus.analysis.differentiation.DSFactory;
+import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -70,7 +73,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class CartesianOrbit extends Orbit {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140723L;
+    private static final long serialVersionUID = 20170414L;
+
+    /** Factory for first time derivatives. */
+    private static final DSFactory FACTORY = new DSFactory(1, 1);
+
+    /** Indicator for non-Keplerian derivatives. */
+    private final transient boolean hasNonKeplerianAcceleration;
 
     /** Underlying equinoctial orbit to which high-level methods are delegated. */
     private transient EquinoctialOrbit equinoctial;
@@ -93,6 +102,7 @@ public class CartesianOrbit extends Orbit {
                           final Frame frame, final double mu)
         throws IllegalArgumentException {
         super(pvaCoordinates, frame, mu);
+        hasNonKeplerianAcceleration = hasNonKeplerianAcceleration(pvaCoordinates, mu);
         equinoctial = null;
     }
 
@@ -122,6 +132,7 @@ public class CartesianOrbit extends Orbit {
      */
     public CartesianOrbit(final Orbit op) {
         super(op.getPVCoordinates(), op.getFrame(), op.getMu());
+        hasNonKeplerianAcceleration = op.hasDerivatives();
         if (op instanceof EquinoctialOrbit) {
             equinoctial = (EquinoctialOrbit) op;
         } else if (op instanceof CartesianOrbit) {
@@ -143,12 +154,45 @@ public class CartesianOrbit extends Orbit {
         }
     }
 
+    /** Get position with derivatives.
+     * @return position with derivatives
+     */
+    private FieldVector3D<DerivativeStructure> getPositionDS() {
+        final Vector3D p = getPVCoordinates().getPosition();
+        final Vector3D v = getPVCoordinates().getVelocity();
+        return new FieldVector3D<>(FACTORY.build(p.getX(), v.getX()),
+                                   FACTORY.build(p.getY(), v.getY()),
+                                   FACTORY.build(p.getZ(), v.getZ()));
+    }
+
+    /** Get velocity with derivatives.
+     * @return velocity with derivatives
+     */
+    private FieldVector3D<DerivativeStructure> getVelocityDS() {
+        final Vector3D v = getPVCoordinates().getVelocity();
+        final Vector3D a = getPVCoordinates().getAcceleration();
+        return new FieldVector3D<>(FACTORY.build(v.getX(), a.getX()),
+                                   FACTORY.build(v.getY(), a.getY()),
+                                   FACTORY.build(v.getZ(), a.getZ()));
+    }
+
     /** {@inheritDoc} */
     public double getA() {
-        // lazy evaluation of semi-major axis
         final double r  = getPVCoordinates().getPosition().getNorm();
         final double V2 = getPVCoordinates().getVelocity().getNormSq();
         return r / (2 - r * V2 / getMu());
+    }
+
+    /** {@inheritDoc} */
+    public double getADot() {
+        if (hasDerivatives()) {
+            final DerivativeStructure r  = getPositionDS().getNorm();
+            final DerivativeStructure V2 = getVelocityDS().getNormSq();
+            final DerivativeStructure a  = r.divide(r.multiply(V2).divide(getMu()).subtract(2).negate());
+            return a.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
     }
 
     /** {@inheritDoc} */
@@ -162,8 +206,38 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getEDot() {
+        if (hasDerivatives()) {
+            final FieldVector3D<DerivativeStructure> pvP   = getPositionDS();
+            final FieldVector3D<DerivativeStructure> pvV   = getVelocityDS();
+            final DerivativeStructure r       = getPositionDS().getNorm();
+            final DerivativeStructure V2      = getVelocityDS().getNormSq();
+            final DerivativeStructure rV2OnMu = r.multiply(V2).divide(getMu());
+            final DerivativeStructure a       = r.divide(rV2OnMu).subtract(2);
+            final DerivativeStructure eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(a.multiply(getMu()).sqrt());
+            final DerivativeStructure eCE     = rV2OnMu.subtract(1);
+            final DerivativeStructure e       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
+            return e.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    /** {@inheritDoc} */
     public double getI() {
         return Vector3D.angle(Vector3D.PLUS_K, getPVCoordinates().getMomentum());
+    }
+
+    /** {@inheritDoc} */
+    public double getIDot() {
+        if (hasDerivatives()) {
+            final FieldVector3D<DerivativeStructure> momentum =
+                            FieldVector3D.crossProduct(getPositionDS(), getVelocityDS());
+            final DerivativeStructure i = FieldVector3D.angle(Vector3D.PLUS_K, momentum);
+            return i.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
     }
 
     /** {@inheritDoc} */
@@ -173,9 +247,21 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getEquinoctialExDot() {
+        initEquinoctial();
+        return equinoctial.getEquinoctialExDot();
+    }
+
+    /** {@inheritDoc} */
     public double getEquinoctialEy() {
         initEquinoctial();
         return equinoctial.getEquinoctialEy();
+    }
+
+    /** {@inheritDoc} */
+    public double getEquinoctialEyDot() {
+        initEquinoctial();
+        return equinoctial.getEquinoctialEyDot();
     }
 
     /** {@inheritDoc} */
@@ -189,6 +275,25 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getHxDot() {
+        if (hasDerivatives()) {
+            final FieldVector3D<DerivativeStructure> w =
+                            FieldVector3D.crossProduct(getPositionDS(), getVelocityDS()).normalize();
+            // Check for equatorial retrograde orbit
+            final double x = w.getX().getValue();
+            final double y = w.getY().getValue();
+            final double z = w.getZ().getValue();
+            if (((x * x + y * y) == 0) && z < 0) {
+                return Double.NaN;
+            }
+            final DerivativeStructure hx = w.getY().negate().divide(w.getZ().add(1));
+            return hx.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    /** {@inheritDoc} */
     public double getHy() {
         final Vector3D w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
@@ -199,9 +304,34 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getHyDot() {
+        if (hasDerivatives()) {
+            final FieldVector3D<DerivativeStructure> w =
+                            FieldVector3D.crossProduct(getPositionDS(), getVelocityDS()).normalize();
+            // Check for equatorial retrograde orbit
+            final double x = w.getX().getValue();
+            final double y = w.getY().getValue();
+            final double z = w.getZ().getValue();
+            if (((x * x + y * y) == 0) && z < 0) {
+                return Double.NaN;
+            }
+            final DerivativeStructure hy = w.getX().divide(w.getZ().add(1));
+            return hy.getPartialDerivative(1);
+        } else {
+            return Double.NaN;
+        }
+    }
+
+    /** {@inheritDoc} */
     public double getLv() {
         initEquinoctial();
         return equinoctial.getLv();
+    }
+
+    /** {@inheritDoc} */
+    public double getLvDot() {
+        initEquinoctial();
+        return equinoctial.getLvDot();
     }
 
     /** {@inheritDoc} */
@@ -211,9 +341,26 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
+    public double getLEDot() {
+        initEquinoctial();
+        return equinoctial.getLEDot();
+    }
+
+    /** {@inheritDoc} */
     public double getLM() {
         initEquinoctial();
         return equinoctial.getLM();
+    }
+
+    /** {@inheritDoc} */
+    public double getLMDot() {
+        initEquinoctial();
+        return equinoctial.getLMDot();
+    }
+
+    /** {@inheritDoc} */
+    public boolean hasDerivatives() {
+        return hasNonKeplerianAcceleration;
     }
 
     /** {@inheritDoc} */
@@ -524,7 +671,7 @@ public class CartesianOrbit extends Orbit {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20140723L;
+        private static final long serialVersionUID = 20170414L;
 
         /** Double values. */
         private double[] d;

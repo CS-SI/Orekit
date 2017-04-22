@@ -26,14 +26,15 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolable;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -60,6 +61,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @since 9.0
  */
 public abstract class FieldOrbit<T extends RealFieldElement<T>> implements FieldPVCoordinatesProvider<T>, FieldTimeInterpolable<FieldOrbit<T>, T> {
 
@@ -151,6 +153,33 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
         this.frame = frame;
     }
 
+    /** Check if Cartesian coordinates include non-Keplerian acceleration.
+     * @param pva Cartesian coordinates
+     * @param mu central attraction coefficient
+     * @param <T> type of the field elements
+     * @return true if Cartesian coordinates include non-Keplerian acceleration
+     */
+    protected static <T extends RealFieldElement<T>> boolean hasNonKeplerianAcceleration(final FieldPVCoordinates<T> pva, final double mu) {
+
+        final FieldVector3D<T> a = pva.getAcceleration();
+        if (a == null) {
+            return false;
+        }
+
+        final FieldVector3D<T> p = pva.getPosition();
+        final T r2 = p.getNormSq();
+        final T r  = r2.sqrt();
+        final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu), p);
+        if (a.getNorm().getReal() > 1.0e-9 * keplerianAcceleration.getNorm().getReal()) {
+            // we have a relevant acceleration, we can compute derivatives
+            return true;
+        } else {
+            // the provided acceleration is either too small to be reliable (probably even 0), or NaN
+            return false;
+        }
+
+    }
+
     /** Get the orbit type.
      * @return orbit type
      */
@@ -187,40 +216,104 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
      */
     public abstract T getA();
 
+    /** Get the semi-major axis derivative.
+     * <p>Note that the semi-major axis is considered negative for hyperbolic orbits.</p>
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return semi-major axis  derivative (m/s)
+     */
+    public abstract T getADot();
+
     /** Get the first component of the equinoctial eccentricity vector.
      * @return first component of the equinoctial eccentricity vector
      */
     public abstract T getEquinoctialEx();
+
+    /** Get the first component of the equinoctial eccentricity vector.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return first component of the equinoctial eccentricity vector
+     */
+    public abstract T getEquinoctialExDot();
 
     /** Get the second component of the equinoctial eccentricity vector.
      * @return second component of the equinoctial eccentricity vector
      */
     public abstract T getEquinoctialEy();
 
+    /** Get the second component of the equinoctial eccentricity vector.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return second component of the equinoctial eccentricity vector
+     */
+    public abstract T getEquinoctialEyDot();
+
     /** Get the first component of the inclination vector.
      * @return first component of the inclination vector
      */
     public abstract T getHx();
+
+    /** Get the first component of the inclination vector derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return first component of the inclination vector derivative
+     */
+    public abstract T getHxDot();
 
     /** Get the second component of the inclination vector.
      * @return second component of the inclination vector
      */
     public abstract T getHy();
 
+    /** Get the second component of the inclination vector derivative.
+     * <p>
+     * </p>
+     * @return second component of the inclination vector derivative
+     */
+    public abstract T getHyDot();
+
     /** Get the eccentric longitude argument.
      * @return E + ω + Ω eccentric longitude argument (rad)
      */
     public abstract T getLE();
+
+    /** Get the eccentric longitude argument derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return d(E + ω + Ω)/dt eccentric longitude argument derivative (rad/s)
+     */
+    public abstract T getLEDot();
 
     /** Get the true longitude argument.
      * @return v + ω + Ω true longitude argument (rad)
      */
     public abstract T getLv();
 
+    /** Get the true longitude argument derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return d(v + ω + Ω)/dt true longitude argument derivative (rad/s)
+     */
+    public abstract T getLvDot();
+
     /** Get the mean longitude argument.
      * @return M + ω + Ω mean longitude argument (rad)
      */
     public abstract T getLM();
+
+    /** Get the mean longitude argument derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return d(M + ω + Ω)/dt mean longitude argument derivative (rad/s)
+     */
+    public abstract T getLMDot();
 
     // Additional orbital elements
 
@@ -229,14 +322,46 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
      */
     public abstract T getE();
 
+    /** Get the eccentricity derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return eccentricity derivative
+     */
+    public abstract T getEDot();
+
     /** Get the inclination.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
      * @return inclination (rad)
      */
     public abstract T getI();
 
+    /** Get the inclination derivative.
+     * @return inclination derivative (rad/s)
+     */
+    public abstract T getIDot();
+
     /** Get the central acceleration constant.
      * @return central acceleration constant
      */
+
+    /** Check if orbit includes derivatives.
+     * @return true if orbit includes derivatives
+     * @see #getADot()
+     * @see #getEquinoctialExDot()
+     * @see #getEquinoctialEyDot()
+     * @see #getHxDot()
+     * @see #getHyDot()
+     * @see #getLEDot()
+     * @see #getLvDot()
+     * @see #getLMDot()
+     * @see #getEDot()
+     * @see #getIDot()
+     * @since 9.0
+     */
+    public abstract boolean hasDerivatives();
 
     public double getMu() {
         return mu;

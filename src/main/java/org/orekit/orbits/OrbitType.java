@@ -47,7 +47,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                    final double[] stateVector, final double[] ststateVectorDot) {
+                                    final double[] stateVector, final double[] stateVectorDot) {
 
             final PVCoordinates pv = orbit.getPVCoordinates();
             final Vector3D      p  = pv.getPosition();
@@ -60,6 +60,16 @@ public enum OrbitType {
             stateVector[4] = v.getY();
             stateVector[5] = v.getZ();
 
+            if (stateVectorDot != null) {
+                final Vector3D a  = pv.getAcceleration();
+                stateVectorDot[0] = v.getX();
+                stateVectorDot[1] = v.getY();
+                stateVectorDot[2] = v.getZ();
+                stateVectorDot[3] = a.getX();
+                stateVectorDot[4] = a.getY();
+                stateVectorDot[5] = a.getZ();
+            }
+
         }
 
         /** {@inheritDoc} */
@@ -67,10 +77,17 @@ public enum OrbitType {
         public Orbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
                                      final AbsoluteDate date, final double mu, final Frame frame) {
 
-            final Vector3D p     = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
-            final double r2      = p.getNormSq();
-            final Vector3D v     = new Vector3D(stateVector[3], stateVector[4], stateVector[5]);
-            final Vector3D a     = new Vector3D(-mu / (r2 * FastMath.sqrt(r2)), p);
+            final Vector3D p = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
+            final Vector3D v = new Vector3D(stateVector[3], stateVector[4], stateVector[5]);
+            final Vector3D a;
+            if (stateVectorDot == null) {
+                // we don't have data about acceleration, just compute two-body acceleration
+                final double r2 = p.getNormSq();
+                a = new Vector3D(-mu / (r2 * FastMath.sqrt(r2)), p);
+            } else {
+                // we do have an acceleration
+                a = new Vector3D(stateVectorDot[3], stateVectorDot[4], stateVectorDot[5]);
+            }
             return new CartesianOrbit(new PVCoordinates(p, v, a), frame, date, mu);
 
         }
@@ -89,8 +106,8 @@ public enum OrbitType {
                                                                     final T[] stateVectorDot) {
 
             final TimeStampedFieldPVCoordinates<T> pv = orbit.getPVCoordinates();
-            final FieldVector3D<T>      p  = pv.getPosition();
-            final FieldVector3D<T>      v  = pv.getVelocity();
+            final FieldVector3D<T>                 p  = pv.getPosition();
+            final FieldVector3D<T>                 v  = pv.getVelocity();
 
             stateVector[0] = p.getX();
             stateVector[1] = p.getY();
@@ -98,6 +115,16 @@ public enum OrbitType {
             stateVector[3] = v.getX();
             stateVector[4] = v.getY();
             stateVector[5] = v.getZ();
+
+            if (stateVectorDot != null) {
+                final FieldVector3D<T> a = pv.getAcceleration();
+                stateVectorDot[0]        = v.getX();
+                stateVectorDot[1]        = v.getY();
+                stateVectorDot[2]        = v.getZ();
+                stateVectorDot[3]        = a.getX();
+                stateVectorDot[4]        = a.getY();
+                stateVectorDot[5]        = a.getZ();
+            }
 
         }
 
@@ -109,10 +136,17 @@ public enum OrbitType {
                                                                              final FieldAbsoluteDate<T> date,
                                                                              final double mu, final Frame frame) {
             final T zero = stateVector[0].getField().getZero();
-            final FieldVector3D<T> p     = new FieldVector3D<T>(stateVector[0], stateVector[1], stateVector[2]);
-            final T r2      = p.getNormSq();
-            final FieldVector3D<T> v     = new FieldVector3D<T>(stateVector[3], stateVector[4], stateVector[5]);
-            final FieldVector3D<T> a     = new FieldVector3D<T>(zero.add(-mu).divide(r2.sqrt().multiply(r2)), p);
+            final FieldVector3D<T> p = new FieldVector3D<>(stateVector[0], stateVector[1], stateVector[2]);
+            final FieldVector3D<T> v = new FieldVector3D<>(stateVector[3], stateVector[4], stateVector[5]);
+            final FieldVector3D<T> a;
+            if (stateVectorDot == null) {
+                // we don't have data about acceleration, just compute two-body acceleration
+                final T r2 = p.getNormSq();
+                a = new FieldVector3D<>(zero.add(-mu).divide(r2.sqrt().multiply(r2)), p);
+            } else {
+                // we do have an acceleration
+                a = new FieldVector3D<>(stateVectorDot[3], stateVectorDot[4], stateVectorDot[5]);
+            }
             return new FieldCartesianOrbit<T>(new FieldPVCoordinates<T>(p, v, a), frame, date, mu);
 
         }
@@ -148,7 +182,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                    final double[] stateVector, final double[] ststateVectorDot) {
+                                    final double[] stateVector, final double[] stateVectorDot) {
 
             final CircularOrbit circularOrbit = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
 
@@ -239,7 +273,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                    final double[] stateVector, final double[] ststateVectorDot) {
+                                    final double[] stateVector, final double[] stateVectorDot) {
 
             final EquinoctialOrbit equinoctialOrbit =
                 (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
@@ -334,7 +368,7 @@ public enum OrbitType {
         /** {@inheritDoc} */
         @Override
         public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                    final double[] stateVector, final double[] ststateVectorDot) {
+                                    final double[] stateVector, final double[] stateVectorDot) {
 
             final KeplerianOrbit keplerianOrbit =
                 (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);

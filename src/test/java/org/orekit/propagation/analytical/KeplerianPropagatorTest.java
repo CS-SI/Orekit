@@ -51,10 +51,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
@@ -78,6 +80,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class KeplerianPropagatorTest {
@@ -792,8 +795,8 @@ public class KeplerianPropagatorTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(propagator.getGeneratedEphemeris());
 
-        Assert.assertTrue(bos.size() > 2300);
-        Assert.assertTrue(bos.size() < 2400);
+        Assert.assertTrue(bos.size() > 2400);
+        Assert.assertTrue(bos.size() < 2500);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -813,6 +816,57 @@ public class KeplerianPropagatorTest {
         });
         ephemeris.propagate(ephemeris.getMaxDate());
 
+    }
+
+    @Test
+    public void testNoDerivatives() throws OrekitException {
+        for (OrbitType type : OrbitType.values()) {
+
+            // create an initial orbit with non-Keplerian acceleration
+            final AbsoluteDate date         = new AbsoluteDate(2003, 9, 16, TimeScalesFactory.getUTC());
+            final Vector3D     position     = new Vector3D(-6142438.668, 3492467.56, -25767.257);
+            final Vector3D     velocity     = new Vector3D(505.848, 942.781, 7435.922);
+            final Vector3D     keplerAcceleration = new Vector3D(-mu / position.getNormSq(), position.normalize());
+            final Vector3D     nonKeplerAcceleration = new Vector3D(0.001, 0.002, 0.003);
+            final Vector3D     acceleration = keplerAcceleration.add(nonKeplerAcceleration);
+            final TimeStampedPVCoordinates pva = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+            final Orbit initial = type.convertType(new CartesianOrbit(pva, FramesFactory.getEME2000(), mu));
+            Assert.assertEquals(type, initial.getType());
+            checkDerivatives(initial, true);
+
+            // Cartesian orbits always have derivatives, by construction, but
+            // with Keplerian propagator they are limited to Keplerian motion
+            // non Cartesian orbits get no derivatives when propagated with Keplerian propagator
+            final boolean expectedDerivatives = type == OrbitType.CARTESIAN;
+
+            KeplerianPropagator propagator = new KeplerianPropagator(initial);
+            Assert.assertEquals(type, propagator.getInitialState().getOrbit().getType());
+            checkDerivatives(propagator.getInitialState().getOrbit(), expectedDerivatives);
+            PVCoordinates initPV = propagator.getInitialState().getOrbit().getPVCoordinates();
+            Assert.assertEquals(nonKeplerAcceleration.getNorm(), Vector3D.distance(acceleration, initPV.getAcceleration()), 2.0e-15);
+            Assert.assertEquals(0.0,
+                                Vector3D.distance(keplerAcceleration, initPV.getAcceleration()),
+                                4.0e-15);
+
+            Orbit orbit = propagator.propagateOrbit(initial.getDate().shiftedBy(0.2 * initial.getKeplerianPeriod()));
+            Assert.assertEquals(type, orbit.getType());
+            checkDerivatives(orbit, expectedDerivatives);
+
+        }
+    }
+
+    private void checkDerivatives(final Orbit orbit, final boolean expectedDerivatives) {
+        Assert.assertEquals(expectedDerivatives, orbit.hasDerivatives());
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getADot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialExDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialEyDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getHxDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getHyDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLEDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLvDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLMDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEDot()));
+        Assert.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getIDot()));
     }
 
     @Test

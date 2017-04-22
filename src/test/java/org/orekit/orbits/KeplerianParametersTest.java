@@ -516,7 +516,7 @@ public class KeplerianParametersTest {
                                    FramesFactory.getEME2000(), date, mu);
             double E = pAlmostParabolic.getEccentricAnomaly();
             double e = pAlmostParabolic.getE();
-            Assert.assertEquals(M, E - e * FastMath.sin(E), 3.0e-13);
+            Assert.assertEquals(M, E - e * FastMath.sin(E), 4.0e-13);
         }
 
     }

@@ -18,8 +18,13 @@ package org.orekit.orbits;
 
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.differentiation.FDSFactory;
+import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
 import org.hipparchus.analysis.interpolation.FieldHermiteInterpolator;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -35,10 +40,10 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 
 /**
- * This class handles traditional keplerian orbital parameters.
+ * This class handles traditional Keplerian orbital parameters.
 
  * <p>
- * The parameters used internally are the classical keplerian elements:
+ * The parameters used internally are the classical Keplerian elements:
  *   <pre>
  *     a
  *     e
@@ -73,10 +78,13 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Andrea Antolino
+ * @since 9.0
  */
-
-
 public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
+
+    /** Factory for first time derivatives. */
+    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES =
+                    new HashMap<>();
 
     /** First coefficient to compute Kepler equation solver starter. */
     private static final double A;
@@ -91,6 +99,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         A  = 3 * k2 * k2 / k1;
         B  = k3 * k3 / (6 * k1);
     }
+
     /** Semi-major axis (m). */
     private final T a;
 
@@ -109,16 +118,31 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** True anomaly (rad). */
     private final T v;
 
-    /** Element identité. */
+    /** Semi-major axis derivative (m/s). */
+    private final T aDot;
 
+    /** Eccentricity derivative. */
+    private final T eDot;
+
+    /** Inclination derivative (rad/s). */
+    private final T iDot;
+
+    /** Perigee Argument derivative (rad/s). */
+    private final T paDot;
+
+    /** Right Ascension of Ascending Node derivative (rad/s). */
+    private final T raanDot;
+
+    /** True anomaly derivative (rad/s). */
+    private final T vDot;
+
+    /** Identity element. */
     private final T one;
 
-    /**Element zero. */
-
+    /** Zero element. */
     private final T zero;
 
     /** Third Canonical Vector. */
-
     private final FieldVector3D<T> PLUS_K;
 
     /** Creates a new instance.
@@ -138,58 +162,128 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * or v is out of range for hyperbolic orbits
      */
     public FieldKeplerianOrbit(final T a, final T e, final T i,
-                          final T pa, final T raan,
-                          final T anomaly, final PositionAngle type,
-                          final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+                               final T pa, final T raan,
+                               final T anomaly, final PositionAngle type,
+                               final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
+        throws IllegalArgumentException {
+        this(a, e, i, pa, raan, anomaly,
+             null, null, null, null, null, null,
+             type, frame, date, mu);
+    }
+
+    /** Creates a new instance.
+     * @param a  semi-major axis (m), negative for hyperbolic orbits
+     * @param e eccentricity
+     * @param i inclination (rad)
+     * @param pa perigee argument (ω, rad)
+     * @param raan right ascension of ascending node (Ω, rad)
+     * @param anomaly mean, eccentric or true anomaly (rad)
+     * @param aDot  semi-major axis derivative, null if unknown (m/s)
+     * @param eDot eccentricity derivative, null if unknown
+     * @param iDot inclination derivative, null if unknown (rad/s)
+     * @param paDot perigee argument derivative, null if unknown (rad/s)
+     * @param raanDot right ascension of ascending node derivative, null if unknown (rad/s)
+     * @param anomalyDot mean, eccentric or true anomaly derivative, null if unknown (rad/s)
+     * @param type type of anomaly
+     * @param frame the frame in which the parameters are defined
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m³/s²)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
+     * or v is out of range for hyperbolic orbits
+     */
+    public FieldKeplerianOrbit(final T a, final T e, final T i,
+                               final T pa, final T raan, final T anomaly,
+                               final T aDot, final T eDot, final T iDot,
+                               final T paDot, final T raanDot, final T anomalyDot,
+                               final PositionAngle type,
+                               final Frame frame, final FieldAbsoluteDate<T> date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
         if (a.multiply(e.negate().add(1)).getReal() < 0) {
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
         }
 
-        this.a    =    a;
-        this.e    =    e;
-        this.i    =    i;
-        this.pa   =   pa;
-        this.raan = raan;
+        if (!FACTORIES.containsKey(a.getField())) {
+            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        }
 
-        /**Element identité.*/
+        this.a       =    a;
+        this.aDot    =    aDot;
+        this.e       =    e;
+        this.eDot    =    eDot;
+        this.i       =    i;
+        this.iDot    =    iDot;
+        this.pa      =   pa;
+        this.paDot   =   paDot;
+        this.raan    = raan;
+        this.raanDot = raanDot;
 
+        /** Identity element. */
         this.one = a.getField().getOne();
 
-        /**Element zero.*/
+        /** Zero element. */
         this.zero = a.getField().getZero();
 
         /**Third canonical vector. */
         this.PLUS_K = new FieldVector3D<T>(zero, zero, one);
-        final T tmpV;
 
-        switch (type) {
-            case MEAN :
+        if (hasDerivatives()) {
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+            final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
+            final FieldDerivativeStructure<T> anomalyDS  = factory.build(anomaly,  anomalyDot);
+            final FieldDerivativeStructure<T> vDS;
+            switch (type) {
+                case MEAN :
+                    vDS = (a.getReal() < 0) ?
+                          hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomalyDS, eDS), eDS) :
+                          ellipticEccentricToTrue(meanToEllipticEccentric(anomalyDS, eDS), eDS);
+                    break;
+                case ECCENTRIC :
+                    vDS = (a.getReal() < 0) ?
+                          hyperbolicEccentricToTrue(anomalyDS, eDS) :
+                          ellipticEccentricToTrue(anomalyDS, eDS);
+                    break;
+                case TRUE :
+                    vDS = anomalyDS;
+                    break;
+                default : // this should never happen
+                    throw new OrekitInternalError(null);
+            }
+            this.v    = vDS.getValue();
+            this.vDot = vDS.getPartialDerivative(1);
+        } else {
+            switch (type) {
+                case MEAN :
 
-                tmpV = (a.getReal() < 0) ? hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly, e)) :
-                    ellipticEccentricToTrue(meanToEllipticEccentric(anomaly));
+                    this.v = (a.getReal() < 0) ?
+                             hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly, e), e) :
+                             ellipticEccentricToTrue(meanToEllipticEccentric(anomaly, e), e);
 
-                break;
-            case ECCENTRIC :
-                tmpV = (a.getReal() < 0) ? hyperbolicEccentricToTrue(anomaly) :
-                    ellipticEccentricToTrue(anomaly);
+                    break;
+                case ECCENTRIC :
+                    this.v = (a.getReal() < 0) ?
+                             hyperbolicEccentricToTrue(anomaly, e) :
+                             ellipticEccentricToTrue(anomaly, e);
 
-                break;
-            case TRUE :
-                tmpV = anomaly;
-                break;
-            default : // this should never happen
-                throw new OrekitInternalError(null);
+                    break;
+                case TRUE :
+                    this.v = anomaly;
+                    break;
+                default : // this should never happen
+                    throw new OrekitInternalError(null);
+            }
+            this.vDot = null;
         }
 
         // check true anomaly range
-        if (e.multiply(tmpV.cos()).add(1).getReal() <= 0) {
-            final T vMax = e.reciprocal().negate().acos();
+        if (e.multiply(v.cos()).add(1).getReal() <= 0) {
+            final double vMax = e.reciprocal().negate().acos().getReal();
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE,
-                                                                 tmpV, e, vMax.negate(), vMax);
+                                                     v.getReal(), e.getReal(), -vMax, vMax);
         }
-        this.v = tmpV;
 
     }
 
@@ -200,40 +294,42 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * use {@code mu} and the position to compute the acceleration, including
      * {@link #shiftedBy(RealFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
-     * @param FieldPVCoordinates the PVCoordinates of the satellite
+     * @param pvCoordinates the PVCoordinates of the satellite
      * @param frame the frame in which are defined the {@link FieldPVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m³/s²)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public FieldKeplerianOrbit (final TimeStampedFieldPVCoordinates<T> FieldPVCoordinates,
-                          final Frame frame, final double mu)
+    public FieldKeplerianOrbit(final TimeStampedFieldPVCoordinates<T> pvCoordinates,
+                               final Frame frame, final double mu)
         throws IllegalArgumentException {
 
-        super(FieldPVCoordinates, frame, mu);
-        /**Element identité*/
+        super(pvCoordinates, frame, mu);
 
-        this.one = FieldPVCoordinates.getPosition().getX().getField().getOne();
+        // identity element
+        this.one = pvCoordinates.getPosition().getX().getField().getOne();
 
-        /**Element zero*/
+        // zero element
         this.zero = this.one.getField().getZero();
 
-        /**Third canonical vector */
+        // third canonical vector
         this.PLUS_K = new FieldVector3D<T>(zero, zero, one);
 
         // compute inclination
-        final FieldVector3D<T> momentum = FieldPVCoordinates.getMomentum();
+        final FieldVector3D<T> momentum = pvCoordinates.getMomentum();
         final T m2 = momentum.getNormSq();
 
         i = FieldVector3D.angle(momentum, PLUS_K);
         // compute right ascension of ascending node
         raan = FieldVector3D.crossProduct(PLUS_K, momentum).getAlpha();
         // preliminary computations for parameters depending on orbit shape (elliptic or hyperbolic)
-        final FieldVector3D<T> pvP     = FieldPVCoordinates.getPosition();
-        final FieldVector3D<T> pvV     = FieldPVCoordinates.getVelocity();
+        final FieldVector3D<T> pvP     = pvCoordinates.getPosition();
+        final FieldVector3D<T> pvV     = pvCoordinates.getVelocity();
+        final FieldVector3D<T> pvA     = pvCoordinates.getAcceleration();
 
-        final T   r       = pvP.getNorm();
+        final T   r2      = pvP.getNormSq();
+        final T   r       = r2.sqrt();
         final T   V2      = pvV.getNormSq();
         final T   rV2OnMu = r.multiply(V2).divide(mu);
 
@@ -247,13 +343,13 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final T eSE = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
             final T eCE = rV2OnMu.subtract(1);
             e = (eSE.multiply(eSE).add(eCE.multiply(eCE))).sqrt();
-            v = ellipticEccentricToTrue(eSE.atan2(eCE)); //(atan2(eSE, eCE));
+            v = ellipticEccentricToTrue(eSE.atan2(eCE), e); //(atan2(eSE, eCE));
         } else {
             // hyperbolic orbit
             final T eSH = FieldVector3D.dotProduct(pvP, pvV).divide(muA.negate().sqrt());
             final T eCH = rV2OnMu.subtract(1);
             e = (m2.negate().divide(muA).add(1)).sqrt();
-            v = hyperbolicEccentricToTrue((eCH.add(eSH)).divide(eCH.subtract(eSH)).log().divide(2));
+            v = hyperbolicEccentricToTrue((eCH.add(eSH)).divide(eCH.subtract(eSH)).log().divide(2), e);
         }
 
         // compute perigee argument
@@ -261,6 +357,53 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T px = FieldVector3D.dotProduct(pvP, node);
         final T py = FieldVector3D.dotProduct(pvP, FieldVector3D.crossProduct(momentum, node)).divide(m2.sqrt());
         pa = py.atan2(px).subtract(v);
+
+        if (!FACTORIES.containsKey(a.getField())) {
+            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        }
+
+        if (hasNonKeplerianAcceleration(pvCoordinates, mu)) {
+            // we have a relevant acceleration, we can compute derivatives
+
+            final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
+            getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+
+            final FieldVector3D<T> keplerianAcceleration    = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu), pvP);
+            final FieldVector3D<T> nonKeplerianAcceleration = pvA.subtract(keplerianAcceleration);
+            final T   aX                       = nonKeplerianAcceleration.getX();
+            final T   aY                       = nonKeplerianAcceleration.getY();
+            final T   aZ                       = nonKeplerianAcceleration.getZ();
+            aDot    = jacobian[0][3].multiply(aX).add(jacobian[0][4].multiply(aY)).add(jacobian[0][5].multiply(aZ));
+            eDot    = jacobian[1][3].multiply(aX).add(jacobian[1][4].multiply(aY)).add(jacobian[1][5].multiply(aZ));
+            iDot    = jacobian[2][3].multiply(aX).add(jacobian[2][4].multiply(aY)).add(jacobian[2][5].multiply(aZ));
+            paDot   = jacobian[3][3].multiply(aX).add(jacobian[3][4].multiply(aY)).add(jacobian[3][5].multiply(aZ));
+            raanDot = jacobian[4][3].multiply(aX).add(jacobian[4][4].multiply(aY)).add(jacobian[4][5].multiply(aZ));
+
+            // in order to compute true anomaly derivative, we must compute
+            // mean anomaly derivative including Keplerian motion and convert to true anomaly
+            final T MDot = getKeplerianMeanMotion().
+                           add(jacobian[5][3].multiply(aX)).add(jacobian[5][4].multiply(aY)).add(jacobian[5][5].multiply(aZ));
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+            final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
+            final FieldDerivativeStructure<T> MDS = factory.build(getMeanAnomaly(), MDot);
+            final FieldDerivativeStructure<T> vDS = (a.getReal() < 0) ?
+                                            FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MDS, eDS), eDS) :
+                                            FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MDS, eDS), eDS);
+            vDot = vDS.getPartialDerivative(1);
+
+        } else {
+            // acceleration is either almost zero or NaN,
+            // we assume acceleration was not known
+            // we don't set up derivatives
+            aDot    = null;
+            eDot    = null;
+            iDot    = null;
+            paDot   = null;
+            raanDot = null;
+            vDot    = null;
+        }
+
     }
 
     /** Constructor from cartesian parameters.
@@ -304,14 +447,28 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
-    public T getE() {
+    public T getADot() {
+        return aDot;
+    }
 
+    /** {@inheritDoc} */
+    public T getE() {
         return e;
+    }
+
+    /** {@inheritDoc} */
+    public T getEDot() {
+        return eDot;
     }
 
     /** {@inheritDoc} */
     public T getI() {
         return i;
+    }
+
+    /** {@inheritDoc} */
+    public T getIDot() {
+        return iDot;
     }
 
     /** Get the perigee argument.
@@ -321,11 +478,110 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         return pa;
     }
 
+    /** Get the perigee argument derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return perigee argument derivative (rad/s)
+     */
+    public T getPerigeeArgumentDot() {
+        return paDot;
+    }
+
     /** Get the right ascension of the ascending node.
      * @return right ascension of the ascending node (rad)
      */
     public T getRightAscensionOfAscendingNode() {
         return raan;
+    }
+
+    /** Get the right ascension of the ascending node derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return right ascension of the ascending node derivative (rad/s)
+     */
+    public T getRightAscensionOfAscendingNodeDot() {
+        return raanDot;
+    }
+
+    /** Get the true anomaly.
+     * @return true anomaly (rad)
+     */
+    public T getTrueAnomaly() {
+        return v;
+    }
+
+    /** Get the true anomaly derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return true anomaly derivative (rad/s)
+     */
+    public T getTrueAnomalyDot() {
+        return vDot;
+    }
+
+    /** Get the eccentric anomaly.
+     * @return eccentric anomaly (rad)
+     */
+    public T getEccentricAnomaly() {
+        return (a.getReal() < 0) ? trueToHyperbolicEccentric(v, e) : trueToEllipticEccentric(v, e);
+    }
+
+    /** Get the eccentric anomaly derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return eccentric anomaly derivative (rad/s)
+     */
+    public T getEccentricAnomalyDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
+        final FieldDerivativeStructure<T> vDS = factory.build(v, vDot);
+        final FieldDerivativeStructure<T> EDS = (a.getReal() < 0) ?
+                                                trueToHyperbolicEccentric(vDS, eDS) :
+                                                trueToEllipticEccentric(vDS, eDS);
+        return EDS.getPartialDerivative(1);
+
+    }
+
+    /** Get the mean anomaly.
+     * @return mean anomaly (rad)
+     */
+    public T getMeanAnomaly() {
+        return (a.getReal() < 0) ?
+               hyperbolicEccentricToMean(trueToHyperbolicEccentric(v, e), e) :
+               ellipticEccentricToMean(trueToEllipticEccentric(v, e), e);
+    }
+
+    /** Get the mean anomaly derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @return mean anomaly derivative (rad/s)
+     */
+    public T getMeanAnomalyDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
+        final FieldDerivativeStructure<T> vDS = factory.build(v, vDot);
+        final FieldDerivativeStructure<T> MDS = (a.getReal() < 0) ?
+                                                hyperbolicEccentricToMean(trueToHyperbolicEccentric(vDS, eDS), eDS) :
+                                                ellipticEccentricToMean(trueToEllipticEccentric(vDS, eDS), eDS);
+        return MDS.getPartialDerivative(1);
+
     }
 
     /** Get the anomaly.
@@ -338,62 +594,78 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
                                                                                    getTrueAnomaly());
     }
 
-    /** Get the true anomaly.
-     * @return true anomaly (rad)
+    /** Get the anomaly derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is null.
+     * </p>
+     * @param type type of the angle
+     * @return anomaly derivative (rad/s)
      */
-    public T getTrueAnomaly() {
-        return v;
+    public T getAnomalyDot(final PositionAngle type) {
+        return (type == PositionAngle.MEAN) ? getMeanAnomalyDot() :
+                                              ((type == PositionAngle.ECCENTRIC) ? getEccentricAnomalyDot() :
+                                                                                   getTrueAnomalyDot());
     }
 
-    /** Get the eccentric anomaly.
-     * @return eccentric anomaly (rad)
-     */
-    public T getEccentricAnomaly() {
-        if (a.getReal() < 0) {
-            // hyperbolic case
-            final T sinhH = (e.multiply(e).subtract(1)).sqrt().multiply(v.sin().divide(e.multiply(v.cos()).add(1)));
-            return sinhH.asinh();
-        }
-        // elliptic case
-        final T beta = e.divide((e.subtract(1).negate().multiply(e.add(1))).sqrt().add(1));
-        return v.subtract((beta.multiply(v.sin()).divide(beta.multiply(v.cos()).add(1))).atan().multiply(2));
-
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasDerivatives() {
+        return aDot != null;
     }
 
     /** Computes the true anomaly from the elliptic eccentric anomaly.
      * @param E eccentric anomaly (rad)
+     * @param e eccentricity
+     * @param <T> type of the field elements
      * @return v the true anomaly
      */
-    private T ellipticEccentricToTrue(final T E) {
+    public static <T extends RealFieldElement<T>> T ellipticEccentricToTrue(final T E, final T e) {
+        final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
+        return E.add(beta.multiply(E.sin()).divide(beta.multiply(E.cos()).subtract(1).negate()).atan().multiply(2));
+    }
 
-        final T beta = e.divide(e.negate().add(1).multiply(e.add(1)).sqrt().add(1));
-        return E.add(beta.multiply(E.sin()).divide(beta.multiply(E.cos()).negate().add(1)).atan().multiply(2));
+    /** Computes the elliptic eccentric anomaly from the true anomaly.
+     * @param v true anomaly (rad)
+     * @param e eccentricity
+     * @param <T> type of the field elements
+     * @return E the elliptic eccentric anomaly
+     */
+    public static <T extends RealFieldElement<T>> T trueToEllipticEccentric(final T v, final T e) {
+        final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
+        return v.subtract((beta.multiply(v.sin()).divide(beta.multiply(v.cos()).add(1))).atan().multiply(2));
     }
 
     /** Computes the true anomaly from the hyperbolic eccentric anomaly.
      * @param H hyperbolic eccentric anomaly (rad)
+     * @param e eccentricity
+     * @param <T> type of the field elements
      * @return v the true anomaly
      */
-    private T hyperbolicEccentricToTrue(final T H) {
-//      return 2 * FastMath.atan(FastMath.sqrt((e + 1) / (e - 1)) * FastMath.tanh(H / 2));
-        return ((e.add(1).divide(e.subtract(1))).sqrt().multiply(H.divide(2.0).tanh())).atan().multiply(2);
+    public static <T extends RealFieldElement<T>> T hyperbolicEccentricToTrue(final T H, final T e) {
+        final T s    = e.add(1).divide(e.subtract(1)).sqrt();
+        final T tanH = H.multiply(0.5).tanh();
+        return s.multiply(tanH).atan().multiply(2);
     }
 
-    /** Get the mean anomaly.
-     * @return mean anomaly (rad)
+    /** Computes the hyperbolic eccentric anomaly from the true anomaly.
+     * @param v true anomaly (rad)
+     * @param e eccentricity
+     * @param <T> type of the field elements
+     * @return H the hyperbolic eccentric anomaly
      */
-    public T getMeanAnomaly() {
+    public static <T extends RealFieldElement<T>> T trueToHyperbolicEccentric(final T v, final T e) {
+        final T sinhH = e.multiply(e).subtract(1).sqrt().multiply(v.sin()).divide(e.multiply(v.cos()).add(1));
+        return sinhH.asinh();
+    }
 
-        if (a.getReal() < 0) {
-            // hyperbolic case
-            final T H = getEccentricAnomaly();
-            return e.multiply(H.sinh()).subtract(H);
-        }
-
-        // elliptic case
-        final T E = getEccentricAnomaly();
-        return E.subtract(e.multiply(E.sin()));
-
+    /** Computes the mean anomaly from the hyperbolic eccentric anomaly.
+     * @param H hyperbolic eccentric anomaly (rad)
+     * @param e eccentricity
+     * @param <T> type of the field elements
+     * @return M the mean anomaly
+     */
+    public static <T extends RealFieldElement<T>> T hyperbolicEccentricToMean(final T H, final T e) {
+        return e.multiply(H.sinh()).subtract(H);
     }
 
     /** Computes the elliptic eccentric anomaly from the mean anomaly.
@@ -403,14 +675,14 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * R. H. Gooding, Celestial Mechanics 38 (1986) 307-334
      * </p>
      * @param M mean anomaly (rad)
+     * @param e eccentricity
+     * @param <T> type of the field elements
      * @return v the true anomaly
      */
-    private T meanToEllipticEccentric(final T M) {
-//SUBSTITUTED THE NORMALIZE ANGLE FUNCTION
+    public static <T extends RealFieldElement<T>> T meanToEllipticEccentric(final T M, final T e) {
         // reduce M to [-PI PI) interval
-        final T reducedM = normalizeAngle(M, this.zero);
+        final T reducedM = normalizeAngle(M, M.getField().getZero());
 
-//
         // compute start value according to A. W. Odell and R. H. Gooding S12 starter
         T E;
         if (reducedM.abs().getReal() < 1.0 / 6.0) {
@@ -443,7 +715,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             } else {
 
 
-                f  = eMeSinE(E).subtract(reducedM);
+                f  = eMeSinE(E, e).subtract(reducedM);
                 final T s = E.multiply(0.5).sin();
                 fd = e1.add(e.multiply(s).multiply(s).multiply(2));
             }
@@ -467,16 +739,18 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * i.e. near the perigee of almost parabolic orbits
      * </p>
      * @param E eccentric anomaly
+     * @param e eccentricity
+     * @param <T> Type of the field elements
      * @return E - e sin(E)
      */
-    private T eMeSinE(final T E) {
+    private static <T extends RealFieldElement<T>> T eMeSinE(final T E, final T e) {
 
         T x = (e.negate().add(1)).multiply(E.sin());
         final T mE2 = E.negate().multiply(E);
         T term = E;
         double d    = 0;
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (T x0 = zero.add(Double.NaN); x.getReal() != x0.getReal();) {
+        for (T x0 = E.getField().getZero().add(Double.NaN); x.getReal() != x0.getReal();) {
             d += 2;
             term = term.multiply(mE2.divide(d * (d + 1)));
             x0 = x;
@@ -491,34 +765,35 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * Danby's iterative method (3rd order) with Vallado's initial guess.
      * </p>
      * @param M mean anomaly (rad)
-     * @param ecc eccentricity
+     * @param e eccentricity
+     * @param <T> Type of the field elements
      * @return H the hyperbolic eccentric anomaly
      */
-    private T meanToHyperbolicEccentric(final T M, final T ecc) {
+    public static <T extends RealFieldElement<T>> T meanToHyperbolicEccentric(final T M, final T e) {
 
         // Resolution of hyperbolic Kepler equation for keplerian parameters
 
         // Initial guess
         T H;
-        if (ecc.getReal() < 1.6) {
+        if (e.getReal() < 1.6) {
             if ((-FastMath.PI < M.getReal() && M.getReal() < 0.) || M.getReal() > FastMath.PI) {
-                H = M.subtract(ecc);
+                H = M.subtract(e);
             } else {
-                H = M.add(ecc);
+                H = M.add(e);
             }
         } else {
-            if (ecc.getReal() < 3.6 && M.abs().getReal() > FastMath.PI) {
-                H = M.subtract(ecc.copySign(M));
+            if (e.getReal() < 3.6 && M.abs().getReal() > FastMath.PI) {
+                H = M.subtract(e.copySign(M));
             } else {
-                H = M.divide(ecc.subtract(1));
+                H = M.divide(e.subtract(1));
             }
         }
 
         // Iterative computation
         int iter = 0;
         do {
-            final T f3  = ecc.multiply(H.cosh());
-            final T f2  = ecc.multiply(H.sinh());
+            final T f3  = e.multiply(H.cosh());
+            final T f2  = e.multiply(H.sinh());
             final T f1  = f3.subtract(1);
             final T f0  = f2.subtract(H).subtract(M);
             final T f12 = f1.multiply(2);
@@ -537,17 +812,59 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         } while (++iter < 50);
 
         throw new MathIllegalArgumentException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
-                                       iter);
+                                               iter);
+    }
+
+    /** Computes the mean anomaly from the elliptic eccentric anomaly.
+     * @param E eccentric anomaly (rad)
+     * @param e eccentricity
+     * @param <T> type of the file elements
+     * @return M the mean anomaly
+     */
+    public static <T extends RealFieldElement<T>> T ellipticEccentricToMean(final T E, final T e) {
+        return E.subtract(e.multiply(E.sin()));
     }
 
     /** {@inheritDoc} */
     public T getEquinoctialEx() {
-        return  e.multiply(pa.add(raan).cos());
+        return e.multiply(pa.add(raan).cos());
+    }
+
+    /** {@inheritDoc} */
+    public T getEquinoctialExDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FieldDerivativeStructure<T> eDS    = factory.build(e,    eDot);
+        final FieldDerivativeStructure<T> paDS   = factory.build(pa,   paDot);
+        final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
+        return eDS.multiply(paDS.add(raanDS).cos()).getPartialDerivative(1);
+
     }
 
     /** {@inheritDoc} */
     public T getEquinoctialEy() {
         return  e.multiply((pa.add(raan)).sin());
+    }
+
+    /** {@inheritDoc} */
+    public T getEquinoctialEyDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FieldDerivativeStructure<T> eDS    = factory.build(e,    eDot);
+        final FieldDerivativeStructure<T> paDS   = factory.build(pa,   paDot);
+        final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
+        return eDS.multiply(paDS.add(raanDS).sin()).getPartialDerivative(1);
+
     }
 
     /** {@inheritDoc} */
@@ -560,6 +877,26 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
+    public T getHxDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+            return this.zero.add(Double.NaN);
+        }
+
+        @SuppressWarnings("unchecked")
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FieldDerivativeStructure<T> iDS    = factory.build(i,    iDot);
+        final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
+        return raanDS.cos().multiply(iDS.multiply(0.5).tan()).getPartialDerivative(1);
+
+    }
+
+    /** {@inheritDoc} */
     public T getHy() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
@@ -569,8 +906,35 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
+    public T getHyDot() {
+
+        if (!hasDerivatives()) {
+            return null;
+        }
+
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+            return this.zero.add(Double.NaN);
+        }
+
+        @SuppressWarnings("unchecked")
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FieldDerivativeStructure<T> iDS    = factory.build(i,    iDot);
+        final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
+        return raanDS.sin().multiply(iDS.multiply(0.5).tan()).getPartialDerivative(1);
+
+    }
+
+    /** {@inheritDoc} */
     public T getLv() {
         return pa.add(raan).add(v);
+    }
+
+    /** {@inheritDoc} */
+    public T getLvDot() {
+        return hasDerivatives() ?
+               paDot.add(raanDot).add(vDot) :
+               null;
     }
 
     /** {@inheritDoc} */
@@ -579,8 +943,22 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
+    public T getLEDot() {
+        return hasDerivatives() ?
+               paDot.add(raanDot).add(getEccentricAnomalyDot()) :
+               null;
+    }
+
+    /** {@inheritDoc} */
     public T getLM() {
         return pa.add(raan).add(getMeanAnomaly());
+    }
+
+    /** {@inheritDoc} */
+    public T getLMDot() {
+        return hasDerivatives() ?
+               paDot.add(raanDot).add(getMeanAnomalyDot()) :
+               null;
     }
 
     /** {@inheritDoc} */
@@ -1287,7 +1665,6 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
      * @param center center of the desired 2&pi; interval for the result
      * @param <T> the type of the field elements
      * @return a-2k&pi; with integer k and center-&pi; &lt;= a-2k&pi; &lt;= center+&pi;
-     * @since 1.2
      */
     public static <T extends RealFieldElement<T>> T normalizeAngle(final T a, final T center) {
         return a.subtract(2 * FastMath.PI * FastMath.floor((a.getReal() + FastMath.PI - center.getReal()) / (2 * FastMath.PI)));
@@ -1295,10 +1672,19 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     @Override
     public KeplerianOrbit toOrbit() {
-        return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
-                                         pa.getReal(), raan.getReal(),
-                                         v.getReal(), PositionAngle.TRUE,
-                                         getFrame(), getDate().toAbsoluteDate(), getMu());
+        if (hasDerivatives()) {
+            return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
+                                      pa.getReal(), raan.getReal(), v.getReal(),
+                                      aDot.getReal(), eDot.getReal(), iDot.getReal(),
+                                      paDot.getReal(), raanDot.getReal(), vDot.getReal(),
+                                      PositionAngle.TRUE,
+                                      getFrame(), getDate().toAbsoluteDate(), getMu());
+        } else {
+            return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
+                                      pa.getReal(), raan.getReal(), v.getReal(),
+                                      PositionAngle.TRUE,
+                                      getFrame(), getDate().toAbsoluteDate(), getMu());
+        }
     }
 
 
