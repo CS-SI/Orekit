@@ -289,12 +289,24 @@ public class OEMFile extends ODMFile implements EphemerisFile {
 
         @Override
         public AbsoluteDate getStart() {
-            return this.getUseableStartTime();
+            // usable start time overrides start time if it is set
+            final AbsoluteDate start = this.getUseableStartTime();
+            if (start != null) {
+                return start;
+            } else {
+                return this.getStartTime();
+            }
         }
 
         @Override
         public AbsoluteDate getStop() {
-            return this.getUseableStopTime();
+            // useable stop time overrides stop time if it is set
+            final AbsoluteDate stop = this.getUseableStopTime();
+            if (stop != null) {
+                return stop;
+            } else {
+                return this.getStopTime();
+            }
         }
 
         /** Get the interpolation method to be used.
