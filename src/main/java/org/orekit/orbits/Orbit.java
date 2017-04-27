@@ -217,7 +217,7 @@ public abstract class Orbit
     /** Get the semi-major axis derivative.
      * <p>Note that the semi-major axis is considered negative for hyperbolic orbits.</p>
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return semi-major axis  derivative (m/s)
      * @see #hasDerivatives()
@@ -232,7 +232,7 @@ public abstract class Orbit
 
     /** Get the first component of the equinoctial eccentricity vector.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return first component of the equinoctial eccentricity vector
      * @see #hasDerivatives()
@@ -247,7 +247,7 @@ public abstract class Orbit
 
     /** Get the second component of the equinoctial eccentricity vector.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return second component of the equinoctial eccentricity vector
      * @see #hasDerivatives()
@@ -262,7 +262,7 @@ public abstract class Orbit
 
     /** Get the first component of the inclination vector derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return first component of the inclination vector derivative
      * @see #hasDerivatives()
@@ -277,7 +277,7 @@ public abstract class Orbit
 
     /** Get the second component of the inclination vector derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return second component of the inclination vector derivative
      * @see #hasDerivatives()
@@ -292,7 +292,7 @@ public abstract class Orbit
 
     /** Get the eccentric longitude argument derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(E + ω + Ω)/dt eccentric longitude argument derivative (rad/s)
      * @see #hasDerivatives()
@@ -307,7 +307,7 @@ public abstract class Orbit
 
     /** Get the true longitude argument derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(v + ω + Ω)/dt true longitude argument derivative (rad/s)
      * @see #hasDerivatives()
@@ -322,7 +322,7 @@ public abstract class Orbit
 
     /** Get the mean longitude argument derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(M + ω + Ω)/dt mean longitude argument derivative (rad/s)
      * @see #hasDerivatives()
@@ -339,7 +339,7 @@ public abstract class Orbit
 
     /** Get the eccentricity derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return eccentricity derivative
      * @see #hasDerivatives()
@@ -354,7 +354,7 @@ public abstract class Orbit
 
     /** Get the inclination derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return inclination derivative (rad/s)
      * @see #hasDerivatives()

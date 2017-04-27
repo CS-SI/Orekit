@@ -604,7 +604,7 @@ public class CircularOrbit
 
     /** Get the true latitude argument derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return v + ω true latitude argument derivative (rad/s)
      * @since 9.0
@@ -622,7 +622,7 @@ public class CircularOrbit
 
     /** Get the eccentric latitude argument derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(E + ω)/dt eccentric latitude argument derivative (rad/s)
      * @since 9.0
@@ -644,7 +644,7 @@ public class CircularOrbit
 
     /** Get the mean latitude argument derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(M + ω)/dt mean latitude argument derivative (rad/s)
      * @since 9.0
@@ -669,7 +669,7 @@ public class CircularOrbit
 
     /** Get the latitude argument derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @param type type of the angle
      * @return latitude argument derivative (rad/s)
@@ -783,7 +783,7 @@ public class CircularOrbit
 
     /** Get the right ascension of the ascending node derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return right ascension of the ascending node derivative (rad/s)
      * @since 9.0

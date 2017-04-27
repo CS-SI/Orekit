@@ -434,7 +434,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** Get the perigee argument derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return perigee argument derivative (rad/s)
      * @since 9.0
@@ -452,7 +452,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** Get the right ascension of the ascending node derivative.
      * <p>
-     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return right ascension of the ascending node derivative (rad/s)
      * @since 9.0
