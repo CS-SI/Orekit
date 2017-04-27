@@ -23,10 +23,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrixPreservingVisitor;
@@ -46,6 +48,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class KeplerianParametersTest {
@@ -996,90 +999,172 @@ public class KeplerianParametersTest {
 
     @Test
     public void testKeplerianDerivatives() {
-        final DSFactory factory = new DSFactory(1, 1);
-        final KeplerianOrbit o = new KeplerianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
-                                                                      new Vector3D(-2079., 5291., -7842.)),
-                                                    FramesFactory.getEME2000(), date, 3.9860047e14);
-        final Vector3D p = o.getPVCoordinates().getPosition();
-        final Vector3D v = o.getPVCoordinates().getVelocity();
-        final Vector3D a = o.getPVCoordinates().getAcceleration();
+
+        final KeplerianOrbit orbit = new KeplerianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
+                                                                          new Vector3D(-2079., 5291., -7842.)),
+                                                        FramesFactory.getEME2000(), date, 3.9860047e14);
+        final Vector3D p = orbit.getPVCoordinates().getPosition();
+        final Vector3D v = orbit.getPVCoordinates().getVelocity();
+        final Vector3D a = orbit.getPVCoordinates().getAcceleration();
 
         // check that despite we did not provide acceleration, it got recomputed
         Assert.assertEquals(7.605422, a.getNorm(), 1.0e-6);
 
-        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
-
         // check velocity is the derivative of position
-        double vx = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return o.shiftedBy(dt).getPVCoordinates().getPosition().getX();
-            }
-        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
-        Assert.assertEquals(o.getPVCoordinates().getVelocity().getX(), vx, 3.0e-12 * v.getNorm());
-        double vy = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return o.shiftedBy(dt).getPVCoordinates().getPosition().getY();
-            }
-        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
-        Assert.assertEquals(o.getPVCoordinates().getVelocity().getY(), vy, 3.0e-12 * v.getNorm());
-        double vz = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return o.shiftedBy(dt).getPVCoordinates().getPosition().getZ();
-            }
-        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
-        Assert.assertEquals(o.getPVCoordinates().getVelocity().getZ(), vz, 3.0e-12 * v.getNorm());
+        Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getPosition().getX()),
+                            orbit.getPVCoordinates().getVelocity().getX(),
+                            3.0e-12 * v.getNorm());
+        Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getPosition().getY()),
+                            orbit.getPVCoordinates().getVelocity().getY(),
+                            3.0e-12 * v.getNorm());
+        Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getPosition().getZ()),
+                            orbit.getPVCoordinates().getVelocity().getZ(),
+                            3.0e-12 * v.getNorm());
 
         // check acceleration is the derivative of velocity
-        double ax = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return o.shiftedBy(dt).getPVCoordinates().getVelocity().getX();
-            }
-        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
-        Assert.assertEquals(o.getPVCoordinates().getAcceleration().getX(), ax, 3.0e-12 * a.getNorm());
-        double ay = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return o.shiftedBy(dt).getPVCoordinates().getVelocity().getY();
-            }
-        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
-        Assert.assertEquals(o.getPVCoordinates().getAcceleration().getY(), ay, 3.0e-12 * a.getNorm());
-        double az = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return o.shiftedBy(dt).getPVCoordinates().getVelocity().getZ();
-            }
-        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
-        Assert.assertEquals(o.getPVCoordinates().getAcceleration().getZ(), az, 3.0e-12 * a.getNorm());
+        Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getX()),
+                            orbit.getPVCoordinates().getAcceleration().getX(),
+                            3.0e-12 * a.getNorm());
+        Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getY()),
+                            orbit.getPVCoordinates().getAcceleration().getY(),
+                            3.0e-12 * a.getNorm());
+        Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getZ()),
+                            orbit.getPVCoordinates().getAcceleration().getZ(),
+                            3.0e-12 * a.getNorm());
 
         // check jerk is the derivative of acceleration
         final double r2 = p.getNormSq();
         final double r  = FastMath.sqrt(r2);
         Vector3D keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
-        double jx = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return o.shiftedBy(dt).getPVCoordinates().getAcceleration().getX();
-            }
-        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
-        Assert.assertEquals(keplerianJerk.getX(), jx, 3.0e-12 * keplerianJerk.getNorm());
-        double jy = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return o.shiftedBy(dt).getPVCoordinates().getAcceleration().getY();
-            }
-        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
-        Assert.assertEquals(keplerianJerk.getY(), jy, 3.0e-12 * keplerianJerk.getNorm());
-        double jz = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return o.shiftedBy(dt).getPVCoordinates().getAcceleration().getZ();
-            }
-        }).value(factory.variable(0, 0.0)).getPartialDerivative(1);
-        Assert.assertEquals(keplerianJerk.getZ(), jz, 3.0e-12 * keplerianJerk.getNorm());
+        Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getAcceleration().getX()),
+                            keplerianJerk.getX(),
+                            3.0e-12 * keplerianJerk.getNorm());
+        Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getAcceleration().getY()),
+                            keplerianJerk.getY(),
+                            3.0e-12 * keplerianJerk.getNorm());
+        Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getAcceleration().getZ()),
+                            keplerianJerk.getZ(),
+                            3.0e-12 * keplerianJerk.getNorm());
+
+        Assert.assertTrue(Double.isNaN(orbit.getADot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEquinoctialExDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEquinoctialEyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHxDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getLvDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getLEDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getLMDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getIDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getPerigeeArgumentDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getRightAscensionOfAscendingNodeDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getTrueAnomalyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEccentricAnomalyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getMeanAnomalyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getAnomalyDot(PositionAngle.TRUE)));
+        Assert.assertTrue(Double.isNaN(orbit.getAnomalyDot(PositionAngle.ECCENTRIC)));
+        Assert.assertTrue(Double.isNaN(orbit.getAnomalyDot(PositionAngle.MEAN)));
 
     }
+
+    private <S extends Function<KeplerianOrbit, Double>>
+    double differentiate(KeplerianOrbit orbit, S picker) {
+        final DSFactory factory = new DSFactory(1, 1);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
+        UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return picker.apply(orbit.shiftedBy(dt));
+            }
+        });
+        return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
+     }
+
+    @Test
+    public void testNonKeplerianEllipticDerivatives() throws OrekitException {
+        final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
+        final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
+        final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D     acceleration = new Vector3D(-7.466182457944, -2.118153357345,  0.160004048437);
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame frame = FramesFactory.getEME2000();
+        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, mu);
+
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+                            orbit.getADot(),
+                            4.3e-8);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+                            orbit.getEquinoctialExDot(),
+                            2.1e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+                            orbit.getEquinoctialEyDot(),
+                            5.3e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+                            orbit.getHxDot(),
+                            1.6e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+                            orbit.getHyDot(),
+                            7.3e-17);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+                            orbit.getLvDot(),
+                            1.1e-14);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+                            orbit.getLEDot(),
+                            7.2e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+                            orbit.getLMDot(),
+                            4.7e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+                            orbit.getEDot(),
+                            6.9e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+                            orbit.getIDot(),
+                            5.7e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getPerigeeArgument()),
+                            orbit.getPerigeeArgumentDot(),
+                            1.5e-12);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getRightAscensionOfAscendingNode()),
+                            orbit.getRightAscensionOfAscendingNodeDot(),
+                            1.5e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getTrueAnomaly()),
+                            orbit.getTrueAnomalyDot(),
+                            1.5e-12);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEccentricAnomaly()),
+                            orbit.getEccentricAnomalyDot(),
+                            1.5e-12);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getMeanAnomaly()),
+                            orbit.getMeanAnomalyDot(),
+                            1.5e-12);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAnomaly(PositionAngle.TRUE)),
+                            orbit.getAnomalyDot(PositionAngle.TRUE),
+                            1.5e-12);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAnomaly(PositionAngle.ECCENTRIC)),
+                            orbit.getAnomalyDot(PositionAngle.ECCENTRIC),
+                            1.5e-12);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAnomaly(PositionAngle.MEAN)),
+                            orbit.getAnomalyDot(PositionAngle.MEAN),
+                            1.5e-12);
+
+    }
+
+    private <S extends Function<KeplerianOrbit, Double>>
+    double differentiate(TimeStampedPVCoordinates pv, Frame frame, double mu, S picker) {
+        final DSFactory factory = new DSFactory(1, 1);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
+        UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
+            public double value(double dt) {
+                return picker.apply(new KeplerianOrbit(pv.shiftedBy(dt), frame, mu));
+            }
+        });
+        return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
+     }
 
     @Test
     public void testSerialization()
             throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
-        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
         KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
         Assert.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
 
@@ -1087,8 +1172,8 @@ public class KeplerianParametersTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assert.assertTrue(bos.size() > 250);
-        Assert.assertTrue(bos.size() < 350);
+        Assert.assertTrue(bos.size() > 280);
+        Assert.assertTrue(bos.size() < 330);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -1099,6 +1184,53 @@ public class KeplerianParametersTest {
         Assert.assertEquals(orbit.getPerigeeArgument(), deserialized.getPerigeeArgument(), 1.0e-10);
         Assert.assertEquals(orbit.getRightAscensionOfAscendingNode(), deserialized.getRightAscensionOfAscendingNode(), 1.0e-10);
         Assert.assertEquals(orbit.getTrueAnomaly(), deserialized.getTrueAnomaly(), 1.0e-10);
+        Assert.assertTrue(Double.isNaN(orbit.getADot()) && Double.isNaN(deserialized.getADot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEDot()) && Double.isNaN(deserialized.getEDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getIDot()) && Double.isNaN(deserialized.getIDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getPerigeeArgumentDot()) && Double.isNaN(deserialized.getPerigeeArgumentDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getRightAscensionOfAscendingNodeDot()) && Double.isNaN(deserialized.getRightAscensionOfAscendingNodeDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getTrueAnomalyDot()) && Double.isNaN(deserialized.getTrueAnomalyDot()));
+        Assert.assertEquals(orbit.getDate(), deserialized.getDate());
+        Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
+        Assert.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
+
+    }
+
+    @Test
+    public void testSerializationWithDerivatives()
+            throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
+                                             1, new Vector3D(-0.1, 0.2, 0.3));
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(orbit);
+
+        Assert.assertTrue(bos.size() > 330);
+        Assert.assertTrue(bos.size() < 380);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        KeplerianOrbit deserialized  = (KeplerianOrbit) ois.readObject();
+        Assert.assertEquals(orbit.getA(), deserialized.getA(), 1.0e-10);
+        Assert.assertEquals(orbit.getE(), deserialized.getE(), 1.0e-10);
+        Assert.assertEquals(orbit.getI(), deserialized.getI(), 1.0e-10);
+        Assert.assertEquals(orbit.getPerigeeArgument(), deserialized.getPerigeeArgument(), 1.0e-10);
+        Assert.assertEquals(orbit.getRightAscensionOfAscendingNode(), deserialized.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assert.assertEquals(orbit.getTrueAnomaly(), deserialized.getTrueAnomaly(), 1.0e-10);
+        Assert.assertEquals(orbit.getADot(), deserialized.getADot(), 1.0e-10);
+        Assert.assertEquals(orbit.getEDot(), deserialized.getEDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getIDot(), deserialized.getIDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getPerigeeArgumentDot(), deserialized.getPerigeeArgumentDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getRightAscensionOfAscendingNodeDot(), deserialized.getRightAscensionOfAscendingNodeDot(), 1.0e-10);
+        Assert.assertEquals(orbit.getTrueAnomalyDot(), deserialized.getTrueAnomalyDot(), 1.0e-10);
         Assert.assertEquals(orbit.getDate(), deserialized.getDate());
         Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
         Assert.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
