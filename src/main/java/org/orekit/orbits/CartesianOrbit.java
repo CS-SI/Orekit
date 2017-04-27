@@ -150,7 +150,16 @@ public class CartesianOrbit extends Orbit {
     /** Lazy evaluation of equinoctial parameters. */
     private void initEquinoctial() {
         if (equinoctial == null) {
-            equinoctial = new EquinoctialOrbit(getPVCoordinates(), getFrame(), getDate(), getMu());
+            if (hasDerivatives()) {
+                // getPVCoordinates includes accelerations that will be interpreted as derivatives
+                equinoctial = new EquinoctialOrbit(getPVCoordinates(), getFrame(), getDate(), getMu());
+            } else {
+                // get rid of Keplerian acceleration so we don't assume
+                // we have derivatives when in fact we don't have them
+                equinoctial = new EquinoctialOrbit(new PVCoordinates(getPVCoordinates().getPosition(),
+                                                                     getPVCoordinates().getVelocity()),
+                                                   getFrame(), getDate(), getMu());
+            }
         }
     }
 
@@ -213,7 +222,7 @@ public class CartesianOrbit extends Orbit {
             final DerivativeStructure r       = getPositionDS().getNorm();
             final DerivativeStructure V2      = getVelocityDS().getNormSq();
             final DerivativeStructure rV2OnMu = r.multiply(V2).divide(getMu());
-            final DerivativeStructure a       = r.divide(rV2OnMu).subtract(2);
+            final DerivativeStructure a       = r.divide(rV2OnMu.negate().add(2));
             final DerivativeStructure eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(a.multiply(getMu()).sqrt());
             final DerivativeStructure eCE     = rV2OnMu.subtract(1);
             final DerivativeStructure e       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
@@ -690,12 +699,20 @@ public class CartesianOrbit extends Orbit {
             final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
             final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
 
-            this.d = new double[] {
-                epoch, offset, orbit.getMu(),
-                pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
-                pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
-                pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
-            };
+            if (orbit.hasDerivatives()) {
+                this.d = new double[] {
+                    epoch, offset, orbit.getMu(),
+                    pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
+                    pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
+                    pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ()
+                };
+            } else {
+                this.d = new double[] {
+                    epoch, offset, orbit.getMu(),
+                    pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
+                    pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ()
+                };
+            }
 
             this.frame = orbit.getFrame();
 
@@ -705,11 +722,20 @@ public class CartesianOrbit extends Orbit {
          * @return replacement {@link CartesianOrbit}
          */
         private Object readResolve() {
-            return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
-                                                                   new Vector3D(d[3], d[ 4], d[ 5]),
-                                                                   new Vector3D(d[6], d[ 7], d[ 8]),
-                                                                   new Vector3D(d[9], d[10], d[11])),
-                                      frame, d[2]);
+            if (d.length >= 12) {
+                // we have derivatives
+                return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                                                       new Vector3D(d[3], d[ 4], d[ 5]),
+                                                                       new Vector3D(d[6], d[ 7], d[ 8]),
+                                                                       new Vector3D(d[9], d[10], d[11])),
+                                          frame, d[2]);
+            } else {
+                // we don't have derivatives
+                return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                                                       new Vector3D(d[3], d[ 4], d[ 5]),
+                                                                       new Vector3D(d[6], d[ 7], d[ 8])),
+                                          frame, d[2]);
+            }
         }
 
     }
