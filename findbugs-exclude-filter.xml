@@ -48,6 +48,7 @@
       <Class name="~.*\.ShiftingTransformProvider$" />
       <Class name="~.*\.MODProvider$" />
       <Class name="~.*\.TIRFProvider$" />
+      <Class name="~.*\.CartesianOrbit$" />
     </Or>
     <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED" />
   </Match>
