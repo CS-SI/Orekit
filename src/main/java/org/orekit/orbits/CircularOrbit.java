@@ -781,6 +781,17 @@ public class CircularOrbit
         return raan;
     }
 
+    /** Get the right ascension of the ascending node derivative.
+     * <p>
+     * If the orbit was created without derivatives, the value returned is {@link Double.NaN}.
+     * </p>
+     * @return right ascension of the ascending node derivative (rad/s)
+     * @since 9.0
+     */
+    public double getRightAscensionOfAscendingNodeDot() {
+        return raanDot;
+    }
+
     /** {@inheritDoc} */
     public double getLv() {
         return alphaV + raan;
