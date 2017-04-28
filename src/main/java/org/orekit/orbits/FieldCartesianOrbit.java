@@ -251,7 +251,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final FieldDerivativeStructure<T> r       = getPositionDS().getNorm();
             final FieldDerivativeStructure<T> V2      = getVelocityDS().getNormSq();
             final FieldDerivativeStructure<T> rV2OnMu = r.multiply(V2).divide(getMu());
-            final FieldDerivativeStructure<T> a       = r.divide(rV2OnMu).subtract(2);
+            final FieldDerivativeStructure<T> a       = r.divide(rV2OnMu.negate().add(2));
             final FieldDerivativeStructure<T> eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(a.multiply(getMu()).sqrt());
             final FieldDerivativeStructure<T> eCE     = rV2OnMu.subtract(1);
             final FieldDerivativeStructure<T> e       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
@@ -322,7 +322,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
             if (((x * x + y * y) == 0) && z < 0) {
-                return null;
+                return zero.add(Double.NaN);
             }
             final FieldDerivativeStructure<T> hx = w.getY().negate().divide(w.getZ().add(1));
             return hx.getPartialDerivative(1);
@@ -351,7 +351,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final double y = w.getY().getValue().getReal();
             final double z = w.getZ().getValue().getReal();
             if (((x * x + y * y) == 0) && z < 0) {
-                return null;
+                return zero.add(Double.NaN);
             }
             final FieldDerivativeStructure<T> hy = w.getX().divide(w.getZ().add(1));
             return hy.getPartialDerivative(1);
