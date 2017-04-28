@@ -469,36 +469,36 @@ public class KeplerianParametersTest {
         }
     }
 
-        @Test
-        public void testVeryLargeEccentricity() {
+    @Test
+    public void testVeryLargeEccentricity() {
 
-            final Frame eme2000 = FramesFactory.getEME2000();
-            final double meanAnomaly = 1.;
-            final KeplerianOrbit orb0 = new KeplerianOrbit(42600e3, 0.9, 0.00001, 0, 0,
-                                                           FastMath.toRadians(meanAnomaly),
-                                                           PositionAngle.MEAN, eme2000, date, mu);
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final double meanAnomaly = 1.;
+        final KeplerianOrbit orb0 = new KeplerianOrbit(42600e3, 0.9, 0.00001, 0, 0,
+                                                       FastMath.toRadians(meanAnomaly),
+                                                       PositionAngle.MEAN, eme2000, date, mu);
 
-            // big dV along Y
-            final Vector3D deltaV = new Vector3D(0.0, 110000.0, 0.0);
-            final PVCoordinates pv1 = new PVCoordinates(orb0.getPVCoordinates().getPosition(),
-                                                        orb0.getPVCoordinates().getVelocity().add(deltaV));
-            final KeplerianOrbit orb1 = new KeplerianOrbit(pv1, eme2000, date, mu);
+        // big dV along Y
+        final Vector3D deltaV = new Vector3D(0.0, 110000.0, 0.0);
+        final PVCoordinates pv1 = new PVCoordinates(orb0.getPVCoordinates().getPosition(),
+                                                    orb0.getPVCoordinates().getVelocity().add(deltaV));
+        final KeplerianOrbit orb1 = new KeplerianOrbit(pv1, eme2000, date, mu);
 
-            // Despite large eccentricity, the conversion of mean anomaly to hyperbolic eccentric anomaly
-            // converges in less than 50 iterations (issue #114)
-            final PVCoordinates pvTested    = orb1.shiftedBy(0).getPVCoordinates();
-            final Vector3D      pTested     = pvTested.getPosition();
-            final Vector3D      vTested     = pvTested.getVelocity();
+        // Despite large eccentricity, the conversion of mean anomaly to hyperbolic eccentric anomaly
+        // converges in less than 50 iterations (issue #114)
+        final PVCoordinates pvTested    = orb1.shiftedBy(0).getPVCoordinates();
+        final Vector3D      pTested     = pvTested.getPosition();
+        final Vector3D      vTested     = pvTested.getVelocity();
 
-            final PVCoordinates pvReference = orb1.getPVCoordinates();
-            final Vector3D      pReference  = pvReference.getPosition();
-            final Vector3D      vReference  = pvReference.getVelocity();
+        final PVCoordinates pvReference = orb1.getPVCoordinates();
+        final Vector3D      pReference  = pvReference.getPosition();
+        final Vector3D      vReference  = pvReference.getVelocity();
 
-            final double threshold = 1.e-15;
-            Assert.assertEquals(0, pTested.subtract(pReference).getNorm(), threshold * pReference.getNorm());
-            Assert.assertEquals(0, vTested.subtract(vReference).getNorm(), threshold * vReference.getNorm());
+        final double threshold = 1.e-15;
+        Assert.assertEquals(0, pTested.subtract(pReference).getNorm(), threshold * pReference.getNorm());
+        Assert.assertEquals(0, vTested.subtract(vReference).getNorm(), threshold * vReference.getNorm());
 
-        }
+    }
 
     @Test
     public void testKeplerEquation() {
