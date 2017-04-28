@@ -53,7 +53,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
-public class EquinoctialParametersTest {
+public class EquinoctialOrbitTest {
 
     // Computation date
     private AbsoluteDate date;

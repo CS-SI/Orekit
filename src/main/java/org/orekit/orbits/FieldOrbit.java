@@ -75,7 +75,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
     private final double mu;
 
     /** Computed PVCoordinates. */
-    private transient TimeStampedFieldPVCoordinates<T> FieldPVCoordinates;
+    private transient TimeStampedFieldPVCoordinates<T> pvCoordinates;
 
     /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
     private transient T[][] jacobianMeanWrtCartesian;
@@ -109,7 +109,7 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
         ensurePseudoInertialFrame(frame);
         this.date                      = date;
         this.mu                        = mu;
-        this.FieldPVCoordinates             = null;
+        this.pvCoordinates             = null;
         this.frame                     = frame;
         jacobianMeanWrtCartesian       = null;
         jacobianWrtParametersMean      = null;
@@ -143,12 +143,12 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
             // compute it from Newtonian attraction
             final T r2 = FieldPVCoordinates.getPosition().getNormSq();
             final T r3 = r2.multiply(r2.sqrt());
-            this.FieldPVCoordinates = new TimeStampedFieldPVCoordinates<T>(FieldPVCoordinates.getDate(),
+            this.pvCoordinates = new TimeStampedFieldPVCoordinates<T>(FieldPVCoordinates.getDate(),
                                                               FieldPVCoordinates.getPosition(),
                                                               FieldPVCoordinates.getVelocity(),
                                                               new FieldVector3D<T> (r3.pow(-1).multiply(-mu), FieldPVCoordinates.getPosition()));
         } else {
-            this.FieldPVCoordinates = FieldPVCoordinates;
+            this.pvCoordinates = FieldPVCoordinates;
         }
         this.frame = frame;
     }
@@ -402,19 +402,19 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
-        if (FieldPVCoordinates == null) {
-            FieldPVCoordinates = initFieldPVCoordinates();
+        if (pvCoordinates == null) {
+            pvCoordinates = initPVCoordinates();
         }
 
         // If output frame requested is the same as definition frame,
         // PV coordinates are returned directly
         if (outputFrame == frame) {
-            return FieldPVCoordinates;
+            return pvCoordinates;
         }
 
         // Else, PV coordinates are transformed to output frame
         final Transform t = frame.getTransformTo(outputFrame, date.toAbsoluteDate()); //TODO CHECK THIS
-        return t.transformPVCoordinates(FieldPVCoordinates);
+        return t.transformPVCoordinates(pvCoordinates);
     }
 
     /** {@inheritDoc} */
@@ -429,17 +429,17 @@ public abstract class FieldOrbit<T extends RealFieldElement<T>> implements Field
      * @see #getPVCoordinates(Frame)
      */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates() {
-        if (FieldPVCoordinates == null) {
-            FieldPVCoordinates = initFieldPVCoordinates();
+        if (pvCoordinates == null) {
+            pvCoordinates = initPVCoordinates();
 
         }
-        return FieldPVCoordinates;
+        return pvCoordinates;
     }
 
     /** Compute the position/velocity coordinates from the canonical parameters.
      * @return computed position/velocity coordinates
      */
-    protected abstract TimeStampedFieldPVCoordinates<T> initFieldPVCoordinates();
+    protected abstract TimeStampedFieldPVCoordinates<T> initPVCoordinates();
 
     /** Get a time-shifted orbit.
      * <p>

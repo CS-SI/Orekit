@@ -315,8 +315,8 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
         // compute latitude argument
         final T beta = (ex.multiply(ex).add(ey.multiply(ey)).negate().add(1)).sqrt().add(1).reciprocal();
-        alphaV = eccentricToTrue (y2.add(ey).add(eSE.multiply(beta).multiply(ex)).atan2(x2.add(ex).subtract(eSE.multiply(beta).multiply(ey))),
-                                  ex, ey);
+        alphaV = eccentricToTrue(y2.add(ey).add(eSE.multiply(beta).multiply(ex)).atan2(x2.add(ex).subtract(eSE.multiply(beta).multiply(ey))),
+                                 ex, ey);
 
         if (!FACTORIES.containsKey(a.getField())) {
             FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
@@ -341,15 +341,15 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
             // in order to compute true anomaly derivative, we must compute
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
-            final T lMDot = getKeplerianMeanMotion().
-                            add(jacobian[5][3].multiply(aX)).add(jacobian[5][4].multiply(aY)).add(jacobian[5][5].multiply(aZ));
+            final T alphaMDot = getKeplerianMeanMotion().
+                                add(jacobian[5][3].multiply(aX)).add(jacobian[5][4].multiply(aY)).add(jacobian[5][5].multiply(aZ));
             @SuppressWarnings("unchecked")
             final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
-            final FieldDerivativeStructure<T> exDS = factory.build(ex, exDot);
-            final FieldDerivativeStructure<T> eyDS = factory.build(ey, eyDot);
-            final FieldDerivativeStructure<T> lMDS = factory.build(getLM(), lMDot);
-            final FieldDerivativeStructure<T> lvDS = eccentricToTrue(meanToEccentric(lMDS, exDS, eyDS), exDS, eyDS);
-            alphaVDot = lvDS.getPartialDerivative(1);
+            final FieldDerivativeStructure<T> exDS     = factory.build(ex, exDot);
+            final FieldDerivativeStructure<T> eyDS     = factory.build(ey, eyDot);
+            final FieldDerivativeStructure<T> alphaMDS = factory.build(getAlphaM(), alphaMDot);
+            final FieldDerivativeStructure<T> alphavDS = eccentricToTrue(meanToEccentric(alphaMDS, exDS, eyDS), exDS, eyDS);
+            alphaVDot = alphavDS.getPartialDerivative(1);
 
         } else {
             // acceleration is either almost zero or NaN,
@@ -811,7 +811,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedFieldPVCoordinates<T> initFieldPVCoordinates() {
+    protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
 
         // get equinoctial parameters
         final T equEx = getEquinoctialEx();

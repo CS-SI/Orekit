@@ -183,7 +183,16 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** Lazy evaluation of equinoctial parameters. */
     private void initEquinoctial() {
         if (equinoctial == null) {
-            equinoctial = new FieldEquinoctialOrbit<T>(getPVCoordinates(), getFrame(), getDate(), getMu());
+            if (hasDerivatives()) {
+                // getPVCoordinates includes accelerations that will be interpreted as derivatives
+                equinoctial = new FieldEquinoctialOrbit<>(getPVCoordinates(), getFrame(), getDate(), getMu());
+            } else {
+                // get rid of Keplerian acceleration so we don't assume
+                // we have derivatives when in fact we don't have them
+                equinoctial = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(getPVCoordinates().getPosition(),
+                                                                                   getPVCoordinates().getVelocity()),
+                                                          getFrame(), getDate(), getMu());
+            }
         }
     }
 
@@ -402,7 +411,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedFieldPVCoordinates<T> initFieldPVCoordinates() {
+    protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the cartesian ones
         return getPVCoordinates();
     }

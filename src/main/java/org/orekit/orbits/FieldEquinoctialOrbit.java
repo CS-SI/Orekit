@@ -633,7 +633,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedFieldPVCoordinates<T> initFieldPVCoordinates() {
+    protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
 
         // get equinoctial parameters
         final T lE = getLE();

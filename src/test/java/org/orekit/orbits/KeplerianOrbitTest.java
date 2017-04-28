@@ -54,7 +54,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
-public class KeplerianParametersTest {
+public class KeplerianOrbitTest {
 
     // Computation date
     private AbsoluteDate date;

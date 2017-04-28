@@ -202,7 +202,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         throws IllegalArgumentException {
         super(frame, date, mu);
         if (a.multiply(e.negate().add(1)).getReal() < 0) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
+            throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a.getReal(), e.getReal());
         }
 
         if (!FACTORIES.containsKey(a.getField())) {
@@ -962,7 +962,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     }
 
     /** {@inheritDoc} */
-    protected TimeStampedFieldPVCoordinates<T> initFieldPVCoordinates() {
+    protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
 
         // preliminary variables
         final T cosRaan = raan.cos();
@@ -1038,9 +1038,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** {@inheritDoc} */
     public FieldKeplerianOrbit<T> shiftedBy(final T dt) {
-        return new FieldKeplerianOrbit<T>(a, e, i, pa, raan,
-                                  getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()),
-                                  PositionAngle.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
+        return new FieldKeplerianOrbit<>(a, e, i, pa, raan,
+                                         getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()),
+                                         PositionAngle.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
     /** {@inheritDoc}
@@ -1590,62 +1590,6 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
                                   append("; v: ").append(FastMath.toDegrees(v.getReal())).
                                   append(";}").toString();
     }
-//
-//    /** Replace the instance with a data transfer object for serialization.
-//     * @return data transfer object that will be serialized
-//     */
-//    private Object writeReplace() {
-//        return new DTO(this);
-//    }
-//    /** Internal class used only for serialization. */
-//    private class DTO implements Serializable {
-//
-//        /** Serializable UID. */
-//        private static final long serialVersionUID = 20140617L;
-//
-//        /** Double values. */
-//        private T[] d;
-//
-//        /** Frame in which are defined the orbital parameters. */
-//        private final Frame frame;
-//
-//        /** Simple constructor.
-//         * @param orbit instance to serialize
-//         */
-//        private DTO(final FieldKeplerianOrbit<T> orbit) {
-//
-//            final TimeStampedFieldPVCoordinates<T> pv = orbit.getFieldPVCoordinates();
-//            final FieldAbsoluteDate<T> FAD = new FieldAbsoluteDate<T>(orbit.a.getField());
-//            // decompose date
-//            final double epoch  = FastMath.floor(pv.getDate().durationFrom(FAD.J2000_EPOCH(orbit.a.getField())).getReal());
-//            final T offset = pv.getDate().durationFrom(FAD.J2000_EPOCH(orbit.a.getField()).shiftedBy(epoch));
-//
-//            this.d = MathArrays.buildArray(getA().getField(), 9);
-//            this.d[0] = a.getField().getZero().add(epoch);
-//            this.d[1] = a.getField().getZero().add(offset);
-//            this.d[2] = a.getField().getZero().add(orbit.getMu());
-//            this.d[3] = orbit.a;
-//            this.d[4] = orbit.e;
-//            this.d[5] = orbit.i;
-//            this.d[6] = orbit.pa;
-//            this.d[7] = orbit.raan;
-//            this.d[8] = orbit.v;
-//
-//            this.frame = orbit.getFrame();
-//
-//        }
-//
-//        /** Replace the deserialized data transfer object with a {@link FieldKeplerianOrbit}.
-//         * @return replacement {@link FieldKeplerianOrbit}
-//         */
-//        /**
-//        private Object readResolve() {
-//            return new FieldKeplerianOrbit<T>(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
-//                                      frame, FieldAbsoluteDate<T>.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
-//                                      d[2]);
-//        }
-//        */
-//    }
 
     /**
      * Normalize an angle in a 2&pi; wide interval around a center value.
