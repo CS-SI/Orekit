@@ -3,6 +3,7 @@ package org.orekit.files.general;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -137,15 +139,17 @@ public class OrekitEphemerisFileTest {
         propagator.propagate(segment.getStart(), segment.getStop());
         ephemerisSegmentPropagator.propagate(segment.getStart(), segment.getStop());
 
+        final double dateEpsilon = 1.0e-9;
         assertTrue(referenceLogger.getLoggedEvents().size() > 0);
         assertEquals(referenceLogger.getLoggedEvents().size(), lookupLogger.getLoggedEvents().size());
         for (int i = 0; i < referenceLogger.getLoggedEvents().size(); i++) {
             LoggedEvent reference = referenceLogger.getLoggedEvents().get(i);
-            LoggedEvent actual = referenceLogger.getLoggedEvents().get(i);
-            assertEquals(reference.getState().getDate(), actual.getState().getDate());
+            LoggedEvent actual = lookupLogger.getLoggedEvents().get(i);
+            assertEquals(0.0,
+                         FastMath.abs(reference.getState().getDate().durationFrom(actual.getState().getDate())),
+                         dateEpsilon);
         }
 
-        final double dateEpsilon = 1e-9;
         final Propagator embeddedPropagator = segment.getPropagator();
         final EventsLogger embeddedPropLogger = new EventsLogger();
         embeddedPropagator.addEventDetector(embeddedPropLogger.monitorDetector(elevationDetector));
@@ -154,8 +158,9 @@ public class OrekitEphemerisFileTest {
         for (int i = 0; i < referenceLogger.getLoggedEvents().size(); i++) {
             LoggedEvent reference = referenceLogger.getLoggedEvents().get(i);
             LoggedEvent actual = embeddedPropLogger.getLoggedEvents().get(i);
-            assertEquals(0.0, Math.abs(reference.getState().getDate().durationFrom(actual.getState().getDate())),
-                    dateEpsilon);
+            assertEquals(0.0,
+                         FastMath.abs(reference.getState().getDate().durationFrom(actual.getState().getDate())),
+                         dateEpsilon);
                  
         }
 
@@ -164,7 +169,7 @@ public class OrekitEphemerisFileTest {
             try {
                 readInStates.add(new SpacecraftState(new CartesianOrbit(c, frame, mu)));
             } catch (IllegalArgumentException | OrekitException e) {
-                e.printStackTrace();
+                fail(e.getLocalizedMessage());
             }
         });
         
@@ -177,8 +182,9 @@ public class OrekitEphemerisFileTest {
         for (int i = 0; i < referenceLogger.getLoggedEvents().size(); i++) {
             LoggedEvent reference = referenceLogger.getLoggedEvents().get(i);
             LoggedEvent actual = directEphemPropLogger.getLoggedEvents().get(i);
-            assertEquals(0.0, Math.abs(reference.getState().getDate().durationFrom(actual.getState().getDate())),
-                    dateEpsilon);
+            assertEquals(0.0,
+                         FastMath.abs(reference.getState().getDate().durationFrom(actual.getState().getDate())),
+                         dateEpsilon);
         }
 
     }
