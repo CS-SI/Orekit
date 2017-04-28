@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -963,6 +965,49 @@ public class CircularParametersTest {
         });
         return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
      }
+
+    @Test
+    public void testPositionAngleDerivatives() throws OrekitException {
+        final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
+        final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
+        final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D     acceleration = new Vector3D(-7.466182457944, -2.118153357345,  0.160004048437);
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame frame = FramesFactory.getEME2000();
+        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final CircularOrbit orbit = new CircularOrbit(pv, frame, mu);
+
+        for (PositionAngle type : PositionAngle.values()) {
+            final CircularOrbit rebuilt = new CircularOrbit(orbit.getA(),
+                                                            orbit.getCircularEx(),
+                                                            orbit.getCircularEy(),
+                                                            orbit.getI(),
+                                                            orbit.getRightAscensionOfAscendingNode(),
+                                                            orbit.getAlpha(type),
+                                                            orbit.getADot(),
+                                                            orbit.getCircularExDot(),
+                                                            orbit.getCircularEyDot(),
+                                                            orbit.getIDot(),
+                                                            orbit.getRightAscensionOfAscendingNodeDot(),
+                                                            orbit.getAlphaDot(type),
+                                                            type, orbit.getFrame(), orbit.getDate(), orbit.getMu());
+            Assert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                                1));
+            Assert.assertThat(rebuilt.getCircularEx(),                       relativelyCloseTo(orbit.getCircularEx(),                       1));
+            Assert.assertThat(rebuilt.getCircularEy(),                       relativelyCloseTo(orbit.getCircularEy(),                       1));
+            Assert.assertThat(rebuilt.getI(),                                relativelyCloseTo(orbit.getI(),                                1));
+            Assert.assertThat(rebuilt.getRightAscensionOfAscendingNode(),    relativelyCloseTo(orbit.getRightAscensionOfAscendingNode(),    1));
+            Assert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),                             1));
+            Assert.assertThat(rebuilt.getCircularExDot(),                    relativelyCloseTo(orbit.getCircularExDot(),                    1));
+            Assert.assertThat(rebuilt.getCircularEyDot(),                    relativelyCloseTo(orbit.getCircularEyDot(),                    1));
+            Assert.assertThat(rebuilt.getIDot(),                             relativelyCloseTo(orbit.getIDot(),                             1));
+            Assert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot(), 1));
+            for (PositionAngle type2 : PositionAngle.values()) {
+                Assert.assertThat(rebuilt.getAlpha(type2),    relativelyCloseTo(orbit.getAlpha(type2),    1));
+                Assert.assertThat(rebuilt.getAlphaDot(type2), relativelyCloseTo(orbit.getAlphaDot(type2), 1));
+            }
+        }
+
+    }
 
     @Before
     public void setUp() {

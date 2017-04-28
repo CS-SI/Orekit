@@ -50,6 +50,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
 
 public class KeplerianParametersTest {
 
@@ -1158,6 +1159,49 @@ public class KeplerianParametersTest {
         });
         return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
      }
+
+    @Test
+    public void testPositionAngleDerivatives() throws OrekitException {
+        final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
+        final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
+        final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
+        final Vector3D     acceleration = new Vector3D(-7.466182457944, -2.118153357345,  0.160004048437);
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame frame = FramesFactory.getEME2000();
+        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, mu);
+
+        for (PositionAngle type : PositionAngle.values()) {
+            final KeplerianOrbit rebuilt = new KeplerianOrbit(orbit.getA(),
+                                                              orbit.getE(),
+                                                              orbit.getI(),
+                                                              orbit.getPerigeeArgument(),
+                                                              orbit.getRightAscensionOfAscendingNode(),
+                                                              orbit.getAnomaly(type),
+                                                              orbit.getADot(),
+                                                              orbit.getEDot(),
+                                                              orbit.getIDot(),
+                                                              orbit.getPerigeeArgumentDot(),
+                                                              orbit.getRightAscensionOfAscendingNodeDot(),
+                                                              orbit.getAnomalyDot(type),
+                                                              type, orbit.getFrame(), orbit.getDate(), orbit.getMu());
+            Assert.assertThat(rebuilt.getA(),                                relativelyCloseTo(orbit.getA(),                                1));
+            Assert.assertThat(rebuilt.getE(),                                relativelyCloseTo(orbit.getE(),                                1));
+            Assert.assertThat(rebuilt.getI(),                                relativelyCloseTo(orbit.getI(),                                1));
+            Assert.assertThat(rebuilt.getPerigeeArgument(),                  relativelyCloseTo(orbit.getPerigeeArgument(),                  1));
+            Assert.assertThat(rebuilt.getRightAscensionOfAscendingNode(),    relativelyCloseTo(orbit.getRightAscensionOfAscendingNode(),    1));
+            Assert.assertThat(rebuilt.getADot(),                             relativelyCloseTo(orbit.getADot(),                             1));
+            Assert.assertThat(rebuilt.getEDot(),                             relativelyCloseTo(orbit.getEDot(),                             1));
+            Assert.assertThat(rebuilt.getIDot(),                             relativelyCloseTo(orbit.getIDot(),                             1));
+            Assert.assertThat(rebuilt.getPerigeeArgumentDot(),               relativelyCloseTo(orbit.getPerigeeArgumentDot(),               1));
+            Assert.assertThat(rebuilt.getRightAscensionOfAscendingNodeDot(), relativelyCloseTo(orbit.getRightAscensionOfAscendingNodeDot(), 1));
+            for (PositionAngle type2 : PositionAngle.values()) {
+                Assert.assertThat(rebuilt.getAnomaly(type2),    relativelyCloseTo(orbit.getAnomaly(type2),    1));
+                Assert.assertThat(rebuilt.getAnomalyDot(type2), relativelyCloseTo(orbit.getAnomalyDot(type2), 1));
+            }
+        }
+
+    }
 
     @Test
     public void testSerialization()
