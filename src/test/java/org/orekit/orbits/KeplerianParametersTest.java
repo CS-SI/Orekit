@@ -1148,6 +1148,74 @@ public class KeplerianParametersTest {
 
     }
 
+    @Test
+    public void testNonKeplerianHyperbolicDerivatives() throws OrekitException {
+        final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
+        final Vector3D     position     = new Vector3D(224267911.905821, 290251613.109399, 45534292.777492);
+        final Vector3D     velocity     = new Vector3D(-1494.068165293, 1124.771027677, 526.915286134);
+        final Vector3D     acceleration = new Vector3D(-0.001295920501, -0.002233045187, -0.000349906292);
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
+        final Frame frame = FramesFactory.getEME2000();
+        final double mu   = Constants.EIGEN5C_EARTH_MU;
+        final KeplerianOrbit orbit = new KeplerianOrbit(pv, frame, mu);
+
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+                            orbit.getADot(),
+                            9.6e-8);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+                            orbit.getEquinoctialExDot(),
+                            2.8e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+                            orbit.getEquinoctialEyDot(),
+                            3.6e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+                            orbit.getHxDot(),
+                            1.4e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+                            orbit.getHyDot(),
+                            9.4e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+                            orbit.getLvDot(),
+                            5.6e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+                            orbit.getLEDot(),
+                            9.0e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+                            orbit.getLMDot(),
+                            1.8e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+                            orbit.getEDot(),
+                            1.8e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+                            orbit.getIDot(),
+                            3.6e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getPerigeeArgument()),
+                            orbit.getPerigeeArgumentDot(),
+                            9.4e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getRightAscensionOfAscendingNode()),
+                            orbit.getRightAscensionOfAscendingNodeDot(),
+                            1.1e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getTrueAnomaly()),
+                            orbit.getTrueAnomalyDot(),
+                            1.4e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEccentricAnomaly()),
+                            orbit.getEccentricAnomalyDot(),
+                            9.2e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getMeanAnomaly()),
+                            orbit.getMeanAnomalyDot(),
+                            1.4e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAnomaly(PositionAngle.TRUE)),
+                            orbit.getAnomalyDot(PositionAngle.TRUE),
+                            1.4e-15);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAnomaly(PositionAngle.ECCENTRIC)),
+                            orbit.getAnomalyDot(PositionAngle.ECCENTRIC),
+                            9.2e-16);
+        Assert.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getAnomaly(PositionAngle.MEAN)),
+                            orbit.getAnomalyDot(PositionAngle.MEAN),
+                            1.4e-15);
+
+    }
+
     private <S extends Function<KeplerianOrbit, Double>>
     double differentiate(TimeStampedPVCoordinates pv, Frame frame, double mu, S picker) {
         final DSFactory factory = new DSFactory(1, 1);
