@@ -571,11 +571,19 @@ public class CircularOrbit
 
     /** {@inheritDoc} */
     public double getHx() {
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
+            return Double.NaN;
+        }
         return  FastMath.cos(raan) * FastMath.tan(i / 2);
     }
 
     /** {@inheritDoc} */
     public double getHxDot() {
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
+            return Double.NaN;
+        }
         final double cosRaan = FastMath.cos(raan);
         final double sinRaan = FastMath.sin(raan);
         final double tan     = FastMath.tan(0.5 * i);
@@ -584,11 +592,19 @@ public class CircularOrbit
 
     /** {@inheritDoc} */
     public double getHy() {
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
+            return Double.NaN;
+        }
         return  FastMath.sin(raan) * FastMath.tan(i / 2);
     }
 
     /** {@inheritDoc} */
     public double getHyDot() {
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
+            return Double.NaN;
+        }
         final double cosRaan = FastMath.cos(raan);
         final double sinRaan = FastMath.sin(raan);
         final double tan     = FastMath.tan(0.5 * i);

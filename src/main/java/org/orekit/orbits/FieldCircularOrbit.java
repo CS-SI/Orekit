@@ -515,6 +515,10 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
     /** {@inheritDoc} */
     public T getHx() {
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+            return zero.add(Double.NaN);
+        }
         return  raan.cos().multiply(i.divide(2).tan());
     }
 
@@ -523,6 +527,11 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
         if (!hasDerivatives()) {
             return null;
+        }
+
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+            return zero.add(Double.NaN);
         }
 
         final T cosRaan = raan.cos();
@@ -535,6 +544,10 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
     /** {@inheritDoc} */
     public T getHy() {
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+            return zero.add(Double.NaN);
+        }
         return raan.sin().multiply(i.divide(2).tan());
     }
 
@@ -543,6 +556,11 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
         if (!hasDerivatives()) {
             return null;
+        }
+
+        // Check for equatorial retrograde orbit
+        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+            return zero.add(Double.NaN);
         }
 
         final T cosRaan = raan.cos();
