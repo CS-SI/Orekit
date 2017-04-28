@@ -1011,6 +1011,41 @@ public class EquinoctialParametersTest {
 
     }
 
+    @Test
+    public void testEquatorialRetrograde() {
+        Vector3D position = new Vector3D(10000000.0, 0.0, 0.0);
+        Vector3D velocity = new Vector3D(0.0, -6500.0, 0.0);
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
+                                             1, new Vector3D(-0.1, 0.2, 0.3));
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        // we use an intermediate Keplerian orbit so eccentricity can be computed
+        // when using directly PV, eccentricity ends up in NaN, due to the way computation is organized
+        // this is not really considered a problem as anyway retrograde equatorial cannot be fully supported
+        EquinoctialOrbit orbit = new EquinoctialOrbit(new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu));
+        Assert.assertEquals(10637829.465, orbit.getA(), 1.0e-3);
+        Assert.assertEquals(-738.145, orbit.getADot(), 1.0e-3);
+        Assert.assertEquals(0.05995861, orbit.getE(), 1.0e-8);
+        Assert.assertEquals(-6.523e-5, orbit.getEDot(), 1.0e-8);
+        Assert.assertTrue(Double.isNaN(orbit.getI()));
+        Assert.assertTrue(Double.isNaN(orbit.getIDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHx()));
+        Assert.assertTrue(Double.isNaN(orbit.getHxDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHy()));
+        Assert.assertTrue(Double.isNaN(orbit.getHyDot()));
+    }
+
+    @Test
+    public void testToString() {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        EquinoctialOrbit orbit = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals("equinoctial parameters: {a: 4.225517000282565E7; ex: 5.927324978565528E-4; ey: -0.002062743969643666; hx: 6.401103130239252E-5; hy: -0.0017606836670756732; lv: 134.24111947709974;}",
+                            orbit.toString());
+    }
+
     @Before
     public void setUp() {
 
