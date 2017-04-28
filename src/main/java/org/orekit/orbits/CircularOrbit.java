@@ -238,14 +238,13 @@ public class CircularOrbit
      * @param ey e sin(ω), second component of circular eccentricity vector
      * @param i inclination (rad)
      * @param raan right ascension of ascending node (Ω, rad)
-     * @param alpha  an + ω, mean, eccentric or true latitude argument (rad)
+     * @param alphaV  v + ω, true latitude argument (rad)
      * @param aDot  semi-major axis derivative (m/s)
      * @param exDot d(e cos(ω))/dt, first component of circular eccentricity vector derivative
      * @param eyDot d(e sin(ω))/dt, second component of circular eccentricity vector derivative
      * @param iDot inclination  derivative(rad/s)
      * @param raanDot right ascension of ascending node derivative (rad/s)
-     * @param alphaDot  d(an + ω), mean, eccentric or true latitude argument derivative (rad/s)
-     * @param type type of latitude argument
+     * @param alphaVDot  d(v + ω), true latitude argument derivative (rad/s)
      * @param pvCoordinates the {@link PVCoordinates} in inertial frame
      * @param frame the frame in which are defined the parameters
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
@@ -254,68 +253,26 @@ public class CircularOrbit
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     private CircularOrbit(final double a, final double ex, final double ey,
-                          final double i, final double raan, final double alpha,
+                          final double i, final double raan, final double alphaV,
                           final double aDot, final double exDot, final double eyDot,
-                          final double iDot, final double raanDot, final double alphaDot,
-                          final PositionAngle type,
+                          final double iDot, final double raanDot, final double alphaVDot,
                           final TimeStampedPVCoordinates pvCoordinates, final Frame frame,
                           final double mu)
         throws IllegalArgumentException {
         super(pvCoordinates, frame, mu);
-        if (ex * ex + ey * ey >= 1.0) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS,
-                                                     getClass().getName());
-        }
-        this.a       =  a;
-        this.aDot    =  aDot;
-        this.ex      = ex;
-        this.exDot   = exDot;
-        this.ey      = ey;
-        this.eyDot   = eyDot;
-        this.i       = i;
-        this.iDot    = iDot;
-        this.raan    = raan;
-        this.raanDot = raanDot;
-
-        if (hasDerivatives()) {
-            final DerivativeStructure exDS    = FACTORY.build(ex,    exDot);
-            final DerivativeStructure eyDS    = FACTORY.build(ey,    eyDot);
-            final DerivativeStructure alphaDS = FACTORY.build(alpha, alphaDot);
-            final DerivativeStructure alphavDS;
-            switch (type) {
-                case MEAN :
-                    alphavDS = FieldCircularOrbit.eccentricToTrue(FieldCircularOrbit.meanToEccentric(alphaDS, exDS, eyDS), exDS, eyDS);
-                    break;
-                case ECCENTRIC :
-                    alphavDS = FieldCircularOrbit.eccentricToTrue(alphaDS, exDS, eyDS);
-                    break;
-                case TRUE :
-                    alphavDS = alphaDS;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
-            this.alphaV    = alphavDS.getValue();
-            this.alphaVDot = alphavDS.getPartialDerivative(1);
-        } else {
-            switch (type) {
-                case MEAN :
-                    this.alphaV = eccentricToTrue(meanToEccentric(alpha, ex, ey), ex, ey);
-                    break;
-                case ECCENTRIC :
-                    this.alphaV = eccentricToTrue(alpha, ex, ey);
-                    break;
-                case TRUE :
-                    this.alphaV = alpha;
-                    break;
-                default :
-                    throw new OrekitInternalError(null);
-            }
-            this.alphaVDot = Double.NaN;
-        }
-
-        serializePV = true;
-
+        this.a           =  a;
+        this.aDot        =  aDot;
+        this.ex          = ex;
+        this.exDot       = exDot;
+        this.ey          = ey;
+        this.eyDot       = eyDot;
+        this.i           = i;
+        this.iDot        = iDot;
+        this.raan        = raan;
+        this.raanDot     = raanDot;
+        this.alphaV      = alphaV;
+        this.alphaVDot   = alphaVDot;
+        this.serializePV = true;
     }
 
     /** Constructor from Cartesian parameters.
@@ -1295,7 +1252,6 @@ public class CircularOrbit
                 case 24 : // date + mu + orbit + derivatives + Cartesian
                     return new CircularOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
                                              d[ 9], d[10], d[11], d[12], d[13], d[14],
-                                             PositionAngle.TRUE,
                                              new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
                                                                           new Vector3D(d[15], d[16], d[17]),
                                                                           new Vector3D(d[18], d[19], d[20]),
@@ -1305,7 +1261,6 @@ public class CircularOrbit
                 case 18 : // date + mu + orbit + Cartesian
                     return new CircularOrbit(d[3], d[4], d[5], d[6], d[7], d[8],
                                              Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
-                                             PositionAngle.TRUE,
                                              new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
                                                                           new Vector3D(d[ 9], d[10], d[11]),
                                                                           new Vector3D(d[12], d[13], d[14]),
