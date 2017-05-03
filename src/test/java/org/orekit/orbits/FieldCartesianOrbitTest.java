@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import static org.orekit.OrekitMatchers.relativelyCloseTo;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -127,6 +129,21 @@ public class FieldCartesianOrbitTest {
     @Test(expected=IllegalArgumentException.class)
     public void testErr1(){
         doTestErr1(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testToOrbitWithoutDerivatives() {
+        doTestToOrbitWithoutDerivatives(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testToOrbitWithDerivatives() {
+        doTestToOrbitWithDerivatives(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testToString() {
+        doTestToString(Decimal64Field.getInstance());
     }
 
     @Test
@@ -383,6 +400,53 @@ public class FieldCartesianOrbitTest {
                            date, mu);
     }
 
+    private <T extends RealFieldElement<T>> void doTestToOrbitWithoutDerivatives(Field<T> field) {
+        T zero =  field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
+
+        FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
+        FieldCartesianOrbit<T>  fieldOrbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        CartesianOrbit orbit = fieldOrbit.toOrbit();
+        Assert.assertFalse(orbit.hasDerivatives());
+        Assert.assertThat(orbit.getPVCoordinates().getPosition().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getX().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getPosition().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getY().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getPosition().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getZ().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getVelocity().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getX().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getVelocity().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getY().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getVelocity().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getZ().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getAcceleration().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getAcceleration().getX().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getAcceleration().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getAcceleration().getY().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getAcceleration().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getAcceleration().getZ().getReal(), 0));
+
+    }
+
+    private <T extends RealFieldElement<T>> void doTestToOrbitWithDerivatives(Field<T> field) {
+        T zero =  field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
+
+        FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        T r2 = position.getNormSq();
+        T r = r2.sqrt();
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,
+                                                                         new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu),
+                                                                                             position));
+        FieldCartesianOrbit<T>  fieldOrbit = new FieldCartesianOrbit<T>(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        CartesianOrbit orbit = fieldOrbit.toOrbit();
+        Assert.assertTrue(orbit.hasDerivatives());
+        Assert.assertThat(orbit.getPVCoordinates().getPosition().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getX().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getPosition().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getY().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getPosition().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getPosition().getZ().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getVelocity().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getX().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getVelocity().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getY().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getVelocity().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getVelocity().getZ().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getAcceleration().getX(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getAcceleration().getX().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getAcceleration().getY(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getAcceleration().getY().getReal(), 0));
+        Assert.assertThat(orbit.getPVCoordinates().getAcceleration().getZ(), relativelyCloseTo(fieldOrbit.getPVCoordinates().getAcceleration().getZ().getReal(), 0));
+    }
+
     private <T extends RealFieldElement<T>> void doTestJacobianReference(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<T>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0));
@@ -580,6 +644,20 @@ public class FieldCartesianOrbitTest {
         Assert.assertTrue(Double.isNaN(orbit.getHxDot().getReal()));
         Assert.assertTrue(Double.isNaN(orbit.getHy().getReal()));
         Assert.assertTrue(Double.isNaN(orbit.getHyDot().getReal()));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestToString(Field<T> field) {
+        FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(-29536113.0),
+                                                        field.getZero().add(30329259.0),
+                                                        field.getZero().add(-100125.0));
+        FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero().add(-2194.0),
+                                                        field.getZero().add(-2141.0),
+                                                        field.getZero().add(-8.0));
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
+        FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
+                                                                 FieldAbsoluteDate.getJ2000Epoch(field), mu);
+        Assert.assertEquals("cartesian parameters: {2000-01-01T11:58:55.816, P(-2.9536113E7, 3.0329259E7, -100125.0), V(-2194.0, -2141.0, -8.0), A(0.1551640482651465, -0.15933073547362608, 5.25993394342302E-4)}",
+                            orbit.toString());
     }
 
 }

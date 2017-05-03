@@ -103,8 +103,28 @@ public class FieldKeplerianOrbitTest {
     }
 
     @Test
-    public void testHyperbola() throws OrekitException {
-        doTestHyperbola(Decimal64Field.getInstance());
+    public void testHyperbola1() throws OrekitException {
+        doTestHyperbola1(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testHyperbola2() throws OrekitException {
+        doTestHyperbola2(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testToOrbitWithoutDerivatives() {
+        doTestToOrbitWithoutDerivatives(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testToOrbitWithDerivatives() {
+        doTestToOrbitWithDerivatives(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testToString() {
+        doTestToString(Decimal64Field.getInstance());
     }
 
     @Test
@@ -648,25 +668,129 @@ public class FieldKeplerianOrbitTest {
         Assert.assertEquals(0.00094277682051291315229, orbit.getKeplerianMeanMotion().getReal(), 1.0e-16);
     }
 
-    private <T extends RealFieldElement<T>> void doTestHyperbola(final Field<T> field) {
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<T>(field.getZero().add(-10000000.0),field.getZero().add(2.5), field.getZero().add(0.3),field.getZero(), field.getZero(),field.getZero(),
-                        PositionAngle.TRUE,
-                        FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field),
-                        mu);
+    private <T extends RealFieldElement<T>> void doTestHyperbola1(final Field<T> field) {
+        T zero = field.getZero();
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(2.5), zero.add(0.3),
+                                                                 zero, zero, zero,
+                                                                 PositionAngle.TRUE,
+                                                                 FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field),
+                                                                 mu);
         FieldVector3D<T> perigeeP  = orbit.getPVCoordinates().getPosition();
         FieldVector3D<T> u = perigeeP.normalize();
-        FieldVector3D<T> focus1 = new FieldVector3D<T>(field.getZero(),field.getZero(),field.getZero());
-        FieldVector3D<T> focus2 = new FieldVector3D<T>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
-        for (T dt = field.getZero().add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {
+        FieldVector3D<T> focus1 = new FieldVector3D<>(zero, zero, zero);
+        FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
+        for (T dt = zero.add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {
             FieldPVCoordinates<T> pv = orbit.shiftedBy(dt).getPVCoordinates();
             T d1 = FieldVector3D.distance(pv.getPosition(), focus1);
             T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
             Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
             FieldKeplerianOrbit<T> rebuilt =
-                            new FieldKeplerianOrbit<T>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+                            new FieldKeplerianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
             Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
             Assert.assertEquals(2.5, rebuilt.getE().getReal(), 1.0e-13);
         }
+    }
+
+    private <T extends RealFieldElement<T>> void doTestHyperbola2(final Field<T> field) {
+        T zero = field.getZero();
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(1.2), zero.add(0.3),
+                                                                 zero, zero, zero.add(-1.75),
+                                                                 PositionAngle.MEAN,
+                                                                 FramesFactory.getEME2000(), new FieldAbsoluteDate<>(field),
+                                                                 mu);
+        FieldVector3D<T> perigeeP  = new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(),
+                                                               orbit.getPerigeeArgument(), orbit.getRightAscensionOfAscendingNode(),
+                                                               zero, PositionAngle.TRUE, orbit.getFrame(),
+                                                               orbit.getDate(), orbit.getMu()).getPVCoordinates().getPosition();
+        FieldVector3D<T> u = perigeeP.normalize();
+        FieldVector3D<T> focus1 = new FieldVector3D<>(zero, zero, zero);
+        FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
+        for (T dt = zero.add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {
+            FieldPVCoordinates<T> pv = orbit.shiftedBy(dt).getPVCoordinates();
+            T d1 = FieldVector3D.distance(pv.getPosition(), focus1);
+            T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
+            Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
+            FieldKeplerianOrbit<T> rebuilt =
+                            new FieldKeplerianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+            Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
+            Assert.assertEquals(1.2, rebuilt.getE().getReal(), 1.0e-13);
+        }
+    }
+
+    private <T extends RealFieldElement<T>> void doTestToOrbitWithoutDerivatives(Field<T> field) {
+        T zero =  field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
+
+        FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
+        FieldKeplerianOrbit<T>  fieldOrbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        KeplerianOrbit orbit = fieldOrbit.toOrbit();
+        Assert.assertFalse(orbit.hasDerivatives());
+        Assert.assertThat(orbit.getA(),                             relativelyCloseTo(fieldOrbit.getA().getReal(),                             0));
+        Assert.assertThat(orbit.getE(),                             relativelyCloseTo(fieldOrbit.getE().getReal(),                             0));
+        Assert.assertThat(orbit.getI(),                             relativelyCloseTo(fieldOrbit.getI().getReal(),                             0));
+        Assert.assertThat(orbit.getPerigeeArgument(),               relativelyCloseTo(fieldOrbit.getPerigeeArgument().getReal(),               0));
+        Assert.assertThat(orbit.getRightAscensionOfAscendingNode(), relativelyCloseTo(fieldOrbit.getRightAscensionOfAscendingNode().getReal(), 0));
+        Assert.assertThat(orbit.getTrueAnomaly(),                   relativelyCloseTo(fieldOrbit.getTrueAnomaly().getReal(),                   0));
+        Assert.assertTrue(Double.isNaN(orbit.getADot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEquinoctialExDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEquinoctialEyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHxDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getHyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getLvDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getLEDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getLMDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getIDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getPerigeeArgumentDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getRightAscensionOfAscendingNodeDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getTrueAnomalyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getEccentricAnomalyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getMeanAnomalyDot()));
+        Assert.assertTrue(Double.isNaN(orbit.getAnomalyDot(PositionAngle.TRUE)));
+        Assert.assertTrue(Double.isNaN(orbit.getAnomalyDot(PositionAngle.ECCENTRIC)));
+        Assert.assertTrue(Double.isNaN(orbit.getAnomalyDot(PositionAngle.MEAN)));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestToOrbitWithDerivatives(Field<T> field) {
+        T zero =  field.getZero();
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
+
+        FieldVector3D<T> position = new FieldVector3D<T>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        FieldVector3D<T> velocity = new FieldVector3D<T>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        T r2 = position.getNormSq();
+        T r = r2.sqrt();
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity,
+                                                                       new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-mu),
+                                                                                           position));
+        FieldKeplerianOrbit<T>  fieldOrbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        KeplerianOrbit orbit = fieldOrbit.toOrbit();
+        Assert.assertTrue(orbit.hasDerivatives());
+        Assert.assertThat(orbit.getA(),                             relativelyCloseTo(fieldOrbit.getA().getReal(),                             0));
+        Assert.assertThat(orbit.getE(),                             relativelyCloseTo(fieldOrbit.getE().getReal(),                             0));
+        Assert.assertThat(orbit.getI(),                             relativelyCloseTo(fieldOrbit.getI().getReal(),                             0));
+        Assert.assertThat(orbit.getPerigeeArgument(),               relativelyCloseTo(fieldOrbit.getPerigeeArgument().getReal(),               0));
+        Assert.assertThat(orbit.getRightAscensionOfAscendingNode(), relativelyCloseTo(fieldOrbit.getRightAscensionOfAscendingNode().getReal(), 0));
+        Assert.assertThat(orbit.getTrueAnomaly(),                   relativelyCloseTo(fieldOrbit.getTrueAnomaly().getReal(),                   0));
+        Assert.assertThat(orbit.getADot(),                              relativelyCloseTo(fieldOrbit.getADot().getReal(),                              0));
+        Assert.assertThat(orbit.getEquinoctialExDot(),                  relativelyCloseTo(fieldOrbit.getEquinoctialExDot().getReal(),                  0));
+        Assert.assertThat(orbit.getEquinoctialEyDot(),                  relativelyCloseTo(fieldOrbit.getEquinoctialEyDot().getReal(),                  0));
+        Assert.assertThat(orbit.getHxDot(),                             relativelyCloseTo(fieldOrbit.getHxDot().getReal(),                             0));
+        Assert.assertThat(orbit.getHyDot(),                             relativelyCloseTo(fieldOrbit.getHyDot().getReal(),                             0));
+        Assert.assertThat(orbit.getLvDot(),                             relativelyCloseTo(fieldOrbit.getLvDot().getReal(),                             0));
+        Assert.assertThat(orbit.getLEDot(),                             relativelyCloseTo(fieldOrbit.getLEDot().getReal(),                             0));
+        Assert.assertThat(orbit.getLMDot(),                             relativelyCloseTo(fieldOrbit.getLMDot().getReal(),                             0));
+        Assert.assertThat(orbit.getEDot(),                              relativelyCloseTo(fieldOrbit.getEDot().getReal(),                              0));
+        Assert.assertThat(orbit.getIDot(),                              relativelyCloseTo(fieldOrbit.getIDot().getReal(),                              0));
+        Assert.assertThat(orbit.getPerigeeArgumentDot(),                relativelyCloseTo(fieldOrbit.getPerigeeArgumentDot().getReal(),                0));
+        Assert.assertThat(orbit.getRightAscensionOfAscendingNodeDot(),  relativelyCloseTo(fieldOrbit.getRightAscensionOfAscendingNodeDot().getReal(),  0));
+        Assert.assertThat(orbit.getTrueAnomalyDot(),                    relativelyCloseTo(fieldOrbit.getTrueAnomalyDot().getReal(),                    0));
+        Assert.assertThat(orbit.getEccentricAnomalyDot(),               relativelyCloseTo(fieldOrbit.getEccentricAnomalyDot().getReal(),               0));
+        Assert.assertThat(orbit.getMeanAnomalyDot(),                    relativelyCloseTo(fieldOrbit.getMeanAnomalyDot().getReal(),                    0));
+        Assert.assertThat(orbit.getAnomalyDot(PositionAngle.TRUE),      relativelyCloseTo(fieldOrbit.getAnomalyDot(PositionAngle.TRUE).getReal(),      0));
+        Assert.assertThat(orbit.getAnomalyDot(PositionAngle.ECCENTRIC), relativelyCloseTo(fieldOrbit.getAnomalyDot(PositionAngle.ECCENTRIC).getReal(), 0));
+        Assert.assertThat(orbit.getAnomalyDot(PositionAngle.MEAN),      relativelyCloseTo(fieldOrbit.getAnomalyDot(PositionAngle.MEAN).getReal(),      0));
     }
 
     private <T extends RealFieldElement<T>> void doTestInconsistentHyperbola(final Field<T> field) {
@@ -1586,6 +1710,20 @@ public class FieldKeplerianOrbitTest {
         Assert.assertTrue(Double.isNaN(orbit.getHxDot().getReal()));
         Assert.assertTrue(Double.isNaN(orbit.getHy().getReal()));
         Assert.assertTrue(Double.isNaN(orbit.getHyDot().getReal()));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestToString(Field<T> field) {
+        FieldVector3D<T> position = new FieldVector3D<>(field.getZero().add(-29536113.0),
+                                                        field.getZero().add(30329259.0),
+                                                        field.getZero().add(-100125.0));
+        FieldVector3D<T> velocity = new FieldVector3D<>(field.getZero().add(-2194.0),
+                                                        field.getZero().add(-2141.0),
+                                                        field.getZero().add(-8.0));
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
+                                                                 FieldAbsoluteDate.getJ2000Epoch(field), mu);
+        Assert.assertEquals("keplerian parameters: {a: 4.225517000282565E7; e: 0.002146216321416967; i: 0.20189257051515358; pa: 13.949966363606599; raan: -87.91788415673473; v: -151.79096272977213;}",
+                            orbit.toString());
     }
 
     @Before

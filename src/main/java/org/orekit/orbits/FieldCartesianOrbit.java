@@ -18,6 +18,7 @@ package org.orekit.orbits;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
@@ -314,7 +316,10 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     public T getHx() {
         final FieldVector3D<T> w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
-        if (((w.getX().getReal() * w.getX().getReal() + w.getY().getReal() * w.getY().getReal()) == 0) && w.getZ().getReal() < 0) {
+        final double x = w.getX().getReal();
+        final double y = w.getY().getReal();
+        final double z = w.getZ().getReal();
+        if (((x * x + y * y) == 0) && z < 0) {
             return zero.add(Double.NaN);
         }
         return w.getY().negate().divide(w.getZ().add(1));
@@ -343,7 +348,10 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     public T getHy() {
         final FieldVector3D<T> w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
-        if (((w.getX().getReal() * w.getX().getReal() + w.getY().getReal() * w.getY().getReal()) == 0) && w.getZ().getReal() < 0) {
+        final double x = w.getX().getReal();
+        final double y = w.getY().getReal();
+        final double z = w.getZ().getReal();
+        if (((x * x + y * y) == 0) && z < 0) {
             return zero.add(Double.NaN);
         }
         return  w.getX().divide(w.getZ().add(1));
@@ -650,32 +658,32 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
                                             iter);
     }
 
-    @Override
-    public void getJacobianWrtCartesian(final PositionAngle type, final T[][] jacobian) {
+    /** Create a 6x6 identity matrix.
+     * @return 6x6 identity matrix
+     */
+    private T[][] create6x6Identity() {
         // this is the fastest way to set the 6x6 identity matrix
+        final T[][] identity = MathArrays.buildArray(field, 6, 6);
         for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                jacobian[i][j] = zero;
-            }
-            jacobian[i][i] = one;
+            Arrays.fill(identity[i], zero);
+            identity[i][i] = one;
         }
+        return identity;
     }
 
     @Override
     protected T[][] computeJacobianMeanWrtCartesian() {
-        // not used
-        return null;
+        return create6x6Identity();
     }
+
     @Override
     protected T[][] computeJacobianEccentricWrtCartesian() {
-        // not used
-        return null;
+        return create6x6Identity();
     }
 
     @Override
     protected T[][] computeJacobianTrueWrtCartesian() {
-        // not used
-        return null;
+        return create6x6Identity();
     }
 
     /** {@inheritDoc} */
