@@ -131,7 +131,7 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public <T extends RealFieldElement<T>> void testHyperbolic() {
+    public void testHyperbolic() {
         doTestHyperbolic(Decimal64Field.getInstance());
     }
 
@@ -151,7 +151,7 @@ public class FieldEquinoctialOrbitTest {
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public <T extends RealFieldElement<T>> void testNonInertialFrame() {
+    public void testNonInertialFrame() {
         doTestNonInertialFrame(Decimal64Field.getInstance());
     }
 
