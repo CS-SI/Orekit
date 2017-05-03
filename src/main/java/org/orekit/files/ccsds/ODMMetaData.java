@@ -22,6 +22,9 @@ import java.util.Collections;
 import java.util.List;
 
 import org.orekit.bodies.CelestialBody;
+import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
@@ -231,11 +234,45 @@ public class ODMMetaData {
         this.hasCreatableBody = hasCreatableBody;
     }
 
-    /** Get the reference frame in which data are given: used for state vector
-     * and Keplerian elements data (and for the covariance reference frame if none is given).
+    /**
+     * Get the reference frame in which data are given: used for state vector and
+     * Keplerian elements data (and for the covariance reference frame if none is given).
+     *
      * @return the reference frame
+     * @throws OrekitException if the reference frame cannot be created.
      */
-    public Frame getFrame() {
+    public Frame getFrame() throws OrekitException {
+        final Frame frame = this.getRefFrame();
+        final CelestialBody body = this.getCenterBody();
+        if (body == null) {
+            throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY,
+                    this.getCenterName());
+        }
+        // Just return frame if we don't need to shift the center based on CENTER_NAME
+        // MCI and ICRF are the only non-earth centered frames specified in Annex A.
+        final String frameString = this.getFrameString();
+        final boolean isMci = "MCI".equals(frameString);
+        final boolean isIcrf = "ICRF".equals(frameString);
+        final boolean isSolarSystemBarycenter =
+                CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER.equals(body.getName());
+        if ((!(isMci || isIcrf) && CelestialBodyFactory.EARTH.equals(body.getName())) ||
+                (isMci && CelestialBodyFactory.MARS.equals(body.getName())) ||
+                (isIcrf && isSolarSystemBarycenter)) {
+            return frame;
+        }
+        // else, translate frame to specified center.
+        return new CcsdsModifiedFrame(frame, frameString, body, this.getCenterName());
+    }
+
+    /**
+     * Get the the value of {@code REF_FRAME} as an Orekit {@link Frame}. The {@code
+     * CENTER_NAME} key word has not been applied yet, so the returned frame may not
+     * correspond to the reference frame of the data in the file.
+     *
+     * @return The reference frame specified by the {@code REF_FRAME} keyword.
+     * @see #getFrame()
+     */
+    public Frame getRefFrame() {
         return refFrame;
     }
 

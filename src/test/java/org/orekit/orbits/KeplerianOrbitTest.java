@@ -474,7 +474,7 @@ public class KeplerianOrbitTest {
     @Test
     public void testHyperbola2() {
         KeplerianOrbit orbit = new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, -1.75,
-                                                  PositionAngle.TRUE,
+                                                  PositionAngle.MEAN,
                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
                                                   mu);
         Vector3D perigeeP  = new KeplerianOrbit(orbit.getA(), orbit.getE(), orbit.getI(),

@@ -44,10 +44,10 @@ public interface EphemerisFileWriter {
 
     /**
      * Write the passed in {@link EphemerisFile} using the passed in
-     * {@link BufferedWriter}.
+     * {@link Appendable}.
      *
      * @param writer
-     *            a configured BufferedWriter to feed with text
+     *            a configured Appendable to feed with text
      * @param ephemerisFile
      *            a populated ephemeris file to serialize into the buffer
      * @throws OrekitException
@@ -58,7 +58,7 @@ public interface EphemerisFileWriter {
      *             (for example having multiple satellites in one file, having
      *             the origin at an unspecified celestial body, etc.)
      */
-    void write(BufferedWriter writer, EphemerisFile ephemerisFile) throws OrekitException, IOException;
+    void write(Appendable writer, EphemerisFile ephemerisFile) throws OrekitException, IOException;
 
     /**
      * Write the passed in {@link EphemerisFile} to a file at the output path

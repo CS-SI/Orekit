@@ -216,6 +216,51 @@ public class CartesianOrbitTest {
     }
 
     @Test
+    public void testHyperbola1() {
+        CartesianOrbit orbit = new CartesianOrbit(new KeplerianOrbit(-10000000.0, 2.5, 0.3, 0, 0, 0.0,
+                                                                     PositionAngle.TRUE,
+                                                                     FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                                                     mu));
+        Vector3D perigeeP  = orbit.getPVCoordinates().getPosition();
+        Vector3D u = perigeeP.normalize();
+        Vector3D focus1 = Vector3D.ZERO;
+        Vector3D focus2 = new Vector3D(-2 * orbit.getA() * orbit.getE(), u);
+        for (double dt = -5000; dt < 5000; dt += 60) {
+            PVCoordinates pv = orbit.shiftedBy(dt).getPVCoordinates();
+            double d1 = Vector3D.distance(pv.getPosition(), focus1);
+            double d2 = Vector3D.distance(pv.getPosition(), focus2);
+            Assert.assertEquals(-2 * orbit.getA(), FastMath.abs(d1 - d2), 1.0e-6);
+            CartesianOrbit rebuilt =
+                new CartesianOrbit(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+            Assert.assertEquals(-10000000.0, rebuilt.getA(), 1.0e-6);
+            Assert.assertEquals(2.5, rebuilt.getE(), 1.0e-13);
+        }
+    }
+
+    @Test
+    public void testHyperbola2() {
+        CartesianOrbit orbit = new CartesianOrbit(new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, -1.75,
+                                                                     PositionAngle.MEAN,
+                                                                     FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                                                     mu));
+        Vector3D perigeeP  = new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, 0.0, PositionAngle.TRUE, orbit.getFrame(),
+                                                orbit.getDate(), orbit.getMu()).getPVCoordinates().getPosition();
+        Vector3D u = perigeeP.normalize();
+        Vector3D focus1 = Vector3D.ZERO;
+        Vector3D focus2 = new Vector3D(-2 * orbit.getA() * orbit.getE(), u);
+        for (double dt = -5000; dt < 5000; dt += 60) {
+            PVCoordinates pv = orbit.shiftedBy(dt).getPVCoordinates();
+            double d1 = Vector3D.distance(pv.getPosition(), focus1);
+            double d2 = Vector3D.distance(pv.getPosition(), focus2);
+            Assert.assertEquals(-2 * orbit.getA(), FastMath.abs(d1 - d2), 1.0e-6);
+            CartesianOrbit rebuilt =
+                new CartesianOrbit(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+            Assert.assertEquals(-10000000.0, rebuilt.getA(), 1.0e-6);
+            Assert.assertEquals(1.2, rebuilt.getE(), 1.0e-13);
+        }
+    }
+
+    @Test
     public void testNumericalIssue25() throws OrekitException {
         Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
         Vector3D velocity = new Vector3D(-6349.7848910501, 288.4061811651, 4066.9366759691);

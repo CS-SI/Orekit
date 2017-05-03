@@ -245,12 +245,20 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** {@inheritDoc} */
     public T getE() {
-        final FieldVector3D<T> pvP   = getPVCoordinates().getPosition();
-        final FieldVector3D<T> pvV   = getPVCoordinates().getVelocity();
-        final T rV2OnMu = pvP.getNorm().multiply(pvV.getNormSq()).divide(getMu());
-        final T eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(getA().multiply(getMu()).sqrt());
-        final T eCE     = rV2OnMu.subtract(1);
-        return (eCE.multiply(eCE).add(eSE.multiply(eSE))).sqrt();
+        final T muA = getA().multiply(getMu());
+        if (muA.getReal() > 0) {
+            // elliptic or circular orbit
+            final FieldVector3D<T> pvP   = getPVCoordinates().getPosition();
+            final FieldVector3D<T> pvV   = getPVCoordinates().getVelocity();
+            final T rV2OnMu = pvP.getNorm().multiply(pvV.getNormSq()).divide(getMu());
+            final T eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(muA.sqrt());
+            final T eCE     = rV2OnMu.subtract(1);
+            return (eCE.multiply(eCE).add(eSE.multiply(eSE))).sqrt();
+        } else {
+            // hyperbolic orbit
+            final FieldVector3D<T> pvM = getPVCoordinates().getMomentum();
+            return pvM.getNormSq().divide(muA).negate().add(1).sqrt();
+        }
     }
 
     /** {@inheritDoc} */
