@@ -1212,7 +1212,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     }
 
     @Override
-    public Orbit toOrbit() {
+    public CircularOrbit toOrbit() {
         if (hasDerivatives()) {
             return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
                                      i.getReal(), raan.getReal(), alphaV.getReal(),

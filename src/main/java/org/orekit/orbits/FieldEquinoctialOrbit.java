@@ -978,7 +978,7 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     }
 
     @Override
-    public Orbit toOrbit() {
+    public EquinoctialOrbit toOrbit() {
         if (hasDerivatives()) {
             return new EquinoctialOrbit(a.getReal(), ex.getReal(), ey.getReal(),
                                         hx.getReal(), hy.getReal(), lv.getReal(),
