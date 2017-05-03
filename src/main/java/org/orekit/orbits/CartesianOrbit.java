@@ -153,12 +153,20 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getE() {
-        final Vector3D pvP   = getPVCoordinates().getPosition();
-        final Vector3D pvV   = getPVCoordinates().getVelocity();
-        final double rV2OnMu = pvP.getNorm() * pvV.getNormSq() / getMu();
-        final double eSE     = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(getMu() * getA());
-        final double eCE     = rV2OnMu - 1;
-        return FastMath.sqrt(eCE * eCE + eSE * eSE);
+        final double muA = getMu() * getA();
+        if (muA > 0) {
+            // elliptic or circular orbit
+            final Vector3D pvP   = getPVCoordinates().getPosition();
+            final Vector3D pvV   = getPVCoordinates().getVelocity();
+            final double rV2OnMu = pvP.getNorm() * pvV.getNormSq() / getMu();
+            final double eSE     = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
+            final double eCE     = rV2OnMu - 1;
+            return FastMath.sqrt(eCE * eCE + eSE * eSE);
+        } else {
+            // hyperbolic orbit
+            final Vector3D pvM = getPVCoordinates().getMomentum();
+            return FastMath.sqrt(1 - pvM.getNormSq() / muA);
+        }
     }
 
     /** {@inheritDoc} */

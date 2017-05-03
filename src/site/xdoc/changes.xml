@@ -22,6 +22,10 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Fixed eccentricity computation for hyperbolic Cartesian orbits.
+        Fixes issue #336.
+      </action>
+      <action dev="luc" type="fix">
         Fixed an array out of bounds error in DSST zonal short periodics terms.
       </action>
       <action dev="luc" type="fix" due-to="Maxime Journot">

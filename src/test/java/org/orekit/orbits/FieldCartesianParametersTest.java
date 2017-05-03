@@ -80,6 +80,16 @@ public class FieldCartesianParametersTest {
     }
 
     @Test
+    public void testHyperbola1() throws OrekitException{
+        doTestHyperbola1(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testHyperbola2() throws OrekitException{
+        doTestHyperbola2(Decimal64Field.getInstance());
+    }
+
+    @Test
     public void doNumericalIssue25Test() throws OrekitException{
         testNumericalIssue25(Decimal64Field.getInstance());
     }
@@ -249,6 +259,55 @@ public class FieldCartesianParametersTest {
             Assert.assertTrue(FastMath.abs(FieldVector3D.dotProduct(position, momentum).getReal()) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
             Assert.assertTrue(FastMath.abs(FieldVector3D.dotProduct(velocity, momentum).getReal()) < Utils.epsilonTest);
+        }
+    }
+
+    private <T extends RealFieldElement<T>> void doTestHyperbola1(final Field<T> field) {
+        T zero = field.getZero();
+        FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(2.5), zero.add(0.3),
+                                                                                           zero, zero,zero,
+                                                                                           PositionAngle.TRUE,
+                                                                                           FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field),
+                                                                                           mu));
+        FieldVector3D<T> perigeeP  = orbit.getPVCoordinates().getPosition();
+        FieldVector3D<T> u = perigeeP.normalize();
+        FieldVector3D<T> focus1 = new FieldVector3D<>(zero,zero,zero);
+        FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
+        for (T dt = zero.add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {
+            FieldPVCoordinates<T> pv = orbit.shiftedBy(dt).getPVCoordinates();
+            T d1 = FieldVector3D.distance(pv.getPosition(), focus1);
+            T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
+            Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
+            FieldCartesianOrbit<T> rebuilt =
+                            new FieldCartesianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+            Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
+            Assert.assertEquals(2.5, rebuilt.getE().getReal(), 1.0e-13);
+        }
+    }
+
+    private <T extends RealFieldElement<T>> void doTestHyperbola2(final Field<T> field) {
+        T zero = field.getZero();
+        FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(1.2), zero.add(0.3),
+                                                                                           zero, zero, zero.add(-1.75),
+                                                                                           PositionAngle.MEAN,
+                                                                                           FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field),
+                                                                                           mu));
+        FieldVector3D<T> perigeeP  = new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(1.2), zero.add(0.3),
+                                                               zero, zero, zero,
+                                                               PositionAngle.TRUE,
+                                                               orbit.getFrame(), orbit.getDate(), orbit.getMu()).getPVCoordinates().getPosition();
+        FieldVector3D<T> u = perigeeP.normalize();
+        FieldVector3D<T> focus1 = new FieldVector3D<>(zero,zero,zero);
+        FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
+        for (T dt = zero.add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {
+            FieldPVCoordinates<T> pv = orbit.shiftedBy(dt).getPVCoordinates();
+            T d1 = FieldVector3D.distance(pv.getPosition(), focus1);
+            T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
+            Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
+            FieldCartesianOrbit<T> rebuilt =
+                            new FieldCartesianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+            Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
+            Assert.assertEquals(1.2, rebuilt.getE().getReal(), 1.0e-13);
         }
     }
 

@@ -103,8 +103,13 @@ public class FieldKeplerianParametersTest {
     }
 
     @Test
-    public void doHyperbolaTest() throws OrekitException {
-        testHyperbola(Decimal64Field.getInstance());
+    public void testHyperbola1() throws OrekitException {
+        doTestHyperbola1(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testHyperbola2() throws OrekitException {
+        doTestHyperbola2(Decimal64Field.getInstance());
     }
 
     @Test
@@ -614,29 +619,55 @@ public class FieldKeplerianParametersTest {
         Assert.assertEquals(0.00094277682051291315229, orbit.getKeplerianMeanMotion().getReal(), 1.0e-16);
     }
 
-
-
-    public <T extends RealFieldElement<T>> void testHyperbola(final Field<T> field) {
-        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<T>(field.getZero().add(-10000000.0),field.getZero().add(2.5), field.getZero().add(0.3),field.getZero(), field.getZero(),field.getZero(),
-                        PositionAngle.TRUE,
-                        FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field),
-                        mu);
+    private <T extends RealFieldElement<T>> void doTestHyperbola1(final Field<T> field) {
+        T zero = field.getZero();
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(2.5), zero.add(0.3),
+                                                                 zero, zero,zero,
+                                                                 PositionAngle.TRUE,
+                                                                 FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field),
+                                                                 mu);
         FieldVector3D<T> perigeeP  = orbit.getPVCoordinates().getPosition();
         FieldVector3D<T> u = perigeeP.normalize();
-        FieldVector3D<T> focus1 = new FieldVector3D<T>(field.getZero(),field.getZero(),field.getZero());
-        FieldVector3D<T> focus2 = new FieldVector3D<T>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
-        for (T dt = field.getZero().add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {
+        FieldVector3D<T> focus1 = new FieldVector3D<>(zero,zero,zero);
+        FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
+        for (T dt = zero.add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {
             FieldPVCoordinates<T> pv = orbit.shiftedBy(dt).getPVCoordinates();
             T d1 = FieldVector3D.distance(pv.getPosition(), focus1);
             T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
             Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
             FieldKeplerianOrbit<T> rebuilt =
-                            new FieldKeplerianOrbit<T>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+                            new FieldKeplerianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
             Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
             Assert.assertEquals(2.5, rebuilt.getE().getReal(), 1.0e-13);
         }
     }
 
+    private <T extends RealFieldElement<T>> void doTestHyperbola2(final Field<T> field) {
+        T zero = field.getZero();
+        FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(-10000000.0), zero.add(1.2), zero.add(0.3),
+                                                                 zero, zero, zero.add(-1.75),
+                                                                 PositionAngle.MEAN,
+                                                                 FramesFactory.getEME2000(), new FieldAbsoluteDate<T>(field),
+                                                                 mu);
+        FieldVector3D<T> perigeeP  = new FieldKeplerianOrbit<>(orbit.getA(), orbit.getE(), orbit.getI(),
+                                                               orbit.getPerigeeArgument(),
+                                                               orbit.getRightAscensionOfAscendingNode(),
+                                                               zero, PositionAngle.TRUE,
+                                                               orbit.getFrame(), orbit.getDate(), orbit.getMu()).getPVCoordinates().getPosition();
+        FieldVector3D<T> u = perigeeP.normalize();
+        FieldVector3D<T> focus1 = new FieldVector3D<>(zero,zero,zero);
+        FieldVector3D<T> focus2 = new FieldVector3D<>(orbit.getA().multiply(-2).multiply(orbit.getE()), u);
+        for (T dt = zero.add(-5000); dt.getReal() < 5000; dt = dt.add(60)) {
+            FieldPVCoordinates<T> pv = orbit.shiftedBy(dt).getPVCoordinates();
+            T d1 = FieldVector3D.distance(pv.getPosition(), focus1);
+            T d2 = FieldVector3D.distance(pv.getPosition(), focus2);
+            Assert.assertEquals(orbit.getA().multiply(-2).getReal(), d1.subtract(d2).abs().getReal(), 1.0e-6);
+            FieldKeplerianOrbit<T> rebuilt =
+                            new FieldKeplerianOrbit<>(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
+            Assert.assertEquals(-10000000.0, rebuilt.getA().getReal(), 1.0e-6);
+            Assert.assertEquals(1.2, rebuilt.getE().getReal(), 1.0e-13);
+        }
+    }
 
     public <T extends RealFieldElement<T>> void testVeryLargeEccentricity(final Field<T> field) {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
@@ -1149,7 +1180,7 @@ public class FieldKeplerianParametersTest {
                                                    maxInterpolationEccentricityError   :  interpolatedE.subtract(propagatedE).abs()  ;
         }
         Assert.assertTrue(maxShiftPositionError.getReal()             > 390.0);
-        Assert.assertTrue(maxInterpolationPositionError.getReal()    < 62.0);
+        Assert.assertTrue(maxInterpolationPositionError.getReal()     < 62.0);
         Assert.assertTrue(maxShiftEccentricityError.getReal()         > 4.5e-4);
         Assert.assertTrue(maxInterpolationEccentricityError.getReal() < 2.6e-5);
 
