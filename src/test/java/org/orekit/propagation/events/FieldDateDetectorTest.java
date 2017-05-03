@@ -275,7 +275,7 @@ public class FieldDateDetectorTest {
     }
 
     @Before
-    public <T extends RealFieldElement<T>> void setUp() {
+    public void setUp() {
             Utils.setDataRoot("regular-data");
             mu = 3.9860047e14;
             dt = 60.;

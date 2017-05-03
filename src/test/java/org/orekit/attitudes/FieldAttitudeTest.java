@@ -57,7 +57,7 @@ public class FieldAttitudeTest {
         doTestInterpolation(Decimal64Field.getInstance());
     }
 
-    public <T extends RealFieldElement<T>> void doTestShift(final Field<T> field){
+    private <T extends RealFieldElement<T>> void doTestShift(final Field<T> field){
         T zero = field.getZero();
         T one = field.getOne();
         T rate = one.multiply(2 * FastMath.PI / (12 * 60));
@@ -83,7 +83,7 @@ public class FieldAttitudeTest {
     }
 
 
-    public <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestSpin(final Field<T> field) throws OrekitException {
         T zero = field.getZero();
         T one = field.getOne();
         T rate = one.multiply(2 * FastMath.PI / (12 * 60));
@@ -120,7 +120,7 @@ public class FieldAttitudeTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void doTestInterpolation(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestInterpolation(final Field<T> field) throws OrekitException {
 
         T zero = field.getZero();
 

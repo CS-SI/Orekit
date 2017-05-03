@@ -33,12 +33,21 @@ import org.orekit.utils.Constants;
 public class FieldStopOnIncreasingTest {
 
     @Test
-    public void test() throws OrekitException{
-        testNoReset(Decimal64Field.getInstance());
-        testIncreasing(Decimal64Field.getInstance());
-        testDecreasing(Decimal64Field.getInstance());
+    public void testNoReset() throws OrekitException {
+        doTestNoReset(Decimal64Field.getInstance());
     }
-    public <T extends RealFieldElement<T>> void testNoReset(Field<T> field) throws OrekitException {
+
+    @Test
+    public void testIbcreasing() throws OrekitException {
+        doTestIncreasing(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testDecreasing() throws OrekitException {
+        doTestDecreasing(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestNoReset(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(zero.add(24464560.0), zero.add(0.7311),
@@ -51,7 +60,7 @@ public class FieldStopOnIncreasingTest {
         Assert.assertSame(s, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().resetState(null, s));
     }
 
-    public <T extends RealFieldElement<T>> void testIncreasing(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIncreasing(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(zero.add(24464560.0), zero.add(0.7311),
@@ -64,7 +73,7 @@ public class FieldStopOnIncreasingTest {
         Assert.assertSame(FieldEventHandler.Action.STOP, new FieldStopOnIncreasing<FieldEventDetector<T>, T>().eventOccurred(s, null, true));
     }
 
-    public <T extends RealFieldElement<T>> void testDecreasing(Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDecreasing(Field<T> field) throws OrekitException {
         T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field);
         FieldSpacecraftState<T> s = new FieldSpacecraftState<T>(new FieldKeplerianOrbit<T>(zero.add(24464560.0), zero.add(0.7311),
