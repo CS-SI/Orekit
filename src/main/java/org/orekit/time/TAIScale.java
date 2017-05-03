@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.RealFieldElement;
+
 /** International Atomic Time.
  * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
  * so there is no public constructor.</p>
@@ -36,6 +38,12 @@ public class TAIScale implements TimeScale {
     @Override
     public double offsetFromTAI(final AbsoluteDate taiTime) {
         return 0;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        return date.getField().getZero();
     }
 
     /** {@inheritDoc} */

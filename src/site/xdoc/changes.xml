@@ -22,6 +22,10 @@
   <body>
     <release version="9.0" date="TBD" description="TBD">
       <action dev="luc" type="fix">
+        Fixed accuracy of FieldAbsoluteDate.
+        Fixes issue #337.
+      </action>
+      <action dev="luc" type="fix">
         Fixed eccentricity computation for hyperbolic Cartesian orbits.
         Fixes issue #336.
       </action>

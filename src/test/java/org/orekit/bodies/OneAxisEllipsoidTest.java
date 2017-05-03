@@ -33,10 +33,13 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.geometry.euclidean.oned.Vector1D;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.random.SobolSequenceGenerator;
+import org.hipparchus.util.Decimal64;
+import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.Assert;
@@ -52,6 +55,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
@@ -732,6 +736,18 @@ public class OneAxisEllipsoidTest {
         Assert.assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
         Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
         Assert.assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
+
+        FieldGeodeticPoint<Decimal64> gp64 = model.transform(new FieldVector3D<Decimal64>(new Decimal64(x),
+                                                                                          new Decimal64(y),
+                                                                                          new Decimal64(z)),
+                                                             frame,
+                                                             new FieldAbsoluteDate<>(Decimal64Field.getInstance(), date));
+        Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp64.getLongitude().getReal(), longitude), 1.0e-10);
+        Assert.assertEquals(latitude,  gp64.getLatitude().getReal(),  1.0e-10);
+        Assert.assertEquals(altitude,  gp64.getAltitude().getReal(),  1.0e-10 * FastMath.abs(ae));
+        FieldVector3D<Decimal64> rebuiltNadir64 = FieldVector3D.crossProduct(gp64.getSouth(), gp64.getWest());
+        Assert.assertEquals(0, rebuiltNadir64.subtract(gp64.getNadir()).getNorm().getReal(), 1.0e-15);
+
     }
 
     @Test

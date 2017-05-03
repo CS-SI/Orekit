@@ -17,7 +17,6 @@
 package org.orekit.propagation;
 
 
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,35 +66,41 @@ import org.orekit.utils.PVCoordinates;
 public class FieldSpacecraftStateTest {
 
     @Test
-    public void doFieldVSRealTest() throws OrekitException, ParseException {
-        testFieldVsReal(Decimal64Field.getInstance());
-    }
-    @Test
-    public void doShiftErrorTest() throws OrekitException, ParseException {
-        testShiftError(Decimal64Field.getInstance());
-    }
-    @Test(expected=IllegalArgumentException.class)
-    public void doDatesConsistencyTest() throws OrekitException, ParseException {
-        testDatesConsistency(Decimal64Field.getInstance());
-    }
-    @Test
-    public void doDateConsistencyCloseTest() throws OrekitException, ParseException {
-        testDateConsistencyClose(Decimal64Field.getInstance());
-    }
-    @Test(expected=IllegalArgumentException.class)
-    public void doFramesConsistencyTest() throws OrekitException, ParseException {
-        testFramesConsistency(Decimal64Field.getInstance());
-    }
-    @Test
-    public void doTransformTest() throws OrekitException, ParseException {
-        testTransform(Decimal64Field.getInstance());
-    }
-    @Test
-    public void doAdditionalStatesTest() throws OrekitException, ParseException {
-        testAdditionalStates(Decimal64Field.getInstance());
+    public void testFieldVSReal() throws OrekitException {
+        doTestFieldVsReal(Decimal64Field.getInstance());
     }
 
-    public <T extends RealFieldElement<T>> void testFieldVsReal(final Field<T> field) throws OrekitException{
+    @Test
+    public void testShiftError() throws OrekitException {
+        doTestShiftError(Decimal64Field.getInstance());
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testDatesConsistency() throws OrekitException {
+        doTestDatesConsistency(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testDateConsistencyClose() throws OrekitException {
+        doTestDateConsistencyClose(Decimal64Field.getInstance());
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testFramesConsistency() throws OrekitException {
+        doTestFramesConsistency(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testTransform() throws OrekitException {
+        doTestTransform(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testAdditionalStates() throws OrekitException {
+        doTestAdditionalStates(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestFieldVsReal(final Field<T> field) throws OrekitException{
         T zero = field.getZero();
 
         double mu = 3.9860047e14;
@@ -160,8 +165,8 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    public <T extends RealFieldElement<T>>  void testShiftError(final Field<T> field)
-        throws ParseException, OrekitException {
+    private <T extends RealFieldElement<T>>  void doTestShiftError(final Field<T> field)
+        throws OrekitException {
 
         T zero = field.getZero();
         T mass = zero.add(2500.);
@@ -233,7 +238,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testDatesConsistency(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDatesConsistency(final Field<T> field) throws OrekitException {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -260,7 +265,7 @@ public class FieldSpacecraftStateTest {
      * Check orbit and attitude dates can be off by a few ulps. I see this when using
      * FixedRate attitude provider.
      */
-    public <T extends RealFieldElement<T>> void testDateConsistencyClose(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestDateConsistencyClose(final Field<T> field) throws OrekitException {
 
 
         //setup
@@ -302,7 +307,7 @@ public class FieldSpacecraftStateTest {
     }
 
     // (expected=IllegalArgumentException.class)
-    public <T extends RealFieldElement<T>> void testFramesConsistency(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestFramesConsistency(final Field<T> field) throws OrekitException {
 
         T one = field.getOne();
         T zero = field.getZero();
@@ -325,8 +330,8 @@ public class FieldSpacecraftStateTest {
                                          new FieldRotation<T>(one,zero,zero,zero, false),new FieldVector3D<T>(zero,zero,zero),new FieldVector3D<T>(zero,zero,zero)));
     }
 
-    public <T extends RealFieldElement<T>> void testTransform(final Field<T> field)
-        throws ParseException, OrekitException {
+    private <T extends RealFieldElement<T>> void doTestTransform(final Field<T> field)
+        throws OrekitException {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());
@@ -369,7 +374,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testAdditionalStates(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestAdditionalStates(final Field<T> field) throws OrekitException {
 
         T zero = field.getZero();
         T a = zero.add(rOrbit.getA());

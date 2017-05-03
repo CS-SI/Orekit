@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.RealFieldElement;
+
 /** GPS time scale.
  * <p>By convention, TGPS = TAI - 19 s.</p>
  * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
@@ -28,6 +30,9 @@ public class GPSScale implements TimeScale {
     /** Serializable UID. */
     private static final long serialVersionUID = 20131209L;
 
+    /** Offset from TAI. */
+    private static final double OFFSET = -19;
+
     /** Package private constructor for the factory.
      */
     GPSScale() {
@@ -36,13 +41,19 @@ public class GPSScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
-        return -19;
+        return OFFSET;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        return date.getField().getZero().add(OFFSET);
     }
 
     /** {@inheritDoc} */
     @Override
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return 19;
+        return -OFFSET;
     }
 
     /** {@inheritDoc} */

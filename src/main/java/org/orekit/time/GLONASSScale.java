@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.RealFieldElement;
+
 /** GLONASS time scale.
  * <p>By convention, TGLONASS = UTC + 3 hours.</p>
  * <p>The time scale is defined in <a
@@ -54,6 +56,12 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        return utc.offsetFromTAI(date).add(OFFSET);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double offsetToTAI(final DateComponents date, final TimeComponents time) {
         final DateTimeComponents utcComponents =
                         new DateTimeComponents(new DateTimeComponents(date, time), -OFFSET);
@@ -68,13 +76,31 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> boolean insideLeap(final FieldAbsoluteDate<T> date) {
+        return utc.insideLeap(date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public int minuteDuration(final AbsoluteDate date) {
         return utc.minuteDuration(date);
     }
 
     /** {@inheritDoc} */
     @Override
+    public <T extends RealFieldElement<T>> int minuteDuration(final FieldAbsoluteDate<T> date) {
+        return utc.minuteDuration(date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public double getLeap(final AbsoluteDate date) {
+        return utc.getLeap(date);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
         return utc.getLeap(date);
     }
 
