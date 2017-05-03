@@ -42,7 +42,6 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** This class holds cartesian orbital parameters.
@@ -710,10 +709,17 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     @Override
     public CartesianOrbit toOrbit() {
-        final PVCoordinates PVC = getPVCoordinates().toPVCoordinates();
-        final AbsoluteDate AD = getPVCoordinates().getDate().toAbsoluteDate();
-        final TimeStampedPVCoordinates TSPVC = new TimeStampedPVCoordinates(AD, PVC);
-        return new CartesianOrbit(TSPVC, getFrame(), getMu());
+        final PVCoordinates pv = getPVCoordinates().toPVCoordinates();
+        final AbsoluteDate date = getPVCoordinates().getDate().toAbsoluteDate();
+        if (hasDerivatives()) {
+            // getPVCoordinates includes accelerations that will be interpreted as derivatives
+            return new CartesianOrbit(pv, getFrame(), date, getMu());
+        } else {
+            // get rid of Keplerian acceleration so we don't assume
+            // we have derivatives when in fact we don't have them
+            return new CartesianOrbit(new PVCoordinates(pv.getPosition(), pv.getVelocity()),
+                                      getFrame(), date, getMu());
+        }
     }
 
 }
