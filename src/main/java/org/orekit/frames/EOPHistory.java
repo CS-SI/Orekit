@@ -173,6 +173,38 @@ public class EOPHistory implements Serializable {
 
     }
 
+    /** Get the UT1-UTC value.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the value is desired
+     * @param <T> type of the field elements
+     * @return UT1-UTC in seconds (0 if date is outside covered range)
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> T getUT1MinusUTC(final FieldAbsoluteDate<T> date) {
+
+        //check if there is data for date
+        final AbsoluteDate absDate = date.toAbsoluteDate();
+        if (!this.hasDataFor(absDate)) {
+            // no EOP data available for this date, we use a default 0.0 offset
+            return (tidalCorrection == null) ? date.getField().getZero() : tidalCorrection.value(date)[2];
+        }
+
+        // we have EOP data -> interpolate offset
+        try {
+            final FieldDUT1Interpolator<T> interpolator = new FieldDUT1Interpolator<>(date, absDate);
+            getNeighbors(absDate).forEach(interpolator);
+            T interpolated = interpolator.getInterpolated();
+            if (tidalCorrection != null) {
+                interpolated = interpolated.add(tidalCorrection.value(date)[2]);
+            }
+            return interpolated;
+        } catch (TimeStampedCacheException tce) {
+            //this should not happen because of date check above
+            throw new OrekitInternalError(tce);
+        }
+
+    }
+
     /** Local class for DUT1 interpolation, crossing leaps safely. */
     private static class DUT1Interpolator implements Consumer<EOPEntry> {
 
@@ -195,7 +227,7 @@ public class EOPHistory implements Serializable {
             this.firstDUT     = Double.NaN;
             this.beforeLeap   = true;
             this.interpolator = new HermiteInterpolator();
-            this.date = date;
+            this.date         = date;
         }
 
         /** {@inheritDoc} */
@@ -226,6 +258,68 @@ public class EOPHistory implements Serializable {
         public double getInterpolated() {
             final double interpolated = interpolator.value(0)[0];
             return beforeLeap ? interpolated : interpolated + 1.0;
+        }
+
+    }
+
+    /** Local class for DUT1 interpolation, crossing leaps safely. */
+    private static class FieldDUT1Interpolator<T extends RealFieldElement<T>> implements Consumer<EOPEntry> {
+
+        /** DUT at first entry. */
+        private double firstDUT;
+
+        /** Indicator for dates just before a leap occurring during the interpolation sample. */
+        private boolean beforeLeap;
+
+        /** Interpolator to use. */
+        private final FieldHermiteInterpolator<T> interpolator;
+
+        /** Interpolation date. */
+        private FieldAbsoluteDate<T> date;
+
+        /** Interpolation date. */
+        private AbsoluteDate absDate;
+
+        /** Simple constructor.
+         * @param date interpolation date
+         * @param absDate interpolation date
+         */
+        FieldDUT1Interpolator(final FieldAbsoluteDate<T> date, final AbsoluteDate absDate) {
+            this.firstDUT     = Double.NaN;
+            this.beforeLeap   = true;
+            this.interpolator = new FieldHermiteInterpolator<>();
+            this.date         = date;
+            this.absDate      = absDate;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void accept(final EOPEntry neighbor) {
+            if (Double.isNaN(firstDUT)) {
+                firstDUT = neighbor.getUT1MinusUTC();
+            }
+            final double dut;
+            if (neighbor.getUT1MinusUTC() - firstDUT > 0.9) {
+                // there was a leap second between the entries
+                dut = neighbor.getUT1MinusUTC() - 1.0;
+                if (neighbor.getDate().compareTo(absDate) <= 0) {
+                    beforeLeap = false;
+                }
+            } else {
+                dut = neighbor.getUT1MinusUTC();
+            }
+            final T[] array = MathArrays.buildArray(date.getField(), 1);
+            array[0] = date.getField().getZero().add(dut);
+            interpolator.addSamplePoint(date.durationFrom(neighbor.getDate()).negate(),
+                                        array);
+        }
+
+        /** Get the interpolated value.
+         * @return interpolated value
+         */
+        public T getInterpolated() {
+            final T interpolated = interpolator.value(date.getField().getZero())[0];
+            return beforeLeap ? interpolated : interpolated.add(1.0);
         }
 
     }

@@ -18,6 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
+import org.hipparchus.RealFieldElement;
 import org.orekit.utils.Constants;
 
 /** Offset between {@link UTCScale UTC} and  {@link TAIScale TAI} time scales.
@@ -138,6 +139,16 @@ class UTCTAIOffset implements TimeStamped, Serializable {
      */
     public double getOffset(final AbsoluteDate date) {
         return offset + date.durationFrom(reference) * slopeTAI;
+    }
+
+    /** Get the TAI - UTC offset in seconds.
+     * @param date date at which the offset is requested
+     * @param <T> type of the filed elements
+     * @return TAI - UTC offset in seconds.
+     * @since 9.0
+     */
+    public <T extends RealFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
+        return date.durationFrom(reference).multiply(slopeTAI).add(offset);
     }
 
     /** Get the TAI - UTC offset in seconds.

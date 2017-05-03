@@ -26,9 +26,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
-
-
-
 /** This class represents a specific instant in time.
 
  * <p>Instances of this class are considered to be absolute in the sense
@@ -150,7 +147,6 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @see #durationFrom(FieldAbsoluteDate)
      */
     public FieldAbsoluteDate(final FieldAbsoluteDate<T> since, final T elapsedDuration) {
-
         this.field = since.field;
         final T sum = since.offset.add(elapsedDuration);
         if (Double.isInfinite(sum.getReal())) {
@@ -327,7 +323,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
     }
 
 
-    /**   Build an instance from an elapsed duration since to another instant.
+    /** Build an instance from an elapsed duration since to another instant.
      * <p>It is important to note that the elapsed duration is <em>not</em>
      * the difference between two readings on a time scale.
      * @param since start instant of the measured duration
@@ -335,11 +331,31 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * instant, as measured in a regular time scale
      */
     public FieldAbsoluteDate(final FieldAbsoluteDate<T> since, final double elapsedDuration) {
-        this(since, since.offset.getField().getZero().add(elapsedDuration));
+        this.field = since.field;
+        final T sum = since.offset.add(elapsedDuration);
+        if (Double.isInfinite(sum.getReal())) {
+            offset = sum;
+            epoch  = (sum.getReal() < 0) ? Long.MIN_VALUE : Long.MAX_VALUE;
+        } else {
+            // compute sum exactly, using Møller-Knuth TwoSum algorithm without branching
+            // the following statements must NOT be simplified, they rely on floating point
+            // arithmetic properties (rounding and representable numbers)
+            // at the end, the EXACT result of addition since.offset + elapsedDuration
+            // is sum + residual, where sum is the closest representable number to the exact
+            // result and residual is the missing part that does not fit in the first number
+            final double oPrime   = sum.getReal() - elapsedDuration;
+            final double dPrime   = sum.getReal() - oPrime;
+            final double deltaO   = since.offset.getReal() - oPrime;
+            final double deltaD   = elapsedDuration - dPrime;
+            final double residual = deltaO + deltaD;
+            final long   dl       = (long) FastMath.floor(sum.getReal());
+            offset = sum.subtract(dl).add(residual);
+            epoch  = since.epoch + dl;
+        }
     }
 
 
-    /**   Build an instance from an elapsed duration since to another instant.
+    /** Build an instance from an elapsed duration since to another instant.
      * <p>It is important to note that the elapsed duration is <em>not</em>
      * the difference between two readings on a time scale.
      * @param since start instant of the measured duration
@@ -890,7 +906,8 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     public T offsetFrom(final FieldAbsoluteDate<T> instant, final TimeScale timeScale) {
         final long   elapsedDurationA = epoch - instant.epoch;
-        final T elapsedDurationB = offset.add(timeScale.offsetFromTAI(toAbsoluteDate())).subtract(instant.offset.add(timeScale.offsetFromTAI(instant.toAbsoluteDate())));
+        final T elapsedDurationB = offset.add(timeScale.offsetFromTAI(this)).
+                                   subtract(instant.offset.add(timeScale.offsetFromTAI(instant)));
         return  elapsedDurationB.add(elapsedDurationA);
     }
 
@@ -904,9 +921,8 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @return offset in seconds between the two time scales at the
      * current instant
      */
-    public double timeScalesOffset(final TimeScale scale1, final TimeScale scale2) {
-        // TODO still not implemented the Field in the TimeScale
-        return scale1.offsetFromTAI(toAbsoluteDate()) - scale2.offsetFromTAI(toAbsoluteDate());
+    public T timeScalesOffset(final TimeScale scale1, final TimeScale scale2) {
+        return scale1.offsetFromTAI(this).subtract(scale2.offsetFromTAI(this));
     }
 
     /** Convert the instance to a Java {@link java.util.Date Date}.
@@ -918,7 +934,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * of the instant in the time scale
      */
     public Date toDate(final TimeScale timeScale) {
-        final double time = epoch + (offset.getReal() + timeScale.offsetFromTAI(toAbsoluteDate()));
+        final double time = epoch + (offset.getReal() + timeScale.offsetFromTAI(this).getReal());
         return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
     }
 
@@ -928,8 +944,6 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     public DateTimeComponents getComponents(final TimeScale timeScale) {
 
-        // TODO still not implemented the Field in the TimeScale
-
         // compute offset from 2000-01-01T00:00:00 in specified time scale exactly,
         // using Møller-Knuth TwoSum algorithm without branching
         // the following statements must NOT be simplified, they rely on floating point
@@ -937,7 +951,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
         // at the end, the EXACT result of addition offset + timeScale.offsetFromTAI(this)
         // is sum + residual, where sum is the closest representable number to the exact
         // result and residual is the missing part that does not fit in the first number
-        final double taiOffset = timeScale.offsetFromTAI(toAbsoluteDate());
+        final double taiOffset = timeScale.offsetFromTAI(this).getReal();
         final double sum       = offset.getReal() + taiOffset;
         final double oPrime    = sum - taiOffset;
         final double dPrime    = sum - oPrime;
@@ -963,10 +977,10 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
         TimeComponents timeComponents = new TimeComponents((int) time, offset2000B);
 
-        if (timeScale.insideLeap(toAbsoluteDate())) {
+        if (timeScale.insideLeap(this)) {
             // fix the seconds number to take the leap into account
             timeComponents = new TimeComponents(timeComponents.getHour(), timeComponents.getMinute(),
-                                                timeComponents.getSecond() + timeScale.getLeap(toAbsoluteDate()));
+                                                timeComponents.getSecond() + timeScale.getLeap(this).getReal());
         }
 
         // build the components
@@ -1094,7 +1108,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * in ISO-8601 format with milliseconds accuracy
      */
     public String toString(final TimeScale timeScale) {
-        return getComponents(timeScale).toString(timeScale.minuteDuration(toAbsoluteDate()));
+        return getComponents(timeScale).toString(timeScale.minuteDuration(this));
     }
 
     /** Get a String representation of the instant location for a local time.
@@ -1106,7 +1120,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     public String toString(final int minutesFromUTC)
         throws OrekitException {
-        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(toAbsoluteDate());
+        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
         return getComponents(minutesFromUTC).toString(minuteDuration);
     }
 
@@ -1118,7 +1132,7 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      */
     public String toString(final TimeZone timeZone)
         throws OrekitException {
-        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(toAbsoluteDate());
+        final int minuteDuration = TimeScalesFactory.getUTC().minuteDuration(this);
         return getComponents(timeZone).toString(minuteDuration);
     }
 
@@ -1144,8 +1158,8 @@ public class FieldAbsoluteDate<T extends RealFieldElement<T>>
      * @return AbsoluteDate of the FieldObject
      * */
     public AbsoluteDate toAbsoluteDate() {
-        final T dT = durationFrom(AbsoluteDate.J2000_EPOCH);
-        return AbsoluteDate.J2000_EPOCH.shiftedBy(dT.getReal());
+        // use two separate shifts to preserve accuracy
+        return REFERENCE_ZERO.shiftedBy(epoch).shiftedBy(offset.getReal());
     }
 
 }

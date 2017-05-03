@@ -31,6 +31,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
 public class FieldAbsoluteDateTest {
@@ -43,54 +45,207 @@ public class FieldAbsoluteDateTest {
         utc = TimeScalesFactory.getUTC();
     }
 
-
-
-    @Test(expected=IllegalArgumentException.class)
-    public void testFAD() throws OrekitException, IOException {
-        testStandardEpoch(Decimal64Field.getInstance());
-        testStandardEpochStrings(Decimal64Field.getInstance());
-        testJulianEpochRate(Decimal64Field.getInstance());
-        testBesselianEpochRate(Decimal64Field.getInstance());
-        testLieske(Decimal64Field.getInstance());
-        testParse(Decimal64Field.getInstance());
-        testLocalTimeParsing(Decimal64Field.getInstance());
-        testTimeZoneDisplay(Decimal64Field.getInstance());
-        testLocalTimeLeapSecond(Decimal64Field.getInstance());
-        testTimeZoneLeapSecond(Decimal64Field.getInstance());
-        testOutput(Decimal64Field.getInstance());
-        testParseLeap(Decimal64Field.getInstance());
-        testJ2000(Decimal64Field.getInstance());
-        testFraction(Decimal64Field.getInstance());
-        testScalesOffset(Decimal64Field.getInstance());
-        testUTC(Decimal64Field.getInstance());
-        test1970(Decimal64Field.getInstance());
-
-        testUtcGpsOffset(Decimal64Field.getInstance());
-        testGpsDate(Decimal64Field.getInstance());
-        testMJDDate(Decimal64Field.getInstance());
-        testJDDate(Decimal64Field.getInstance());
-        testOffsets(Decimal64Field.getInstance());
-        testBeforeAndAfterLeap(Decimal64Field.getInstance());
-        testSymmetry(Decimal64Field.getInstance());
-        testEquals(Decimal64Field.getInstance());
-        testComponents(Decimal64Field.getInstance());
-        testMonth(Decimal64Field.getInstance());
-        testCCSDSUnsegmentedNoExtension(Decimal64Field.getInstance());
-        testCCSDSUnsegmentedWithExtendedPreamble(Decimal64Field.getInstance());
-        testCCSDSDaySegmented(Decimal64Field.getInstance());
-        testCCSDSCalendarSegmented(Decimal64Field.getInstance());
-        testExpandedConstructors(Decimal64Field.getInstance());
-        testHashcode(Decimal64Field.getInstance());
-        testInfinity(Decimal64Field.getInstance());
-        testAccuracy(Decimal64Field.getInstance());
-        testIterationAccuracy(Decimal64Field.getInstance());
-        testIssue142(Decimal64Field.getInstance());
-        testIssue148(Decimal64Field.getInstance());
-        testIssue149(Decimal64Field.getInstance());
-        testWrapAtMinuteEnd(Decimal64Field.getInstance());
+    @Test
+    public void testStandardEpoch() throws OrekitException {
+        doTestStandardEpoch(Decimal64Field.getInstance());
     }
 
-    public <T extends RealFieldElement<T>>void testStandardEpoch(final Field<T> field) throws OrekitException {
+    @Test
+    public void testStandardEpochStrings() throws OrekitException {
+        doTestStandardEpochStrings(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testJulianEpochRate() throws OrekitException {
+        doTestJulianEpochRate(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testBesselianEpochRate() throws OrekitException {
+        doTestBesselianEpochRate(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testLieske() throws OrekitException {
+        doTestLieske(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testParse() throws OrekitException {
+        doTestParse(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testLocalTimeParsing() throws OrekitException {
+        doTestLocalTimeParsing(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testTimeZoneDisplay() throws OrekitException {
+        doTestTimeZoneDisplay(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testLocalTimeLeapSecond() throws OrekitException, IOException {
+        doTestLocalTimeLeapSecond(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testTimeZoneLeapSecond() throws OrekitException {
+        doTestTimeZoneLeapSecond(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testParseLeap() throws OrekitException {
+        doTestParseLeap(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testOutput() {
+        doTestOutput(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testJ2000() {
+        doTestJ2000(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testFraction() {
+        doTestFraction(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testScalesOffset() {
+        doTestScalesOffset(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testUTC() {
+        doTestUTC(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void test1970() {
+        doTest1970(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testUtcGpsOffset() {
+        doTestUtcGpsOffset(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testGpsDate() {
+        doTestGpsDate(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testMJDDate() throws OrekitException {
+        doTestMJDDate(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testJDDate() {
+        doTestJDDate(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testOffsets() {
+        doTestOffsets(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testBeforeAndAfterLeap() {
+        doTestBeforeAndAfterLeap(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testSymmetry() {
+        doTestSymmetry(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testEquals() {
+        doTestEquals(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testComponents() throws OrekitException {
+        doTestComponents(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testMonth() throws OrekitException {
+        doTestMonth(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testCCSDSUnsegmentedNoExtension() throws OrekitException {
+        doTestCCSDSUnsegmentedNoExtension(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testCCSDSUnsegmentedWithExtendedPreamble() throws OrekitException {
+        doTestCCSDSUnsegmentedWithExtendedPreamble(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testCCSDSDaySegmented() throws OrekitException {
+        doTestCCSDSDaySegmented(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testCCSDSCalendarSegmented() throws OrekitException {
+        doTestCCSDSCalendarSegmented(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testExpandedConstructors() throws OrekitException {
+        doTestExpandedConstructors(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testHashcode() {
+        doTestHashcode(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testInfinity() {
+        doTestInfinity(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testAccuracy() {
+        doTestAccuracy(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testIterationAccuracy() {
+        doTestIterationAccuracy(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue142() throws OrekitException {
+        doTestIssue142(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue148() throws OrekitException {
+        doTestIssue148(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testIssue149() throws OrekitException {
+        doTestIssue149(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testWrapAtMinuteEnd() throws OrekitException {
+        doTestWrapAtMinuteEnd(Decimal64Field.getInstance());
+    }
+
+    private <T extends RealFieldElement<T>> void doTestStandardEpoch(final Field<T> field) throws OrekitException {
 
         TimeScale tai = TimeScalesFactory.getTAI();
         TimeScale tt  = TimeScalesFactory.getTT();
@@ -113,7 +268,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testStandardEpochStrings(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestStandardEpochStrings(final Field<T> field) throws OrekitException {
 
         Assert.assertEquals("-4712-01-01T12:00:00.000",
                             FieldAbsoluteDate.getJulianEpoch(field).toString(TimeScalesFactory.getTT()));
@@ -133,7 +288,7 @@ public class FieldAbsoluteDateTest {
                             FieldAbsoluteDate.getJavaEpoch(field).toString(TimeScalesFactory.getUTC()));
     }
 
-    public <T extends RealFieldElement<T>>void testJulianEpochRate(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestJulianEpochRate(final Field<T> field) throws OrekitException {
 
         for (int i = 0; i < 10; ++i) {
             FieldAbsoluteDate<T> j200i = FieldAbsoluteDate.createJulianEpoch(field.getZero().add(2000.0+i));
@@ -144,7 +299,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testBesselianEpochRate(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestBesselianEpochRate(final Field<T> field) throws OrekitException {
 
         for (int i = 0; i < 10; ++i) {
             FieldAbsoluteDate<T> b195i = FieldAbsoluteDate.createBesselianEpoch(field.getZero().add(1950.0 + i));
@@ -155,7 +310,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>>void testLieske(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestLieske(final Field<T> field) throws OrekitException {
 
         // the following test values correspond to table 1 in the paper:
         // Precession Matrix Based on IAU (1976) System of Astronomical Constants,
@@ -190,7 +345,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(0.0, b.durationFrom(j).getReal(), epsilon);
     }
 
-    public <T extends RealFieldElement<T>> void testParse(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestParse(final Field<T> field) throws OrekitException {
 
         Assert.assertEquals(FieldAbsoluteDate.getModifiedJulianEpoch(field),
                             new FieldAbsoluteDate<T>(field,"1858-W46-3", TimeScalesFactory.getTT()));
@@ -202,7 +357,7 @@ public class FieldAbsoluteDateTest {
                             new FieldAbsoluteDate<T>(field,"1958-001", TimeScalesFactory.getTAI()));
     }
 
-    public  <T extends RealFieldElement<T>>void testLocalTimeParsing(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestLocalTimeParsing(final Field<T> field) throws OrekitException {
         TimeScale utc = TimeScalesFactory.getUTC();
         Assert.assertEquals(new FieldAbsoluteDate<T>(field,"2011-12-31T23:00:00",       utc),
                             new FieldAbsoluteDate<T>(field,"2012-01-01T03:30:00+04:30", utc));
@@ -218,7 +373,7 @@ public class FieldAbsoluteDateTest {
                             new FieldAbsoluteDate<T>(field,"2011-12-31T22:17:00-07",    utc));
     }
 
-    public <T extends RealFieldElement<T>> void testTimeZoneDisplay(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestTimeZoneDisplay(final Field<T> field) throws OrekitException {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field,"2000-01-01T01:01:01.000", utc);
         Assert.assertEquals("2000-01-01T01:01:01.000",       date.toString());
@@ -236,7 +391,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testLocalTimeLeapSecond(final Field<T> field) throws OrekitException, IOException {
+    private <T extends RealFieldElement<T>> void doTestLocalTimeLeapSecond(final Field<T> field) throws OrekitException, IOException {
 
         TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> beforeLeap = new FieldAbsoluteDate<T>(field,"2012-06-30T23:59:59.8", utc);
@@ -259,7 +414,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testTimeZoneLeapSecond(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestTimeZoneLeapSecond(final Field<T> field) throws OrekitException {
 
         TimeScale utc = TimeScalesFactory.getUTC();
         final TimeZone tz = TimeZone.getTimeZone("Europe/Paris");
@@ -277,7 +432,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testParseLeap(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestParseLeap(final Field<T> field) throws OrekitException {
         TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> beforeLeap = new FieldAbsoluteDate<T>(field,"2012-06-30T23:59:59.8", utc);
         FieldAbsoluteDate<T> inLeap     = new FieldAbsoluteDate<T>(field,"2012-06-30T23:59:60.5", utc);
@@ -285,7 +440,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals("2012-06-30T23:59:60.500", inLeap.toString(utc));
     }
 
-    public <T extends RealFieldElement<T>> void testOutput(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestOutput(final Field<T> field) {
         TimeScale tt = TimeScalesFactory.getTT();
         Assert.assertEquals("1950-01-01T01:01:01.000",
                             FieldAbsoluteDate.getFiftiesEpoch(field).shiftedBy(3661.0).toString(tt));
@@ -293,7 +448,7 @@ public class FieldAbsoluteDateTest {
                             FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(3661.0).toString(tt));
     }
 
-    public <T extends RealFieldElement<T>> void testJ2000(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestJ2000(final Field<T> field) {
         FieldAbsoluteDate<T> FAD = new FieldAbsoluteDate<T>(field);
         Assert.assertEquals("2000-01-01T12:00:00.000",
                             FAD.toString(TimeScalesFactory.getTT()));
@@ -309,35 +464,35 @@ public class FieldAbsoluteDateTest {
                             FieldAbsoluteDate.getJ2000Epoch(field).toString(utc));
     }
 
-    public <T extends RealFieldElement<T>> void testFraction(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestFraction(final Field<T> field) {
         FieldAbsoluteDate<T> d =
             new FieldAbsoluteDate<T>(field,new DateComponents(2000, 01, 01), new TimeComponents(11, 59, 27.816),
                              TimeScalesFactory.getTAI());
         Assert.assertEquals(0, d.durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), 1.0e-10);
     }
 
-    public <T extends RealFieldElement<T>> void testScalesOffset(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestScalesOffset(final Field<T> field) {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field,new DateComponents(2006, 02, 24),
                                              new TimeComponents(15, 38, 00),
                                              utc);
         Assert.assertEquals(33,
-                     date.timeScalesOffset(TimeScalesFactory.getTAI(), utc),
-                     1.0e-10);
+                            date.timeScalesOffset(TimeScalesFactory.getTAI(), utc).getReal(),
+                            1.0e-10);
     }
 
-    public <T extends RealFieldElement<T>> void testUTC(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestUTC(final Field<T> field) {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field,new DateComponents(2002, 01, 01),
                                              new TimeComponents(00, 00, 01),
                                              utc);
         Assert.assertEquals("2002-01-01T00:00:01.000", date.toString());
     }
 
-    public <T extends RealFieldElement<T>> void test1970(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTest1970(final Field<T> field) {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field,new Date(0l), utc);
         Assert.assertEquals("1970-01-01T00:00:00.000", date.toString());
     }
 
-    public <T extends RealFieldElement<T>> void testUtcGpsOffset(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestUtcGpsOffset(final Field<T> field) {
         FieldAbsoluteDate<T> date1   = new FieldAbsoluteDate<T>(field,new DateComponents(2005, 8, 9),
                                                 new TimeComponents(16, 31, 17),
                                                 utc);
@@ -360,7 +515,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testGpsDate(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestGpsDate(final Field<T> field) {
         FieldAbsoluteDate<T> date = FieldAbsoluteDate.createGPSDate(1387, field.getZero().add(318677000.0));
         FieldAbsoluteDate<T> ref  = new FieldAbsoluteDate<T>(field,new DateComponents(2006, 8, 9),
                                              new TimeComponents(16, 31, 03),
@@ -368,7 +523,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(0, date.durationFrom(ref).getReal(), 1.0e-15);
     }
 
-    public <T extends RealFieldElement<T>> void testMJDDate(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestMJDDate(final Field<T> field) throws OrekitException {
         FieldAbsoluteDate<T> dateA = FieldAbsoluteDate.createMJDDate(51544, field.getZero().add(0.5 * Constants.JULIAN_DAY),
                                                              TimeScalesFactory.getTT());
         Assert.assertEquals(0.0, FieldAbsoluteDate.getJ2000Epoch(field).durationFrom(dateA).getReal(), 1.0e-15);
@@ -377,13 +532,13 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(0.0, dateC.durationFrom(dateB).getReal(), 1.0e-15);
     }
 
-    public <T extends RealFieldElement<T>> void testJDDate(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestJDDate(final Field<T> field) {
         final FieldAbsoluteDate<T> date = FieldAbsoluteDate.createJDDate(2400000,field.getZero().add(0.5 * Constants.JULIAN_DAY),
                                                                          TimeScalesFactory.getTT());
         Assert.assertEquals(0.0, FieldAbsoluteDate.getModifiedJulianEpoch(field).durationFrom(date).getReal(), 1.0e-15);
     }
 
-    public <T extends RealFieldElement<T>> void testOffsets(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestOffsets(final Field<T> field) {
         final TimeScale tai = TimeScalesFactory.getTAI();
         FieldAbsoluteDate<T> leapStartUTC = new FieldAbsoluteDate<T>(field,1976, 12, 31, 23, 59, 59, utc);
         FieldAbsoluteDate<T> leapEndUTC   = new FieldAbsoluteDate<T>(field,1977,  1,  1,  0,  0,  0, utc);
@@ -399,7 +554,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(2, leapEndTAI.durationFrom(leapStartTAI).getReal(),    1.0e-10);
     }
 
-    public <T extends RealFieldElement<T>> void testBeforeAndAfterLeap(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestBeforeAndAfterLeap(final Field<T> field) {
         final TimeScale tai = TimeScalesFactory.getTAI();
         FieldAbsoluteDate<T> leapStart = new FieldAbsoluteDate<T>(field,1977,  1,  1,  0,  0, 14, tai);
         FieldAbsoluteDate<T> leapEnd   = new FieldAbsoluteDate<T>(field,1977,  1,  1,  0,  0, 16, tai);
@@ -421,7 +576,7 @@ public class FieldAbsoluteDateTest {
         }
     }
 
-    public <T extends RealFieldElement<T>> void testSymmetry(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestSymmetry(final Field<T> field) {
         final TimeScale tai = TimeScalesFactory.getTAI();
         FieldAbsoluteDate<T> leapStart = new FieldAbsoluteDate<T>(field,1977,  1,  1,  0,  0, 14, tai);
         for (int i = -10; i < 10; ++i) {
@@ -432,7 +587,7 @@ public class FieldAbsoluteDateTest {
         }
     }
 
-    public <T extends RealFieldElement<T>> void testEquals(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestEquals(final Field<T> field) {
         FieldAbsoluteDate<T> d1 =
             new FieldAbsoluteDate<T>(field,new DateComponents(2006, 2, 25),
                              new TimeComponents(17, 10, 34),
@@ -444,7 +599,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertFalse(d1.equals(this));
     }
 
-    public <T extends RealFieldElement<T>> void testComponents(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestComponents(final Field<T> field) throws OrekitException {
         // this is NOT J2000.0,
         // it is either a few seconds before or after depending on time scale
         DateComponents date = new DateComponents(2000, 01,01);
@@ -468,7 +623,7 @@ public class FieldAbsoluteDateTest {
         }
     }
 
-    public <T extends RealFieldElement<T>> void testMonth(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestMonth(final Field<T> field) throws OrekitException {
         TimeScale utc = TimeScalesFactory.getUTC();
         Assert.assertEquals(new FieldAbsoluteDate<T>(field,2011, 2, 23, utc),
                             new FieldAbsoluteDate<T>(field,2011, Month.FEBRUARY, 23, utc));
@@ -476,7 +631,7 @@ public class FieldAbsoluteDateTest {
                             new FieldAbsoluteDate<T>(field,2011, Month.FEBRUARY, 23, 1, 2, 3.4, utc));
     }
 
-    public <T extends RealFieldElement<T>> void testCCSDSUnsegmentedNoExtension(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestCCSDSUnsegmentedNoExtension(final Field<T> field) throws OrekitException {
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<T>(field,"2002-05-23T12:34:56.789", utc);
         double lsb = FastMath.pow(2.0, -24);
 
@@ -515,7 +670,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testCCSDSUnsegmentedWithExtendedPreamble(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestCCSDSUnsegmentedWithExtendedPreamble(final Field<T> field) throws OrekitException {
 
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<T>(field,"2095-03-03T22:02:45.789012345678901", utc);
         int leap = (int) FastMath.rint(utc.offsetFromTAI(reference.toAbsoluteDate()));
@@ -539,7 +694,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testCCSDSDaySegmented(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestCCSDSDaySegmented(final Field<T> field) throws OrekitException {
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<T>(field,"2002-05-23T12:34:56.789012345678", TimeScalesFactory.getUTC());
         double lsb = 1.0e-13;
         byte[] timeCCSDSEpoch = new byte[] { 0x3F, 0x55, 0x02, -0x4D, 0x2C, -0x6B, 0x00, -0x44, 0x61, 0x4E };
@@ -584,7 +739,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testCCSDSCalendarSegmented(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestCCSDSCalendarSegmented(final Field<T> field) throws OrekitException {
 
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<T>(field,"2002-05-23T12:34:56.789012345678", TimeScalesFactory.getUTC());
         double lsb = 1.0e-13;
@@ -641,7 +796,7 @@ public class FieldAbsoluteDateTest {
 
     }
 
-    public <T extends RealFieldElement<T>> void testExpandedConstructors(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestExpandedConstructors(final Field<T> field) throws OrekitException {
         Assert.assertEquals(new FieldAbsoluteDate<T>(field,new DateComponents(2002, 05, 28),
                                       new TimeComponents(15, 30, 0),
                                       TimeScalesFactory.getUTC()),
@@ -649,10 +804,17 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(new FieldAbsoluteDate<T>(field,new DateComponents(2002, 05, 28), TimeComponents.H00,
                                       TimeScalesFactory.getUTC()),
                      new FieldAbsoluteDate<T>(field,2002, 05, 28, TimeScalesFactory.getUTC()));
-        new FieldAbsoluteDate<T>(field,2002, 05, 28, 25, 30, 0, TimeScalesFactory.getUTC());
+        try {
+            new FieldAbsoluteDate<T>(field,2002, 05, 28, 25, 30, 0, TimeScalesFactory.getUTC());
+        } catch (OrekitIllegalArgumentException oiae) {
+            Assert.assertEquals(OrekitMessages.NON_EXISTENT_HMS_TIME, oiae.getSpecifier());
+            Assert.assertEquals(25, ((Integer) oiae.getParts()[0]).intValue());
+            Assert.assertEquals(30, ((Integer) oiae.getParts()[1]).intValue());
+            Assert.assertEquals( 0, ((Double) oiae.getParts()[2]).doubleValue(), 1.0e-15);
+        }
     }
 
-    public <T extends RealFieldElement<T>> void testHashcode(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestHashcode(final Field<T> field) {
         FieldAbsoluteDate<T> d1 =
             new FieldAbsoluteDate<T>(field,new DateComponents(2006, 2, 25),
                              new TimeComponents(17, 10, 34),
@@ -664,7 +826,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertTrue(d1.hashCode() != d1.shiftedBy(1.0e-3).hashCode());
     }
 
-    public <T extends RealFieldElement<T>> void testInfinity(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestInfinity(final Field<T> field) {
         Assert.assertTrue(FieldAbsoluteDate.getJulianEpoch(field).compareTo(FieldAbsoluteDate.getPastInfinity(field)) > 0);
         Assert.assertTrue(FieldAbsoluteDate.getJulianEpoch(field).compareTo(FieldAbsoluteDate.getFutureInfinity(field)) < 0);
         Assert.assertTrue(FieldAbsoluteDate.getJ2000Epoch(field).compareTo(FieldAbsoluteDate.getPastInfinity(field)) > 0);
@@ -680,7 +842,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertTrue(Double.isInfinite(FieldAbsoluteDate.getPastInfinity(field).durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal()));
     }
 
-    public <T extends RealFieldElement<T>> void testAccuracy(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestAccuracy(final Field<T> field) {
         TimeScale tai = TimeScalesFactory.getTAI();
         double sec = 0.281;
         FieldAbsoluteDate<T> t = new FieldAbsoluteDate<T>(field,2010, 6, 21, 18, 42, sec, tai);
@@ -688,7 +850,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(sec, recomputedSec, FastMath.ulp(sec));
     }
 
-    public <T extends RealFieldElement<T>> void testIterationAccuracy(final Field<T> field) {
+    private <T extends RealFieldElement<T>> void doTestIterationAccuracy(final Field<T> field) {
 
         final TimeScale tai = TimeScalesFactory.getTAI();
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<T>(field,2010, 6, 21, 18, 42, 0.281, tai);
@@ -719,7 +881,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals(expectedMean, mean, meanTolerance);
     }
 
-    public <T extends RealFieldElement<T>> void testIssue142(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue142(final Field<T> field) throws OrekitException {
         final FieldAbsoluteDate<T> epoch = FieldAbsoluteDate.getJavaEpoch(field);
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -735,7 +897,7 @@ public class FieldAbsoluteDateTest {
         Assert.assertEquals("2006-04-01T00:00:00.000", ad.toString(utc));
     }
 
-    public <T extends RealFieldElement<T>> void testIssue148(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue148(final Field<T> field) throws OrekitException {
         final TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<T>(field,2012, 6, 30, 23, 59, 50.0, utc);
         DateTimeComponents components = t0.shiftedBy(11.0 - 200 * Precision.EPSILON).getComponents(utc);
@@ -748,7 +910,7 @@ public class FieldAbsoluteDateTest {
                             components.getTime().getSecond(), 1.0e-15);
     }
 
-    public <T extends RealFieldElement<T>> void testIssue149(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestIssue149(final Field<T> field) throws OrekitException {
         final TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<T>(field,2012, 6, 30, 23, 59, 59, utc);
         DateTimeComponents components = t0.shiftedBy(1.0 - Precision.EPSILON).getComponents(utc);
@@ -761,7 +923,7 @@ public class FieldAbsoluteDateTest {
                             components.getTime().getSecond(), 1.0e-15);
     }
 
-    public <T extends RealFieldElement<T>> void testWrapAtMinuteEnd(final Field<T> field) throws OrekitException {
+    private <T extends RealFieldElement<T>> void doTestWrapAtMinuteEnd(final Field<T> field) throws OrekitException {
         TimeScale tai = TimeScalesFactory.getTAI();
         TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<T>(field,DateComponents.J2000_EPOCH, TimeComponents.H12, tai);

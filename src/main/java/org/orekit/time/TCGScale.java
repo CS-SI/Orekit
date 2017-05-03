@@ -16,6 +16,8 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.RealFieldElement;
+
 /** Geocentric Coordinate Time.
  * <p>Coordinate time at the center of mass of the Earth.
  * This time scale depends linearly from {@link TTScale Terrestrial Time}.</p>
@@ -30,7 +32,7 @@ public class TCGScale implements TimeScale {
     private static final long serialVersionUID = 20131209L;
 
     /** LG rate. */
-    private static double LG_RATE = 6.969290134e-10;
+    private static final double LG_RATE = 6.969290134e-10;
 
     /** Reference date for TCG.
      * <p>The reference date is such that the four following instants are equal:</p>
@@ -57,6 +59,12 @@ public class TCGScale implements TimeScale {
     @Override
     public double offsetFromTAI(final AbsoluteDate date) {
         return TT_OFFSET + LG_RATE * date.durationFrom(REFERENCE_DATE);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends RealFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
+        return date.durationFrom(REFERENCE_DATE).multiply(LG_RATE).add(TT_OFFSET);
     }
 
     /** {@inheritDoc} */
