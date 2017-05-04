@@ -307,9 +307,9 @@ public class TurnAroundRangeAnalyticTest {
         // Assert statistical errors
         Assert.assertEquals(0.0, absErrorsMedian, 2.8e-09);
         Assert.assertEquals(0.0, absErrorsMin, 8.8e-08);
-        Assert.assertEquals(0.0, absErrorsMax, 9.4e-08);
+        Assert.assertEquals(0.0, absErrorsMax, 1.1e-7);
         Assert.assertEquals(0.0, relErrorsMedian, 1.7e-15);
-        Assert.assertEquals(0.0, relErrorsMax , 5.8e-15);
+        Assert.assertEquals(0.0, relErrorsMax , 6.4e-15);
     }
 
     /**

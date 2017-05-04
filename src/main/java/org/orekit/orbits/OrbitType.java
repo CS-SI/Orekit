@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.Arrays;
+
 import org.hipparchus.RealFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -40,8 +42,8 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public Orbit convertType(final Orbit orbit) {
-            return (orbit.getType() == this) ? orbit : new CartesianOrbit(orbit);
+        public CartesianOrbit convertType(final Orbit orbit) {
+            return (orbit.getType() == this) ? (CartesianOrbit) orbit : new CartesianOrbit(orbit);
         }
 
         /** {@inheritDoc} */
@@ -74,28 +76,27 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public Orbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
-                                     final AbsoluteDate date, final double mu, final Frame frame) {
+        public CartesianOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
+                                              final AbsoluteDate date, final double mu, final Frame frame) {
 
             final Vector3D p = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
             final Vector3D v = new Vector3D(stateVector[3], stateVector[4], stateVector[5]);
             final Vector3D a;
             if (stateVectorDot == null) {
-                // we don't have data about acceleration, just compute two-body acceleration
-                final double r2 = p.getNormSq();
-                a = new Vector3D(-mu / (r2 * FastMath.sqrt(r2)), p);
+                // we don't have data about acceleration
+                return new CartesianOrbit(new PVCoordinates(p, v), frame, date, mu);
             } else {
                 // we do have an acceleration
                 a = new Vector3D(stateVectorDot[3], stateVectorDot[4], stateVectorDot[5]);
+                return new CartesianOrbit(new PVCoordinates(p, v, a), frame, date, mu);
             }
-            return new CartesianOrbit(new PVCoordinates(p, v, a), frame, date, mu);
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit) {
-            return (orbit.getType() == this) ? orbit : new FieldCartesianOrbit<T>(orbit);
+        public <T extends RealFieldElement<T>> FieldCartesianOrbit<T> convertType(final FieldOrbit<T> orbit) {
+            return (orbit.getType() == this) ? (FieldCartesianOrbit<T>) orbit : new FieldCartesianOrbit<>(orbit);
         }
 
         /** {@inheritDoc} */
@@ -118,36 +119,34 @@ public enum OrbitType {
 
             if (stateVectorDot != null) {
                 final FieldVector3D<T> a = pv.getAcceleration();
-                stateVectorDot[0]        = v.getX();
-                stateVectorDot[1]        = v.getY();
-                stateVectorDot[2]        = v.getZ();
-                stateVectorDot[3]        = a.getX();
-                stateVectorDot[4]        = a.getY();
-                stateVectorDot[5]        = a.getZ();
+                stateVectorDot[0] = v.getX();
+                stateVectorDot[1] = v.getY();
+                stateVectorDot[2] = v.getZ();
+                stateVectorDot[3] = a.getX();
+                stateVectorDot[4] = a.getY();
+                stateVectorDot[5] = a.getZ();
             }
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                             final T[] stateVectorDot,
-                                                                             final PositionAngle type,
-                                                                             final FieldAbsoluteDate<T> date,
-                                                                             final double mu, final Frame frame) {
-            final T zero = stateVector[0].getField().getZero();
+        public <T extends RealFieldElement<T>> FieldCartesianOrbit<T> mapArrayToOrbit(final T[] stateVector,
+                                                                                      final T[] stateVectorDot,
+                                                                                      final PositionAngle type,
+                                                                                      final FieldAbsoluteDate<T> date,
+                                                                                      final double mu, final Frame frame) {
             final FieldVector3D<T> p = new FieldVector3D<>(stateVector[0], stateVector[1], stateVector[2]);
             final FieldVector3D<T> v = new FieldVector3D<>(stateVector[3], stateVector[4], stateVector[5]);
             final FieldVector3D<T> a;
             if (stateVectorDot == null) {
-                // we don't have data about acceleration, just compute two-body acceleration
-                final T r2 = p.getNormSq();
-                a = new FieldVector3D<>(zero.add(-mu).divide(r2.sqrt().multiply(r2)), p);
+                // we don't have data about acceleration
+                return new FieldCartesianOrbit<T>(new FieldPVCoordinates<T>(p, v), frame, date, mu);
             } else {
                 // we do have an acceleration
                 a = new FieldVector3D<>(stateVectorDot[3], stateVectorDot[4], stateVectorDot[5]);
+                return new FieldCartesianOrbit<T>(new FieldPVCoordinates<T>(p, v, a), frame, date, mu);
             }
-            return new FieldCartesianOrbit<T>(new FieldPVCoordinates<T>(p, v, a), frame, date, mu);
 
         }
 
@@ -175,8 +174,8 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public Orbit convertType(final Orbit orbit) {
-            return (orbit.getType() == this) ? orbit : new CircularOrbit(orbit);
+        public CircularOrbit convertType(final Orbit orbit) {
+            return (orbit.getType() == this) ? (CircularOrbit) orbit : new CircularOrbit(orbit);
         }
 
         /** {@inheritDoc} */
@@ -193,21 +192,44 @@ public enum OrbitType {
             stateVector[4] = circularOrbit.getRightAscensionOfAscendingNode();
             stateVector[5] = circularOrbit.getAlpha(type);
 
+            if (stateVectorDot != null) {
+                if (orbit.hasDerivatives()) {
+                    stateVectorDot[0] = circularOrbit.getADot();
+                    stateVectorDot[1] = circularOrbit.getCircularExDot();
+                    stateVectorDot[2] = circularOrbit.getCircularEyDot();
+                    stateVectorDot[3] = circularOrbit.getIDot();
+                    stateVectorDot[4] = circularOrbit.getRightAscensionOfAscendingNodeDot();
+                    stateVectorDot[5] = circularOrbit.getAlphaDot(type);
+                } else {
+                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                }
+            }
+
         }
 
         /** {@inheritDoc} */
         @Override
-        public Orbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
-                                     final AbsoluteDate date, final double mu, final Frame frame) {
-            return new CircularOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                     stateVector[4], stateVector[5], type,
-                                     frame, date, mu);
+        public CircularOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
+                                             final AbsoluteDate date, final double mu, final Frame frame) {
+            if (stateVectorDot == null) {
+                // we don't have orbit derivatives
+                return new CircularOrbit(stateVector[0], stateVector[1], stateVector[2],
+                                         stateVector[3], stateVector[4], stateVector[5],
+                                         type, frame, date, mu);
+            } else {
+                // we have orbit derivatives
+                return new CircularOrbit(stateVector[0],    stateVector[1],    stateVector[2],
+                                         stateVector[3],    stateVector[4],    stateVector[5],
+                                         stateVectorDot[0], stateVectorDot[1], stateVectorDot[2],
+                                         stateVectorDot[3], stateVectorDot[4], stateVectorDot[5],
+                                         type, frame, date, mu);
+            }
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit) {
-            return (orbit.getType() == this) ? orbit : new FieldCircularOrbit<T>(orbit);
+        public <T extends RealFieldElement<T>> FieldCircularOrbit<T> convertType(final FieldOrbit<T> orbit) {
+            return (orbit.getType() == this) ? (FieldCircularOrbit<T>) orbit : new FieldCircularOrbit<T>(orbit);
         }
 
         /** {@inheritDoc} */
@@ -226,17 +248,40 @@ public enum OrbitType {
             stateVector[4] = circularOrbit.getRightAscensionOfAscendingNode();
             stateVector[5] = circularOrbit.getAlpha(type);
 
+            if (stateVectorDot != null) {
+                if (orbit.hasDerivatives()) {
+                    stateVectorDot[0] = circularOrbit.getADot();
+                    stateVectorDot[1] = circularOrbit.getCircularExDot();
+                    stateVectorDot[2] = circularOrbit.getCircularEyDot();
+                    stateVectorDot[3] = circularOrbit.getIDot();
+                    stateVectorDot[4] = circularOrbit.getRightAscensionOfAscendingNodeDot();
+                    stateVectorDot[5] = circularOrbit.getAlphaDot(type);
+                } else {
+                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                }
+            }
+
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                             final T[] stateVectorDot, final PositionAngle type,
-                                                                             final FieldAbsoluteDate<T> date,
-                                                                             final double mu, final Frame frame) {
-            return new FieldCircularOrbit<T>(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                     stateVector[4], stateVector[5], type,
-                                     frame, date, mu);
+        public <T extends RealFieldElement<T>> FieldCircularOrbit<T> mapArrayToOrbit(final T[] stateVector,
+                                                                                     final T[] stateVectorDot, final PositionAngle type,
+                                                                                     final FieldAbsoluteDate<T> date,
+                                                                                     final double mu, final Frame frame) {
+            if (stateVectorDot == null) {
+                // we don't have orbit derivatives
+                return new FieldCircularOrbit<>(stateVector[0], stateVector[1], stateVector[2],
+                                                stateVector[3], stateVector[4], stateVector[5],
+                                                type, frame, date, mu);
+            } else {
+                // we have orbit derivatives
+                return new FieldCircularOrbit<>(stateVector[0],    stateVector[1],    stateVector[2],
+                                                stateVector[3],    stateVector[4],    stateVector[5],
+                                                stateVectorDot[0], stateVectorDot[1], stateVectorDot[2],
+                                                stateVectorDot[3], stateVectorDot[4], stateVectorDot[5],
+                                                type, frame, date, mu);
+            }
         }
 
         /** {@inheritDoc} */
@@ -266,14 +311,14 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public Orbit convertType(final Orbit orbit) {
-            return (orbit.getType() == this) ? orbit : new EquinoctialOrbit(orbit);
+        public EquinoctialOrbit convertType(final Orbit orbit) {
+            return (orbit.getType() == this) ? (EquinoctialOrbit) orbit : new EquinoctialOrbit(orbit);
         }
 
         /** {@inheritDoc} */
         @Override
        public void mapOrbitToArray(final Orbit orbit, final PositionAngle type,
-                                    final double[] stateVector, final double[] stateVectorDot) {
+                                   final double[] stateVector, final double[] stateVectorDot) {
 
             final EquinoctialOrbit equinoctialOrbit =
                 (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
@@ -285,21 +330,44 @@ public enum OrbitType {
             stateVector[4] = equinoctialOrbit.getHy();
             stateVector[5] = equinoctialOrbit.getL(type);
 
+            if (stateVectorDot != null) {
+                if (orbit.hasDerivatives()) {
+                    stateVectorDot[0] = equinoctialOrbit.getADot();
+                    stateVectorDot[1] = equinoctialOrbit.getEquinoctialExDot();
+                    stateVectorDot[2] = equinoctialOrbit.getEquinoctialEyDot();
+                    stateVectorDot[3] = equinoctialOrbit.getHxDot();
+                    stateVectorDot[4] = equinoctialOrbit.getHyDot();
+                    stateVectorDot[5] = equinoctialOrbit.getLDot(type);
+                } else {
+                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                }
+            }
+
         }
 
         /** {@inheritDoc} */
         @Override
-        public Orbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
-                                     final AbsoluteDate date, final double mu, final Frame frame) {
-            return new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                        stateVector[4], stateVector[5], type,
-                                        frame, date, mu);
+        public EquinoctialOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
+                                                final AbsoluteDate date, final double mu, final Frame frame) {
+            if (stateVectorDot == null) {
+                // we don't have orbit derivatives
+                return new EquinoctialOrbit(stateVector[0], stateVector[1], stateVector[2],
+                                            stateVector[3], stateVector[4], stateVector[5],
+                                            type, frame, date, mu);
+            } else {
+                // we have orbit derivatives
+                return new EquinoctialOrbit(stateVector[0],    stateVector[1],    stateVector[2],
+                                            stateVector[3],    stateVector[4],    stateVector[5],
+                                            stateVectorDot[0], stateVectorDot[1], stateVectorDot[2],
+                                            stateVectorDot[3], stateVectorDot[4], stateVectorDot[5],
+                                            type, frame, date, mu);
+            }
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit) {
-            return (orbit.getType() == this) ? orbit : new FieldEquinoctialOrbit<T>(orbit);
+        public <T extends RealFieldElement<T>> FieldEquinoctialOrbit<T> convertType(final FieldOrbit<T> orbit) {
+            return (orbit.getType() == this) ? (FieldEquinoctialOrbit<T>) orbit : new FieldEquinoctialOrbit<T>(orbit);
         }
 
         /** {@inheritDoc} */
@@ -319,18 +387,41 @@ public enum OrbitType {
             stateVector[4] = equinoctialOrbit.getHy();
             stateVector[5] = equinoctialOrbit.getL(type);
 
+            if (stateVectorDot != null) {
+                if (orbit.hasDerivatives()) {
+                    stateVectorDot[0] = equinoctialOrbit.getADot();
+                    stateVectorDot[1] = equinoctialOrbit.getEquinoctialExDot();
+                    stateVectorDot[2] = equinoctialOrbit.getEquinoctialEyDot();
+                    stateVectorDot[3] = equinoctialOrbit.getHxDot();
+                    stateVectorDot[4] = equinoctialOrbit.getHyDot();
+                    stateVectorDot[5] = equinoctialOrbit.getLDot(type);
+                } else {
+                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                }
+            }
+
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                             final T[] stateVectorDot,
-                                                                             final PositionAngle type,
-                                                                             final FieldAbsoluteDate<T> date,
-                                                                             final double mu, final Frame frame) {
-            return new FieldEquinoctialOrbit<T>(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                                stateVector[4], stateVector[5], type,
-                                                frame, date, mu);
+        public <T extends RealFieldElement<T>> FieldEquinoctialOrbit<T> mapArrayToOrbit(final T[] stateVector,
+                                                                                        final T[] stateVectorDot,
+                                                                                        final PositionAngle type,
+                                                                                        final FieldAbsoluteDate<T> date,
+                                                                                        final double mu, final Frame frame) {
+            if (stateVectorDot == null) {
+                // we don't have orbit derivatives
+                return new FieldEquinoctialOrbit<>(stateVector[0], stateVector[1], stateVector[2],
+                                                   stateVector[3], stateVector[4], stateVector[5],
+                                                   type, frame, date, mu);
+            } else {
+                // we have orbit derivatives
+                return new FieldEquinoctialOrbit<>(stateVector[0],    stateVector[1],    stateVector[2],
+                                                   stateVector[3],    stateVector[4],    stateVector[5],
+                                                   stateVectorDot[0], stateVectorDot[1], stateVectorDot[2],
+                                                   stateVectorDot[3], stateVectorDot[4], stateVectorDot[5],
+                                                   type, frame, date, mu);
+            }
         }
 
         /** {@inheritDoc} */
@@ -361,8 +452,8 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         @Override
-        public Orbit convertType(final Orbit orbit) {
-            return (orbit.getType() == this) ? orbit : new KeplerianOrbit(orbit);
+        public KeplerianOrbit convertType(final Orbit orbit) {
+            return (orbit.getType() == this) ? (KeplerianOrbit) orbit : new KeplerianOrbit(orbit);
         }
 
         /** {@inheritDoc} */
@@ -380,21 +471,44 @@ public enum OrbitType {
             stateVector[4] = keplerianOrbit.getRightAscensionOfAscendingNode();
             stateVector[5] = keplerianOrbit.getAnomaly(type);
 
+            if (stateVectorDot != null) {
+                if (orbit.hasDerivatives()) {
+                    stateVectorDot[0] = keplerianOrbit.getADot();
+                    stateVectorDot[1] = keplerianOrbit.getEDot();
+                    stateVectorDot[2] = keplerianOrbit.getIDot();
+                    stateVectorDot[3] = keplerianOrbit.getPerigeeArgumentDot();
+                    stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
+                    stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
+                } else {
+                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                }
+            }
+
         }
 
         /** {@inheritDoc} */
         @Override
-        public Orbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
-                                     final AbsoluteDate date, final double mu, final Frame frame) {
-            return new KeplerianOrbit(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                      stateVector[4], stateVector[5], type,
-                                      frame, date, mu);
+        public KeplerianOrbit mapArrayToOrbit(final double[] stateVector, final double[] stateVectorDot, final PositionAngle type,
+                                              final AbsoluteDate date, final double mu, final Frame frame) {
+            if (stateVectorDot == null) {
+                // we don't have orbit derivatives
+                return new KeplerianOrbit(stateVector[0], stateVector[1], stateVector[2],
+                                          stateVector[3], stateVector[4], stateVector[5],
+                                          type, frame, date, mu);
+            } else {
+                // we have orbit derivatives
+                return new KeplerianOrbit(stateVector[0],    stateVector[1],    stateVector[2],
+                                          stateVector[3],    stateVector[4],    stateVector[5],
+                                          stateVectorDot[0], stateVectorDot[1], stateVectorDot[2],
+                                          stateVectorDot[3], stateVectorDot[4], stateVectorDot[5],
+                                          type, frame, date, mu);
+            }
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> convertType(final FieldOrbit<T> orbit) {
-            return (orbit.getType() == this) ? orbit : new FieldKeplerianOrbit<T>(orbit);
+        public <T extends RealFieldElement<T>> FieldKeplerianOrbit<T> convertType(final FieldOrbit<T> orbit) {
+            return (orbit.getType() == this) ? (FieldKeplerianOrbit<T>) orbit : new FieldKeplerianOrbit<T>(orbit);
         }
 
         /** {@inheritDoc} */
@@ -412,18 +526,42 @@ public enum OrbitType {
             stateVector[3] = keplerianOrbit.getPerigeeArgument();
             stateVector[4] = keplerianOrbit.getRightAscensionOfAscendingNode();
             stateVector[5] = keplerianOrbit.getAnomaly(type);
+
+            if (stateVectorDot != null) {
+                if (orbit.hasDerivatives()) {
+                    stateVectorDot[0] = keplerianOrbit.getADot();
+                    stateVectorDot[1] = keplerianOrbit.getEDot();
+                    stateVectorDot[2] = keplerianOrbit.getIDot();
+                    stateVectorDot[3] = keplerianOrbit.getPerigeeArgumentDot();
+                    stateVectorDot[4] = keplerianOrbit.getRightAscensionOfAscendingNodeDot();
+                    stateVectorDot[5] = keplerianOrbit.getAnomalyDot(type);
+                } else {
+                    Arrays.fill(stateVectorDot, 0, 6, 0.0);
+                }
+            }
+
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends RealFieldElement<T>> FieldOrbit<T> mapArrayToOrbit(final T[] stateVector,
-                                                                             final T[] stateVectorDot,
-                                                                             final PositionAngle type,
-                                                                             final FieldAbsoluteDate<T> date,
-                                                                             final double mu, final Frame frame) {
-            return new FieldKeplerianOrbit<T>(stateVector[0], stateVector[1], stateVector[2], stateVector[3],
-                                              stateVector[4], stateVector[5], type,
-                                              frame, date, mu);
+        public <T extends RealFieldElement<T>> FieldKeplerianOrbit<T> mapArrayToOrbit(final T[] stateVector,
+                                                                                      final T[] stateVectorDot,
+                                                                                      final PositionAngle type,
+                                                                                      final FieldAbsoluteDate<T> date,
+                                                                                      final double mu, final Frame frame) {
+            if (stateVectorDot == null) {
+                // we don't have orbit derivatives
+                return new FieldKeplerianOrbit<>(stateVector[0], stateVector[1], stateVector[2],
+                                                 stateVector[3], stateVector[4], stateVector[5],
+                                                 type, frame, date, mu);
+            } else {
+                // we have orbit derivatives
+                return new FieldKeplerianOrbit<>(stateVector[0],    stateVector[1],    stateVector[2],
+                                                 stateVector[3],    stateVector[4],    stateVector[5],
+                                                 stateVectorDot[0], stateVectorDot[1], stateVectorDot[2],
+                                                 stateVectorDot[3], stateVectorDot[4], stateVectorDot[5],
+                                                 type, frame, date, mu);
+            }
         }
 
         /** {@inheritDoc} */

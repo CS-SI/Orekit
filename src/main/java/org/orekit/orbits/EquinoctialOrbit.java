@@ -628,10 +628,26 @@ public class EquinoctialOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public EquinoctialOrbit shiftedBy(final double dt) {
-        return new EquinoctialOrbit(a, ex, ey, hx, hy,
-                                    getLM() + getKeplerianMeanMotion() * dt,
-                                    PositionAngle.MEAN, getFrame(),
-                                    getDate().shiftedBy(dt), getMu());
+        if (hasDerivatives()) {
+            // use Keplerian motion + first derivatives
+            final double newA  = a    + aDot    * dt;
+            final double newEx = ex   + exDot   * dt;
+            final double newEy = ey   + eyDot   * dt;
+            final double newHx = hx   + hxDot   * dt;
+            final double newHy = hy   + hyDot   * dt;
+            final double lMDot = getLMDot();
+            final double newLM = getLM() + lMDot * dt;
+            return new EquinoctialOrbit(newA, newEx, newEy, newHx, newHy, newLM,
+                                        aDot, exDot, eyDot, hxDot, hyDot, lMDot,
+                                        PositionAngle.MEAN, getFrame(),
+                                        getDate().shiftedBy(dt), getMu());
+        } else {
+            // use Keplerian-only motion
+            return new EquinoctialOrbit(a, ex, ey, hx, hy,
+                                        getLM() + getKeplerianMeanMotion() * dt,
+                                        PositionAngle.MEAN, getFrame(),
+                                        getDate().shiftedBy(dt), getMu());
+        }
     }
 
     /** {@inheritDoc}

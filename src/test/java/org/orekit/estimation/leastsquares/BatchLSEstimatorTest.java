@@ -246,7 +246,7 @@ public class BatchLSEstimatorTest {
         estimator.setMaxIterations(10);
         estimator.setMaxEvaluations(20);
 
-        EstimationTestUtils.checkFit(context, estimator, 3, 4,
+        EstimationTestUtils.checkFit(context, estimator, 3, 6,
                                      0.0, 1.6e-2,
                                      0.0, 3.4e-2,
                                      0.0, 170.0,  // we only have range rate...

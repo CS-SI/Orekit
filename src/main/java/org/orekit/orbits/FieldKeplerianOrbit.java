@@ -1038,9 +1038,25 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
     /** {@inheritDoc} */
     public FieldKeplerianOrbit<T> shiftedBy(final T dt) {
-        return new FieldKeplerianOrbit<>(a, e, i, pa, raan,
-                                         getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()),
-                                         PositionAngle.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
+        if (hasDerivatives()) {
+            // use Keplerian motion + first derivatives
+            final T newA      = a.add(aDot.multiply(dt));
+            final T newE      = e.add(eDot.multiply(dt));
+            final T newI      = i.add(iDot.multiply(dt));
+            final T newPA     = pa.add(paDot.multiply(dt));
+            final T newRaan   = raan.add(raanDot.multiply(dt));
+            final T mDot      = getMeanAnomalyDot();
+            final T newM      = getMeanAnomaly().add(mDot.multiply(dt));
+            return new FieldKeplerianOrbit<>(newA, newE, newI, newPA, newRaan, newM,
+                                             aDot, eDot, iDot, paDot, raanDot, mDot,
+                                             PositionAngle.MEAN, getFrame(),
+                                             getDate().shiftedBy(dt), getMu());
+        } else {
+            // use Keplerian-only motion
+            return new FieldKeplerianOrbit<>(a, e, i, pa, raan,
+                                             getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()),
+                                             PositionAngle.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
+        }
     }
 
     /** {@inheritDoc}

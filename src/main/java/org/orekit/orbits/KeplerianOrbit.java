@@ -914,9 +914,25 @@ public class KeplerianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public KeplerianOrbit shiftedBy(final double dt) {
-        return new KeplerianOrbit(a, e, i, pa, raan,
-                                  getMeanAnomaly() + getKeplerianMeanMotion() * dt,
-                                  PositionAngle.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
+        if (hasDerivatives()) {
+            // use Keplerian motion + first derivatives
+            final double newA    = a    + aDot    * dt;
+            final double newE    = e    + eDot    * dt;
+            final double newI    = i    + iDot    * dt;
+            final double newPA   = pa   + paDot   * dt;
+            final double newRAAN = raan + raanDot * dt;
+            final double mDot    = getMeanAnomalyDot();
+            final double newM    = getMeanAnomaly() + mDot * dt;
+            return new KeplerianOrbit(newA, newE, newI, newPA, newRAAN, newM,
+                                      aDot, eDot, iDot, paDot, raanDot, mDot,
+                                      PositionAngle.MEAN, getFrame(),
+                                      getDate().shiftedBy(dt), getMu());
+        } else {
+            // use Keplerian-only motion
+            return new KeplerianOrbit(a, e, i, pa, raan,
+                                      getMeanAnomaly() + getKeplerianMeanMotion() * dt,
+                                      PositionAngle.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
+        }
     }
 
     /** {@inheritDoc}

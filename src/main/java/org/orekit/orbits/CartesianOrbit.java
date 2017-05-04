@@ -427,7 +427,8 @@ public class CartesianOrbit extends Orbit {
         // preliminary computation
         final Vector3D pvP   = getPVCoordinates().getPosition();
         final Vector3D pvV   = getPVCoordinates().getVelocity();
-        final double r       = pvP.getNorm();
+        final double r2      = pvP.getNormSq();
+        final double r       = FastMath.sqrt(r2);
         final double rV2OnMu = r * pvV.getNormSq() / getMu();
         final double a       = getA();
         final double eSE     = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(getMu() * a);
@@ -463,10 +464,23 @@ public class CartesianOrbit extends Orbit {
         final double yDot   = factor * ( cTE - beta * ex * exCeyS);
 
         final Vector3D shiftedP = new Vector3D(x, u, y, v);
-        final double   r2       = x * x + y * y;
         final Vector3D shiftedV = new Vector3D(xDot, u, yDot, v);
-        final Vector3D shiftedA = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), shiftedP);
-        return new PVCoordinates(shiftedP, shiftedV, shiftedA);
+        if (hasNonKeplerianAcceleration) {
+            // we need to take apart Keplerian and non-Keplerian accelerations
+            // we consider the non-Keplerian part doesn't change,
+            // we computed it by subtracting the initial Keplerian acceleration
+            // from the initial acceleration, then we add it to the shifted
+            // Keplerian acceleration
+            final double   newR2    = x * x + y * y;
+            final Vector3D shiftedA = new Vector3D(1, getPVCoordinates().getAcceleration(),
+                                                  +getMu() / (r2 * r), pvP,
+                                                  -getMu() / (newR2 * FastMath.sqrt(newR2)), shiftedP);
+            return new PVCoordinates(shiftedP, shiftedV, shiftedA);
+        } else {
+            // don't include acceleration,
+            // so the shifted orbit is not considered to have derivatives
+            return new PVCoordinates(shiftedP, shiftedV);
+        }
 
     }
 
@@ -480,7 +494,8 @@ public class CartesianOrbit extends Orbit {
         final Vector3D pvP   = pv.getPosition();
         final Vector3D pvV   = pv.getVelocity();
         final Vector3D pvM   = pv.getMomentum();
-        final double r       = pvP.getNorm();
+        final double r2      = pvP.getNormSq();
+        final double r       = FastMath.sqrt(r2);
         final double rV2OnMu = r * pvV.getNormSq() / getMu();
         final double a       = getA();
         final double muA     = getMu() * a;
@@ -515,10 +530,23 @@ public class CartesianOrbit extends Orbit {
         final double yDot   =  factor * sE2m1 * cH;
 
         final Vector3D shiftedP = new Vector3D(x, p, y, q);
-        final double   r2       = x * x + y * y;
         final Vector3D shiftedV = new Vector3D(xDot, p, yDot, q);
-        final Vector3D shiftedA = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), shiftedP);
-        return new PVCoordinates(shiftedP, shiftedV, shiftedA);
+        if (hasNonKeplerianAcceleration) {
+            // we need to take apart Keplerian and non-Keplerian accelerations
+            // we consider the non-Keplerian part doesn't change,
+            // we computed it by subtracting the initial Keplerian acceleration
+            // from the initial acceleration, then we add it to the shifted
+            // Keplerian acceleration
+            final double   newR2    = x * x + y * y;
+            final Vector3D shiftedA = new Vector3D(1, getPVCoordinates().getAcceleration(),
+                                                   +getMu() / (r2 * r), pvP,
+                                                   -getMu() / (newR2 * FastMath.sqrt(newR2)), shiftedP);
+            return new PVCoordinates(shiftedP, shiftedV, shiftedA);
+        } else {
+            // don't include acceleration,
+            // so the shifted orbit is not considered to have derivatives
+            return new PVCoordinates(shiftedP, shiftedV);
+        }
 
     }
 

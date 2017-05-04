@@ -852,10 +852,26 @@ public class CircularOrbit
 
     /** {@inheritDoc} */
     public CircularOrbit shiftedBy(final double dt) {
-        return new CircularOrbit(a, ex, ey, i, raan,
-                                 getAlphaM() + getKeplerianMeanMotion() * dt,
-                                 PositionAngle.MEAN, getFrame(),
-                                 getDate().shiftedBy(dt), getMu());
+        if (hasDerivatives()) {
+            // use Keplerian motion + first derivatives
+            final double newA      = a    + aDot    * dt;
+            final double newEx     = ex   + exDot   * dt;
+            final double newEy     = ey   + eyDot   * dt;
+            final double newI      = i    + iDot    * dt;
+            final double newRaan   = raan + raanDot * dt;
+            final double alphaMDot = getAlphaMDot();
+            final double newAlphaM = getAlphaM() + alphaMDot * dt;
+            return new CircularOrbit(newA, newEx, newEy, newI, newRaan, newAlphaM,
+                                     aDot, exDot, eyDot, iDot, raanDot, alphaMDot,
+                                     PositionAngle.MEAN, getFrame(),
+                                     getDate().shiftedBy(dt), getMu());
+        } else {
+            // use Keplerian-only motion
+            return new CircularOrbit(a, ex, ey, i, raan,
+                                     getAlphaM() + getKeplerianMeanMotion() * dt,
+                                     PositionAngle.MEAN, getFrame(),
+                                     getDate().shiftedBy(dt), getMu());
+        }
     }
 
     /** {@inheritDoc}

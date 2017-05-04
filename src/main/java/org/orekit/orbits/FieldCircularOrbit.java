@@ -406,6 +406,10 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         ey   = equiEy.multiply(cosRaan).subtract(equiEx.multiply(sinRaan));
         this.alphaV = op.getLv().subtract(raan);
 
+        if (!FACTORIES.containsKey(a.getField())) {
+            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        }
+
         if (op.hasDerivatives()) {
             aDot      = op.getADot();
             final T      hxDot = op.getHxDot();
@@ -865,10 +869,26 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
     /** {@inheritDoc} */
     public FieldCircularOrbit<T> shiftedBy(final T dt) {
-        return new FieldCircularOrbit<T>(a, ex, ey, i, raan,
-                                         getAlphaM().add(getKeplerianMeanMotion().multiply(dt)),
-                                         PositionAngle.MEAN, getFrame(),
-                                         getDate().shiftedBy(dt), getMu());
+        if (hasDerivatives()) {
+            // use Keplerian motion + first derivatives
+            final T newA      = a.add(aDot.multiply(dt));
+            final T newEx     = ex.add(exDot.multiply(dt));
+            final T newEy     = ey.add(eyDot.multiply(dt));
+            final T newI      = i.add(iDot.multiply(dt));
+            final T newRaan   = raan.add(raanDot.multiply(dt));
+            final T alphaMDot = getAlphaMDot();
+            final T newAlphaM = getAlphaM().add(alphaMDot.multiply(dt));
+            return new FieldCircularOrbit<>(newA, newEx, newEy, newI, newRaan, newAlphaM,
+                                            aDot, exDot, eyDot, iDot, raanDot, alphaMDot,
+                                            PositionAngle.MEAN, getFrame(),
+                                            getDate().shiftedBy(dt), getMu());
+        } else {
+            // use Keplerian-only motion
+            return new FieldCircularOrbit<>(a, ex, ey, i, raan,
+                                            getAlphaM().add(getKeplerianMeanMotion().multiply(dt)),
+                                            PositionAngle.MEAN, getFrame(),
+                                            getDate().shiftedBy(dt), getMu());
+        }
     }
 
     /** {@inheritDoc}

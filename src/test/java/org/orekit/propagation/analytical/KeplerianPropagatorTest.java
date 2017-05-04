@@ -832,25 +832,31 @@ public class KeplerianPropagatorTest {
             final TimeStampedPVCoordinates pva = new TimeStampedPVCoordinates(date, position, velocity, acceleration);
             final Orbit initial = type.convertType(new CartesianOrbit(pva, FramesFactory.getEME2000(), mu));
             Assert.assertEquals(type, initial.getType());
-            checkDerivatives(initial, true);
 
-            // Cartesian orbits always have derivatives, by construction, but
-            // with Keplerian propagator they are limited to Keplerian motion
-            // non Cartesian orbits get no derivatives when propagated with Keplerian propagator
-            final boolean expectedDerivatives = type == OrbitType.CARTESIAN;
+            // the derivatives are available at this stage
+            checkDerivatives(initial, true);
 
             KeplerianPropagator propagator = new KeplerianPropagator(initial);
             Assert.assertEquals(type, propagator.getInitialState().getOrbit().getType());
-            checkDerivatives(propagator.getInitialState().getOrbit(), expectedDerivatives);
+
+            // non-Keplerian derivatives are explicitly removed when building the Keplerian-only propagator
+            checkDerivatives(propagator.getInitialState().getOrbit(), false);
+
             PVCoordinates initPV = propagator.getInitialState().getOrbit().getPVCoordinates();
             Assert.assertEquals(nonKeplerAcceleration.getNorm(), Vector3D.distance(acceleration, initPV.getAcceleration()), 2.0e-15);
             Assert.assertEquals(0.0,
                                 Vector3D.distance(keplerAcceleration, initPV.getAcceleration()),
                                 4.0e-15);
 
-            Orbit orbit = propagator.propagateOrbit(initial.getDate().shiftedBy(0.2 * initial.getKeplerianPeriod()));
+            double dt = 0.2 * initial.getKeplerianPeriod();
+            Orbit orbit = propagator.propagateOrbit(initial.getDate().shiftedBy(dt));
             Assert.assertEquals(type, orbit.getType());
-            checkDerivatives(orbit, expectedDerivatives);
+
+            // at the end, we don't have non-Keplerian derivatives
+            checkDerivatives(orbit, false);
+
+            // using shiftedBy on the initial orbit, non-Keplerian derivatives would have been preserved
+            checkDerivatives(initial.shiftedBy(dt), true);
 
         }
     }

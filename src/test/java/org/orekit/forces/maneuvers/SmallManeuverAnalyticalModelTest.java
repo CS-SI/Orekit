@@ -212,7 +212,7 @@ public class SmallManeuverAnalyticalModelTest {
             for (PositionAngle positionAngle : PositionAngle.values()) {
                 BoundedPropagator withoutManeuver = getEphemeris(orbitType.convertType(leo), mass, t0, Vector3D.ZERO, f, isp);
 
-                SpacecraftState state0 = withoutManeuver.propagate(t0);
+                SpacecraftState state0 = removeDerivatives(withoutManeuver.propagate(t0));
                 SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(state0, eme2000, dV0, isp);
                 Assert.assertEquals(t0, model.getDate());
 
@@ -225,20 +225,20 @@ public class SmallManeuverAnalyticalModelTest {
                     SmallManeuverAnalyticalModel[] models = new SmallManeuverAnalyticalModel[] {
                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-4 * h * timeDirs[i])),
                                                          eme2000, new Vector3D(1, dV0, -4 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-3 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, -3 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-2 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, -2 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-1 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, -1 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+1 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, +1 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+2 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, +2 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+3 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, +3 * h, velDirs[i]), isp),
-                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+4 * h * timeDirs[i])),
-                                                                                          eme2000, new Vector3D(1, dV0, +4 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-3 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, -3 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-2 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, -2 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-1 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, -1 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+1 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, +1 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+2 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, +2 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+3 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, +3 * h, velDirs[i]), isp),
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+4 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, +4 * h, velDirs[i]), isp),
                     };
                     double[][] array = new double[models.length][6];
 
@@ -272,6 +272,16 @@ public class SmallManeuverAnalyticalModelTest {
 
         }
 
+    }
+
+    private SpacecraftState removeDerivatives(final SpacecraftState state) {
+        final Orbit orbit = state.getOrbit();
+        final OrbitType type = orbit.getType();
+        final double[] stateVector = new double[6];
+        type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
+        final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
+                                                      orbit.getDate(), orbit.getMu(), orbit.getFrame());
+        return new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
     }
 
     private BoundedPropagator getEphemeris(final Orbit orbit, final double mass,
