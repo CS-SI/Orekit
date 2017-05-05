@@ -22,11 +22,11 @@ import java.util.Map;
 
 import org.hipparchus.Field;
 import org.hipparchus.RealFieldElement;
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Decimal64Field;
 import org.hipparchus.util.FastMath;
@@ -36,8 +36,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.FieldBodyCenterPointing;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -50,8 +48,8 @@ import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
-import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -71,8 +69,8 @@ public class FieldSpacecraftStateTest {
     }
 
     @Test
-    public void testShiftError() throws OrekitException {
-        doTestShiftError(Decimal64Field.getInstance());
+    public void testShiftVsEcksteinHechlerError() throws OrekitException {
+        doTestShiftVsEcksteinHechlerError(Decimal64Field.getInstance());
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -165,7 +163,7 @@ public class FieldSpacecraftStateTest {
 
     }
 
-    private <T extends RealFieldElement<T>>  void doTestShiftError(final Field<T> field)
+    private <T extends RealFieldElement<T>>  void doTestShiftVsEcksteinHechlerError(final Field<T> field)
         throws OrekitException {
 
         T zero = field.getZero();
@@ -176,7 +174,39 @@ public class FieldSpacecraftStateTest {
         T pa = zero.add(1.9674147913622104);
         T raan = zero.add(FastMath.toRadians(261));
         T lv = zero.add(0);
+        double ae  = 6.378137e6;
+        T c20 = zero.add(-1.08263e-3);
+        T c30 = zero.add(2.54e-6);
+        T c40 = zero.add(1.62e-6);
+        T c50 = zero.add(2.3e-7);
+        T c60 = zero.add(-5.5e-7);
 
+
+        // polynomial models for interpolation error in position, velocity, acceleration and attitude
+        // these models grow as follows
+        //   interpolation time (s)    position error (m)   velocity error (m/s)   acceleration error (m/s²)  attitude error (°)
+        //           60                        2                    0.07                  0.002               0.00002
+        //          120                       12                    0.3                   0.005               0.00009
+        //          300                      170                    1.6                   0.012               0.0009
+        //          600                     1200                    5.7                   0.024               0.006
+        //          900                     3600                   10.6                   0.034               0.02
+        // the expected maximum residuals with respect to these models are about 0.4m, 0.5mm/s, 8μm/s² and 3e-6°
+        PolynomialFunction pModel = new PolynomialFunction(new double[] {
+            1.5664070631933846e-01,  7.5504722733047560e-03, -8.2460562451009510e-05,
+            6.9546332080305580e-06, -1.7045365367533077e-09, -4.2187860791066264e-13
+        });
+        PolynomialFunction vModel = new PolynomialFunction(new double[] {
+           -3.5472364019908720e-04,  1.6568103861124980e-05,  1.9637913327830596e-05,
+           -3.4248792843039766e-09, -5.6565135131014254e-12,  1.4730170946808630e-15
+        });
+        PolynomialFunction aModel = new PolynomialFunction(new double[] {
+            3.0731707577766896e-06,  3.9770746399850350e-05,  1.9779039254538660e-09,
+            8.0263328220724900e-12, -1.5600835252366078e-14,  1.1785257001549687e-18
+        });
+        PolynomialFunction rModel = new PolynomialFunction(new double[] {
+           -2.7689062063188115e-06,  1.7406542538258334e-07,  2.5109795349592287e-09,
+            2.0399322661074575e-11,  9.9126348912426750e-15, -3.5015638905729510e-18
+        });
 
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field,new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
@@ -187,54 +217,41 @@ public class FieldSpacecraftStateTest {
 
         FieldBodyCenterPointing<T> attitudeLaw = new FieldBodyCenterPointing<T>(orbit.getFrame(), earth);
 
-        FieldKeplerianPropagator<T> propagator =
-            new FieldKeplerianPropagator<T>(orbit, attitudeLaw, mu, mass);
+        FieldPropagator<T> propagator =
+            new FieldEcksteinHechlerPropagator<>(orbit, attitudeLaw, mass,
+                                                 ae, mu, c20, c30, c40, c50, c60);
 
         FieldAbsoluteDate<T> centerDate = orbit.getDate().shiftedBy(100.0);
 
         FieldSpacecraftState<T> centerState = propagator.propagate(centerDate);
 
-        AbsoluteDate rCenterDate = centerDate.toAbsoluteDate();
-        SpacecraftState rCenterState = rPropagator.propagate(rCenterDate);
-
-
-        for (T dt = field.getZero(); dt.getReal() < 1100.0; dt =dt.add(5)) {
-
-
-
-            SpacecraftState         rShifted = rCenterState.shiftedBy(dt.getReal());
-            SpacecraftState         rPropagated = rPropagator.propagate(centerDate.shiftedBy(dt).toAbsoluteDate());
+        double maxResidualP = 0;
+        double maxResidualV = 0;
+        double maxResidualA = 0;
+        double maxResidualR = 0;
+        for (T dt = field.getZero(); dt.getReal() < 900.0; dt = dt.add(5)) {
 
             FieldSpacecraftState<T> shifted = centerState.shiftedBy(dt);
             FieldSpacecraftState<T> propagated = propagator.propagate(centerDate.shiftedBy(dt));
+            FieldPVCoordinates<T> dpv = new FieldPVCoordinates<>(propagated.getPVCoordinates(), shifted.getPVCoordinates());
 
 
-
-            PVCoordinates        rdpv = new PVCoordinates(rPropagated.getPVCoordinates(),rShifted.getPVCoordinates());
-            FieldPVCoordinates<T> dpv = new FieldPVCoordinates<T>(propagated.getPVCoordinates(), shifted.getPVCoordinates());
-
-
-            double residualP = rdpv.getPosition().getNorm()     - dpv.getPosition().getNorm().getReal();
-            double residualV = rdpv.getVelocity().getNorm()     - dpv.getVelocity().getNorm().getReal();
-            double residualA = rdpv.getAcceleration().getNorm() - dpv.getAcceleration().getNorm().getReal();
-            double residualR =  FastMath.toDegrees(Rotation.     distance(rShifted.getAttitude().getRotation(),
-                                                                     rPropagated.getAttitude().getRotation())) -
-                                FastMath.toDegrees(FieldRotation.distance(shifted.getAttitude().getRotation(),
-                                                                    propagated.getAttitude().getRotation()).getReal());
-            Assert.assertEquals(0, residualP, 5e-4);
-            Assert.assertEquals(0, residualV, 5e-4);
-            Assert.assertEquals(0, residualA, 5e-4);
-            Assert.assertEquals(0, residualR, 5e-4);
-
-
+            double residualP = pModel.value(dt.getReal()) - dpv.getPosition().getNorm().getReal();
+            double residualV = vModel.value(dt.getReal()) - dpv.getVelocity().getNorm().getReal();
+            double residualA = aModel.value(dt.getReal()) - dpv.getAcceleration().getNorm().getReal();
+            double residualR = rModel.value(dt.getReal()) -
+                               FastMath.toDegrees(FieldRotation.distance(shifted.getAttitude().getRotation(),
+                                                                         propagated.getAttitude().getRotation()).getReal());
+            maxResidualP = FastMath.max(maxResidualP, FastMath.abs(residualP));
+            maxResidualV = FastMath.max(maxResidualV, FastMath.abs(residualV));
+            maxResidualA = FastMath.max(maxResidualA, FastMath.abs(residualA));
+            maxResidualR = FastMath.max(maxResidualR, FastMath.abs(residualR));
 
         }
 
-
-
-
-
-
+        Assert.assertEquals(0.40,   maxResidualP, 0.01);
+        Assert.assertEquals(4.9e-4, maxResidualV, 1.0e-5);
+        Assert.assertEquals(2.8e-6, maxResidualR, 1.0e-1);
 
     }
 
@@ -469,13 +486,12 @@ public class FieldSpacecraftStateTest {
         Utils.setDataRoot("regular-data");
         mu  = 3.9860047e14;
 
-        rMass = 2500;
-        double a = 7187990.1979844316;
-        double  e =0.5e-4;
-        double i =     1.7105407051081795;
+        double a     = 7187990.1979844316;
+        double e     = 0.5e-4;
+        double i     = 1.7105407051081795;
         double omega = 1.9674147913622104;
         double OMEGA = FastMath.toRadians(261);
-        double lv =    0;
+        double lv    =    0;
 
         rDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
@@ -485,10 +501,6 @@ public class FieldSpacecraftStateTest {
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        rAttitudeLaw = new BodyCenterPointing(rOrbit.getFrame(), earth);
-        rPropagator =
-            new KeplerianPropagator(rOrbit, rAttitudeLaw, mu, rMass);
-
         } catch (OrekitException oe) {
 
             Assert.fail(oe.getLocalizedMessage());
@@ -497,22 +509,8 @@ public class FieldSpacecraftStateTest {
 
     private AbsoluteDate rDate;
     private double mu;
-    private double rMass;
     private Orbit rOrbit;
-    private AttitudeProvider rAttitudeLaw;
-    private Propagator rPropagator;
     private OneAxisEllipsoid earth;
 
 }
-
-
-
-
-
-
-
-
-
-
-
 

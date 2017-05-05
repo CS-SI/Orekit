@@ -21,6 +21,18 @@
   </properties>
   <body>
     <release version="9.0" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added derivatives to orbits computed from non-Keplerian models, and use
+        these derivatives when available. This improves shiftedBy() accuracy,
+        and as a consequence also the accuracy of EventShifter. As example, when
+        comparing shiftedBy and Eckstein-Hechler model, previously shifted position
+        errors were 30m after 60s, 100m after 120s and 600m after 300s, now the
+        shifted position errors are 2m after 60s, 12m after 120s and 170m after 300s.
+      </action>
+      <action dev="luc" type="fix">
+        Preserved non-Keplerian acceleration in spacecraft state when computed from numerical propagator.
+        Fixes issue #183.
+      </action>
       <action dev="luc" type="fix">
         Fixed accuracy of FieldAbsoluteDate.
         Fixes issue #337.

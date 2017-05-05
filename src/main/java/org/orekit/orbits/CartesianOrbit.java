@@ -466,16 +466,23 @@ public class CartesianOrbit extends Orbit {
         final Vector3D shiftedP = new Vector3D(x, u, y, v);
         final Vector3D shiftedV = new Vector3D(xDot, u, yDot, v);
         if (hasNonKeplerianAcceleration) {
-            // we need to take apart Keplerian and non-Keplerian accelerations
-            // we consider the non-Keplerian part doesn't change,
-            // we computed it by subtracting the initial Keplerian acceleration
-            // from the initial acceleration, then we add it to the shifted
-            // Keplerian acceleration
-            final double   newR2    = x * x + y * y;
-            final Vector3D shiftedA = new Vector3D(1, getPVCoordinates().getAcceleration(),
-                                                  +getMu() / (r2 * r), pvP,
-                                                  -getMu() / (newR2 * FastMath.sqrt(newR2)), shiftedP);
-            return new PVCoordinates(shiftedP, shiftedV, shiftedA);
+
+            // extract non-Keplerian part of the initial acceleration
+            final Vector3D nonKeplerianAcceleration = new Vector3D(1, getPVCoordinates().getAcceleration(),
+                                                                   getMu() / (r2 * r), pvP);
+
+            // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
+            final Vector3D fixedP   = new Vector3D(1, shiftedP,
+                                                   0.5 * dt * dt, nonKeplerianAcceleration);
+            final double   fixedR2 = fixedP.getNormSq();
+            final double   fixedR  = FastMath.sqrt(fixedR2);
+            final Vector3D fixedV  = new Vector3D(1, shiftedV,
+                                                  dt, nonKeplerianAcceleration);
+            final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), shiftedP,
+                                                  1, nonKeplerianAcceleration);
+
+            return new PVCoordinates(fixedP, fixedV, fixedA);
+
         } else {
             // don't include acceleration,
             // so the shifted orbit is not considered to have derivatives
@@ -532,16 +539,23 @@ public class CartesianOrbit extends Orbit {
         final Vector3D shiftedP = new Vector3D(x, p, y, q);
         final Vector3D shiftedV = new Vector3D(xDot, p, yDot, q);
         if (hasNonKeplerianAcceleration) {
-            // we need to take apart Keplerian and non-Keplerian accelerations
-            // we consider the non-Keplerian part doesn't change,
-            // we computed it by subtracting the initial Keplerian acceleration
-            // from the initial acceleration, then we add it to the shifted
-            // Keplerian acceleration
-            final double   newR2    = x * x + y * y;
-            final Vector3D shiftedA = new Vector3D(1, getPVCoordinates().getAcceleration(),
-                                                   +getMu() / (r2 * r), pvP,
-                                                   -getMu() / (newR2 * FastMath.sqrt(newR2)), shiftedP);
-            return new PVCoordinates(shiftedP, shiftedV, shiftedA);
+
+            // extract non-Keplerian part of the initial acceleration
+            final Vector3D nonKeplerianAcceleration = new Vector3D(1, getPVCoordinates().getAcceleration(),
+                                                                   getMu() / (r2 * r), pvP);
+
+            // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
+            final Vector3D fixedP   = new Vector3D(1, shiftedP,
+                                                   0.5 * dt * dt, nonKeplerianAcceleration);
+            final double   fixedR2 = fixedP.getNormSq();
+            final double   fixedR  = FastMath.sqrt(fixedR2);
+            final Vector3D fixedV  = new Vector3D(1, shiftedV,
+                                                  dt, nonKeplerianAcceleration);
+            final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), shiftedP,
+                                                  1, nonKeplerianAcceleration);
+
+            return new PVCoordinates(fixedP, fixedV, fixedA);
+
         } else {
             // don't include acceleration,
             // so the shifted orbit is not considered to have derivatives

@@ -481,7 +481,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T r2      = pvP.getNormSq();
         final T r       = r2.sqrt();
         final T rV2OnMu = r.multiply(pvV.getNormSq()).divide(getMu());
-        final T a       = getA();
+        final T a       = r.divide(rV2OnMu.negate().add(2));
         final T eSE     = FieldVector3D.dotProduct(pvP, pvV).divide(a.multiply(getMu()).sqrt());
         final T eCE     = rV2OnMu.subtract(1);
         final T e2      = eCE.multiply(eCE).add(eSE.multiply(eSE));
@@ -489,44 +489,53 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         // we can use any arbitrary reference 2D frame in the orbital plane
         // in order to simplify some equations below, we use the current position as the u axis
         final FieldVector3D<T> u     = pvP.normalize();
-        final FieldVector3D<T> v     = FieldVector3D.crossProduct(getPVCoordinates().getMomentum(), u).normalize();
+        final FieldVector3D<T> v     = FieldVector3D.crossProduct(FieldVector3D.crossProduct(pvP, pvV), u).normalize();
 
         // the following equations rely on the specific choice of u explained above,
         // some coefficients that vanish to 0 in this case have already been removed here
         final T ex      = eCE.subtract(e2).multiply(a).divide(r);
-        final T ey      = one.subtract(e2).sqrt().negate().multiply(eSE).multiply(a).divide(r);
-        final T beta    = one.divide(one.subtract(e2).sqrt().add(1));
+        final T s       = e2.negate().add(1).sqrt();
+        final T ey      = s.negate().multiply(eSE).multiply(a).divide(r);
+        final T beta    = s.add(1).reciprocal();
         final T thetaE0 = ey.add(eSE.multiply(beta).multiply(ex)).atan2(r.divide(a).add(ex).subtract(eSE.multiply(beta).multiply(ey)));
         final T thetaM0 = thetaE0.subtract(ex.multiply(thetaE0.sin())).add(ey.multiply(thetaE0.cos()));
 
         // compute in-plane shifted eccentric argument
-        final T thetaM1 = thetaM0.add(getKeplerianMeanMotion().multiply(dt));
-        final T thetaE1 = meanToEccentric(thetaM1, ex, ey);
-        final T cTE     = thetaE1.cos();
-        final T sTE     = thetaE1.sin();
+        final T sqrtMmuOA = a.reciprocal().multiply(getMu()).sqrt();
+        final T thetaM1   = thetaM0.add(sqrtMmuOA.divide(a).multiply(dt));
+        final T thetaE1   = meanToEccentric(thetaM1, ex, ey);
+        final T cTE       = thetaE1.cos();
+        final T sTE       = thetaE1.sin();
 
         // compute shifted in-plane cartesian coordinates
         final T exey   = ex.multiply(ey);
         final T exCeyS = ex.multiply(cTE).add(ey.multiply(sTE));
-        final T x      = a.multiply(one.subtract(beta.multiply(ey).multiply(ey)).multiply(cTE).add(beta.multiply(exey).multiply(sTE)).subtract(ex));
-        final T y      = a.multiply(one.subtract(beta.multiply(ex).multiply(ex)).multiply(sTE).add(beta.multiply(exey).multiply(cTE)).subtract(ey));
-        final T factor = zero.add(getMu()).divide(a).sqrt().divide(one.subtract(exCeyS));
+        final T x      = a.multiply(beta.multiply(ey).multiply(ey).negate().add(1).multiply(cTE).add(beta.multiply(exey).multiply(sTE)).subtract(ex));
+        final T y      = a.multiply(beta.multiply(ex).multiply(ex).negate().add(1).multiply(sTE).add(beta.multiply(exey).multiply(cTE)).subtract(ey));
+        final T factor = sqrtMmuOA.divide(exCeyS.negate().add(1));
         final T xDot   = factor.multiply(beta.multiply(ey).multiply(exCeyS).subtract(sTE));
         final T yDot   = factor.multiply(cTE.subtract(beta.multiply(ex).multiply(exCeyS)));
 
-        final FieldVector3D<T> shiftedP = new FieldVector3D<T>(x, u, y, v);
-        final FieldVector3D<T> shiftedV = new FieldVector3D<T>(xDot, u, yDot, v);
+        final FieldVector3D<T> shiftedP = new FieldVector3D<>(x, u, y, v);
+        final FieldVector3D<T> shiftedV = new FieldVector3D<>(xDot, u, yDot, v);
         if (hasNonKeplerianAcceleration) {
-            // we need to take apart Keplerian and non-Keplerian accelerations
-            // we consider the non-Keplerian part doesn't change,
-            // we computed it by subtracting the initial Keplerian acceleration
-            // from the initial acceleration, then we add it to the shifted
-            // Keplerian acceleration
-            final T   newR2       = x.multiply(x).add(y.multiply(y));
-            final FieldVector3D<T> shiftedA = new FieldVector3D<>(one, getPVCoordinates().getAcceleration(),
-                                                  r2.multiply(r).reciprocal().multiply(+getMu()), pvP,
-                                                  newR2.multiply(newR2.sqrt()).reciprocal().multiply(-getMu()), shiftedP);
-            return new FieldPVCoordinates<>(shiftedP, shiftedV, shiftedA);
+
+            // extract non-Keplerian part of the initial acceleration
+            final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(one, getPVCoordinates().getAcceleration(),
+                                                                                  r.multiply(r2).reciprocal().multiply(+getMu()), pvP);
+
+            // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
+            final FieldVector3D<T> fixedP   = new FieldVector3D<>(one, shiftedP,
+                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+            final T                fixedR2 = fixedP.getNormSq();
+            final T                fixedR  = fixedR2.sqrt();
+            final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, shiftedV,
+                                                                 dt, nonKeplerianAcceleration);
+            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR.multiply(fixedR2).reciprocal().multiply(-getMu()), shiftedP,
+                                                                 one, nonKeplerianAcceleration);
+
+            return new FieldPVCoordinates<>(fixedP, fixedV, fixedA);
+
         } else {
             // don't include acceleration,
             // so the shifted orbit is not considered to have derivatives
@@ -583,16 +592,23 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final FieldVector3D<T> shiftedP = new FieldVector3D<T>(x, p, y, q);
         final FieldVector3D<T> shiftedV = new FieldVector3D<T>(xDot, p, yDot, q);
         if (hasNonKeplerianAcceleration) {
-            // we need to take apart Keplerian and non-Keplerian accelerations
-            // we consider the non-Keplerian part doesn't change,
-            // we computed it by subtracting the initial Keplerian acceleration
-            // from the initial acceleration, then we add it to the shifted
-            // Keplerian acceleration
-            final T   newR2       = x.multiply(x).add(y.multiply(y));
-            final FieldVector3D<T> shiftedA = new FieldVector3D<>(one, getPVCoordinates().getAcceleration(),
-                                                  r2.multiply(r).reciprocal().multiply(+getMu()), pvP,
-                                                  newR2.multiply(newR2.sqrt()).reciprocal().multiply(-getMu()), shiftedP);
-            return new FieldPVCoordinates<>(shiftedP, shiftedV, shiftedA);
+
+            // extract non-Keplerian part of the initial acceleration
+            final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(one, getPVCoordinates().getAcceleration(),
+                                                                                  r.multiply(r2).reciprocal().multiply(-getMu()), pvP);
+
+            // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
+            final FieldVector3D<T> fixedP   = new FieldVector3D<>(one, shiftedP,
+                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+            final T                fixedR2 = fixedP.getNormSq();
+            final T                fixedR  = fixedR2.sqrt();
+            final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, shiftedV,
+                                                                 dt, nonKeplerianAcceleration);
+            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR.multiply(fixedR2).reciprocal().multiply(-getMu()), shiftedP,
+                                                                 one, nonKeplerianAcceleration);
+
+            return new FieldPVCoordinates<>(fixedP, fixedV, fixedA);
+
         } else {
             // don't include acceleration,
             // so the shifted orbit is not considered to have derivatives
