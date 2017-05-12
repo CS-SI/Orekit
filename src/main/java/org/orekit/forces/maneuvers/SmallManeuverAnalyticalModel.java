@@ -67,9 +67,6 @@ import org.orekit.utils.Constants;
  * org.orekit.propagation.analytical.J2DifferentialEffect J2DifferentialEffect}
  * must be used together with an instance of this class.
  * </p>
- * <p>
- * The model also explicitly filters out non-Keplerian derivatives from orbits.
- * </p>
  * @author Luc Maisonobe
  */
 public class SmallManeuverAnalyticalModel
@@ -330,9 +327,8 @@ public class SmallManeuverAnalyticalModel
         if (j0Dot == null) {
 
             j0Dot = new double[6][3];
-            final Orbit orbitWithoutDerivatives = removeDerivatives(state0.getOrbit());
-            final double dt = 1.0e-5 / orbitWithoutDerivatives.getKeplerianMeanMotion();
-            final Orbit orbit = type.convertType(orbitWithoutDerivatives);
+            final double dt = 1.0e-5 / state0.getOrbit().getKeplerianMeanMotion();
+            final Orbit orbit = type.convertType(state0.getOrbit());
 
             // compute shifted Jacobians
             final double[][] j0m1 = new double[6][6];
@@ -352,18 +348,6 @@ public class SmallManeuverAnalyticalModel
 
         }
 
-    }
-
-    /** Remove derivatives from an orbit.
-     * @param orbit initial orbit
-     * @return orbit without derivatives
-     */
-    private static Orbit removeDerivatives(final Orbit orbit) {
-        final OrbitType type = orbit.getType();
-        final double[] stateVector = new double[6];
-        type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-        return type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                    orbit.getDate(), orbit.getMu(), orbit.getFrame());
     }
 
     /** Update a spacecraft mass due to maneuver.

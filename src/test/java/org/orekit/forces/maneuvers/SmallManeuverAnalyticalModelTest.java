@@ -263,7 +263,7 @@ public class SmallManeuverAnalyticalModelTest {
                     model.getJacobian(orbitWithout, positionAngle, jacobian);
 
                     for (int j = 0; j < orbitGradient.length; ++j) {
-                        Assert.assertEquals(orbitGradient[j], jacobian[j][i], 7.0e-6 * FastMath.abs(orbitGradient[j]));
+                        Assert.assertEquals(orbitGradient[j], jacobian[j][i], 1.6e-4 * FastMath.abs(orbitGradient[j]));
                     }
 
                 }
