@@ -173,8 +173,8 @@ public class AdapterPropagatorTest {
              t = t.shiftedBy(300.0)) {
             PVCoordinates pvWithout  = withoutManeuver.getPVCoordinates(t, heo.getFrame());
             PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, heo.getFrame());
-            double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
-            Assert.assertEquals(0, revertError, 180.0);
+            double revertError       = Vector3D.distance(pvWithout.getPosition(), pvReverted.getPosition());
+            Assert.assertEquals(0, revertError, 2.5e-5 * heo.getA());
             Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
             Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
             Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);

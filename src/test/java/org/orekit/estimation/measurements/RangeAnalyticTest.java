@@ -60,7 +60,7 @@ public class RangeAnalyticTest {
             System.out.println("\nTest Range Analytical Values\n");
         }
         // Run test
-        this.genericTestValues(printResults);
+        genericTestValues(printResults);
     }
 
     /**
@@ -78,7 +78,8 @@ public class RangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences = false;
-        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
+                                    3.5e-8, 1.4e-7, 7.8e-6, 3.5e-8, 1.4e-7, 7.8e-6);
     }
 
     /**
@@ -96,7 +97,8 @@ public class RangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences = true;
-        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
+                                    3.5e-8, 1.4e-7, 7.4e-6, 3.3e-4, 1.7e-3, 8.1e-2);
     }
 
     /**
@@ -114,7 +116,8 @@ public class RangeAnalyticTest {
         // Run test
         boolean isModifier = true;
         boolean isFiniteDifferences = false;
-        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
+                                    4.1e-7, 1.8e-6, 6.3e-5, 3.5e-8, 1.4e-7, 7.7e-6);
     }
 
     /**
@@ -132,7 +135,8 @@ public class RangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences = true;
-        this.genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestStateDerivatives(isModifier, isFiniteDifferences, printResults,
+                                    3.5e-8, 1.4e-7, 7.4e-6, 3.3e-4, 1.7e-3, 8.1e-2);
     }
 
     /**
@@ -150,7 +154,7 @@ public class RangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences = false;
-        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
     }
 
     /**
@@ -168,7 +172,7 @@ public class RangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences = true;
-        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
     }
 
     /**
@@ -186,7 +190,7 @@ public class RangeAnalyticTest {
         // Run test
         boolean isModifier = true;
         boolean isFiniteDifferences = false;
-        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
     }
 
     /**
@@ -204,7 +208,7 @@ public class RangeAnalyticTest {
         // Run test
         boolean isModifier = false;
         boolean isFiniteDifferences = true;
-        this.genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
+        genericTestParameterDerivatives(isModifier, isFiniteDifferences, printResults);
     }
 
     /**
@@ -331,8 +335,10 @@ public class RangeAnalyticTest {
      * @param printResults Print the results ?
      * @throws OrekitException
      */
-    void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults)
-                    throws OrekitException {
+    void genericTestStateDerivatives(final boolean isModifier, final boolean isFiniteDifferences, final boolean printResults,
+                                     final double refErrorsPMedian, final double refErrorsPMean, final double refErrorsPMax,
+                                     final double refErrorsVMedian, final double refErrorsVMean, final double refErrorsVMax)
+        throws OrekitException {
 
         Context context = EstimationTestUtils.eccentricContext();
 
@@ -484,37 +490,7 @@ public class RangeAnalyticTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        // Assert the results / max values depend on the test
-        double refErrorsPMedian, refErrorsPMean, refErrorsPMax;
-        double refErrorsVMedian, refErrorsVMean, refErrorsVMax;
-
         // Reference comparison with Range class
-        if (!isFiniteDifferences) {
-
-            if (!isModifier) {
-                refErrorsPMedian = 4.7e-11;
-                refErrorsPMean   = 4.7e-11;
-                refErrorsPMax    = 5.1e-11;
-            } else {
-                refErrorsPMedian = 4.1e-07;
-                refErrorsPMean   = 1.8e-06;
-                refErrorsPMax    = 6.3e-05;
-            }
-            refErrorsVMedian = 4.7e-11;
-            refErrorsVMean   = 4.7e-11;
-            refErrorsVMax    = 5.1e-11;
-        }
-        // Reference comparison with finite differences
-        else {
-            refErrorsPMedian = 1.2e-09;
-            refErrorsPMean   = 8.0e-09;
-            refErrorsPMax    = 3.1e-07;
-
-            refErrorsVMedian = 3.1e-04;
-            refErrorsVMean   = 1.7e-03;
-            refErrorsVMax    = 8.1e-02;
-        }
-
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
         Assert.assertEquals(0.0, errorsPMean, refErrorsPMean);
         Assert.assertEquals(0.0, errorsPMax, refErrorsPMax);

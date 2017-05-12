@@ -366,7 +366,7 @@ public class TurnAroundRangeTest {
         refErrorsPMax    = 2.3e-06;
 
         refErrorsVMedian = 1.5e-04;
-        refErrorsVMean   = 4.1e-04;
+        refErrorsVMean   = 4.7e-04;
         refErrorsVMax    = 5.3e-03;
 
         Assert.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
@@ -537,7 +537,7 @@ public class TurnAroundRangeTest {
         double refErrorQSMedian, refErrorQSMean, refErrorQSMax;
 
         // Finite differences reference values
-        refErrorQMMedian = 1.2e-10;
+        refErrorQMMedian = 1.3e-10;
         refErrorQMMean   = 2.3e-10;
         refErrorQMMax    = 3.3e-09;
 

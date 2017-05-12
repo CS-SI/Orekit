@@ -101,7 +101,7 @@ public class ModelTest {
         for (ObservedMeasurement<?> measurement : measurements) {
             for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
-                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.4e-7);
+                Assert.assertEquals(0.0, value.getFirst().getEntry(index++), 1.6e-7);
             }
         }
         Assert.assertEquals(index, value.getFirst().getDimension());
