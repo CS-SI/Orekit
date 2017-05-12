@@ -24,6 +24,7 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
 import org.hipparchus.exception.MathIllegalStateException;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -81,7 +82,10 @@ public class KeplerianOrbit extends Orbit {
     private static final long serialVersionUID = 20170414L;
 
     /** Factory for first time derivatives. */
-    private static final DSFactory FACTORY = new DSFactory(1, 1);
+    private static final DSFactory FACTORY_1 = new DSFactory(1, 1);
+
+    /** Factory for second time derivatives. */
+    private static final DSFactory FACTORY_2 = new DSFactory(1, 2);
 
     /** First coefficient to compute Kepler equation solver starter. */
     private static final double A;
@@ -195,20 +199,20 @@ public class KeplerianOrbit extends Orbit {
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a, e);
         }
 
-        this.a       =    a;
-        this.aDot    =    aDot;
-        this.e       =    e;
-        this.eDot    =    eDot;
-        this.i       =    i;
-        this.iDot    =    iDot;
-        this.pa      =   pa;
-        this.paDot   =   paDot;
+        this.a       = a;
+        this.aDot    = aDot;
+        this.e       = e;
+        this.eDot    = eDot;
+        this.i       = i;
+        this.iDot    = iDot;
+        this.pa      = pa;
+        this.paDot   = paDot;
         this.raan    = raan;
         this.raanDot = raanDot;
 
         if (hasDerivatives()) {
-            final DerivativeStructure eDS        = FACTORY.build(e, eDot);
-            final DerivativeStructure anomalyDS  = FACTORY.build(anomaly,  anomalyDot);
+            final DerivativeStructure eDS        = FACTORY_1.build(e, eDot);
+            final DerivativeStructure anomalyDS  = FACTORY_1.build(anomaly,  anomalyDot);
             final DerivativeStructure vDS;
             switch (type) {
                 case MEAN :
@@ -341,8 +345,8 @@ public class KeplerianOrbit extends Orbit {
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final double MDot = getKeplerianMeanMotion() +
                                 jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
-            final DerivativeStructure eDS = FACTORY.build(e, eDot);
-            final DerivativeStructure MDS = FACTORY.build(getMeanAnomaly(), MDot);
+            final DerivativeStructure eDS = FACTORY_1.build(e, eDot);
+            final DerivativeStructure MDS = FACTORY_1.build(getMeanAnomaly(), MDot);
             final DerivativeStructure vDS = (a < 0) ?
                                             FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(MDS, eDS), eDS) :
                                             FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(MDS, eDS), eDS);
@@ -487,8 +491,8 @@ public class KeplerianOrbit extends Orbit {
      * @since 9.0
      */
     public double getEccentricAnomalyDot() {
-        final DerivativeStructure eDS = FACTORY.build(e, eDot);
-        final DerivativeStructure vDS = FACTORY.build(v, vDot);
+        final DerivativeStructure eDS = FACTORY_1.build(e, eDot);
+        final DerivativeStructure vDS = FACTORY_1.build(v, vDot);
         final DerivativeStructure EDS = (a < 0) ?
                                         FieldKeplerianOrbit.trueToHyperbolicEccentric(vDS, eDS) :
                                         FieldKeplerianOrbit.trueToEllipticEccentric(vDS, eDS);
@@ -509,8 +513,8 @@ public class KeplerianOrbit extends Orbit {
      * @since 9.0
      */
     public double getMeanAnomalyDot() {
-        final DerivativeStructure eDS = FACTORY.build(e, eDot);
-        final DerivativeStructure vDS = FACTORY.build(v, vDot);
+        final DerivativeStructure eDS = FACTORY_1.build(e, eDot);
+        final DerivativeStructure vDS = FACTORY_1.build(v, vDot);
         final DerivativeStructure MDS = (a < 0) ?
                                         FieldKeplerianOrbit.hyperbolicEccentricToMean(FieldKeplerianOrbit.trueToHyperbolicEccentric(vDS, eDS), eDS) :
                                         FieldKeplerianOrbit.ellipticEccentricToMean(FieldKeplerianOrbit.trueToEllipticEccentric(vDS, eDS), eDS);
@@ -748,10 +752,10 @@ public class KeplerianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getEquinoctialExDot() {
-        final DerivativeStructure eDS    = FACTORY.build(e,    eDot);
-        final DerivativeStructure paDS   = FACTORY.build(pa,   paDot);
-        final DerivativeStructure raanDS = FACTORY.build(raan, raanDot);
-        return eDS.multiply(paDS.add(raanDS).cos()).getPartialDerivative(1);
+        final double paPraan = pa + raan;
+        final double cos     = FastMath.cos(paPraan);
+        final double sin     = FastMath.sin(paPraan);
+        return eDot * cos - e * sin * (paDot + raanDot);
     }
 
     /** {@inheritDoc} */
@@ -761,10 +765,10 @@ public class KeplerianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getEquinoctialEyDot() {
-        final DerivativeStructure eDS    = FACTORY.build(e,    eDot);
-        final DerivativeStructure paDS   = FACTORY.build(pa,   paDot);
-        final DerivativeStructure raanDS = FACTORY.build(raan, raanDot);
-        return eDS.multiply(paDS.add(raanDS).sin()).getPartialDerivative(1);
+        final double paPraan = pa + raan;
+        final double cos     = FastMath.cos(paPraan);
+        final double sin     = FastMath.sin(paPraan);
+        return eDot * sin + e * cos * (paDot + raanDot);
     }
 
     /** {@inheritDoc} */
@@ -773,7 +777,7 @@ public class KeplerianOrbit extends Orbit {
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        return FastMath.cos(raan) * FastMath.tan(i / 2);
+        return FastMath.cos(raan) * FastMath.tan(0.5 * i);
     }
 
     /** {@inheritDoc} */
@@ -782,9 +786,10 @@ public class KeplerianOrbit extends Orbit {
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        final DerivativeStructure iDS    = FACTORY.build(i,    iDot);
-        final DerivativeStructure raanDS = FACTORY.build(raan, raanDot);
-        return raanDS.cos().multiply(iDS.multiply(0.5).tan()).getPartialDerivative(1);
+        final double cosRaan = FastMath.cos(raan);
+        final double sinRaan = FastMath.sin(raan);
+        final double tan     = FastMath.tan(0.5 * i);
+        return 0.5 * (1 + tan * tan) * cosRaan * iDot - tan * sinRaan * raanDot;
     }
 
     /** {@inheritDoc} */
@@ -793,7 +798,7 @@ public class KeplerianOrbit extends Orbit {
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        return  FastMath.sin(raan) * FastMath.tan(i / 2);
+        return  FastMath.sin(raan) * FastMath.tan(0.5 * i);
     }
 
     /** {@inheritDoc} */
@@ -802,9 +807,10 @@ public class KeplerianOrbit extends Orbit {
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
-        final DerivativeStructure iDS    = FACTORY.build(i,    iDot);
-        final DerivativeStructure raanDS = FACTORY.build(raan, raanDot);
-        return raanDS.sin().multiply(iDS.multiply(0.5).tan()).getPartialDerivative(1);
+        final double cosRaan = FastMath.cos(raan);
+        final double sinRaan = FastMath.sin(raan);
+        final double tan     = FastMath.tan(0.5 * i);
+        return 0.5 * (1 + tan * tan) * sinRaan * iDot + tan * cosRaan * raanDot;
     }
 
     /** {@inheritDoc} */
@@ -840,28 +846,71 @@ public class KeplerianOrbit extends Orbit {
     /** {@inheritDoc} */
     protected TimeStampedPVCoordinates initPVCoordinates() {
 
-        // preliminary variables
-        final double cosRaan = FastMath.cos(raan);
-        final double sinRaan = FastMath.sin(raan);
-        final double cosPa   = FastMath.cos(pa);
-        final double sinPa   = FastMath.sin(pa);
-        final double cosI    = FastMath.cos(i);
-        final double sinI    = FastMath.sin(i);
+        if (hasDerivatives()) {
 
-        final double crcp    = cosRaan * cosPa;
-        final double crsp    = cosRaan * sinPa;
-        final double srcp    = sinRaan * cosPa;
-        final double srsp    = sinRaan * sinPa;
+            final DerivativeStructure aDS2    = FACTORY_2.build(a,    aDot,    0.0);
+            final DerivativeStructure eDS2    = FACTORY_2.build(e,    eDot,    0.0);
+            final DerivativeStructure iDS2    = FACTORY_2.build(i,    iDot,    0.0);
+            final DerivativeStructure paDS2   = FACTORY_2.build(pa,   paDot,   0.0);
+            final DerivativeStructure raanDS2 = FACTORY_2.build(raan, raanDot, 0.0);
 
-        // reference axes defining the orbital plane
-        final Vector3D p = new Vector3D( crcp - cosI * srsp,  srcp + cosI * crsp, sinI * sinPa);
-        final Vector3D q = new Vector3D(-crsp - cosI * srcp, -srsp + cosI * crcp, sinI * cosPa);
+            // we have v and dv/dt and we know d²v/dt² is *not* 0, even in Keplerian motion
+            // to be consistent with the zero second derivatives above, we assume d²M/dt² = 0
+            // we have to convert back and forth to retrieve a consistent second derivative for v
+            final DerivativeStructure eDS1 = FACTORY_1.build(e, eDot);
+            final DerivativeStructure vDS1 = FACTORY_1.build(v, vDot);
+            final DerivativeStructure mDS1 = (a < 0) ?
+                                             FieldKeplerianOrbit.hyperbolicEccentricToMean(FieldKeplerianOrbit.trueToHyperbolicEccentric(vDS1, eDS1), eDS1) :
+                                             FieldKeplerianOrbit.ellipticEccentricToMean(FieldKeplerianOrbit.trueToEllipticEccentric(vDS1, eDS1), eDS1);
+            final DerivativeStructure mDS2 = FACTORY_2.build(mDS1.getValue(),
+                                                            mDS1.getPartialDerivative(1),
+                                                            0.0);
+            final DerivativeStructure vDS2 = (a < 0) ?
+                                             FieldKeplerianOrbit.hyperbolicEccentricToTrue(FieldKeplerianOrbit.meanToHyperbolicEccentric(mDS2, eDS2), eDS2) :
+                                             FieldKeplerianOrbit.ellipticEccentricToTrue(FieldKeplerianOrbit.meanToEllipticEccentric(mDS2, eDS2), eDS2);
 
-        return (a > 0) ? initPVCoordinatesElliptical(p, q) : initPVCoordinatesHyperbolic(p, q);
+            final FieldVector3D<DerivativeStructure> pDS = (a < 0) ?
+                FieldKeplerianOrbit.hyperbolicKeplerianToPosition(aDS2, eDS2, iDS2, paDS2, raanDS2, vDS2, getMu()) :
+                FieldKeplerianOrbit.ellipticKeplerianToPosition(aDS2, eDS2, iDS2, paDS2, raanDS2, vDS2, getMu());
+
+            final Vector3D position     = new Vector3D(pDS.getX().getValue(),
+                                                       pDS.getY().getValue(),
+                                                       pDS.getZ().getValue());
+            final Vector3D velocity     = new Vector3D(pDS.getX().getPartialDerivative(1),
+                                                       pDS.getY().getPartialDerivative(1),
+                                                       pDS.getZ().getPartialDerivative(1));
+            final Vector3D acceleration = new Vector3D(pDS.getX().getPartialDerivative(2),
+                                                       pDS.getY().getPartialDerivative(2),
+                                                       pDS.getZ().getPartialDerivative(2));
+            return new TimeStampedPVCoordinates(getDate(),
+                                                new PVCoordinates(position, velocity, acceleration));
+
+        } else {
+
+            // preliminary variables
+            final double cosRaan = FastMath.cos(raan);
+            final double sinRaan = FastMath.sin(raan);
+            final double cosPa   = FastMath.cos(pa);
+            final double sinPa   = FastMath.sin(pa);
+            final double cosI    = FastMath.cos(i);
+            final double sinI    = FastMath.sin(i);
+
+            final double crcp    = cosRaan * cosPa;
+            final double crsp    = cosRaan * sinPa;
+            final double srcp    = sinRaan * cosPa;
+            final double srsp    = sinRaan * sinPa;
+
+            // reference axes defining the orbital plane
+            final Vector3D p = new Vector3D( crcp - cosI * srsp,  srcp + cosI * crsp, sinI * sinPa);
+            final Vector3D q = new Vector3D(-crsp - cosI * srcp, -srsp + cosI * crcp, sinI * cosPa);
+
+            return (a > 0) ? initPVCoordinatesElliptical(p, q) : initPVCoordinatesHyperbolic(p, q);
+
+        }
 
     }
 
-    /** Initialize the position/velocity coordinates, elliptic case.
+    /** Initialize the position/velocity coordinates, elliptic case, without derivatives.
      * @param p unit vector in the orbital plane pointing towards perigee
      * @param q unit vector in the orbital plane in quadrature with p
      * @return computed position/velocity coordinates
@@ -882,16 +931,18 @@ public class KeplerianOrbit extends Orbit {
         final double xDot   = -sinE * factor;
         final double yDot   =  cosE * s1Me2 * factor;
 
-
         final Vector3D position = new Vector3D(x, p, y, q);
         final double r2 = x * x + y * y;
         final Vector3D velocity = new Vector3D(xDot, p, yDot, q);
+
+        // use Keplerian acceleration only
         final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+
         return new TimeStampedPVCoordinates(getDate(), position, velocity, acceleration);
 
     }
 
-    /** Initialize the position/velocity coordinates, hyperbolic case.
+    /** Initialize the position/velocity coordinates, hyperbolic case, without derivatives.
      * @param p unit vector in the orbital plane pointing towards perigee
      * @param q unit vector in the orbital plane in quadrature with p
      * @return computed position/velocity coordinates
@@ -905,9 +956,17 @@ public class KeplerianOrbit extends Orbit {
         final double posFactor = f / (1 + e * cosV);
         final double velFactor = FastMath.sqrt(getMu() / f);
 
-        final Vector3D position     = new Vector3D( posFactor * cosV, p, posFactor * sinV, q);
-        final Vector3D velocity     = new Vector3D(-velFactor * sinV, p, velFactor * (e + cosV), q);
-        final Vector3D acceleration = new Vector3D(-getMu() / (posFactor * posFactor * posFactor), position);
+        final double   x            =  posFactor * cosV;
+        final double   y            =  posFactor * sinV;
+        final double   r2           =  x * x + y * y;
+        final double   xDot         = -velFactor * sinV;
+        final double   yDot         =  velFactor * (e + cosV);
+        final Vector3D position     = new Vector3D(x, p, y, q);
+        final Vector3D velocity     = new Vector3D(xDot, p, yDot, q);
+
+        // use Keplerian acceleration only
+        final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+
         return new TimeStampedPVCoordinates(getDate(), position, velocity, acceleration);
 
     }

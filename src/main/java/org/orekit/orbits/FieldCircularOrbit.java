@@ -81,7 +81,11 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     extends FieldOrbit<T> {
 
     /** Factory for first time derivatives. */
-    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES =
+    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES_1 =
+                    new HashMap<>();
+
+    /** Factory for second time derivatives. */
+    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES_2 =
                     new HashMap<>();
 
     /** Semi-major axis (m). */
@@ -185,8 +189,9 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
                                                      getClass().getName());
         }
 
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        if (!FACTORIES_1.containsKey(a.getField())) {
+            FACTORIES_1.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+            FACTORIES_2.put(a.getField(), new FDSFactory<>(a.getField(), 1, 2));
         }
 
         this.a       =  a;
@@ -205,7 +210,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
 
         if (hasDerivatives()) {
             @SuppressWarnings("unchecked")
-            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
             final FieldDerivativeStructure<T> exDS    = factory.build(ex,    exDot);
             final FieldDerivativeStructure<T> eyDS    = factory.build(ey,    eyDot);
             final FieldDerivativeStructure<T> alphaDS = factory.build(alpha, alphaDot);
@@ -318,8 +323,9 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         alphaV = eccentricToTrue(y2.add(ey).add(eSE.multiply(beta).multiply(ex)).atan2(x2.add(ex).subtract(eSE.multiply(beta).multiply(ey))),
                                  ex, ey);
 
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        if (!FACTORIES_1.containsKey(a.getField())) {
+            FACTORIES_1.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+            FACTORIES_2.put(a.getField(), new FDSFactory<>(a.getField(), 1, 2));
         }
 
         if (hasNonKeplerianAcceleration(pvCoordinates, mu)) {
@@ -344,7 +350,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
             final T alphaMDot = getKeplerianMeanMotion().
                                 add(jacobian[5][3].multiply(aX)).add(jacobian[5][4].multiply(aY)).add(jacobian[5][5].multiply(aZ));
             @SuppressWarnings("unchecked")
-            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
             final FieldDerivativeStructure<T> exDS     = factory.build(ex, exDot);
             final FieldDerivativeStructure<T> eyDS     = factory.build(ey, eyDot);
             final FieldDerivativeStructure<T> alphaMDS = factory.build(getAlphaM(), alphaMDot);
@@ -406,8 +412,9 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         ey   = equiEy.multiply(cosRaan).subtract(equiEx.multiply(sinRaan));
         this.alphaV = op.getLv().subtract(raan);
 
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        if (!FACTORIES_1.containsKey(a.getField())) {
+            FACTORIES_1.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+            FACTORIES_2.put(a.getField(), new FDSFactory<>(a.getField(), 1, 2));
         }
 
         if (op.hasDerivatives()) {
@@ -606,7 +613,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         }
 
         @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
         final FieldDerivativeStructure<T> alphaVDS = factory.build(alphaV, alphaVDot);
         final FieldDerivativeStructure<T> exDS     = factory.build(ex, exDot);
         final FieldDerivativeStructure<T> eyDS     = factory.build(ey, eyDot);
@@ -632,7 +639,7 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         }
 
         @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
         final FieldDerivativeStructure<T> alphaVDS = factory.build(alphaV, alphaVDot);
         final FieldDerivativeStructure<T> exDS     = factory.build(ex, exDot);
         final FieldDerivativeStructure<T> eyDS     = factory.build(ey, eyDot);
@@ -738,6 +745,74 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
         return alphaE.subtract(ex.multiply(alphaE.sin()).subtract(ey.multiply(alphaE.cos())));
     }
 
+    /** Compute position from circular parameters.
+     * @param a  semi-major axis (m)
+     * @param ex e cos(ω), first component of circular eccentricity vector
+     * @param ey e sin(ω), second component of circular eccentricity vector
+     * @param i inclination (rad)
+     * @param raan right ascension of ascending node (Ω, rad)
+     * @param alphaV  v + ω true latitude argument (rad)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param <T> type of the fiels elements
+     * @return position vector
+     */
+    public static <T extends RealFieldElement<T>> FieldVector3D<T> circularToPosition(final T a, final T ex, final T ey,
+                                                                                      final T i, final T raan, final T alphaV,
+                                                                                      final double mu) {
+
+        final T zero = a.getField().getZero();
+
+        // get equinoctial parameters
+        final T equEx = ex.multiply(raan.cos()).subtract(ey.multiply(raan.sin()));
+        final T equEy = ey.multiply(raan.cos()).add(ex.multiply(raan.sin()));
+        final T hx;
+        final T hy;
+        if (FastMath.abs(i.getReal() - FastMath.PI) < 1.0e-10) {
+            hx = zero.add(Double.NaN);
+            hy = zero.add(Double.NaN);
+        } else {
+            final T tan = i.divide(2).tan();
+            hx = raan.cos().multiply(tan);
+            hy = raan.sin().multiply(tan);
+        }
+        final T lE = trueToEccentric(alphaV, ex, ey).add(raan);
+
+        // inclination-related intermediate parameters
+        final T hx2   = hx.multiply(hx);
+        final T hy2   = hy.multiply(hy);
+        final T factH = (hx2.add(1).add(hy2)).reciprocal();
+
+        // reference axes defining the orbital plane
+        final T ux = (hx2.add(1).subtract(hy2)).multiply(factH);
+        final T uy =  hx.multiply(2).multiply(hy).multiply(factH);
+        final T uz = hy.multiply(-2).multiply(factH);
+
+        final T vx = uy;
+        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
+        final T vz =  hx.multiply(factH).multiply(2);
+
+        // eccentricity-related intermediate parameters
+        final T exey = equEx.multiply(equEy);
+        final T ex2  = equEx.multiply(equEx);
+        final T ey2  = equEy.multiply(equEy);
+        final T e2   = ex2.add(ey2);
+        final T eta  = e2.negate().add(1).sqrt().add(1);
+        final T beta = eta.reciprocal();
+
+        // eccentric latitude argument
+        final T cLe    = lE.cos();
+        final T sLe    = lE.sin();
+
+        // coordinates of position and velocity in the orbital plane
+        final T x      = a.multiply(beta.negate().multiply(ey2).add(1).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(equEx));
+        final T y      = a.multiply(beta.negate().multiply(ex2).add(1).multiply(sLe).add(beta.multiply(exey).multiply(cLe)).subtract(equEy));
+
+        return new FieldVector3D<>(x.multiply(ux).add(y.multiply(vx)),
+                                   x.multiply(uy).add(y.multiply(vy)),
+                                   x.multiply(uz).add(y.multiply(vz)));
+
+    }
+
     /** {@inheritDoc} */
     public T getE() {
         return ex.multiply(ex).add(ey.multiply(ey)).sqrt();
@@ -817,53 +892,77 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     /** {@inheritDoc} */
     protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
 
-        // get equinoctial parameters
-        final T equEx = getEquinoctialEx();
-        final T equEy = getEquinoctialEy();
-        final T hx = getHx();
-        final T hy = getHy();
-        final T lE = getLE();
-        // inclination-related intermediate parameters
-        final T hx2   = hx.multiply(hx);
-        final T hy2   = hy.multiply(hy);
-        final T factH = (hx2.add(1).add(hy2)).reciprocal();
+        if (hasDerivatives()) {
 
-        // reference axes defining the orbital plane
-        final T ux = (hx2.add(1).subtract(hy2)).multiply(factH);
-        final T uy =  hx.multiply(2).multiply(hy).multiply(factH);
-        final T uz = hy.multiply(-2).multiply(factH);
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory2 = (FDSFactory<T>) FACTORIES_2.get(a.getField());
+            final FieldDerivativeStructure<T> aDS2      = factory2.build(a,      aDot,      zero);
+            final FieldDerivativeStructure<T> exDS2     = factory2.build(ex,     exDot,     zero);
+            final FieldDerivativeStructure<T> eyDS2     = factory2.build(ey,     eyDot,     zero);
+            final FieldDerivativeStructure<T> iDS2      = factory2.build(i,      iDot,      zero);
+            final FieldDerivativeStructure<T> raanDS2   = factory2.build(raan,   raanDot,   zero);
 
-        final T vx = uy;
-        final T vy = (hy2.subtract(hx2).add(1)).multiply(factH);
-        final T vz =  hx.multiply(factH).multiply(2);
+            // we have αv and dαv/dt and we know d²αv/dt² is *not* 0, even in Keplerian motion
+            // to be consistent with the zero second derivatives above, we assume d²αM/dt² = 0
+            // we have to convert back and forth to retrieve a consistent second derivative for αv
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory1 = (FDSFactory<T>) FACTORIES_1.get(a.getField());
+            final FieldDerivativeStructure<T> exDS1     = factory1.build(ex,     exDot);
+            final FieldDerivativeStructure<T> eyDS1     = factory1.build(ey,     eyDot);
+            final FieldDerivativeStructure<T> alphaVDS1 = factory1.build(alphaV, alphaVDot);
+            final FieldDerivativeStructure<T> alphaMDS1 = eccentricToMean(trueToEccentric(alphaVDS1, exDS1, eyDS1), exDS1, eyDS1);
+            final FieldDerivativeStructure<T> alphaMDS2 = factory2.build(alphaMDS1.getValue(),
+                                                                         alphaMDS1.getPartialDerivative(1),
+                                                                         zero);
+            final FieldDerivativeStructure<T> alphaVDS2 = eccentricToTrue(meanToEccentric(alphaMDS2, exDS2, eyDS2), exDS2, eyDS2);
 
-        // eccentricity-related intermediate parameters
-        final T exey = equEx.multiply(equEy);
-        final T ex2  = equEx.multiply(equEx);
-        final T ey2  = equEy.multiply(equEy);
-        final T e2   = ex2.add(ey2);
-        final T eta  = e2.negate().add(1).sqrt().add(1);
-        final T beta = eta.reciprocal();
+            final FieldVector3D<FieldDerivativeStructure<T>> pDS2 =
+                circularToPosition(aDS2, exDS2, eyDS2, iDS2, raanDS2, alphaVDS2, getMu());
 
-        // eccentric latitude argument
-        final T cLe    = lE.cos();
-        final T sLe    = lE.sin();
-        final T exCeyS = equEx.multiply(cLe).add(equEy.multiply(sLe));
-        // coordinates of position and velocity in the orbital plane
-        final T x      = a.multiply(beta.negate().multiply(ey2).add(1).multiply(cLe).add(beta.multiply(exey).multiply(sLe)).subtract(equEx));
-        final T y      = a.multiply(beta.negate().multiply(ex2).add(1).multiply(sLe).add(beta.multiply(exey).multiply(cLe)).subtract(equEy));
+            final FieldVector3D<T> position     = new FieldVector3D<>(pDS2.getX().getValue(),
+                                                                      pDS2.getY().getValue(),
+                                                                      pDS2.getZ().getValue());
+            final FieldVector3D<T> velocity     = new FieldVector3D<>(pDS2.getX().getPartialDerivative(1),
+                                                                      pDS2.getY().getPartialDerivative(1),
+                                                                      pDS2.getZ().getPartialDerivative(1));
+            final FieldVector3D<T> acceleration = new FieldVector3D<>(pDS2.getX().getPartialDerivative(2),
+                                                                      pDS2.getY().getPartialDerivative(2),
+                                                                      pDS2.getZ().getPartialDerivative(2));
+            return new TimeStampedFieldPVCoordinates<>(getDate(),
+                                                       new FieldPVCoordinates<>(position, velocity, acceleration));
 
-        final T factor = one.add(getMu()).divide(a).sqrt().divide(exCeyS.negate().add(1));
-        final T xdot   = factor.multiply( beta.multiply(equEy).multiply(exCeyS).subtract(sLe ));
-        final T ydot   = factor.multiply( cLe.subtract(beta.multiply(equEx).multiply(exCeyS)));
+        } else {
 
-        final FieldVector3D<T> position =
-            new FieldVector3D<T>(x.multiply(ux).add(y.multiply(vx)), x.multiply(uy).add(y.multiply(vy)), x.multiply(uz).add(y.multiply(vz)));
-        final T r2         = position.getNormSq();
-        final FieldVector3D<T> velocity =
-            new FieldVector3D<T>(xdot.multiply(ux).add(ydot.multiply(vx)), xdot.multiply(uy).add(ydot.multiply(vy)), xdot.multiply(uz).add(ydot.multiply(vz)));
-        final FieldVector3D<T> acceleration = new FieldVector3D<T>(zero.add(-getMu()).divide(r2.multiply(r2.sqrt())), position);
-        return new TimeStampedFieldPVCoordinates<T>(getDate(), position, velocity, acceleration);
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory1 = (FDSFactory<T>) FACTORIES_1.get(a.getField());
+            final FieldDerivativeStructure<T> aDS      = factory1.build(a,    zero);
+            final FieldDerivativeStructure<T> exDS     = factory1.build(ex,   zero);
+            final FieldDerivativeStructure<T> eyDS     = factory1.build(ey,   zero);
+            final FieldDerivativeStructure<T> iDS      = factory1.build(i,    zero);
+            final FieldDerivativeStructure<T> raanDS   = factory1.build(raan, zero);
+
+            final FieldDerivativeStructure<T> alphaMDS = factory1.build(getAlphaM(), getKeplerianMeanMotion());
+            final FieldDerivativeStructure<T> alphaVDS = eccentricToTrue(meanToEccentric(alphaMDS, exDS, eyDS), exDS, eyDS);
+
+            final FieldVector3D<FieldDerivativeStructure<T>> pDS =
+                circularToPosition(aDS, exDS, eyDS, iDS, raanDS, alphaVDS, getMu());
+
+            final FieldVector3D<T> position     = new FieldVector3D<>(pDS.getX().getValue(),
+                                                                      pDS.getY().getValue(),
+                                                                      pDS.getZ().getValue());
+            final FieldVector3D<T> velocity     = new FieldVector3D<>(pDS.getX().getPartialDerivative(1),
+                                                                      pDS.getY().getPartialDerivative(1),
+                                                                      pDS.getZ().getPartialDerivative(1));
+
+            // use Keplerian acceleration only
+            final T r2 = position.getNormSq();
+            final T r  = r2.sqrt();
+            final FieldVector3D<T> acceleration = new FieldVector3D<>(r2.multiply(r).reciprocal().multiply(-getMu()),
+                                                                      position);
+            return new TimeStampedFieldPVCoordinates<>(getDate(),
+                                                       new FieldPVCoordinates<>(position, velocity, acceleration));
+
+        }
 
     }
 

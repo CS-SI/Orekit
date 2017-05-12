@@ -30,6 +30,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.Precision;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -83,7 +84,11 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrbit<T> {
 
     /** Factory for first time derivatives. */
-    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES =
+    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES_1 =
+                    new HashMap<>();
+
+    /** Factory for second time derivatives. */
+    private static final Map<Field<? extends RealFieldElement<?>>, FDSFactory<? extends RealFieldElement<?>>> FACTORIES_2 =
                     new HashMap<>();
 
     /** First coefficient to compute Kepler equation solver starter. */
@@ -205,8 +210,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             throw new OrekitIllegalArgumentException(OrekitMessages.ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE, a.getReal(), e.getReal());
         }
 
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        if (!FACTORIES_1.containsKey(a.getField())) {
+            FACTORIES_1.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+            FACTORIES_2.put(a.getField(), new FDSFactory<>(a.getField(), 1, 2));
         }
 
         this.a       =    a;
@@ -231,7 +237,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
         if (hasDerivatives()) {
             @SuppressWarnings("unchecked")
-            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
             final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
             final FieldDerivativeStructure<T> anomalyDS  = factory.build(anomaly,  anomalyDot);
             final FieldDerivativeStructure<T> vDS;
@@ -358,8 +364,9 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         final T py = FieldVector3D.dotProduct(pvP, FieldVector3D.crossProduct(momentum, node)).divide(m2.sqrt());
         pa = py.atan2(px).subtract(v);
 
-        if (!FACTORIES.containsKey(a.getField())) {
-            FACTORIES.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+        if (!FACTORIES_1.containsKey(a.getField())) {
+            FACTORIES_1.put(a.getField(), new FDSFactory<>(a.getField(), 1, 1));
+            FACTORIES_2.put(a.getField(), new FDSFactory<>(a.getField(), 1, 2));
         }
 
         if (hasNonKeplerianAcceleration(pvCoordinates, mu)) {
@@ -384,7 +391,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             final T MDot = getKeplerianMeanMotion().
                            add(jacobian[5][3].multiply(aX)).add(jacobian[5][4].multiply(aY)).add(jacobian[5][5].multiply(aZ));
             @SuppressWarnings("unchecked")
-            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+            final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
             final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
             final FieldDerivativeStructure<T> MDS = factory.build(getMeanAnomaly(), MDot);
             final FieldDerivativeStructure<T> vDS = (a.getReal() < 0) ?
@@ -542,7 +549,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
 
         @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
         final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
         final FieldDerivativeStructure<T> vDS = factory.build(v, vDot);
         final FieldDerivativeStructure<T> EDS = (a.getReal() < 0) ?
@@ -574,7 +581,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
 
         @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
         final FieldDerivativeStructure<T> eDS = factory.build(e, eDot);
         final FieldDerivativeStructure<T> vDS = factory.build(v, vDot);
         final FieldDerivativeStructure<T> MDS = (a.getReal() < 0) ?
@@ -686,7 +693,15 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         // compute start value according to A. W. Odell and R. H. Gooding S12 starter
         T E;
         if (reducedM.abs().getReal() < 1.0 / 6.0) {
-            E = reducedM.add(e.multiply( (reducedM.multiply(6).cbrt()).subtract(reducedM)));
+            if (FastMath.abs(reducedM.getReal()) < Precision.SAFE_MIN) {
+                // this is an Orekit change to the S12 starter, mainly used when T is some kind of derivative structure.
+                // If reducedM is 0.0, the derivative of cbrt is infinite which induces NaN appearing later in
+                // the computation. As in this case E and M are almost equal, we initialize E with reducedM
+                E = reducedM;
+            } else {
+                // this is the standard S12 starter
+                E = reducedM.add(e.multiply( (reducedM.multiply(6).cbrt()).subtract(reducedM)));
+            }
         } else {
             if (reducedM.getReal() < 0) {
                 final T w = reducedM.add(FastMath.PI);
@@ -818,11 +833,101 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** Computes the mean anomaly from the elliptic eccentric anomaly.
      * @param E eccentric anomaly (rad)
      * @param e eccentricity
-     * @param <T> type of the file elements
+     * @param <T> type of the field elements
      * @return M the mean anomaly
      */
     public static <T extends RealFieldElement<T>> T ellipticEccentricToMean(final T E, final T e) {
         return E.subtract(e.multiply(E.sin()));
+    }
+
+    /** Compute position from elliptic Keplerian parameters.
+     * @param a semi-major axis (m)
+     * @param e eccentricity
+     * @param i inclination (rad)
+     * @param pa Perigee Argument (rad)
+     * @param raan Right Ascension of Ascending Node (rad)
+     * @param v true anomaly (rad)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param <T> type of the fiels elements
+     * @return position vector
+     */
+    public static <T extends RealFieldElement<T>> FieldVector3D<T> ellipticKeplerianToPosition(final T a, final T e, final T i,
+                                                                                               final T pa, final T raan, final T v,
+                                                                                               final double mu) {
+
+        // preliminary variables
+        final T cosRaan = raan.cos();
+        final T sinRaan = raan.sin();
+        final T cosPa   = pa.cos();
+        final T sinPa   = pa.sin();
+        final T cosI    = i.cos();
+        final T sinI    = i.sin();
+        final T crcp    = cosRaan.multiply(cosPa);
+        final T crsp    = cosRaan.multiply(sinPa);
+        final T srcp    = sinRaan.multiply(cosPa);
+        final T srsp    = sinRaan.multiply(sinPa);
+
+        // reference axes defining the orbital plane
+        final FieldVector3D<T> p = new FieldVector3D<T>( crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
+        final FieldVector3D<T> q = new FieldVector3D<T>( crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
+
+        // elliptic eccentric anomaly
+        final T uME2   = e.negate().add(1).multiply(e.add(1));
+        final T s1Me2  = uME2.sqrt();
+        final T E      = (a.getReal() < 0) ? trueToHyperbolicEccentric(v, e) : trueToEllipticEccentric(v, e);
+        final T cosE   = E.cos();
+        final T sinE   = E.sin();
+
+        // coordinates of position in the orbital plane
+        final T x      = a.multiply(cosE.subtract(e));
+        final T y      = a.multiply(sinE).multiply(s1Me2);
+
+        return new FieldVector3D<T>(x, p, y, q);
+
+    }
+
+    /** Compute position from hyperbolic Keplerian parameters.
+     * @param a semi-major axis (m)
+     * @param e eccentricity
+     * @param i inclination (rad)
+     * @param pa Perigee Argument (rad)
+     * @param raan Right Ascension of Ascending Node (rad)
+     * @param v true anomaly (rad)
+     * @param mu central attraction coefficient (m³/s²)
+     * @param <T> type of the fiels elements
+     * @return position vector
+     */
+    public static <T extends RealFieldElement<T>> FieldVector3D<T> hyperbolicKeplerianToPosition(final T a, final T e, final T i,
+                                                                                                 final T pa, final T raan, final T v,
+                                                                                                 final double mu) {
+
+        // preliminary variables
+        final T cosRaan = raan.cos();
+        final T sinRaan = raan.sin();
+        final T cosPa   = pa.cos();
+        final T sinPa   = pa.sin();
+        final T cosI    = i.cos();
+        final T sinI    = i.sin();
+        final T crcp    = cosRaan.multiply(cosPa);
+        final T crsp    = cosRaan.multiply(sinPa);
+        final T srcp    = sinRaan.multiply(cosPa);
+        final T srsp    = sinRaan.multiply(sinPa);
+
+        // reference axes defining the orbital plane
+        final FieldVector3D<T> p = new FieldVector3D<T>( crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
+        final FieldVector3D<T> q = new FieldVector3D<T>( crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
+
+
+        // coordinates of position in the orbital plane
+        final T sinV      = v.sin();
+        final T cosV      = v.cos();
+        final T f         = a.multiply(e.multiply(e).negate().add(1));
+        final T posFactor = f.divide(e.multiply(cosV).add(1));
+        final T x         = posFactor.multiply(cosV);
+        final T y         = posFactor.multiply(sinV);
+
+        return new FieldVector3D<T>(x, p, y, q);
+
     }
 
     /** {@inheritDoc} */
@@ -838,7 +943,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
 
         @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
         final FieldDerivativeStructure<T> eDS    = factory.build(e,    eDot);
         final FieldDerivativeStructure<T> paDS   = factory.build(pa,   paDot);
         final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
@@ -859,7 +964,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
 
         @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
         final FieldDerivativeStructure<T> eDS    = factory.build(e,    eDot);
         final FieldDerivativeStructure<T> paDS   = factory.build(pa,   paDot);
         final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
@@ -889,7 +994,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
 
         @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
         final FieldDerivativeStructure<T> iDS    = factory.build(i,    iDot);
         final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
         return raanDS.cos().multiply(iDS.multiply(0.5).tan()).getPartialDerivative(1);
@@ -918,7 +1023,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         }
 
         @SuppressWarnings("unchecked")
-        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES.get(a.getField());
+        final FDSFactory<T> factory = (FDSFactory<T>) FACTORIES_1.get(a.getField());
         final FieldDerivativeStructure<T> iDS    = factory.build(i,    iDot);
         final FieldDerivativeStructure<T> raanDS = factory.build(raan, raanDot);
         return raanDS.sin().multiply(iDS.multiply(0.5).tan()).getPartialDerivative(1);
@@ -964,75 +1069,83 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
     /** {@inheritDoc} */
     protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
 
-        // preliminary variables
-        final T cosRaan = raan.cos();
-        final T sinRaan = raan.sin();
-        final T cosPa   = pa.cos();
-        final T sinPa   = pa.sin();
-        final T cosI    = i.cos();
-        final T sinI    = i.sin();
-        final T crcp    = cosRaan.multiply(cosPa);
-        final T crsp    = cosRaan.multiply(sinPa);
-        final T srcp    = sinRaan.multiply(cosPa);
-        final T srsp    = sinRaan.multiply(sinPa);
+        if (hasDerivatives()) {
 
-        // reference axes defining the orbital plane
-        final FieldVector3D<T> p = new FieldVector3D<T>( crcp.subtract(cosI.multiply(srsp)),  srcp.add(cosI.multiply(crsp)), sinI.multiply(sinPa));
-        final FieldVector3D<T> q = new FieldVector3D<T>( crsp.add(cosI.multiply(srcp)).negate(), cosI.multiply(crcp).subtract(srsp), sinI.multiply(cosPa));
-        return (a.getReal() > 0) ? initFieldPVCoordinatesElliptical(p, q) : initFieldPVCoordinatesHyperbolic(p, q);
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory2 = (FDSFactory<T>) FACTORIES_2.get(a.getField());
+            final FieldDerivativeStructure<T> aDS2    = factory2.build(a,    aDot,    zero);
+            final FieldDerivativeStructure<T> eDS2    = factory2.build(e,    eDot,    zero);
+            final FieldDerivativeStructure<T> iDS2    = factory2.build(i,    iDot,    zero);
+            final FieldDerivativeStructure<T> paDS2   = factory2.build(pa,   paDot,   zero);
+            final FieldDerivativeStructure<T> raanDS2 = factory2.build(raan, raanDot, zero);
 
-    }
+            // we have v and dv/dt and we know d²v/dt² is *not* 0, even in Keplerian motion
+            // to be consistent with the zero second derivatives above, we assume d²M/dt² = 0
+            // we have to convert back and forth to retrieve a consistent second derivative for v
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory1 = (FDSFactory<T>) FACTORIES_1.get(a.getField());
+            final FieldDerivativeStructure<T> eDS1 = factory1.build(e, eDot);
+            final FieldDerivativeStructure<T> vDS1 = factory1.build(v, vDot);
+            final FieldDerivativeStructure<T> mDS1 = (a.getReal() < 0) ?
+                                                     hyperbolicEccentricToMean(trueToHyperbolicEccentric(vDS1, eDS1), eDS1) :
+                                                     ellipticEccentricToMean(trueToEllipticEccentric(vDS1, eDS1), eDS1);
+            final FieldDerivativeStructure<T> mDS2 = factory2.build(mDS1.getValue(),
+                                                                    mDS1.getPartialDerivative(1),
+                                                                    zero);
+            final FieldDerivativeStructure<T> vDS2 = (a.getReal() < 0) ?
+                                                     hyperbolicEccentricToTrue(meanToHyperbolicEccentric(mDS2, eDS2), eDS2) :
+                                                     ellipticEccentricToTrue(meanToEllipticEccentric(mDS2, eDS2), eDS2);
 
-    /** Initialize the position/velocity coordinates, elliptic case.
-     * @param p unit vector in the orbital plane pointing towards perigee
-     * @param q unit vector in the orbital plane in quadrature with p
-     * @return computed position/velocity coordinates
-     */
-    private TimeStampedFieldPVCoordinates<T> initFieldPVCoordinatesElliptical(final FieldVector3D<T> p, final FieldVector3D<T> q) {
+            final FieldVector3D<FieldDerivativeStructure<T>> pDS2 = (a.getReal() < 0) ?
+                hyperbolicKeplerianToPosition(aDS2, eDS2, iDS2, paDS2, raanDS2, vDS2, getMu()) :
+                ellipticKeplerianToPosition(aDS2, eDS2, iDS2, paDS2, raanDS2, vDS2, getMu());
 
-        // elliptic eccentric anomaly
-        final T uME2   = e.negate().add(1).multiply(e.add(1));
-        final T s1Me2  = uME2.sqrt();
-        final T E      = getEccentricAnomaly();
-        final T cosE   = E.cos();
-        final T sinE   = E.sin();
+            final FieldVector3D<T> position     = new FieldVector3D<>(pDS2.getX().getValue(),
+                                                                      pDS2.getY().getValue(),
+                                                                      pDS2.getZ().getValue());
+            final FieldVector3D<T> velocity     = new FieldVector3D<>(pDS2.getX().getPartialDerivative(1),
+                                                                      pDS2.getY().getPartialDerivative(1),
+                                                                      pDS2.getZ().getPartialDerivative(1));
+            final FieldVector3D<T> acceleration = new FieldVector3D<>(pDS2.getX().getPartialDerivative(2),
+                                                                      pDS2.getY().getPartialDerivative(2),
+                                                                      pDS2.getZ().getPartialDerivative(2));
+            return new TimeStampedFieldPVCoordinates<>(getDate(),
+                                                       new FieldPVCoordinates<>(position, velocity, acceleration));
 
-        // coordinates of position and velocity in the orbital plane
-        final T x      = a.multiply(cosE.subtract(e));
-        final T y      = a.multiply(sinE).multiply(s1Me2);
-        final T factor = (a.reciprocal().multiply(getMu())).sqrt().divide(e.negate().multiply(cosE).add(1));
-        final T xDot   = sinE.negate().multiply(factor);
-        final T yDot   = cosE.multiply(s1Me2).multiply(factor);
+        } else {
+            @SuppressWarnings("unchecked")
+            final FDSFactory<T> factory1 = (FDSFactory<T>) FACTORIES_1.get(a.getField());
+            final FieldDerivativeStructure<T> aDS    = factory1.build(a,    zero);
+            final FieldDerivativeStructure<T> eDS    = factory1.build(e,    zero);
+            final FieldDerivativeStructure<T> iDS    = factory1.build(i,    zero);
+            final FieldDerivativeStructure<T> paDS   = factory1.build(pa,   zero);
+            final FieldDerivativeStructure<T> raanDS = factory1.build(raan, zero);
 
-        final FieldVector3D<T> position = new FieldVector3D<T>(x, p, y, q);
-        final T r2 = x.multiply(x).add(y.multiply(y));
+            final FieldDerivativeStructure<T> mDS    = factory1.build(getMeanAnomaly(), getKeplerianMeanMotion());
+            final FieldDerivativeStructure<T> vDS    = (a.getReal() < 0) ?
+                                                       hyperbolicEccentricToTrue(meanToHyperbolicEccentric(mDS, eDS), eDS) :
+                                                       ellipticEccentricToTrue(meanToEllipticEccentric(mDS, eDS), eDS);
 
-        final FieldVector3D<T> velocity = new FieldVector3D<T>(xDot, p, yDot, q);
+            final FieldVector3D<FieldDerivativeStructure<T>> pDS = (a.getReal() < 0) ?
+                hyperbolicKeplerianToPosition(aDS, eDS, iDS, paDS, raanDS, vDS, getMu()) :
+                ellipticKeplerianToPosition(aDS, eDS, iDS, paDS, raanDS, vDS, getMu());
 
-        final FieldVector3D<T> acceleration = new FieldVector3D<T>(r2.multiply(r2.sqrt()).reciprocal().multiply(-getMu()), position);
+            final FieldVector3D<T> position     = new FieldVector3D<>(pDS.getX().getValue(),
+                                                                      pDS.getY().getValue(),
+                                                                      pDS.getZ().getValue());
+            final FieldVector3D<T> velocity     = new FieldVector3D<>(pDS.getX().getPartialDerivative(1),
+                                                                      pDS.getY().getPartialDerivative(1),
+                                                                      pDS.getZ().getPartialDerivative(1));
 
-        return new TimeStampedFieldPVCoordinates<T>(getDate(), position, velocity, acceleration);
+            // use Keplerian acceleration only
+            final T r2 = position.getNormSq();
+            final T r  = r2.sqrt();
+            final FieldVector3D<T> acceleration = new FieldVector3D<>(r2.multiply(r).reciprocal().multiply(-getMu()),
+                                                                      position);
+            return new TimeStampedFieldPVCoordinates<>(getDate(),
+                                                       new FieldPVCoordinates<>(position, velocity, acceleration));
 
-    }
-
-    /** Initialize the position/velocity coordinates, hyperbolic case.
-     * @param p unit vector in the orbital plane pointing towards perigee
-     * @param q unit vector in the orbital plane in quadrature with p
-     * @return computed position/velocity coordinates
-     */
-    private TimeStampedFieldPVCoordinates<T> initFieldPVCoordinatesHyperbolic(final FieldVector3D<T> p, final FieldVector3D<T> q) {
-
-        // compute position and velocity factors
-        final T sinV      = v.sin();
-        final T cosV      = v.cos();
-        final T f         = a.multiply(e.multiply(e).negate().add(1));
-        final T posFactor = f.divide(e.multiply(cosV).add(1));
-        final T velFactor = f.reciprocal().multiply(getMu()).sqrt();
-
-        final FieldVector3D<T> position     = new FieldVector3D<T>( posFactor.multiply(cosV), p, posFactor.multiply(sinV), q);
-        final FieldVector3D<T> velocity     = new FieldVector3D<T>( velFactor.multiply(sinV).negate(), p, velFactor.multiply(e.add(cosV)), q);
-        final FieldVector3D<T> acceleration = new FieldVector3D<T>(posFactor.multiply(posFactor).multiply(posFactor).reciprocal().multiply(-getMu()), position);
-        return new TimeStampedFieldPVCoordinates<T>(getDate(), position, velocity, acceleration);
+        }
 
     }
 
@@ -1090,8 +1203,7 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
         T previousRAAN = this.zero.add(Double.NaN);
         T previousM    = this.zero.add(Double.NaN);
         for (final FieldOrbit<T> orbit : sample) {
-            final FieldKeplerianOrbit<T> kep = new FieldKeplerianOrbit <T>(orbit);
-       //   final FieldKeplerianOrbit<T> kep = (FieldKeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+            final FieldKeplerianOrbit<T> kep = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(orbit);
             final T continuousPA;
             final T continuousRAAN;
             final T continuousM;
@@ -1117,13 +1229,11 @@ public class FieldKeplerianOrbit<T extends RealFieldElement<T>> extends FieldOrb
             useless[3] = continuousPA;
             useless[4] = continuousRAAN;
             useless[5] = continuousM;
-            //@SuppressWarnings("unchecked")
             interpolator.addSamplePoint(this.zero.add(kep.getDate().durationFrom(date)),
                                         useless);
         }
 
         // interpolate
-        //ADDED RISK CASTING TO T() (it should work i think)
         final T[] interpolated = (T[]) interpolator.value(this.zero);
 
         // build a new interpolated instance

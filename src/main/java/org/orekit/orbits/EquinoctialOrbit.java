@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.interpolation.HermiteInterpolator;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -79,7 +80,10 @@ public class EquinoctialOrbit extends Orbit {
     private static final long serialVersionUID = 20170414L;
 
     /** Factory for first time derivatives. */
-    private static final DSFactory FACTORY = new DSFactory(1, 1);
+    private static final DSFactory FACTORY_1 = new DSFactory(1, 1);
+
+    /** Factory for second time derivatives. */
+    private static final DSFactory FACTORY_2 = new DSFactory(1, 2);
 
     /** Semi-major axis (m). */
     private final double a;
@@ -187,9 +191,9 @@ public class EquinoctialOrbit extends Orbit {
         this.hyDot = hyDot;
 
         if (hasDerivatives()) {
-            final DerivativeStructure exDS = FACTORY.build(ex, exDot);
-            final DerivativeStructure eyDS = FACTORY.build(ey, eyDot);
-            final DerivativeStructure lDS  = FACTORY.build(l,  lDot);
+            final DerivativeStructure exDS = FACTORY_1.build(ex, exDot);
+            final DerivativeStructure eyDS = FACTORY_1.build(ey, eyDot);
+            final DerivativeStructure lDS  = FACTORY_1.build(l,  lDot);
             final DerivativeStructure lvDS;
             switch (type) {
                 case MEAN :
@@ -303,9 +307,9 @@ public class EquinoctialOrbit extends Orbit {
             // mean anomaly derivative including Keplerian motion and convert to true anomaly
             final double lMDot = getKeplerianMeanMotion() +
                                  jacobian[5][3] * aX + jacobian[5][4] * aY + jacobian[5][5] * aZ;
-            final DerivativeStructure exDS = FACTORY.build(ex, exDot);
-            final DerivativeStructure eyDS = FACTORY.build(ey, eyDot);
-            final DerivativeStructure lMDS = FACTORY.build(getLM(), lMDot);
+            final DerivativeStructure exDS = FACTORY_1.build(ex, exDot);
+            final DerivativeStructure eyDS = FACTORY_1.build(ey, eyDot);
+            final DerivativeStructure lMDS = FACTORY_1.build(getLM(), lMDot);
             final DerivativeStructure lvDS = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lMDS, exDS, eyDS), exDS, eyDS);
             lvDot = lvDS.getPartialDerivative(1);
 
@@ -435,9 +439,9 @@ public class EquinoctialOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getLEDot() {
-        final DerivativeStructure lVDS = FACTORY.build(lv, lvDot);
-        final DerivativeStructure exDS = FACTORY.build(ex, exDot);
-        final DerivativeStructure eyDS = FACTORY.build(ey, eyDot);
+        final DerivativeStructure lVDS = FACTORY_1.build(lv, lvDot);
+        final DerivativeStructure exDS = FACTORY_1.build(ex, exDot);
+        final DerivativeStructure eyDS = FACTORY_1.build(ey, eyDot);
         final DerivativeStructure lEDS = FieldEquinoctialOrbit.trueToEccentric(lVDS, exDS, eyDS);
         return lEDS.getPartialDerivative(1);
     }
@@ -449,9 +453,9 @@ public class EquinoctialOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getLMDot() {
-        final DerivativeStructure lVDS = FACTORY.build(lv, lvDot);
-        final DerivativeStructure exDS = FACTORY.build(ex, exDot);
-        final DerivativeStructure eyDS = FACTORY.build(ey, eyDot);
+        final DerivativeStructure lVDS = FACTORY_1.build(lv, lvDot);
+        final DerivativeStructure exDS = FACTORY_1.build(ex, exDot);
+        final DerivativeStructure eyDS = FACTORY_1.build(ey, eyDot);
         final DerivativeStructure lMDS = FieldEquinoctialOrbit.eccentricToMean(FieldEquinoctialOrbit.trueToEccentric(lVDS, exDS, eyDS), exDS, eyDS);
         return lMDS.getPartialDerivative(1);
     }
@@ -576,53 +580,93 @@ public class EquinoctialOrbit extends Orbit {
     /** {@inheritDoc} */
     protected TimeStampedPVCoordinates initPVCoordinates() {
 
-        // get equinoctial parameters
-        final double lE = getLE();
+        if (hasDerivatives()) {
 
-        // inclination-related intermediate parameters
-        final double hx2   = hx * hx;
-        final double hy2   = hy * hy;
-        final double factH = 1. / (1 + hx2 + hy2);
+            final DerivativeStructure aDS2  = FACTORY_2.build(a,  aDot,  0.0);
+            final DerivativeStructure exDS2 = FACTORY_2.build(ex, exDot, 0.0);
+            final DerivativeStructure eyDS2 = FACTORY_2.build(ey, eyDot, 0.0);
+            final DerivativeStructure hxDS2 = FACTORY_2.build(hx, hxDot, 0.0);
+            final DerivativeStructure hyDS2 = FACTORY_2.build(hy, hyDot, 0.0);
 
-        // reference axes defining the orbital plane
-        final double ux = (1 + hx2 - hy2) * factH;
-        final double uy =  2 * hx * hy * factH;
-        final double uz = -2 * hy * factH;
+            // we have lv and dlv/dt and we know d²lv/dt² is *not* 0, even in Keplerian motion
+            // to be consistent with the zero second derivatives above, we assume d²lM/dt² = 0
+            // we have to convert back and forth to retrieve a consistent second derivative for lv
+            final DerivativeStructure exDS1 = FACTORY_1.build(ex, exDot);
+            final DerivativeStructure eyDS1 = FACTORY_1.build(ey, eyDot);
+            final DerivativeStructure lvDS1 = FACTORY_1.build(lv, lvDot);
+            final DerivativeStructure lMDS1 = FieldEquinoctialOrbit.eccentricToMean(FieldEquinoctialOrbit.trueToEccentric(lvDS1, exDS1, eyDS1), exDS1, eyDS1);
+            final DerivativeStructure lMDS2 = FACTORY_2.build(lMDS1.getValue(),
+                                                              lMDS1.getPartialDerivative(1),
+                                                              0.0);
+            final DerivativeStructure lvDS2 = FieldEquinoctialOrbit.eccentricToTrue(FieldEquinoctialOrbit.meanToEccentric(lMDS2, exDS2, eyDS2), exDS2, eyDS2);
 
-        final double vx = uy;
-        final double vy = (1 - hx2 + hy2) * factH;
-        final double vz =  2 * hx * factH;
+            final FieldVector3D<DerivativeStructure> pDS2 =
+                FieldEquinoctialOrbit.equinoctialToPosition(aDS2, exDS2, eyDS2, hxDS2, hyDS2, lvDS2, getMu());
 
-        // eccentricity-related intermediate parameters
-        final double exey = ex * ey;
-        final double ex2  = ex * ex;
-        final double ey2  = ey * ey;
-        final double e2   = ex2 + ey2;
-        final double eta  = 1 + FastMath.sqrt(1 - e2);
-        final double beta = 1. / eta;
+            final Vector3D position     = new Vector3D(pDS2.getX().getValue(),
+                                                       pDS2.getY().getValue(),
+                                                       pDS2.getZ().getValue());
+            final Vector3D velocity     = new Vector3D(pDS2.getX().getPartialDerivative(1),
+                                                       pDS2.getY().getPartialDerivative(1),
+                                                       pDS2.getZ().getPartialDerivative(1));
+            final Vector3D acceleration = new Vector3D(pDS2.getX().getPartialDerivative(2),
+                                                       pDS2.getY().getPartialDerivative(2),
+                                                       pDS2.getZ().getPartialDerivative(2));
+            return new TimeStampedPVCoordinates(getDate(),
+                                                new PVCoordinates(position, velocity, acceleration));
 
-        // eccentric longitude argument
-        final double cLe    = FastMath.cos(lE);
-        final double sLe    = FastMath.sin(lE);
-        final double exCeyS = ex * cLe + ey * sLe;
+        } else {
 
-        // coordinates of position and velocity in the orbital plane
-        final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - ex);
-        final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - ey);
+            // get equinoctial parameters
+            final double lE = getLE();
 
-        final double factor = FastMath.sqrt(getMu() / a) / (1 - exCeyS);
-        final double xdot   = factor * (-sLe + beta * ey * exCeyS);
-        final double ydot   = factor * ( cLe - beta * ex * exCeyS);
+            // inclination-related intermediate parameters
+            final double hx2   = hx * hx;
+            final double hy2   = hy * hy;
+            final double factH = 1. / (1 + hx2 + hy2);
 
-        final Vector3D position =
-            new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
-        final double r2 = position.getNormSq();
-        final Vector3D velocity =
-            new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
+            // reference axes defining the orbital plane
+            final double ux = (1 + hx2 - hy2) * factH;
+            final double uy =  2 * hx * hy * factH;
+            final double uz = -2 * hy * factH;
 
-        final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+            final double vx = uy;
+            final double vy = (1 - hx2 + hy2) * factH;
+            final double vz =  2 * hx * factH;
 
-        return new TimeStampedPVCoordinates(getDate(), position, velocity, acceleration);
+            // eccentricity-related intermediate parameters
+            final double exey = ex * ey;
+            final double ex2  = ex * ex;
+            final double ey2  = ey * ey;
+            final double e2   = ex2 + ey2;
+            final double eta  = 1 + FastMath.sqrt(1 - e2);
+            final double beta = 1. / eta;
+
+            // eccentric longitude argument
+            final double cLe    = FastMath.cos(lE);
+            final double sLe    = FastMath.sin(lE);
+            final double exCeyS = ex * cLe + ey * sLe;
+
+            // coordinates of position and velocity in the orbital plane
+            final double x      = a * ((1 - beta * ey2) * cLe + beta * exey * sLe - ex);
+            final double y      = a * ((1 - beta * ex2) * sLe + beta * exey * cLe - ey);
+
+            final double factor = FastMath.sqrt(getMu() / a) / (1 - exCeyS);
+            final double xdot   = factor * (-sLe + beta * ey * exCeyS);
+            final double ydot   = factor * ( cLe - beta * ex * exCeyS);
+
+            final Vector3D position =
+                            new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
+            final double r2 = position.getNormSq();
+            final Vector3D velocity =
+                            new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
+
+            // use Keplerian acceleration only
+            final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+
+            return new TimeStampedPVCoordinates(getDate(), position, velocity, acceleration);
+
+        }
 
     }
 

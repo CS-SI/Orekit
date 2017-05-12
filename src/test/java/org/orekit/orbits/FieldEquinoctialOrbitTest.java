@@ -656,9 +656,7 @@ public class FieldEquinoctialOrbitTest {
                                          one.subtract(ex.multiply(ex).add(ey.multiply(ey)))).sqrt());
 
         // both methods to compute radius of curvature should match
-
-
-        Assert.assertEquals(rCart.getReal(), rOrb.getReal(), 1.0e-15 * p.getA().getReal());
+        Assert.assertEquals(rCart.getReal(), rOrb.getReal(), 2.0e-15 * p.getA().getReal());
 
         // at this place for such an eccentric orbit,
         // the radius of curvature is much smaller than semi major axis
@@ -841,7 +839,7 @@ public class FieldEquinoctialOrbitTest {
                 T[] row    = jacobian[i];
                 T[] rowRef = finiteDiffJacobian[i];
                 for (int j = 0; j < row.length; j++) {
-                    Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 4.0e-9);
+                    Assert.assertEquals(0, (row[j].getReal() - rowRef[j].getReal()) / rowRef[j].getReal(), 8.0e-9);
                 }
             }
 

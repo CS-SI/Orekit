@@ -975,8 +975,8 @@ public class FieldKeplerianOrbitTest {
 
 
         FieldPVCoordinates<T> pv = orbKep.getPVCoordinates();
-        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal(), 1.0e-15 * pRef.getNorm().getReal());
-        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal(), 1.0e-16 * vRef.getNorm().getReal());
+        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal(), 2.0e-16 * pRef.getNorm().getReal());
+        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal(), 2.0e-16 * vRef.getNorm().getReal());
 
         T[][] jacobian = MathArrays.buildArray(field, 6 , 6);
         orbKep.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
@@ -1105,8 +1105,7 @@ public class FieldKeplerianOrbitTest {
 
         FieldPVCoordinates<T> pv = orbKep.getPVCoordinates();
         Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm().getReal() / pRef.getNorm().getReal(), 1.0e-16);
-        // Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm() / pRef.getNorm(), 2.0e-15);
-        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal() / vRef.getNorm().getReal(), 3.0e-16);
+        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm().getReal() / vRef.getNorm().getReal(), 5.0e-16);
 
         T[][] jacobian = MathArrays.buildArray(field, 6, 6);
         orbKep.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
@@ -1391,24 +1390,24 @@ public class FieldKeplerianOrbitTest {
         // check velocity is the derivative of position
         Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getPosition().getX()),
                             orbit.getPVCoordinates().getVelocity().getX().getReal(),
-                            3.0e-12 * v.getNorm().getReal());
+                            4.0e-12 * v.getNorm().getReal());
         Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getPosition().getY()),
                             orbit.getPVCoordinates().getVelocity().getY().getReal(),
-                            3.0e-12 * v.getNorm().getReal());
+                            4.0e-12 * v.getNorm().getReal());
         Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getPosition().getZ()),
                             orbit.getPVCoordinates().getVelocity().getZ().getReal(),
-                            3.0e-12 * v.getNorm().getReal());
+                            4.0e-12 * v.getNorm().getReal());
 
         // check acceleration is the derivative of velocity
         Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getX()),
                             orbit.getPVCoordinates().getAcceleration().getX().getReal(),
-                            3.0e-12 * a.getNorm().getReal());
+                            6.0e-12 * a.getNorm().getReal());
         Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getY()),
                             orbit.getPVCoordinates().getAcceleration().getY().getReal(),
-                            3.0e-12 * a.getNorm().getReal());
+                            6.0e-12 * a.getNorm().getReal());
         Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getZ()),
                             orbit.getPVCoordinates().getAcceleration().getZ().getReal(),
-                            3.0e-12 * a.getNorm().getReal());
+                            6.0e-12 * a.getNorm().getReal());
 
         // check jerk is the derivative of acceleration
         final T r2 = p.getNormSq();
@@ -1417,13 +1416,13 @@ public class FieldKeplerianOrbitTest {
                                                              a.getNorm().divide(r).multiply(-1), v);
         Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getAcceleration().getX()),
                             keplerianJerk.getX().getReal(),
-                            4.0e-12 * keplerianJerk.getNorm().getReal());
+                            5.0e-12 * keplerianJerk.getNorm().getReal());
         Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getAcceleration().getY()),
                             keplerianJerk.getY().getReal(),
-                            4.0e-12 * keplerianJerk.getNorm().getReal());
+                            5.0e-12 * keplerianJerk.getNorm().getReal());
         Assert.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getAcceleration().getZ()),
                             keplerianJerk.getZ().getReal(),
-                            4.0e-12 * keplerianJerk.getNorm().getReal());
+                            5.0e-12 * keplerianJerk.getNorm().getReal());
 
         Assert.assertNull(orbit.getADot());
         Assert.assertNull(orbit.getEquinoctialExDot());

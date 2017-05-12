@@ -403,7 +403,7 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<T>( position, velocity);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(FieldPVCoordinates, FramesFactory.getEME2000(),
                                                                   FieldAbsoluteDate.getJ2000Epoch(field), mu);
-        testShift(orbit, new FieldCircularOrbit<T>(orbit), 2e-15);
+        testShift(orbit, new FieldCircularOrbit<T>(orbit), 6e-16);
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftHyperbolic(Field<T> field) {
@@ -413,7 +413,7 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<T>(position, velocity);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(FieldPVCoordinates, FramesFactory.getEME2000(),
                                                                   FieldAbsoluteDate.getJ2000Epoch(field), mu);
-        testShift(orbit, new FieldKeplerianOrbit<T>(orbit), 1e-15);
+        testShift(orbit, new FieldKeplerianOrbit<T>(orbit), 2.0e-15);
     }
 
     private <T extends RealFieldElement<T>> void doTestNumericalIssue135(Field<T> field) throws OrekitException {
@@ -424,7 +424,7 @@ public class FieldCartesianOrbitTest {
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(FieldPVCoordinates, FramesFactory.getEME2000(),
                                                                   FieldAbsoluteDate.getJ2000Epoch(field),
                                                                   324858598826460.);
-        testShift(orbit, new FieldKeplerianOrbit<T>(orbit), 3.0e-15);
+        testShift(orbit, new FieldKeplerianOrbit<T>(orbit), 6.0e-15);
     }
 
     private <T extends RealFieldElement<T>> void testShift(FieldCartesianOrbit<T> tested, FieldOrbit<T> reference, double threshold) {
@@ -439,10 +439,8 @@ public class FieldCartesianOrbitTest {
             FieldPVCoordinates<T> pvReference = reference.shiftedBy(dt).getPVCoordinates();
             FieldVector3D<T>      pReference  = pvReference.getPosition();
             FieldVector3D<T>      vReference  = pvReference.getVelocity();
-            Assert.assertEquals(0, pTested.subtract(pReference).getNorm().getReal(), threshold * pReference.getNorm().getReal());
-            Assert.assertEquals(0.0, vTested.getX().getReal() - vReference.getX().getReal(), threshold * vReference.getNorm().getReal());
-            Assert.assertEquals(0.0, vTested.getY().getReal() - vReference.getY().getReal(), threshold * vReference.getNorm().getReal());
-            Assert.assertEquals(0.0, vTested.getZ().getReal() - vReference.getZ().getReal(), threshold * vReference.getNorm().getReal());
+            Assert.assertEquals(0.0, pTested.subtract(pReference).getNorm().getReal(), threshold * pReference.getNorm().getReal());
+            Assert.assertEquals(0.0, vTested.subtract(vReference).getNorm().getReal(), threshold * vReference.getNorm().getReal());
 
         }
     }
