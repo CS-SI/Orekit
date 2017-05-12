@@ -152,8 +152,8 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractPropagatorBuilder 
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final PositionAngle positionAngle)
         throws OrekitException {
-        final double[] parameters = new double[6];
-        final double[] parametersDot = new double[6];
+        final double[] parameters    = new double[6];
+        final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
         templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngle, parameters, parametersDot);
         return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngle,
                                                        templateOrbit.getDate(),
