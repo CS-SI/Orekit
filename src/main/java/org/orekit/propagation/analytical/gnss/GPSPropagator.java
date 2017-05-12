@@ -21,6 +21,7 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -293,7 +294,15 @@ public class GPSPropagator extends AbstractAnalyticalPropagator {
         // compute start value according to A. W. Odell and R. H. Gooding S12 starter
         DerivativeStructure ek;
         if (FastMath.abs(reducedM.getValue()) < 1.0 / 6.0) {
-            ek = reducedM.add(reducedM.multiply(6).cbrt().subtract(reducedM).multiply(gpsOrbit.getE()));
+            if (FastMath.abs(reducedM.getValue()) < Precision.SAFE_MIN) {
+                // this is an Orekit change to the S12 starter.
+                // If reducedM is 0.0, the derivative of cbrt is infinite which induces NaN appearing later in
+                // the computation. As in this case E and M are almost equal, we initialize ek with reducedM
+                ek = reducedM;
+            } else {
+                // this is the standard S12 starter
+                ek = reducedM.add(reducedM.multiply(6).cbrt().subtract(reducedM).multiply(gpsOrbit.getE()));
+            }
         } else {
             if (reducedM.getValue() < 0) {
                 final DerivativeStructure w = reducedM.add(FastMath.PI);
