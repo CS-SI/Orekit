@@ -212,7 +212,7 @@ public class SmallManeuverAnalyticalModelTest {
             for (PositionAngle positionAngle : PositionAngle.values()) {
                 BoundedPropagator withoutManeuver = getEphemeris(orbitType.convertType(leo), mass, t0, Vector3D.ZERO, f, isp);
 
-                SpacecraftState state0 = removeDerivatives(withoutManeuver.propagate(t0));
+                SpacecraftState state0 = withoutManeuver.propagate(t0);
                 SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(state0, eme2000, dV0, isp);
                 Assert.assertEquals(t0, model.getDate());
 
@@ -272,16 +272,6 @@ public class SmallManeuverAnalyticalModelTest {
 
         }
 
-    }
-
-    private SpacecraftState removeDerivatives(final SpacecraftState state) {
-        final Orbit orbit = state.getOrbit();
-        final OrbitType type = orbit.getType();
-        final double[] stateVector = new double[6];
-        type.mapOrbitToArray(orbit, PositionAngle.TRUE, stateVector, null);
-        final Orbit fixedOrbit = type.mapArrayToOrbit(stateVector, null, PositionAngle.TRUE,
-                                                      orbit.getDate(), orbit.getMu(), orbit.getFrame());
-        return new SpacecraftState(fixedOrbit, state.getAttitude(), state.getMass());
     }
 
     private BoundedPropagator getEphemeris(final Orbit orbit, final double mass,
