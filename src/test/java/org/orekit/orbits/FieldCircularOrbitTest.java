@@ -182,6 +182,11 @@ public class FieldCircularOrbitTest {
     }
 
     @Test
+    public void testDerivativesConversionSymmetry() throws OrekitException{
+        doTestDerivativesConversionSymmetry(Decimal64Field.getInstance());
+    }
+
+    @Test
     public void testToString() {
         doTestToString(Decimal64Field.getInstance());
     }
@@ -1252,6 +1257,43 @@ public class FieldCircularOrbitTest {
         Assert.assertTrue(Double.isNaN(orbit.getHxDot().getReal()));
         Assert.assertTrue(Double.isNaN(orbit.getHy().getReal()));
         Assert.assertTrue(Double.isNaN(orbit.getHyDot().getReal()));
+    }
+
+    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) throws OrekitException {
+        T zero = field.getZero();
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
+        FieldVector3D<T> position     = new FieldVector3D<>(zero.add(6893443.400234382),
+                                                            zero.add(1886406.1073757345),
+                                                            zero.add(-589265.1150359757));
+        FieldVector3D<T> velocity     = new FieldVector3D<>(zero.add(-281.1261461082365),
+                                                            zero.add(-1231.6165642450928),
+                                                            zero.add(-7348.756363469432));
+        FieldVector3D<T> acceleration = new FieldVector3D<>(zero.add(-7.460341170581685),
+                                                            zero.add(-2.0415957334584527),
+                                                            zero.add(0.6393322823627762));
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( position, velocity, acceleration);
+        FieldCircularOrbit<T> orbit = new FieldCircularOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
+                                                               date, Constants.EIGEN5C_EARTH_MU);
+        Assert.assertTrue(orbit.hasDerivatives());
+        T r2 = position.getNormSq();
+        T r  = r2.sqrt();
+        FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-orbit.getMu()),
+                                                                     position);
+        Assert.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
+
+        for (OrbitType type : OrbitType.values()) {
+            FieldOrbit<T> converted = type.convertType(orbit);
+            Assert.assertTrue(converted.hasDerivatives());
+            FieldCircularOrbit<T> rebuilt = (FieldCircularOrbit<T>) OrbitType.CIRCULAR.convertType(converted);
+            Assert.assertTrue(rebuilt.hasDerivatives());
+            Assert.assertEquals(orbit.getADot().getReal(),                             rebuilt.getADot().getReal(),                             3.0e-13);
+            Assert.assertEquals(orbit.getCircularExDot().getReal(),                    rebuilt.getCircularExDot().getReal(),                    1.0e-15);
+            Assert.assertEquals(orbit.getCircularEyDot().getReal(),                    rebuilt.getCircularEyDot().getReal(),                    1.0e-15);
+            Assert.assertEquals(orbit.getIDot().getReal(),                             rebuilt.getIDot().getReal(),                             1.0e-15);
+            Assert.assertEquals(orbit.getRightAscensionOfAscendingNodeDot().getReal(), rebuilt.getRightAscensionOfAscendingNodeDot().getReal(), 1.0e-15);
+            Assert.assertEquals(orbit.getAlphaVDot().getReal(),                        rebuilt.getAlphaVDot().getReal(),                        1.0e-15);
+        }
+
     }
 
     private <T extends RealFieldElement<T>> void doTestToString(Field<T> field) {

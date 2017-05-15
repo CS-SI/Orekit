@@ -107,6 +107,16 @@ public class FieldCartesianOrbitTest {
     }
 
     @Test
+    public void testDerivativesConversionSymmetry() throws OrekitException{
+        doTestDerivativesConversionSymmetry(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testDerivativesConversionSymmetryHyperbolic() throws OrekitException{
+        doTestDerivativesConversionSymmetryHyperbolic(Decimal64Field.getInstance());
+    }
+
+    @Test
     public void testShiftElliptic() throws OrekitException{
         doTestShiftElliptic(Decimal64Field.getInstance());
     }
@@ -114,6 +124,11 @@ public class FieldCartesianOrbitTest {
     @Test
     public void testShiftCircular() throws OrekitException{
         doTestShiftCircular(Decimal64Field.getInstance());
+    }
+
+    @Test
+    public void testShiftEquinoctial() throws OrekitException{
+        doTestShiftEquinoctial(Decimal64Field.getInstance());
     }
 
     @Test
@@ -386,6 +401,73 @@ public class FieldCartesianOrbitTest {
         Assert.assertEquals(0.0, orbit.getE().getReal(), 2.0e-14);
     }
 
+    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetry(Field<T> field) throws OrekitException {
+        T zero = field.getZero();
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
+        FieldVector3D<T> position     = new FieldVector3D<>(zero.add(6893443.400234382),
+                                                            zero.add(1886406.1073757345),
+                                                            zero.add(-589265.1150359757));
+        FieldVector3D<T> velocity     = new FieldVector3D<>(zero.add(-281.1261461082365),
+                                                            zero.add(-1231.6165642450928),
+                                                            zero.add(-7348.756363469432));
+        FieldVector3D<T> acceleration = new FieldVector3D<>(zero.add(-7.460341170581685),
+                                                            zero.add(-2.0415957334584527),
+                                                            zero.add(0.6393322823627762));
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( position, velocity, acceleration);
+        FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
+                                                                 date, Constants.EIGEN5C_EARTH_MU);
+        Assert.assertTrue(orbit.hasDerivatives());
+        T r2 = position.getNormSq();
+        T r  = r2.sqrt();
+        FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-orbit.getMu()),
+                                                                     position);
+        Assert.assertEquals(0.0101, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-4);
+
+        for (OrbitType type : OrbitType.values()) {
+            FieldOrbit<T> converted = type.convertType(orbit);
+            Assert.assertTrue(converted.hasDerivatives());
+            FieldCartesianOrbit<T> rebuilt = (FieldCartesianOrbit<T>) OrbitType.CARTESIAN.convertType(converted);
+            Assert.assertTrue(rebuilt.hasDerivatives());
+            Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getPosition(),     position).getReal(),     2.0e-9);
+            Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity).getReal(),     7.0e-12);
+            Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration).getReal(), 4.9e-15);
+        }
+
+    }
+
+    private <T extends RealFieldElement<T>> void doTestDerivativesConversionSymmetryHyperbolic(Field<T> field) throws OrekitException {
+        T zero = field.getZero();
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
+        FieldVector3D<T> position     = new FieldVector3D<>(zero.add(224267911.905821),
+                                                            zero.add(290251613.109399),
+                                                            zero.add(45534292.777492));
+        FieldVector3D<T> velocity     = new FieldVector3D<>(zero.add(-1494.068165293),
+                                                            zero.add(1124.771027677),
+                                                            zero.add(526.915286134));
+        FieldVector3D<T> acceleration = new FieldVector3D<>(zero.add(-0.001295920501),
+                                                            zero.add(-0.002233045187),
+                                                            zero.add(-0.000349906292));
+        FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>( position, velocity, acceleration);
+        FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, FramesFactory.getEME2000(),
+                                                                 date, Constants.EIGEN5C_EARTH_MU);
+        Assert.assertTrue(orbit.hasDerivatives());
+        T r2 = position.getNormSq();
+        T r  = r2.sqrt();
+        FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r.multiply(r2).reciprocal().multiply(-orbit.getMu()),
+                                                                     position);
+        Assert.assertEquals(4.78e-4, FieldVector3D.distance(keplerianAcceleration, acceleration).getReal(), 1.0e-6);
+
+        OrbitType type = OrbitType.KEPLERIAN;
+        FieldOrbit<T> converted = type.convertType(orbit);
+        Assert.assertTrue(converted.hasDerivatives());
+        FieldCartesianOrbit<T> rebuilt = (FieldCartesianOrbit<T>) OrbitType.CARTESIAN.convertType(converted);
+        Assert.assertTrue(rebuilt.hasDerivatives());
+        Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getPosition(),     position).getReal(),     1.0e-15);
+        Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity).getReal(),     1.0e-15);
+        Assert.assertEquals(0, FieldVector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration).getReal(), 1.0e-15);
+
+    }
+
     private <T extends RealFieldElement<T>> void doTestShiftElliptic(Field<T> field) {
         T zero = field.getZero();
         FieldVector3D<T> position = new FieldVector3D<T>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0));
@@ -403,7 +485,17 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<T>( position, velocity);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(FieldPVCoordinates, FramesFactory.getEME2000(),
                                                                   FieldAbsoluteDate.getJ2000Epoch(field), mu);
-        testShift(orbit, new FieldCircularOrbit<T>(orbit), 6e-16);
+        testShift(orbit, new FieldCircularOrbit<T>(orbit), 2.0e-15);
+    }
+
+    private <T extends RealFieldElement<T>> void doTestShiftEquinoctial(Field<T> field) {
+        T zero = field.getZero();
+        FieldVector3D<T> position = new FieldVector3D<T>(zero.add(-29536113.0), zero.add(30329259.0), zero.add(-100125.0));
+        FieldVector3D<T> velocity = new FieldVector3D<T>(position.getNorm().reciprocal().multiply(mu).sqrt(), position.orthogonal());
+        FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<T>( position, velocity);
+        FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(FieldPVCoordinates, FramesFactory.getEME2000(),
+                                                                  FieldAbsoluteDate.getJ2000Epoch(field), mu);
+        testShift(orbit, new FieldEquinoctialOrbit<T>(orbit), 6e-16);
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftHyperbolic(Field<T> field) {

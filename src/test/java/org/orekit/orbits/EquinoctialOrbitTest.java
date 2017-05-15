@@ -1037,6 +1037,36 @@ public class EquinoctialOrbitTest {
     }
 
     @Test
+    public void testDerivativesConversionSymmetry() throws OrekitException {
+        final AbsoluteDate date = new AbsoluteDate("2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
+        Vector3D position     = new Vector3D(6893443.400234382, 1886406.1073757345, -589265.1150359757);
+        Vector3D velocity     = new Vector3D(-281.1261461082365, -1231.6165642450928, -7348.756363469432);
+        Vector3D acceleration = new Vector3D(-7.460341170581685, -2.0415957334584527, 0.6393322823627762);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
+        EquinoctialOrbit orbit = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(),
+                                                      date, Constants.EIGEN5C_EARTH_MU);
+        Assert.assertTrue(orbit.hasDerivatives());
+        double r2 = position.getNormSq();
+        double r  = FastMath.sqrt(r2);
+        Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
+        Assert.assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
+
+        for (OrbitType type : OrbitType.values()) {
+            Orbit converted = type.convertType(orbit);
+            Assert.assertTrue(converted.hasDerivatives());
+            EquinoctialOrbit rebuilt = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(converted);
+            Assert.assertTrue(rebuilt.hasDerivatives());
+            Assert.assertEquals(orbit.getADot(),             rebuilt.getADot(),             3.0e-13);
+            Assert.assertEquals(orbit.getEquinoctialExDot(), rebuilt.getEquinoctialExDot(), 1.0e-15);
+            Assert.assertEquals(orbit.getEquinoctialEyDot(), rebuilt.getEquinoctialEyDot(), 1.0e-15);
+            Assert.assertEquals(orbit.getHxDot(),            rebuilt.getHxDot(),            1.0e-15);
+            Assert.assertEquals(orbit.getHyDot(),            rebuilt.getHyDot(),            1.0e-15);
+            Assert.assertEquals(orbit.getLvDot(),            rebuilt.getLvDot(),            1.0e-15);
+        }
+
+    }
+
+    @Test
     public void testToString() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
