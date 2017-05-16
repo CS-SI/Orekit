@@ -65,6 +65,7 @@ public class FieldCartesianOrbitTest {
         // Body mu
         mu = 3.9860047e14;
     }
+
     @Test
     public void testCartesianToCartesian()
         throws OrekitException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -495,7 +496,7 @@ public class FieldCartesianOrbitTest {
         FieldPVCoordinates<T> FieldPVCoordinates = new FieldPVCoordinates<T>( position, velocity);
         FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<T>(FieldPVCoordinates, FramesFactory.getEME2000(),
                                                                   FieldAbsoluteDate.getJ2000Epoch(field), mu);
-        testShift(orbit, new FieldEquinoctialOrbit<T>(orbit), 6e-16);
+        testShift(orbit, new FieldEquinoctialOrbit<T>(orbit), 5.0e-14);
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftHyperbolic(Field<T> field) {

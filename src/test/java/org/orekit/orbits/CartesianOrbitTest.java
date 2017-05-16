@@ -425,7 +425,7 @@ public class CartesianOrbitTest {
         Vector3D velocity = new Vector3D(FastMath.sqrt(mu / position.getNorm()), position.orthogonal());
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        testShift(orbit, new EquinoctialOrbit(orbit), 1.0e-15);
+        testShift(orbit, new EquinoctialOrbit(orbit), 5.0e-14);
     }
 
     @Test
