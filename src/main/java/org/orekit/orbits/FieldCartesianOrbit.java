@@ -595,7 +595,7 @@ public class FieldCartesianOrbit<T extends RealFieldElement<T>> extends FieldOrb
 
             // extract non-Keplerian part of the initial acceleration
             final FieldVector3D<T> nonKeplerianAcceleration = new FieldVector3D<>(one, getPVCoordinates().getAcceleration(),
-                                                                                  r.multiply(r2).reciprocal().multiply(-getMu()), pvP);
+                                                                                  r.multiply(r2).reciprocal().multiply(getMu()), pvP);
 
             // add the quadratic motion due to the non-Keplerian acceleration to the Keplerian motion
             final FieldVector3D<T> fixedP   = new FieldVector3D<>(one, shiftedP,
