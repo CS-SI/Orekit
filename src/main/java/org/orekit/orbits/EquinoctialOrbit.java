@@ -698,9 +698,10 @@ public class EquinoctialOrbit extends Orbit {
             final double newHx = hx   + hxDot   * dt;
             final double newHy = hy   + hyDot   * dt;
             final double lMDot = getLMDot();
-            final double newLM = getLM() + lMDot * dt;
+            final double lMDotDot = -1.5 * aDot * getKeplerianMeanMotion() / a;
+            final double newLM = getLM() + dt * (lMDot + 0.5 * dt * lMDotDot);
             return new EquinoctialOrbit(newA, newEx, newEy, newHx, newHy, newLM,
-                                        aDot, exDot, eyDot, hxDot, hyDot, lMDot,
+                                        aDot, exDot, eyDot, hxDot, hyDot, lMDot + dt * lMDotDot,
                                         PositionAngle.MEAN, getFrame(),
                                         getDate().shiftedBy(dt), getMu());
         } else {

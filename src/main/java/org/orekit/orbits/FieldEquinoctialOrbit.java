@@ -829,15 +829,16 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
     public FieldEquinoctialOrbit<T> shiftedBy(final T dt) {
         if (hasDerivatives()) {
             // use Keplerian motion + first derivatives
-            final T newA  = a.add(aDot.multiply(dt));
-            final T newEx = ex.add(exDot.multiply(dt));
-            final T newEy = ey.add(eyDot.multiply(dt));
-            final T newHx = hx.add(hxDot.multiply(dt));
-            final T newHy = hy.add(hyDot.multiply(dt));
-            final T lMDot = getLMDot();
-            final T newLM = getLM().add(lMDot.multiply(dt));
+            final T newA     = a.add(aDot.multiply(dt));
+            final T newEx    = ex.add(exDot.multiply(dt));
+            final T newEy    = ey.add(eyDot.multiply(dt));
+            final T newHx    = hx.add(hxDot.multiply(dt));
+            final T newHy    = hy.add(hyDot.multiply(dt));
+            final T lMDot    = getLMDot();
+            final T lMDotDot = aDot.multiply(-1.5).multiply(getKeplerianMeanMotion()).divide(a);
+            final T newLM    = getLM().add(dt.multiply(lMDot.add(dt.multiply(0.5).multiply(lMDotDot))));
             return new FieldEquinoctialOrbit<>(newA, newEx, newEy, newHx, newHy, newLM,
-                                               aDot, exDot, eyDot, hxDot, hyDot, lMDot,
+                                               aDot, exDot, eyDot, hxDot, hyDot, lMDot.add(dt.multiply(lMDotDot)),
                                                PositionAngle.MEAN, getFrame(),
                                                getDate().shiftedBy(dt), getMu());
         } else {

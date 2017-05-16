@@ -980,9 +980,10 @@ public class KeplerianOrbit extends Orbit {
             final double newPA   = pa   + paDot   * dt;
             final double newRAAN = raan + raanDot * dt;
             final double mDot    = getMeanAnomalyDot();
-            final double newM    = getMeanAnomaly() + mDot * dt;
+            final double mDotDot = -1.5 * aDot * getKeplerianMeanMotion() / a;
+            final double newM    = getMeanAnomaly() + dt * (mDot + 0.5 * dt * mDotDot);
             return new KeplerianOrbit(newA, newE, newI, newPA, newRAAN, newM,
-                                      aDot, eDot, iDot, paDot, raanDot, mDot,
+                                      aDot, eDot, iDot, paDot, raanDot, mDot + dt * mDotDot,
                                       PositionAngle.MEAN, getFrame(),
                                       getDate().shiftedBy(dt), getMu());
         } else {

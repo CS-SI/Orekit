@@ -1008,15 +1008,16 @@ public  class FieldCircularOrbit<T extends RealFieldElement<T>>
     public FieldCircularOrbit<T> shiftedBy(final T dt) {
         if (hasDerivatives()) {
             // use Keplerian motion + first derivatives
-            final T newA      = a.add(aDot.multiply(dt));
-            final T newEx     = ex.add(exDot.multiply(dt));
-            final T newEy     = ey.add(eyDot.multiply(dt));
-            final T newI      = i.add(iDot.multiply(dt));
-            final T newRaan   = raan.add(raanDot.multiply(dt));
-            final T alphaMDot = getAlphaMDot();
-            final T newAlphaM = getAlphaM().add(alphaMDot.multiply(dt));
+            final T newA         = a.add(aDot.multiply(dt));
+            final T newEx        = ex.add(exDot.multiply(dt));
+            final T newEy        = ey.add(eyDot.multiply(dt));
+            final T newI         = i.add(iDot.multiply(dt));
+            final T newRaan      = raan.add(raanDot.multiply(dt));
+            final T alphaMDot    = getAlphaMDot();
+            final T alphaMDotDot = aDot.multiply(-1.5).multiply(getKeplerianMeanMotion()).divide(a);
+            final T newAlphaM    = getAlphaM().add(dt.multiply(alphaMDot.add(dt.multiply(0.5).multiply(alphaMDotDot))));
             return new FieldCircularOrbit<>(newA, newEx, newEy, newI, newRaan, newAlphaM,
-                                            aDot, exDot, eyDot, iDot, raanDot, alphaMDot,
+                                            aDot, exDot, eyDot, iDot, raanDot, alphaMDot.add(dt.multiply(alphaMDotDot)),
                                             PositionAngle.MEAN, getFrame(),
                                             getDate().shiftedBy(dt), getMu());
         } else {

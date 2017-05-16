@@ -920,15 +920,16 @@ public class CircularOrbit
     public CircularOrbit shiftedBy(final double dt) {
         if (hasDerivatives()) {
             // use Keplerian motion + first derivatives
-            final double newA      = a    + aDot    * dt;
-            final double newEx     = ex   + exDot   * dt;
-            final double newEy     = ey   + eyDot   * dt;
-            final double newI      = i    + iDot    * dt;
-            final double newRaan   = raan + raanDot * dt;
-            final double alphaMDot = getAlphaMDot();
-            final double newAlphaM = getAlphaM() + alphaMDot * dt;
+            final double newA         = a    + aDot    * dt;
+            final double newEx        = ex   + exDot   * dt;
+            final double newEy        = ey   + eyDot   * dt;
+            final double newI         = i    + iDot    * dt;
+            final double newRaan      = raan + raanDot * dt;
+            final double alphaMDot    = getAlphaMDot();
+            final double alphaMDotDot = -1.5 * aDot * getKeplerianMeanMotion() / a;
+            final double newAlphaM    = getAlphaM() + dt * (alphaMDot + 0.5 * dt * alphaMDotDot);
             return new CircularOrbit(newA, newEx, newEy, newI, newRaan, newAlphaM,
-                                     aDot, exDot, eyDot, iDot, raanDot, alphaMDot,
+                                     aDot, exDot, eyDot, iDot, raanDot, alphaMDot + dt * alphaMDotDot,
                                      PositionAngle.MEAN, getFrame(),
                                      getDate().shiftedBy(dt), getMu());
         } else {
