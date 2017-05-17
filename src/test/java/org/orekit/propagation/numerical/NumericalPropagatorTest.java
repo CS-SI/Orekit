@@ -1023,227 +1023,218 @@ public class NumericalPropagatorTest {
 
     @Test
     public void testShiftKeplerianEllipticTrueWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftKeplerianEllipticTrueWithDerivatives() throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, true, 24.0,
-                    93.5, 578.8, 2800.2, 8107.7);
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftKeplerianEllipticEccentricWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftKeplerianEllipticEcentricWithDerivatives() throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true, 24.0,
-                    93.5, 578.8, 2800.2, 8107.7);
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftKeplerianEllipticMeanWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftKeplerianEllipticMeanWithDerivatives() throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, true, 24.0,
-                    93.5, 578.8, 2800.2, 8107.7);
+        doTestShift(createEllipticOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicTrueWithoutDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, false, 0.484,
-                    1.94, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
+                    0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicTrueWithDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, true, 2.56,
-                    10.2, 63.9, 255.7, 575.1);
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicEccentricWithoutDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false, 0.484,
-                    1.94, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
+                    0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicEcentricWithDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true, 2.56,
-                    10.2, 63.9, 255.7, 575.1);
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicMeanWithoutDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, false, 0.484,
-                    1.94, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
+                    0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftKeplerianHyperbolicMeanWithDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, true, 2.56,
-                    10.2, 63.9, 255.7, 575.1);
+        doTestShift(createHyperbolicOrbit(), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftCartesianEllipticTrueWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCartesianEllipticTrueWithDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, true, 1.14,
-                    9.1, 140.3, 1066.7, 3306.9);
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCartesianEllipticEccentricWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCartesianEllipticEcentricWithDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true, 1.14,
-                    9.1, 140.3, 1066.7, 3306.9);
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCartesianEllipticMeanWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCartesianEllipticMeanWithDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, true, 1.14,
-                    9.1, 140.3, 1066.7, 3306.9);
+        doTestShift(createEllipticOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCartesianHyperbolicTrueWithoutDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, false, 0.48,
-                    1.93, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
+                    0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftCartesianHyperbolicTrueWithDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, true, 1.38e-4,
-                    1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftCartesianHyperbolicEccentricWithoutDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false, 0.48,
-                    1.93, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
+                    0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftCartesianHyperbolicEcentricWithDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true, 1.38e-4,
-                    1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftCartesianHyperbolicMeanWithoutDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, false, 0.48,
-                    1.93, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
+                    0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
     public void testShiftCartesianHyperbolicMeanWithDerivatives() throws OrekitException {
-        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, true, 1.38e-4,
-                    1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
+        doTestShift(createHyperbolicOrbit(), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
     public void testShiftCircularTrueWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.TRUE, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.TRUE, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCircularTrueWithDerivatives() throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.TRUE, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.TRUE, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCircularEccentricWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCircularEcentricWithDerivatives() throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftCircularMeanWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.MEAN, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.MEAN, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftCircularMeanWithDerivatives() throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.MEAN, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(), OrbitType.CIRCULAR, PositionAngle.MEAN, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftEquinoctialTrueWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftEquinoctialTrueWithDerivatives() throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftEquinoctialEccentricWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftEquinoctialEcentricWithDerivatives() throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
     public void testShiftEquinoctialMeanWithoutDerivatives() throws OrekitException {
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
     public void testShiftEquinoctialMeanWithDerivatives() throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     private static void doTestShift(final CartesianOrbit orbit, final OrbitType orbitType,

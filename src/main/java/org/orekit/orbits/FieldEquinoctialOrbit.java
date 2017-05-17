@@ -772,6 +772,41 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
 
     }
 
+    /** Compute non-Keplerian part of the acceleration from first time derivatives.
+     * <p>
+     * This method should be called only when {@link #hasDerivatives()} returns true.
+     * </p>
+     * @return non-Keplerian part of the acceleration
+     */
+    private FieldVector3D<T> nonKeplerianAcceleration() {
+
+        final T[][] dCdP = MathArrays.buildArray(a.getField(), 6, 6);
+        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+
+        final T nonKeplerianMeanMotion = getLMDot().subtract(getKeplerianMeanMotion());
+        final T nonKeplerianAx =     dCdP[3][0].multiply(aDot).
+                                 add(dCdP[3][1].multiply(exDot)).
+                                 add(dCdP[3][2].multiply(eyDot)).
+                                 add(dCdP[3][3].multiply(hxDot)).
+                                 add(dCdP[3][4].multiply(hyDot)).
+                                 add(dCdP[3][5].multiply(nonKeplerianMeanMotion));
+        final T nonKeplerianAy =     dCdP[4][0].multiply(aDot).
+                                 add(dCdP[4][1].multiply(exDot)).
+                                 add(dCdP[4][2].multiply(eyDot)).
+                                 add(dCdP[4][3].multiply(hxDot)).
+                                 add(dCdP[4][4].multiply(hyDot)).
+                                 add(dCdP[4][5].multiply(nonKeplerianMeanMotion));
+        final T nonKeplerianAz =     dCdP[5][0].multiply(aDot).
+                                 add(dCdP[5][1].multiply(exDot)).
+                                 add(dCdP[5][2].multiply(eyDot)).
+                                 add(dCdP[5][3].multiply(hxDot)).
+                                 add(dCdP[5][4].multiply(hyDot)).
+                                 add(dCdP[5][5].multiply(nonKeplerianMeanMotion));
+
+        return new FieldVector3D<>(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+
+    }
+
     /** {@inheritDoc} */
     protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
 
@@ -782,44 +817,9 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
         final T r2 = partialPV.getPosition().getNormSq();
         final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(-getMu()),
                                                                            partialPV.getPosition());
-        final FieldVector3D<T> acceleration;
-        if (hasDerivatives()) {
-
-            // add Keplerian and non-Keplerian accelerations
-            final T[][] jacobian = MathArrays.buildArray(a.getField(), 6, 6);
-            getJacobianWrtParameters(PositionAngle.MEAN, jacobian);
-
-            final T nonKeplerianMeanMotion = getLMDot().subtract(getKeplerianMeanMotion());
-            final T nonKeplerianAx =     jacobian[3][0].multiply(aDot).
-                                     add(jacobian[3][1].multiply(exDot)).
-                                     add(jacobian[3][2].multiply(eyDot)).
-                                     add(jacobian[3][3].multiply(hxDot)).
-                                     add(jacobian[3][4].multiply(hyDot)).
-                                     add(jacobian[3][5].multiply(nonKeplerianMeanMotion));
-            final T nonKeplerianAy =     jacobian[4][0].multiply(aDot).
-                                     add(jacobian[4][1].multiply(exDot)).
-                                     add(jacobian[4][2].multiply(eyDot)).
-                                     add(jacobian[4][3].multiply(hxDot)).
-                                     add(jacobian[4][4].multiply(hyDot)).
-                                     add(jacobian[4][5].multiply(nonKeplerianMeanMotion));
-            final T nonKeplerianAz =     jacobian[5][0].multiply(aDot).
-                                     add(jacobian[5][1].multiply(exDot)).
-                                     add(jacobian[5][2].multiply(eyDot)).
-                                     add(jacobian[5][3].multiply(hxDot)).
-                                     add(jacobian[5][4].multiply(hyDot)).
-                                     add(jacobian[5][5].multiply(nonKeplerianMeanMotion));
-
-            // add Keplerian and non-Keplerian accelerations
-            acceleration = new FieldVector3D<>(keplerianAcceleration.getX().add(nonKeplerianAx),
-                                               keplerianAcceleration.getY().add(nonKeplerianAy),
-                                               keplerianAcceleration.getZ().add(nonKeplerianAz));
-
-        } else {
-
-            // use Keplerian acceleration only
-            acceleration = keplerianAcceleration;
-
-        }
+        final FieldVector3D<T> acceleration = hasDerivatives() ?
+                                              keplerianAcceleration.add(nonKeplerianAcceleration()) :
+                                              keplerianAcceleration;
 
         return new TimeStampedFieldPVCoordinates<>(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
 
@@ -827,27 +827,40 @@ public class FieldEquinoctialOrbit<T extends RealFieldElement<T>> extends FieldO
 
     /** {@inheritDoc} */
     public FieldEquinoctialOrbit<T> shiftedBy(final T dt) {
+
+        // use Keplerian-only motion
+        final FieldEquinoctialOrbit<T> keplerianShifted = new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
+                                                                                      getLM().add(getKeplerianMeanMotion().multiply(dt)),
+                                                                                      PositionAngle.MEAN, getFrame(),
+                                                                                      getDate().shiftedBy(dt), getMu());
+
         if (hasDerivatives()) {
-            // use Keplerian motion + first derivatives
-            final T newA     = a.add(aDot.multiply(dt));
-            final T newEx    = ex.add(exDot.multiply(dt));
-            final T newEy    = ey.add(eyDot.multiply(dt));
-            final T newHx    = hx.add(hxDot.multiply(dt));
-            final T newHy    = hy.add(hyDot.multiply(dt));
-            final T lMDot    = getLMDot();
-            final T lMDotDot = aDot.multiply(-1.5).multiply(getKeplerianMeanMotion()).divide(a);
-            final T newLM    = getLM().add(dt.multiply(lMDot.add(dt.multiply(0.5).multiply(lMDotDot))));
-            return new FieldEquinoctialOrbit<>(newA, newEx, newEy, newHx, newHy, newLM,
-                                               aDot, exDot, eyDot, hxDot, hyDot, lMDot.add(dt.multiply(lMDotDot)),
-                                               PositionAngle.MEAN, getFrame(),
-                                               getDate().shiftedBy(dt), getMu());
+
+            // extract non-Keplerian acceleration from first time derivatives
+            final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
+
+            // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
+            keplerianShifted.computePVWithoutA();
+            final FieldVector3D<T> fixedP   = new FieldVector3D<>(one, keplerianShifted.partialPV.getPosition(),
+                                                                  dt.multiply(dt).multiply(0.5), nonKeplerianAcceleration);
+            final T   fixedR2 = fixedP.getNormSq();
+            final T   fixedR  = fixedR2.sqrt();
+            final FieldVector3D<T> fixedV  = new FieldVector3D<>(one, keplerianShifted.partialPV.getVelocity(),
+                                                                 dt, nonKeplerianAcceleration);
+            final FieldVector3D<T> fixedA  = new FieldVector3D<>(fixedR2.multiply(fixedR).reciprocal().multiply(-getMu()),
+                                                                 keplerianShifted.partialPV.getPosition(),
+                                                                 one, nonKeplerianAcceleration);
+
+            // build a new orbit, taking non-Keplerian acceleration into account
+            return new FieldEquinoctialOrbit<>(new TimeStampedFieldPVCoordinates<>(keplerianShifted.getDate(),
+                                                                                   fixedP, fixedV, fixedA),
+                                               keplerianShifted.getFrame(), keplerianShifted.getMu());
+
         } else {
-            // use Keplerian-only motion
-            return new FieldEquinoctialOrbit<>(a, ex, ey, hx, hy,
-                                              getLM().add(getKeplerianMeanMotion().multiply(dt)),
-                                              PositionAngle.MEAN, getFrame(),
-                                              getDate().shiftedBy(dt), getMu());
+            // Keplerian-only motion is all we can do
+            return keplerianShifted;
         }
+
     }
 
     /** {@inheritDoc}

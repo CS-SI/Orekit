@@ -636,6 +636,29 @@ public class EquinoctialOrbit extends Orbit {
 
     }
 
+    /** Compute non-Keplerian part of the acceleration from first time derivatives.
+     * <p>
+     * This method should be called only when {@link #hasDerivatives()} returns true.
+     * </p>
+     * @return non-Keplerian part of the acceleration
+     */
+    private Vector3D nonKeplerianAcceleration() {
+
+        final double[][] dCdP = new double[6][6];
+        getJacobianWrtParameters(PositionAngle.MEAN, dCdP);
+
+        final double nonKeplerianMeanMotion = getLMDot() - getKeplerianMeanMotion();
+        final double nonKeplerianAx = dCdP[3][0] * aDot  + dCdP[3][1] * exDot + dCdP[3][2] * eyDot +
+                                      dCdP[3][3] * hxDot + dCdP[3][4] * hyDot + dCdP[3][5] * nonKeplerianMeanMotion;
+        final double nonKeplerianAy = dCdP[4][0] * aDot  + dCdP[4][1] * exDot + dCdP[4][2] * eyDot +
+                                      dCdP[4][3] * hxDot + dCdP[4][4] * hyDot + dCdP[4][5] * nonKeplerianMeanMotion;
+        final double nonKeplerianAz = dCdP[5][0] * aDot  + dCdP[5][1] * exDot + dCdP[5][2] * eyDot +
+                                      dCdP[5][3] * hxDot + dCdP[5][4] * hyDot + dCdP[5][5] * nonKeplerianMeanMotion;
+
+        return new Vector3D(nonKeplerianAx, nonKeplerianAy, nonKeplerianAz);
+
+    }
+
     /** {@inheritDoc} */
     protected TimeStampedPVCoordinates initPVCoordinates() {
 
@@ -645,44 +668,9 @@ public class EquinoctialOrbit extends Orbit {
         // acceleration
         final double r2 = partialPV.getPosition().getNormSq();
         final Vector3D keplerianAcceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), partialPV.getPosition());
-        final Vector3D acceleration;
-        if (hasDerivatives()) {
-
-            // add Keplerian and non-Keplerian accelerations
-            final double[][] jacobian = new double[6][6];
-            getJacobianWrtParameters(PositionAngle.MEAN, jacobian);
-
-            final double nonKeplerianMeanMotion = getLMDot() - getKeplerianMeanMotion();
-            final double nonKeplerianAx = jacobian[3][0] * aDot    +
-                                          jacobian[3][1] * exDot   +
-                                          jacobian[3][2] * eyDot   +
-                                          jacobian[3][3] * hxDot   +
-                                          jacobian[3][4] * hyDot   +
-                                          jacobian[3][5] * nonKeplerianMeanMotion;
-            final double nonKeplerianAy = jacobian[4][0] * aDot    +
-                                          jacobian[4][1] * exDot   +
-                                          jacobian[4][2] * eyDot   +
-                                          jacobian[4][3] * hxDot   +
-                                          jacobian[4][4] * hyDot   +
-                                          jacobian[4][5] * nonKeplerianMeanMotion;
-            final double nonKeplerianAz = jacobian[5][0] * aDot    +
-                                          jacobian[5][1] * exDot   +
-                                          jacobian[5][2] * eyDot   +
-                                          jacobian[5][3] * hxDot   +
-                                          jacobian[5][4] * hyDot   +
-                                          jacobian[5][5] * nonKeplerianMeanMotion;
-
-            // add Keplerian and non-Keplerian accelerations
-            acceleration = new Vector3D(keplerianAcceleration.getX() + nonKeplerianAx,
-                                        keplerianAcceleration.getY() + nonKeplerianAy,
-                                        keplerianAcceleration.getZ() + nonKeplerianAz);
-
-        } else {
-
-            // use Keplerian acceleration only
-            acceleration = keplerianAcceleration;
-
-        }
+        final Vector3D acceleration = hasDerivatives() ?
+                                      keplerianAcceleration.add(nonKeplerianAcceleration()) :
+                                      keplerianAcceleration;
 
         return new TimeStampedPVCoordinates(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
 
@@ -690,27 +678,39 @@ public class EquinoctialOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public EquinoctialOrbit shiftedBy(final double dt) {
+
+        // use Keplerian-only motion
+        final EquinoctialOrbit keplerianShifted = new EquinoctialOrbit(a, ex, ey, hx, hy,
+                                                                       getLM() + getKeplerianMeanMotion() * dt,
+                                                                       PositionAngle.MEAN, getFrame(),
+                                                                       getDate().shiftedBy(dt), getMu());
+
         if (hasDerivatives()) {
-            // use Keplerian motion + first derivatives
-            final double newA  = a    + aDot    * dt;
-            final double newEx = ex   + exDot   * dt;
-            final double newEy = ey   + eyDot   * dt;
-            final double newHx = hx   + hxDot   * dt;
-            final double newHy = hy   + hyDot   * dt;
-            final double lMDot = getLMDot();
-            final double lMDotDot = -1.5 * aDot * getKeplerianMeanMotion() / a;
-            final double newLM = getLM() + dt * (lMDot + 0.5 * dt * lMDotDot);
-            return new EquinoctialOrbit(newA, newEx, newEy, newHx, newHy, newLM,
-                                        aDot, exDot, eyDot, hxDot, hyDot, lMDot + dt * lMDotDot,
-                                        PositionAngle.MEAN, getFrame(),
-                                        getDate().shiftedBy(dt), getMu());
+
+            // extract non-Keplerian acceleration from first time derivatives
+            final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
+
+            // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
+            keplerianShifted.computePVWithoutA();
+            final Vector3D fixedP   = new Vector3D(1, keplerianShifted.partialPV.getPosition(),
+                                                   0.5 * dt * dt, nonKeplerianAcceleration);
+            final double   fixedR2 = fixedP.getNormSq();
+            final double   fixedR  = FastMath.sqrt(fixedR2);
+            final Vector3D fixedV  = new Vector3D(1, keplerianShifted.partialPV.getVelocity(),
+                                                  dt, nonKeplerianAcceleration);
+            final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), keplerianShifted.partialPV.getPosition(),
+                                                  1, nonKeplerianAcceleration);
+
+            // build a new orbit, taking non-Keplerian acceleration into account
+            return new EquinoctialOrbit(new TimeStampedPVCoordinates(keplerianShifted.getDate(),
+                                                                     fixedP, fixedV, fixedA),
+                                        keplerianShifted.getFrame(), keplerianShifted.getMu());
+
         } else {
-            // use Keplerian-only motion
-            return new EquinoctialOrbit(a, ex, ey, hx, hy,
-                                        getLM() + getKeplerianMeanMotion() * dt,
-                                        PositionAngle.MEAN, getFrame(),
-                                        getDate().shiftedBy(dt), getMu());
+            // Keplerian-only motion is all we can do
+            return keplerianShifted;
         }
+
     }
 
     /** {@inheritDoc}

@@ -1221,8 +1221,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1231,9 +1231,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticTrueWithDerivatives(final Field<T> field) throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, true, 24.0,
-                    93.5, 578.8, 2800.2, 8107.7);
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1242,8 +1241,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1252,9 +1251,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticEcentricWithDerivatives(final Field<T> field) throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true, 24.0,
-                    93.5, 578.8, 2800.2, 8107.7);
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1263,8 +1261,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1273,9 +1271,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianEllipticMeanWithDerivatives(final Field<T> field) throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, true, 24.0,
-                    93.5, 578.8, 2800.2, 8107.7);
+        doTestShift(createEllipticOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1284,8 +1281,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, false, 0.484,
-                    1.94, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, false,
+                    0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
@@ -1294,8 +1291,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicTrueWithDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, true, 2.56,
-                    10.2, 63.9, 255.7, 575.1);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.TRUE, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
@@ -1304,8 +1301,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
-                   doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false, 0.484,
-                    1.94, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, false,
+                    0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
@@ -1314,8 +1311,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicEcentricWithDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true, 2.56,
-                    10.2, 63.9, 255.7, 575.1);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.ECCENTRIC, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
@@ -1324,8 +1321,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, false, 0.484,
-                    1.94, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, false,
+                    0.484, 1.94, 12.1, 48.3, 108.5);
     }
 
     @Test
@@ -1334,8 +1331,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftKeplerianHyperbolicMeanWithDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, true, 2.56,
-                    10.2, 63.9, 255.7, 575.1);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.KEPLERIAN, PositionAngle.MEAN, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
@@ -1344,8 +1341,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1354,8 +1351,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticTrueWithDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, true, 1.14,
-                    9.1, 140.3, 1066.7, 3306.9);
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1364,8 +1361,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1374,8 +1371,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticEcentricWithDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true, 1.14,
-                    9.1, 140.3, 1066.7, 3306.9);
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1384,8 +1381,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1394,8 +1391,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianEllipticMeanWithDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, true, 1.14,
-                    9.1, 140.3, 1066.7, 3306.9);
+        doTestShift(createEllipticOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1404,8 +1401,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, false, 0.48,
-                    1.93, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, false,
+                    0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
@@ -1414,8 +1411,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicTrueWithDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, true, 1.38e-4,
-                    1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.TRUE, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
@@ -1424,8 +1421,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false, 0.48,
-                    1.93, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, false,
+                    0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
@@ -1434,8 +1431,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicEcentricWithDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true, 1.38e-4,
-                    1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.ECCENTRIC, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
@@ -1444,8 +1441,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, false, 0.48,
-                    1.93, 12.1, 48.3, 108.5);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, false,
+                    0.48, 1.93, 12.1, 48.3, 108.5);
     }
 
     @Test
@@ -1454,8 +1451,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCartesianHyperbolicMeanWithDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, true, 1.38e-4,
-                    1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
+        doTestShift(createHyperbolicOrbit(field), OrbitType.CARTESIAN, PositionAngle.MEAN, true,
+                    1.38e-4, 1.10e-3, 1.72e-2, 1.37e-1, 4.62e-1);
     }
 
     @Test
@@ -1464,8 +1461,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCircularTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.TRUE, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.TRUE, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1474,9 +1471,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCircularTrueWithDerivatives(final Field<T> field) throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.TRUE, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.TRUE, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1485,8 +1481,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCircularEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1495,9 +1491,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCircularEcentricWithDerivatives(final Field<T> field) throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.ECCENTRIC, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1506,8 +1501,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCircularMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.MEAN, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.MEAN, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1516,9 +1511,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftCircularMeanWithDerivatives(final Field<T> field) throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.MEAN, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(field), OrbitType.CIRCULAR, PositionAngle.MEAN, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1527,8 +1521,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftEquinoctialTrueWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1537,9 +1531,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftEquinoctialTrueWithDerivatives(final Field<T> field) throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.TRUE, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1548,8 +1541,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftEquinoctialEccentricWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1558,9 +1551,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTtestShiftEquinoctialEcentricWithDerivatives(final Field<T> field) throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.ECCENTRIC, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     @Test
@@ -1569,8 +1561,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftEquinoctialMeanWithoutDerivatives(final Field<T> field) throws OrekitException {
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, false, 18.1,
-                    72.0, 437.3, 1601.1, 3141.8);
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, false,
+                    18.1, 72.0, 437.3, 1601.1, 3141.8);
     }
 
     @Test
@@ -1579,9 +1571,8 @@ public class FieldNumericalPropagatorTest {
     }
 
     private <T extends RealFieldElement<T>> void doTestShiftEquinoctialMeanWithDerivatives(final Field<T> field) throws OrekitException {
-        // TODO: these errors are too large, derivatives should improve shift accuracy
-        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, true, 20.6,
-                    80.2, 497, 2417, 7034);
+        doTestShift(createEllipticOrbit(field), OrbitType.EQUINOCTIAL, PositionAngle.MEAN, true,
+                    1.14, 9.1, 140.3, 1066.7, 3306.9);
     }
 
     private static <T extends RealFieldElement<T>> void doTestShift(final FieldCartesianOrbit<T> orbit, final OrbitType orbitType,
